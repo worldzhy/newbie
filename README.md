@@ -1,7 +1,3 @@
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-
 <p align="left">
 
 ![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg?style=flat-square)
@@ -35,15 +31,11 @@
 ```bash
 # development
 $ npm install
-$ npx prisma generate
-$ npx prisma migrate dev
-$ npx prisma db seed
-$ npx gts init
+$ cp .env.example .env
 
 # production
 $ npm install --production
-$ npx prisma generate
-$ npx prisma migrate deploy
+$ cp .env.example .env
 ```
 
 ## Running the app
@@ -52,15 +44,30 @@ $ npx prisma migrate deploy
 # development
 $ npm run start:dev
 
-# production mode
+# production
 $ npm run build
 $ npm run start:prod
 ```
 
-## Lint
+## Google ts lint
 
-```bash
-$ npm run lint 
+```
+$ npx gts init
+```
+
+## husky
+
+```
+$ npx husky install
+```
+
+## Prisma
+
+```
+$ npx prisma generate
+$ npx prisma migrate dev
+$ npx prisma db seed
+$ npx prisma migrate deploy
 ```
 
 ## Test
@@ -74,6 +81,12 @@ $ npm test:e2e
 
 # test coverage
 $ npm test:cov
+```
+
+## Lint
+
+```bash
+$ npm run lint 
 ```
 
 ## Stay in touch

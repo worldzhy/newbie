@@ -3,6 +3,14 @@ import {Enum} from './_common.enum';
 
 @Injectable()
 export class Config {
+  static getJwtSecret = () => {
+    if (typeof process.env.JWT_SECRET === 'string') {
+      return process.env.JWT_SECRET;
+    } else {
+      return 'environment variable JWT_SECRET is invalid.';
+    }
+  };
+
   // This function is no longer needed because https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/loading-node-credentials-environment.html
   static getCredentials = () => {
     if (process.env.ENVIRONMENT === Enum.environment.DEVELOPMENT) {
