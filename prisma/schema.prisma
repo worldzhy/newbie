@@ -1,0 +1,238 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  // Enable Full-Text Search which is only available for PostgreSQL.
+  previewFeatures = ["dataProxy", "fullTextSearch"]
+  
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+// [1] The 'User' and 'UserVerificationCode' models are both used for logging in.
+// [2] The 'User' is designed for long-term use and the 'UserVerificationCode' is designed for short-term use.
+// [3] Actually, the 'User' model should be named 'UserPassword' just like 'UserVerificationCode' model.
+model User {
+  id            String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email         String? @unique
+  phone         String? @unique
+  username      String? @unique
+  passwordHash  String?
+  status        UserStatus
+  lastLoginAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  profiles      Profile[]
+}
+  enum UserStatus  {
+    ACTIVE
+    INACTIVE
+  }
+
+
+model VerificationCode {
+  id        Int @id @default(autoincrement())
+  userId    String?
+  email     String?
+  phone     String?
+  code      String
+  use       VerificationCodeUse
+  status    VerificationCodeStatus
+  expiredAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+  enum VerificationCodeUse  {
+    UNKNOWN
+    // For generating JWT.
+    LOGIN_BY_EMAIL
+    LOGIN_BY_PHONE
+    // For closing and recovering account.
+    CLOSE_ACCOUNT_BY_EMAIL
+    CLOSE_ACCOUNT_BY_PHONE
+    RECOVER_ACCOUNT_BY_EMAIL
+    RECOVER_ACCOUNT_BY_PHONE
+    // For other operations
+    BIND_EMAIL
+    BIND_PHONE
+    CHANGE_PASSWORD
+    RESET_PASSWORD
+  }
+  enum VerificationCodeStatus  {
+    ACTIVE
+    INACTIVE
+  }
+
+model JsonWebToken {
+  id      Int @id @default(autoincrement())
+  userId  String
+  token   String
+  status  JwtStatus
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+  enum JwtStatus  {
+    ACTIVE
+    INACTIVE
+  }
+
+
+model Organization {
+  id          String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  profile     Profile?
+}
+
+model Profile {
+  id              String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  familyName      String?
+  givenName       String?
+  middleName      String?
+  name            String?
+  nickname        String?
+  preferredUsername  String?
+  birthday        DateTime?
+  gender          String?
+  picture         String?
+  address         String?
+  geoJSON         Json? // https://datatracker.ietf.org/doc/html/rfc7946
+  websites        Json? // {'facebook': 'https://www.facebook.com/grace', 'twitter': 'https://twitter.com/elonmusk'}
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  userId          String @db.Uuid
+  user            User @relation(fields: [userId], references: [id])
+  organizationId  String? @db.Uuid
+  organization    Organization? @relation(fields: [organizationId], references: [id])
+}
+
+
+model Role {
+  id          String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String @unique  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Permission {
+  id          String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  resource    String
+  action      Action
+  attributes  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+  enum Action {
+    CREATE
+    UPDATE
+    RETRIEVE
+    DELETE
+  }
+
+model User_Role {
+  userId String @db.Uuid
+  roleId String @db.Uuid
+  @@id([userId, roleId])
+}
+
+model User_Permission {
+  userId String @db.Uuid
+  permissionId String @db.Uuid
+  @@id([userId, permissionId])
+}
+
+model Role_Permission {
+  roleId String @db.Uuid
+  permissionId String @db.Uuid
+  @@id([roleId, permissionId])
+}
+
+
+model SqsMessage {
+  id            Int @id @default(autoincrement())
+  messageId     String?
+  queueUrl      String
+  context       String?
+  message       Json
+  responseData  Json?
+  responseErr   Json?
+  createdAt     DateTime @default(now()) // GMT
+}
+
+model SqsMessageBatch {
+  id            Int @id @default(autoincrement())
+  queueUrl      String
+  context       String?
+  message       Json
+  responseData  Json?
+  responseErr   Json?
+  successfulCnt Int
+  failedCnt     Int
+  createdAt     DateTime @default(now())
+}
+
+model Project {
+  id                  String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                String @unique
+  clientName          String
+  clientEmail         String
+  awsAccessKeyID      String? // hash
+  awsSecretAccessKey  String? // hash
+  status              ProjectStatus
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  microServices       Microservice[]
+}
+  enum ProjectStatus  {
+    IN_DEVELOPMENT
+    IN_MAINTENANCE
+    ON_HOLD
+    END
+  }
+
+model Microservice {
+  id                  String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type                MicroserviceType
+  status              MicroserviceStatus
+  environment         String // refer to _common.enum.ts -> environment (development / staging / production)
+  awsAccessKeyID      String? // hash, overwrite Project.awsAccessKeyID
+  awsSecretAccessKey  String? // hash, overwrite Project.awsSecretAccessKey
+  pulumiStackType     PulumiStackType?
+  pulumiStackName     String? // We use Microservice.environment to name the stack.
+  pulumiStackUpResult       Json?
+  pulumiStackDestroyResult  Json?
+  pulumiStackDeleteResult   Json?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  projectId           String @db.Uuid
+  project             Project @relation(fields: [projectId], references: [id])
+}
+  enum MicroserviceType {
+    NETWORK
+    DATABASE
+    ACCOUNT
+    LOGGER
+    QUEQUE
+    FILE_MANAGER
+  }
+  enum MicroserviceStatus {
+    CREATING
+    CREATED
+    DESTROYED
+    DELETED
+    FAULTY
+  }
+  enum PulumiStackType  {
+    NETWORK
+    DATABASE
+    ACCOUNT
+    LOGGER
+    QUEQUE
+    FILE_MANAGER
+  }
