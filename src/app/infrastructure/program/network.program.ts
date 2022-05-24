@@ -38,10 +38,9 @@ export class Network extends BaseProgram {
     const devVpc = new awsx.ec2.Vpc('development-vpc', {
       cidrBlock: this.vpcCidrBlockDev,
       numberOfAvailabilityZones: this.numberOfAvailabilityZones,
-      numberOfNatGateways: 1,
-      subnets: [
+      subnetSpecs: [
         {
-          type: 'private',
+          type: 'Private',
           cidrMask: 24,
         },
       ],
@@ -49,10 +48,9 @@ export class Network extends BaseProgram {
     const prodVpc = new awsx.ec2.Vpc('production-vpc', {
       cidrBlock: this.vpcCidrBlockProd,
       numberOfAvailabilityZones: this.numberOfAvailabilityZones,
-      numberOfNatGateways: 1,
-      subnets: [
+      subnetSpecs: [
         {
-          type: 'private',
+          type: 'Private',
           cidrMask: 24,
         },
       ],
@@ -60,21 +58,20 @@ export class Network extends BaseProgram {
     const mgmtVpc = new awsx.ec2.Vpc('management-vpc', {
       cidrBlock: this.vpcCidrBlockMgmt,
       numberOfAvailabilityZones: this.numberOfAvailabilityZones,
-      numberOfNatGateways: 1,
-      subnets: [
+      subnetSpecs: [
         {
-          type: 'private',
+          type: 'Private',
           cidrMask: 24,
         },
         {
-          type: 'public',
+          type: 'Public',
           cidrMask: 24,
         },
       ],
     });
     const mgmtVpcInternetGateway = new aws.ec2.InternetGateway(
       'mgmt-vpc-internet-gateway',
-      {vpcId: mgmtVpc.id}
+      {vpcId: mgmtVpc.vpcId}
     );
 
     // Allocate a transit gateway and attach VPCs.
@@ -112,22 +109,22 @@ export class Network extends BaseProgram {
     // Allocate EC2 security group.
     const ec2SecurityGroupDev = Util.generateSecurityGroupForEC2(
       'ec2-security-group-dev',
-      devVpc.id
+      devVpc.vpcId
     );
     const ec2SecurityGroupProd = Util.generateSecurityGroupForEC2(
       'ec2-security-group-prod',
-      prodVpc.id
+      prodVpc.vpcId
     );
 
     // Allocate RDS security group.
     const rdsSecurityGroupDev = Util.generateSecurityGroupForRDS(
       'rds-security-group-dev',
-      devVpc.id,
+      devVpc.vpcId,
       [ec2SecurityGroupDev.id]
     );
     const rdsSecurityGroupProd = Util.generateSecurityGroupForRDS(
       'rds-security-group-prod',
-      prodVpc.id,
+      prodVpc.vpcId,
       [ec2SecurityGroupProd.id]
     );
 

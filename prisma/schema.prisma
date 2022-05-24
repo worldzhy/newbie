@@ -214,25 +214,33 @@ model Microservice {
   project             Project @relation(fields: [projectId], references: [id])
 }
   enum MicroserviceType {
-    NETWORK
-    DATABASE
     ACCOUNT
-    LOGGER
-    QUEQUE
+    DATABASE
+    ELASTIC_COMPUTE
     FILE_MANAGER
+    LOGGER
+    NETWORK
+    QUEQUE
   }
   enum MicroserviceStatus {
     CREATING
-    CREATED
+    CREATE_SUCCEEDED
+    CREATE_FAILED
+    UPDATING
+    UPDATE_SUCCEEDED
+    UPDATE_FAILED
+    DESTROYING
+    DESTROY_SUCCEEDED
+    DESTROY_FAILED
     DESTROYED
     DELETED
-    FAULTY
   }
   enum PulumiStackType  {
-    NETWORK
-    DATABASE
     ACCOUNT
-    LOGGER
-    QUEQUE
+    DATABASE
+    ELASTIC_COMPUTE
     FILE_MANAGER
+    LOGGER
+    NETWORK
+    QUEQUE
   }

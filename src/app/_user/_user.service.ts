@@ -68,7 +68,6 @@ export class UserService {
         OR: [{username: account}, {email: account}, {phone: account}],
       },
     });
-    console.log(account);
     if (users.length > 0) {
       return users[0] as User;
     } else {

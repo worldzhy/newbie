@@ -5,7 +5,7 @@ import {rds} from '@pulumi/aws';
 @Injectable()
 export class Database extends BaseProgram {
   private instanceName: string = 'postgres-default';
-  private instanceClass: string = 'db.t3.micro';
+  private instanceType: string = 'db.t3.micro';
   private allocatedStorage: number = 20;
   private databaseName: string = 'postgres';
   private username: string = 'postgres';
@@ -21,8 +21,8 @@ export class Database extends BaseProgram {
     return this;
   };
 
-  setInstanceClass = (instanceClass: string) => {
-    this.instanceClass = instanceClass;
+  setInstanceType = (instanceType: string) => {
+    this.instanceType = instanceType;
     return this;
   };
 
@@ -55,7 +55,7 @@ export class Database extends BaseProgram {
     const defaultInstance = new rds.Instance(this.instanceName, {
       allocatedStorage: this.allocatedStorage,
       engine: 'postgres',
-      instanceClass: this.instanceClass,
+      instanceClass: this.instanceType,
       name: this.databaseName,
       password: this.password,
       username: this.username,

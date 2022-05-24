@@ -5,7 +5,7 @@ import axios from 'axios';
 
 @Injectable()
 export class BaseProgram {
-  private awsRegion = Config.getRegion();
+  public awsRegion = Config.getRegion();
   private pulumiAwsVersion = Config.getPulumiAwsVersion();
   private pulumiProgram: () => Promise<object>;
   private pulumiStackName = 'development';

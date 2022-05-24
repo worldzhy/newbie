@@ -24,7 +24,37 @@
   <a href="https://www.pulumi.com?utm_campaign=pulumi-pulumi-github-repo&utm_source=github.com&utm_medium=top-logo" title="Pulumi - Modern Infrastructure as Code - AWS Azure Kubernetes Containers Serverless"><img src="https://www.pulumi.com/images/logo/logo-on-white-box.svg?" width="350"></a>
 </p>
 
+## Environment
+#### Nodejs
+> https://nodejs.org/en/download/package-manager/
 
+#### Nestjs
+> https://docs.nestjs.com/first-steps
+
+#### Pulumi
+
+> https://www.pulumi.com/docs/get-started/install/
+```
+$ curl -fsSL https://get.pulumi.com | sh
+$ pulumi version
+```
+
+> https://www.pulumi.com/docs/reference/cli/pulumi_plugin/
+```
+$ pulumi plugin install resource aws
+$ pulumi plugin install resource awsx v1.0.0-beta.5
+$ pulumi plugin install resource docker
+$ pulumi plugin install resource eks
+$ pulumi plugin install resource kubernetes
+$
+$ pulumi plugin ls
+NAME        KIND      VERSION       SIZE    INSTALLED      LAST USED
+aws         resource  5.4.0         371 MB  1 week ago     1 week ago
+awsx        resource  1.0.0-beta.5  65 MB   1 hour ago     15 minutes ago
+docker      resource  3.2.0         40 MB   1 week ago     1 week ago
+eks         resource  0.40.0        176 MB  2 minutes ago  2 minutes ago
+kubernetes  resource  3.19.0        77 MB   6 hours ago    7 minutes ago
+```
 
 ## Installation
 
@@ -36,6 +66,7 @@ $ cp .env.example .env
 # production
 $ npm install --production
 $ cp .env.example .env
+
 ```
 
 ## Running the app

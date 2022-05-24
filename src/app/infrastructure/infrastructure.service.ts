@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {Database} from './program/database.program';
+import {ElasticCompute} from './program/eks.program';
 import {FileManager} from './program/filemanager.program';
 import {Network} from './program/network.program';
 import {Config} from '../../_common/_common.config';
@@ -8,6 +9,7 @@ import axios from 'axios';
 
 @Injectable()
 export class InfrastructureService {
+  private eksStack = new ElasticCompute();
   private fileManagerStack = new FileManager();
   private databaseStack = new Database();
   private networkStack = new Network();
@@ -83,6 +85,8 @@ export class InfrastructureService {
     switch (stackType) {
       case PulumiStackType.DATABASE:
         return await this.databaseStack.setStackName(stackName).start();
+      case PulumiStackType.ELASTIC_COMPUTE:
+        return await this.eksStack.setStackName(stackName).start();
       case PulumiStackType.FILE_MANAGER:
         return await this.fileManagerStack.setStackName(stackName).start();
       case PulumiStackType.NETWORK:
@@ -96,12 +100,14 @@ export class InfrastructureService {
     switch (stackType) {
       case PulumiStackType.DATABASE:
         return await this.databaseStack.setStackName(stackName).destroy();
+      case PulumiStackType.ELASTIC_COMPUTE:
+        return await this.eksStack.setStackName(stackName).destroy();
       case PulumiStackType.FILE_MANAGER:
         return await this.fileManagerStack.setStackName(stackName).destroy();
       case PulumiStackType.NETWORK:
         return await this.networkStack.setStackName(stackName).destroy();
       default:
-        return null;
+        return {err: {message: 'Invalid stack type.'}};
     }
   }
 
@@ -109,17 +115,35 @@ export class InfrastructureService {
    * See the detail https://www.pulumi.com/docs/reference/service-rest-api/#delete-stack
    *
    * @param {string} pulumiOrgName
-   * @param {string} pulumiStackType
-   * @param {string} pulumiStackName
+   * @param {string} stackType
+   * @param {string} stackName
    * @returns
    * @memberof InfrastructureService
    */
   async deleteStack(
     pulumiOrgName: string,
-    pulumiStackType: string,
-    pulumiStackName: string
+    stackType: string,
+    stackName: string
   ) {
-    const url = `https://api.pulumi.com/api/stacks/${pulumiOrgName}/${pulumiStackType}/${pulumiStackName}`;
+    let pulumiStackType: string;
+    switch (stackType) {
+      case PulumiStackType.DATABASE:
+        pulumiStackType = this.databaseStack.constructor.name;
+        break;
+      case PulumiStackType.ELASTIC_COMPUTE:
+        pulumiStackType = this.eksStack.constructor.name;
+        break;
+      case PulumiStackType.FILE_MANAGER:
+        pulumiStackType = this.fileManagerStack.constructor.name;
+        break;
+      case PulumiStackType.NETWORK:
+        pulumiStackType = this.networkStack.constructor.name;
+        break;
+      default:
+        return {err: {message: 'Invalid stack type.'}};
+    }
+
+    const url = `https://api.pulumi.com/api/stacks/${pulumiOrgName}/${pulumiStackType}/${stackName}`;
     try {
       const response = await axios.delete(url, {
         maxRedirects: 5,

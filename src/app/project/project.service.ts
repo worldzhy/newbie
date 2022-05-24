@@ -11,7 +11,7 @@ export class ProjectService {
    *
    * @param {Prisma.ProjectWhereUniqueInput} ProjectWhereUniqueInput
    * @returns {(Promise<Project | null>)}
-   * @memberof ProjectProject
+   * @memberof ProjectService
    */
   async findOne(
     where: Prisma.ProjectWhereUniqueInput
@@ -32,7 +32,7 @@ export class ProjectService {
    *     select?: Prisma.ProjectSelect;
    *   }} params
    * @returns
-   * @memberof ProjectProject
+   * @memberof ProjectService
    */
   async findMany(params: {
     skip?: number;
@@ -52,11 +52,25 @@ export class ProjectService {
   }
 
   /**
+   * Check if exist
+   *
+   * @param {string} id
+   * @returns
+   * @memberof ProjectService
+   */
+  async checkExistence(id: string) {
+    const count = await this.prisma.project.count({
+      where: {id},
+    });
+    return count > 0 ? true : false;
+  }
+
+  /**
    * Create a project
    *
    * @param {Prisma.ProjectCreateInput} data
    * @returns {Promise<Project>}
-   * @memberof ProjectProject
+   * @memberof ProjectService
    */
   async create(data: Prisma.ProjectCreateInput): Promise<Project> {
     return await this.prisma.project.create({
@@ -72,7 +86,7 @@ export class ProjectService {
    *     data: Prisma.ProjectUpdateInput;
    *   }} params
    * @returns {Promise<Project>}
-   * @memberof ProjectProject
+   * @memberof ProjectService
    */
   async update(params: {
     where: Prisma.ProjectWhereUniqueInput;
@@ -90,7 +104,7 @@ export class ProjectService {
    *
    * @param {Prisma.ProjectWhereUniqueInput} where
    * @returns {Promise<Project>}
-   * @memberof ProjectProject
+   * @memberof ProjectService
    */
   async delete(where: Prisma.ProjectWhereUniqueInput): Promise<Project> {
     return await this.prisma.project.delete({

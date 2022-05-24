@@ -104,6 +104,20 @@ export class MicroserviceService {
   }
 
   /**
+   * Check if exist
+   *
+   * @param {string} id
+   * @returns
+   * @memberof MicroserviceService
+   */
+  async checkExistence(id: string) {
+    const count = await this.prisma.microservice.count({
+      where: {id},
+    });
+    return count > 0 ? true : false;
+  }
+
+  /**
    * Create a microservice
    *
    * @param {Prisma.MicroserviceCreateInput} data

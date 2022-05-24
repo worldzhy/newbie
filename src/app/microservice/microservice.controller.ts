@@ -1,9 +1,15 @@
 import {Controller, Get, Post, Delete, Param, Body} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {MicroserviceStatus, MicroserviceType, Project} from '@prisma/client';
+import {
+  MicroserviceStatus,
+  MicroserviceType,
+  Project,
+  PulumiStackType,
+} from '@prisma/client';
 import {MicroserviceService} from './microservice.service';
 import {ProjectService} from '../project/project.service';
 import {InfrastructureService} from '../infrastructure/infrastructure.service';
+import {identity} from 'rxjs';
 
 @ApiTags('App - Microservice')
 @ApiBearerAuth()
@@ -112,11 +118,7 @@ export class MicroserviceController {
     }
 
     // [step 2] Verify projectId.
-    let project: Project | null = null;
-    if (body.projectId) {
-      project = await this.projectService.findOne({id: body.projectId});
-    }
-    if (project === null) {
+    if (false === (await this.projectService.checkExistence(body.projectId))) {
       return {
         data: null,
         err: {
@@ -153,8 +155,113 @@ export class MicroserviceController {
       data: {
         status:
           stackUpResult?.summary.result === 'succeeded'
-            ? MicroserviceStatus.CREATED
-            : MicroserviceStatus.FAULTY,
+            ? MicroserviceStatus.CREATE_SUCCEEDED
+            : MicroserviceStatus.CREATE_FAILED,
+        pulumiStackType: body.microserviceType,
+        pulumiStackName: body.environment,
+        pulumiStackUpResult: JSON.parse(JSON.stringify(stackUpResult)),
+      },
+    });
+
+    return {
+      data: updatedMicroservice,
+      err: null,
+    };
+  }
+
+  /**
+   * Create a microservice
+   *
+   * @param {{
+   *       projectId: string;
+   *       environment: string;
+   *       microserviceType: string;
+   *     }} body
+   * @returns
+   * @memberof ProjectController
+   */
+  @Post('microservices/:microserviceId')
+  @ApiParam({
+    name: 'microserviceId',
+    schema: {type: 'string'},
+    example: 'e67c94cf-ee4f-4dfd-8819-fcb08b4a2e3d',
+  })
+  @ApiBody({
+    description:
+      "The 'projectId'and 'microserviceType' are required in request body.",
+    examples: {
+      a: {
+        summary: '1. Launch FileManager',
+        value: {
+          projectId: 'd8141ece-f242-4288-a60a-8675538549cd',
+          microserviceType: 'FILE_MANAGER',
+          environment: 'development',
+          microserviceParams: {
+            instanceName: 'postgres-default',
+            instanceClass: 'db.t3.micro',
+          },
+        },
+      },
+    },
+  })
+  async updateMicroservice(
+    @Param('microserviceId') microserviceId: string,
+    @Body()
+    body: {
+      projectId: string;
+      microserviceType: MicroserviceType;
+      microserviceParams: {instanceName: string; instanceClass: string};
+      environment: string;
+    }
+  ) {
+    // [step 1] Verify microserviceType.
+    if (
+      !body.microserviceType ||
+      !this.microserviceService.listAllTypes().includes(body.microserviceType)
+    ) {
+      return {
+        data: null,
+        err: {
+          message:
+            "Please provide valid 'microserviceType' in the request body. Use 'microservices/types' API to get available types.",
+        },
+      };
+    }
+
+    // [step 2] Verify projectId.
+    if (false === (await this.projectService.checkExistence(body.projectId))) {
+      return {
+        data: null,
+        err: {
+          message: "Please provide valid 'projectId' in the request body.",
+        },
+      };
+    }
+
+    // [step 3] Verify microserviceId.
+    if (
+      false === (await this.microserviceService.checkExistence(microserviceId))
+    ) {
+      return {
+        data: null,
+        err: {message: 'Update microservice failed.'},
+      };
+    }
+
+    // [step 4] Update infrastructure stack.
+    const stackUpResult = await this.infrastructureService.startStack(
+      body.microserviceType,
+      body.environment
+    );
+
+    // [step 5] Update microservice status.
+    const updatedMicroservice = await this.microserviceService.update({
+      where: {id: microserviceId},
+      data: {
+        status:
+          stackUpResult?.summary.result === 'succeeded'
+            ? MicroserviceStatus.UPDATE_SUCCEEDED
+            : MicroserviceStatus.UPDATE_FAILED,
         pulumiStackType: body.microserviceType,
         pulumiStackName: body.environment,
         pulumiStackUpResult: JSON.parse(JSON.stringify(stackUpResult)),
@@ -203,28 +310,33 @@ export class MicroserviceController {
       };
     }
 
-    // [step 2] Destroy the infrastructure stack.
-    const stackDestroyResult = await this.infrastructureService.destroyStack(
-      microservice.pulumiStackType as string,
-      microservice.pulumiStackName as string
-    );
+    // [step 2] Destroy and delete the infrastructure stack.
+    let stackDestroyResult: object | undefined;
+    let stackDeleteResult: object | undefined;
+    if (
+      microservice.pulumiStackName &&
+      microservice.pulumiStackType &&
+      Object.values(PulumiStackType).includes(microservice.pulumiStackType)
+    ) {
+      stackDestroyResult = await this.infrastructureService.destroyStack(
+        microservice.pulumiStackType,
+        microservice.pulumiStackName
+      );
 
-    // [step 3] Delete the infrastructure stack.
-    const stackDeleteResult = await this.infrastructureService.deleteStack(
-      'worldzhy',
-      microservice.pulumiStackType as string,
-      microservice.pulumiStackName as string
-    );
+      stackDeleteResult = await this.infrastructureService.deleteStack(
+        'worldzhy',
+        microservice.pulumiStackType,
+        microservice.pulumiStackName
+      );
+    }
 
-    // [step 4] Set microservice status 'deleted'.
+    // [step 3] Set microservice status 'deleted'.
     const deletedMicroservice = await this.microserviceService.update({
       where: {id: microserviceId},
       data: {
         status: MicroserviceStatus.DELETED,
-        pulumiStackDestroyResult: JSON.parse(
-          JSON.stringify(stackDestroyResult)
-        ),
-        pulumiStackDeleteResult: JSON.parse(JSON.stringify(stackDeleteResult)),
+        pulumiStackDestroyResult: stackDestroyResult,
+        pulumiStackDeleteResult: stackDeleteResult,
       },
     });
 
