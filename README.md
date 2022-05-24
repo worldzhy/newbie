@@ -34,26 +34,27 @@
 #### Pulumi
 
 > https://www.pulumi.com/docs/get-started/install/
-```
+
+```bash
 $ curl -fsSL https://get.pulumi.com | sh
+```
+
+```bash
 $ pulumi version
 ```
 
 > https://www.pulumi.com/docs/reference/cli/pulumi_plugin/
-```
+
+```bash
 $ pulumi plugin install resource aws
 $ pulumi plugin install resource awsx v1.0.0-beta.5
 $ pulumi plugin install resource docker
 $ pulumi plugin install resource eks
 $ pulumi plugin install resource kubernetes
-$
+```
+
+```bash
 $ pulumi plugin ls
-NAME        KIND      VERSION       SIZE    INSTALLED      LAST USED
-aws         resource  5.4.0         371 MB  1 week ago     1 week ago
-awsx        resource  1.0.0-beta.5  65 MB   1 hour ago     15 minutes ago
-docker      resource  3.2.0         40 MB   1 week ago     1 week ago
-eks         resource  0.40.0        176 MB  2 minutes ago  2 minutes ago
-kubernetes  resource  3.19.0        77 MB   6 hours ago    7 minutes ago
 ```
 
 ## Installation
@@ -62,7 +63,9 @@ kubernetes  resource  3.19.0        77 MB   6 hours ago    7 minutes ago
 # development
 $ npm install
 $ cp .env.example .env
+```
 
+```bash
 # production
 $ npm install --production
 $ cp .env.example .env
@@ -74,7 +77,9 @@ $ cp .env.example .env
 ```bash
 # development
 $ npm run start:dev
+```
 
+```bash
 # production
 $ npm run build
 $ npm run start:prod
@@ -82,19 +87,19 @@ $ npm run start:prod
 
 ## Google ts lint
 
-```
+```bash
 $ npx gts init
 ```
 
 ## husky
 
-```
+```bash
 $ npx husky install
 ```
 
 ## Prisma
 
-```
+```bash
 $ npx prisma generate
 $ npx prisma migrate dev
 $ npx prisma db seed
