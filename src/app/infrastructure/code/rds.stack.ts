@@ -1,5 +1,5 @@
 import {Injectable} from '@nestjs/common';
-import {BaseProgram} from './base.program';
+import {BaseProgram} from './base.stack';
 import {rds} from '@pulumi/aws';
 
 @Injectable()

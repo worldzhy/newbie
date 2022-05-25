@@ -1,5 +1,5 @@
 import {Injectable} from '@nestjs/common';
-import {BaseProgram} from './base.program';
+import {BaseProgram} from './base.stack';
 import * as aws from '@pulumi/aws';
 import * as eks from '@pulumi/eks';
 import * as k8s from '@pulumi/kubernetes';

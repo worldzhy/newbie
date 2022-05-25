@@ -1,9 +1,9 @@
 import {Injectable} from '@nestjs/common';
-import {Database} from './program/database.program';
-import {ElasticContainerCluster} from './program/ecs.program';
-import {ElasticServerCluster} from './program/eks.program';
-import {FileManager} from './program/filemanager.program';
-import {Network} from './program/network.program';
+import {Database} from './code/rds.stack';
+import {ElasticContainerCluster} from './code/ecs.stack';
+import {ElasticServerCluster} from './code/eks.stack';
+import {FileManager} from './code/s3.stack';
+import {Network} from './code/vpc.stack';
 import {Config} from '../../_common/_common.config';
 import {PulumiStackType} from '@prisma/client';
 import axios from 'axios';
@@ -228,7 +228,10 @@ export class InfrastructureService {
       case PulumiStackType.LOGGER:
         return {};
       case PulumiStackType.NETWORK:
-        return {};
+        return {
+          [PulumiStackType.ELASTIC_CONTAINER_CLUSTER]: {},
+          [PulumiStackType.ELASTIC_SERVER_CLUSTER]: {},
+        };
       case PulumiStackType.QUEQUE:
         return {};
       default:
