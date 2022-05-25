@@ -1,6 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {Database} from './program/database.program';
-import {ElasticCompute} from './program/eks.program';
+import {ElasticContainerCluster} from './program/ecs.program';
+import {ElasticServerCluster} from './program/eks.program';
 import {FileManager} from './program/filemanager.program';
 import {Network} from './program/network.program';
 import {Config} from '../../_common/_common.config';
@@ -9,7 +10,8 @@ import axios from 'axios';
 
 @Injectable()
 export class InfrastructureService {
-  private eksStack = new ElasticCompute();
+  private ecsStack = new ElasticContainerCluster();
+  private eksStack = new ElasticServerCluster();
   private fileManagerStack = new FileManager();
   private databaseStack = new Database();
   private networkStack = new Network();
@@ -81,11 +83,28 @@ export class InfrastructureService {
     });
   }
 
-  async startStack(stackType: string, stackName: string) {
+  /**
+   * Start Pulumi stack
+   *
+   * @param {string} stackType
+   * @param {string} stackName
+   * @param {*} stackParams
+   * @returns
+   * @memberof InfrastructureService
+   */
+  async startStack(stackType: string, stackName: string, stackParams: any) {
     switch (stackType) {
       case PulumiStackType.DATABASE:
         return await this.databaseStack.setStackName(stackName).start();
-      case PulumiStackType.ELASTIC_COMPUTE:
+      case PulumiStackType.ELASTIC_CONTAINER_CLUSTER:
+        return await this.ecsStack
+          .setStackName(stackName)
+          .setVpcId(stackParams.vpcId as string | null)
+          .setClusterName(stackParams.clusterName as string | null)
+          .setRepositoryName(stackParams.repositoryName as string | null)
+          .setDesiredTaskCount(stackParams.desiredTaskCount as number | null)
+          .start();
+      case PulumiStackType.ELASTIC_SERVER_CLUSTER:
         return await this.eksStack.setStackName(stackName).start();
       case PulumiStackType.FILE_MANAGER:
         return await this.fileManagerStack.setStackName(stackName).start();
@@ -96,11 +115,21 @@ export class InfrastructureService {
     }
   }
 
+  /**
+   * Destroy Pulumi stack
+   *
+   * @param {string} stackType
+   * @param {string} stackName
+   * @returns
+   * @memberof InfrastructureService
+   */
   async destroyStack(stackType: string, stackName: string) {
     switch (stackType) {
       case PulumiStackType.DATABASE:
         return await this.databaseStack.setStackName(stackName).destroy();
-      case PulumiStackType.ELASTIC_COMPUTE:
+      case PulumiStackType.ELASTIC_CONTAINER_CLUSTER:
+        return await this.ecsStack.setStackName(stackName).destroy();
+      case PulumiStackType.ELASTIC_SERVER_CLUSTER:
         return await this.eksStack.setStackName(stackName).destroy();
       case PulumiStackType.FILE_MANAGER:
         return await this.fileManagerStack.setStackName(stackName).destroy();
@@ -130,7 +159,10 @@ export class InfrastructureService {
       case PulumiStackType.DATABASE:
         pulumiStackType = this.databaseStack.constructor.name;
         break;
-      case PulumiStackType.ELASTIC_COMPUTE:
+      case PulumiStackType.ELASTIC_CONTAINER_CLUSTER:
+        pulumiStackType = this.ecsStack.constructor.name;
+        break;
+      case PulumiStackType.ELASTIC_SERVER_CLUSTER:
         pulumiStackType = this.eksStack.constructor.name;
         break;
       case PulumiStackType.FILE_MANAGER:
@@ -182,6 +214,15 @@ export class InfrastructureService {
           username: 'postgres',
           password: 'postgres',
         };
+      case PulumiStackType.ELASTIC_CONTAINER_CLUSTER:
+        return {
+          vpcId: 'vpc-0480013368552dacb',
+          clusterName: 'my-cluster',
+          repositoryName: 'nodejs',
+          desiredTaskCount: 5,
+        };
+      case PulumiStackType.ELASTIC_SERVER_CLUSTER:
+        return {};
       case PulumiStackType.FILE_MANAGER:
         return {};
       case PulumiStackType.LOGGER:

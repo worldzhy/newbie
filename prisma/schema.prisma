@@ -216,7 +216,8 @@ model Microservice {
   enum MicroserviceType {
     ACCOUNT
     DATABASE
-    ELASTIC_COMPUTE
+    ELASTIC_CONTAINER_CLUSTER
+    ELASTIC_SERVER_CLUSTER
     FILE_MANAGER
     LOGGER
     NETWORK
@@ -238,7 +239,8 @@ model Microservice {
   enum PulumiStackType  {
     ACCOUNT
     DATABASE
-    ELASTIC_COMPUTE
+    ELASTIC_CONTAINER_CLUSTER
+    ELASTIC_SERVER_CLUSTER
     FILE_MANAGER
     LOGGER
     NETWORK

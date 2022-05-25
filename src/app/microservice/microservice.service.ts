@@ -28,6 +28,14 @@ export class MicroserviceService {
         return this.infrastructureService.getParamsByStackType(
           PulumiStackType.DATABASE
         );
+      case MicroserviceType.ELASTIC_CONTAINER_CLUSTER:
+        return this.infrastructureService.getParamsByStackType(
+          PulumiStackType.ELASTIC_CONTAINER_CLUSTER
+        );
+      case MicroserviceType.ELASTIC_SERVER_CLUSTER:
+        return this.infrastructureService.getParamsByStackType(
+          PulumiStackType.ELASTIC_SERVER_CLUSTER
+        );
       case MicroserviceType.FILE_MANAGER:
         return this.infrastructureService.getParamsByStackType(
           PulumiStackType.FILE_MANAGER

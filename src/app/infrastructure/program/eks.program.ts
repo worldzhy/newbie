@@ -1,17 +1,17 @@
 import {Injectable} from '@nestjs/common';
 import {BaseProgram} from './base.program';
-import * as awsx from '@pulumi/awsx';
+import * as aws from '@pulumi/aws';
 import * as eks from '@pulumi/eks';
 import * as k8s from '@pulumi/kubernetes';
-import {Config} from '../../../_common/_common.config';
 
 @Injectable()
-export class ElasticCompute extends BaseProgram {
+export class ElasticServerCluster extends BaseProgram {
   private clusterName: string = 'my-cluster';
   private instanceType: string = 't3.medium';
-  private desiredNodeNumber: number = 5;
-  private minNodeNumber: number = 1;
-  private maxNodeNumber: number = 100;
+  private repositoryName: string = 'nodejs';
+  private desiredNodeCount: number = 5;
+  private minNodeCount: number = 1;
+  private maxNodeCount: number = 100;
 
   constructor() {
     super();
@@ -28,18 +28,18 @@ export class ElasticCompute extends BaseProgram {
     return this;
   };
 
-  setDesiredNodeNumber = (num: number) => {
-    this.desiredNodeNumber = num;
+  setDesiredNodeCount = (num: number) => {
+    this.desiredNodeCount = num;
     return this;
   };
 
-  setMinNodeNumber = (num: number) => {
-    this.minNodeNumber = num;
+  setMinNodeCount = (num: number) => {
+    this.minNodeCount = num;
     return this;
   };
 
-  setMaxNodeNumber = (num: number) => {
-    this.maxNodeNumber = num;
+  setMaxNodeCount = (num: number) => {
+    this.maxNodeCount = num;
     return this;
   };
 
@@ -53,9 +53,9 @@ export class ElasticCompute extends BaseProgram {
         // privateSubnetIds: vpc.privateSubnetIds,
         // nodeAssociatePublicIpAddress: false,
         instanceType: this.instanceType,
-        desiredCapacity: this.desiredNodeNumber,
-        minSize: this.minNodeNumber,
-        maxSize: this.maxNodeNumber,
+        desiredCapacity: this.desiredNodeCount,
+        minSize: this.minNodeCount,
+        maxSize: this.maxNodeCount,
         enabledClusterLogTypes: [
           'api',
           'audit',
@@ -91,10 +91,10 @@ export class ElasticCompute extends BaseProgram {
       }
     );
 
-    // Build and publish our app's container image.
-    const image = new awsx.ecr.Image('image', {
-      repositoryUrl:
-        '077767357755.dkr.ecr.cn-northwest-1.amazonaws.com.cn/nodejs',
+    // Get app's container image.
+    const repository = await aws.ecr.getRepository({name: this.repositoryName});
+    const image = await aws.ecr.getImage({
+      repositoryName: this.repositoryName,
     });
 
     // Create a NGINX Deployment and load balanced Service, running our app.
@@ -113,7 +113,7 @@ export class ElasticCompute extends BaseProgram {
               containers: [
                 {
                   name: appName,
-                  image: image.imageUri,
+                  image: repository.repositoryUrl + ':' + image.imageTag,
                   ports: [{name: 'http', containerPort: 3000}],
                 },
               ],

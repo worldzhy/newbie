@@ -71,6 +71,7 @@ export class MicroserviceController {
    *       projectId: string;
    *       environment: string;
    *       microserviceType: string;
+   *       microserviceParams: object;
    *     }} body
    * @returns
    * @memberof ProjectController
@@ -98,9 +99,9 @@ export class MicroserviceController {
     @Body()
     body: {
       projectId: string;
-      microserviceType: MicroserviceType;
-      microserviceParams: {instanceName: string; instanceClass: string};
       environment: string;
+      microserviceType: MicroserviceType;
+      microserviceParams: object;
     }
   ) {
     // [step 1] Verify microserviceType.
@@ -146,7 +147,8 @@ export class MicroserviceController {
     // [step 4] Start infrastructure stack.
     const stackUpResult = await this.infrastructureService.startStack(
       body.microserviceType,
-      body.environment
+      body.environment,
+      body.microserviceParams
     );
 
     // [step 5] Update microservice status.
@@ -170,12 +172,13 @@ export class MicroserviceController {
   }
 
   /**
-   * Create a microservice
+   * Update a microservice
    *
    * @param {{
    *       projectId: string;
    *       environment: string;
    *       microserviceType: string;
+   *       microserviceParams: object;
    *     }} body
    * @returns
    * @memberof ProjectController
@@ -194,8 +197,8 @@ export class MicroserviceController {
         summary: '1. Launch FileManager',
         value: {
           projectId: 'd8141ece-f242-4288-a60a-8675538549cd',
-          microserviceType: 'FILE_MANAGER',
           environment: 'development',
+          microserviceType: 'ELASTIC_CONTAINER_CLUSTER',
           microserviceParams: {
             instanceName: 'postgres-default',
             instanceClass: 'db.t3.micro',
@@ -209,9 +212,9 @@ export class MicroserviceController {
     @Body()
     body: {
       projectId: string;
-      microserviceType: MicroserviceType;
-      microserviceParams: {instanceName: string; instanceClass: string};
       environment: string;
+      microserviceType: MicroserviceType;
+      microserviceParams: object;
     }
   ) {
     // [step 1] Verify microserviceType.
@@ -251,7 +254,8 @@ export class MicroserviceController {
     // [step 4] Update infrastructure stack.
     const stackUpResult = await this.infrastructureService.startStack(
       body.microserviceType,
-      body.environment
+      body.environment,
+      body.microserviceParams
     );
 
     // [step 5] Update microservice status.

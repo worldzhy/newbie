@@ -115,7 +115,12 @@ export class InfrastructureController {
   /**
    * Start a stack.
    *
-   * @param {{StackType: string}} body
+   * @param {{
+   *       stackType: string;
+   *       stackName: string;
+   *       stackParams: object;
+   *     }} body
+   * @returns
    * @memberof InfrastructureController
    */
   @Post('infrastructure/stacks')
@@ -139,13 +144,14 @@ export class InfrastructureController {
     @Body()
     body: {
       stackType: string;
-      stackParams: object;
       stackName: string;
+      stackParams: object;
     }
   ) {
     return await this.infrastructureService.startStack(
       body.stackType,
-      body.stackName
+      body.stackName,
+      body.stackParams
     );
   }
 
