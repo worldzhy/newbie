@@ -1,7 +1,7 @@
 import {PrismaService} from '../_prisma/_prisma.service';
 import {SqsService} from '../_aws/_sqs/_sqs.service';
-import {Config} from '../_common/_common.config';
-import {AwsEnum} from '../_common/_common.enum';
+import {Config} from '../_config/_common.config';
+import {AwsEnum} from '../_config/_common.enum';
 
 export class QueueService {
   private sqs = new SqsService();

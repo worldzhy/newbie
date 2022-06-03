@@ -1,60 +1,13 @@
 import {Injectable} from '@nestjs/common';
-import {
-  Prisma,
-  Microservice,
-  Project,
-  MicroserviceType,
-  PulumiStackType,
-} from '@prisma/client';
+import {Prisma, Microservice, Project, MicroserviceType} from '@prisma/client';
 import {PrismaService} from '../../_prisma/_prisma.service';
-import {InfrastructureService} from '../infrastructure/infrastructure.service';
 
 @Injectable()
 export class MicroserviceService {
   public readonly prisma: PrismaService = new PrismaService();
-  private infrastructureService = new InfrastructureService();
 
   listAllTypes(): string[] {
     return Object.values(MicroserviceType);
-  }
-
-  getParamsByServiceType(microserviceType: string) {
-    switch (microserviceType) {
-      case MicroserviceType.ACCOUNT:
-        return this.infrastructureService.getParamsByStackType(
-          PulumiStackType.ACCOUNT
-        );
-      case MicroserviceType.DATABASE:
-        return this.infrastructureService.getParamsByStackType(
-          PulumiStackType.DATABASE
-        );
-      case MicroserviceType.ELASTIC_CONTAINER_CLUSTER:
-        return this.infrastructureService.getParamsByStackType(
-          PulumiStackType.ELASTIC_CONTAINER_CLUSTER
-        );
-      case MicroserviceType.ELASTIC_SERVER_CLUSTER:
-        return this.infrastructureService.getParamsByStackType(
-          PulumiStackType.ELASTIC_SERVER_CLUSTER
-        );
-      case MicroserviceType.FILE_MANAGER:
-        return this.infrastructureService.getParamsByStackType(
-          PulumiStackType.FILE_MANAGER
-        );
-      case MicroserviceType.LOGGER:
-        return this.infrastructureService.getParamsByStackType(
-          PulumiStackType.LOGGER
-        );
-      case MicroserviceType.NETWORK:
-        return this.infrastructureService.getParamsByStackType(
-          PulumiStackType.NETWORK
-        );
-      case MicroserviceType.QUEQUE:
-        return this.infrastructureService.getParamsByStackType(
-          PulumiStackType.QUEQUE
-        );
-      default:
-        return {message: 'Invalid microservice type.'};
-    }
   }
 
   /**

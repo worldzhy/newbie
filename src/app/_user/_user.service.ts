@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {PrismaService} from '../../_prisma/_prisma.service';
 import {Prisma, User} from '@prisma/client';
-import {Util} from '../../_common/_common.util';
+import {CommonUtil} from '../../_util/_common.util';
 
 const bcrypt = require('bcrypt');
 
@@ -178,7 +178,7 @@ export class UserService {
     }
 
     // [step 3] Generate the new password hash.
-    const hash = await Util.generateHash(newPassword);
+    const hash = await CommonUtil.generateHash(newPassword);
 
     // [step 4] Update the password.
     const result = await this.update({
@@ -195,7 +195,7 @@ export class UserService {
 
   async resetPassword(userId: string, newPassword: string): Promise<boolean> {
     // [step 1] Generate the new password hash.
-    const hash = await Util.generateHash(newPassword);
+    const hash = await CommonUtil.generateHash(newPassword);
 
     // [step 2] Update the password.
     const result = await this.update({

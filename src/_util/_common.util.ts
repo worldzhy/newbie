@@ -1,11 +1,11 @@
 const bcrypt = require('bcrypt');
 
-export class Util {
+export class CommonUtil {
   /**
    * Convert object to string
    *
    * @static
-   * @memberof Util
+   * @memberof CommonUtil
    */
   static stringfy = (obj: unknown): string => {
     try {
@@ -23,9 +23,9 @@ export class Util {
    * Generate a random verification code.
    *
    * @static
-   * @memberof Util
+   * @memberof CommonUtil
    */
-  static randomCode = (length: number) => {
+  static randomCode = (length = 6) => {
     let result = '';
     const characters = '0123456789';
     const charactersLength = characters.length;
@@ -39,7 +39,7 @@ export class Util {
    * Generate hash of a string
    *
    * @static
-   * @memberof Util
+   * @memberof CommonUtil
    */
   static generateHash = async (password: string) => {
     // The type of env variable is string.
@@ -53,7 +53,7 @@ export class Util {
    * Generate a datetime
    *
    * @static
-   * @memberof Util
+   * @memberof CommonUtil
    */
   static nowPlusMinutes = (minutes: number) => {
     const currentTime = new Date();

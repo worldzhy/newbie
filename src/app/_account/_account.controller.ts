@@ -6,13 +6,12 @@ import {LoggingInByPassword} from '../_auth/_auth-password/_auth-password.decora
 import {LoggingInByVerificationCode} from '../_auth/_auth-verification-code/_auth-verification-code.decorator';
 import {AccountService} from './_account.service';
 import {UserService} from '../_user/_user.service';
-import {ValidatorService} from '../../_validator/_validator.service';
+import {ValidatorAccountService} from '../../_validator/_validator-account.service';
 
 @ApiTags('Account')
 @Controller()
 export class AccountController {
   private userService = new UserService();
-  private validator = new ValidatorService();
 
   constructor(private accountService: AccountService) {}
 
@@ -84,7 +83,7 @@ export class AccountController {
 
     // [step 1] Validate parameters.
     if (signupUser.password) {
-      if (!this.validator.verifyPassword(signupUser.password)) {
+      if (!ValidatorAccountService.verifyPassword(signupUser.password)) {
         return {
           data: null,
           err: {message: 'Your password is not strong enough.'},
@@ -96,7 +95,7 @@ export class AccountController {
     }
 
     if (signupUser.username) {
-      if (!this.validator.verifyUsername(signupUser.username)) {
+      if (!ValidatorAccountService.verifyUsername(signupUser.username)) {
         return {
           data: null,
           err: {message: 'Your username is not valid.'},
@@ -108,7 +107,7 @@ export class AccountController {
     }
 
     if (signupUser.email) {
-      if (!this.validator.verifyEmail(signupUser.email)) {
+      if (!ValidatorAccountService.verifyEmail(signupUser.email)) {
         return {
           data: null,
           err: {message: 'Your email is not valid.'},
@@ -120,7 +119,7 @@ export class AccountController {
     }
 
     if (signupUser.phone) {
-      if (!this.validator.verifyPhone(signupUser.phone)) {
+      if (!ValidatorAccountService.verifyPhone(signupUser.phone)) {
         return {
           data: null,
           err: {message: 'Your username is not valid.'},

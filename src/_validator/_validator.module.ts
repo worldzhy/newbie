@@ -1,10 +1,16 @@
 import {Module} from '@nestjs/common';
 import {ValidatorController} from './_validator.controller';
-import {ValidatorService} from './_validator.service';
+import {ValidatorAccountService} from './_validator-account.service';
+import {ValidatorAwsService} from './_validator-aws.service';
+import {ValidatorAppService} from './_validator-app.service';
 
 @Module({
   controllers: [ValidatorController],
-  providers: [ValidatorService],
-  exports: [ValidatorService],
+  providers: [
+    ValidatorAccountService,
+    ValidatorAwsService,
+    ValidatorAppService,
+  ],
+  exports: [ValidatorAccountService, ValidatorAwsService, ValidatorAppService],
 })
 export class ValidatorModule {}

@@ -1,13 +1,13 @@
 import {Controller, Post, Body} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {ValidatorService} from './_validator.service';
+import {ValidatorAccountService} from './_validator-account.service';
+import {ValidatorAwsService} from './_validator-aws.service';
+import {ValidatorAppService} from './_validator-app.service';
 
 @ApiTags('Validator')
 @ApiBearerAuth()
 @Controller()
 export class ValidatorController {
-  private validator = new ValidatorService();
-
   @Post('validator/password')
   @ApiBody({
     examples: {
@@ -33,7 +33,7 @@ export class ValidatorController {
     description: "The request body should contain 'password' attribute.",
   })
   verifyPassword(@Body() body: {password: string}): boolean {
-    return this.validator.verifyPassword(body.password);
+    return ValidatorAccountService.verifyPassword(body.password);
   }
 
   @Post('validator/username')
@@ -55,7 +55,7 @@ export class ValidatorController {
     description: "The request body should contain 'username' attribute.",
   })
   verifyUsername(@Body() body: {username: string}): boolean {
-    return this.validator.verifyUsername(body.username);
+    return ValidatorAccountService.verifyUsername(body.username);
   }
 
   @Post('validator/email')
@@ -77,7 +77,7 @@ export class ValidatorController {
     description: "The request body should contain 'email' attribute.",
   })
   verifyEmail(@Body() body: {email: string}): boolean {
-    return this.validator.verifyEmail(body.email);
+    return ValidatorAccountService.verifyEmail(body.email);
   }
 
   @Post('validator/phone')
@@ -99,7 +99,7 @@ export class ValidatorController {
     description: "The request body should contain 'phone' attribute.",
   })
   verifyPhone(@Body() body: {phone: string}): boolean {
-    return this.validator.verifyPhone(body.phone);
+    return ValidatorAccountService.verifyPhone(body.phone);
   }
 
   @Post('validator/s3-bucketname')
@@ -121,7 +121,7 @@ export class ValidatorController {
     description: "The request body should contain 'bucketName' attribute.",
   })
   verifyS3Bucketname(@Body() body: {bucketName: string}) {
-    return this.validator.verifyS3Bucketname(body.bucketName);
+    return ValidatorAwsService.verifyS3Bucketname(body.bucketName);
   }
 
   @Post('validator/project-name')
@@ -137,7 +137,7 @@ export class ValidatorController {
     description: "The request body should contain 'projectName' attribute.",
   })
   verifyProjectName(@Body() body: {projectName: string}) {
-    return this.validator.verifyProjectName(body.projectName);
+    return ValidatorAppService.verifyProjectName(body.projectName);
   }
   /* End */
 }

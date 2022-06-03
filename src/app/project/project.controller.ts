@@ -1,17 +1,15 @@
 import {Controller, Get, Post, Param, Body} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {ProjectService} from './project.service';
-import {ValidatorService} from '../../_validator/_validator.service';
-import {MicroserviceService} from '../microservice/microservice.service';
+import {ValidatorAccountService} from '../../_validator/_validator-account.service';
+import {ValidatorAppService} from '../../_validator/_validator-app.service';
 import {ProjectStatus} from '@prisma/client';
 
 @ApiTags('App - Project')
 @ApiBearerAuth()
 @Controller()
 export class ProjectController {
-  private validator = new ValidatorService();
   private projectService = new ProjectService();
-  private microserviceService = new MicroserviceService();
 
   /**
    * Get projects by page number. The order is by projectname.
@@ -130,10 +128,10 @@ export class ProjectController {
     // [step 1] Guard statement.
     if (
       !body.projectName ||
-      !this.validator.verifyProjectName(body.projectName) ||
+      !ValidatorAppService.verifyProjectName(body.projectName) ||
       !body.clientName ||
       !body.clientEmail ||
-      !this.validator.verifyEmail(body.clientEmail)
+      !ValidatorAccountService.verifyEmail(body.clientEmail)
     ) {
       return {
         data: null,

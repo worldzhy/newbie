@@ -1,13 +1,10 @@
 {
-  "engines": {
-    "node": "16.14.2"
-  },
-  "name": "project-name",
+  "name": "z",
   "version": "0.0.1",
   "description": "",
-  "author": "",
+  "author": "worldzhy",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",

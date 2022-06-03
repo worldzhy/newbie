@@ -5,13 +5,12 @@ import {
   VerificationCodeStatus,
   VerificationCodeUse,
 } from '@prisma/client';
-import {ValidatorService} from '../../_validator/_validator.service';
-import {Util} from '../../_common/_common.util';
+import {ValidatorAccountService} from '../../_validator/_validator-account.service';
+import {CommonUtil} from '../../_util/_common.util';
 
 @Injectable()
 export class VerificationCodeService {
   private prisma = new PrismaService();
-  private validator = new ValidatorService();
 
   /**
    * Check if a verification code exists and is active.
@@ -58,23 +57,23 @@ export class VerificationCodeService {
         where: {
           userId: account.userId,
           status: VerificationCodeStatus.ACTIVE,
-          expiredAt: {gte: Util.nowPlusMinutes(4)},
+          expiredAt: {gte: CommonUtil.nowPlusMinutes(4)},
         },
       });
-    } else if (email && this.validator.verifyEmail(email)) {
+    } else if (email && ValidatorAccountService.verifyEmail(email)) {
       existedCode = await this.prisma.verificationCode.findFirst({
         where: {
           email: account.email,
           status: VerificationCodeStatus.ACTIVE,
-          expiredAt: {gte: Util.nowPlusMinutes(4)},
+          expiredAt: {gte: CommonUtil.nowPlusMinutes(4)},
         },
       });
-    } else if (phone && this.validator.verifyPhone(phone)) {
+    } else if (phone && ValidatorAccountService.verifyPhone(phone)) {
       existedCode = await this.prisma.verificationCode.findFirst({
         where: {
           phone: account.phone,
           status: VerificationCodeStatus.ACTIVE,
-          expiredAt: {gte: Util.nowPlusMinutes(4)},
+          expiredAt: {gte: CommonUtil.nowPlusMinutes(4)},
         },
       });
     } else {
@@ -98,7 +97,7 @@ export class VerificationCodeService {
 
     // [step 2: start] Generate verification code which is valid for 5 minutes.
     // Totally 1000000 different verification codes
-    const code = Util.randomCode(6);
+    const code = CommonUtil.randomCode(6);
     const newCode = await this.prisma.verificationCode.create({
       data: {
         userId: userId,
@@ -107,7 +106,7 @@ export class VerificationCodeService {
         code: code,
         use: use,
         status: VerificationCodeStatus.ACTIVE,
-        expiredAt: Util.nowPlusMinutes(5),
+        expiredAt: CommonUtil.nowPlusMinutes(5),
       },
     });
 
@@ -152,7 +151,7 @@ export class VerificationCodeService {
           },
         },
       });
-    } else if (email && this.validator.verifyEmail(email)) {
+    } else if (email && ValidatorAccountService.verifyEmail(email)) {
       existedCode = await this.prisma.verificationCode.findFirst({
         where: {
           email: email,
@@ -163,7 +162,7 @@ export class VerificationCodeService {
           },
         },
       });
-    } else if (phone && this.validator.verifyPhone(phone)) {
+    } else if (phone && ValidatorAccountService.verifyPhone(phone)) {
       existedCode = await this.prisma.verificationCode.findFirst({
         where: {
           phone: phone,

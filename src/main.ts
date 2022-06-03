@@ -5,8 +5,8 @@ import {
   SwaggerCustomOptions,
 } from '@nestjs/swagger';
 import {AppModule} from './app.module';
-import {Config} from './_common/_common.config';
-import {Enum} from './_common/_common.enum';
+import {Config} from './_config/_common.config';
+import {Enum} from './_config/_common.enum';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

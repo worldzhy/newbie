@@ -1,7 +1,7 @@
 import {Body, Controller, Post} from '@nestjs/common';
 import {ApiBearerAuth, ApiBody, ApiTags} from '@nestjs/swagger';
 import {PinpointService} from './_pinpoint.service';
-import {AwsEnum} from '../../_common/_common.enum';
+import {AwsEnum} from '../../_config/_common.enum';
 
 @ApiTags('AWS')
 @ApiBearerAuth()

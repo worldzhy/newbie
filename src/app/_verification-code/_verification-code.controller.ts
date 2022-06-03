@@ -3,7 +3,7 @@ import {ApiTags, ApiBody} from '@nestjs/swagger';
 import {Public} from '../_auth/_auth-jwt/_auth-jwt.decorator';
 import {QueueService} from '../../_queue/_queue.service';
 import {UserService} from '../_user/_user.service';
-import {ValidatorService} from '../../_validator/_validator.service';
+import {ValidatorAccountService} from '../../_validator/_validator-account.service';
 import {VerificationCodeService} from './_verification-code.service';
 import {VerificationCodeUse} from '@prisma/client';
 
@@ -11,7 +11,6 @@ import {VerificationCodeUse} from '@prisma/client';
 @Controller()
 export class VerificationCodeController {
   private verificationCodeService = new VerificationCodeService();
-  private validator = new ValidatorService();
 
   /**
    * [1] Account parameter must be email or phone.
@@ -54,8 +53,12 @@ export class VerificationCodeController {
     @Body() body: {account: string; use: string}
   ): Promise<{data: object | null; err: object | null}> {
     const {account, use} = body;
-    const byEmail = account ? this.validator.verifyEmail(account) : null;
-    const byPhone = account ? this.validator.verifyPhone(account) : null;
+    const byEmail = account
+      ? ValidatorAccountService.verifyEmail(account)
+      : null;
+    const byPhone = account
+      ? ValidatorAccountService.verifyPhone(account)
+      : null;
 
     // [step 1] Validate email/phone and verificaiton code use.
     if (!byEmail && !byPhone) {
@@ -166,8 +169,12 @@ export class VerificationCodeController {
     @Body() body: {account: string; code: string}
   ): Promise<boolean> {
     const {account, code} = body;
-    const byEmail = account ? this.validator.verifyEmail(account) : null;
-    const byPhone = account ? this.validator.verifyPhone(account) : null;
+    const byEmail = account
+      ? ValidatorAccountService.verifyEmail(account)
+      : null;
+    const byPhone = account
+      ? ValidatorAccountService.verifyPhone(account)
+      : null;
 
     // [step 1] Validate email/phone.
     if ((!byEmail && !byPhone) || !code) {

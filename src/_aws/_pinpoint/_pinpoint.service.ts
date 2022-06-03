@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {PinpointClient, SendMessagesCommand} from '@aws-sdk/client-pinpoint';
-import {Config} from '../../_common/_common.config';
+import {Config} from '../../_config/_common.config';
 
 @Injectable()
 export class PinpointService {
