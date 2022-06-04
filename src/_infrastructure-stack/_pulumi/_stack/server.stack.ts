@@ -1,8 +1,8 @@
 import * as aws from '@pulumi/aws';
 import * as eks from '@pulumi/eks';
 import * as k8s from '@pulumi/kubernetes';
-import {Config} from 'src/_config/_common.config';
-import {PulumiUtil} from '../_util';
+import {CommonUtil} from 'src/_util/_common.util';
+import {PulumiUtil} from '../_pulumi.util';
 
 export const createServerComputingStack =
   (params: {
@@ -61,13 +61,15 @@ export const createServerComputingStack =
     }
 
     // [step 2] Create an EKS cluster with the default configuration.
+    let uniqueResourceName = 'eks-cluster-' + CommonUtil.randomCode(4);
     const cluster = new eks.Cluster(
-      clusterName,
+      uniqueResourceName,
       {
         // vpcId: vpc.id,
         // publicSubnetIds: vpc.publicSubnetIds,
         // privateSubnetIds: vpc.privateSubnetIds,
         // nodeAssociatePublicIpAddress: false,
+        name: clusterName,
         instanceType: instanceType,
         desiredCapacity: desiredInstanceCount,
         minSize: minInstanceCount,
@@ -87,9 +89,11 @@ export const createServerComputingStack =
     const repository = await aws.ecr.getRepository({name: repositoryName});
 
     const appName = 'my-app';
+    uniqueResourceName =
+      `${appName}-k8s-deployment-` + CommonUtil.randomCode(4);
     const appLabels = {appClass: appName};
     const deployment = new k8s.apps.v1.Deployment(
-      `${appName}-dep`,
+      uniqueResourceName,
       {
         metadata: {labels: appLabels},
         spec: {
@@ -109,10 +113,15 @@ export const createServerComputingStack =
           },
         },
       },
-      {provider: cluster.provider}
+      {
+        provider: cluster.provider,
+        transformations: PulumiUtil.resourceOptions.transformations,
+      }
     );
+
+    uniqueResourceName = `${appName}-k8s-service-` + CommonUtil.randomCode(4);
     const service = new k8s.core.v1.Service(
-      `${appName}-svc`,
+      uniqueResourceName,
       {
         metadata: {labels: appLabels},
         spec: {
@@ -121,7 +130,10 @@ export const createServerComputingStack =
           selector: appLabels,
         },
       },
-      {provider: cluster.provider}
+      {
+        provider: cluster.provider,
+        transformations: PulumiUtil.resourceOptions.transformations,
+      }
     );
 
     return {

@@ -1,7 +1,8 @@
 import * as pulumi from '@pulumi/pulumi';
 import * as aws from '@pulumi/aws';
 import * as awsx from '@pulumi/awsx';
-import {PulumiUtil} from '../_util';
+import {PulumiUtil} from '../_pulumi.util';
+import {CommonUtil} from '../../../_util/_common.util';
 
 export const createContainerClusterInVpcStack =
   (params: {
@@ -67,11 +68,24 @@ export const createContainerClusterInVpcStack =
       name: repositoryName,
     });
 
-    const cluster = new aws.ecs.Cluster(clusterName);
-    const lb = new awsx.lb.ApplicationLoadBalancer('nginx-lb');
-    const containserServiceName = repositoryName + '-service';
+    let uniqueResourceName = 'ecs-cluster-' + CommonUtil.randomCode(4);
+    const cluster = new aws.ecs.Cluster(
+      uniqueResourceName,
+      {name: clusterName},
+      PulumiUtil.resourceOptions
+    );
+
+    uniqueResourceName = 'application-loadbalancer-' + CommonUtil.randomCode(4);
+    const lbName = repositoryName + '-lb';
+    const lb = new awsx.lb.ApplicationLoadBalancer(
+      uniqueResourceName,
+      {name: lbName},
+      PulumiUtil.resourceOptions
+    );
+
+    uniqueResourceName = 'ecs-fargate-service-' + CommonUtil.randomCode(4);
     const containerService = new awsx.ecs.FargateService(
-      containserServiceName,
+      uniqueResourceName,
       {
         networkConfiguration: {
           subnets: subnets.ids,
@@ -100,9 +114,9 @@ export const createContainerClusterInVpcStack =
     );
 
     // Config auto scaling for container cluster.
-    const scalableTarget = 'ecs_target';
+    uniqueResourceName = 'ecs-target-' + CommonUtil.randomCode(4);
     const ecsTarget = new aws.appautoscaling.Target(
-      scalableTarget,
+      uniqueResourceName,
       {
         maxCapacity: maxTaskCount,
         minCapacity: minTaskCount,

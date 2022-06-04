@@ -1,7 +1,8 @@
 import * as pulumi from '@pulumi/pulumi';
 import * as aws from '@pulumi/aws';
 import * as awsx from '@pulumi/awsx';
-import {PulumiUtil} from '../_util';
+import {PulumiUtil} from '../_pulumi.util';
+import {CommonUtil} from '../../../_util/_common.util';
 
 export const createContainerClusterStack =
   (params: {
@@ -44,9 +45,10 @@ export const createContainerClusterStack =
     }
 
     // [step 3] Create a container cluster Fargate service.
+    let uniqueResourceName = 'ecs-cluster-' + CommonUtil.randomCode(4);
     const cluster = new aws.ecs.Cluster(
-      clusterName,
-      undefined,
+      uniqueResourceName,
+      {name: clusterName},
       PulumiUtil.resourceOptions
     );
 
@@ -54,16 +56,18 @@ export const createContainerClusterStack =
       name: repositoryName,
     });
 
+    uniqueResourceName = 'application-loadbalancer-' + CommonUtil.randomCode(4);
     const lbName = repositoryName + '-lb';
     const lb = new awsx.lb.ApplicationLoadBalancer(
-      lbName,
-      undefined,
+      uniqueResourceName,
+      {name: lbName},
       PulumiUtil.resourceOptions
     );
 
-    const taskDefinitionName = repositoryName + '-task-definition';
+    uniqueResourceName =
+      'ecs-fargate-task-definition-' + CommonUtil.randomCode(4);
     const taskDefinition = new awsx.ecs.FargateTaskDefinition(
-      taskDefinitionName,
+      uniqueResourceName,
       {
         container: {
           image: repository.repositoryUrl + ':latest',
@@ -81,10 +85,12 @@ export const createContainerClusterStack =
       PulumiUtil.resourceOptions
     );
 
-    const containerServiceName = repositoryName + '-service';
+    uniqueResourceName = 'ecs-fargate-service-' + CommonUtil.randomCode(4);
+    const fargateServiceName = repositoryName + '-service';
     const containerService = new awsx.ecs.FargateService(
-      containerServiceName,
+      uniqueResourceName,
       {
+        name: fargateServiceName,
         cluster: cluster.arn,
         desiredCount: desiredTaskCount,
         deploymentMinimumHealthyPercent: 100,
@@ -95,9 +101,9 @@ export const createContainerClusterStack =
     );
 
     // [step 4] Create auto scaling target.
-    const scalableTargetName = 'ecs_target';
+    uniqueResourceName = 'ecs-task-' + CommonUtil.randomCode(4);
     const ecsTarget = new aws.appautoscaling.Target(
-      scalableTargetName,
+      uniqueResourceName,
       {
         maxCapacity: maxTaskCount,
         minCapacity: minTaskCount,
@@ -109,9 +115,10 @@ export const createContainerClusterStack =
     );
 
     // [step 5] Create scaling up and scaling down policy.
-    const scaleUpPolicyName = 'ecs-scale-up-policy';
+    uniqueResourceName =
+      'ecs-auto-scaling-up-policy-' + CommonUtil.randomCode(4);
     const scaleUpPolicy = new aws.appautoscaling.Policy(
-      scaleUpPolicyName,
+      uniqueResourceName,
       {
         policyType: 'StepScaling',
         resourceId: ecsTarget.resourceId,
@@ -133,9 +140,10 @@ export const createContainerClusterStack =
       PulumiUtil.resourceOptions
     );
 
-    const scaleDownPolicyName = 'ecs-scale-down-policy';
+    uniqueResourceName =
+      'ecs-auto-scaling-down-policy-' + CommonUtil.randomCode(4);
     const scaleDownPolicy = new aws.appautoscaling.Policy(
-      scaleDownPolicyName,
+      uniqueResourceName,
       {
         policyType: 'StepScaling',
         resourceId: ecsTarget.resourceId,

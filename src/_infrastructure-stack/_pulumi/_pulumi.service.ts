@@ -7,8 +7,11 @@ import {
   UpResult,
 } from '@pulumi/pulumi/automation';
 import {InfrastructureStackType} from '@prisma/client';
+import {createAwsCodeCommitStack} from './_stack/aws.code-commit.stack';
+import {createAwsEcrStack} from './_stack/aws.ecr.stack';
 import {createAwsS3Stack} from './_stack/aws.s3.stack';
 import {createAwsVpcStack} from './_stack/aws.vpc.stack';
+import {createAwsWafStack} from './_stack/aws.waf.stack';
 import {createContainerClusterStack} from './_stack/container.stack';
 import {createContainerClusterInVpcStack} from './_stack/container-in-vpc.stack';
 import {createDatabaseStack} from './_stack/database.stack';
@@ -169,10 +172,16 @@ export class PulumiService {
     stackParams: any
   ) {
     switch (stackType) {
+      case InfrastructureStackType.AWS_CODE_COMMIT:
+        return createAwsCodeCommitStack(stackParams);
+      case InfrastructureStackType.AWS_ECR:
+        return createAwsEcrStack(stackParams);
       case InfrastructureStackType.AWS_S3:
         return createAwsS3Stack(stackParams);
       case InfrastructureStackType.AWS_VPC:
         return createAwsVpcStack(stackParams);
+      case InfrastructureStackType.AWS_WAF:
+        return createAwsWafStack(stackParams);
       case InfrastructureStackType.ACCOUNT:
         return null;
       case InfrastructureStackType.DATABASE:

@@ -1,5 +1,10 @@
 import {Injectable} from '@nestjs/common';
-import {Prisma, Microservice, Project, MicroserviceType} from '@prisma/client';
+import {
+  Prisma,
+  Microservice,
+  Project,
+  InfrastructureStackType,
+} from '@prisma/client';
 import {PrismaService} from '../../_prisma/_prisma.service';
 
 @Injectable()
@@ -7,7 +12,7 @@ export class MicroserviceService {
   public readonly prisma: PrismaService = new PrismaService();
 
   listAllTypes(): string[] {
-    return Object.values(MicroserviceType);
+    return Object.values(InfrastructureStackType);
   }
 
   /**

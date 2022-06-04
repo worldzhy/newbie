@@ -182,10 +182,23 @@ export class InfrastructureStackService {
    */
   getParamsByType(type: InfrastructureStackType) {
     switch (type) {
+      case InfrastructureStackType.AWS_CODE_COMMIT:
+        return {
+          repositoryName: 'pulumi-test-repository',
+        };
+      case InfrastructureStackType.AWS_S3:
+        return {
+          bucketName: 'pulumi-test-bucket',
+        };
       case InfrastructureStackType.AWS_VPC:
         return {
           vpcName: 'pulumi-test-vpc',
           vpcCidrBlock: '10.21.0.0/16',
+        };
+      case InfrastructureStackType.AWS_WAF:
+        return {
+          applicationLoadBalancerArn:
+            'arn:aws-cn:elasticloadbalancing:cn-northwest-1:077767357755:loadbalancer/app/EC2Co-EcsEl-MGLLJA763BKU/72d6e710220b1e44',
         };
       case InfrastructureStackType.ACCOUNT:
         return {};

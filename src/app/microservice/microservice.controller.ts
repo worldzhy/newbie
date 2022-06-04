@@ -1,6 +1,9 @@
 import {Controller, Get, Post, Delete, Param, Body} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {MicroserviceStatus, MicroserviceType} from '@prisma/client';
+import {
+  InfrastructureStackStatus,
+  InfrastructureStackType,
+} from '@prisma/client';
 import {MicroserviceService} from './microservice.service';
 import {ProjectService} from '../project/project.service';
 import {InfrastructureStackService} from '../../_infrastructure-stack/_infrastructure-stack.service';
@@ -20,8 +23,20 @@ export class MicroserviceController {
    * @memberof MicroserviceController
    */
   @Get('microservices/types')
-  async getMicroserviceTypes() {
+  async getInfrastructureTypes() {
     return this.microserviceService.listAllTypes();
+  }
+
+  @Get('microservices/types/:type/params')
+  @ApiParam({
+    name: 'type',
+    schema: {type: 'string'},
+    example: InfrastructureStackType.AWS_CODE_COMMIT,
+  })
+  async getInfrastructureParamsByType(
+    @Param('type') type: InfrastructureStackType
+  ) {
+    return this.infrastructureStackService.getParamsByType(type);
   }
 
   /**
@@ -64,7 +79,7 @@ export class MicroserviceController {
    * @param {{
    *       projectId: string;
    *       environment: string;
-   *       microserviceType: string;
+   *       infrastructureType: string;
    *       microserviceParams: object;
    *     }} body
    * @returns
@@ -73,17 +88,16 @@ export class MicroserviceController {
   @Post('microservices')
   @ApiBody({
     description:
-      "The 'projectId'and 'microserviceType' are required in request body.",
+      "The 'projectId'and 'infrastructureType' are required in request body.",
     examples: {
       a: {
-        summary: '1. Launch FileManager',
+        summary: '1. Launch AWS CodeCommit',
         value: {
-          projectId: 'd8141ece-f242-4288-a60a-8675538549cd',
-          microserviceType: 'FILE_MANAGER',
+          projectId: 'dcfb8c4d-b2c8-495a-a4f8-8959bc03d322',
           environment: 'development',
-          microserviceParams: {
-            instanceName: 'postgres-default',
-            instanceClass: 'db.t3.micro',
+          infrastructureStackType: InfrastructureStackType.AWS_CODE_COMMIT,
+          infrastructureStackParams: {
+            repositoryName: 'pulumi-test-repository',
           },
         },
       },
@@ -94,20 +108,22 @@ export class MicroserviceController {
     body: {
       projectId: string;
       environment: string;
-      microserviceType: MicroserviceType;
-      microserviceParams: object;
+      infrastructureStackType: InfrastructureStackType;
+      infrastructureStackParams: object;
     }
   ) {
-    // [step 1] Verify microserviceType.
+    // [step 1] Verify infrastructureType.
     if (
-      !body.microserviceType ||
-      !this.microserviceService.listAllTypes().includes(body.microserviceType)
+      !body.infrastructureStackType ||
+      !this.microserviceService
+        .listAllTypes()
+        .includes(body.infrastructureStackType)
     ) {
       return {
         data: null,
         err: {
           message:
-            "Please provide valid 'microserviceType' in the request body. Use 'microservices/types' API to get available types.",
+            "Please provide valid 'infrastructureType' in the request body. Use 'microservices/types' API to get available types.",
         },
       };
     }
@@ -125,9 +141,10 @@ export class MicroserviceController {
 
     // [step 3] Create a microservice.
     const createdMicroservice = await this.microserviceService.create({
-      type: body.microserviceType,
       environment: body.environment,
-      status: MicroserviceStatus.CREATING,
+      infrastructureStackType: body.infrastructureStackType,
+      infrastructureStackParams: body.infrastructureStackParams,
+      infrastructureStackStatus: InfrastructureStackStatus.CREATING,
       project: {
         connect: {id: body.projectId},
       },
@@ -142,8 +159,8 @@ export class MicroserviceController {
     // [step 4] Start infrastructure stack.
     const stack = await this.infrastructureStackService.create(
       project.name,
-      body.microserviceType,
-      body.microserviceParams
+      body.infrastructureStackType,
+      body.infrastructureStackParams
     );
     if (stack === null) {
       return {
@@ -156,8 +173,8 @@ export class MicroserviceController {
     const updatedMicroservice = await this.microserviceService.update({
       where: {id: createdMicroservice.id},
       data: {
-        status: stack.status,
         infrastructureStackId: stack.id,
+        infrastructureStackStatus: stack.status,
         infrastructureStackUpResult: JSON.parse(
           JSON.stringify(stack.stackResult)
         ),
@@ -176,7 +193,7 @@ export class MicroserviceController {
    * @param {{
    *       projectId: string;
    *       environment: string;
-   *       microserviceType: string;
+   *       infrastructureType: string;
    *       microserviceParams: object;
    *     }} body
    * @returns
@@ -190,15 +207,15 @@ export class MicroserviceController {
   })
   @ApiBody({
     description:
-      "The 'projectId'and 'microserviceType' are required in request body.",
+      "The 'projectId'and 'infrastructureType' are required in request body.",
     examples: {
       a: {
         summary: '1. Launch FileManager',
         value: {
           projectId: 'd8141ece-f242-4288-a60a-8675538549cd',
           environment: 'development',
-          microserviceType: 'ELASTIC_CONTAINER_CLUSTER',
-          microserviceParams: {
+          infrastructureStackType: 'ELASTIC_CONTAINER_CLUSTER',
+          infrastructureStackParams: {
             instanceName: 'postgres-default',
             instanceClass: 'db.t3.micro',
           },
@@ -210,7 +227,7 @@ export class MicroserviceController {
     @Param('microserviceId') microserviceId: string,
     @Body()
     body: {
-      microserviceParams: object;
+      infrastructureStackParams: object;
     }
   ) {
     // [step 1] Verify microserviceId.
@@ -237,7 +254,7 @@ export class MicroserviceController {
     }
     const stack = await this.infrastructureStackService.update(
       microservice.infrastructureStackId,
-      body.microserviceParams
+      body.infrastructureStackParams
     );
 
     // [step 3] Update microservice status.
@@ -253,7 +270,8 @@ export class MicroserviceController {
     const updatedMicroservice = await this.microserviceService.update({
       where: {id: microserviceId},
       data: {
-        status: stack.status,
+        infrastructureStackParams: body.infrastructureStackParams,
+        infrastructureStackStatus: stack.status,
         infrastructureStackUpResult: JSON.parse(
           JSON.stringify(stack.stackResult)
         ),
@@ -293,7 +311,10 @@ export class MicroserviceController {
         err: {message: 'Invalid microserviceId.'},
       };
     }
-    if (microservice.status === MicroserviceStatus.DELETED) {
+    if (
+      microservice.infrastructureStackStatus ===
+      InfrastructureStackStatus.DELETED
+    ) {
       return {
         data: null,
         err: {
@@ -326,7 +347,7 @@ export class MicroserviceController {
       await this.microserviceService.update({
         where: {id: microserviceId},
         data: {
-          status: stack.status,
+          infrastructureStackStatus: stack.status,
           infrastructureStackDestroyResult: JSON.parse(
             JSON.stringify(stack.stackResult)
           ),

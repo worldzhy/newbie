@@ -194,8 +194,11 @@ model InfrastructureStack {
     AWSCDK
   }
   enum InfrastructureStackType {
+    AWS_CODE_COMMIT
+    AWS_ECR
     AWS_S3
     AWS_VPC
+    AWS_WAF
     ACCOUNT
     DATABASE
     ELASTIC_CONTAINER_CLUSTER
@@ -223,8 +226,8 @@ model InfrastructureStack {
 model Project {
   id                  String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name                String @unique
-  clientName          String
-  clientEmail         String
+  clientName          String?
+  clientEmail         String?
   awsAccessKeyID      String? // hash
   awsSecretAccessKey  String? // hash
   status              ProjectStatus
@@ -241,8 +244,6 @@ model Project {
 
 model Microservice {
   id                  String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  type                MicroserviceType
-  status              MicroserviceStatus
   environment         String // refer to _common.enum.ts -> environment (development / staging / production)
   awsAccessKeyID      String? // hash, overwrite Project.awsAccessKeyID
   awsSecretAccessKey  String? // hash, overwrite Project.awsSecretAccessKey
@@ -250,32 +251,11 @@ model Microservice {
   updatedAt           DateTime @updatedAt
   projectId           String @db.Uuid
   project             Project @relation(fields: [projectId], references: [id])
-  infrastructureStackId    String? @db.Uuid
+  infrastructureStackId             String? @db.Uuid
+  infrastructureStackType           InfrastructureStackType
+  infrastructureStackParams         Json?
+  infrastructureStackStatus         InfrastructureStackStatus
   infrastructureStackUpResult       Json?
   infrastructureStackDestroyResult  Json?
   infrastructureStackDeleteResult   Json?
 }
-  enum MicroserviceType {
-    ACCOUNT
-    DATABASE
-    ELASTIC_CONTAINER_CLUSTER
-    ELASTIC_CONTAINER_CLUSTER_IN_VPC
-    ELASTIC_SERVER_CLUSTER
-    FILE_MANAGER
-    LOGGER
-    NETWORK
-    QUEQUE
-  }
-  enum MicroserviceStatus {
-    CREATING
-    CREATE_SUCCEEDED
-    CREATE_FAILED
-    UPDATING
-    UPDATE_SUCCEEDED
-    UPDATE_FAILED
-    DESTROYING
-    DESTROY_SUCCEEDED
-    DESTROY_FAILED
-    DESTROYED
-    DELETED
-  }

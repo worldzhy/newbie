@@ -1,4 +1,6 @@
 import * as aws from '@pulumi/aws';
+import {CommonUtil} from '../../../_util/_common.util';
+import {PulumiUtil} from '../_pulumi.util';
 
 export const createAwsVpcStack =
   (params: {vpcName?: string; vpcCidrBlock?: string}) => async () => {
@@ -18,9 +20,14 @@ export const createAwsVpcStack =
     }
 
     // Allocate development, production and management VPCs.
-    const vpc = new aws.ec2.Vpc(vpcName, {
-      cidrBlock: vpcCidrBlock,
-    });
+    const uniqueResourceName = 'vpc-' + CommonUtil.randomCode(4);
+    const vpc = new aws.ec2.Vpc(
+      uniqueResourceName,
+      {
+        cidrBlock: vpcCidrBlock,
+      },
+      PulumiUtil.resourceOptions
+    );
 
     return {
       vpcId: vpc.id,

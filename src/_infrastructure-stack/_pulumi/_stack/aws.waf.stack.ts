@@ -1,0 +1,193 @@
+import * as aws from '@pulumi/aws';
+import {CommonUtil} from '../../../_util/_common.util';
+import {PulumiUtil} from '../_pulumi.util';
+
+export const createAwsWafStack =
+  (params: {applicationLoadBalancerArn: string}) => async () => {
+    // [step 1] Create rule group.
+    let uniqueResourceName = 'waf-rule-group-' + CommonUtil.randomCode(4);
+    const ruleGroup = new aws.wafv2.RuleGroup(
+      uniqueResourceName,
+      {
+        capacity: 10,
+        scope: 'REGIONAL',
+        rules: [
+          {
+            name: 'rule-1',
+            priority: 1,
+            action: {
+              count: {},
+            },
+            statement: {
+              geoMatchStatement: {
+                countryCodes: ['NL'],
+              },
+            },
+            visibilityConfig: {
+              cloudwatchMetricsEnabled: false,
+              metricName: 'friendly-rule-metric-name',
+              sampledRequestsEnabled: false,
+            },
+          },
+          {
+            name: 'rule-to-exclude-a',
+            priority: 10,
+            action: {
+              allow: {},
+            },
+            statement: {
+              geoMatchStatement: {
+                countryCodes: ['US'],
+              },
+            },
+            visibilityConfig: {
+              cloudwatchMetricsEnabled: false,
+              metricName: 'friendly-rule-metric-name',
+              sampledRequestsEnabled: false,
+            },
+          },
+          {
+            name: 'rule-to-exclude-b',
+            priority: 15,
+            action: {
+              allow: {},
+            },
+            statement: {
+              geoMatchStatement: {
+                countryCodes: ['GB'],
+              },
+            },
+            visibilityConfig: {
+              cloudwatchMetricsEnabled: false,
+              metricName: 'friendly-rule-metric-name',
+              sampledRequestsEnabled: false,
+            },
+          },
+        ],
+        visibilityConfig: {
+          cloudwatchMetricsEnabled: false,
+          metricName: 'friendly-metric-name',
+          sampledRequestsEnabled: false,
+        },
+      },
+      PulumiUtil.resourceOptions
+    );
+
+    // [step 2] Create web ACL.
+    uniqueResourceName = 'waf-acl-' + CommonUtil.randomCode(4);
+    const webAcl = new aws.wafv2.WebAcl(
+      uniqueResourceName,
+      {
+        defaultAction: {
+          allow: {},
+        },
+        description: 'Example of a managed rule.',
+        rules: [
+          // AWS managed rule
+          {
+            name: 'rule-1',
+            overrideAction: {
+              count: {},
+            },
+            priority: 1,
+            statement: {
+              managedRuleGroupStatement: {
+                excludedRules: [
+                  {
+                    name: 'SizeRestrictions_QUERYSTRING',
+                  },
+                  {
+                    name: 'NoUserAgent_HEADER',
+                  },
+                ],
+                name: 'AWSManagedRulesCommonRuleSet',
+                scopeDownStatement: {
+                  geoMatchStatement: {
+                    countryCodes: ['US', 'NL'],
+                  },
+                },
+                vendorName: 'AWS',
+              },
+            },
+            visibilityConfig: {
+              cloudwatchMetricsEnabled: false,
+              metricName: 'friendly-rule-metric-name',
+              sampledRequestsEnabled: false,
+            },
+          },
+          // Rate based rule
+          {
+            action: {
+              block: {},
+            },
+            name: 'rule-1',
+            priority: 1,
+            statement: {
+              rateBasedStatement: {
+                aggregateKeyType: 'IP',
+                limit: 10000,
+                scopeDownStatement: {
+                  geoMatchStatement: {
+                    countryCodes: ['US', 'NL'],
+                  },
+                },
+              },
+            },
+            visibilityConfig: {
+              cloudwatchMetricsEnabled: false,
+              metricName: 'friendly-rule-metric-name',
+              sampledRequestsEnabled: false,
+            },
+          },
+          // rule group
+          {
+            name: 'rule-1',
+            priority: 1,
+            overrideAction: {
+              count: {},
+            },
+            statement: {
+              ruleGroupReferenceStatement: {
+                arn: ruleGroup.arn,
+                excludedRules: [
+                  {
+                    name: 'rule-to-exclude-b',
+                  },
+                  {
+                    name: 'rule-to-exclude-a',
+                  },
+                ],
+              },
+            },
+            visibilityConfig: {
+              cloudwatchMetricsEnabled: false,
+              metricName: 'friendly-rule-metric-name',
+              sampledRequestsEnabled: false,
+            },
+          },
+        ],
+        scope: 'REGIONAL',
+        tags: {
+          Tag1: 'Value1',
+          Tag2: 'Value2',
+        },
+        visibilityConfig: {
+          cloudwatchMetricsEnabled: false,
+          metricName: 'friendly-metric-name',
+          sampledRequestsEnabled: false,
+        },
+      },
+      PulumiUtil.resourceOptions
+    );
+
+    // [step 3] Associate web ACL with application loadbalancer.
+    uniqueResourceName = 'waf-acl-association-' + CommonUtil.randomCode(4);
+    const webAclAssociation = new aws.wafv2.WebAclAssociation(
+      uniqueResourceName,
+      {
+        resourceArn: params.applicationLoadBalancerArn,
+        webAclArn: webAcl.arn,
+      },
+      PulumiUtil.resourceOptions
+    );
+  };

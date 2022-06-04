@@ -1,6 +1,7 @@
 import * as aws from '@pulumi/aws';
 import * as awsx from '@pulumi/awsx';
-import {PulumiUtil} from '../_util';
+import {CommonUtil} from '../../../_util/_common.util';
+import {PulumiUtil} from '../_pulumi.util';
 
 export const createNetworkStack =
   (params: {
@@ -15,7 +16,7 @@ export const createNetworkStack =
 
     // [step 1] Guard statement
     if (vpcName === undefined || vpcName === null || vpcName.trim() === '') {
-      vpcName = 'development-vpc';
+      vpcName = 'vpc-development';
     }
     if (
       vpcCidrBlock === undefined ||
@@ -33,26 +34,37 @@ export const createNetworkStack =
     }
 
     // Allocate development, production and management VPCs.
-    const vpc = new awsx.ec2.Vpc(vpcName, {
-      cidrBlock: vpcCidrBlock,
-      numberOfAvailabilityZones: numberOfAvailabilityZones,
-      subnetSpecs: [
-        {
-          type: 'Private',
-          cidrMask: 22,
+    let uniqueResourceName = `${vpcName}-` + CommonUtil.randomCode(4);
+    const vpc = new awsx.ec2.Vpc(
+      uniqueResourceName,
+      {
+        cidrBlock: vpcCidrBlock,
+        numberOfAvailabilityZones: numberOfAvailabilityZones,
+        subnetSpecs: [
+          {
+            type: 'Private',
+            cidrMask: 22,
+          },
+          {
+            type: 'Public',
+            cidrMask: 24,
+          },
+        ],
+        natGateways: {
+          strategy: awsx.ec2.NatGatewayStrategy.OnePerAz,
         },
-        {
-          type: 'Public',
-          cidrMask: 24,
-        },
-      ],
-      natGateways: {
-        strategy: awsx.ec2.NatGatewayStrategy.OnePerAz,
       },
-    });
-    const vpcInternetGateway = new aws.ec2.InternetGateway(vpcName + '-igw', {
-      vpcId: vpc.vpcId,
-    });
+      PulumiUtil.resourceOptions
+    );
+
+    uniqueResourceName = 'igw-' + CommonUtil.randomCode(4);
+    const vpcInternetGateway = new aws.ec2.InternetGateway(
+      uniqueResourceName,
+      {
+        vpcId: vpc.vpcId,
+      },
+      PulumiUtil.resourceOptions
+    );
 
     // Allocate EC2 security group.
     const ec2SecurityGroup = PulumiUtil.generateSecurityGroupForEC2(
