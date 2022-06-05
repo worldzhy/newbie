@@ -6,18 +6,19 @@ import {
   InfrastructureStackManager,
   InfrastructureStackStatus,
   InfrastructureStackType,
+  Prisma,
 } from '@prisma/client';
 import {CommonUtil} from 'src/_util/_common.util';
 
 @Injectable()
 export class InfrastructureStackService {
   private prisma = new PrismaService();
-  private pulumi = new PulumiService();
+  private pulumiService = new PulumiService();
   private stackManager = InfrastructureStackManager.PULUMI;
 
-  async findOne(id: string) {
+  async findOne(where: Prisma.InfrastructureStackWhereUniqueInput) {
     return await this.prisma.infrastructureStack.findUnique({
-      where: {id},
+      where,
     });
   }
 
@@ -48,7 +49,7 @@ export class InfrastructureStackService {
       // [step 2] Start launching infrastructureStack.
       let upResult: any = undefined;
       if (this.stackManager === InfrastructureStackManager.PULUMI) {
-        upResult = await this.pulumi.createStack(
+        upResult = await this.pulumiService.createStack(
           projectName,
           stackName,
           stackType,
@@ -97,7 +98,7 @@ export class InfrastructureStackService {
     }
     let upResult;
     if (this.stackManager === InfrastructureStackManager.PULUMI) {
-      upResult = await this.pulumi.createStack(
+      upResult = await this.pulumiService.createStack(
         infrastructureStack.projectName,
         infrastructureStack.stackName,
         infrastructureStack.type,
@@ -143,14 +144,14 @@ export class InfrastructureStackService {
     }
     let destroyResult, deleteResult;
     if (this.stackManager === InfrastructureStackManager.PULUMI) {
-      destroyResult = await this.pulumi.destroyStack(
+      destroyResult = await this.pulumiService.destroyStack(
         infrastructureStack.projectName,
         infrastructureStack.stackName,
         infrastructureStack.type,
         {}
       );
 
-      deleteResult = await this.pulumi.deleteStack(
+      deleteResult = await this.pulumiService.deleteStack(
         infrastructureStack.projectName,
         infrastructureStack.stackName,
         infrastructureStack.type
@@ -173,76 +174,8 @@ export class InfrastructureStackService {
     });
   }
 
-  /**
-   * Get stack params by type.
-   *
-   * @param {InfrastructureStackType} type
-   * @returns
-   * @memberof InfrastructureStackService
-   */
-  getParamsByType(type: InfrastructureStackType) {
-    switch (type) {
-      case InfrastructureStackType.AWS_CODE_COMMIT:
-        return {
-          repositoryName: 'pulumi-test-repository',
-        };
-      case InfrastructureStackType.AWS_S3:
-        return {
-          bucketName: 'pulumi-test-bucket',
-        };
-      case InfrastructureStackType.AWS_VPC:
-        return {
-          vpcName: 'pulumi-test-vpc',
-          vpcCidrBlock: '10.21.0.0/16',
-        };
-      case InfrastructureStackType.AWS_WAF:
-        return {
-          applicationLoadBalancerArn:
-            'arn:aws-cn:elasticloadbalancing:cn-northwest-1:077767357755:loadbalancer/app/EC2Co-EcsEl-MGLLJA763BKU/72d6e710220b1e44',
-        };
-      case InfrastructureStackType.ACCOUNT:
-        return {};
-      case InfrastructureStackType.DATABASE:
-        return {
-          instanceName: 'postgres-default',
-          instanceType: 'db.t3.micro',
-          allocatedStorage: 20,
-          databaseName: 'postgres',
-          username: 'postgres',
-          password: 'postgres',
-        };
-      case InfrastructureStackType.ELASTIC_CONTAINER_CLUSTER:
-        return {
-          vpcId: 'vpc-086e9a2695d4f7001',
-          clusterName: 'development',
-          repositoryName: 'nodejs',
-          desiredTaskCount: 5,
-        };
-      case InfrastructureStackType.ELASTIC_SERVER_CLUSTER:
-        return {};
-      case InfrastructureStackType.FILE_MANAGER:
-        return {bucketName: 'default-bucket-name'};
-      case InfrastructureStackType.LOGGER:
-        return {};
-      case InfrastructureStackType.NETWORK:
-        return {
-          [InfrastructureStackType.ELASTIC_CONTAINER_CLUSTER]: {
-            vpcName: 'elastic-container-cluster',
-            vpcCidrBlock: '10.10.0.0/16',
-            numberOfAvailabilityZones: 2,
-          },
-          [InfrastructureStackType.ELASTIC_SERVER_CLUSTER]: {
-            vpcName: 'elastic-server-cluster',
-            vpcCidrBlock: '10.20.0.0/16',
-            numberOfAvailabilityZones: 2,
-          },
-        };
-      case InfrastructureStackType.QUEQUE:
-        return {};
-      default:
-        return {message: 'Invalid infrastructureStack stack type.'};
-    }
+  getStackParamsByType(stackType: InfrastructureStackType) {
+    return this.pulumiService.getStackParamsByType(stackType);
   }
-
   /* End */
 }

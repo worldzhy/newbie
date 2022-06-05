@@ -43,7 +43,7 @@ export class InfrastructureStackController {
     @Param('infrastructureStackId')
     infrastructureStackId: string
   ) {
-    return await this.stackService.findOne(infrastructureStackId);
+    return await this.stackService.findOne({id: infrastructureStackId});
   }
 
   /**
@@ -78,7 +78,7 @@ export class InfrastructureStackController {
         value: {
           projectName: 'Galaxy',
           stackName: Enum.environment.DEVELOPMENT,
-          stackType: InfrastructureStackType.DATABASE,
+          stackType: InfrastructureStackType.AWS_RDS,
           stackParams: {
             instanceName: 'postgres-default',
             instanceClass: 'db.t3.micro',
@@ -136,8 +136,8 @@ export class InfrastructureStackController {
     schema: {type: 'string'},
     example: 'ELASTIC_CONTAINER_CLUSTER',
   })
-  async getParams(@Param('type') type: string) {
-    return this.stackService.getParamsByType(type as InfrastructureStackType);
+  async getParams(@Param('type') type: InfrastructureStackType) {
+    return this.stackService.getStackParamsByType(type);
   }
 
   /* End */

@@ -13,7 +13,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 // [1] The 'User' and 'UserVerificationCode' models are both used for logging in.
 // [2] The 'User' is designed for long-term use and the 'UserVerificationCode' is designed for short-term use.
 // [3] Actually, the 'User' model should be named 'UserPassword' just like 'UserVerificationCode' model.
@@ -196,18 +195,16 @@ model InfrastructureStack {
   enum InfrastructureStackType {
     AWS_CODE_COMMIT
     AWS_ECR
+    AWS_ECS
+    AWS_ECS_IN_VPC
+    AWS_EKS
+    AWS_IAM_USER
+    AWS_RDS
     AWS_S3
+    AWS_SQS
     AWS_VPC
+    AWS_VPC_HIPAA
     AWS_WAF
-    ACCOUNT
-    DATABASE
-    ELASTIC_CONTAINER_CLUSTER
-    ELASTIC_CONTAINER_CLUSTER_IN_VPC
-    ELASTIC_SERVER_CLUSTER
-    FILE_MANAGER
-    LOGGER
-    NETWORK
-    QUEQUE
   }
   enum InfrastructureStackStatus {
     CREATING
@@ -233,6 +230,7 @@ model Project {
   status              ProjectStatus
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
+  projectEnvironments ProjectEnvironment[]
   microServices       Microservice[]
 }
   enum ProjectStatus  {
@@ -240,6 +238,25 @@ model Project {
     IN_MAINTENANCE
     ON_HOLD
     END
+  }
+
+model ProjectEnvironment {
+  id          String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  environment ProjectEnvironmentType
+  variables   Json
+  status      ProjectEnvironmentStatus
+  createdAt   DateTime @default(now())
+  projectId   String @db.Uuid
+  project     Project @relation(fields: [projectId], references: [id]) 
+}
+  enum ProjectEnvironmentType {
+    DEVELOPMENT
+    STAGING
+    PRODUCTION
+  }
+  enum ProjectEnvironmentStatus {
+    ACTIVE
+    INACTIVE
   }
 
 model Microservice {

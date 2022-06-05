@@ -7,23 +7,24 @@ import {
   UpResult,
 } from '@pulumi/pulumi/automation';
 import {InfrastructureStackType} from '@prisma/client';
-import {createAwsCodeCommitStack} from './_stack/aws.code-commit.stack';
-import {createAwsEcrStack} from './_stack/aws.ecr.stack';
-import {createAwsS3Stack} from './_stack/aws.s3.stack';
-import {createAwsVpcStack} from './_stack/aws.vpc.stack';
-import {createAwsWafStack} from './_stack/aws.waf.stack';
-import {createContainerClusterStack} from './_stack/container.stack';
-import {createContainerClusterInVpcStack} from './_stack/container-in-vpc.stack';
-import {createDatabaseStack} from './_stack/database.stack';
-import {createNetworkStack} from './_stack/network.stack';
-import {createServerComputingStack} from './_stack/server.stack';
-import {Config} from 'src/_config/_common.config';
+import {CommonConfig} from 'src/_config/_common.config';
 import axios from 'axios';
+import {AwsCodecommit_StackService} from './_stack/aws.codecommit.service';
+import {AwsEcr_StackService} from './_stack/aws.ecr.service';
+import {AwsEcs_StackService} from './_stack/aws.ecs.service';
+import {AwsEcsInVpc_StackService} from './_stack/aws.ecs-in-vpc.service';
+import {AwsIamUser_StackService} from './_stack/aws.iam-user.service';
+import {AwsRds_StackService} from './_stack/aws.rds.service';
+import {AwsS3_StackService} from './_stack/aws.s3.service';
+import {AwsSqs_StackService} from './_stack/aws.sqs.service copy';
+import {AwsVpc_StackService} from './_stack/aws.vpc.service';
+import {AwsVpcHipaa_StackService} from './_stack/aws.vpc-hipaa.service';
+import {AwsWaf_StackService} from './_stack/aws.waf.service';
 
 @Injectable()
 export class PulumiService {
-  public awsRegion = Config.getRegion();
-  private pulumiAwsVersion = Config.getPulumiAwsVersion();
+  public awsRegion = CommonConfig.getRegion();
+  private pulumiAwsVersion = CommonConfig.getPulumiAwsVersion();
 
   /**
    * Start a stack.
@@ -65,13 +66,13 @@ export class PulumiService {
     stackParams: any
   ): Promise<UpResult | undefined> {
     // [step 1] Get Pulumi stack program.
-    const program: PulumiFn | null = this.getPulumiProgramByStackType(
+    const program: PulumiFn | undefined = this.getStackProgramByType(
       stackType,
       stackParams
     );
 
     // [step 2] Create the stack.
-    if (program === null) {
+    if (program === undefined) {
       return undefined;
     }
     const args: InlineProgramArgs = {
@@ -103,13 +104,13 @@ export class PulumiService {
     stackParams: any
   ): Promise<DestroyResult | undefined> {
     // [step 1] Get Pulumi stack program.
-    const program: PulumiFn | null = this.getPulumiProgramByStackType(
+    const program: PulumiFn | undefined = this.getStackProgramByType(
       stackType,
       stackParams
     );
 
     // [step 2] Destroy the stack.
-    if (program === null) {
+    if (program === undefined) {
       return undefined;
     }
     const args: InlineProgramArgs = {
@@ -136,7 +137,7 @@ export class PulumiService {
     stackName: string,
     stackType: InfrastructureStackType
   ) {
-    if (null === this.getPulumiProgramByStackType(stackType, {})) {
+    if (null === this.getStackProgramByType(stackType, {})) {
       return {err: {message: 'Invalid stack type.'}};
     }
 
@@ -147,7 +148,7 @@ export class PulumiService {
         headers: {
           Accept: 'application/vnd.pulumi+8',
           'Content-Type': 'application/json',
-          Authorization: 'token ' + Config.getPulumiAccessToken(),
+          Authorization: 'token ' + CommonConfig.getPulumiAccessToken(),
         },
       });
 
@@ -166,45 +167,6 @@ export class PulumiService {
     }
   }
 
-  // :)
-  private getPulumiProgramByStackType(
-    stackType: InfrastructureStackType,
-    stackParams: any
-  ) {
-    switch (stackType) {
-      case InfrastructureStackType.AWS_CODE_COMMIT:
-        return createAwsCodeCommitStack(stackParams);
-      case InfrastructureStackType.AWS_ECR:
-        return createAwsEcrStack(stackParams);
-      case InfrastructureStackType.AWS_S3:
-        return createAwsS3Stack(stackParams);
-      case InfrastructureStackType.AWS_VPC:
-        return createAwsVpcStack(stackParams);
-      case InfrastructureStackType.AWS_WAF:
-        return createAwsWafStack(stackParams);
-      case InfrastructureStackType.ACCOUNT:
-        return null;
-      case InfrastructureStackType.DATABASE:
-        return createDatabaseStack(stackParams);
-      case InfrastructureStackType.ELASTIC_CONTAINER_CLUSTER:
-        return createContainerClusterStack(stackParams);
-      case InfrastructureStackType.ELASTIC_CONTAINER_CLUSTER_IN_VPC:
-        return createContainerClusterInVpcStack(stackParams);
-      case InfrastructureStackType.ELASTIC_SERVER_CLUSTER:
-        return createServerComputingStack(stackParams);
-      case InfrastructureStackType.FILE_MANAGER:
-        return createAwsS3Stack(stackParams);
-      case InfrastructureStackType.NETWORK:
-        return createNetworkStack(stackParams);
-      case InfrastructureStackType.LOGGER:
-        return null;
-      case InfrastructureStackType.QUEQUE:
-        return null;
-      default:
-        return null;
-    }
-  }
-
   /**
    * See the detail https://www.pulumi.com/docs/reference/service-rest-api/#list-stacks
    *
@@ -218,7 +180,7 @@ export class PulumiService {
       headers: {
         Accept: 'application/vnd.pulumi+8',
         'Content-Type': 'application/json',
-        Authorization: 'token ' + Config.getPulumiAccessToken(),
+        Authorization: 'token ' + CommonConfig.getPulumiAccessToken(),
       },
     });
   }
@@ -238,7 +200,7 @@ export class PulumiService {
       headers: {
         Accept: 'application/vnd.pulumi+8',
         'Content-Type': 'application/json',
-        Authorization: 'token ' + Config.getPulumiAccessToken(),
+        Authorization: 'token ' + CommonConfig.getPulumiAccessToken(),
       },
     });
   }
@@ -259,9 +221,58 @@ export class PulumiService {
       headers: {
         Accept: 'application/vnd.pulumi+8',
         'Content-Type': 'application/json',
-        Authorization: 'token ' + Config.getPulumiAccessToken(),
+        Authorization: 'token ' + CommonConfig.getPulumiAccessToken(),
       },
     });
+  }
+
+  /**
+   * Get stack class
+   *
+   * @param {InfrastructureStackType} type
+   * @returns
+   * @memberof InfrastructureStackService
+   */
+  private getStackServiceByType(type: InfrastructureStackType) {
+    switch (type) {
+      case InfrastructureStackType.AWS_CODE_COMMIT:
+        return AwsCodecommit_StackService;
+      case InfrastructureStackType.AWS_ECR:
+        return AwsEcr_StackService;
+      case InfrastructureStackType.AWS_ECS:
+        return AwsEcs_StackService;
+      case InfrastructureStackType.AWS_ECS_IN_VPC:
+        return AwsEcsInVpc_StackService;
+      case InfrastructureStackType.AWS_EKS:
+        return AwsEcs_StackService;
+      case InfrastructureStackType.AWS_IAM_USER:
+        return AwsIamUser_StackService;
+      case InfrastructureStackType.AWS_RDS:
+        return AwsRds_StackService;
+      case InfrastructureStackType.AWS_S3:
+        return AwsS3_StackService;
+      case InfrastructureStackType.AWS_SQS:
+        return AwsSqs_StackService;
+      case InfrastructureStackType.AWS_VPC:
+        return AwsVpc_StackService;
+      case InfrastructureStackType.AWS_VPC_HIPAA:
+        return AwsVpcHipaa_StackService;
+      case InfrastructureStackType.AWS_WAF:
+        return AwsWaf_StackService;
+      default:
+        return null;
+    }
+  }
+
+  private getStackProgramByType(
+    stackType: InfrastructureStackType,
+    stackParams: any
+  ) {
+    return this.getStackServiceByType(stackType)?.getStackProgram(stackParams);
+  }
+
+  getStackParamsByType(stackType: InfrastructureStackType) {
+    return this.getStackServiceByType(stackType)?.getStackParams();
   }
   /* End */
 }

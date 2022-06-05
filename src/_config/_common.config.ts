@@ -2,7 +2,7 @@ import {Injectable} from '@nestjs/common';
 import {Enum} from './_common.enum';
 
 @Injectable()
-export class Config {
+export class CommonConfig {
   static getJwtSecret = () => {
     if (typeof process.env.JWT_SECRET === 'string') {
       return process.env.JWT_SECRET;

@@ -1,9 +1,17 @@
+import {Injectable} from '@nestjs/common';
 import * as aws from '@pulumi/aws';
 import {CommonUtil} from '../../../_util/_common.util';
 import {PulumiUtil} from '../_pulumi.util';
 
-export const createAwsCodeCommitStack =
-  (params: {repositoryName: string}) => async () => {
+@Injectable()
+export class AwsCodecommit_StackService {
+  static getStackParams() {
+    return {
+      repositoryName: 'example-repository',
+    };
+  }
+
+  static getStackProgram = (params: {repositoryName: string}) => async () => {
     // [step 1] Guard statement.
 
     // [step 2] Create a repository.
@@ -12,6 +20,7 @@ export const createAwsCodeCommitStack =
       uniqueResourceName,
       {
         repositoryName: params.repositoryName,
+        defaultBranch: 'main',
       },
       PulumiUtil.resourceOptions
     );
@@ -21,3 +30,4 @@ export const createAwsCodeCommitStack =
       cloneUrlSsh: repository.cloneUrlSsh,
     };
   };
+}

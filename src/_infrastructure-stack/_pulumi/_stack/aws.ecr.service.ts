@@ -1,9 +1,17 @@
+import {Injectable} from '@nestjs/common';
 import * as awsx from '@pulumi/awsx';
 import {CommonUtil} from '../../../_util/_common.util';
 import {PulumiUtil} from '../_pulumi.util';
 
-export const createAwsEcrStack =
-  (params: {repositoryName: string}) => async () => {
+@Injectable()
+export class AwsEcr_StackService {
+  static getStackParams() {
+    return {
+      repositoryName: 'example-repository',
+    };
+  }
+
+  static getStackProgram = (params: {repositoryName: string}) => async () => {
     // [step 1] Guard statement.
 
     // [step 2] Create a repository.
@@ -26,3 +34,4 @@ export const createAwsEcrStack =
       imageUrn: image.urn,
     };
   };
+}

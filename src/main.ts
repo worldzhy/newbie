@@ -5,14 +5,14 @@ import {
   SwaggerCustomOptions,
 } from '@nestjs/swagger';
 import {AppModule} from './app.module';
-import {Config} from './_config/_common.config';
+import {CommonConfig} from './_config/_common.config';
 import {Enum} from './_config/_common.enum';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // API document is only available in development environment.
-  if (Config.getEnvironment() === Enum.environment.DEVELOPMENT) {
+  if (CommonConfig.getEnvironment() === Enum.environment.DEVELOPMENT) {
     const config = new DocumentBuilder()
       .setTitle('Cloud Native InceptionPad Basic')
       .setDescription('The API description')

@@ -1,6 +1,6 @@
 import * as aws from '@pulumi/aws';
 import {Input} from '@pulumi/pulumi';
-import {Config} from '../../_config/_common.config';
+import {CommonConfig} from '../../_config/_common.config';
 
 export class PulumiUtil {
   static resourceOptions = {
@@ -9,7 +9,7 @@ export class PulumiUtil {
       args => {
         if (
           args.type === 'aws:iam/rolePolicyAttachment:RolePolicyAttachment' &&
-          Config.getRegion().startsWith('cn')
+          CommonConfig.getRegion().startsWith('cn')
         ) {
           const arn: string | undefined = args.props['policyArn'];
           if (arn && arn.startsWith('arn:aws:iam')) {

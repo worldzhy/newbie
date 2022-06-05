@@ -36,7 +36,7 @@ export class MicroserviceController {
   async getInfrastructureParamsByType(
     @Param('type') type: InfrastructureStackType
   ) {
-    return this.infrastructureStackService.getParamsByType(type);
+    return this.infrastructureStackService.getStackParamsByType(type);
   }
 
   /**
@@ -63,14 +63,24 @@ export class MicroserviceController {
    * @returns
    * @memberof MicroserviceController
    */
-  @Get('microservices/project/:microserviceId')
+  @Get('microservices/:microserviceId')
   @ApiParam({
     name: 'microserviceId',
     schema: {type: 'string'},
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
   async getMicroservice(@Param('microserviceId') microserviceId: string) {
-    return this.microserviceService.findOne({id: microserviceId});
+    // [step 1] Get microservice database record.
+    const microservice = await this.microserviceService.findOne({
+      id: microserviceId,
+    });
+
+    // [step 2] Get infrastructure stack information.
+    /* if (microservice?.infrastructureStackId) {
+      const info = await this.infrastructureStackService.info(
+        microservice?.infrastructureStackId
+      );
+    } */
   }
 
   /**
