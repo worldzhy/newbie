@@ -207,6 +207,8 @@ model InfrastructureStack {
     AWS_WAF
   }
   enum InfrastructureStackStatus {
+    PARAMS_CORRECT
+    PARAMS_INCORRECT
     CREATING
     CREATE_SUCCEEDED
     CREATE_FAILED
@@ -216,7 +218,6 @@ model InfrastructureStack {
     DESTROYING
     DESTROY_SUCCEEDED
     DESTROY_FAILED
-    DELETED
   }
   
 
@@ -225,8 +226,12 @@ model Project {
   name                String @unique
   clientName          String?
   clientEmail         String?
-  awsAccessKeyID      String? // hash
+  awsAccountId        String?
+  awsIamUsername      String?
+  awsIamPassword      String? // hash
+  awsAccessKeyId      String?
   awsSecretAccessKey  String? // hash
+  awsRegion           String?
   status              ProjectStatus
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
@@ -262,8 +267,9 @@ model ProjectEnvironment {
 model Microservice {
   id                  String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   environment         String // refer to _common.enum.ts -> environment (development / staging / production)
-  awsAccessKeyID      String? // hash, overwrite Project.awsAccessKeyID
+  awsAccessKeyId      String? // overwrite Project.awsAccessKeyID
   awsSecretAccessKey  String? // hash, overwrite Project.awsSecretAccessKey
+  awsRegion           String? // // overwrite Project.awsRegion
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
   projectId           String @db.Uuid

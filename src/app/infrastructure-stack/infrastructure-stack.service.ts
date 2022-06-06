@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
-import {PrismaService} from '../_prisma/_prisma.service';
-import {PulumiService} from './_pulumi/_pulumi.service';
+import {PrismaService} from '../../_prisma/_prisma.service';
+import {PulumiService} from './pulumi/pulumi.service';
 import {
   InfrastructureStack,
   InfrastructureStackManager,
@@ -15,6 +15,11 @@ export class InfrastructureStackService {
   private prisma = new PrismaService();
   private pulumiService = new PulumiService();
   private stackManager = InfrastructureStackManager.PULUMI;
+
+  setAwsRegion(awsRegion: string) {
+    this.pulumiService.setAwsRegion(awsRegion);
+    return this;
+  }
 
   async findOne(where: Prisma.InfrastructureStackWhereUniqueInput) {
     return await this.prisma.infrastructureStack.findUnique({
@@ -31,7 +36,7 @@ export class InfrastructureStackService {
   async create(
     projectName: string,
     stackType: InfrastructureStackType,
-    stackParams: object
+    stackParams: any
   ): Promise<InfrastructureStack | null> {
     // [step 1] Create a database record of infrastructureStack.
     const stackName = stackType + '-' + CommonUtil.randomCode(8);
@@ -175,7 +180,10 @@ export class InfrastructureStackService {
   }
 
   getStackParamsByType(stackType: InfrastructureStackType) {
-    return this.pulumiService.getStackParamsByType(stackType);
+    return {
+      infrastructureStackParams:
+        this.pulumiService.getStackParamsByType(stackType),
+    };
   }
   /* End */
 }

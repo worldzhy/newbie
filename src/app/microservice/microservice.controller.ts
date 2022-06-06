@@ -6,7 +6,7 @@ import {
 } from '@prisma/client';
 import {MicroserviceService} from './microservice.service';
 import {ProjectService} from '../project/project.service';
-import {InfrastructureStackService} from '../../_infrastructure-stack/_infrastructure-stack.service';
+import {InfrastructureStackService} from '../infrastructure-stack/infrastructure-stack.service';
 
 @ApiTags('App - Microservice')
 @ApiBearerAuth()
@@ -71,7 +71,7 @@ export class MicroserviceController {
   })
   async getMicroservice(@Param('microserviceId') microserviceId: string) {
     // [step 1] Get microservice database record.
-    const microservice = await this.microserviceService.findOne({
+    return await this.microserviceService.findOne({
       id: microserviceId,
     });
 
@@ -118,6 +118,7 @@ export class MicroserviceController {
     body: {
       projectId: string;
       environment: string;
+      awsRegion?: string;
       infrastructureStackType: InfrastructureStackType;
       infrastructureStackParams: object;
     }
@@ -150,51 +151,16 @@ export class MicroserviceController {
     }
 
     // [step 3] Create a microservice.
-    const createdMicroservice = await this.microserviceService.create({
+    return await this.microserviceService.create({
       environment: body.environment,
+      awsRegion: body.awsRegion ? body.awsRegion : project.awsRegion,
       infrastructureStackType: body.infrastructureStackType,
       infrastructureStackParams: body.infrastructureStackParams,
-      infrastructureStackStatus: InfrastructureStackStatus.CREATING,
+      infrastructureStackStatus: InfrastructureStackStatus.PARAMS_CORRECT,
       project: {
         connect: {id: body.projectId},
       },
     });
-    if (createdMicroservice === null) {
-      return {
-        data: null,
-        err: {message: 'Create microservice failed.'},
-      };
-    }
-
-    // [step 4] Start infrastructure stack.
-    const stack = await this.infrastructureStackService.create(
-      project.name,
-      body.infrastructureStackType,
-      body.infrastructureStackParams
-    );
-    if (stack === null) {
-      return {
-        data: null,
-        err: {message: 'Create infrastructure stack failed.'},
-      };
-    }
-
-    // [step 5] Update microservice status.
-    const updatedMicroservice = await this.microserviceService.update({
-      where: {id: createdMicroservice.id},
-      data: {
-        infrastructureStackId: stack.id,
-        infrastructureStackStatus: stack.status,
-        infrastructureStackUpResult: JSON.parse(
-          JSON.stringify(stack.stackResult)
-        ),
-      },
-    });
-
-    return {
-      data: updatedMicroservice,
-      err: null,
-    };
   }
 
   /**
@@ -222,9 +188,6 @@ export class MicroserviceController {
       a: {
         summary: '1. Launch FileManager',
         value: {
-          projectId: 'd8141ece-f242-4288-a60a-8675538549cd',
-          environment: 'development',
-          infrastructureStackType: 'ELASTIC_CONTAINER_CLUSTER',
           infrastructureStackParams: {
             instanceName: 'postgres-default',
             instanceClass: 'db.t3.micro',
@@ -240,58 +203,10 @@ export class MicroserviceController {
       infrastructureStackParams: object;
     }
   ) {
-    // [step 1] Verify microserviceId.
-    const microservice = await this.microserviceService.findOne({
-      id: microserviceId,
-    });
-    if (!microservice) {
-      return {
-        data: null,
-        err: {
-          message: "Please provide valid 'microserviceId' in the url.",
-        },
-      };
-    }
-
-    // [step 2] Update infrastructure stack.
-    if (!microservice.infrastructureStackId) {
-      return {
-        data: null,
-        err: {
-          message: 'The microservice does not have infrastructure stack.',
-        },
-      };
-    }
-    const stack = await this.infrastructureStackService.update(
-      microservice.infrastructureStackId,
-      body.infrastructureStackParams
-    );
-
-    // [step 3] Update microservice status.
-    if (stack === null) {
-      return {
-        data: null,
-        err: {
-          message: 'Update infrastructure failed.',
-        },
-      };
-    }
-    stack.stackResult;
-    const updatedMicroservice = await this.microserviceService.update({
+    return await this.microserviceService.update({
       where: {id: microserviceId},
-      data: {
-        infrastructureStackParams: body.infrastructureStackParams,
-        infrastructureStackStatus: stack.status,
-        infrastructureStackUpResult: JSON.parse(
-          JSON.stringify(stack.stackResult)
-        ),
-      },
+      data: {infrastructureStackParams: body.infrastructureStackParams},
     });
-
-    return {
-      data: updatedMicroservice,
-      err: null,
-    };
   }
 
   /**
@@ -321,14 +236,145 @@ export class MicroserviceController {
         err: {message: 'Invalid microserviceId.'},
       };
     }
+
+    // [step 2] Verify infrastructure status.
     if (
-      microservice.infrastructureStackStatus ===
-      InfrastructureStackStatus.DELETED
+      microservice.infrastructureStackStatus !==
+      InfrastructureStackStatus.DESTROY_SUCCEEDED
     ) {
       return {
         data: null,
         err: {
-          message: `The microservice has been deleted at ${microservice.updatedAt}`,
+          message: 'The microservice can not be deleted before destroying.',
+        },
+      };
+    }
+
+    // [step 3] Delete microservice.
+    return await this.microserviceService.delete({id: microserviceId});
+  }
+
+  /**
+   * Build microservice.
+   *
+   * @param {string} microserviceId
+   * @returns
+   * @memberof MicroserviceController
+   */
+  @Post('microservices/:microserviceId/build')
+  @ApiParam({
+    name: 'microserviceId',
+    schema: {type: 'string'},
+    example: 'd8141ece-f242-4288-a60a-8675538549cd',
+  })
+  async buildMicroservice(
+    @Param('microserviceId')
+    microserviceId: string
+  ) {
+    // [step 1] Verify microserviceId.
+    const microservice = await this.microserviceService.findOne({
+      id: microserviceId,
+    });
+    if (microservice === null) {
+      return {
+        data: null,
+        err: {
+          message: "Please provide valid 'microserviceId'.",
+        },
+      };
+    }
+
+    // [step 2] Verify infrastructure parameters.
+    if (
+      microservice.infrastructureStackStatus !==
+        InfrastructureStackStatus.PARAMS_CORRECT ||
+      microservice.infrastructureStackType === null ||
+      microservice.infrastructureStackParams === null ||
+      microservice.awsRegion === null
+    ) {
+      return {
+        data: null,
+        err: {
+          message: 'This microservice is not ready for building.',
+        },
+      };
+    }
+
+    // [step 3] Start infrastructure stack.
+    await this.microserviceService.update({
+      where: {
+        id: microserviceId,
+      },
+      data: {infrastructureStackStatus: InfrastructureStackStatus.CREATING},
+    });
+
+    const stack = await this.infrastructureStackService
+      .setAwsRegion(microservice.awsRegion)
+      .create(
+        microservice.project.name,
+        microservice.infrastructureStackType,
+        microservice.infrastructureStackParams
+      );
+    if (stack === null) {
+      return {
+        data: null,
+        err: {message: 'Create infrastructure stack failed.'},
+      };
+    }
+
+    // [step 4] Update microservice status.
+    const updatedMicroservice = await this.microserviceService.update({
+      where: {id: microserviceId},
+      data: {
+        infrastructureStackId: stack.id,
+        infrastructureStackStatus: stack.status,
+        infrastructureStackUpResult: JSON.parse(
+          JSON.stringify(stack.stackResult)
+        ),
+      },
+    });
+
+    return {
+      data: updatedMicroservice,
+      err: null,
+    };
+  }
+
+  /**
+   * Destroy microservice.
+   *
+   * @param {string} microserviceId
+   * @returns
+   * @memberof MicroserviceController
+   */
+  @Delete('microservices/:microserviceId/destroy')
+  @ApiParam({
+    name: 'microserviceId',
+    schema: {type: 'string'},
+    example: 'ff337f2d-d3a5-4f2e-be16-62c75477b605',
+  })
+  async destroyMicroservice(
+    @Param('microserviceId')
+    microserviceId: string
+  ) {
+    // [step 1] Get the microservice.
+    const microservice = await this.microserviceService.findOne({
+      id: microserviceId,
+    });
+    if (!microservice) {
+      return {
+        data: null,
+        err: {message: 'Invalid microserviceId.'},
+      };
+    }
+    if (
+      microservice.infrastructureStackStatus ===
+      InfrastructureStackStatus.DESTROY_SUCCEEDED
+    ) {
+      return {
+        data: null,
+        err: {
+          message: `The microservice has been destroyed at ${microservice.updatedAt}`,
         },
       };
     }

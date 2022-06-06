@@ -3,6 +3,10 @@ import validator from 'validator';
 
 @Injectable()
 export class ValidatorAwsService {
+  static verifyRegion(region: string) {
+    return true;
+  }
+
   /**
    * bucket naming rules - https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html
    *

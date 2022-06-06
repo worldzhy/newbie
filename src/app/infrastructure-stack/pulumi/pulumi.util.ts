@@ -1,31 +1,32 @@
 import * as aws from '@pulumi/aws';
 import {Input} from '@pulumi/pulumi';
-import {CommonConfig} from '../../_config/_common.config';
 
 export class PulumiUtil {
-  static resourceOptions = {
-    transformations: [
-      // Update all RolePolicyAttachment resources to use aws-cn ARNs.
-      args => {
-        if (
-          args.type === 'aws:iam/rolePolicyAttachment:RolePolicyAttachment' &&
-          CommonConfig.getRegion().startsWith('cn')
-        ) {
-          const arn: string | undefined = args.props['policyArn'];
-          if (arn && arn.startsWith('arn:aws:iam')) {
-            args.props['policyArn'] = arn.replace(
-              'arn:aws:iam',
-              'arn:aws-cn:iam'
-            );
+  static getResourceOptions = (awsRegion: string) => {
+    return {
+      transformations: [
+        // Update all RolePolicyAttachment resources to use aws-cn ARNs.
+        args => {
+          if (
+            args.type === 'aws:iam/rolePolicyAttachment:RolePolicyAttachment' &&
+            awsRegion.startsWith('cn')
+          ) {
+            const arn: string | undefined = args.props['policyArn'];
+            if (arn && arn.startsWith('arn:aws:iam')) {
+              args.props['policyArn'] = arn.replace(
+                'arn:aws:iam',
+                'arn:aws-cn:iam'
+              );
+            }
+            return {
+              props: args.props,
+              opts: args.opts,
+            };
           }
-          return {
-            props: args.props,
-            opts: args.opts,
-          };
-        }
-        return undefined;
-      },
-    ],
+          return undefined;
+        },
+      ],
+    };
   };
 
   static generateSecurityGroupForEC2 = (name: string, vpcId: Input<string>) => {

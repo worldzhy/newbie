@@ -1,12 +1,12 @@
 import {Injectable} from '@nestjs/common';
 import {PinpointClient, SendMessagesCommand} from '@aws-sdk/client-pinpoint';
-import {CommonConfig} from '../../_config/_common.config';
+import {AwsConfig} from '../../_config/_aws.config';
 
 @Injectable()
 export class PinpointService {
   private client: PinpointClient;
-  private pinpointAppId = CommonConfig.getPinpointAppId();
-  private pinpointEmailFromAddress = CommonConfig.getPinpointEmailFromAddress();
+  private pinpointAppId = AwsConfig.getPinpointAppId();
+  private pinpointEmailFromAddress = AwsConfig.getPinpointEmailFromAddress();
 
   constructor() {
     this.client = new PinpointClient({});

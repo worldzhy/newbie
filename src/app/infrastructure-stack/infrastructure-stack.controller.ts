@@ -1,8 +1,8 @@
 import {Controller, Get, Post, Delete, Param, Body} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {InfrastructureStackService} from './_infrastructure-stack.service';
+import {InfrastructureStackService} from './infrastructure-stack.service';
 import {InfrastructureStackType} from '@prisma/client';
-import {Enum} from '../_config/_common.enum';
+import {Enum} from '../../_config/_common.enum';
 
 @ApiTags('Infrastructure Stack')
 @ApiBearerAuth()

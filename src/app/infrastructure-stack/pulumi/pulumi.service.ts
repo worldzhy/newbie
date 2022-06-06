@@ -7,24 +7,32 @@ import {
   UpResult,
 } from '@pulumi/pulumi/automation';
 import {InfrastructureStackType} from '@prisma/client';
-import {CommonConfig} from 'src/_config/_common.config';
+import {PulumiConfig} from 'src/_config/_pulumi.config';
 import axios from 'axios';
-import {AwsCodecommit_StackService} from './_stack/aws.codecommit.service';
-import {AwsEcr_StackService} from './_stack/aws.ecr.service';
-import {AwsEcs_StackService} from './_stack/aws.ecs.service';
-import {AwsEcsInVpc_StackService} from './_stack/aws.ecs-in-vpc.service';
-import {AwsIamUser_StackService} from './_stack/aws.iam-user.service';
-import {AwsRds_StackService} from './_stack/aws.rds.service';
-import {AwsS3_StackService} from './_stack/aws.s3.service';
-import {AwsSqs_StackService} from './_stack/aws.sqs.service copy';
-import {AwsVpc_StackService} from './_stack/aws.vpc.service';
-import {AwsVpcHipaa_StackService} from './_stack/aws.vpc-hipaa.service';
-import {AwsWaf_StackService} from './_stack/aws.waf.service';
+import {AwsCodecommit_StackService} from './stack/aws.codecommit.service';
+import {AwsEcr_StackService} from './stack/aws.ecr.service';
+import {AwsEcs_StackService} from './stack/aws.ecs.service';
+import {AwsEcsInVpc_StackService} from './stack/aws.ecs-in-vpc.service';
+import {AwsIamUser_StackService} from './stack/aws.iam-user.service';
+import {AwsRds_StackService} from './stack/aws.rds.service';
+import {AwsS3_StackService} from './stack/aws.s3.service';
+import {AwsSqs_StackService} from './stack/aws.sqs.service';
+import {AwsVpc_StackService} from './stack/aws.vpc.service';
+import {AwsVpcHipaa_StackService} from './stack/aws.vpc-hipaa.service';
+import {AwsWaf_StackService} from './stack/aws.waf.service';
 
 @Injectable()
 export class PulumiService {
-  public awsRegion = CommonConfig.getRegion();
-  private pulumiAwsVersion = CommonConfig.getPulumiAwsVersion();
+  private pulumiAwsVersion = PulumiConfig.getAwsVersion();
+  private awsRegion: string;
+
+  /* constructor(config: {projectName: string; awsConfig: {awsRegion: string}}) {
+    this.projectName = config.projectName;
+    this.awsRegion = config.awsConfig.awsRegion;
+  } */
+  setAwsRegion(awsRegion: string) {
+    this.awsRegion = awsRegion;
+  }
 
   /**
    * Start a stack.
@@ -70,20 +78,22 @@ export class PulumiService {
       stackType,
       stackParams
     );
-
-    // [step 2] Create the stack.
     if (program === undefined) {
       return undefined;
     }
+
+    // [step 2] Create the stack.
     const args: InlineProgramArgs = {
       projectName,
       stackName,
       program,
     };
-
     const stack = await LocalWorkspace.createStack(args);
     await stack.workspace.installPlugin('aws', this.pulumiAwsVersion);
-    await stack.setConfig('aws:region', {value: this.awsRegion});
+    await stack.setAllConfig({
+      'aws:region': {value: this.awsRegion},
+      'aws:profile': {value: projectName},
+    });
     return await stack.up({onOutput: console.log}); // pulumiStackResult.summary.result is one of ['failed', 'in-progress', 'not-started', 'succeeded']
   }
 
@@ -148,7 +158,7 @@ export class PulumiService {
         headers: {
           Accept: 'application/vnd.pulumi+8',
           'Content-Type': 'application/json',
-          Authorization: 'token ' + CommonConfig.getPulumiAccessToken(),
+          Authorization: 'token ' + PulumiConfig.getAccessToken(),
         },
       });
 
@@ -180,7 +190,7 @@ export class PulumiService {
       headers: {
         Accept: 'application/vnd.pulumi+8',
         'Content-Type': 'application/json',
-        Authorization: 'token ' + CommonConfig.getPulumiAccessToken(),
+        Authorization: 'token ' + PulumiConfig.getAccessToken(),
       },
     });
   }
@@ -200,7 +210,7 @@ export class PulumiService {
       headers: {
         Accept: 'application/vnd.pulumi+8',
         'Content-Type': 'application/json',
-        Authorization: 'token ' + CommonConfig.getPulumiAccessToken(),
+        Authorization: 'token ' + PulumiConfig.getAccessToken(),
       },
     });
   }
@@ -221,7 +231,7 @@ export class PulumiService {
       headers: {
         Accept: 'application/vnd.pulumi+8',
         'Content-Type': 'application/json',
-        Authorization: 'token ' + CommonConfig.getPulumiAccessToken(),
+        Authorization: 'token ' + PulumiConfig.getAccessToken(),
       },
     });
   }
@@ -268,7 +278,10 @@ export class PulumiService {
     stackType: InfrastructureStackType,
     stackParams: any
   ) {
-    return this.getStackServiceByType(stackType)?.getStackProgram(stackParams);
+    return this.getStackServiceByType(stackType)?.getStackProgram(
+      stackParams,
+      this.awsRegion
+    );
   }
 
   getStackParamsByType(stackType: InfrastructureStackType) {

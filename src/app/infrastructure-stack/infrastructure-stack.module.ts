@@ -1,7 +1,7 @@
 import {Module} from '@nestjs/common';
-import {PrismaModule} from '../_prisma/_prisma.module';
-import {InfrastructureStackController} from './_infrastructure-stack.controller';
-import {InfrastructureStackService} from './_infrastructure-stack.service';
+import {PrismaModule} from '../../_prisma/_prisma.module';
+import {InfrastructureStackController} from './infrastructure-stack.controller';
+import {InfrastructureStackService} from './infrastructure-stack.service';
 
 @Module({
   imports: [PrismaModule],

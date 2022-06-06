@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import * as aws from '@pulumi/aws';
-import {CommonUtil} from '../../../_util/_common.util';
-import {PulumiUtil} from '../_pulumi.util';
+import {CommonUtil} from '../../../../_util/_common.util';
+import {PulumiUtil} from '../pulumi.util';
 
 @Injectable()
 export class AwsWaf_StackService {
@@ -13,7 +13,8 @@ export class AwsWaf_StackService {
   }
 
   static getStackProgram =
-    (params: {applicationLoadBalancerArn: string}) => async () => {
+    (params: {applicationLoadBalancerArn: string}, awsRegion: string) =>
+    async () => {
       // [step 1] Create rule group.
       let uniqueResourceName = 'waf-rule-group-' + CommonUtil.randomCode(4);
       const ruleGroup = new aws.wafv2.RuleGroup(
@@ -80,7 +81,7 @@ export class AwsWaf_StackService {
             sampledRequestsEnabled: false,
           },
         },
-        PulumiUtil.resourceOptions
+        PulumiUtil.getResourceOptions(awsRegion)
       );
 
       // [step 2] Create web ACL.
@@ -187,7 +188,7 @@ export class AwsWaf_StackService {
             sampledRequestsEnabled: false,
           },
         },
-        PulumiUtil.resourceOptions
+        PulumiUtil.getResourceOptions(awsRegion)
       );
 
       // [step 3] Associate web ACL with application loadbalancer.
@@ -198,7 +199,7 @@ export class AwsWaf_StackService {
           resourceArn: params.applicationLoadBalancerArn,
           webAclArn: webAcl.arn,
         },
-        PulumiUtil.resourceOptions
+        PulumiUtil.getResourceOptions(awsRegion)
       );
     };
 }

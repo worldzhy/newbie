@@ -6,7 +6,7 @@ import {AppController} from './app.controller';
 import {AccountModule} from './app/_account/_account.module';
 import {AwsModule} from './_aws/_aws.module';
 import {CustomLoggerModule} from './_logger/_custom-logger.module';
-import {InfrastructureStackModule} from './_infrastructure-stack/_infrastructure-stack.module';
+import {InfrastructureStackModule} from './app/infrastructure-stack/infrastructure-stack.module';
 import {OrganizationModule} from './app/_organization/_organization.module';
 import {ProfileModule} from './app/_profile/_profile.module';
 import {ProjectModule} from './app/project/project.module';

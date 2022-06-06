@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {SendMessageCommand, SQSClient} from '@aws-sdk/client-sqs';
-import {CommonConfig} from '../../_config/_common.config';
+import {AwsConfig} from '../../_config/_aws.config';
 
 @Injectable()
 export class SqsService {
@@ -8,7 +8,7 @@ export class SqsService {
 
   constructor() {
     this.client = new SQSClient({
-      region: CommonConfig.getRegion(), // region is required for SQS service.
+      region: AwsConfig.getRegion(), // region is required for SQS service.
     });
   }
 

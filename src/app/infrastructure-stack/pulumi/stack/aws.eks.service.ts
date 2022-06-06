@@ -3,7 +3,7 @@ import * as aws from '@pulumi/aws';
 import * as eks from '@pulumi/eks';
 import * as k8s from '@pulumi/kubernetes';
 import {CommonUtil} from 'src/_util/_common.util';
-import {PulumiUtil} from '../_pulumi.util';
+import {PulumiUtil} from '../pulumi.util';
 
 @Injectable()
 export class AwsEks_StackService {
@@ -12,15 +12,18 @@ export class AwsEks_StackService {
   }
 
   static getStackProgram =
-    (params: {
-      vpcId?: string;
-      clusterName?: string;
-      repositoryName: string;
-      instanceType: string;
-      desiredInstanceCount?: number;
-      minInstanceCount?: number;
-      maxInstanceCount?: number;
-    }) =>
+    (
+      params: {
+        vpcId?: string;
+        clusterName?: string;
+        repositoryName: string;
+        instanceType: string;
+        desiredInstanceCount?: number;
+        minInstanceCount?: number;
+        maxInstanceCount?: number;
+      },
+      awsRegion: string
+    ) =>
     async () => {
       let vpcId = params.vpcId;
       let clusterName = params.clusterName;
@@ -89,7 +92,7 @@ export class AwsEks_StackService {
             'scheduler',
           ],
         },
-        PulumiUtil.resourceOptions
+        PulumiUtil.getResourceOptions(awsRegion)
       );
 
       // [step 3] Deployment and running application.
@@ -122,7 +125,8 @@ export class AwsEks_StackService {
         },
         {
           provider: cluster.provider,
-          transformations: PulumiUtil.resourceOptions.transformations,
+          transformations:
+            PulumiUtil.getResourceOptions(awsRegion).transformations,
         }
       );
 
@@ -139,7 +143,8 @@ export class AwsEks_StackService {
         },
         {
           provider: cluster.provider,
-          transformations: PulumiUtil.resourceOptions.transformations,
+          transformations:
+            PulumiUtil.getResourceOptions(awsRegion).transformations,
         }
       );
 

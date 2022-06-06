@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import * as aws from '@pulumi/aws';
-import {CommonUtil} from '../../../_util/_common.util';
-import {PulumiUtil} from '../_pulumi.util';
+import {CommonUtil} from '../../../../_util/_common.util';
+import {PulumiUtil} from '../pulumi.util';
 
 @Injectable()
 export class AwsRds_StackService {
@@ -17,14 +17,17 @@ export class AwsRds_StackService {
   }
 
   static getStackProgram =
-    (params: {
-      instanceName: string;
-      instanceType: string;
-      allocatedStorage: number;
-      databaseName: string;
-      password: string;
-      username: string;
-    }) =>
+    (
+      params: {
+        instanceName: string;
+        instanceType: string;
+        allocatedStorage: number;
+        databaseName: string;
+        password: string;
+        username: string;
+      },
+      awsRegion: string
+    ) =>
     async () => {
       const uniqueResourceName = 'rds-' + CommonUtil.randomCode(4);
       const defaultInstance = new aws.rds.Instance(
@@ -40,7 +43,7 @@ export class AwsRds_StackService {
           vpcSecurityGroupIds: ['sg-08e3e67dfba148950'],
           skipFinalSnapshot: true, // 'finalSnapshotIdentifier' is required when 'skipFinalSnapshot' is false.
         },
-        PulumiUtil.resourceOptions
+        PulumiUtil.getResourceOptions(awsRegion)
       );
 
       return {

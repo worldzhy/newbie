@@ -2,8 +2,8 @@ import {Injectable} from '@nestjs/common';
 import {InfrastructureStackType} from '@prisma/client';
 import * as aws from '@pulumi/aws';
 import * as awsx from '@pulumi/awsx';
-import {CommonUtil} from '../../../_util/_common.util';
-import {PulumiUtil} from '../_pulumi.util';
+import {CommonUtil} from '../../../../_util/_common.util';
+import {PulumiUtil} from '../pulumi.util';
 
 @Injectable()
 export class AwsVpcHipaa_StackService {
@@ -23,11 +23,14 @@ export class AwsVpcHipaa_StackService {
   }
 
   static getStackProgram =
-    (params: {
-      vpcName?: string;
-      vpcCidrBlock?: string;
-      numberOfAvailabilityZones?: number;
-    }) =>
+    (
+      params: {
+        vpcName?: string;
+        vpcCidrBlock?: string;
+        numberOfAvailabilityZones?: number;
+      },
+      awsRegion: string
+    ) =>
     async () => {
       let vpcName = params.vpcName;
       let vpcCidrBlock = params.vpcCidrBlock;
@@ -73,7 +76,7 @@ export class AwsVpcHipaa_StackService {
             strategy: awsx.ec2.NatGatewayStrategy.OnePerAz,
           },
         },
-        PulumiUtil.resourceOptions
+        PulumiUtil.getResourceOptions(awsRegion)
       );
 
       uniqueResourceName = 'igw-' + CommonUtil.randomCode(4);
@@ -82,7 +85,7 @@ export class AwsVpcHipaa_StackService {
         {
           vpcId: vpc.vpcId,
         },
-        PulumiUtil.resourceOptions
+        PulumiUtil.getResourceOptions(awsRegion)
       );
 
       // Allocate EC2 security group.

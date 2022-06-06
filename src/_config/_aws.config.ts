@@ -2,36 +2,24 @@ import {Injectable} from '@nestjs/common';
 import {Enum} from './_common.enum';
 
 @Injectable()
-export class CommonConfig {
-  static getJwtSecret = () => {
-    if (typeof process.env.JWT_SECRET === 'string') {
-      return process.env.JWT_SECRET;
+export class AwsConfig {
+  // This function is no longer needed because https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/loading-node-credentials-environment.html
+  static getCredentials = () => {
+    if (process.env.ENVIRONMENT === Enum.environment.DEVELOPMENT) {
+      return {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      };
     } else {
-      return 'environment variable JWT_SECRET is invalid.';
+      return null;
     }
   };
 
-  static getEnvironment = () => {
-    if (typeof process.env.ENVIRONMENT === 'string') {
-      return process.env.ENVIRONMENT;
+  static getRegion = () => {
+    if (typeof process.env.AWS_REGION === 'string') {
+      return process.env.AWS_REGION;
     } else {
-      return 'environment variable ENVIRONMENT is invalid.';
-    }
-  };
-
-  static getPulumiAwsVersion = () => {
-    if (typeof process.env.PULUMI_AWS_VERSION === 'string') {
-      return process.env.PULUMI_AWS_VERSION;
-    } else {
-      return 'environment variable PULUMI_AWS_VERSION is invalid.';
-    }
-  };
-
-  static getPulumiAccessToken = () => {
-    if (typeof process.env.PULUMI_ACCESS_TOKEN === 'string') {
-      return process.env.PULUMI_ACCESS_TOKEN;
-    } else {
-      return 'environment variable PULUMI_ACCESS_TOKEN is invalid.';
+      return 'environment variable AWS_REGION is invalid.';
     }
   };
 

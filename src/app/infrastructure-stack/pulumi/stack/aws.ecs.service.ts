@@ -2,8 +2,8 @@ import {Injectable} from '@nestjs/common';
 import * as pulumi from '@pulumi/pulumi';
 import * as aws from '@pulumi/aws';
 import * as awsx from '@pulumi/awsx';
-import {PulumiUtil} from '../_pulumi.util';
-import {CommonUtil} from '../../../_util/_common.util';
+import {PulumiUtil} from '../pulumi.util';
+import {CommonUtil} from '../../../../_util/_common.util';
 
 @Injectable()
 export class AwsEcs_StackService {
@@ -16,13 +16,16 @@ export class AwsEcs_StackService {
   }
 
   static getStackProgram =
-    (params: {
-      clusterName?: string;
-      repositoryName: string;
-      desiredTaskCount?: number;
-      minTaskCount?: number;
-      maxTaskCount?: number;
-    }) =>
+    (
+      params: {
+        clusterName?: string;
+        repositoryName: string;
+        desiredTaskCount?: number;
+        minTaskCount?: number;
+        maxTaskCount?: number;
+      },
+      awsRegion: string
+    ) =>
     async () => {
       let clusterName = params.clusterName;
       let repositoryName = params.repositoryName;
@@ -60,7 +63,7 @@ export class AwsEcs_StackService {
       const cluster = new aws.ecs.Cluster(
         uniqueResourceName,
         {name: clusterName},
-        PulumiUtil.resourceOptions
+        PulumiUtil.getResourceOptions(awsRegion)
       );
 
       const repository = await aws.ecr.getRepository({
@@ -73,7 +76,7 @@ export class AwsEcs_StackService {
       const lb = new awsx.lb.ApplicationLoadBalancer(
         uniqueResourceName,
         {name: lbName},
-        PulumiUtil.resourceOptions
+        PulumiUtil.getResourceOptions(awsRegion)
       );
 
       uniqueResourceName =
@@ -94,7 +97,7 @@ export class AwsEcs_StackService {
           cpu: '512',
           memory: '1024',
         },
-        PulumiUtil.resourceOptions
+        PulumiUtil.getResourceOptions(awsRegion)
       );
 
       uniqueResourceName = 'ecs-fargate-service-' + CommonUtil.randomCode(4);
@@ -109,7 +112,7 @@ export class AwsEcs_StackService {
           deploymentMaximumPercent: 500,
           taskDefinition: taskDefinition.taskDefinition.arn,
         },
-        PulumiUtil.resourceOptions
+        PulumiUtil.getResourceOptions(awsRegion)
       );
 
       // [step 4] Create auto scaling target.
@@ -123,7 +126,7 @@ export class AwsEcs_StackService {
           scalableDimension: 'ecs:service:DesiredCount',
           serviceNamespace: 'ecs',
         },
-        PulumiUtil.resourceOptions
+        PulumiUtil.getResourceOptions(awsRegion)
       );
 
       // [step 5] Create scaling up and scaling down policy.
@@ -149,7 +152,7 @@ export class AwsEcs_StackService {
             ],
           },
         },
-        PulumiUtil.resourceOptions
+        PulumiUtil.getResourceOptions(awsRegion)
       );
 
       uniqueResourceName =
@@ -174,7 +177,7 @@ export class AwsEcs_StackService {
             ],
           },
         },
-        PulumiUtil.resourceOptions
+        PulumiUtil.getResourceOptions(awsRegion)
       );
 
       return {
