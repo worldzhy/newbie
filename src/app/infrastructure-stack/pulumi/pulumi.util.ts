@@ -1,8 +1,8 @@
 import * as aws from '@pulumi/aws';
-import {Input} from '@pulumi/pulumi';
+import * as pulumi from '@pulumi/pulumi';
 
 export class PulumiUtil {
-  static getResourceOptions = (awsRegion: string) => {
+  static getResourceOptions = (awsRegion: string, secretOutputs?: string[]) => {
     return {
       transformations: [
         // Update all RolePolicyAttachment resources to use aws-cn ARNs.
@@ -29,7 +29,10 @@ export class PulumiUtil {
     };
   };
 
-  static generateSecurityGroupForEC2 = (name: string, vpcId: Input<string>) => {
+  static generateSecurityGroupForEC2 = (
+    name: string,
+    vpcId: pulumi.Input<string>
+  ) => {
     return new aws.ec2.SecurityGroup(name, {
       vpcId: vpcId,
       ingress: [
@@ -68,8 +71,8 @@ export class PulumiUtil {
 
   static generateSecurityGroupForRDS = (
     name: string,
-    vpcId: Input<string>,
-    allowedSecurityGroups: Input<string>[]
+    vpcId: pulumi.Input<string>,
+    allowedSecurityGroups: pulumi.Input<string>[]
   ) => {
     return new aws.ec2.SecurityGroup(name, {
       vpcId: vpcId,

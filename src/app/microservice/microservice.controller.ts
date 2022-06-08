@@ -46,7 +46,7 @@ export class MicroserviceController {
    * @returns
    * @memberof MicroserviceController
    */
-  @Get('microservices/project/:projectId')
+  @Get('microservices/projects/:projectId')
   @ApiParam({
     name: 'projectId',
     schema: {type: 'string'},
@@ -74,13 +74,6 @@ export class MicroserviceController {
     return await this.microserviceService.findOne({
       id: microserviceId,
     });
-
-    // [step 2] Get infrastructure stack information.
-    /* if (microservice?.infrastructureStackId) {
-      const info = await this.infrastructureStackService.info(
-        microservice?.infrastructureStackId
-      );
-    } */
   }
 
   /**
@@ -101,13 +94,24 @@ export class MicroserviceController {
       "The 'projectId'and 'infrastructureType' are required in request body.",
     examples: {
       a: {
-        summary: '1. Launch AWS CodeCommit',
+        summary: '1. Create a CodeCommit',
         value: {
           projectId: 'dcfb8c4d-b2c8-495a-a4f8-8959bc03d322',
           environment: 'development',
           infrastructureStackType: InfrastructureStackType.AWS_CODE_COMMIT,
           infrastructureStackParams: {
             repositoryName: 'pulumi-test-repository',
+          },
+        },
+      },
+      b: {
+        summary: '2. Create an IamUser',
+        value: {
+          projectId: 'dcfb8c4d-b2c8-495a-a4f8-8959bc03d322',
+          environment: 'development',
+          infrastructureStackType: InfrastructureStackType.AWS_IAM_USER,
+          infrastructureStackParams: {
+            iamUserName: 'batman',
           },
         },
       },

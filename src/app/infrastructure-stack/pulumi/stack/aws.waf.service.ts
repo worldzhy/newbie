@@ -12,6 +12,10 @@ export class AwsWaf_StackService {
     };
   }
 
+  static getStackOutputKeys() {
+    return [];
+  }
+
   static getStackProgram =
     (params: {applicationLoadBalancerArn: string}, awsRegion: string) =>
     async () => {

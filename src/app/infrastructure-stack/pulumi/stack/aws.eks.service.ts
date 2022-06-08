@@ -11,6 +11,10 @@ export class AwsEks_StackService {
     return {};
   }
 
+  static getStackOutputKeys() {
+    return ['loadBalancerHostname', 'kubeconfig'];
+  }
+
   static getStackProgram =
     (
       params: {
@@ -150,7 +154,7 @@ export class AwsEks_StackService {
 
       return {
         kubeconfig: cluster.kubeconfig,
-        url: service.status.loadBalancer.ingress[0].hostname,
+        loadBalancerHostname: service.status.loadBalancer.ingress[0].hostname,
       };
     };
 }

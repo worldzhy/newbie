@@ -11,6 +11,10 @@ export class AwsCodecommit_StackService {
     };
   }
 
+  static getStackOutputKeys() {
+    return ['username', 'password'];
+  }
+
   static getStackProgram =
     (params: {repositoryName: string}, awsRegion: string) => async () => {
       // [step 1] Guard statement.

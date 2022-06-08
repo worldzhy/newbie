@@ -12,8 +12,8 @@ export class AwsIamUser_StackService {
     };
   }
 
-  static getUsers() {
-    return pulumi.output(aws.iam.getUsers());
+  static getStackOutputKeys() {
+    return ['gitUsername', 'gitPassword'];
   }
 
   static getStackProgram =
@@ -46,14 +46,14 @@ export class AwsIamUser_StackService {
             group: userGroupName,
             policyArn:
               (awsRegion.startsWith('cn') ? 'arn:aws-cn:' : 'arn:aws:') +
-              'arn:aws-cn:iam::aws:policy/AWSCodeCommitPowerUser',
+              'iam::aws:policy/AWSCodeCommitPowerUser',
           },
           PulumiUtil.getResourceOptions(awsRegion)
         );
       }
 
       // [step 3] Create a user.
-      uniqueResourceName = 'code-commit-' + CommonUtil.randomCode(4);
+      uniqueResourceName = 'iam-user-' + CommonUtil.randomCode(4);
 
       const iamUser = new aws.iam.User(
         uniqueResourceName,
@@ -63,6 +63,8 @@ export class AwsIamUser_StackService {
         PulumiUtil.getResourceOptions(awsRegion)
       );
 
+      uniqueResourceName =
+        'iam-usergroup-membership-' + CommonUtil.randomCode(4);
       new aws.iam.UserGroupMembership(
         uniqueResourceName,
         {
@@ -81,12 +83,14 @@ export class AwsIamUser_StackService {
           serviceName: 'codecommit.amazonaws.com',
           userName: iamUser.name,
         },
-        PulumiUtil.getResourceOptions(awsRegion)
+        PulumiUtil.getResourceOptions(awsRegion, ['servicePassword'])
       );
 
       return {
-        username: serviceSpecificCredential.serviceUserName,
-        password: serviceSpecificCredential.servicePassword,
+        gitUsername: serviceSpecificCredential.serviceUserName,
+        gitPassword: serviceSpecificCredential.servicePassword,
       };
     };
+
+  /* End */
 }

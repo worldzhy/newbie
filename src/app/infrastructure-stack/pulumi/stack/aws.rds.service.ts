@@ -16,6 +16,10 @@ export class AwsRds_StackService {
     };
   }
 
+  static getStackOutputKeys() {
+    return ['databaseHost', 'databasePort'];
+  }
+
   static getStackProgram =
     (
       params: {

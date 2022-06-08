@@ -13,6 +13,10 @@ export class AwsSqs_StackService {
     };
   }
 
+  static getStackOutputKeys() {
+    return ['username', 'password'];
+  }
+
   static getStackProgram =
     (params: {bucketName: string}, awsRegion: string) => async () => {
       let bucketName = params.bucketName;

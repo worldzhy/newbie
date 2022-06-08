@@ -22,6 +22,16 @@ export class AwsVpcHipaa_StackService {
     };
   }
 
+  static getStackOutputKeys() {
+    return [
+      'vpcId',
+      'privateSubnetIds',
+      'publicSubnetIds',
+      'ec2SecurityGroup',
+      'rdsSecurityGroup',
+    ];
+  }
+
   static getStackProgram =
     (
       params: {

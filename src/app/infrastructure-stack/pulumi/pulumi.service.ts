@@ -1,4 +1,5 @@
 import {Injectable} from '@nestjs/common';
+import * as pulumi from '@pulumi/pulumi';
 import {
   DestroyResult,
   InlineProgramArgs,
@@ -196,44 +197,55 @@ export class PulumiService {
   }
 
   /**
-   * See the detail https://www.pulumi.com/docs/reference/service-rest-api/#get-stack
-   * @param {string} orgName
+   * Get stack outputs.
+   *
    * @param {string} projectName
    * @param {string} stackName
-   * @returns
+   * @param {InfrastructureStackType} stackType
    * @memberof PulumiService
    */
-  async getStack(orgName: string, projectName: string, stackName: string) {
-    const url = `https://api.pulumi.com/api/stacks/${orgName}/${projectName}/${stackName}`;
-    return await axios.get(url, {
-      maxRedirects: 5,
-      headers: {
-        Accept: 'application/vnd.pulumi+8',
-        'Content-Type': 'application/json',
-        Authorization: 'token ' + PulumiConfig.getAccessToken(),
-      },
+  async getStackOutputs(
+    projectName: string,
+    stackName: string,
+    stackType: InfrastructureStackType
+  ) {
+    // [step 1] Create stack args.
+    const args: InlineProgramArgs = {
+      projectName,
+      stackName,
+      program: async () => {},
+    };
+
+    // [step 2] Get stack.
+    const stack = await LocalWorkspace.selectStack(args);
+    await stack.workspace.installPlugin('aws', this.pulumiAwsVersion);
+    await stack.setAllConfig({
+      'aws:region': {value: this.awsRegion},
+      'aws:profile': {value: projectName},
+    });
+
+    // [step 3] Get stack outputs.
+    const outputs = await stack.outputs();
+    const outputKeys =
+      this.getStackServiceByType(stackType)?.getStackOutputKeys();
+    return outputKeys?.map(key => {
+      if (outputs[key].secret) {
+        return {[key]: outputs[key].value};
+      } else {
+        return {[key]: outputs[key].value};
+      }
     });
   }
 
   /**
-   * See the detail https://www.pulumi.com/docs/reference/service-rest-api/#get-stack-state
+   * Get parameter example of creating stack.
    *
-   * @param {string} orgName
-   * @param {string} projectName
-   * @param {string} stackName
+   * @param {InfrastructureStackType} stackType
    * @returns
    * @memberof PulumiService
    */
-  async getStackState(orgName: string, projectName: string, stackName: string) {
-    const url = `https://api.pulumi.com/api/stacks/${orgName}/${projectName}/${stackName}/export`;
-    return await axios.get(url, {
-      maxRedirects: 5,
-      headers: {
-        Accept: 'application/vnd.pulumi+8',
-        'Content-Type': 'application/json',
-        Authorization: 'token ' + PulumiConfig.getAccessToken(),
-      },
-    });
+  getStackParamsByType(stackType: InfrastructureStackType) {
+    return this.getStackServiceByType(stackType)?.getStackParams();
   }
 
   /**
@@ -284,8 +296,5 @@ export class PulumiService {
     );
   }
 
-  getStackParamsByType(stackType: InfrastructureStackType) {
-    return this.getStackServiceByType(stackType)?.getStackParams();
-  }
   /* End */
 }

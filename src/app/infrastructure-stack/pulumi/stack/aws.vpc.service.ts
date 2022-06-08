@@ -12,6 +12,10 @@ export class AwsVpc_StackService {
     };
   }
 
+  static getStackOutputKeys() {
+    return ['vpcId', 'defaultSecurityGroup'];
+  }
+
   static getStackProgram =
     (params: {vpcName?: string; vpcCidrBlock?: string}, awsRegion: string) =>
     async () => {

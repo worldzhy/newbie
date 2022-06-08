@@ -12,6 +12,10 @@ export class AwsS3_StackService {
     };
   }
 
+  static getStackOutputKeys() {
+    return ['bucketName', 'bucketArn'];
+  }
+
   static getStackProgram =
     (params: {bucketName: string}, awsRegion: string) => async () => {
       let bucketName = params.bucketName + '-' + CommonUtil.randomCode(4);

@@ -16,15 +16,37 @@ export class InfrastructureStackService {
   private pulumiService = new PulumiService();
   private stackManager = InfrastructureStackManager.PULUMI;
 
+  /**
+   * Attention:
+   * This function must be called before 'InfrastructureStackService.create()'.
+   *
+   * @param {string} awsRegion
+   * @returns
+   * @memberof InfrastructureStackService
+   */
   setAwsRegion(awsRegion: string) {
     this.pulumiService.setAwsRegion(awsRegion);
     return this;
   }
 
   async findOne(where: Prisma.InfrastructureStackWhereUniqueInput) {
-    return await this.prisma.infrastructureStack.findUnique({
+    const stack = await this.prisma.infrastructureStack.findUnique({
       where,
     });
+    if (stack === null) {
+      return null;
+    }
+
+    const outputs = await this.pulumiService.getStackOutputs(
+      stack.projectName,
+      stack.stackName,
+      stack.type
+    );
+
+    return {
+      stack: stack,
+      outputs: outputs,
+    };
   }
 
   async findMany(projectName: string) {
@@ -33,6 +55,16 @@ export class InfrastructureStackService {
     });
   }
 
+  /**
+   * Attention:
+   * This function must be called after 'InfrastructureStackService.setAwsRegion()'.
+   *
+   * @param {string} projectName
+   * @param {InfrastructureStackType} stackType
+   * @param {*} stackParams
+   * @returns {(Promise<InfrastructureStack | null>)}
+   * @memberof InfrastructureStackService
+   */
   async create(
     projectName: string,
     stackType: InfrastructureStackType,
@@ -88,6 +120,14 @@ export class InfrastructureStackService {
     }
   }
 
+  /**
+   * NOT READY to USE!
+   *
+   * @param {string} id
+   * @param {*} params
+   * @returns
+   * @memberof InfrastructureStackService
+   */
   async update(id: string, params: any) {
     // [step 1] Update database record of infrastructureStack.
     const infrastructureStack = await this.prisma.infrastructureStack.update({
@@ -179,11 +219,19 @@ export class InfrastructureStackService {
     });
   }
 
+  /**
+   * Call this function if you don't know the input parameters of a infrastructure stack.
+   *
+   * @param {InfrastructureStackType} stackType
+   * @returns
+   * @memberof InfrastructureStackService
+   */
   getStackParamsByType(stackType: InfrastructureStackType) {
     return {
       infrastructureStackParams:
         this.pulumiService.getStackParamsByType(stackType),
     };
   }
+
   /* End */
 }

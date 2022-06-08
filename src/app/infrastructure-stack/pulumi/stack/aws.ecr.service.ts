@@ -11,6 +11,10 @@ export class AwsEcr_StackService {
     };
   }
 
+  static getStackOutputKeys() {
+    return ['repositoryUrl', 'imageUrn'];
+  }
+
   static getStackProgram =
     (params: {repositoryName: string}, awsRegion: string) => async () => {
       // [step 1] Guard statement.

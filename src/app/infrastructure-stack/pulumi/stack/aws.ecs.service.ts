@@ -15,6 +15,10 @@ export class AwsEcs_StackService {
     };
   }
 
+  static getStackOutputKeys() {
+    return ['loadBalancerDnsName'];
+  }
+
   static getStackProgram =
     (
       params: {
@@ -181,7 +185,7 @@ export class AwsEcs_StackService {
       );
 
       return {
-        url: lb.loadBalancer.dnsName,
+        loadBalancerDnsName: lb.loadBalancer.dnsName,
       };
     };
 }
