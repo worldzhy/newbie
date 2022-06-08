@@ -3,7 +3,7 @@ import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {ProjectService} from './project.service';
 import {ValidatorAccountService} from '../../_validator/_validator-account.service';
 import {ValidatorAppService} from '../../_validator/_validator-app.service';
-import {ProjectStatus} from '@prisma/client';
+import {ProjectEnvironmentType, ProjectStatus} from '@prisma/client';
 
 @ApiTags('App - Project')
 @ApiBearerAuth()
@@ -148,6 +148,16 @@ export class ProjectController {
       clientName: body.clientName,
       clientEmail: body.clientEmail,
       status: ProjectStatus.IN_DEVELOPMENT,
+      environments: {
+        createMany: {
+          skipDuplicates: true,
+          data: [
+            {type: ProjectEnvironmentType.DEVELOPMENT},
+            {type: ProjectEnvironmentType.STAGING},
+            {type: ProjectEnvironmentType.PRODUCTION},
+          ],
+        },
+      },
     });
     if (result) {
       return {

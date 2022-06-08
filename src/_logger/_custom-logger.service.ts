@@ -1,6 +1,7 @@
 import {ConsoleLogger} from '@nestjs/common';
 import {SqsService} from '../_aws/_sqs/_sqs.service';
 import {CommonConfig} from '../_config/_common.config';
+import {AwsConfig} from '../_config/_aws.config';
 import {Enum} from '../_config/_common.enum';
 
 /**
@@ -13,7 +14,7 @@ import {Enum} from '../_config/_common.enum';
  */
 export class CustomLoggerService extends ConsoleLogger {
   private env = CommonConfig.getEnvironment();
-  private queueUrl = CommonConfig.getSqsLoggerQueueUrl();
+  private queueUrl = AwsConfig.getSqsLoggerQueueUrl();
   private sqs = new SqsService();
 
   constructor(context: string) {

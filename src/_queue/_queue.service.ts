@@ -1,15 +1,15 @@
 import {PrismaService} from '../_prisma/_prisma.service';
 import {SqsService} from '../_aws/_sqs/_sqs.service';
-import {CommonConfig} from '../_config/_common.config';
+import {AwsConfig} from '../_config/_aws.config';
 import {AwsEnum} from '../_config/_common.enum';
 
 export class QueueService {
   private sqs = new SqsService();
   private prisma = new PrismaService();
   private context = 'QueueService';
-  private emailQueueUrl = CommonConfig.getSqsEmailQueueUrl();
-  private smsQueueUrl = CommonConfig.getSqsSmsQueueUrl();
-  private pinpointSmsSenderId = CommonConfig.getPinpointSmsSenderId();
+  private emailQueueUrl = AwsConfig.getSqsEmailQueueUrl();
+  private smsQueueUrl = AwsConfig.getSqsSmsQueueUrl();
+  private pinpointSmsSenderId = AwsConfig.getPinpointSmsSenderId();
 
   async sendEmail(
     subject: string,

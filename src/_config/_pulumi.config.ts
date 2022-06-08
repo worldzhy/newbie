@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
+import {ProjectEnvironmentType} from '@prisma/client';
 import {PrismaService} from 'src/_prisma/_prisma.service';
-import {Enum} from './_common.enum';
 
 @Injectable()
 export class PulumiConfig {
@@ -17,19 +17,6 @@ export class PulumiConfig {
       return process.env.PULUMI_ACCESS_TOKEN;
     } else {
       return 'environment variable PULUMI_ACCESS_TOKEN is invalid.';
-    }
-  };
-
-  static getAwsRegion = async (projectName: string) => {
-    const prisma = new PrismaService();
-    const project = await prisma.project.findUnique({
-      where: {name: projectName},
-    });
-
-    if (project) {
-      return project.awsRegion;
-    } else {
-      return null;
     }
   };
 }

@@ -1,9 +1,9 @@
-import {Prisma, ProjectStatus} from '@prisma/client';
+import {Prisma, ProjectEnvironmentType, ProjectStatus} from '@prisma/client';
 import {PrismaService} from '../src/_prisma/_prisma.service';
-import {AccountService} from '../src/app/_account/_account.service';
-import {AccountController} from '../src/app/_account/_account.controller';
+import {AccountService} from '../src/app/account/account.service';
+import {AccountController} from '../src/app/account/account.controller';
 import {ProjectService} from '../src/app/project/project.service';
-import {RoleService} from '../src/app/_role/_role.service';
+import {RoleService} from '../src/app/account/role/role.service';
 
 const prisma = new PrismaService();
 // create account controller
@@ -34,6 +34,22 @@ const projects: Prisma.ProjectCreateInput[] = [
   {
     name: 'Galaxy',
     status: ProjectStatus.IN_DEVELOPMENT,
+    environments: {
+      createMany: {
+        skipDuplicates: true,
+        data: [
+          {
+            type: ProjectEnvironmentType.DEVELOPMENT,
+            awsRegion: 'cn-northwest-1',
+          },
+          {type: ProjectEnvironmentType.STAGING, awsRegion: 'cn-northwest-1'},
+          {
+            type: ProjectEnvironmentType.PRODUCTION,
+            awsRegion: 'cn-northwest-1',
+          },
+        ],
+      },
+    },
   },
 ];
 

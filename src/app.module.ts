@@ -3,17 +3,17 @@ import {Module, MiddlewareConsumer} from '@nestjs/common';
 import {HttpMiddleware} from './_http/_http.middleware';
 import {HttpExceptionFilter} from './_http/_http-exception.filter';
 import {AppController} from './app.controller';
-import {AccountModule} from './app/_account/_account.module';
+import {AccountModule} from './app/account/account.module';
 import {AwsModule} from './_aws/_aws.module';
 import {CustomLoggerModule} from './_logger/_custom-logger.module';
-import {InfrastructureStackModule} from './app/infrastructure-stack/infrastructure-stack.module';
-import {OrganizationModule} from './app/_organization/_organization.module';
-import {ProfileModule} from './app/_profile/_profile.module';
+import {InfrastructureStackModule} from './app/project/infrastructure-stack/infrastructure-stack.module';
+import {OrganizationModule} from './app/account/organization/organization.module';
+import {ProfileModule} from './app/account/profile/profile.module';
 import {ProjectModule} from './app/project/project.module';
 import {QueueModule} from './_queue/_queue.module';
-import {UserModule} from './app/_user/_user.module';
+import {UserModule} from './app/account/user/user.module';
 import {ValidatorModule} from './_validator/_validator.module';
-import {VerificationCodeModule} from './app/_verification-code/_verification-code.module';
+import {VerificationCodeModule} from './app/account/verification-code/verification-code.module';
 
 @Module({
   imports: [

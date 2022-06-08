@@ -176,17 +176,64 @@ model SqsMessageBatch {
   createdAt     DateTime @default(now())
 }
 
-model InfrastructureStack {
+
+model Project {
   id                  String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  manager             InfrastructureStackManager
-  type                InfrastructureStackType
-  status              InfrastructureStackStatus
+  name                String @unique
+  status              ProjectStatus
+  clientName          String?
+  clientEmail         String?
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
-  // We use 'projectName' & 'stackName' to identify infrastructure stack(cloud resource stack).
-  projectName         String
-  stackName           String @unique
-  stackResult         Json?
+  environments        ProjectEnvironment[]
+  infrastructureStack InfrastructureStack[]
+  microservices       Microservice[]
+}
+  enum ProjectStatus  {
+    IN_DEVELOPMENT
+    IN_MAINTENANCE
+    ON_HOLD
+    END
+  }
+
+model ProjectEnvironment {
+  type                ProjectEnvironmentType
+  awsAccountId        String?
+  awsIamUsername      String?
+  awsIamPassword      String? // hash
+  awsAccessKeyId      String?
+  awsSecretAccessKey  String? // hash
+  awsRegion           String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  projectId           String @db.Uuid
+  project             Project @relation(fields: [projectId], references: [id]) 
+  @@id([type, projectId])
+}
+  enum ProjectEnvironmentType {
+    DEVELOPMENT
+    STAGING
+    PRODUCTION
+  }
+
+model InfrastructureStack {
+  id                  String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                String @unique
+  params              Json?
+  type                InfrastructureStackType
+  status              InfrastructureStackStatus
+  manager             InfrastructureStackManager
+  pulumiProjectName   String
+  // We use 'stackProjectName' & 'name' to identify infrastructure stack(cloud resource stack).
+  // The stackProject Name is a concept of Pulumi. We set it with Project->name.
+  upResult            Json?
+  destroyResult       Json?
+  deleteResult        Json?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  projectId           String @db.Uuid
+  project             Project @relation(fields: [projectId], references: [id]) 
+  environment         ProjectEnvironmentType
 }
   enum InfrastructureStackManager {
     PULUMI
@@ -207,78 +254,28 @@ model InfrastructureStack {
     AWS_WAF
   }
   enum InfrastructureStackStatus {
-    PARAMS_CORRECT
-    PARAMS_INCORRECT
-    CREATING
-    CREATE_SUCCEEDED
-    CREATE_FAILED
-    UPDATING
-    UPDATE_SUCCEEDED
-    UPDATE_FAILED
+    PREPARING
+    BUILDING
+    BUILD_SUCCEEDED
+    BUILD_FAILED
     DESTROYING
     DESTROY_SUCCEEDED
     DESTROY_FAILED
+    DELETED
   }
   
-
-model Project {
-  id                  String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                String @unique
-  clientName          String?
-  clientEmail         String?
-  awsAccountId        String?
-  awsIamUsername      String?
-  awsIamPassword      String? // hash
-  awsAccessKeyId      String?
-  awsSecretAccessKey  String? // hash
-  awsRegion           String?
-  status              ProjectStatus
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  projectEnvironments ProjectEnvironment[]
-  microServices       Microservice[]
-}
-  enum ProjectStatus  {
-    IN_DEVELOPMENT
-    IN_MAINTENANCE
-    ON_HOLD
-    END
-  }
-
-model ProjectEnvironment {
-  id          String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  environment ProjectEnvironmentType
-  variables   Json
-  status      ProjectEnvironmentStatus
-  createdAt   DateTime @default(now())
-  projectId   String @db.Uuid
-  project     Project @relation(fields: [projectId], references: [id]) 
-}
-  enum ProjectEnvironmentType {
-    DEVELOPMENT
-    STAGING
-    PRODUCTION
-  }
-  enum ProjectEnvironmentStatus {
-    ACTIVE
-    INACTIVE
-  }
-
 model Microservice {
   id                  String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  environment         String // refer to _common.enum.ts -> environment (development / staging / production)
-  awsAccessKeyId      String? // overwrite Project.awsAccessKeyID
-  awsSecretAccessKey  String? // hash, overwrite Project.awsSecretAccessKey
-  awsRegion           String? // // overwrite Project.awsRegion
+  name                String @unique
+  status              MicroserviceStatus
+  environment         ProjectEnvironmentType
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
   projectId           String @db.Uuid
   project             Project @relation(fields: [projectId], references: [id])
-  infrastructureStackId             String? @db.Uuid
-  infrastructureStackType           InfrastructureStackType
-  infrastructureStackParams         Json?
-  infrastructureStackStatus         InfrastructureStackStatus
-  infrastructureStackUpResult       Json?
-  infrastructureStackDestroyResult  Json?
-  infrastructureStackDeleteResult   Json?
-}
+}             
+  enum MicroserviceStatus {
+    PREPARING
+    RUNNING
+    STOPPED
+  }

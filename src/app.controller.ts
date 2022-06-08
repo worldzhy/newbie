@@ -1,6 +1,6 @@
 import {Controller, Get} from '@nestjs/common';
 import {ApiTags} from '@nestjs/swagger';
-import {Public} from './app/_auth/_auth-jwt/_auth-jwt.decorator';
+import {Public} from './app/account/auth/auth-jwt/auth-jwt.decorator';
 
 @ApiTags('App')
 @Controller()
