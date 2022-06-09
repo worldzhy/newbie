@@ -98,7 +98,7 @@ export class AwsVpcHipaa_StackService {
       );
 
       uniqueResourceName = 'igw-' + CommonUtil.randomCode(4);
-      const vpcInternetGateway = new aws.ec2.InternetGateway(
+      new aws.ec2.InternetGateway(
         uniqueResourceName,
         {
           vpcId: vpc.vpcId,

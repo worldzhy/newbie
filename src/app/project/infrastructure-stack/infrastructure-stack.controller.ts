@@ -43,11 +43,11 @@ export class InfrastructureStackController {
    * @returns
    * @memberof InfrastructureStackController
    */
-  @Get('infrastructure-stacks/projects/:projectId/:environment')
+  @Get('infrastructure-stacks/:projectId/:environment')
   @ApiParam({
     name: 'projectId',
     schema: {type: 'string'},
-    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
+    example: 'a9538079-2781-4e92-998b-293514d4a67b',
   })
   @ApiParam({
     name: 'environment',
@@ -55,13 +55,10 @@ export class InfrastructureStackController {
     example: 'development',
   })
   async getStacks(
-    @Param('projectName') projectId: string,
+    @Param('projectId') projectId: string,
     @Param('environment') environment: ProjectEnvironmentType
   ) {
-    return await this.stackService.findMany({
-      projectId: projectId,
-      environment: environment,
-    });
+    return await this.stackService.findMany({projectId, environment});
   }
 
   /**
@@ -257,9 +254,9 @@ export class InfrastructureStackController {
   /**
    * Destroy infrastructure stack.
    *
-   * @param {string} microserviceId
+   * @param {string} infrastructureStackId
    * @returns
-   * @memberof MicroserviceController
+   * @memberof InfrastructureStackController
    */
   @Delete('infrastructure-stacks/:infrastructureStackId/destroy')
   @ApiParam({

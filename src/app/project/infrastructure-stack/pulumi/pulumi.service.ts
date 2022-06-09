@@ -121,9 +121,7 @@ export class PulumiService {
    *
    * @param {string} projectName
    * @param {string} stackName
-   * @param {InfrastructureStackType} stackType
-   * @param {*} stackParams
-   * @returns {(Promise<DestroyResult | undefined>)}
+   * @returns {Promise<DestroyResult>}
    * @memberof PulumiService
    */
   async destroy(
@@ -143,10 +141,8 @@ export class PulumiService {
   /**
    * See the detail https://www.pulumi.com/docs/reference/service-rest-api/#delete-stack
    *
-   * @param {string} pulumiOrgName
-   * @param {string} stackType
+   * @param {string} projectName
    * @param {string} stackName
-   * @returns
    * @memberof PulumiService
    */
   async delete(projectName: string, stackName: string) {

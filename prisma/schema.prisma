@@ -178,16 +178,16 @@ model SqsMessageBatch {
 
 
 model Project {
-  id                  String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                String @unique
-  status              ProjectStatus
-  clientName          String?
-  clientEmail         String?
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  environments        ProjectEnvironment[]
-  infrastructureStack InfrastructureStack[]
-  microservices       Microservice[]
+  id                    String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                  String @unique
+  status                ProjectStatus
+  clientName            String?
+  clientEmail           String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  environments          ProjectEnvironment[]
+  infrastructureStacks  InfrastructureStack[]
+  microservices         Microservice[]
 }
   enum ProjectStatus  {
     IN_DEVELOPMENT

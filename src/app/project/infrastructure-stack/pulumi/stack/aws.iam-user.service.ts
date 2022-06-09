@@ -1,5 +1,4 @@
 import {Injectable} from '@nestjs/common';
-import * as pulumi from '@pulumi/pulumi';
 import * as aws from '@pulumi/aws';
 import {CommonUtil} from '../../../../../_util/_common.util';
 import {PulumiUtil} from '../pulumi.util';
@@ -91,7 +90,7 @@ export class AwsIamUser_StackService {
           serviceName: 'codecommit.amazonaws.com',
           userName: iamUser.name,
         },
-        PulumiUtil.getResourceOptions(awsRegion, ['servicePassword'])
+        PulumiUtil.getResourceOptions(awsRegion)
       );
 
       return {

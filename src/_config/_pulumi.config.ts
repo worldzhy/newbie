@@ -1,6 +1,4 @@
 import {Injectable} from '@nestjs/common';
-import {ProjectEnvironmentType} from '@prisma/client';
-import {PrismaService} from 'src/_prisma/_prisma.service';
 
 @Injectable()
 export class PulumiConfig {

@@ -11,7 +11,8 @@ export class AwsEcs_StackService {
     return {
       clusterName: 'development',
       repositoryName: 'nodejs',
-      desiredTaskCount: 5,
+      maxTaskCount: 100,
+      minTaskCount: 1,
     };
   }
 
@@ -32,7 +33,6 @@ export class AwsEcs_StackService {
       params: {
         clusterName?: string;
         repositoryName: string;
-        desiredTaskCount?: number;
         minTaskCount?: number;
         maxTaskCount?: number;
       },
@@ -41,7 +41,6 @@ export class AwsEcs_StackService {
     async () => {
       let clusterName = params.clusterName;
       let repositoryName = params.repositoryName;
-      let desiredTaskCount = params.desiredTaskCount;
       let minTaskCount = params.minTaskCount;
       let maxTaskCount = params.maxTaskCount;
 
@@ -59,9 +58,6 @@ export class AwsEcs_StackService {
         repositoryName.trim() === ''
       ) {
         repositoryName = 'default';
-      }
-      if (desiredTaskCount === undefined || desiredTaskCount === null) {
-        desiredTaskCount = 1;
       }
       if (minTaskCount === undefined || minTaskCount === null) {
         minTaskCount = 1;
@@ -119,7 +115,7 @@ export class AwsEcs_StackService {
         {
           name: fargateServiceName,
           cluster: cluster.arn,
-          desiredCount: desiredTaskCount,
+          desiredCount: minTaskCount + 1,
           deploymentMinimumHealthyPercent: 100,
           deploymentMaximumPercent: 500,
           taskDefinition: taskDefinition.taskDefinition.arn,
@@ -144,7 +140,7 @@ export class AwsEcs_StackService {
       // [step 5] Create scaling up and scaling down policy.
       uniqueResourceName =
         'ecs-auto-scaling-up-policy-' + CommonUtil.randomCode(4);
-      const scaleUpPolicy = new aws.appautoscaling.Policy(
+      new aws.appautoscaling.Policy(
         uniqueResourceName,
         {
           policyType: 'StepScaling',
@@ -169,7 +165,7 @@ export class AwsEcs_StackService {
 
       uniqueResourceName =
         'ecs-auto-scaling-down-policy-' + CommonUtil.randomCode(4);
-      const scaleDownPolicy = new aws.appautoscaling.Policy(
+      new aws.appautoscaling.Policy(
         uniqueResourceName,
         {
           policyType: 'StepScaling',

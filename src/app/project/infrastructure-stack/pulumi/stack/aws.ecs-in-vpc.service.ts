@@ -12,7 +12,8 @@ export class AwsEcsInVpc_StackService {
       vpcId: 'vpc-086e9a2695d4f7001',
       clusterName: 'development',
       repositoryName: 'nodejs',
-      desiredTaskCount: 5,
+      maxTaskCount: 100,
+      minTaskCount: 1,
     };
   }
 
@@ -34,7 +35,6 @@ export class AwsEcsInVpc_StackService {
         vpcId?: string;
         clusterName?: string;
         repositoryName: string;
-        desiredTaskCount?: number;
         minTaskCount?: number;
         maxTaskCount?: number;
       },
@@ -44,7 +44,6 @@ export class AwsEcsInVpc_StackService {
       let vpcId = params.vpcId;
       let clusterName = params.clusterName;
       let repositoryName = params.repositoryName;
-      let desiredTaskCount = params.desiredTaskCount;
       let minTaskCount = params.minTaskCount;
       let maxTaskCount = params.maxTaskCount;
 
@@ -66,9 +65,6 @@ export class AwsEcsInVpc_StackService {
       ) {
         repositoryName = 'default';
       }
-      if (desiredTaskCount === undefined || desiredTaskCount === null) {
-        desiredTaskCount = 1;
-      }
       if (minTaskCount === undefined || minTaskCount === null) {
         minTaskCount = 1;
       }
@@ -80,7 +76,7 @@ export class AwsEcsInVpc_StackService {
       const subnets = await aws.ec2.getSubnets({
         filters: [{name: 'vpc-id', values: [vpcId]}],
       });
-      const securityGroups = await aws.ec2.getSecurityGroups({
+      await aws.ec2.getSecurityGroups({
         filters: [
           // Check out https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-security-groups.html
           {
@@ -120,7 +116,7 @@ export class AwsEcsInVpc_StackService {
             // securityGroups: securityGroups.ids,
           },
           cluster: cluster.arn,
-          desiredCount: desiredTaskCount,
+          desiredCount: minTaskCount + 1,
           deploymentMinimumHealthyPercent: 100,
           deploymentMaximumPercent: 500,
           taskDefinitionArgs: {
@@ -143,7 +139,7 @@ export class AwsEcsInVpc_StackService {
 
       // Config auto scaling for container cluster.
       uniqueResourceName = 'ecs-target-' + CommonUtil.randomCode(4);
-      const ecsTarget = new aws.appautoscaling.Target(
+      new aws.appautoscaling.Target(
         uniqueResourceName,
         {
           maxCapacity: maxTaskCount,

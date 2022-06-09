@@ -4,7 +4,9 @@ import validator from 'validator';
 @Injectable()
 export class ValidatorAwsService {
   static verifyRegion(region: string) {
-    return true;
+    const pattern =
+      /(us(-gov)?|ap|ca|cn|eu|sa)-(central|(north|south)?(east|west)?)-\d/g;
+    return pattern.test(region);
   }
 
   /**

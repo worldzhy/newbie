@@ -205,7 +205,7 @@ export class AwsWaf_StackService {
 
       // [step 3] Associate web ACL with application loadbalancer.
       uniqueResourceName = 'waf-acl-association-' + CommonUtil.randomCode(4);
-      const webAclAssociation = new aws.wafv2.WebAclAssociation(
+      new aws.wafv2.WebAclAssociation(
         uniqueResourceName,
         {
           resourceArn: params.applicationLoadBalancerArn,

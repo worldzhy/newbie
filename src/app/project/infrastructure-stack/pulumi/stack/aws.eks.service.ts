@@ -114,7 +114,7 @@ export class AwsEks_StackService {
       uniqueResourceName =
         `${appName}-k8s-deployment-` + CommonUtil.randomCode(4);
       const appLabels = {appClass: appName};
-      const deployment = new k8s.apps.v1.Deployment(
+      new k8s.apps.v1.Deployment(
         uniqueResourceName,
         {
           metadata: {labels: appLabels},

@@ -109,7 +109,7 @@ export class VerificationCodeController {
     const verificationCode = others;
 
     // [step 4: start] Send verification code.
-    let result;
+    let result: {data: object | null; err: object | null};
     const messageService = new QueueService();
     if (byEmail) {
       // Send verification code to user's email
@@ -124,7 +124,9 @@ export class VerificationCodeController {
       result = await messageService.sendSms(content, phone);
     } else {
       // No chance to arrive here.
+      result = {data: null, err: null};
     }
+
     if (result.data) {
       // [step 4: successful]
       return {

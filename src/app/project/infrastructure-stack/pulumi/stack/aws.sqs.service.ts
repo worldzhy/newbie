@@ -64,7 +64,7 @@ export class AwsSqs_StackService {
 
       // Set the access policy for the bucket so all objects are readable.
       uniqueResourceName = 's3bucket-policy-' + CommonUtil.randomCode(4);
-      const bucketPolicy = new aws.s3.BucketPolicy(
+      new aws.s3.BucketPolicy(
         uniqueResourceName,
         {
           bucket: bucket.bucket, // Refer to the bucket created earlier.

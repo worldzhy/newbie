@@ -20,7 +20,7 @@ export class MicroserviceController {
    * @returns
    * @memberof MicroserviceController
    */
-  @Get('microservices/projects/:projectId/:environment')
+  @Get('microservices/:projectId/:environment')
   @ApiParam({
     name: 'projectId',
     schema: {type: 'string'},
@@ -32,7 +32,7 @@ export class MicroserviceController {
     example: 'development',
   })
   async getMicroservices(
-    @Param('projectName') projectId: string,
+    @Param('projectId') projectId: string,
     @Param('environment') environment: ProjectEnvironmentType
   ) {
     return this.microserviceService.findMany({projectId, environment});
