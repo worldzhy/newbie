@@ -1,16 +1,11 @@
 import {Controller, Get, Post, Delete, Param, Body} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {
-  InfrastructureStackStatus,
-  InfrastructureStackType,
-  MicroserviceStatus,
-  ProjectEnvironmentType,
-} from '@prisma/client';
+import {MicroserviceStatus, ProjectEnvironmentType} from '@prisma/client';
 import {MicroserviceService} from './microservice.service';
 import {ProjectService} from '../project.service';
 import {InfrastructureStackService} from '../infrastructure-stack/infrastructure-stack.service';
 
-@ApiTags('App - Microservice')
+@ApiTags('App / Project / Microservice')
 @ApiBearerAuth()
 @Controller()
 export class MicroserviceController {

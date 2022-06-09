@@ -5,7 +5,7 @@ import {ValidatorAccountService} from '../../_validator/_validator-account.servi
 import {ValidatorAppService} from '../../_validator/_validator-app.service';
 import {ProjectEnvironmentType, ProjectStatus} from '@prisma/client';
 
-@ApiTags('App - Project')
+@ApiTags('App / Project')
 @ApiBearerAuth()
 @Controller()
 export class ProjectController {

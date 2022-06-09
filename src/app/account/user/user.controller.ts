@@ -3,7 +3,7 @@ import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {UserService} from './user.service';
 import {ValidatorAccountService} from '../../../_validator/_validator-account.service';
 
-@ApiTags('Account - User')
+@ApiTags('App / Account / User')
 @ApiBearerAuth()
 @Controller()
 export class UserController {

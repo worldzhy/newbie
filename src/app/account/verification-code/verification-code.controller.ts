@@ -7,7 +7,7 @@ import {ValidatorAccountService} from '../../../_validator/_validator-account.se
 import {VerificationCodeService} from './verification-code.service';
 import {VerificationCodeUse} from '@prisma/client';
 
-@ApiTags('Account - Verification Code')
+@ApiTags('App / Account / Verification Code')
 @Controller()
 export class VerificationCodeController {
   private verificationCodeService = new VerificationCodeService();

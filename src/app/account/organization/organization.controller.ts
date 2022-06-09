@@ -3,7 +3,7 @@ import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {Prisma} from '@prisma/client';
 import {OrganizationService} from './organization.service';
 
-@ApiTags('Account - Organization')
+@ApiTags('App / Account / Organization')
 @ApiBearerAuth()
 @Controller()
 export class OrganizationController {

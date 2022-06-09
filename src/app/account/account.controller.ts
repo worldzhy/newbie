@@ -8,7 +8,7 @@ import {AccountService} from './account.service';
 import {UserService} from './user/user.service';
 import {ValidatorAccountService} from '../../_validator/_validator-account.service';
 
-@ApiTags('Account')
+@ApiTags('App / Account')
 @Controller()
 export class AccountController {
   private userService = new UserService();

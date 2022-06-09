@@ -2,7 +2,7 @@ import {Controller, Get, Param} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth} from '@nestjs/swagger';
 import {RoleService} from './role.service';
 
-@ApiTags('App - Role')
+@ApiTags('App / Account / Role')
 @ApiBearerAuth()
 @Controller()
 export class RoleController {

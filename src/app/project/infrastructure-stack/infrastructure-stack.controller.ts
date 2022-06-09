@@ -10,7 +10,7 @@ import {
 } from '@prisma/client';
 import {CommonUtil} from 'src/_util/_common.util';
 
-@ApiTags('App - Infrastructure Stack')
+@ApiTags('App / Project / Infrastructure Stack')
 @ApiBearerAuth()
 @Controller()
 export class InfrastructureStackController {
