@@ -1,7 +1,6 @@
 import {Controller, Get, Post, Delete, Param, Body} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {InfrastructureStackService} from './infrastructure-stack.service';
-import {EnvironmentService} from '../environment/environment.service';
 import {
   InfrastructureStackManager,
   InfrastructureStackStatus,
@@ -15,7 +14,6 @@ import {CommonUtil} from 'src/_util/_common.util';
 @Controller()
 export class InfrastructureStackController {
   private stackService = new InfrastructureStackService();
-  private environmentService = new EnvironmentService();
 
   @Get('infrastructure-stacks/types')
   async getStackTypes() {
@@ -151,6 +149,63 @@ export class InfrastructureStackController {
   }
 
   /**
+   * Update a stack.
+   *
+   * @param {string} infrastructureStackId
+   * @param {{
+   *       params: object;
+   *     }} body
+   * @returns
+   * @memberof InfrastructureStackController
+   */
+  @Post('infrastructure-stacks/:infrastructureStackId')
+  @ApiParam({
+    name: 'infrastructureStackId',
+    schema: {type: 'string'},
+    example: 'ff337f2d-d3a5-4f2e-be16-62c75477b605',
+  })
+  @ApiBody({
+    description: 'Create infrastructure stack.',
+    examples: {
+      a: {
+        summary: '1. AWS VPC stack',
+        value: {
+          params: {
+            vpcName: 'pulumi-test-vpc-modified',
+            vpcCidrBlock: '10.21.0.0/16',
+          },
+        },
+      },
+      b: {
+        summary: '2. Database stack',
+        value: {
+          params: {
+            instanceName: 'postgres-default-modified',
+            instanceClass: 'db.t3.small',
+          },
+        },
+      },
+    },
+  })
+  async updateStack(
+    @Param('infrastructureStackId') infrastructureStackId: string,
+    @Body()
+    body: {
+      params: object;
+    }
+  ) {
+    const {params} = body;
+
+    return await this.stackService.update(
+      {id: infrastructureStackId},
+      {
+        params: params,
+        status: InfrastructureStackStatus.PREPARING,
+      }
+    );
+  }
+
+  /**
    * Build infrastructure stack.
    *
    * @param {string} infrastructureStackId
@@ -196,21 +251,7 @@ export class InfrastructureStackController {
     }
 
     // [step 2] Destroy the infrastructure stack.
-    const environment = await this.environmentService.findOne({
-      type_projectId: {type: stack.environment, projectId: stack.projectId},
-    });
-    if (environment?.awsRegion) {
-      return await this.stackService
-        .setAwsRegion(environment.awsRegion)
-        .build(infrastructureStackId);
-    } else {
-      return {
-        data: null,
-        err: {
-          message: 'Missing AWS region.',
-        },
-      };
-    }
+    return await this.stackService.build(infrastructureStackId);
   }
 
   /**
@@ -294,10 +335,14 @@ export class InfrastructureStackController {
         err: {message: 'Invalid infrastructureStackId.'},
       };
     }
-    if (
-      stack.upResult !== null &&
-      stack.status !== InfrastructureStackStatus.DESTROY_SUCCEEDED
-    ) {
+    if (stack.upResult === null) {
+      return {
+        data: null,
+        err: {
+          message: 'The stack has not been built.',
+        },
+      };
+    } else if (stack.status !== InfrastructureStackStatus.DESTROY_SUCCEEDED) {
       return {
         data: null,
         err: {

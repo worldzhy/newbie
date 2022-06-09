@@ -40,11 +40,13 @@ const projects: Prisma.ProjectCreateInput[] = [
         data: [
           {
             type: ProjectEnvironmentType.DEVELOPMENT,
+            awsProfile: 'Galaxy',
             awsRegion: 'cn-northwest-1',
           },
           {type: ProjectEnvironmentType.STAGING, awsRegion: 'cn-northwest-1'},
           {
             type: ProjectEnvironmentType.PRODUCTION,
+            awsProfile: 'Galaxy',
             awsRegion: 'cn-northwest-1',
           },
         ],

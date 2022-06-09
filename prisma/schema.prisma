@@ -201,6 +201,7 @@ model ProjectEnvironment {
   awsAccountId        String?
   awsIamUsername      String?
   awsIamPassword      String? // hash
+  awsProfile          String?
   awsAccessKeyId      String?
   awsSecretAccessKey  String? // hash
   awsRegion           String?
@@ -228,7 +229,6 @@ model InfrastructureStack {
   // The stackProject Name is a concept of Pulumi. We set it with Project->name.
   upResult            Json?
   destroyResult       Json?
-  deleteResult        Json?
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
   projectId           String @db.Uuid

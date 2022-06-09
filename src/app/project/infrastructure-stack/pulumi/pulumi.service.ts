@@ -24,14 +24,33 @@ import {AwsWaf_StackService} from './stack/aws.waf.service';
 @Injectable()
 export class PulumiService {
   private pulumiAwsVersion = PulumiConfig.getAwsVersion();
+  private awsProfile: string;
   private awsRegion: string;
 
-  /* constructor(config: {projectName: string; awsConfig: {awsRegion: string}}) {
-    this.projectName = config.projectName;
-    this.awsRegion = config.awsConfig.awsRegion;
-  } */
+  /**
+   * Attention:
+   * This function must be called before 'PulumiService.build()'.
+   *
+   * @param {string} awsProfile
+   * @returns
+   * @memberof PulumiService
+   */
+  setAwsProfile(awsProfile: string) {
+    this.awsProfile = awsProfile;
+    return this;
+  }
+
+  /**
+   * Attention:
+   * This function must be called before 'PulumiService.build()'.
+   *
+   * @param {string} awsRegion
+   * @returns
+   * @memberof PulumiService
+   */
   setAwsRegion(awsRegion: string) {
     this.awsRegion = awsRegion;
+    return this;
   }
 
   /**
@@ -92,7 +111,7 @@ export class PulumiService {
     await stack.workspace.installPlugin('aws', this.pulumiAwsVersion);
     await stack.setAllConfig({
       'aws:region': {value: this.awsRegion},
-      'aws:profile': {value: stackProjectName},
+      'aws:profile': {value: this.awsProfile},
     });
     return await stack.up({onOutput: console.log}); // pulumiStackResult.summary.result is one of ['failed', 'in-progress', 'not-started', 'succeeded']
   }
@@ -109,24 +128,12 @@ export class PulumiService {
    */
   async destroy(
     projectName: string,
-    stackName: string,
-    stackType: InfrastructureStackType,
-    stackParams: any
-  ): Promise<DestroyResult | undefined> {
-    // [step 1] Get Pulumi stack program.
-    const program: PulumiFn | undefined = this.getStackProgramByType(
-      stackType,
-      stackParams
-    );
-
-    // [step 2] Destroy the stack.
-    if (program === undefined) {
-      return undefined;
-    }
+    stackName: string
+  ): Promise<DestroyResult> {
     const args: InlineProgramArgs = {
       projectName,
       stackName,
-      program,
+      program: async () => {},
     };
 
     const stack = await LocalWorkspace.selectStack(args);
@@ -142,39 +149,15 @@ export class PulumiService {
    * @returns
    * @memberof PulumiService
    */
-  async delete(
-    projectName: string,
-    stackName: string,
-    stackType: InfrastructureStackType
-  ) {
-    if (null === this.getStackProgramByType(stackType, {})) {
-      return {err: {message: 'Invalid stack type.'}};
-    }
+  async delete(projectName: string, stackName: string) {
+    const args: InlineProgramArgs = {
+      projectName,
+      stackName,
+      program: async () => {},
+    };
 
-    const url = `https://api.pulumi.com/api/stacks/worldzhy/${projectName}/${stackName}`;
-    try {
-      const response = await axios.delete(url, {
-        maxRedirects: 5,
-        headers: {
-          Accept: 'application/vnd.pulumi+8',
-          'Content-Type': 'application/json',
-          Authorization: 'token ' + PulumiConfig.getAccessToken(),
-        },
-      });
-
-      return {
-        status: response.status,
-        statusText: response.statusText,
-        config: response.config,
-        data: response.data,
-      };
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error(error);
-      } else {
-        console.error(error);
-      }
-    }
+    const stack = await LocalWorkspace.selectStack(args);
+    await stack.workspace.removeStack(stack.name);
   }
 
   /**

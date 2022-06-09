@@ -1,6 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {PrismaService} from '../../../_prisma/_prisma.service';
 import {PulumiService} from './pulumi/pulumi.service';
+import {EnvironmentService} from '../environment/environment.service';
 import {
   InfrastructureStack,
   InfrastructureStackManager,
@@ -13,6 +14,7 @@ import {
 export class InfrastructureStackService {
   private prisma = new PrismaService();
   private pulumiService = new PulumiService();
+  private environmentService = new EnvironmentService();
   private stackManager = InfrastructureStackManager.PULUMI;
 
   /**
@@ -38,19 +40,6 @@ export class InfrastructureStackService {
    */
   checkStackParams(stackType: InfrastructureStackType, params: any) {
     return this.pulumiService.checkStackParams(stackType, params);
-  }
-
-  /**
-   * Attention:
-   * This function must be called before 'InfrastructureStackService.create()'.
-   *
-   * @param {string} awsRegion
-   * @returns
-   * @memberof InfrastructureStackService
-   */
-  setAwsRegion(awsRegion: string) {
-    this.pulumiService.setAwsRegion(awsRegion);
-    return this;
   }
 
   async findOne(where: Prisma.InfrastructureStackWhereUniqueInput) {
@@ -122,14 +111,31 @@ export class InfrastructureStackService {
     });
 
     // [step 2] Start launching infrastructureStack.
+    const environment = await this.environmentService.findOne({
+      type_projectId: {
+        type: infrastructureStack.environment,
+        projectId: infrastructureStack.projectId,
+      },
+    });
+    if (!environment?.awsProfile || !environment.awsRegion) {
+      return {
+        data: null,
+        err: {
+          message: 'Missing AWS profile or region.',
+        },
+      };
+    }
     let upResult: any = undefined;
     if (this.stackManager === InfrastructureStackManager.PULUMI) {
-      upResult = await this.pulumiService.build(
-        infrastructureStack.pulumiProjectName,
-        infrastructureStack.name,
-        infrastructureStack.type,
-        infrastructureStack.params
-      );
+      upResult = await this.pulumiService
+        .setAwsProfile(environment.awsProfile)
+        .setAwsRegion(environment.awsRegion)
+        .build(
+          infrastructureStack.pulumiProjectName,
+          infrastructureStack.name,
+          infrastructureStack.type,
+          infrastructureStack.params
+        );
     } // else if (this.manager === InfrastructureManager.XXX) {}
     else {
       return null;
@@ -172,9 +178,7 @@ export class InfrastructureStackService {
     if (this.stackManager === InfrastructureStackManager.PULUMI) {
       destroyResult = await this.pulumiService.destroy(
         infrastructureStack.pulumiProjectName,
-        infrastructureStack.name,
-        infrastructureStack.type,
-        {}
+        infrastructureStack.name
       );
     } /* else if (this.manager === InfrastructureManager.XXX) {
 } */ else {
@@ -212,12 +216,10 @@ export class InfrastructureStackService {
     if (infrastructureStack === null) {
       return null;
     }
-    let deleteResult;
     if (this.stackManager === InfrastructureStackManager.PULUMI) {
-      deleteResult = await this.pulumiService.delete(
+      await this.pulumiService.delete(
         infrastructureStack.pulumiProjectName,
-        infrastructureStack.name,
-        infrastructureStack.type
+        infrastructureStack.name
       );
     } /* else if (this.manager === InfrastructureManager.XXX) {
 } */ else {
@@ -229,7 +231,6 @@ export class InfrastructureStackService {
       where: {id: infrastructureStack.id},
       data: {
         status: InfrastructureStackStatus.DELETED,
-        deleteResult: deleteResult,
       },
     });
   }
