@@ -25,11 +25,13 @@ import {AwsWaf_StackService} from './stack/aws.waf.service';
 export class PulumiService {
   private pulumiAwsVersion = PulumiConfig.getAwsVersion();
   private awsProfile: string;
+  private awsAccessKey: string;
+  private awsSecretKey: string;
   private awsRegion: string;
 
   /**
    * Attention:
-   * This function must be called before 'PulumiService.build()'.
+   * These 4 functions must be called before 'PulumiService.build()'.
    *
    * @param {string} awsProfile
    * @returns
@@ -39,15 +41,14 @@ export class PulumiService {
     this.awsProfile = awsProfile;
     return this;
   }
-
-  /**
-   * Attention:
-   * This function must be called before 'PulumiService.build()'.
-   *
-   * @param {string} awsRegion
-   * @returns
-   * @memberof PulumiService
-   */
+  setAwsAccessKey(awsAccessKey: string) {
+    this.awsAccessKey = awsAccessKey;
+    return this;
+  }
+  setAwsSecretKey(awsSecretKey: string) {
+    this.awsSecretKey = awsSecretKey;
+    return this;
+  }
   setAwsRegion(awsRegion: string) {
     this.awsRegion = awsRegion;
     return this;
@@ -110,8 +111,10 @@ export class PulumiService {
     const stack = await LocalWorkspace.createStack(args);
     await stack.workspace.installPlugin('aws', this.pulumiAwsVersion);
     await stack.setAllConfig({
-      'aws:region': {value: this.awsRegion},
       'aws:profile': {value: this.awsProfile},
+      'aws:accessKey': {value: this.awsAccessKey},
+      'aws:secretKey': {value: this.awsSecretKey},
+      'aws:region': {value: this.awsRegion},
     });
     return await stack.up({onOutput: console.log}); // pulumiStackResult.summary.result is one of ['failed', 'in-progress', 'not-started', 'succeeded']
   }

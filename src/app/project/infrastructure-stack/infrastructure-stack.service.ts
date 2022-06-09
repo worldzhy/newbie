@@ -117,7 +117,12 @@ export class InfrastructureStackService {
         projectId: infrastructureStack.projectId,
       },
     });
-    if (!environment?.awsProfile || !environment.awsRegion) {
+    if (
+      !environment?.awsProfile ||
+      !environment.awsAccessKeyId ||
+      !environment.awsSecretAccessKey ||
+      !environment.awsRegion
+    ) {
       return {
         data: null,
         err: {
@@ -129,6 +134,8 @@ export class InfrastructureStackService {
     if (this.stackManager === InfrastructureStackManager.PULUMI) {
       upResult = await this.pulumiService
         .setAwsProfile(environment.awsProfile)
+        .setAwsAccessKey(environment.awsAccessKeyId)
+        .setAwsSecretKey(environment.awsSecretAccessKey)
         .setAwsRegion(environment.awsRegion)
         .build(
           infrastructureStack.pulumiProjectName,
