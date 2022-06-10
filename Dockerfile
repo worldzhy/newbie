@@ -9,10 +9,10 @@ RUN apt update
 # Install nodejs
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
 RUN curl -s https://deb.nodesource.com/setup_18.x | bash 
-RUN apt install -y nodejs
+RUN apt install -y nodejs npm
 
 # Install nestjs
-RUN npm i -g @nestjs/cli -y
+RUN npm install -y -g @nestjs/cli
 
 # Install pulumi
 RUN curl -fsSL https://get.pulumi.com | sh 
