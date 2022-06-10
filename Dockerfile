@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu
 WORKDIR /home/ubuntu/
 ADD . /home/ubuntu/
 
