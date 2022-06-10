@@ -1,6 +1,6 @@
 FROM ubuntu:20.04
-WORKDIR /
-ADD . /
+WORKDIR /home/ubuntu/
+ADD . /home/ubuntu/
 
 # Install curl
 RUN sudo apt install -y curl
