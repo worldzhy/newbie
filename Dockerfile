@@ -3,7 +3,7 @@ WORKDIR /home/ubuntu/
 ADD . /home/ubuntu/
 
 # Install curl
-RUN apt-get install -y curl
+#RUN apt-get install -y curl
 
 # Install nodejs
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
