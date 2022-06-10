@@ -3,12 +3,12 @@ WORKDIR /home/ubuntu/
 ADD . /home/ubuntu/
 
 # Install curl
-RUN apt install -y curl
+RUN apt-get install -y curl
 
 # Install nodejs
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
 RUN curl -s https://deb.nodesource.com/setup_18.x | bash 
-RUN apt install -y nodejs
+RUN apt-get install -y nodejs
 
 # Install nestjs
 RUN npm i -g @nestjs/cli -y
