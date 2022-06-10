@@ -3,15 +3,15 @@ WORKDIR /home/ubuntu/
 ADD . /home/ubuntu/
 
 # Install curl
-RUN sudo apt install -y curl
+RUN apt install -y curl
 
 # Install nodejs
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
-RUN curl -s https://deb.nodesource.com/setup_18.x | sudo bash 
-RUN sudo apt install -y nodejs
+RUN curl -s https://deb.nodesource.com/setup_18.x | bash 
+RUN apt install -y nodejs
 
 # Install nestjs
-RUN sudo npm i -g @nestjs/cli -y
+RUN npm i -g @nestjs/cli -y
 
 # Install pulumi
 RUN curl -fsSL https://get.pulumi.com | sh 
