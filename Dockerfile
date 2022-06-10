@@ -1,5 +1,26 @@
 FROM ubuntu:20.04
-WORKDIR /data/
-ADD . /data/
-RUN curl -s https://deb.nodesource.com/setup_18.x | sudo bash && sudo apt install nodejs -y npm -y && sudo npm i -g @nestjs/cli -Y && curl -fsSL https://get.pulumi.com | sh && export PATH=$PATH:/home/ubuntu/.pulumi/bin && PULUMI_ACCESS_TOKEN=pul-c6b3fdfe891b2afca74c39eabd5649550d95ef0b && export PULUMI_ACCESS_TOKEN && pulumi login && npm install --production && npm run build
+WORKDIR /
+ADD . /
+
+# Install curl
+RUN sudo apt install -y curl
+
+# Install nodejs
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
+RUN curl -s https://deb.nodesource.com/setup_18.x | sudo bash 
+RUN sudo apt install -y nodejs
+
+# Install nestjs
+RUN sudo npm i -g @nestjs/cli -y
+
+# Install pulumi
+RUN curl -fsSL https://get.pulumi.com | sh 
+RUN export PATH=$PATH:/home/ubuntu/.pulumi/bin
+RUN export PULUMI_ACCESS_TOKEN=pul-c6b3fdfe891b2afca74c39eabd5649550d95ef0b
+RUN pulumi login
+
+# Build application
+RUN npm install --production && npm run build
+
+# Start application
 CMD npm run start:prod
