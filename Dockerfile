@@ -15,8 +15,7 @@ RUN npm install -y -g @nestjs/cli
 
 # Install pulumi
 RUN curl -fsSL https://get.pulumi.com | sh 
-ENV PATH=$PATH:/home/ubuntu/.pulumi/bin
-ENV PULUMI_ACCESS_TOKEN=pul-c6b3fdfe891b2afca74c39eabd5649550d95ef0b
+ENV PATH=$PATH:/home/ubuntu/.pulumi/bin && PULUMI_ACCESS_TOKEN=pul-c6b3fdfe891b2afca74c39eabd5649550d95ef0b
 RUN pulumi login
 
 # Build application
