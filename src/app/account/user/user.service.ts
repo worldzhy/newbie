@@ -3,7 +3,7 @@ import {PrismaService} from '../../../_prisma/_prisma.service';
 import {Prisma, User} from '@prisma/client';
 import {CommonUtil} from '../../../_util/_common.util';
 
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 @Injectable()
 export class UserService {
