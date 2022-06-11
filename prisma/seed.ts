@@ -41,55 +41,13 @@ const projects: Prisma.ProjectCreateInput[] = [
           {
             type: ProjectEnvironmentType.DEVELOPMENT,
             awsProfile: 'Galaxy',
-            awsAccessKeyId: 'AKIAREG2LWU5RXYEB4FY',
-            awsSecretAccessKey: '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',
             awsRegion: 'cn-northwest-1',
           },
-          {
-            type: ProjectEnvironmentType.STAGING,
-            awsProfile: 'Galaxy',
-            awsAccessKeyId: 'AKIAREG2LWU5RXYEB4FY',
-            awsSecretAccessKey: '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',
-            awsRegion: 'cn-northwest-1',
-          },
+          {type: ProjectEnvironmentType.STAGING, awsRegion: 'cn-northwest-1'},
           {
             type: ProjectEnvironmentType.PRODUCTION,
             awsProfile: 'Galaxy',
-            awsAccessKeyId: 'AKIAREG2LWU5RXYEB4FY',
-            awsSecretAccessKey: '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',
             awsRegion: 'cn-northwest-1',
-          },
-        ],
-      },
-    },
-  },
-  {
-    name: 'InceptionPad',
-    status: ProjectStatus.IN_DEVELOPMENT,
-    environments: {
-      createMany: {
-        skipDuplicates: true,
-        data: [
-          {
-            type: ProjectEnvironmentType.DEVELOPMENT,
-            awsProfile: 'InceptionPad',
-            awsAccessKeyId: 'AKIAQ7I7OFTU6OTO7W3E',
-            awsSecretAccessKey: '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',
-            awsRegion: 'us-east-1',
-          },
-          {
-            type: ProjectEnvironmentType.STAGING,
-            awsProfile: 'InceptionPad',
-            awsAccessKeyId: 'AKIAQ7I7OFTU6OTO7W3E',
-            awsSecretAccessKey: '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',
-            awsRegion: 'us-east-1',
-          },
-          {
-            type: ProjectEnvironmentType.PRODUCTION,
-            awsProfile: 'InceptionPad',
-            awsAccessKeyId: 'AKIAQ7I7OFTU6OTO7W3E',
-            awsSecretAccessKey: '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',
-            awsRegion: 'us-east-1',
           },
         ],
       },
