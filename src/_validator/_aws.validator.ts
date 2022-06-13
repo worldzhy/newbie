@@ -2,7 +2,7 @@ import {Injectable} from '@nestjs/common';
 import validator from 'validator';
 
 @Injectable()
-export class ValidatorAwsService {
+export class AwsValidator {
   static verifyRegion(region: string) {
     const pattern =
       /(us(-gov)?|ap|ca|cn|eu|sa)-(central|(north|south)?(east|west)?)-\d/g;

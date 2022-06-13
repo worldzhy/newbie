@@ -2,7 +2,7 @@ import {Injectable} from '@nestjs/common';
 import validator from 'validator';
 
 @Injectable()
-export class ValidatorAppService {
+export class ProjectValidator {
   /**
    * Verify Project information:
    */

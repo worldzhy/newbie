@@ -4,7 +4,6 @@ import {
   InlineProgramArgs,
   LocalWorkspace,
   PulumiFn,
-  UpResult,
 } from '@pulumi/pulumi/automation';
 import {InfrastructureStackType} from '@prisma/client';
 import {PulumiConfig} from 'src/_config/_pulumi.config';
@@ -12,7 +11,6 @@ import axios from 'axios';
 import {AwsCodecommit_StackService} from './stack/aws.codecommit.service';
 import {AwsEcr_StackService} from './stack/aws.ecr.service';
 import {AwsEcs_StackService} from './stack/aws.ecs.service';
-import {AwsEcsInVpc_StackService} from './stack/aws.ecs-in-vpc.service';
 import {AwsIamUser_StackService} from './stack/aws.iam-user.service';
 import {AwsRds_StackService} from './stack/aws.rds.service';
 import {AwsS3_StackService} from './stack/aws.s3.service';
@@ -92,15 +90,12 @@ export class PulumiService {
     stackName: string,
     stackType: InfrastructureStackType,
     stackParams: any
-  ): Promise<UpResult | undefined> {
+  ): Promise<any> {
     // [step 1] Get Pulumi stack program.
-    const program: PulumiFn | undefined = this.getStackProgramByType(
+    const program: PulumiFn = this.getStackProgramByType(
       stackType,
       stackParams
     );
-    if (program === undefined) {
-      return undefined;
-    }
 
     // [step 2] Create the stack.
     const args: InlineProgramArgs = {
@@ -108,7 +103,7 @@ export class PulumiService {
       stackName,
       program,
     };
-    const stack = await LocalWorkspace.createStack(args);
+    const stack = await LocalWorkspace.createOrSelectStack(args);
     await stack.workspace.installPlugin('aws', this.pulumiAwsVersion);
     await stack.setAllConfig({
       'aws:profile': {value: this.awsProfile},
@@ -116,7 +111,12 @@ export class PulumiService {
       'aws:secretKey': {value: this.awsSecretKey},
       'aws:region': {value: this.awsRegion},
     });
-    return await stack.up({onOutput: console.log}); // pulumiStackResult.summary.result is one of ['failed', 'in-progress', 'not-started', 'succeeded']
+
+    try {
+      return await stack.up({onOutput: console.log}); // pulumiStackResult.summary.result is one of ['failed', 'in-progress', 'not-started', 'succeeded']
+    } catch (error) {
+      return error;
+    }
   }
 
   /**
@@ -256,8 +256,6 @@ export class PulumiService {
         return AwsEcr_StackService;
       case InfrastructureStackType.AWS_ECS:
         return AwsEcs_StackService;
-      case InfrastructureStackType.AWS_ECS_IN_VPC:
-        return AwsEcsInVpc_StackService;
       case InfrastructureStackType.AWS_EKS:
         return AwsEcs_StackService;
       case InfrastructureStackType.AWS_IAM_USER:
@@ -274,8 +272,6 @@ export class PulumiService {
         return AwsVpcHipaa_StackService;
       case InfrastructureStackType.AWS_WAF:
         return AwsWaf_StackService;
-      default:
-        return null;
     }
   }
 
@@ -283,7 +279,7 @@ export class PulumiService {
     stackType: InfrastructureStackType,
     stackParams: any
   ) {
-    return this.getStackServiceByType(stackType)?.getStackProgram(
+    return this.getStackServiceByType(stackType).getStackProgram(
       stackParams,
       this.awsRegion
     );

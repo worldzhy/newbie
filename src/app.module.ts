@@ -12,7 +12,6 @@ import {ProfileModule} from './app/account/profile/profile.module';
 import {ProjectModule} from './app/project/project.module';
 import {QueueModule} from './_queue/_queue.module';
 import {UserModule} from './app/account/user/user.module';
-import {ValidatorModule} from './_validator/_validator.module';
 import {VerificationCodeModule} from './app/account/verification-code/verification-code.module';
 
 @Module({
@@ -26,7 +25,6 @@ import {VerificationCodeModule} from './app/account/verification-code/verificati
     ProjectModule,
     QueueModule,
     UserModule,
-    ValidatorModule,
     VerificationCodeModule,
   ],
   providers: [

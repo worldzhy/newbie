@@ -228,8 +228,7 @@ export class InfrastructureStackController {
         data: null,
         err: {message: 'Invalid infrastructureStackId.'},
       };
-    }
-    if (
+    } else if (
       false === this.stackService.checkStackParams(stack.type, stack.params)
     ) {
       return {
@@ -238,11 +237,15 @@ export class InfrastructureStackController {
           message: 'This infrastructure is not ready for building.',
         },
       };
-    } else if (stack.status === InfrastructureStackStatus.DELETED) {
+    } else if (
+      stack.status === InfrastructureStackStatus.BUILDING ||
+      stack.status === InfrastructureStackStatus.DESTROYING ||
+      stack.status === InfrastructureStackStatus.DELETED
+    ) {
       return {
         data: null,
         err: {
-          message: 'This infrastructure has been deleted.',
+          message: 'Please check the infrastructure status.',
         },
       };
     }

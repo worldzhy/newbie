@@ -1,8 +1,8 @@
 import {Controller, Get, Post, Param, Body} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {ProjectService} from './project.service';
-import {ValidatorAccountService} from '../../_validator/_validator-account.service';
-import {ValidatorAppService} from '../../_validator/_validator-app.service';
+import {AccountValidator} from '../../_validator/_account.validator';
+import {ProjectValidator} from '../../_validator/_project.validator';
 import {ProjectEnvironmentType, ProjectStatus} from '@prisma/client';
 
 @ApiTags('App / Project')
@@ -128,10 +128,10 @@ export class ProjectController {
     // [step 1] Guard statement.
     if (
       !body.projectName ||
-      !ValidatorAppService.verifyProjectName(body.projectName) ||
+      !ProjectValidator.verifyProjectName(body.projectName) ||
       !body.clientName ||
       !body.clientEmail ||
-      !ValidatorAccountService.verifyEmail(body.clientEmail)
+      !AccountValidator.verifyEmail(body.clientEmail)
     ) {
       return {
         data: null,

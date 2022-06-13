@@ -7,10 +7,9 @@ import {SnsService} from './_sns/_sns.service';
 import {SnsController} from './_sns/_sns.controller';
 import {PinpointService} from './_pinpoint/_pinpoint.service';
 import {PinpointController} from './_pinpoint/_pinpoint.controller';
-import {ValidatorModule} from '../_validator/_validator.module';
 
 @Module({
-  imports: [ValidatorModule],
+  imports: [],
   providers: [S3Service, SqsService, SnsService, PinpointService],
   controllers: [S3Controller, SqsController, SnsController, PinpointController],
   exports: [SqsService, S3Service, SnsService, PinpointService],

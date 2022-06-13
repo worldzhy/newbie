@@ -3,7 +3,7 @@ import {ApiTags, ApiBody} from '@nestjs/swagger';
 import {Public} from '../auth/auth-jwt/auth-jwt.decorator';
 import {QueueService} from '../../../_queue/_queue.service';
 import {UserService} from '../user/user.service';
-import {ValidatorAccountService} from '../../../_validator/_validator-account.service';
+import {AccountValidator} from '../../../_validator/_account.validator';
 import {VerificationCodeService} from './verification-code.service';
 import {VerificationCodeUse} from '@prisma/client';
 
@@ -53,12 +53,8 @@ export class VerificationCodeController {
     @Body() body: {account: string; use: string}
   ): Promise<{data: object | null; err: object | null}> {
     const {account, use} = body;
-    const byEmail = account
-      ? ValidatorAccountService.verifyEmail(account)
-      : null;
-    const byPhone = account
-      ? ValidatorAccountService.verifyPhone(account)
-      : null;
+    const byEmail = account ? AccountValidator.verifyEmail(account) : null;
+    const byPhone = account ? AccountValidator.verifyPhone(account) : null;
 
     // [step 1] Validate email/phone and verificaiton code use.
     if (!byEmail && !byPhone) {
@@ -171,12 +167,8 @@ export class VerificationCodeController {
     @Body() body: {account: string; code: string}
   ): Promise<boolean> {
     const {account, code} = body;
-    const byEmail = account
-      ? ValidatorAccountService.verifyEmail(account)
-      : null;
-    const byPhone = account
-      ? ValidatorAccountService.verifyPhone(account)
-      : null;
+    const byEmail = account ? AccountValidator.verifyEmail(account) : null;
+    const byPhone = account ? AccountValidator.verifyPhone(account) : null;
 
     // [step 1] Validate email/phone.
     if ((!byEmail && !byPhone) || !code) {

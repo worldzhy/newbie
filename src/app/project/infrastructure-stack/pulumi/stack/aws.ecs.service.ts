@@ -4,13 +4,17 @@ import * as aws from '@pulumi/aws';
 import * as awsx from '@pulumi/awsx';
 import {PulumiUtil} from '../pulumi.util';
 import {CommonUtil} from '../../../../../_util/_common.util';
+import {AwsValidator} from 'src/_validator/_aws.validator';
 
 @Injectable()
 export class AwsEcs_StackService {
   static getStackParams() {
     return {
-      clusterName: 'development',
-      repositoryName: 'nodejs',
+      vpcId: 'vpc-086e9a2695d4f7001',
+      ecrName: 'worldzhy',
+      ecsContainerPort: 3000,
+      ecsLoadbalancerPort: 80,
+      ecsClusterName: 'example-cluster',
       maxTaskCount: 100,
       minTaskCount: 1,
     };
@@ -31,20 +35,32 @@ export class AwsEcs_StackService {
   static getStackProgram =
     (
       params: {
-        clusterName?: string;
-        repositoryName: string;
+        vpcId?: string;
+        ecrName: string; // required
+        ecsContainerPort: number; // required
+        ecsLoadbalancerPort?: number; // default 80
+        ecsClusterName?: string;
         minTaskCount?: number;
         maxTaskCount?: number;
       },
       awsRegion: string
     ) =>
     async () => {
-      let clusterName = params.clusterName;
-      let repositoryName = params.repositoryName;
+      let vpcId = params.vpcId;
+      const ecrName = params.ecrName;
+      const ecsContainerPort = params.ecsContainerPort;
+      let loadbalancerPort = params.ecsLoadbalancerPort;
+      let clusterName = params.ecsClusterName;
       let minTaskCount = params.minTaskCount;
       let maxTaskCount = params.maxTaskCount;
 
-      // [step 1] Guard statement.
+      // Guard statement.
+      if (!AwsValidator.verifyRegion(awsRegion)) {
+        return undefined;
+      }
+      if (vpcId === undefined || vpcId === null || vpcId.trim() === '') {
+        vpcId = (await aws.ec2.getVpc({default: true})).id;
+      }
       if (
         clusterName === undefined ||
         clusterName === null ||
@@ -52,12 +68,8 @@ export class AwsEcs_StackService {
       ) {
         clusterName = 'my-cluster';
       }
-      if (
-        repositoryName === undefined ||
-        repositoryName === null ||
-        repositoryName.trim() === ''
-      ) {
-        repositoryName = 'default';
+      if (loadbalancerPort === undefined) {
+        loadbalancerPort = 80;
       }
       if (minTaskCount === undefined || minTaskCount === null) {
         minTaskCount = 1;
@@ -66,7 +78,7 @@ export class AwsEcs_StackService {
         maxTaskCount = 100;
       }
 
-      // [step 3] Create a container cluster Fargate service.
+      // [step 1] Create an ECS cluster as the logical grouping of tasks or services.
       let uniqueResourceName = 'ecs-cluster-' + CommonUtil.randomCode(4);
       const cluster = new aws.ecs.Cluster(
         uniqueResourceName,
@@ -74,21 +86,34 @@ export class AwsEcs_StackService {
         PulumiUtil.getResourceOptions(awsRegion)
       );
 
+      // [step 2] Prepare a task definition for container service.
+      // [step 2-1] Get a docker image repository.
       const repository = await aws.ecr.getRepository({
-        name: repositoryName,
+        name: ecrName,
       });
 
-      uniqueResourceName =
-        'application-loadbalancer-' + CommonUtil.randomCode(4);
-      const lbName = repositoryName + '-lb';
+      // [step 2-2] Create an application loadbalancer.
+      const securityGroup = PulumiUtil.generateSecurityGroup(
+        [ecsContainerPort],
+        vpcId
+      );
+      uniqueResourceName = 'loadbalancer-' + CommonUtil.randomCode(4);
+      const lbName = ecrName + '-lb-' + CommonUtil.randomCode(4);
       const lb = new awsx.lb.ApplicationLoadBalancer(
         uniqueResourceName,
-        {name: lbName},
+        {
+          name: lbName,
+          listener: {port: loadbalancerPort},
+          defaultTargetGroup: {
+            port: ecsContainerPort,
+          },
+          securityGroups: [securityGroup.id],
+        },
         PulumiUtil.getResourceOptions(awsRegion)
       );
 
-      uniqueResourceName =
-        'ecs-fargate-task-definition-' + CommonUtil.randomCode(4);
+      // [step 2-3] Create a task definition. https://docs.aws.amazon.com/AmazonECS/latest/userguide/fargate-task-defs.html
+      uniqueResourceName = 'task-definition-' + CommonUtil.randomCode(4);
       const taskDefinition = new awsx.ecs.FargateTaskDefinition(
         uniqueResourceName,
         {
@@ -97,19 +122,45 @@ export class AwsEcs_StackService {
             essential: true,
             portMappings: [
               {
-                containerPort: 80,
+                containerPort: ecsContainerPort, // Only 'awsvpc' network mode is available for fargate. And 'hostPort' equals to 'containerPort' in the 'awsvpc' network.
+                protocol: 'tcp',
                 targetGroup: lb.defaultTargetGroup,
               },
             ],
           },
-          cpu: '512',
-          memory: '1024',
+          cpu: '1024',
+          memory: '2048',
         },
-        PulumiUtil.getResourceOptions(awsRegion)
+        {
+          transformations: [
+            // Update all RolePolicyAttachment resources to use aws-cn ARNs.
+            args => {
+              if (
+                args.type ===
+                'aws:iam/rolePolicyAttachment:RolePolicyAttachment'
+              ) {
+                const arn: string | undefined = args.props['policyArn'];
+                if (arn && arn.startsWith('arn:aws:iam')) {
+                  args.props['policyArn'] = arn.replace(
+                    'arn:aws:iam',
+                    'arn:aws-cn:iam'
+                  );
+                }
+                return {
+                  props: args.props,
+                  opts: args.opts,
+                };
+              }
+              return undefined;
+            },
+          ],
+        }
       );
 
-      uniqueResourceName = 'ecs-fargate-service-' + CommonUtil.randomCode(4);
-      const fargateServiceName = repositoryName + '-service';
+      // [step 3] Create a constainer service.
+      uniqueResourceName = 'fargate-service-' + CommonUtil.randomCode(4);
+      const fargateServiceName =
+        ecrName + '-service-' + CommonUtil.randomCode(4);
       const containerService = new awsx.ecs.FargateService(
         uniqueResourceName,
         {
@@ -120,11 +171,35 @@ export class AwsEcs_StackService {
           deploymentMaximumPercent: 500,
           taskDefinition: taskDefinition.taskDefinition.arn,
         },
-        PulumiUtil.getResourceOptions(awsRegion)
+        {
+          transformations: [
+            // Update all RolePolicyAttachment resources to use aws-cn ARNs.
+            args => {
+              if (
+                args.type ===
+                'aws:iam/rolePolicyAttachment:RolePolicyAttachment'
+              ) {
+                const arn: string | undefined = args.props['policyArn'];
+                if (arn && arn.startsWith('arn:aws:iam')) {
+                  args.props['policyArn'] = arn.replace(
+                    'arn:aws:iam',
+                    'arn:aws-cn:iam'
+                  );
+                }
+                return {
+                  props: args.props,
+                  opts: args.opts,
+                };
+              }
+              return undefined;
+            },
+          ],
+        }
       );
 
-      // [step 4] Create auto scaling target.
-      uniqueResourceName = 'ecs-task-' + CommonUtil.randomCode(4);
+      // [step 4] Add auto-scaling target for container service.
+      // [step 4-1] Create an auto-scaling target.
+      uniqueResourceName = 'scaling-target-' + CommonUtil.randomCode(4);
       const ecsTarget = new aws.appautoscaling.Target(
         uniqueResourceName,
         {
@@ -137,9 +212,8 @@ export class AwsEcs_StackService {
         PulumiUtil.getResourceOptions(awsRegion)
       );
 
-      // [step 5] Create scaling up and scaling down policy.
-      uniqueResourceName =
-        'ecs-auto-scaling-up-policy-' + CommonUtil.randomCode(4);
+      // [step 4-2] Bind policies to the auto-scaling target.
+      uniqueResourceName = 'scaling-up-policy-' + CommonUtil.randomCode(4);
       new aws.appautoscaling.Policy(
         uniqueResourceName,
         {
@@ -163,8 +237,7 @@ export class AwsEcs_StackService {
         PulumiUtil.getResourceOptions(awsRegion)
       );
 
-      uniqueResourceName =
-        'ecs-auto-scaling-down-policy-' + CommonUtil.randomCode(4);
+      uniqueResourceName = 'scaling-down-policy-' + CommonUtil.randomCode(4);
       new aws.appautoscaling.Policy(
         uniqueResourceName,
         {

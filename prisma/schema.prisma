@@ -243,7 +243,6 @@ model InfrastructureStack {
     AWS_CODE_COMMIT
     AWS_ECR
     AWS_ECS
-    AWS_ECS_IN_VPC
     AWS_EKS
     AWS_IAM_USER
     AWS_RDS

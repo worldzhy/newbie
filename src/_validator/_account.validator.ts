@@ -2,7 +2,7 @@ import {Injectable} from '@nestjs/common';
 import validator from 'validator';
 
 @Injectable()
-export class ValidatorAccountService {
+export class AccountValidator {
   static verifyPassword(password: string): boolean {
     return validator.isStrongPassword(password);
   }

@@ -1,5 +1,6 @@
 import * as aws from '@pulumi/aws';
 import * as pulumi from '@pulumi/pulumi';
+import {CommonUtil} from '../../../../_util/_common.util';
 
 export class PulumiUtil {
   static getResourceOptions = (awsRegion: string) => {
@@ -7,6 +8,7 @@ export class PulumiUtil {
       transformations: [
         // Update all RolePolicyAttachment resources to use aws-cn ARNs.
         args => {
+          console.log('$$$$$$$$$$', awsRegion);
           if (
             args.type === 'aws:iam/rolePolicyAttachment:RolePolicyAttachment' &&
             awsRegion.startsWith('cn')
@@ -27,6 +29,32 @@ export class PulumiUtil {
         },
       ],
     };
+  };
+
+  static generateSecurityGroup = (
+    inboundPorts: number[],
+    vpcId: pulumi.Input<string>
+  ) => {
+    const uniqueResourceName = 'security-group-' + CommonUtil.randomCode(4);
+    return new aws.ec2.SecurityGroup(uniqueResourceName, {
+      ingress: inboundPorts.map(value => {
+        return {
+          fromPort: value,
+          toPort: value,
+          protocol: 'tcp',
+          securityGroups: [],
+        };
+      }),
+      egress: [
+        {
+          fromPort: 0,
+          toPort: 0,
+          protocol: '-1',
+          cidrBlocks: ['0.0.0.0/0'],
+        },
+      ],
+      vpcId: vpcId,
+    });
   };
 
   static generateSecurityGroupForEC2 = (

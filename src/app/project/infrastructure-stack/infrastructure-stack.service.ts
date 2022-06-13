@@ -26,6 +26,7 @@ export class InfrastructureStackService {
    */
   getStackParams(stackType: InfrastructureStackType) {
     return {
+      type: stackType,
       params: this.pulumiService.getStackParams(stackType),
     };
   }
@@ -149,13 +150,19 @@ export class InfrastructureStackService {
     }
 
     // [step 3] Update database record of infrastructureStack.
+    let stackStatus: InfrastructureStackStatus =
+      InfrastructureStackStatus.BUILD_FAILED;
+    if (upResult.summary && upResult.summary.result) {
+      stackStatus =
+        upResult.summary.result === 'succeeded'
+          ? InfrastructureStackStatus.BUILD_SUCCEEDED
+          : InfrastructureStackStatus.BUILD_FAILED;
+    }
+
     return await this.prisma.infrastructureStack.update({
       where: {id: infrastructureStack.id},
       data: {
-        status:
-          upResult.summary.result === 'succeeded'
-            ? InfrastructureStackStatus.BUILD_SUCCEEDED
-            : InfrastructureStackStatus.BUILD_FAILED,
+        status: stackStatus,
         upResult: upResult,
       },
     });

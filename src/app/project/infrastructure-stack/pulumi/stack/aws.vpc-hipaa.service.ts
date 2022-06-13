@@ -9,7 +9,7 @@ import {PulumiUtil} from '../pulumi.util';
 export class AwsVpcHipaa_StackService {
   static getStackParams() {
     return {
-      [InfrastructureStackType.AWS_ECS_IN_VPC]: {
+      [InfrastructureStackType.AWS_ECS]: {
         vpcName: 'elastic-container-cluster',
         vpcCidrBlock: '10.10.0.0/16',
         numberOfAvailabilityZones: 2,
