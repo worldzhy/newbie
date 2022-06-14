@@ -41,7 +41,7 @@ export class AwsRds_StackService {
       awsRegion: string
     ) =>
     async () => {
-      const uniqueResourceName = 'rds-' + CommonUtil.randomCode(4);
+      const uniqueResourceName = 'rds';
       const defaultInstance = new aws.rds.Instance(
         uniqueResourceName,
         {

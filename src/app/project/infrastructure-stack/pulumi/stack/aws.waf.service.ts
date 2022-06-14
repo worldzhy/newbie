@@ -28,7 +28,7 @@ export class AwsWaf_StackService {
     (params: {applicationLoadBalancerArn: string}, awsRegion: string) =>
     async () => {
       // [step 1] Create rule group.
-      let uniqueResourceName = 'waf-rule-group-' + CommonUtil.randomCode(4);
+      let uniqueResourceName = 'waf-rule-group';
       const ruleGroup = new aws.wafv2.RuleGroup(
         uniqueResourceName,
         {
@@ -97,7 +97,7 @@ export class AwsWaf_StackService {
       );
 
       // [step 2] Create web ACL.
-      uniqueResourceName = 'waf-acl-' + CommonUtil.randomCode(4);
+      uniqueResourceName = 'waf-acl';
       const webAcl = new aws.wafv2.WebAcl(
         uniqueResourceName,
         {
@@ -204,7 +204,7 @@ export class AwsWaf_StackService {
       );
 
       // [step 3] Associate web ACL with application loadbalancer.
-      uniqueResourceName = 'waf-acl-association-' + CommonUtil.randomCode(4);
+      uniqueResourceName = 'waf-acl-association';
       new aws.wafv2.WebAclAssociation(
         uniqueResourceName,
         {

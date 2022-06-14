@@ -79,7 +79,7 @@ export class AwsEcs_StackService {
       }
 
       // [step 1] Create an ECS cluster as the logical grouping of tasks or services.
-      let uniqueResourceName = 'ecs-cluster-' + CommonUtil.randomCode(4);
+      let uniqueResourceName = 'ecs-cluster';
       const cluster = new aws.ecs.Cluster(
         uniqueResourceName,
         {name: clusterName},
@@ -97,7 +97,7 @@ export class AwsEcs_StackService {
         [ecsContainerPort],
         vpcId
       );
-      uniqueResourceName = 'loadbalancer-' + CommonUtil.randomCode(4);
+      uniqueResourceName = 'loadbalancer';
       const lbName = ecrName + '-lb-' + CommonUtil.randomCode(4);
       const lb = new awsx.lb.ApplicationLoadBalancer(
         uniqueResourceName,
@@ -113,7 +113,7 @@ export class AwsEcs_StackService {
       );
 
       // [step 2-3] Create a task definition. https://docs.aws.amazon.com/AmazonECS/latest/userguide/fargate-task-defs.html
-      uniqueResourceName = 'task-definition-' + CommonUtil.randomCode(4);
+      uniqueResourceName = 'task-definition';
       const taskDefinition = new awsx.ecs.FargateTaskDefinition(
         uniqueResourceName,
         {
@@ -158,7 +158,7 @@ export class AwsEcs_StackService {
       );
 
       // [step 3] Create a constainer service.
-      uniqueResourceName = 'fargate-service-' + CommonUtil.randomCode(4);
+      uniqueResourceName = 'fargate-service';
       const fargateServiceName =
         ecrName + '-service-' + CommonUtil.randomCode(4);
       const containerService = new awsx.ecs.FargateService(
@@ -199,7 +199,7 @@ export class AwsEcs_StackService {
 
       // [step 4] Add auto-scaling target for container service.
       // [step 4-1] Create an auto-scaling target.
-      uniqueResourceName = 'scaling-target-' + CommonUtil.randomCode(4);
+      uniqueResourceName = 'scaling-target';
       const ecsTarget = new aws.appautoscaling.Target(
         uniqueResourceName,
         {
@@ -213,7 +213,7 @@ export class AwsEcs_StackService {
       );
 
       // [step 4-2] Bind policies to the auto-scaling target.
-      uniqueResourceName = 'scaling-up-policy-' + CommonUtil.randomCode(4);
+      uniqueResourceName = 'scaling-up-policy';
       new aws.appautoscaling.Policy(
         uniqueResourceName,
         {
@@ -237,7 +237,7 @@ export class AwsEcs_StackService {
         PulumiUtil.getResourceOptions(awsRegion)
       );
 
-      uniqueResourceName = 'scaling-down-policy-' + CommonUtil.randomCode(4);
+      uniqueResourceName = 'scaling-down-policy';
       new aws.appautoscaling.Policy(
         uniqueResourceName,
         {

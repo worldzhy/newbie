@@ -43,7 +43,7 @@ export class AwsVpc_StackService {
       }
 
       // Allocate development, production and management VPCs.
-      const uniqueResourceName = 'vpc-' + CommonUtil.randomCode(4);
+      const uniqueResourceName = 'vpc';
       const vpc = new aws.ec2.Vpc(
         uniqueResourceName,
         {

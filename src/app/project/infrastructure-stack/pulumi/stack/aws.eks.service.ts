@@ -83,7 +83,7 @@ export class AwsEks_StackService {
       }
 
       // [step 2] Create an EKS cluster with the default configuration.
-      let uniqueResourceName = 'eks-cluster-' + CommonUtil.randomCode(4);
+      let uniqueResourceName = 'eks-cluster';
       const cluster = new eks.Cluster(
         uniqueResourceName,
         {
@@ -111,8 +111,7 @@ export class AwsEks_StackService {
       const repository = await aws.ecr.getRepository({name: repositoryName});
 
       const appName = 'my-app';
-      uniqueResourceName =
-        `${appName}-k8s-deployment-` + CommonUtil.randomCode(4);
+      uniqueResourceName = `${appName}-k8s-deployment-`;
       const appLabels = {appClass: appName};
       new k8s.apps.v1.Deployment(
         uniqueResourceName,
@@ -142,7 +141,7 @@ export class AwsEks_StackService {
         }
       );
 
-      uniqueResourceName = `${appName}-k8s-service-` + CommonUtil.randomCode(4);
+      uniqueResourceName = `${appName}-k8s-service-`;
       const service = new k8s.core.v1.Service(
         uniqueResourceName,
         {

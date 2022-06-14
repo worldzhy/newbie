@@ -36,7 +36,7 @@ export class AwsIamUser_StackService {
       });
 
       if (null === developerUserGroup || undefined === developerUserGroup) {
-        uniqueResourceName = 'UserGroup-';
+        uniqueResourceName = 'UserGroup';
         new aws.iam.Group(
           uniqueResourceName,
           {
@@ -45,8 +45,7 @@ export class AwsIamUser_StackService {
           PulumiUtil.getResourceOptions(awsRegion)
         );
 
-        uniqueResourceName =
-          'iam-usergroup-policy-attachment-' + CommonUtil.randomCode(4);
+        uniqueResourceName = 'iam-usergroup-policy-attachment';
         new aws.iam.GroupPolicyAttachment(
           uniqueResourceName,
           {
@@ -60,8 +59,7 @@ export class AwsIamUser_StackService {
       }
 
       // [step 3] Create a user.
-      uniqueResourceName = 'iam-user-' + CommonUtil.randomCode(4);
-
+      uniqueResourceName = 'iam-user';
       const iamUser = new aws.iam.User(
         uniqueResourceName,
         {
@@ -70,8 +68,7 @@ export class AwsIamUser_StackService {
         PulumiUtil.getResourceOptions(awsRegion)
       );
 
-      uniqueResourceName =
-        'iam-usergroup-membership-' + CommonUtil.randomCode(4);
+      uniqueResourceName = 'iam-usergroup-membership';
       new aws.iam.UserGroupMembership(
         uniqueResourceName,
         {
@@ -82,8 +79,7 @@ export class AwsIamUser_StackService {
       );
 
       // [step 4] Create HTTPS Git credentials for Amazon CodeCommit
-      uniqueResourceName =
-        'service-specific-credential-' + CommonUtil.randomCode(4);
+      uniqueResourceName = 'service-specific-credential';
       const serviceSpecificCredential = new aws.iam.ServiceSpecificCredential(
         uniqueResourceName,
         {

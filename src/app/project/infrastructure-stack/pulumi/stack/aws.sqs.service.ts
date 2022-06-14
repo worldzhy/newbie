@@ -34,7 +34,7 @@ export class AwsSqs_StackService {
       }
 
       // Create a bucket.
-      let uniqueResourceName = 's3bucket-' + CommonUtil.randomCode(4);
+      let uniqueResourceName = 's3-bucket';
       const bucket = new aws.s3.Bucket(
         uniqueResourceName,
         {bucket: bucketName},
@@ -63,7 +63,7 @@ export class AwsSqs_StackService {
       }
 
       // Set the access policy for the bucket so all objects are readable.
-      uniqueResourceName = 's3bucket-policy-' + CommonUtil.randomCode(4);
+      uniqueResourceName = 's3-bucket-policy';
       new aws.s3.BucketPolicy(
         uniqueResourceName,
         {

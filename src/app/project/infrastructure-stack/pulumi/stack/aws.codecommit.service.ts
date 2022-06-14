@@ -28,7 +28,7 @@ export class AwsCodecommit_StackService {
       // [step 1] Guard statement.
 
       // [step 2] Create a repository.
-      const uniqueResourceName = 'code-commit-' + CommonUtil.randomCode(4);
+      const uniqueResourceName = 'code-commit';
       const repository = new aws.codecommit.Repository(
         uniqueResourceName,
         {

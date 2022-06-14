@@ -74,7 +74,7 @@ export class AwsVpcHipaa_StackService {
       }
 
       // Allocate development, production and management VPCs.
-      let uniqueResourceName = `${vpcName}-` + CommonUtil.randomCode(4);
+      let uniqueResourceName = `${vpcName}-`;
       const vpc = new awsx.ec2.Vpc(
         uniqueResourceName,
         {
@@ -97,7 +97,7 @@ export class AwsVpcHipaa_StackService {
         PulumiUtil.getResourceOptions(awsRegion)
       );
 
-      uniqueResourceName = 'igw-' + CommonUtil.randomCode(4);
+      uniqueResourceName = 'igw';
       new aws.ec2.InternetGateway(
         uniqueResourceName,
         {

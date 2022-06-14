@@ -35,7 +35,7 @@ export class PulumiUtil {
     inboundPorts: number[],
     vpcId: pulumi.Input<string>
   ) => {
-    const uniqueResourceName = 'security-group-' + CommonUtil.randomCode(4);
+    const uniqueResourceName = 'security-group';
     return new aws.ec2.SecurityGroup(uniqueResourceName, {
       ingress: inboundPorts.map(value => {
         return {
