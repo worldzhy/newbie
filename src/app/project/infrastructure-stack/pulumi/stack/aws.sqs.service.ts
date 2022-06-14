@@ -2,7 +2,6 @@ import {Injectable} from '@nestjs/common';
 import * as aws from '@pulumi/aws';
 import {AwsValidator} from '../../../../../_validator/_aws.validator';
 import {PulumiUtil} from '../pulumi.util';
-import {CommonUtil} from '../../../../../_util/_common.util';
 
 @Injectable()
 export class AwsSqs_StackService {

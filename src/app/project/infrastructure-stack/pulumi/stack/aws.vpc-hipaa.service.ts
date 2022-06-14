@@ -2,7 +2,6 @@ import {Injectable} from '@nestjs/common';
 import {InfrastructureStackType} from '@prisma/client';
 import * as aws from '@pulumi/aws';
 import * as awsx from '@pulumi/awsx';
-import {CommonUtil} from '../../../../../_util/_common.util';
 import {PulumiUtil} from '../pulumi.util';
 
 @Injectable()

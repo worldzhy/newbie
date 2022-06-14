@@ -1,6 +1,5 @@
 import {Injectable} from '@nestjs/common';
 import * as aws from '@pulumi/aws';
-import {CommonUtil} from '../../../../../_util/_common.util';
 import {PulumiUtil} from '../pulumi.util';
 
 @Injectable()

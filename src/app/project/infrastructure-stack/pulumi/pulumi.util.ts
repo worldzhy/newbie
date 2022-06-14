@@ -1,6 +1,5 @@
 import * as aws from '@pulumi/aws';
 import * as pulumi from '@pulumi/pulumi';
-import {CommonUtil} from '../../../../_util/_common.util';
 
 export class PulumiUtil {
   static getResourceOptions = (awsRegion: string) => {

@@ -2,7 +2,6 @@ import {Injectable} from '@nestjs/common';
 import * as aws from '@pulumi/aws';
 import * as eks from '@pulumi/eks';
 import * as k8s from '@pulumi/kubernetes';
-import {CommonUtil} from 'src/_util/_common.util';
 import {PulumiUtil} from '../pulumi.util';
 
 @Injectable()
