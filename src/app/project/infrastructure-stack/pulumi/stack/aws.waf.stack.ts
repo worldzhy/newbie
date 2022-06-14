@@ -3,7 +3,7 @@ import * as aws from '@pulumi/aws';
 import {PulumiUtil} from '../pulumi.util';
 
 @Injectable()
-export class AwsWaf_StackService {
+export class AwsWaf_Stack {
   static getStackParams() {
     return {
       applicationLoadBalancerArn:

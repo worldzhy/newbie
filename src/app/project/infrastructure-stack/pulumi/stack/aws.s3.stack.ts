@@ -2,9 +2,10 @@ import {Injectable} from '@nestjs/common';
 import * as aws from '@pulumi/aws';
 import {AwsValidator} from '../../../../../_validator/_aws.validator';
 import {PulumiUtil} from '../pulumi.util';
+import {CommonUtil} from '../../../../../_util/_common.util';
 
 @Injectable()
-export class AwsSqs_StackService {
+export class AwsS3_Stack {
   static getStackParams() {
     return {
       bucketName: 'example-bucket',
@@ -20,16 +21,16 @@ export class AwsSqs_StackService {
   }
 
   static getStackOutputKeys() {
-    return ['username', 'password'];
+    return ['bucketName', 'bucketArn'];
   }
 
   static getStackProgram =
     (params: {bucketName: string}, awsRegion: string) => async () => {
-      let bucketName = params.bucketName;
+      let bucketName = params.bucketName + '-' + CommonUtil.randomCode(4);
 
       // [step 1] Guard statement.
       if (false === AwsValidator.verifyS3Bucketname(bucketName)) {
-        bucketName = 'default-bucket-name';
+        bucketName = 'example-bucket-' + CommonUtil.randomCode(4);
       }
 
       // Create a bucket.

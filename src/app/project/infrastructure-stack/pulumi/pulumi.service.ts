@@ -8,16 +8,17 @@ import {
 import {InfrastructureStackType} from '@prisma/client';
 import {PulumiConfig} from 'src/_config/_pulumi.config';
 import axios from 'axios';
-import {AwsCodecommit_StackService} from './stack/aws.codecommit.service';
-import {AwsEcr_StackService} from './stack/aws.ecr.service';
-import {AwsEcs_StackService} from './stack/aws.ecs.service';
-import {AwsIamUser_StackService} from './stack/aws.iam-user.service';
-import {AwsRds_StackService} from './stack/aws.rds.service';
-import {AwsS3_StackService} from './stack/aws.s3.service';
-import {AwsSqs_StackService} from './stack/aws.sqs.service';
-import {AwsVpc_StackService} from './stack/aws.vpc.service';
-import {AwsVpcHipaa_StackService} from './stack/aws.vpc-hipaa.service';
-import {AwsWaf_StackService} from './stack/aws.waf.service';
+import {AwsCloudfront_Stack} from './stack/aws.cloudfront.stack';
+import {AwsCodecommit_Stack} from './stack/aws.codecommit.stack';
+import {AwsEcr_Stack} from './stack/aws.ecr.stack';
+import {AwsEcs_Stack} from './stack/aws.ecs.stack';
+import {AwsIamUser_Stack} from './stack/aws.iam-user.stack';
+import {AwsRds_Stack} from './stack/aws.rds.stack';
+import {AwsS3_Stack} from './stack/aws.s3.stack';
+import {AwsSqs_Stack} from './stack/aws.sqs.stack';
+import {AwsVpc_Stack} from './stack/aws.vpc.stack';
+import {Hipaa_Stack} from './stack/hipaa.stack';
+import {AwsWaf_Stack} from './stack/aws.waf.stack';
 
 @Injectable()
 export class PulumiService {
@@ -250,28 +251,30 @@ export class PulumiService {
    */
   private getStackServiceByType(type: InfrastructureStackType) {
     switch (type) {
+      case InfrastructureStackType.AWS_CLOUDFRONT:
+        return AwsCloudfront_Stack;
       case InfrastructureStackType.AWS_CODE_COMMIT:
-        return AwsCodecommit_StackService;
+        return AwsCodecommit_Stack;
       case InfrastructureStackType.AWS_ECR:
-        return AwsEcr_StackService;
+        return AwsEcr_Stack;
       case InfrastructureStackType.AWS_ECS:
-        return AwsEcs_StackService;
+        return AwsEcs_Stack;
       case InfrastructureStackType.AWS_EKS:
-        return AwsEcs_StackService;
+        return AwsEcs_Stack;
       case InfrastructureStackType.AWS_IAM_USER:
-        return AwsIamUser_StackService;
+        return AwsIamUser_Stack;
       case InfrastructureStackType.AWS_RDS:
-        return AwsRds_StackService;
+        return AwsRds_Stack;
       case InfrastructureStackType.AWS_S3:
-        return AwsS3_StackService;
+        return AwsS3_Stack;
       case InfrastructureStackType.AWS_SQS:
-        return AwsSqs_StackService;
+        return AwsSqs_Stack;
       case InfrastructureStackType.AWS_VPC:
-        return AwsVpc_StackService;
-      case InfrastructureStackType.AWS_VPC_HIPAA:
-        return AwsVpcHipaa_StackService;
+        return AwsVpc_Stack;
       case InfrastructureStackType.AWS_WAF:
-        return AwsWaf_StackService;
+        return AwsWaf_Stack;
+      case InfrastructureStackType.HIPAA:
+        return Hipaa_Stack;
     }
   }
 

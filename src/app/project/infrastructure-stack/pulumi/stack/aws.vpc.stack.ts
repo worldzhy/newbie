@@ -3,7 +3,7 @@ import * as aws from '@pulumi/aws';
 import {PulumiUtil} from '../pulumi.util';
 
 @Injectable()
-export class AwsVpc_StackService {
+export class AwsVpc_Stack {
   static getStackParams() {
     return {
       vpcName: 'pulumi-test-vpc',

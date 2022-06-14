@@ -3,7 +3,7 @@ import * as aws from '@pulumi/aws';
 import {PulumiUtil} from '../pulumi.util';
 
 @Injectable()
-export class AwsRds_StackService {
+export class AwsRds_Stack {
   static getStackParams() {
     return {
       instanceName: 'postgres-default',

@@ -3,7 +3,7 @@ import * as aws from '@pulumi/aws';
 import {PulumiUtil} from '../pulumi.util';
 
 @Injectable()
-export class AwsIamUser_StackService {
+export class AwsIamUser_Stack {
   static getStackParams() {
     return {
       iamUserName: 'henry',

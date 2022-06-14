@@ -240,6 +240,7 @@ model InfrastructureStack {
     AWSCDK
   }
   enum InfrastructureStackType {
+    AWS_CLOUDFRONT
     AWS_CODE_COMMIT
     AWS_ECR
     AWS_ECS
@@ -249,8 +250,8 @@ model InfrastructureStack {
     AWS_S3
     AWS_SQS
     AWS_VPC
-    AWS_VPC_HIPAA
     AWS_WAF
+    HIPAA
   }
   enum InfrastructureStackStatus {
     PREPARING

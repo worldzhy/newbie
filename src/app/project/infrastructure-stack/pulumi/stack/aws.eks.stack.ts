@@ -5,7 +5,7 @@ import * as k8s from '@pulumi/kubernetes';
 import {PulumiUtil} from '../pulumi.util';
 
 @Injectable()
-export class AwsEks_StackService {
+export class AwsEks_Stack {
   static getStackParams() {
     return {};
   }

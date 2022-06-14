@@ -1,9 +1,9 @@
 import {Injectable} from '@nestjs/common';
-import * as awsx from '@pulumi/awsx';
+import * as aws from '@pulumi/aws';
 import {PulumiUtil} from '../pulumi.util';
 
 @Injectable()
-export class AwsEcr_StackService {
+export class AwsCloudfront_Stack {
   static getStackParams() {
     return {
       repositoryName: 'example-repository',
@@ -19,7 +19,7 @@ export class AwsEcr_StackService {
   }
 
   static getStackOutputKeys() {
-    return ['repositoryUrl', 'imageUrn'];
+    return ['username', 'password'];
   }
 
   static getStackProgram =
@@ -27,23 +27,19 @@ export class AwsEcr_StackService {
       // [step 1] Guard statement.
 
       // [step 2] Create a repository.
-      let uniqueResourceName = 'ecr';
-      const repository = new awsx.ecr.Repository(
+      const uniqueResourceName = 'code-commit';
+      const repository = new aws.codecommit.Repository(
         uniqueResourceName,
-        {name: params.repositoryName},
-        PulumiUtil.getResourceOptions(awsRegion)
-      );
-
-      uniqueResourceName = 'ecr-image';
-      const image = new awsx.ecr.Image(
-        uniqueResourceName,
-        {repositoryUrl: repository.url},
+        {
+          repositoryName: params.repositoryName,
+          defaultBranch: 'main',
+        },
         PulumiUtil.getResourceOptions(awsRegion)
       );
 
       return {
-        repositoryUrl: repository.url,
-        imageUrn: image.urn,
+        cloneUrlHttp: repository.cloneUrlHttp,
+        cloneUrlSsh: repository.cloneUrlSsh,
       };
     };
 }
