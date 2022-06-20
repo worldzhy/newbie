@@ -4,7 +4,7 @@ import {Injectable} from '@nestjs/common';
 export class S3_Stack {
   static getStackParams() {
     return {
-      bucketName: 'example-bucket',
+      S3BucketName: 'example-bucket',
     };
   }
 
