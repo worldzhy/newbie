@@ -123,17 +123,17 @@ export class PulumiService {
   /**
    * Destroy a stack.
    *
-   * @param {string} projectName
+   * @param {string} stackProjectName
    * @param {string} stackName
    * @returns {Promise<DestroyResult>}
    * @memberof PulumiService
    */
   async destroy(
-    projectName: string,
+    stackProjectName: string,
     stackName: string
   ): Promise<DestroyResult> {
     const args: InlineProgramArgs = {
-      projectName,
+      projectName: stackProjectName,
       stackName,
       program: async () => {},
     };
@@ -145,13 +145,13 @@ export class PulumiService {
   /**
    * See the detail https://www.pulumi.com/docs/reference/service-rest-api/#delete-stack
    *
-   * @param {string} projectName
+   * @param {string} stackProjectName
    * @param {string} stackName
    * @memberof PulumiService
    */
-  async delete(projectName: string, stackName: string) {
+  async delete(stackProjectName: string, stackName: string) {
     const args: InlineProgramArgs = {
-      projectName,
+      projectName: stackProjectName,
       stackName,
       program: async () => {},
     };
@@ -166,8 +166,8 @@ export class PulumiService {
    * @returns
    * @memberof PulumiService
    */
-  async getStacks(projectName: string) {
-    const url = `https://api.pulumi.com/api/user/stacks?project=${projectName}`;
+  async getStacks(stackProjectName: string) {
+    const url = `https://api.pulumi.com/api/user/stacks?project=${stackProjectName}`;
     return await axios.get(url, {
       maxRedirects: 5,
       headers: {
@@ -181,19 +181,19 @@ export class PulumiService {
   /**
    * Get stack outputs.
    *
-   * @param {string} projectName
+   * @param {string} stackProjectName
    * @param {string} stackName
    * @param {InfrastructureStackType} stackType
    * @memberof PulumiService
    */
   async getStackOutputs(
-    projectName: string,
+    stackProjectName: string,
     stackName: string,
     stackType: InfrastructureStackType
   ) {
     // [step 1] Create stack args.
     const args: InlineProgramArgs = {
-      projectName,
+      projectName: stackProjectName,
       stackName,
       program: async () => {},
     };
@@ -203,7 +203,7 @@ export class PulumiService {
     await stack.workspace.installPlugin('aws', this.pulumiAwsVersion);
     await stack.setAllConfig({
       'aws:region': {value: this.awsRegion},
-      'aws:profile': {value: projectName},
+      'aws:profile': {value: stackProjectName},
     });
 
     // [step 3] Get stack outputs.
@@ -243,6 +243,25 @@ export class PulumiService {
   }
 
   /**
+   * Get Pulumi program for stack-up.
+   *
+   * @private
+   * @param {InfrastructureStackType} stackType
+   * @param {*} stackParams
+   * @returns
+   * @memberof PulumiService
+   */
+  private getStackProgramByType(
+    stackType: InfrastructureStackType,
+    stackParams: any
+  ) {
+    return this.getStackServiceByType(stackType).getStackProgram(
+      stackParams,
+      this.awsRegion
+    );
+  }
+
+  /**
    * Get stack class
    *
    * @param {InfrastructureStackType} type
@@ -276,16 +295,6 @@ export class PulumiService {
       case InfrastructureStackType.HIPAA:
         return Hipaa_Stack;
     }
-  }
-
-  private getStackProgramByType(
-    stackType: InfrastructureStackType,
-    stackParams: any
-  ) {
-    return this.getStackServiceByType(stackType).getStackProgram(
-      stackParams,
-      this.awsRegion
-    );
   }
 
   /* End */

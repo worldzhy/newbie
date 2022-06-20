@@ -27,14 +27,22 @@ export class InfrastructureStackController {
    * @returns
    * @memberof InfrastructureStackController
    */
-  @Get('infrastructure-stacks/:type/params')
+  @Get('infrastructure-stacks/:type/:stackManager/params')
   @ApiParam({
     name: 'type',
     schema: {type: 'string'},
     example: InfrastructureStackType.AWS_CODE_COMMIT,
   })
-  async getStackParams(@Param('type') type: InfrastructureStackType) {
-    return this.stackService.getStackParams(type);
+  @ApiParam({
+    name: 'stackManager',
+    schema: {type: 'string'},
+    example: InfrastructureStackManager.PULUMI,
+  })
+  async getStackParams(
+    @Param('type') type: InfrastructureStackType,
+    @Param('stackManager') stackManager: InfrastructureStackManager
+  ) {
+    return this.stackService.getStackParams(stackManager, type);
   }
 
   /**
@@ -106,6 +114,7 @@ export class InfrastructureStackController {
             vpcName: 'pulumi-test-vpc',
             vpcCidrBlock: '10.21.0.0/16',
           },
+          manager: InfrastructureStackManager.CLOUDFORMATION,
         },
       },
       b: {
@@ -118,6 +127,7 @@ export class InfrastructureStackController {
             instanceName: 'postgres-default',
             instanceClass: 'db.t3.micro',
           },
+          manager: InfrastructureStackManager.PULUMI,
         },
       },
     },
@@ -129,16 +139,30 @@ export class InfrastructureStackController {
       environment: ProjectEnvironmentType;
       type: InfrastructureStackType;
       params?: object;
+      manager?: InfrastructureStackManager;
     }
   ) {
-    const {type, params, projectName, environment} = body;
+    const {
+      type,
+      params,
+      projectName,
+      environment,
+      manager = InfrastructureStackManager.PULUMI,
+    } = body;
+
+    let stackName: string = type + '-' + CommonUtil.randomCode(8);
+
+    // CloudFormation stack name must satisfy regular expression pattern: [a-zA-Z][-a-zA-Z0-9]*".
+    if (manager === InfrastructureStackManager.CLOUDFORMATION) {
+      stackName = stackName.replace('_', '-');
+    }
 
     return await this.stackService.create({
-      name: type + '-' + CommonUtil.randomCode(8),
+      name: stackName,
       type: type,
       params: params,
       status: InfrastructureStackStatus.PREPARING,
-      manager: InfrastructureStackManager.PULUMI,
+      manager: manager,
       pulumiProjectName: projectName,
       environment: environment,
       project: {connect: {name: projectName}},
@@ -229,7 +253,12 @@ export class InfrastructureStackController {
         err: {message: 'Invalid infrastructureStackId.'},
       };
     } else if (
-      false === this.stackService.checkStackParams(stack.type, stack.params)
+      false ===
+      this.stackService.checkStackParams(
+        stack.manager,
+        stack.type,
+        stack.params
+      )
     ) {
       return {
         data: null,
@@ -238,7 +267,7 @@ export class InfrastructureStackController {
         },
       };
     } else if (
-      stack.status === InfrastructureStackStatus.BUILDING ||
+      //stack.status === InfrastructureStackStatus.BUILDING ||
       stack.status === InfrastructureStackStatus.DESTROYING ||
       stack.status === InfrastructureStackStatus.DELETED
     ) {

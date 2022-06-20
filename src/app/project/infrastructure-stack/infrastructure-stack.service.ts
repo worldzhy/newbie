@@ -1,6 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {PrismaService} from '../../../_prisma/_prisma.service';
 import {PulumiService} from './pulumi/pulumi.service';
+import {CloudFormationService} from './cloudformation/cloudformation.service';
 import {EnvironmentService} from '../environment/environment.service';
 import {
   InfrastructureStack,
@@ -14,34 +15,8 @@ import {
 export class InfrastructureStackService {
   private prisma = new PrismaService();
   private pulumiService = new PulumiService();
+  private cloudformationService = new CloudFormationService();
   private environmentService = new EnvironmentService();
-  private stackManager = InfrastructureStackManager.PULUMI;
-
-  /**
-   * Call this function if you don't know the input parameters of a infrastructure stack.
-   *
-   * @param {InfrastructureStackType} stackType
-   * @returns
-   * @memberof InfrastructureStackService
-   */
-  getStackParams(stackType: InfrastructureStackType) {
-    return {
-      type: stackType,
-      params: this.pulumiService.getStackParams(stackType),
-    };
-  }
-
-  /**
-   *
-   *
-   * @param {InfrastructureStackType} stackType
-   * @param {object} params
-   * @returns
-   * @memberof InfrastructureStackService
-   */
-  checkStackParams(stackType: InfrastructureStackType, params: any) {
-    return this.pulumiService.checkStackParams(stackType, params);
-  }
 
   async findOne(where: Prisma.InfrastructureStackWhereUniqueInput) {
     return await this.prisma.infrastructureStack.findUnique({
@@ -95,6 +70,52 @@ export class InfrastructureStackService {
   }
 
   /**
+   * Call this function if you don't know the input parameters of a infrastructure stack.
+   *
+   * @param {InfrastructureStackType} stackType
+   * @returns
+   * @memberof InfrastructureStackService
+   */
+  getStackParams(
+    stackManager: InfrastructureStackManager,
+    stackType: InfrastructureStackType
+  ) {
+    if (stackManager === InfrastructureStackManager.PULUMI) {
+      return {
+        type: stackType,
+        params: this.pulumiService.getStackParams(stackType),
+        manager: InfrastructureStackManager.PULUMI,
+      };
+    } else if (stackManager === InfrastructureStackManager.CLOUDFORMATION) {
+      return {
+        type: stackType,
+        params: this.cloudformationService.getStackParams(stackType),
+        manager: InfrastructureStackManager.CLOUDFORMATION,
+      };
+    }
+  }
+
+  /**
+   *
+   *
+   * @param {InfrastructureStackType} stackType
+   * @param {object} params
+   * @returns
+   * @memberof InfrastructureStackService
+   */
+  checkStackParams(
+    stackManager: InfrastructureStackManager,
+    stackType: InfrastructureStackType,
+    params: any
+  ) {
+    if (stackManager === InfrastructureStackManager.PULUMI) {
+      return this.pulumiService.checkStackParams(stackType, params);
+    } else if (stackManager === InfrastructureStackManager.CLOUDFORMATION) {
+      return this.cloudformationService.checkStackParams(stackType, params);
+    }
+  }
+
+  /**
    * Attention:
    * This function must be called after 'InfrastructureStackService.setAwsRegion()'.
    *
@@ -132,7 +153,7 @@ export class InfrastructureStackService {
       };
     }
     let upResult: any = undefined;
-    if (this.stackManager === InfrastructureStackManager.PULUMI) {
+    if (infrastructureStack.manager === InfrastructureStackManager.PULUMI) {
       upResult = await this.pulumiService
         .setAwsProfile(environment.awsProfile)
         .setAwsAccessKey(environment.awsAccessKeyId)
@@ -144,8 +165,18 @@ export class InfrastructureStackService {
           infrastructureStack.type,
           infrastructureStack.params
         );
-    } // else if (this.manager === InfrastructureManager.XXX) {}
-    else {
+    } else if (
+      infrastructureStack.manager === InfrastructureStackManager.CLOUDFORMATION
+    ) {
+      upResult = await this.cloudformationService
+        .setAwsProfile(environment.awsProfile)
+        .setAwsRegion(environment.awsRegion)
+        .build(
+          infrastructureStack.name,
+          infrastructureStack.type,
+          infrastructureStack.params
+        );
+    } else {
       return null;
     }
 
@@ -185,17 +216,39 @@ export class InfrastructureStackService {
     });
 
     // [step 2] Start destroying infrastructure stack.
-    if (infrastructureStack === null) {
-      return null;
+    const environment = await this.environmentService.findOne({
+      type_projectId: {
+        type: infrastructureStack.environment,
+        projectId: infrastructureStack.projectId,
+      },
+    });
+    if (
+      !environment?.awsProfile ||
+      !environment.awsAccessKeyId ||
+      !environment.awsSecretAccessKey ||
+      !environment.awsRegion
+    ) {
+      return {
+        data: null,
+        err: {
+          message: 'Missing AWS profile or region.',
+        },
+      };
     }
-    let destroyResult;
-    if (this.stackManager === InfrastructureStackManager.PULUMI) {
+    let destroyResult: any = undefined;
+    if (infrastructureStack.manager === InfrastructureStackManager.PULUMI) {
       destroyResult = await this.pulumiService.destroy(
         infrastructureStack.pulumiProjectName,
         infrastructureStack.name
       );
-    } /* else if (this.manager === InfrastructureManager.XXX) {
-} */ else {
+    } else if (
+      infrastructureStack.manager === InfrastructureStackManager.CLOUDFORMATION
+    ) {
+      destroyResult = await this.cloudformationService
+        .setAwsProfile(environment.awsProfile)
+        .setAwsRegion(environment.awsRegion)
+        .destroy(infrastructureStack.name);
+    } else {
       return null;
     }
 
@@ -230,7 +283,7 @@ export class InfrastructureStackService {
     if (infrastructureStack === null) {
       return null;
     }
-    if (this.stackManager === InfrastructureStackManager.PULUMI) {
+    if (infrastructureStack.manager === InfrastructureStackManager.PULUMI) {
       await this.pulumiService.delete(
         infrastructureStack.pulumiProjectName,
         infrastructureStack.name

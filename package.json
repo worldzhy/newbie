@@ -30,10 +30,12 @@
     "seed": "ts-node ./prisma/seed.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-cloudformation": "^3.112.0",
     "@aws-sdk/client-pinpoint": "^3.76.0",
     "@aws-sdk/client-s3": "^3.76.0",
     "@aws-sdk/client-sns": "^3.76.0",
     "@aws-sdk/client-sqs": "^3.76.0",
+    "@aws-sdk/credential-providers": "^3.112.0",
     "@nestjs/common": "^8.0.0",
     "@nestjs/core": "^8.0.0",
     "@nestjs/jwt": "^8.0.0",

@@ -237,7 +237,7 @@ model InfrastructureStack {
 }
   enum InfrastructureStackManager {
     PULUMI
-    AWSCDK
+    CLOUDFORMATION
   }
   enum InfrastructureStackType {
     AWS_CLOUDFRONT

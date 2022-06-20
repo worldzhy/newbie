@@ -3,7 +3,6 @@ import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {MicroserviceStatus, ProjectEnvironmentType} from '@prisma/client';
 import {MicroserviceService} from './microservice.service';
 import {ProjectService} from '../project.service';
-import {InfrastructureStackService} from '../infrastructure-stack/infrastructure-stack.service';
 
 @ApiTags('App / Project / Microservice')
 @ApiBearerAuth()
@@ -11,7 +10,6 @@ import {InfrastructureStackService} from '../infrastructure-stack/infrastructure
 export class MicroserviceController {
   private projectService = new ProjectService();
   private microserviceService = new MicroserviceService();
-  private infrastructureStackService = new InfrastructureStackService();
 
   /**
    * Get microservices for a project.
