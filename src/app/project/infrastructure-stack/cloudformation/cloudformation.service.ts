@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {
+  Capability,
   CloudFormationClient,
   CreateStackCommand,
   DeleteStackCommand,
@@ -8,6 +9,7 @@ import {fromIni} from '@aws-sdk/credential-providers';
 import {InfrastructureStackType} from '@prisma/client';
 import {S3_Stack} from './stack/s3.stack';
 import {Hipaa_Stack} from './stack/hipaa.stack';
+import {Message_Stack} from './stack/message.stack';
 
 @Injectable()
 export class CloudFormationService {
@@ -52,7 +54,7 @@ export class CloudFormationService {
     });
 
     const params = {
-      /** input parameters */
+      Capabilities: [Capability.CAPABILITY_IAM], // Allow cloudformation to create IAM resource.
       StackName: stackName,
       TemplateURL: this.getStackTemplateByType(stackType),
       Parameters: Object.keys(stackParams).map(key => {
@@ -179,6 +181,8 @@ export class CloudFormationService {
         return Hipaa_Stack;
       case InfrastructureStackType.HIPAA:
         return Hipaa_Stack;
+      case InfrastructureStackType.MESSAGE:
+        return Message_Stack;
     }
   }
 }

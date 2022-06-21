@@ -17,8 +17,9 @@ import {AwsRds_Stack} from './stack/aws.rds.stack';
 import {AwsS3_Stack} from './stack/aws.s3.stack';
 import {AwsSqs_Stack} from './stack/aws.sqs.stack';
 import {AwsVpc_Stack} from './stack/aws.vpc.stack';
-import {Hipaa_Stack} from './stack/hipaa.stack';
 import {AwsWaf_Stack} from './stack/aws.waf.stack';
+import {Hipaa_Stack} from './stack/hipaa.stack';
+import {Message_Stack} from './stack/message.stack';
 
 @Injectable()
 export class PulumiService {
@@ -294,6 +295,8 @@ export class PulumiService {
         return AwsWaf_Stack;
       case InfrastructureStackType.HIPAA:
         return Hipaa_Stack;
+      case InfrastructureStackType.MESSAGE:
+        return Message_Stack;
     }
   }
 

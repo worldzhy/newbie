@@ -252,6 +252,7 @@ model InfrastructureStack {
     AWS_VPC
     AWS_WAF
     HIPAA
+    MESSAGE
   }
   enum InfrastructureStackStatus {
     PREPARING
