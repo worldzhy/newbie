@@ -4,11 +4,18 @@ import {Injectable} from '@nestjs/common';
 export class Message_Stack {
   static getStackParams() {
     return {
-      AWSConfigARN:
-        'arn:aws:iam::067174804713:role/aws-service-role/config.amazonaws.com/AWSServiceRoleForConfig',
-      SNSAlarmEmail: 'henry@inceptionpad.com',
-      QSS3BucketName: 'cf-templates-1mxwi9sjys7dk-us-east-1',
-      QSS3BucketRegion: 'us-east-1',
+      DatabaseHost:
+        'postgres-1.cmkxbdo0yf63.rds.cn-northwest-1.amazonaws.com.cn',
+      DatabasePort: '5432',
+      DatabaseMasterUsername: 'postgres',
+      DatabaseMasterUserPassword: 'postgres',
+      DatabaseName: 'postgres',
+      SESIdentityARN: '',
+      FromAddress: 'henry@inceptionpad.com',
+      LambdaCodeS3BucketName: 'aws-quickstart-077767357755',
+      PinpointEventProcessorLambdaCodeArchiveName: '',
+      AlarmLambdaCodeArchiveName: '',
+      MessageShooterLambdaCodeArchiveName: '',
     };
   }
 
@@ -21,7 +28,7 @@ export class Message_Stack {
   }
 
   static getStackOutputKeys() {
-    return [];
+    return ['EmailQueueUrl'];
   }
 
   static getStackTemplate() {
