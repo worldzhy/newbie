@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 
 @Injectable()
-export class Message_Stack {
+export class MessageTracker_Stack {
   static getStackParams() {
     return {
       DatabaseHost:
@@ -32,6 +32,6 @@ export class Message_Stack {
   }
 
   static getStackTemplate() {
-    return 'https://cf-templates-1mxwi9sjys7dk-us-east-1.s3.amazonaws.com/quickstart-compliance-hipaa/templates/compliance-hipaa-entrypoint.template.yaml';
+    return 'https://aws-quickstart-077767357755.s3.cn-northwest-1.amazonaws.com.cn/quickstart-message-tracker/templates/message-tracker.template.json';
   }
 }

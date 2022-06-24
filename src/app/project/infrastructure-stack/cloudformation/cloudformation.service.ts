@@ -9,7 +9,7 @@ import {fromIni} from '@aws-sdk/credential-providers';
 import {InfrastructureStackType} from '@prisma/client';
 import {S3_Stack} from './stack/s3.stack';
 import {Hipaa_Stack} from './stack/hipaa.stack';
-import {Message_Stack} from './stack/message.stack';
+import {MessageTracker_Stack} from './stack/message-tracker.stack';
 
 @Injectable()
 export class CloudFormationService {
@@ -181,8 +181,8 @@ export class CloudFormationService {
         return Hipaa_Stack;
       case InfrastructureStackType.HIPAA:
         return Hipaa_Stack;
-      case InfrastructureStackType.MESSAGE:
-        return Message_Stack;
+      case InfrastructureStackType.MESSAGE_TRACKER:
+        return MessageTracker_Stack;
     }
   }
 }

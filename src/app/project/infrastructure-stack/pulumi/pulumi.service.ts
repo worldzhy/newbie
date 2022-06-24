@@ -295,7 +295,7 @@ export class PulumiService {
         return AwsWaf_Stack;
       case InfrastructureStackType.HIPAA:
         return Hipaa_Stack;
-      case InfrastructureStackType.MESSAGE:
+      case InfrastructureStackType.MESSAGE_TRACKER:
         return Message_Stack;
     }
   }

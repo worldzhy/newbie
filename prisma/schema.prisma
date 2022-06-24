@@ -252,7 +252,7 @@ model InfrastructureStack {
     AWS_VPC
     AWS_WAF
     HIPAA
-    MESSAGE
+    MESSAGE_TRACKER
   }
   enum InfrastructureStackStatus {
     PREPARING
