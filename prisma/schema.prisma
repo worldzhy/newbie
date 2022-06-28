@@ -224,10 +224,10 @@ model InfrastructureStack {
   type                InfrastructureStackType
   status              InfrastructureStackStatus
   manager             InfrastructureStackManager
-  pulumiProjectName   String
+  pulumiProjectName   String?
   // We use 'stackProjectName' & 'name' to identify infrastructure stack(cloud resource stack).
   // The stackProject Name is a concept of Pulumi. We set it with Project->name.
-  upResult            Json?
+  buildResult         Json?
   destroyResult       Json?
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
@@ -251,8 +251,9 @@ model InfrastructureStack {
     AWS_SQS
     AWS_VPC
     AWS_WAF
-    HIPAA
-    MESSAGE_TRACKER
+    FARGATE_CICD_SOLUTION
+    HIPAA_NETWORK_SOLUTION
+    MESSAGE_TRACKER_SOLUTION
   }
   enum InfrastructureStackStatus {
     PREPARING

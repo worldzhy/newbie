@@ -23,7 +23,7 @@ export class AwsIamUser_Stack {
   }
 
   static getStackProgram =
-    (params: {iamUserName: string}, awsRegion: string) => async () => {
+    (params: {iamUserName: string}, awsConfig: any) => async () => {
       // [step 1] Guard statement.
 
       // [step 2] Get or create IAM user group.
@@ -41,7 +41,7 @@ export class AwsIamUser_Stack {
           {
             name: userGroupName,
           },
-          PulumiUtil.getResourceOptions(awsRegion)
+          PulumiUtil.getResourceOptions(awsConfig.region)
         );
 
         uniqueResourceName = 'iam-usergroup-policy-attachment';
@@ -50,10 +50,10 @@ export class AwsIamUser_Stack {
           {
             group: userGroupName,
             policyArn:
-              (awsRegion.startsWith('cn') ? 'arn:aws-cn:' : 'arn:aws:') +
+              (awsConfig.region.startsWith('cn') ? 'arn:aws-cn:' : 'arn:aws:') +
               'iam::aws:policy/AWSCodeCommitPowerUser',
           },
-          PulumiUtil.getResourceOptions(awsRegion)
+          PulumiUtil.getResourceOptions(awsConfig.region)
         );
       }
 
@@ -64,7 +64,7 @@ export class AwsIamUser_Stack {
         {
           name: params.iamUserName,
         },
-        PulumiUtil.getResourceOptions(awsRegion)
+        PulumiUtil.getResourceOptions(awsConfig.region)
       );
 
       uniqueResourceName = 'iam-usergroup-membership';
@@ -74,7 +74,7 @@ export class AwsIamUser_Stack {
           user: iamUser.name,
           groups: [userGroupName],
         },
-        PulumiUtil.getResourceOptions(awsRegion)
+        PulumiUtil.getResourceOptions(awsConfig.region)
       );
 
       // [step 4] Create HTTPS Git credentials for Amazon CodeCommit
@@ -85,7 +85,7 @@ export class AwsIamUser_Stack {
           serviceName: 'codecommit.amazonaws.com',
           userName: iamUser.name,
         },
-        PulumiUtil.getResourceOptions(awsRegion)
+        PulumiUtil.getResourceOptions(awsConfig.region)
       );
 
       return {

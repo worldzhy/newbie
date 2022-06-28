@@ -5,7 +5,7 @@ import * as awsx from '@pulumi/awsx';
 import {PulumiUtil} from '../pulumi.util';
 
 @Injectable()
-export class Hipaa_Stack {
+export class HipaaNetwork_Solution_Stack {
   static getStackParams() {
     return {
       [InfrastructureStackType.AWS_ECS]: {

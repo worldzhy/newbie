@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 
 @Injectable()
-export class S3_Stack {
+export class AwsS3_Stack {
   static getStackParams() {
     return {
       S3BucketName: 'example-bucket',

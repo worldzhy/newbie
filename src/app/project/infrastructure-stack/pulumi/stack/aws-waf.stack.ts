@@ -24,7 +24,7 @@ export class AwsWaf_Stack {
   }
 
   static getStackProgram =
-    (params: {applicationLoadBalancerArn: string}, awsRegion: string) =>
+    (params: {applicationLoadBalancerArn: string}, awsConfig: any) =>
     async () => {
       // [step 1] Create rule group.
       let uniqueResourceName = 'waf-rule-group';
@@ -92,7 +92,7 @@ export class AwsWaf_Stack {
             sampledRequestsEnabled: false,
           },
         },
-        PulumiUtil.getResourceOptions(awsRegion)
+        PulumiUtil.getResourceOptions(awsConfig.region)
       );
 
       // [step 2] Create web ACL.
@@ -199,7 +199,7 @@ export class AwsWaf_Stack {
             sampledRequestsEnabled: false,
           },
         },
-        PulumiUtil.getResourceOptions(awsRegion)
+        PulumiUtil.getResourceOptions(awsConfig.region)
       );
 
       // [step 3] Associate web ACL with application loadbalancer.
@@ -210,7 +210,7 @@ export class AwsWaf_Stack {
           resourceArn: params.applicationLoadBalancerArn,
           webAclArn: webAcl.arn,
         },
-        PulumiUtil.getResourceOptions(awsRegion)
+        PulumiUtil.getResourceOptions(awsConfig.region)
       );
     };
 }

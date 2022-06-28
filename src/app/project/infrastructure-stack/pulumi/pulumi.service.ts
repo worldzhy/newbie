@@ -8,49 +8,53 @@ import {
 import {InfrastructureStackType} from '@prisma/client';
 import {PulumiConfig} from 'src/_config/_pulumi.config';
 import axios from 'axios';
-import {AwsCloudfront_Stack} from './stack/aws.cloudfront.stack';
-import {AwsCodecommit_Stack} from './stack/aws.codecommit.stack';
-import {AwsEcr_Stack} from './stack/aws.ecr.stack';
-import {AwsEcs_Stack} from './stack/aws.ecs.stack';
-import {AwsIamUser_Stack} from './stack/aws.iam-user.stack';
-import {AwsRds_Stack} from './stack/aws.rds.stack';
-import {AwsS3_Stack} from './stack/aws.s3.stack';
-import {AwsSqs_Stack} from './stack/aws.sqs.stack';
-import {AwsVpc_Stack} from './stack/aws.vpc.stack';
-import {AwsWaf_Stack} from './stack/aws.waf.stack';
-import {Hipaa_Stack} from './stack/hipaa.stack';
-import {Message_Stack} from './stack/message.stack';
+import {AwsCloudfront_Stack} from './stack/aws-cloudfront.stack';
+import {AwsCodecommit_Stack} from './stack/aws-codecommit.stack';
+import {AwsEcr_Stack} from './stack/aws-ecr.stack';
+import {AwsEcs_Stack} from './stack/aws-ecs.stack';
+import {AwsIamUser_Stack} from './stack/aws-iam-user.stack';
+import {AwsRds_Stack} from './stack/aws-rds.stack';
+import {AwsS3_Stack} from './stack/aws-s3.stack';
+import {AwsSqs_Stack} from './stack/aws-sqs.stack';
+import {AwsVpc_Stack} from './stack/aws-vpc.stack';
+import {AwsWaf_Stack} from './stack/aws-waf.stack';
+import {FargateCicd_Solution_Stack} from './stack/fargate-cicd.solution.stack';
+import {HipaaNetwork_Solution_Stack} from './stack/hipaa-network.solution.stack';
+import {MessageTracker_Solution_Stack} from './stack/message-tracker.solution.stack';
 
 @Injectable()
 export class PulumiService {
   private pulumiAwsVersion = PulumiConfig.getAwsVersion();
-  private awsProfile: string;
-  private awsAccessKey: string;
-  private awsSecretKey: string;
-  private awsRegion: string;
+  private awsConfig: {
+    accountId: string;
+    profile: string;
+    region: string;
+    accessKey: string;
+    secretKey: string;
+  };
 
   /**
    * Attention:
-   * These 4 functions must be called before 'PulumiService.build()'.
-   *
-   * @param {string} awsProfile
-   * @returns
-   * @memberof PulumiService
+   * These 5 functions must be called before 'PulumiService.build()'.
    */
+  setAwsAccountId(awsAccountId: string) {
+    this.awsConfig.accountId = awsAccountId;
+    return this;
+  }
   setAwsProfile(awsProfile: string) {
-    this.awsProfile = awsProfile;
-    return this;
-  }
-  setAwsAccessKey(awsAccessKey: string) {
-    this.awsAccessKey = awsAccessKey;
-    return this;
-  }
-  setAwsSecretKey(awsSecretKey: string) {
-    this.awsSecretKey = awsSecretKey;
+    this.awsConfig.profile = awsProfile;
     return this;
   }
   setAwsRegion(awsRegion: string) {
-    this.awsRegion = awsRegion;
+    this.awsConfig.region = awsRegion;
+    return this;
+  }
+  setAwsAccessKey(awsAccessKey: string) {
+    this.awsConfig.accessKey = awsAccessKey;
+    return this;
+  }
+  setAwsSecretKey(awsSecretKey: string) {
+    this.awsConfig.secretKey = awsSecretKey;
     return this;
   }
 
@@ -108,10 +112,10 @@ export class PulumiService {
     const stack = await LocalWorkspace.createOrSelectStack(args);
     await stack.workspace.installPlugin('aws', this.pulumiAwsVersion);
     await stack.setAllConfig({
-      'aws:profile': {value: this.awsProfile},
-      'aws:accessKey': {value: this.awsAccessKey},
-      'aws:secretKey': {value: this.awsSecretKey},
-      'aws:region': {value: this.awsRegion},
+      'aws:profile': {value: this.awsConfig.profile},
+      'aws:accessKey': {value: this.awsConfig.accessKey},
+      'aws:secretKey': {value: this.awsConfig.secretKey},
+      'aws:region': {value: this.awsConfig.region},
     });
 
     try {
@@ -203,7 +207,7 @@ export class PulumiService {
     const stack = await LocalWorkspace.selectStack(args);
     await stack.workspace.installPlugin('aws', this.pulumiAwsVersion);
     await stack.setAllConfig({
-      'aws:region': {value: this.awsRegion},
+      'aws:region': {value: this.awsConfig.region},
       'aws:profile': {value: stackProjectName},
     });
 
@@ -258,7 +262,7 @@ export class PulumiService {
   ) {
     return this.getStackServiceByType(stackType).getStackProgram(
       stackParams,
-      this.awsRegion
+      this.awsConfig
     );
   }
 
@@ -293,10 +297,12 @@ export class PulumiService {
         return AwsVpc_Stack;
       case InfrastructureStackType.AWS_WAF:
         return AwsWaf_Stack;
-      case InfrastructureStackType.HIPAA:
-        return Hipaa_Stack;
-      case InfrastructureStackType.MESSAGE_TRACKER:
-        return Message_Stack;
+      case InfrastructureStackType.FARGATE_CICD_SOLUTION:
+        return FargateCicd_Solution_Stack;
+      case InfrastructureStackType.HIPAA_NETWORK_SOLUTION:
+        return HipaaNetwork_Solution_Stack;
+      case InfrastructureStackType.MESSAGE_TRACKER_SOLUTION:
+        return MessageTracker_Solution_Stack;
     }
   }
 

@@ -23,7 +23,7 @@ export class AwsEcr_Stack {
   }
 
   static getStackProgram =
-    (params: {repositoryName: string}, awsRegion: string) => async () => {
+    (params: {repositoryName: string}, awsConfig: any) => async () => {
       // [step 1] Guard statement.
 
       // [step 2] Create a repository.
@@ -31,14 +31,14 @@ export class AwsEcr_Stack {
       const repository = new awsx.ecr.Repository(
         uniqueResourceName,
         {name: params.repositoryName},
-        PulumiUtil.getResourceOptions(awsRegion)
+        PulumiUtil.getResourceOptions(awsConfig.region)
       );
 
       uniqueResourceName = 'ecr-image';
       const image = new awsx.ecr.Image(
         uniqueResourceName,
         {repositoryUrl: repository.url},
-        PulumiUtil.getResourceOptions(awsRegion)
+        PulumiUtil.getResourceOptions(awsConfig.region)
       );
 
       return {

@@ -24,7 +24,7 @@ export class AwsVpc_Stack {
   }
 
   static getStackProgram =
-    (params: {vpcName?: string; vpcCidrBlock?: string}, awsRegion: string) =>
+    (params: {vpcName?: string; vpcCidrBlock?: string}, awsConfig: any) =>
     async () => {
       let vpcName = params.vpcName;
       let vpcCidrBlock = params.vpcCidrBlock;
@@ -48,7 +48,7 @@ export class AwsVpc_Stack {
         {
           cidrBlock: vpcCidrBlock,
         },
-        PulumiUtil.getResourceOptions(awsRegion)
+        PulumiUtil.getResourceOptions(awsConfig.region)
       );
 
       return {

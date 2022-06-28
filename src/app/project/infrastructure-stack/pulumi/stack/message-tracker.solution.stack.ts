@@ -5,7 +5,7 @@ import * as awsx from '@pulumi/awsx';
 import {PulumiUtil} from '../pulumi.util';
 
 @Injectable()
-export class Message_Stack {
+export class MessageTracker_Solution_Stack {
   static getStackParams() {
     return {};
   }

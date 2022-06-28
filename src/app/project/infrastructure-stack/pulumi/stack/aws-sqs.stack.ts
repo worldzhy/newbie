@@ -2,10 +2,9 @@ import {Injectable} from '@nestjs/common';
 import * as aws from '@pulumi/aws';
 import {AwsValidator} from '../../../../../_validator/_aws.validator';
 import {PulumiUtil} from '../pulumi.util';
-import {CommonUtil} from '../../../../../_util/_common.util';
 
 @Injectable()
-export class AwsS3_Stack {
+export class AwsSqs_Stack {
   static getStackParams() {
     return {
       bucketName: 'example-bucket',
@@ -21,16 +20,16 @@ export class AwsS3_Stack {
   }
 
   static getStackOutputKeys() {
-    return ['bucketName', 'bucketArn'];
+    return ['username', 'password'];
   }
 
   static getStackProgram =
-    (params: {bucketName: string}, awsRegion: string) => async () => {
-      let bucketName = params.bucketName + '-' + CommonUtil.randomCode(4);
+    (params: {bucketName: string}, awsConfig: any) => async () => {
+      let bucketName = params.bucketName;
 
       // [step 1] Guard statement.
       if (false === AwsValidator.verifyS3Bucketname(bucketName)) {
-        bucketName = 'example-bucket-' + CommonUtil.randomCode(4);
+        bucketName = 'default-bucket-name';
       }
 
       // Create a bucket.
@@ -38,7 +37,7 @@ export class AwsS3_Stack {
       const bucket = new aws.s3.Bucket(
         uniqueResourceName,
         {bucket: bucketName},
-        PulumiUtil.getResourceOptions(awsRegion)
+        PulumiUtil.getResourceOptions(awsConfig.region)
       );
 
       // Create an S3 Bucket Policy to allow public read of all objects in bucket.
@@ -53,7 +52,7 @@ export class AwsS3_Stack {
               Principal: '*',
               Action: ['s3:GetObject'],
               Resource: [
-                awsRegion.startsWith('cn')
+                awsConfig.region.startsWith('cn')
                   ? `arn:aws-cn:s3:::${bucketName}/*`
                   : `arn:aws:s3:::${bucketName}/*`, // Policy refers to bucket name explicitly.
               ],
@@ -70,7 +69,7 @@ export class AwsS3_Stack {
           bucket: bucket.bucket, // Refer to the bucket created earlier.
           policy: bucket.bucket.apply(publicReadPolicyForBucket), // Use output property `siteBucket.bucket`.
         },
-        PulumiUtil.getResourceOptions(awsRegion)
+        PulumiUtil.getResourceOptions(awsConfig.region)
       );
 
       return {

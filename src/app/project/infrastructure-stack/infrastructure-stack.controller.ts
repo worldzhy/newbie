@@ -151,10 +151,14 @@ export class InfrastructureStackController {
     } = body;
 
     let stackName: string = type + '-' + CommonUtil.randomCode(8);
+    let pulumiProjectName: string | undefined = undefined;
 
     // CloudFormation stack name must satisfy regular expression pattern: [a-zA-Z][-a-zA-Z0-9]*".
+    // Pulumi stack must be under a Pulumi project.
     if (manager === InfrastructureStackManager.CLOUDFORMATION) {
       stackName = stackName.replace('_', '-');
+    } else if (manager === InfrastructureStackManager.PULUMI) {
+      pulumiProjectName = projectName;
     }
 
     return await this.stackService.create({
@@ -163,7 +167,7 @@ export class InfrastructureStackController {
       params: params,
       status: InfrastructureStackStatus.PREPARING,
       manager: manager,
-      pulumiProjectName: projectName,
+      pulumiProjectName: pulumiProjectName,
       environment: environment,
       project: {connect: {name: projectName}},
     });
@@ -310,7 +314,7 @@ export class InfrastructureStackController {
         err: {message: 'Invalid infrastructureStackId.'},
       };
     }
-    if (stack.upResult === null) {
+    if (stack.buildResult === null) {
       return {
         data: null,
         err: {
@@ -364,7 +368,7 @@ export class InfrastructureStackController {
         err: {message: 'Invalid infrastructureStackId.'},
       };
     }
-    if (stack.upResult === null) {
+    if (stack.buildResult === null) {
       return {
         data: null,
         err: {

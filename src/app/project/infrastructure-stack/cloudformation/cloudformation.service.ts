@@ -7,9 +7,10 @@ import {
 } from '@aws-sdk/client-cloudformation';
 import {fromIni} from '@aws-sdk/credential-providers';
 import {InfrastructureStackType} from '@prisma/client';
-import {S3_Stack} from './stack/s3.stack';
-import {Hipaa_Stack} from './stack/hipaa.stack';
-import {MessageTracker_Stack} from './stack/message-tracker.stack';
+import {AwsS3_Stack} from './stack/aws-s3.stack';
+import {FargateCicd_Solution_Stack} from './stack/fargate-cicd.solution.stack';
+import {HipaaNetwork_Solution_Stack} from './stack/hipaa-network.solution.stack';
+import {MessageTracker_Solution_Stack} from './stack/message-tracker.solution.stack';
 
 @Injectable()
 export class CloudFormationService {
@@ -158,31 +159,33 @@ export class CloudFormationService {
   private getStackServiceByType(type: InfrastructureStackType) {
     switch (type) {
       case InfrastructureStackType.AWS_CLOUDFRONT:
-        return Hipaa_Stack;
+        return HipaaNetwork_Solution_Stack;
       case InfrastructureStackType.AWS_CODE_COMMIT:
-        return Hipaa_Stack;
+        return HipaaNetwork_Solution_Stack;
       case InfrastructureStackType.AWS_ECR:
-        return Hipaa_Stack;
+        return HipaaNetwork_Solution_Stack;
       case InfrastructureStackType.AWS_ECS:
-        return Hipaa_Stack;
+        return HipaaNetwork_Solution_Stack;
       case InfrastructureStackType.AWS_EKS:
-        return Hipaa_Stack;
+        return HipaaNetwork_Solution_Stack;
       case InfrastructureStackType.AWS_IAM_USER:
-        return Hipaa_Stack;
+        return HipaaNetwork_Solution_Stack;
       case InfrastructureStackType.AWS_RDS:
-        return Hipaa_Stack;
+        return HipaaNetwork_Solution_Stack;
       case InfrastructureStackType.AWS_S3:
-        return S3_Stack;
+        return AwsS3_Stack;
       case InfrastructureStackType.AWS_SQS:
-        return Hipaa_Stack;
+        return HipaaNetwork_Solution_Stack;
       case InfrastructureStackType.AWS_VPC:
-        return Hipaa_Stack;
+        return HipaaNetwork_Solution_Stack;
       case InfrastructureStackType.AWS_WAF:
-        return Hipaa_Stack;
-      case InfrastructureStackType.HIPAA:
-        return Hipaa_Stack;
-      case InfrastructureStackType.MESSAGE_TRACKER:
-        return MessageTracker_Stack;
+        return HipaaNetwork_Solution_Stack;
+      case InfrastructureStackType.FARGATE_CICD_SOLUTION:
+        return FargateCicd_Solution_Stack;
+      case InfrastructureStackType.HIPAA_NETWORK_SOLUTION:
+        return HipaaNetwork_Solution_Stack;
+      case InfrastructureStackType.MESSAGE_TRACKER_SOLUTION:
+        return MessageTracker_Solution_Stack;
     }
   }
 }

@@ -23,7 +23,7 @@ export class AwsCodecommit_Stack {
   }
 
   static getStackProgram =
-    (params: {repositoryName: string}, awsRegion: string) => async () => {
+    (params: {repositoryName: string}, awsConfig: any) => async () => {
       // [step 1] Guard statement.
 
       // [step 2] Create a repository.
@@ -34,7 +34,7 @@ export class AwsCodecommit_Stack {
           repositoryName: params.repositoryName,
           defaultBranch: 'main',
         },
-        PulumiUtil.getResourceOptions(awsRegion)
+        PulumiUtil.getResourceOptions(awsConfig.region)
       );
 
       return {

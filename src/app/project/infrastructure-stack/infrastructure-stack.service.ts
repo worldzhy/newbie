@@ -24,28 +24,6 @@ export class InfrastructureStackService {
     });
   }
 
-  async findOneWithStackOutputs(
-    where: Prisma.InfrastructureStackWhereUniqueInput
-  ) {
-    const stack = await this.prisma.infrastructureStack.findUnique({
-      where,
-    });
-    if (stack === null) {
-      return null;
-    }
-
-    const outputs = await this.pulumiService.getStackOutputs(
-      stack.pulumiProjectName,
-      stack.name,
-      stack.type
-    );
-
-    return {
-      stack: stack,
-      outputs: outputs,
-    };
-  }
-
   async findMany(where: Prisma.InfrastructureStackWhereInput) {
     return await this.prisma.infrastructureStack.findMany({where});
   }
@@ -140,10 +118,11 @@ export class InfrastructureStackService {
       },
     });
     if (
-      !environment?.awsProfile ||
+      !environment?.awsAccountId ||
+      !environment.awsProfile ||
+      !environment.awsRegion ||
       !environment.awsAccessKeyId ||
-      !environment.awsSecretAccessKey ||
-      !environment.awsRegion
+      !environment.awsSecretAccessKey
     ) {
       return {
         data: null,
@@ -152,15 +131,16 @@ export class InfrastructureStackService {
         },
       };
     }
-    let upResult: any = undefined;
+    let buildResult: any = undefined;
     if (infrastructureStack.manager === InfrastructureStackManager.PULUMI) {
-      upResult = await this.pulumiService
+      buildResult = await this.pulumiService
+        .setAwsAccountId(environment.awsAccountId)
         .setAwsProfile(environment.awsProfile)
+        .setAwsRegion(environment.awsRegion)
         .setAwsAccessKey(environment.awsAccessKeyId)
         .setAwsSecretKey(environment.awsSecretAccessKey)
-        .setAwsRegion(environment.awsRegion)
         .build(
-          infrastructureStack.pulumiProjectName,
+          infrastructureStack.pulumiProjectName!,
           infrastructureStack.name,
           infrastructureStack.type,
           infrastructureStack.params
@@ -168,7 +148,7 @@ export class InfrastructureStackService {
     } else if (
       infrastructureStack.manager === InfrastructureStackManager.CLOUDFORMATION
     ) {
-      upResult = await this.cloudformationService
+      buildResult = await this.cloudformationService
         .setAwsProfile(environment.awsProfile)
         .setAwsRegion(environment.awsRegion)
         .build(
@@ -183,9 +163,9 @@ export class InfrastructureStackService {
     // [step 3] Update database record of infrastructureStack.
     let stackStatus: InfrastructureStackStatus =
       InfrastructureStackStatus.BUILD_FAILED;
-    if (upResult.summary && upResult.summary.result) {
+    if (buildResult.summary && buildResult.summary.result) {
       stackStatus =
-        upResult.summary.result === 'succeeded'
+        buildResult.summary.result === 'succeeded'
           ? InfrastructureStackStatus.BUILD_SUCCEEDED
           : InfrastructureStackStatus.BUILD_FAILED;
     }
@@ -194,7 +174,7 @@ export class InfrastructureStackService {
       where: {id: infrastructureStack.id},
       data: {
         status: stackStatus,
-        upResult: upResult,
+        buildResult: buildResult,
       },
     });
   }
@@ -238,7 +218,7 @@ export class InfrastructureStackService {
     let destroyResult: any = undefined;
     if (infrastructureStack.manager === InfrastructureStackManager.PULUMI) {
       destroyResult = await this.pulumiService.destroy(
-        infrastructureStack.pulumiProjectName,
+        infrastructureStack.pulumiProjectName!,
         infrastructureStack.name
       );
     } else if (
@@ -285,7 +265,7 @@ export class InfrastructureStackService {
     }
     if (infrastructureStack.manager === InfrastructureStackManager.PULUMI) {
       await this.pulumiService.delete(
-        infrastructureStack.pulumiProjectName,
+        infrastructureStack.pulumiProjectName!,
         infrastructureStack.name
       );
     } /* else if (this.manager === InfrastructureManager.XXX) {
