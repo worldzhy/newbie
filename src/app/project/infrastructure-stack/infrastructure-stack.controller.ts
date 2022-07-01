@@ -31,7 +31,7 @@ export class InfrastructureStackController {
   @ApiParam({
     name: 'type',
     schema: {type: 'string'},
-    example: InfrastructureStackType.AWS_CODE_COMMIT,
+    example: InfrastructureStackType.P_AWS_CODE_COMMIT,
   })
   @ApiParam({
     name: 'stackManager',
@@ -109,7 +109,7 @@ export class InfrastructureStackController {
         value: {
           projectName: 'Galaxy',
           environment: ProjectEnvironmentType.DEVELOPMENT,
-          type: InfrastructureStackType.AWS_VPC,
+          type: InfrastructureStackType.P_AWS_VPC,
           params: {
             vpcName: 'pulumi-test-vpc',
             vpcCidrBlock: '10.21.0.0/16',
@@ -122,7 +122,7 @@ export class InfrastructureStackController {
         value: {
           projectName: 'Galaxy',
           environment: ProjectEnvironmentType.DEVELOPMENT,
-          type: InfrastructureStackType.AWS_RDS,
+          type: InfrastructureStackType.P_AWS_RDS,
           params: {
             instanceName: 'postgres-default',
             instanceClass: 'db.t3.micro',

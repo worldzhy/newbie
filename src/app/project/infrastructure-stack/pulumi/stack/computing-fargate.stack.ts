@@ -7,7 +7,7 @@ import {CommonUtil} from '../../../../../_util/_common.util';
 import {AwsValidator} from 'src/_validator/_aws.validator';
 
 @Injectable()
-export class FargateCicd_Solution_Stack {
+export class ComputingFargate_Stack {
   static getStackParams() {
     return {
       vpcId: 'vpc-086e9a2695d4f7001',

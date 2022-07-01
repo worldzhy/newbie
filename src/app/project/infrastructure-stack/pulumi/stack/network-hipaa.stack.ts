@@ -5,9 +5,20 @@ import * as awsx from '@pulumi/awsx';
 import {PulumiUtil} from '../pulumi.util';
 
 @Injectable()
-export class MessageTracker_Solution_Stack {
+export class NetworkHipaa_Stack {
   static getStackParams() {
-    return {};
+    return {
+      [InfrastructureStackType.P_AWS_ECS]: {
+        vpcName: 'elastic-container-cluster',
+        vpcCidrBlock: '10.10.0.0/16',
+        numberOfAvailabilityZones: 2,
+      },
+      [InfrastructureStackType.P_AWS_EKS]: {
+        vpcName: 'elastic-server-cluster',
+        vpcCidrBlock: '10.20.0.0/16',
+        numberOfAvailabilityZones: 2,
+      },
+    };
   }
 
   static checkStackParams(params: object) {
@@ -19,7 +30,13 @@ export class MessageTracker_Solution_Stack {
   }
 
   static getStackOutputKeys() {
-    return [];
+    return [
+      'vpcId',
+      'privateSubnetIds',
+      'publicSubnetIds',
+      'ec2SecurityGroup',
+      'rdsSecurityGroup',
+    ];
   }
 
   static getStackProgram =

@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 
 @Injectable()
-export class HipaaNetwork_Solution_Stack {
+export class NetworkHipaa_Stack {
   static getStackParams() {
     return {
       AWSConfigARN:

@@ -18,19 +18,19 @@ import {AwsS3_Stack} from './stack/aws-s3.stack';
 import {AwsSqs_Stack} from './stack/aws-sqs.stack';
 import {AwsVpc_Stack} from './stack/aws-vpc.stack';
 import {AwsWaf_Stack} from './stack/aws-waf.stack';
-import {FargateCicd_Solution_Stack} from './stack/fargate-cicd.solution.stack';
-import {HipaaNetwork_Solution_Stack} from './stack/hipaa-network.solution.stack';
-import {MessageTracker_Solution_Stack} from './stack/message-tracker.solution.stack';
+import {ComputingFargate_Stack} from './stack/computing-fargate.stack';
+import {NetworkHipaa_Stack} from './stack/network-hipaa.stack';
+import {Null_Stack} from './stack/null.stack';
 
 @Injectable()
 export class PulumiService {
   private pulumiAwsVersion = PulumiConfig.getAwsVersion();
-  private awsConfig: {
-    accountId: string;
-    profile: string;
-    region: string;
-    accessKey: string;
-    secretKey: string;
+  private awsConfig = {
+    accountId: '',
+    profile: '',
+    region: '',
+    accessKey: '',
+    secretKey: '',
   };
 
   /**
@@ -275,34 +275,34 @@ export class PulumiService {
    */
   private getStackServiceByType(type: InfrastructureStackType) {
     switch (type) {
-      case InfrastructureStackType.AWS_CLOUDFRONT:
+      case InfrastructureStackType.P_AWS_CLOUDFRONT:
         return AwsCloudfront_Stack;
-      case InfrastructureStackType.AWS_CODE_COMMIT:
+      case InfrastructureStackType.P_AWS_CODE_COMMIT:
         return AwsCodecommit_Stack;
-      case InfrastructureStackType.AWS_ECR:
+      case InfrastructureStackType.P_AWS_ECR:
         return AwsEcr_Stack;
-      case InfrastructureStackType.AWS_ECS:
+      case InfrastructureStackType.P_AWS_ECS:
         return AwsEcs_Stack;
-      case InfrastructureStackType.AWS_EKS:
+      case InfrastructureStackType.P_AWS_EKS:
         return AwsEcs_Stack;
-      case InfrastructureStackType.AWS_IAM_USER:
+      case InfrastructureStackType.P_AWS_IAM_USER:
         return AwsIamUser_Stack;
-      case InfrastructureStackType.AWS_RDS:
+      case InfrastructureStackType.P_AWS_RDS:
         return AwsRds_Stack;
-      case InfrastructureStackType.AWS_S3:
+      case InfrastructureStackType.P_AWS_S3:
         return AwsS3_Stack;
-      case InfrastructureStackType.AWS_SQS:
+      case InfrastructureStackType.P_AWS_SQS:
         return AwsSqs_Stack;
-      case InfrastructureStackType.AWS_VPC:
+      case InfrastructureStackType.P_AWS_VPC:
         return AwsVpc_Stack;
-      case InfrastructureStackType.AWS_WAF:
+      case InfrastructureStackType.P_AWS_WAF:
         return AwsWaf_Stack;
-      case InfrastructureStackType.FARGATE_CICD_SOLUTION:
-        return FargateCicd_Solution_Stack;
-      case InfrastructureStackType.HIPAA_NETWORK_SOLUTION:
-        return HipaaNetwork_Solution_Stack;
-      case InfrastructureStackType.MESSAGE_TRACKER_SOLUTION:
-        return MessageTracker_Solution_Stack;
+      case InfrastructureStackType.P_COMPUTING_FARGATE:
+        return ComputingFargate_Stack;
+      case InfrastructureStackType.P_NETWORK_HIPAA:
+        return NetworkHipaa_Stack;
+      default:
+        return Null_Stack;
     }
   }
 

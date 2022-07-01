@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 
 @Injectable()
-export class FargateCicd_Solution_Stack {
+export class ComputingFargate_Stack {
   static getStackParams() {
     return {
       ContainerPort: 3000,

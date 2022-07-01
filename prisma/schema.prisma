@@ -4,7 +4,7 @@
 generator client {
   provider = "prisma-client-js"
   // Enable Full-Text Search which is only available for PostgreSQL.
-  previewFeatures = ["dataProxy", "fullTextSearch"]
+  previewFeatures = ["fullTextSearch"]
   
 }
 
@@ -240,20 +240,28 @@ model InfrastructureStack {
     CLOUDFORMATION
   }
   enum InfrastructureStackType {
-    AWS_CLOUDFRONT
-    AWS_CODE_COMMIT
-    AWS_ECR
-    AWS_ECS
-    AWS_EKS
-    AWS_IAM_USER
-    AWS_RDS
-    AWS_S3
-    AWS_SQS
-    AWS_VPC
-    AWS_WAF
-    FARGATE_CICD_SOLUTION
-    HIPAA_NETWORK_SOLUTION
-    MESSAGE_TRACKER_SOLUTION
+    // CloudFormation stack types
+    C_APP_MESSAGE_TRACKER
+    C_AWS_S3
+    C_CICD_BUILD
+    C_CICD_PIPELINE
+    C_CICD_REPOSITORY
+    C_COMPUTING_FARGATE
+    C_NETWORK_HIPAA
+    // Pulumi stack types
+    P_AWS_CLOUDFRONT
+    P_AWS_CODE_COMMIT
+    P_AWS_ECR
+    P_AWS_ECS
+    P_AWS_EKS
+    P_AWS_IAM_USER
+    P_AWS_RDS
+    P_AWS_S3
+    P_AWS_SQS
+    P_AWS_VPC
+    P_AWS_WAF
+    P_COMPUTING_FARGATE
+    P_NETWORK_HIPAA
   }
   enum InfrastructureStackStatus {
     PREPARING

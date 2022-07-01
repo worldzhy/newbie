@@ -40,6 +40,7 @@ const projects: Prisma.ProjectCreateInput[] = [
         data: [
           {
             type: ProjectEnvironmentType.DEVELOPMENT,
+            awsAccountId: '077767357755',
             awsProfile: 'Galaxy',
             awsAccessKeyId: 'fakeAKIAREGsfXsf4FY',
             awsSecretAccessKey: 'fakeGVxCF0AEbjdsftVsfswRR8V+uhQg8QJiZxMy',
@@ -47,6 +48,7 @@ const projects: Prisma.ProjectCreateInput[] = [
           },
           {
             type: ProjectEnvironmentType.STAGING,
+            awsAccountId: '077767357755',
             awsProfile: 'Galaxy',
             awsAccessKeyId: 'fakeAKIAREGsfWUsfYEB4FY',
             awsSecretAccessKey: 'fakeGVxCF0AEbj/xisfSsfwRR8V+uhQg8QJiZxMy',
@@ -54,6 +56,7 @@ const projects: Prisma.ProjectCreateInput[] = [
           },
           {
             type: ProjectEnvironmentType.PRODUCTION,
+            awsAccountId: '077767357755',
             awsProfile: 'Galaxy',
             awsAccessKeyId: 'fakeAKsffsdWU5RXYEB4FY',
             awsSecretAccessKey: 'fakeGVxCsfEbj/xi3asfvVswRR8V+uhQg8QJiZxMy',
@@ -72,6 +75,7 @@ const projects: Prisma.ProjectCreateInput[] = [
         data: [
           {
             type: ProjectEnvironmentType.DEVELOPMENT,
+            awsAccountId: '067174804713',
             awsProfile: 'InceptionPad',
             awsAccessKeyId: 'fakeAKIAQ734OFTUTLIKUV7D',
             awsSecretAccessKey: 'fake7Nw/oOD34gsfoDBkec43s6B2ktqJj2MutiHyfwBUZ',
@@ -79,6 +83,7 @@ const projects: Prisma.ProjectCreateInput[] = [
           },
           {
             type: ProjectEnvironmentType.STAGING,
+            awsAccountId: '067174804713',
             awsProfile: 'InceptionPad',
             awsAccessKeyId: 'fake434Q34OFsdfTLIKUV7D',
             awsSecretAccessKey: 'fake7Nw/oOD34h345oafkecs6B2ktqJj2MsayfwBUZ',
@@ -86,6 +91,7 @@ const projects: Prisma.ProjectCreateInput[] = [
           },
           {
             type: ProjectEnvironmentType.PRODUCTION,
+            awsAccountId: '067174804713',
             awsProfile: 'InceptionPad',
             awsAccessKeyId: 'fakeAKIAQ7IsOF23TLIKUV7D',
             awsSecretAccessKey: 'fake7Nw/oODZ34Igf5oDsfcs6B2342MutiHyfwBUZ',

@@ -7,7 +7,6 @@ export class PulumiUtil {
       transformations: [
         // Update all RolePolicyAttachment resources to use aws-cn ARNs.
         args => {
-          console.log('$$$$$$$$$$', awsRegion);
           if (
             args.type === 'aws:iam/rolePolicyAttachment:RolePolicyAttachment' &&
             awsRegion.startsWith('cn')
