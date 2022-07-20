@@ -268,8 +268,48 @@ export class InfrastructureStackService {
         infrastructureStack.pulumiProjectName!,
         infrastructureStack.name
       );
+    } else if (
+      infrastructureStack.manager === InfrastructureStackManager.CLOUDFORMATION
+    ) {
+      // Do nothing because destroying is enough for CloudFormation stack.
     } /* else if (this.manager === InfrastructureManager.XXX) {
 } */ else {
+      return null;
+    }
+
+    // [step 3] Update database record of infrastructureStack.
+    return await this.prisma.infrastructureStack.update({
+      where: {id: infrastructureStack.id},
+      data: {
+        status: InfrastructureStackStatus.DELETED,
+      },
+    });
+  }
+
+  /**
+   * Only for Pulumi stack.
+   *
+   * @param {string} id
+   * @returns
+   * @memberof InfrastructureStackService
+   */
+  async deletePulumiStackForce(id: string) {
+    // [step 1] Update database record of infrastructureStack.
+    const infrastructureStack =
+      await this.prisma.infrastructureStack.findUnique({
+        where: {id},
+      });
+
+    // [step 2] Start destroying and deleting infrastructure stack.
+    if (infrastructureStack === null) {
+      return null;
+    }
+    if (infrastructureStack.manager === InfrastructureStackManager.PULUMI) {
+      await this.pulumiService.deleteByForce(
+        infrastructureStack.pulumiProjectName!,
+        infrastructureStack.name
+      );
+    } else {
       return null;
     }
 

@@ -388,5 +388,47 @@ export class InfrastructureStackController {
     return await this.stackService.delete(infrastructureStackId);
   }
 
+  /**
+   * Force delete a Pulumi stack.
+   *
+   * @param {string} infrastructureStackId
+   * @returns
+   * @memberof InfrastructureStackController
+   */
+  @Delete('infrastructure-stacks/:infrastructureStackId/delete-pulumi-force')
+  @ApiParam({
+    name: 'infrastructureStackId',
+    schema: {type: 'string'},
+    example: 'a143f94d-8698-4fc5-bd9c-45a3d965a08b',
+  })
+  async forceDeletePulumiStack(
+    @Param('infrastructureStackId')
+    infrastructureStackId: string
+  ) {
+    // [step 1] Get the infrastructure stack.
+    const stack = await this.stackService.findOne({
+      id: infrastructureStackId,
+    });
+    if (!stack) {
+      return {
+        data: null,
+        err: {message: 'Invalid infrastructureStackId.'},
+      };
+    }
+
+    // [step 2] Destroy the infrastructure stack.
+    try {
+      await this.stackService.destroy(infrastructureStackId);
+    } catch (error) {
+      // Do nothing
+      console.log('Exception for destroying pulumi stack [', stack.name, ']');
+    }
+
+    // [step 3] Force delete the infrastructure stack.
+    return await this.stackService.deletePulumiStackForce(
+      infrastructureStackId
+    );
+  }
+
   /* End */
 }

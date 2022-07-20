@@ -1,4 +1,5 @@
 import {Injectable} from '@nestjs/common';
+import axios from 'axios';
 import {
   DestroyResult,
   InlineProgramArgs,
@@ -7,7 +8,6 @@ import {
 } from '@pulumi/pulumi/automation';
 import {InfrastructureStackType} from '@prisma/client';
 import {PulumiConfig} from 'src/_config/_pulumi.config';
-import axios from 'axios';
 import {AwsCloudfront_Stack} from './stack/aws-cloudfront.stack';
 import {AwsCodecommit_Stack} from './stack/aws-codecommit.stack';
 import {AwsEcr_Stack} from './stack/aws-ecr.stack';
@@ -163,6 +163,22 @@ export class PulumiService {
 
     const stack = await LocalWorkspace.selectStack(args);
     await stack.workspace.removeStack(stack.name);
+  }
+
+  async deleteByForce(stackProjectName: string, stackName: string) {
+    const url = `https://api.pulumi.com/api/stacks/worldzhy/${stackProjectName}/${stackName}`;
+    console.log(url);
+    return await axios.delete(url, {
+      maxRedirects: 5,
+      headers: {
+        Accept: 'application/vnd.pulumi+8',
+        'Content-Type': 'application/json',
+        Authorization: 'token ' + PulumiConfig.getAccessToken(),
+      },
+      params: {
+        force: true,
+      },
+    });
   }
 
   /**
