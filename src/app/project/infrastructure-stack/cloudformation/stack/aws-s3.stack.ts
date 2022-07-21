@@ -21,6 +21,6 @@ export class AwsS3_Stack {
   }
 
   static getStackTemplate() {
-    return 'https://s3-external-1.amazonaws.com/cf-templates-1mxwi9sjys7dk-us-east-1/2022171Cj4-new.template8y1d4phaedp';
+    return 'aws-quickstart-067174804713/2022171Cj4-new.template8y1d4phaedp';
   }
 }

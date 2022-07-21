@@ -32,6 +32,6 @@ export class AppMessageTracker_Stack {
   }
 
   static getStackTemplate() {
-    return 'https://aws-quickstart-077767357755.s3.cn-northwest-1.amazonaws.com.cn/quickstart-message-tracker/templates/message-tracker.template.json';
+    return 'quickstart-message-tracker/templates/message-tracker.template.json';
   }
 }

@@ -122,7 +122,8 @@ export class InfrastructureStackService {
       !environment.awsProfile ||
       !environment.awsRegion ||
       !environment.awsAccessKeyId ||
-      !environment.awsSecretAccessKey
+      !environment.awsSecretAccessKey ||
+      !environment.cfTemplateS3
     ) {
       return {
         data: null,
@@ -149,8 +150,10 @@ export class InfrastructureStackService {
       infrastructureStack.manager === InfrastructureStackManager.CLOUDFORMATION
     ) {
       buildResult = await this.cloudformationService
+        .setAwsAccountId(environment.awsAccountId)
         .setAwsProfile(environment.awsProfile)
         .setAwsRegion(environment.awsRegion)
+        .setCfTemplateS3(environment.cfTemplateS3)
         .build(
           infrastructureStack.name,
           infrastructureStack.type,

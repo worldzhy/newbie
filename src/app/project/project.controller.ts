@@ -1,6 +1,7 @@
 import {Controller, Get, Post, Param, Body} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {ProjectService} from './project.service';
+import {EnvironmentService} from './environment/environment.service';
 import {AccountValidator} from '../../_validator/_account.validator';
 import {ProjectValidator} from '../../_validator/_project.validator';
 import {ProjectEnvironmentType, ProjectStatus} from '@prisma/client';
@@ -10,6 +11,7 @@ import {ProjectEnvironmentType, ProjectStatus} from '@prisma/client';
 @Controller()
 export class ProjectController {
   private projectService = new ProjectService();
+  private environmentService = new EnvironmentService();
 
   /**
    * Get projects by page number. The order is by projectname.
@@ -168,6 +170,63 @@ export class ProjectController {
       return {
         data: null,
         err: {message: 'Project create failed.'},
+      };
+    }
+  }
+
+  /**
+   * Update project environment
+   *
+   * @param {string} projectId
+   * @param {ProjectEnvironmentType} type
+   * @param {{cfTemplateS3: string}} body
+   * @returns
+   * @memberof ProjectController
+   */
+  @Post('projects/:projectId/environment/:type')
+  @ApiParam({
+    name: 'projectId',
+    schema: {type: 'string'},
+    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
+  })
+  @ApiParam({
+    name: 'type',
+    schema: {type: 'string'},
+    example: ProjectEnvironmentType.DEVELOPMENT,
+  })
+  @ApiBody({
+    description: 'Update environment variables.',
+    examples: {
+      a: {
+        summary: '1. Update cfTemplateS3',
+        value: {
+          cfTemplateS3: 'aws-quickstart',
+        },
+      },
+    },
+  })
+  async updateProjectEnvironment(
+    @Param('projectId') projectId: string,
+    @Param('type') type: ProjectEnvironmentType,
+    @Body() body: {cfTemplateS3: string}
+  ) {
+    // [step 1] Guard statement.
+    const {cfTemplateS3} = body;
+
+    // [step 2] Update environment.
+    const result = await this.environmentService.update({
+      where: {type_projectId: {type: type, projectId: projectId}},
+      data: {cfTemplateS3},
+    });
+    if (result) {
+      return {
+        data: result,
+        err: null,
+      };
+    } else {
+      return {
+        data: null,
+        err: {message: 'Environment updated failed.'},
       };
     }
   }

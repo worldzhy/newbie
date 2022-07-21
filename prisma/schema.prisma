@@ -205,6 +205,7 @@ model ProjectEnvironment {
   awsAccessKeyId      String?
   awsSecretAccessKey  String? // hash
   awsRegion           String?
+  cfTemplateS3        String?
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
   projectId           String @db.Uuid

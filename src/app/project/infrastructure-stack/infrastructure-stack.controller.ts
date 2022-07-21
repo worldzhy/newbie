@@ -105,14 +105,13 @@ export class InfrastructureStackController {
     description: 'Create infrastructure stack.',
     examples: {
       a: {
-        summary: '1. AWS VPC stack',
+        summary: '1. HIPAA network stack',
         value: {
-          projectName: 'Galaxy',
+          projectName: 'InceptionPad',
           environment: ProjectEnvironmentType.DEVELOPMENT,
-          type: InfrastructureStackType.P_AWS_VPC,
+          type: InfrastructureStackType.C_NETWORK_HIPAA,
           params: {
-            vpcName: 'pulumi-test-vpc',
-            vpcCidrBlock: '10.21.0.0/16',
+            SNSAlarmEmail: 'henry@inceptionpad.com',
           },
           manager: InfrastructureStackManager.CLOUDFORMATION,
         },
@@ -156,7 +155,7 @@ export class InfrastructureStackController {
     // CloudFormation stack name must satisfy regular expression pattern: [a-zA-Z][-a-zA-Z0-9]*".
     // Pulumi stack must be under a Pulumi project.
     if (manager === InfrastructureStackManager.CLOUDFORMATION) {
-      stackName = stackName.replace('_', '-');
+      stackName = stackName.replace(/_/g, '-');
     } else if (manager === InfrastructureStackManager.PULUMI) {
       pulumiProjectName = projectName;
     }

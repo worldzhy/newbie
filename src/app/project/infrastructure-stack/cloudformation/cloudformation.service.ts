@@ -18,19 +18,25 @@ import {Null_Stack} from './stack/null.stack';
 
 @Injectable()
 export class CloudFormationService {
+  private awsAccountId: string;
   private awsProfile: string;
   private awsAccessKey: string;
   private awsSecretKey: string;
   private awsRegion: string;
+  private cfTemplateS3: string;
 
   /**
    * Attention:
-   * These 4 functions must be called before 'PulumiService.build()'.
+   * These 6 functions must be called before 'PulumiService.build()'.
    *
-   * @param {string} awsProfile
+   * @param {string} awsAccountId
    * @returns
-   * @memberof PulumiService
+   * @memberof CloudFormationService
    */
+  setAwsAccountId(awsAccountId: string) {
+    this.awsAccountId = awsAccountId;
+    return this;
+  }
   setAwsProfile(awsProfile: string) {
     this.awsProfile = awsProfile;
     return this;
@@ -47,16 +53,45 @@ export class CloudFormationService {
     this.awsRegion = awsRegion;
     return this;
   }
+  setCfTemplateS3(cfTemplateS3: string) {
+    this.cfTemplateS3 = cfTemplateS3;
+    return this;
+  }
 
   async build(
     stackName: string,
     stackType: InfrastructureStackType,
     stackParams: any
   ) {
+    // Create a cloudformation client.
     const client = new CloudFormationClient({
       credentials: fromIni({profile: this.awsProfile}),
       region: this.awsRegion,
     });
+
+    // Build parameters for cloudformation command.
+    switch (stackType) {
+      case InfrastructureStackType.C_APP_MESSAGE_TRACKER:
+        break;
+      case InfrastructureStackType.C_AWS_S3:
+        break;
+      case InfrastructureStackType.C_CICD_BUILD:
+        break;
+      case InfrastructureStackType.C_CICD_PIPELINE:
+        break;
+      case InfrastructureStackType.C_CICD_REPOSITORY:
+        break;
+      case InfrastructureStackType.C_COMPUTING_FARGATE:
+        break;
+      case InfrastructureStackType.C_NETWORK_HIPAA:
+        stackParams['AWSConfigARN'] =
+          'arn:aws:iam::' +
+          this.awsAccountId +
+          ':role/aws-service-role/config.amazonaws.com/AWSServiceRoleForConfig';
+        break;
+      default:
+        break;
+    }
 
     const params = {
       Capabilities: [Capability.CAPABILITY_IAM], // Allow cloudformation to create IAM resource.
@@ -150,7 +185,22 @@ export class CloudFormationService {
    * @memberof CloudFormationService
    */
   private getStackTemplateByType(stackType: InfrastructureStackType) {
-    return this.getStackServiceByType(stackType).getStackTemplate();
+    const templatePath =
+      this.getStackServiceByType(stackType).getStackTemplate();
+    if (this.awsRegion.startsWith('cn')) {
+      return (
+        'https://' +
+        this.cfTemplateS3 +
+        '.s3.' +
+        this.awsRegion +
+        '.amazonaws.com.cn/' +
+        templatePath
+      );
+    } else {
+      return (
+        'https://' + this.cfTemplateS3 + '.s3.amazonaws.com/' + templatePath
+      );
+    }
   }
 
   /**

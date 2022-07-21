@@ -21,6 +21,6 @@ export class CicdPipeline_Stack {
   }
 
   static getStackTemplate() {
-    return 'https://aws-quickstart-077767357755.s3.cn-northwest-1.amazonaws.com.cn/quickstart-coderepo-and-imagerepo/templates/coderepo-and-imagerepo.template.yaml';
+    return 'quickstart-coderepo-and-imagerepo/templates/coderepo-and-imagerepo.template.yaml';
   }
 }

@@ -28,6 +28,6 @@ export class ComputingFargate_Stack {
   }
 
   static getStackTemplate() {
-    return 'https://aws-quickstart-077767357755.s3.cn-northwest-1.amazonaws.com.cn/quickstart-nestjs-fargate-cicd/templates/fargate-cicd.template.yaml';
+    return 'quickstart-nestjs-fargate-cicd/templates/fargate-cicd.template.yaml';
   }
 }
