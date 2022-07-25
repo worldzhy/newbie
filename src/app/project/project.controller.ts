@@ -19,6 +19,16 @@ export class ProjectController {
   private checkpointService = new CheckpointService();
   private environmentService = new EnvironmentService();
 
+  @Get('projects/checkpoints/types/list')
+  async listProjectCheckpoints() {
+    return Object.values(ProjectCheckpointType);
+  }
+
+  @Get('projects/environments/types/list')
+  async listProjectEnvironments() {
+    return Object.values(ProjectEnvironmentType);
+  }
+
   /**
    * Get projects by page number. The order is by projectname.
    *

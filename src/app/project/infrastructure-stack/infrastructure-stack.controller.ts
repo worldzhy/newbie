@@ -15,8 +15,8 @@ import {CommonUtil} from 'src/_util/_common.util';
 export class InfrastructureStackController {
   private stackService = new InfrastructureStackService();
 
-  @Get('infrastructure-stacks/types')
-  async getStackTypes() {
+  @Get('infrastructure-stacks/types/list')
+  async listStackTypes() {
     return Object.values(InfrastructureStackType);
   }
 
