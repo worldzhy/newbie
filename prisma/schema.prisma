@@ -2,10 +2,9 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   // Enable Full-Text Search which is only available for PostgreSQL.
   previewFeatures = ["fullTextSearch"]
-  
 }
 
 datasource db {
@@ -17,25 +16,25 @@ datasource db {
 // [2] The 'User' is designed for long-term use and the 'UserVerificationCode' is designed for short-term use.
 // [3] Actually, the 'User' model should be named 'UserPassword' just like 'UserVerificationCode' model.
 model User {
-  id            String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email         String? @unique
-  phone         String? @unique
-  username      String? @unique
-  passwordHash  String?
-  status        UserStatus
-  lastLoginAt   DateTime?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  profiles      Profile[]
+  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email        String?    @unique
+  phone        String?    @unique
+  username     String?    @unique
+  passwordHash String?
+  status       UserStatus
+  lastLoginAt  DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  profiles     Profile[]
 }
-  enum UserStatus  {
-    ACTIVE
-    INACTIVE
-  }
 
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
 
 model VerificationCode {
-  id        Int @id @default(autoincrement())
+  id        Int                    @id @default(autoincrement())
   userId    String?
   email     String?
   phone     String?
@@ -43,129 +42,131 @@ model VerificationCode {
   use       VerificationCodeUse
   status    VerificationCodeStatus
   expiredAt DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime               @default(now())
+  updatedAt DateTime               @updatedAt
 }
-  enum VerificationCodeUse  {
-    UNKNOWN
-    // For generating JWT.
-    LOGIN_BY_EMAIL
-    LOGIN_BY_PHONE
-    // For closing and recovering account.
-    CLOSE_ACCOUNT_BY_EMAIL
-    CLOSE_ACCOUNT_BY_PHONE
-    RECOVER_ACCOUNT_BY_EMAIL
-    RECOVER_ACCOUNT_BY_PHONE
-    // For other operations
-    BIND_EMAIL
-    BIND_PHONE
-    CHANGE_PASSWORD
-    RESET_PASSWORD
-  }
-  enum VerificationCodeStatus  {
-    ACTIVE
-    INACTIVE
-  }
+
+enum VerificationCodeUse {
+  UNKNOWN
+  // For generating JWT.
+  LOGIN_BY_EMAIL
+  LOGIN_BY_PHONE
+  // For closing and recovering account.
+  CLOSE_ACCOUNT_BY_EMAIL
+  CLOSE_ACCOUNT_BY_PHONE
+  RECOVER_ACCOUNT_BY_EMAIL
+  RECOVER_ACCOUNT_BY_PHONE
+  // For other operations
+  BIND_EMAIL
+  BIND_PHONE
+  CHANGE_PASSWORD
+  RESET_PASSWORD
+}
+
+enum VerificationCodeStatus {
+  ACTIVE
+  INACTIVE
+}
 
 model JsonWebToken {
-  id      Int @id @default(autoincrement())
-  userId  String
-  token   String
-  status  JwtStatus
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        Int       @id @default(autoincrement())
+  userId    String
+  token     String
+  status    JwtStatus
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
-  enum JwtStatus  {
-    ACTIVE
-    INACTIVE
-  }
 
+enum JwtStatus {
+  ACTIVE
+  INACTIVE
+}
 
 model Organization {
-  id          String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name        String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  profile     Profile?
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Profile {
-  id              String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  familyName      String?
-  givenName       String?
-  middleName      String?
-  name            String?
-  nickname        String?
-  preferredUsername  String?
-  birthday        DateTime?
-  gender          String?
-  picture         String?
-  address         String?
-  geoJSON         Json? // https://datatracker.ietf.org/doc/html/rfc7946
-  websites        Json? // {'facebook': 'https://www.facebook.com/grace', 'twitter': 'https://twitter.com/elonmusk'}
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  userId          String @db.Uuid
-  user            User @relation(fields: [userId], references: [id])
-  organizationId  String? @db.Uuid
-  organization    Organization? @relation(fields: [organizationId], references: [id])
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  familyName        String?
+  givenName         String?
+  middleName        String?
+  name              String?
+  nickname          String?
+  preferredUsername String?
+  birthday          DateTime?
+  gender            String?
+  picture           String?
+  address           String?
+  geoJSON           Json? // https://datatracker.ietf.org/doc/html/rfc7946
+  websites          Json? // {'facebook': 'https://www.facebook.com/grace', 'twitter': 'https://twitter.com/elonmusk'}
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  userId            String    @db.Uuid
+  user              User      @relation(fields: [userId], references: [id])
+  organizationId    String?   @db.Uuid
 }
 
-
 model Role {
-  id          String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name        String @unique  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Permission {
-  id          String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  resource    String
-  action      Action
-  attributes  String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  resource   String
+  action     Action
+  attributes String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
-  enum Action {
-    CREATE
-    UPDATE
-    RETRIEVE
-    DELETE
-  }
+
+enum Action {
+  CREATE
+  UPDATE
+  RETRIEVE
+  DELETE
+}
 
 model User_Role {
   userId String @db.Uuid
   roleId String @db.Uuid
+
   @@id([userId, roleId])
 }
 
 model User_Permission {
-  userId String @db.Uuid
+  userId       String @db.Uuid
   permissionId String @db.Uuid
+
   @@id([userId, permissionId])
 }
 
 model Role_Permission {
-  roleId String @db.Uuid
+  roleId       String @db.Uuid
   permissionId String @db.Uuid
+
   @@id([roleId, permissionId])
 }
 
-
 model SqsMessage {
-  id            Int @id @default(autoincrement())
-  messageId     String?
-  queueUrl      String
-  context       String?
-  message       Json
-  responseData  Json?
-  responseErr   Json?
-  createdAt     DateTime @default(now()) // GMT
+  id           Int      @id @default(autoincrement())
+  messageId    String?
+  queueUrl     String
+  context      String?
+  message      Json
+  responseData Json?
+  responseErr  Json?
+  createdAt    DateTime @default(now()) // GMT
 }
 
 model SqsMessageBatch {
-  id            Int @id @default(autoincrement())
+  id            Int      @id @default(autoincrement())
   queueUrl      String
   context       String?
   message       Json
@@ -176,117 +177,149 @@ model SqsMessageBatch {
   createdAt     DateTime @default(now())
 }
 
-
 model Project {
-  id                    String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                  String @unique
-  status                ProjectStatus
-  clientName            String?
-  clientEmail           String?
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-  environments          ProjectEnvironment[]
-  infrastructureStacks  InfrastructureStack[]
-  microservices         Microservice[]
+  id                   String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                 String                @unique
+  status               ProjectStatus
+  clientName           String?
+  clientEmail          String?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  checkpoints          ProjectCheckpoint[]
+  environments         ProjectEnvironment[]
+  infrastructureStacks InfrastructureStack[]
+  microservices        Microservice[]
 }
-  enum ProjectStatus  {
-    IN_DEVELOPMENT
-    IN_MAINTENANCE
-    ON_HOLD
-    END
-  }
 
-model ProjectEnvironment {
-  type                ProjectEnvironmentType
-  awsAccountId        String?
-  awsIamUsername      String?
-  awsIamPassword      String? // hash
-  awsProfile          String?
-  awsAccessKeyId      String?
-  awsSecretAccessKey  String? // hash
-  awsRegion           String?
-  cfTemplateS3        String?
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  projectId           String @db.Uuid
-  project             Project @relation(fields: [projectId], references: [id]) 
+enum ProjectStatus {
+  IN_DEVELOPMENT
+  IN_MAINTENANCE
+  ON_HOLD
+  END
+}
+
+model ProjectCheckpoint {
+  type      ProjectCheckpointType
+  content   String?
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+  projectId String                @db.Uuid
+  Project   Project               @relation(fields: [projectId], references: [id])
+
   @@id([type, projectId])
 }
-  enum ProjectEnvironmentType {
-    DEVELOPMENT
-    STAGING
-    PRODUCTION
-  }
+
+enum ProjectCheckpointType {
+  MGMT_JIRA
+  DESIGN_FIGMA
+  ACCOUNT_APPLE
+  ACCOUNT_GOOGLE
+  CODE_FE_REPO
+  CODE_FE_FRAMEWORK
+  CODE_BE_REPO
+  CODE_BE_FRAMEWORK
+  CODE_BE_DATABASE
+  CODE_BE_API
+  INFRASTRUCTURE
+}
+
+model ProjectEnvironment {
+  type               ProjectEnvironmentType
+  awsAccountId       String?
+  awsIamUsername     String?
+  awsIamPassword     String? // hash
+  awsProfile         String?
+  awsAccessKeyId     String?
+  awsSecretAccessKey String? // hash
+  awsRegion          String?
+  cfTemplateS3       String?
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+  projectId          String                 @db.Uuid
+  project            Project                @relation(fields: [projectId], references: [id])
+
+  @@id([type, projectId])
+}
+
+enum ProjectEnvironmentType {
+  DEVELOPMENT
+  STAGING
+  PRODUCTION
+}
 
 model InfrastructureStack {
-  id                  String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                String @unique
-  params              Json?
-  type                InfrastructureStackType
-  status              InfrastructureStackStatus
-  manager             InfrastructureStackManager
-  pulumiProjectName   String?
+  id                String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name              String                     @unique
+  params            Json?
+  type              InfrastructureStackType
+  status            InfrastructureStackStatus
+  manager           InfrastructureStackManager
+  pulumiProjectName String?
   // We use 'stackProjectName' & 'name' to identify infrastructure stack(cloud resource stack).
   // The stackProject Name is a concept of Pulumi. We set it with Project->name.
-  buildResult         Json?
-  destroyResult       Json?
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  projectId           String @db.Uuid
-  project             Project @relation(fields: [projectId], references: [id]) 
-  environment         ProjectEnvironmentType
+  buildResult       Json?
+  destroyResult     Json?
+  createdAt         DateTime                   @default(now())
+  updatedAt         DateTime                   @updatedAt
+  projectId         String                     @db.Uuid
+  project           Project                    @relation(fields: [projectId], references: [id])
+  environment       ProjectEnvironmentType
 }
-  enum InfrastructureStackManager {
-    PULUMI
-    CLOUDFORMATION
-  }
-  enum InfrastructureStackType {
-    // CloudFormation stack types
-    C_APP_MESSAGE_TRACKER
-    C_AWS_S3
-    C_CICD_BUILD
-    C_CICD_PIPELINE
-    C_CICD_REPOSITORY
-    C_COMPUTING_FARGATE
-    C_NETWORK_HIPAA
-    // Pulumi stack types
-    P_AWS_CLOUDFRONT
-    P_AWS_CODE_COMMIT
-    P_AWS_ECR
-    P_AWS_ECS
-    P_AWS_EKS
-    P_AWS_IAM_USER
-    P_AWS_RDS
-    P_AWS_S3
-    P_AWS_SQS
-    P_AWS_VPC
-    P_AWS_WAF
-    P_COMPUTING_FARGATE
-    P_NETWORK_HIPAA
-  }
-  enum InfrastructureStackStatus {
-    PREPARING
-    BUILDING
-    BUILD_SUCCEEDED
-    BUILD_FAILED
-    DESTROYING
-    DESTROY_SUCCEEDED
-    DESTROY_FAILED
-    DELETED
-  }
-  
+
+enum InfrastructureStackManager {
+  PULUMI
+  CLOUDFORMATION
+}
+
+enum InfrastructureStackType {
+  // CloudFormation stack types
+  C_APP_MESSAGE_TRACKER
+  C_AWS_S3
+  C_CICD_BUILD
+  C_CICD_PIPELINE
+  C_CICD_REPOSITORY
+  C_COMPUTING_FARGATE
+  C_NETWORK_HIPAA
+  // Pulumi stack types
+  P_AWS_CLOUDFRONT
+  P_AWS_CODE_COMMIT
+  P_AWS_ECR
+  P_AWS_ECS
+  P_AWS_EKS
+  P_AWS_IAM_USER
+  P_AWS_RDS
+  P_AWS_S3
+  P_AWS_SQS
+  P_AWS_VPC
+  P_AWS_WAF
+  P_COMPUTING_FARGATE
+  P_NETWORK_HIPAA
+}
+
+enum InfrastructureStackStatus {
+  PREPARING
+  BUILDING
+  BUILD_SUCCEEDED
+  BUILD_FAILED
+  DESTROYING
+  DESTROY_SUCCEEDED
+  DESTROY_FAILED
+  DELETED
+}
+
 model Microservice {
-  id                  String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                String @unique
-  status              MicroserviceStatus
-  environment         ProjectEnvironmentType
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  projectId           String @db.Uuid
-  project             Project @relation(fields: [projectId], references: [id])
-}             
-  enum MicroserviceStatus {
-    PREPARING
-    RUNNING
-    STOPPED
-  }
+  id          String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String                 @unique
+  status      MicroserviceStatus
+  environment ProjectEnvironmentType
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+  projectId   String                 @db.Uuid
+  project     Project                @relation(fields: [projectId], references: [id])
+}
+
+enum MicroserviceStatus {
+  PREPARING
+  RUNNING
+  STOPPED
+}

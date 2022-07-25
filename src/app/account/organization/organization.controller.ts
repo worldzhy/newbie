@@ -55,21 +55,7 @@ export class OrganizationController {
     // [step 2] Search organizationname, given name, family name...
     const organizations = await this.organizationService.findMany({
       where: {
-        OR: [
-          {name: {search: s}},
-          {
-            profile: {
-              is: {
-                OR: [
-                  {givenName: {search: s}},
-                  {familyName: {search: s}},
-                  {middleName: {search: s}},
-                  {name: {search: s}},
-                ],
-              },
-            },
-          },
-        ],
+        OR: [{name: {search: s}}],
       },
       orderBy: {
         _relevance: {
@@ -83,7 +69,6 @@ export class OrganizationController {
       select: {
         id: true,
         name: true,
-        profile: true,
       },
     });
     return {
@@ -137,7 +122,6 @@ export class OrganizationController {
       select: {
         id: true,
         name: true,
-        profile: true,
       },
     });
     return {

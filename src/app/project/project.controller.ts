@@ -4,13 +4,19 @@ import {ProjectService} from './project.service';
 import {EnvironmentService} from './environment/environment.service';
 import {AccountValidator} from '../../_validator/_account.validator';
 import {ProjectValidator} from '../../_validator/_project.validator';
-import {ProjectEnvironmentType, ProjectStatus} from '@prisma/client';
+import {
+  ProjectCheckpointType,
+  ProjectEnvironmentType,
+  ProjectStatus,
+} from '@prisma/client';
+import {CheckpointService} from './checkpoint/checkpoint.service';
 
 @ApiTags('App / Project')
 @ApiBearerAuth()
 @Controller()
 export class ProjectController {
   private projectService = new ProjectService();
+  private checkpointService = new CheckpointService();
   private environmentService = new EnvironmentService();
 
   /**
@@ -150,6 +156,24 @@ export class ProjectController {
       clientName: body.clientName,
       clientEmail: body.clientEmail,
       status: ProjectStatus.IN_DEVELOPMENT,
+      checkpoints: {
+        createMany: {
+          skipDuplicates: true,
+          data: [
+            {type: ProjectCheckpointType.MGMT_JIRA},
+            {type: ProjectCheckpointType.DESIGN_FIGMA},
+            {type: ProjectCheckpointType.ACCOUNT_APPLE},
+            {type: ProjectCheckpointType.ACCOUNT_GOOGLE},
+            {type: ProjectCheckpointType.CODE_FE_REPO},
+            {type: ProjectCheckpointType.CODE_FE_FRAMEWORK},
+            {type: ProjectCheckpointType.CODE_BE_REPO},
+            {type: ProjectCheckpointType.CODE_BE_FRAMEWORK},
+            {type: ProjectCheckpointType.CODE_BE_DATABASE},
+            {type: ProjectCheckpointType.CODE_BE_API},
+            {type: ProjectCheckpointType.INFRASTRUCTURE},
+          ],
+        },
+      },
       environments: {
         createMany: {
           skipDuplicates: true,
@@ -170,6 +194,63 @@ export class ProjectController {
       return {
         data: null,
         err: {message: 'Project create failed.'},
+      };
+    }
+  }
+
+  /**
+   * Update project checkpoint
+   *
+   * @param {string} projectId
+   * @param {{cfTemplateS3: string}} body
+   * @returns
+   * @memberof ProjectController
+   */
+  @Post('projects/:projectId/checkpoint/:type')
+  @ApiParam({
+    name: 'projectId',
+    schema: {type: 'string'},
+    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
+  })
+  @ApiParam({
+    name: 'type',
+    schema: {type: 'string'},
+    example: ProjectCheckpointType.DESIGN_FIGMA,
+  })
+  @ApiBody({
+    description: 'Update checkpoint content.',
+    examples: {
+      a: {
+        summary: '1. Update design file',
+        value: {
+          content:
+            'https://www.figma.com/file/AjxS125V2lJkesR42e29VU/Health-Hub',
+        },
+      },
+    },
+  })
+  async updateProjectCheckpoint(
+    @Param('projectId') projectId: string,
+    @Param('type') type: ProjectCheckpointType,
+    @Body() body: {content: string}
+  ) {
+    // [step 1] Guard statement.
+    const {content} = body;
+
+    // [step 2] Update environment.
+    const result = await this.checkpointService.update({
+      where: {type_projectId: {type: type, projectId: projectId}},
+      data: {content},
+    });
+    if (result) {
+      return {
+        data: result,
+        err: null,
+      };
+    } else {
+      return {
+        data: null,
+        err: {message: 'Environment updated failed.'},
       };
     }
   }
