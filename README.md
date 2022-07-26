@@ -57,47 +57,15 @@ $ pulumi plugin install resource kubernetes
 $ pulumi plugin ls
 ```
 
-## Installation
+## For development
+### Install dependencies
 
 ```bash
-# development
 $ npm install
 $ cp .env.example .env
 ```
 
-```bash
-# production
-$ npm install --production
-$ cp .env.example .env
-
-```
-
-## Running the app
-
-```bash
-# development
-$ npm run start:dev
-```
-
-```bash
-# production
-$ npm run build
-$ npm run start:prod
-```
-
-## Google ts lint
-
-```bash
-$ npx gts init
-```
-
-## husky
-
-```bash
-$ npx husky install
-```
-
-## Prisma
+### Install database
 
 ```bash
 $ npx prisma generate
@@ -106,7 +74,19 @@ $ npx prisma db seed
 $ npx prisma migrate deploy
 ```
 
-## Test
+### Install Google typescript lint
+
+```bash
+$ npx gts init
+```
+
+### Install husky
+
+```bash
+$ npx husky install
+```
+
+### Test
 
 ```bash
 # unit tests
@@ -119,10 +99,42 @@ $ npm test:e2e
 $ npm test:cov
 ```
 
-## Lint
+### Lint
 
 ```bash
 $ npm run lint 
+```
+
+### Start the app
+
+```bash
+$ npm run start:dev
+```
+
+
+## For production
+### Install dependencies
+
+```bash
+$ npm install --production
+$ cp .env.example .env
+
+```
+
+### Install database
+
+```bash
+$ npx prisma generate
+$ npx prisma migrate dev
+$ npx prisma db seed
+$ npx prisma migrate deploy
+```
+
+### Start the app
+
+```bash
+$ npm run build
+$ npm run start:prod
 ```
 
 ## Stay in touch
