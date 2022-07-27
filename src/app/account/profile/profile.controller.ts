@@ -1,6 +1,6 @@
 import {Controller, Get, Post, Param, Body} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {Prisma} from '@prisma/client';
+import {EthnicityType, Prisma, RaceType} from '@prisma/client';
 import {ProfileService} from './profile.service';
 
 @ApiTags('App / Account / Profile')
@@ -41,31 +41,35 @@ export class ProfileController {
   }
 
   /**
-   * Create or update profile.
-   * [1] Create a new profile if there is not 'id' in request body. 'user' is required.
-   * [2] Update the profile if there is 'id' in request body. 'user' is optional.
+   * Create profile.
+   *
    * @returns
    * @memberof ProfileController
    */
-  @Post('profiles/')
+  @Post('profiles/users/:userId')
+  @ApiParam({
+    name: 'userId',
+    schema: {type: 'string'},
+    description: 'The uuid of the user.',
+    example: '924da395-1921-45fe-b7f5-1198ed78ac24',
+  })
   @ApiBody({
-    description:
-      "Whether the request body contains an 'id' determines whether to create or update.",
+    description: 'Create a user profile.',
     examples: {
       a: {
         summary: '1. Create',
         value: {
-          familyName: 'Jobs',
-          givenName: 'Steven',
-          middleName: 'Paul',
-          name: 'Steven Paul Jobs',
-          nickname: 'Steve',
-          preferredUsername: 'stevejobs',
+          givenName: 'Mary',
+          middleName: 'Rose',
+          familyName: 'Johnson',
+          suffix: 'PhD',
           birthday: new Date(),
           gender: 'male',
-          picture:
-            'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Steve_Jobs_Headshot_2010-CROP_%28cropped_2%29.jpg/800px-Steve_Jobs_Headshot_2010-CROP_%28cropped_2%29.jpg',
+          race: RaceType.OTHER,
+          ethnicity: EthnicityType.HISPANIC,
+          hasPCP: true,
           address: '456 White Finch St. North Augusta, SC 29860',
+          zipcode: '21000',
           geoJSON: {
             type: 'Feature',
             geometry: {
@@ -77,28 +81,68 @@ export class ProfileController {
             },
           },
           websites: {facebook: 'https://www.facebook.com/grace'},
-          user: {
-            connect: {
-              id: '924da395-1921-45fe-b7f5-1198ed78ac24',
-            },
-          },
-        },
-      },
-      b: {
-        summary: '2. Update',
-        value: {
-          id: '135c948e-d150-4kd6-at58-7798e4d9783f',
-          familyName: 'Jobs',
-          givenName: 'Steven',
-          middleName: 'Paul',
-          name: 'Steven Paul Jobs',
-          nickname: 'Steve',
-          preferredUsername: 'stevejobs',
-          birthday: new Date(),
-          gender: 'male',
           picture:
             'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Steve_Jobs_Headshot_2010-CROP_%28cropped_2%29.jpg/800px-Steve_Jobs_Headshot_2010-CROP_%28cropped_2%29.jpg',
+        },
+      },
+    },
+  })
+  async createProfile(
+    @Param('userId') userId: string,
+    @Body() body: Prisma.ProfileCreateWithoutUserInput
+  ) {
+    // [step 1] Guard statement.
+
+    // [step 2] Create profile.
+    const result = await this.profileService.create({
+      ...body,
+      user: {connect: {id: userId}},
+    });
+    if (result) {
+      return {
+        data: result,
+        err: null,
+      };
+    } else {
+      return {
+        data: null,
+        err: {message: 'Create profile failed.'},
+      };
+    }
+  }
+
+  /**
+   * Update user profile.
+   *
+   * @param {string} profileId
+   * @param {Prisma.ProfileUpdateInput} body
+   * @returns
+   * @memberof ProfileController
+   */
+  @Post('profiles/:profileId')
+  @ApiParam({
+    name: 'profileId',
+    schema: {type: 'string'},
+    description: 'The uuid of the profile.',
+    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
+  })
+  @ApiBody({
+    description: 'Update a specific user profile.',
+    examples: {
+      a: {
+        summary: '1. Update',
+        value: {
+          givenName: 'Robert',
+          middleName: 'William',
+          familyName: 'Smith',
+          suffix: 'PhD',
+          birthday: '2019-05-27T11:53:32.118Z',
+          gender: 'male',
+          race: RaceType.OTHER,
+          ethnicity: EthnicityType.HISPANIC,
+          hasPCP: true,
           address: '456 White Finch St. North Augusta, SC 29860',
+          zipcode: '21000',
           geoJSON: {
             type: 'Feature',
             geometry: {
@@ -109,56 +153,34 @@ export class ProfileController {
               name: 'Dinagat Islands',
             },
           },
-          websites: {
-            facebook: 'https://www.facebook.com/grace',
-            twitter: 'https://twitter.com/elonmusk',
-          },
-          organization: {
-            connect: {
-              id: 'fd87bcb0-b4b4-4789-b684-405015da1118',
-            },
-          },
+          websites: {facebook: 'https://www.facebook.com/grace'},
+          picture:
+            'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Steve_Jobs_Headshot_2010-CROP_%28cropped_2%29.jpg/800px-Steve_Jobs_Headshot_2010-CROP_%28cropped_2%29.jpg',
         },
       },
     },
   })
-  async postProfile(
-    @Body() body: Prisma.ProfileCreateInput | Prisma.ProfileUpdateInput
+  async updateProfile(
+    @Param('profileId') profileId: string,
+    @Body() body: Prisma.ProfileUpdateInput
   ) {
     // [step 1] Guard statement.
 
-    // [step 2] Create or modify profile.
-    if (body.id) {
-      const result = await this.profileService.update({
-        where: {id: body.id as string},
-        data: body,
-      });
-      if (result) {
-        return {
-          data: result,
-          err: null,
-        };
-      } else {
-        return {
-          data: null,
-          err: {message: 'Update profile failed.'},
-        };
-      }
+    // [step 2] Update profile.
+    const result = await this.profileService.update({
+      where: {id: profileId},
+      data: body,
+    });
+    if (result) {
+      return {
+        data: result,
+        err: null,
+      };
     } else {
-      const result = await this.profileService.create(
-        body as Prisma.ProfileCreateInput
-      );
-      if (result) {
-        return {
-          data: result,
-          err: null,
-        };
-      } else {
-        return {
-          data: null,
-          err: {message: 'Create profile failed.'},
-        };
-      }
+      return {
+        data: null,
+        err: {message: 'Update profile failed.'},
+      };
     }
   }
 

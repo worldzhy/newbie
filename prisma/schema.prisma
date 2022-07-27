@@ -12,9 +12,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// [1] The 'User' and 'UserVerificationCode' models are both used for logging in.
-// [2] The 'User' is designed for long-term use and the 'UserVerificationCode' is designed for short-term use.
-// [3] Actually, the 'User' model should be named 'UserPassword' just like 'UserVerificationCode' model.
+//
+// Account tables
+//
+// [1] The 'User' and 'VerificationCode' models are both used for logging in.
+// [2] The 'User' is designed for long-term use and the 'VerificationCode' is designed for short-term use.
+// [3] Actually, the 'User' model should be named 'UserPassword' and the 'VerificationCode' should be named 'UserVerificationCode'.
+//
+
 model User {
   id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   email        String?    @unique
@@ -82,32 +87,38 @@ enum JwtStatus {
   INACTIVE
 }
 
-model Organization {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
 model Profile {
   id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  familyName        String?
   givenName         String?
   middleName        String?
-  name              String?
-  nickname          String?
-  preferredUsername String?
+  familyName        String?
+  suffix            String?  
   birthday          DateTime?
   gender            String?
-  picture           String?
+  race              RaceType?
+  ethnicity         EthnicityType?
+  hasPCP            Boolean? // Primary Care Physician  
   address           String?
+  zipcode           String?  
   geoJSON           Json? // https://datatracker.ietf.org/doc/html/rfc7946
   websites          Json? // {'facebook': 'https://www.facebook.com/grace', 'twitter': 'https://twitter.com/elonmusk'}
+  picture           String?
+  organizationId    String?   @db.Uuid
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   userId            String    @db.Uuid
   user              User      @relation(fields: [userId], references: [id])
-  organizationId    String?   @db.Uuid
+}
+enum RaceType {
+  AA
+  WHITE
+  ASIAN
+  MULTI
+  OTHER
+}
+enum EthnicityType {
+  HISPANIC
+  NOT_HISPANIC
 }
 
 model Role {
@@ -154,6 +165,21 @@ model Role_Permission {
   @@id([roleId, permissionId])
 }
 
+//
+// Organization tables
+//
+
+model Organization {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//
+// SQS Message tables
+//
+
 model SqsMessage {
   id           Int      @id @default(autoincrement())
   messageId    String?
@@ -176,6 +202,10 @@ model SqsMessageBatch {
   failedCnt     Int
   createdAt     DateTime @default(now())
 }
+
+//
+// Project management tables
+//
 
 model Project {
   id                   String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -273,13 +303,14 @@ enum InfrastructureStackManager {
 
 enum InfrastructureStackType {
   // CloudFormation stack types
-  C_APP_MESSAGE_TRACKER
   C_AWS_S3
   C_CICD_BUILD
   C_CICD_PIPELINE
   C_CICD_REPOSITORY
   C_COMPUTING_FARGATE
   C_NETWORK_HIPAA
+  C_PRODUCT_IDE
+  C_PRODUCT_MESSAGE_TRACKER
   // Pulumi stack types
   P_AWS_CLOUDFRONT
   P_AWS_CODE_COMMIT
