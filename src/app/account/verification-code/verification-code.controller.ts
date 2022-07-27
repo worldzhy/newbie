@@ -30,21 +30,21 @@ export class VerificationCodeController {
         summary: '1. Login by email',
         value: {
           account: 'email@example.com',
-          use: 'login-by-email',
+          use: VerificationCodeUse.LOGIN_BY_EMAIL,
         },
       },
       b: {
         summary: '2. Close account by email',
         value: {
           account: 'email@example.com',
-          use: 'close-account-by-email',
+          use: VerificationCodeUse.CLOSE_ACCOUNT_BY_EMAIL,
         },
       },
       c: {
         summary: '3. Recover account by phone',
         value: {
           account: '13960068008',
-          use: 'recover-account-by-phone',
+          use: VerificationCodeUse.RECOVER_ACCOUNT_BY_PHONE,
         },
       },
     },

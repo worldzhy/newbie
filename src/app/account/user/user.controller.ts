@@ -64,7 +64,6 @@ export class UserController {
                   {givenName: {search: s}},
                   {familyName: {search: s}},
                   {middleName: {search: s}},
-                  {name: {search: s}},
                 ],
               },
             },
@@ -152,7 +151,7 @@ export class UserController {
   /**
    * Get user by id
    *
-   * @param {string} id
+   * @param {string} userId
    * @returns {Promise<{ data: object, err: object}>}
    * @memberof UserController
    */

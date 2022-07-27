@@ -16,6 +16,8 @@ export class AuthPasswordStrategy extends PassportStrategy(
   }
 
   /**
+   * 'vaidate' function must be implemented.
+   *
    * The 'account' parameter accepts:
    * [1] username
    * [2] email

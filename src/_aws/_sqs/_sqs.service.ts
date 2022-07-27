@@ -21,7 +21,10 @@ export class SqsService {
    * @returns {(Promise<{data: SQS.SendMessageResult | void; err: AWSError | void}>)}
    * @memberof SqsService
    */
-  async sendMessage(queueUrl: string, messageBody: object) {
+  async sendMessage(
+    queueUrl: string,
+    messageBody: object
+  ): Promise<{data: any | null; err: any | null}> {
     const sendMessageRequest = {
       QueueUrl: queueUrl,
       MessageBody: JSON.stringify(messageBody),

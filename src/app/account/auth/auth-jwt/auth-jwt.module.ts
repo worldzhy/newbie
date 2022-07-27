@@ -5,6 +5,8 @@ import {JwtStrategy} from './auth-jwt.strategy';
 import {JwtAuthGuard} from './auth-jwt.guard';
 import {AuthJwtService} from './auth-jwt.service';
 import {AuthPasswordModule} from '../auth-password/auth-password.module';
+import {AuthProfileModule} from '../auth-profile/auth-profile.module';
+import {AuthUuidModule} from '../auth-uuid/auth-uuid.module';
 import {AuthVerificationCodeModule} from '../auth-verification-code/auth-verification-code.module';
 import {PrismaModule} from '../../../../_prisma/_prisma.module';
 
@@ -15,6 +17,8 @@ import {PrismaModule} from '../../../../_prisma/_prisma.module';
       signOptions: {expiresIn: '60s'},
     }),
     AuthPasswordModule,
+    AuthProfileModule,
+    AuthUuidModule,
     AuthVerificationCodeModule,
     PrismaModule,
   ],

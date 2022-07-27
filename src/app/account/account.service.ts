@@ -31,6 +31,7 @@ export class AccountService {
     password?: string;
     email?: string;
     phone?: string;
+    profile?: object;
   }) {
     // [step 1] Generate password hash if needed.
     let passwordHash: string | null | undefined;
@@ -45,6 +46,7 @@ export class AccountService {
       email: signupUser.email,
       phone: signupUser.phone,
       status: UserStatus.ACTIVE,
+      profiles: {create: {...signupUser.profile}},
     });
     if (user) {
       // Return user info except passwordHash, createdAt, updatedAt
@@ -60,9 +62,10 @@ export class AccountService {
    * a JWT to declare the user is authenticated.
    *
    * The 'account' parameter accepts:
-   * [1] username
-   * [2] email
-   * [3] phone
+   * [1] id
+   * [2] username
+   * [3] email
+   * [4] phone
    *
    * @param {string} account
    * @returns

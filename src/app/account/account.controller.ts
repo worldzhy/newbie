@@ -3,9 +3,12 @@ import {Controller, Body, Post, Request} from '@nestjs/common';
 import {ApiTags, ApiBody, ApiBearerAuth} from '@nestjs/swagger';
 import {Public} from './auth/auth-jwt/auth-jwt.decorator';
 import {LoggingInByPassword} from './auth/auth-password/auth-password.decorator';
+import {LoggingInByProfile} from './auth/auth-profile/auth-profile.decorator';
+import {LoggingInByUuid} from './auth/auth-uuid/auth-uuid.decorator';
 import {LoggingInByVerificationCode} from './auth/auth-verification-code/auth-verification-code.decorator';
 import {AccountService} from './account.service';
 import {UserService} from './user/user.service';
+import {ProfileService} from './profile/profile.service';
 import {AccountValidator} from '../../_validator/_account.validator';
 
 @ApiTags('App / Account')
@@ -14,6 +17,89 @@ export class AccountController {
   private userService = new UserService();
 
   constructor(private accountService: AccountService) {}
+
+  @Post('account/check')
+  @Public()
+  @ApiBody({
+    description:
+      "The request body should contain at least one of the three attributes ['username', 'email', 'phone']. If 'username' is contained, then 'password' is required, or 'password' is optional.",
+    examples: {
+      a: {
+        summary: '1. Check username',
+        value: {
+          username: 'henry',
+        },
+      },
+      b: {
+        summary: '2. Check email',
+        value: {
+          email: 'email@example.com',
+        },
+      },
+      c: {
+        summary: '3. Check phone',
+        value: {
+          phone: '13960068008',
+        },
+      },
+      d: {
+        summary: '4. Check profile',
+        value: {
+          profile: {
+            givenName: 'Robert',
+            middleName: 'William',
+            familyName: 'Smith',
+            suffix: 'PhD',
+            birthday: '2019-05-27T11:53:32.118Z',
+          },
+        },
+      },
+    },
+  })
+  async check(
+    @Body()
+    body: {
+      username?: string;
+      email?: string;
+      phone?: string;
+      profile?: object;
+    }
+  ): Promise<{count: number; message: string}> {
+    // [step 1] Check account existence with username, email and phone.
+    const existed = await this.userService.checkAccount({
+      username: body.username,
+      email: body.email,
+      phone: body.phone,
+    });
+    if (existed) {
+      return {
+        count: 1,
+        message: 'Your account exists.',
+      };
+    }
+
+    // [step 2] Check account existence with profile.
+    if (body.profile) {
+      const profileService = new ProfileService();
+      const profiles = await profileService.findMany({...body.profile});
+      if (profiles.length === 1) {
+        return {
+          count: 1,
+          message: 'Your account exists.',
+        };
+      } else if (profiles.length > 1) {
+        return {
+          count: 2,
+          message: 'Multiple accounts exist.',
+        };
+      }
+    }
+
+    return {
+      count: 0,
+      message: 'Your account does not exist.',
+    };
+  }
 
   /**
    * Sign up by:
@@ -28,6 +114,7 @@ export class AccountController {
    *       password?: string;
    *       email?: string;
    *       phone?: string;
+   *       profile?: object;
    *     }} signupUser
    * @returns {(Promise<{data: object | null; err: object | null}>)}
    * @memberof AccountController
@@ -58,12 +145,15 @@ export class AccountController {
         },
       },
       d: {
-        summary: '4. Sign up with username',
+        summary: '4. Sign up with profile',
         value: {
-          username: 'henry',
-          password: 'Abc1234!',
-          email: 'email@example.com',
-          phone: '13960068008',
+          profile: {
+            givenName: 'Robert',
+            middleName: 'William',
+            familyName: 'Smith',
+            suffix: 'PhD',
+            birthday: '2019-05-27T11:53:32.118Z',
+          },
         },
       },
     },
@@ -75,11 +165,13 @@ export class AccountController {
       password?: string;
       email?: string;
       phone?: string;
+      profile?: object;
     }
   ): Promise<{data: object | null; err: object | null}> {
     let usernameCount = 0;
     let emailCount = 0;
     let phoneCount = 0;
+    let profileCount = 0;
 
     // [step 1] Validate parameters.
     if (signupUser.password) {
@@ -122,12 +214,16 @@ export class AccountController {
       if (!AccountValidator.verifyPhone(signupUser.phone)) {
         return {
           data: null,
-          err: {message: 'Your username is not valid.'},
+          err: {message: 'Your phone is not valid.'},
         };
       } else {
         // End of validating.
         phoneCount += 1;
       }
+    }
+
+    if (signupUser.profile) {
+      profileCount += 1;
     }
 
     // [step 2] Check account existence.
@@ -144,7 +240,12 @@ export class AccountController {
     }
 
     // [step 3] Sign up a new account.
-    if (usernameCount === 2 || emailCount === 1 || phoneCount === 1) {
+    if (
+      usernameCount === 2 ||
+      emailCount === 1 ||
+      phoneCount === 1 ||
+      profileCount === 1
+    ) {
       const user = await this.accountService.signup(signupUser);
       if (user) {
         return {
@@ -210,12 +311,109 @@ export class AccountController {
   })
   async loginByPassword(
     @Body()
-    loginUser: {
+    body: {
       account: string;
       password: string;
     }
   ): Promise<{data: object | null; err: object | null}> {
-    return await this.accountService.login(loginUser.account);
+    return await this.accountService.login(body.account);
+  }
+
+  /**
+   * Login by profile.
+   *
+   * @param {{
+   *       givenName: string;
+   *       middleName: string;
+   *       familyName: string;
+   *       suffix?: string;
+   *       birthday: Date;
+   *     }} body
+   * @returns {(Promise<{data: object | null; err: object | null}>)}
+   * @memberof AccountController
+   */
+  @Post('account/login-by-profile')
+  @LoggingInByProfile()
+  @ApiBody({
+    description:
+      "The request body should contain 'giveName', 'middleName', 'familyName' and 'birthday' attributes. The 'suffix' is optional.",
+    examples: {
+      a: {
+        summary: '1. Profile with suffix',
+        value: {
+          givenName: 'Robert',
+          middleName: 'William',
+          familyName: 'Smith',
+          suffix: 'PhD',
+          birthday: '2019-05-27T11:53:32.118Z',
+        },
+      },
+      b: {
+        summary: '2. Profile without suffix',
+        value: {
+          givenName: 'Mary',
+          middleName: 'Rose',
+          familyName: 'Johnson',
+          birthday: '2019-05-27T11:53:32.118Z',
+        },
+      },
+    },
+  })
+  async loginByProfile(
+    @Body()
+    body: {
+      givenName: string;
+      middleName: string;
+      familyName: string;
+      suffix?: string;
+      birthday: Date;
+    }
+  ): Promise<{data: object | null; err: object | null}> {
+    const profileService = new ProfileService();
+
+    // [step 1] It has been confirmed there is only one profile.
+    const {givenName, middleName, familyName, suffix, birthday} = body;
+    const profiles = await profileService.findMany({
+      givenName,
+      middleName,
+      familyName,
+      suffix,
+      birthday,
+    });
+
+    // [step 2] Login with userId.
+    return await this.accountService.login(profiles[0].userId);
+  }
+
+  /**
+   * Login by uuid.
+   *
+   * @param {{
+   *       uuid: string;
+   *     }} body
+   * @returns {(Promise<{data: object | null; err: object | null}>)}
+   * @memberof AccountController
+   */
+  @Post('account/login-by-uuid')
+  @LoggingInByUuid()
+  @ApiBody({
+    description: 'Verfiy account by uuid.',
+    examples: {
+      a: {
+        summary: '1. Valid uuid',
+        value: {
+          uuid: 'e51b4030-39ab-4420-bc87-2907acae824c',
+        },
+      },
+    },
+  })
+  async loginByUuid(
+    @Body()
+    body: {
+      uuid: string;
+    }
+  ): Promise<{data: object | null; err: object | null}> {
+    return await this.accountService.login(body.uuid);
   }
 
   /**
@@ -227,7 +425,7 @@ export class AccountController {
    * @param {{
    *       account: string;
    *       verificationCode: string;
-   *     }} loginUser
+   *     }} body
    * @returns {(Promise<{data: object | null; err: object | null}>)}
    * @memberof AccountController
    */
@@ -267,11 +465,7 @@ export class AccountController {
       verificationCode: string;
     }
   ): Promise<{data: object | null; err: object | null}> {
-    const login = await this.accountService.login(body.account);
-    return {
-      data: login,
-      err: null,
-    };
+    return await this.accountService.login(body.account);
   }
 
   /**

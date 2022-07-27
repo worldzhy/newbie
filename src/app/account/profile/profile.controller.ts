@@ -44,8 +44,6 @@ export class ProfileController {
    * Create or update profile.
    * [1] Create a new profile if there is not 'id' in request body. 'user' is required.
    * [2] Update the profile if there is 'id' in request body. 'user' is optional.
-   *
-   * @param {*} profile should be { profileId, id, ... }
    * @returns
    * @memberof ProfileController
    */

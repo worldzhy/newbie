@@ -14,6 +14,12 @@ export class ProfileService {
     });
   }
 
+  async findMany(whereInput: Prisma.ProfileWhereInput): Promise<Profile[]> {
+    return await this.prisma.profile.findMany({
+      where: whereInput,
+    });
+  }
+
   async create(data: Prisma.ProfileCreateInput): Promise<Profile> {
     return await this.prisma.profile.create({
       data: data,

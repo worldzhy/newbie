@@ -8,7 +8,7 @@ export class AuthPasswordService {
   private userService = new UserService();
 
   /**
-   * Entry of the verification is in '_local.strategy.ts'.
+   * Entry of the verification is in 'auth-password.strategy.ts'.
    *
    * @param {string} account accepts 'username', 'email' and 'phone'.
    * @param {string} password

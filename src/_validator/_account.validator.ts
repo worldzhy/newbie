@@ -3,6 +3,10 @@ import validator from 'validator';
 
 @Injectable()
 export class AccountValidator {
+  static verifyUuid(uuid: string): boolean {
+    return validator.isUUID(uuid);
+  }
+
   static verifyPassword(password: string): boolean {
     return validator.isStrongPassword(password);
   }

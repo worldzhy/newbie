@@ -14,8 +14,10 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   /**
+   * 'vaidate' function must be implemented.
+   *
    * For the jwt-strategy, Passport first verifies the JWT's signature and decodes the JSON.
-   * It then invokes our validate() method passing the decoded JSON as its single parameter
+   * Then it invokes our validate() method passing the decoded JSON as its single parameter
    *
    * @param {*} payload
    * @returns

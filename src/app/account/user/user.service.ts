@@ -2,6 +2,7 @@ import {Injectable} from '@nestjs/common';
 import {PrismaService} from '../../../_prisma/_prisma.service';
 import {Prisma, User} from '@prisma/client';
 import {CommonUtil} from '../../../_util/_common.util';
+import {AccountValidator} from 'src/_validator/_account.validator';
 
 const bcrypt = require('bcryptjs');
 
@@ -63,15 +64,16 @@ export class UserService {
    * @memberof UserService
    */
   async findByAccount(account: string): Promise<User | null> {
-    const users = await this.findMany({
-      where: {
-        OR: [{username: account}, {email: account}, {phone: account}],
-      },
-    });
-    if (users.length > 0) {
-      return users[0] as User;
+    if (AccountValidator.verifyUuid(account)) {
+      return await this.findOne({id: account});
     } else {
-      return null;
+      const users = await this.findMany({
+        where: {
+          // {id: account} will cause crash because 'id' must accept uuid parameter.
+          OR: [{username: account}, {email: account}, {phone: account}],
+        },
+      });
+      return users.length > 0 ? (users[0] as User) : null;
     }
   }
 
