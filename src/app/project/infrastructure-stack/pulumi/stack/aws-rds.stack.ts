@@ -6,12 +6,16 @@ import {PulumiUtil} from '../pulumi.util';
 export class AwsRds_Stack {
   static getStackParams() {
     return {
-      instanceName: 'postgres-default',
+      // Instance parameters
+      instanceName: 'postgres-example',
       instanceType: 'db.t3.micro',
       allocatedStorage: 20,
       databaseName: 'postgres',
       username: 'postgres',
       password: 'postgres',
+      // Network parameters
+      vpcSubnetIds: ['subnet-01b5e1910ec7fd74c', 'subnet-0ab0381e937e9b3af'],
+      isPublic: false,
     };
   }
 
@@ -30,31 +34,45 @@ export class AwsRds_Stack {
   static getStackProgram =
     (
       params: {
+        // Instance parameters
         instanceName: string;
         instanceType: string;
         allocatedStorage: number;
         databaseName: string;
-        password: string;
         username: string;
+        password: string;
+        // Network parameters
+        vpcSubnetIds: string[];
+        isPublic: boolean;
       },
-      awsRegion: string
+      awsConfig: any
     ) =>
     async () => {
-      const uniqueResourceName = 'rds';
+      // [step 1] The subnet group specifies the VPC and subnets where the RDS will be deployed to.
+      let uniqueResourceName = 'subnet-group';
+      const subnetGroup = new aws.rds.SubnetGroup(uniqueResourceName, {
+        subnetIds: params.vpcSubnetIds,
+      });
+
+      // [step 2] Create the RDS instance.
+      uniqueResourceName = 'rds';
       const defaultInstance = new aws.rds.Instance(
         uniqueResourceName,
         {
-          identifier: params.instanceName,
-          allocatedStorage: params.allocatedStorage,
           engine: 'postgres',
+          identifier: params.instanceName,
           instanceClass: params.instanceType,
+          allocatedStorage: params.allocatedStorage,
           name: params.databaseName,
-          password: params.password,
           username: params.username,
-          vpcSecurityGroupIds: ['sg-08e3e67dfba148950'],
+          password: params.password,
+          dbSubnetGroupName: subnetGroup.name,
+          // RDS will use default security group(allow all traffic) if no vpcSecurityGroupIds provided.
+          // vpcSecurityGroupIds: ['sg-xx', 'sg-yy'],
+          publiclyAccessible: params.isPublic,
           skipFinalSnapshot: true, // 'finalSnapshotIdentifier' is required when 'skipFinalSnapshot' is false.
         },
-        PulumiUtil.getResourceOptions(awsRegion)
+        PulumiUtil.getResourceOptions(awsConfig.region)
       );
 
       return {

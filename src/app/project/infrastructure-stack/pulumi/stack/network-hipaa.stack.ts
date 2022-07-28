@@ -46,7 +46,7 @@ export class NetworkHipaa_Stack {
         vpcCidrBlock?: string;
         numberOfAvailabilityZones?: number;
       },
-      awsRegion: string
+      awsConfig: any
     ) =>
     async () => {
       let vpcName = params.vpcName;
@@ -93,7 +93,7 @@ export class NetworkHipaa_Stack {
             strategy: awsx.ec2.NatGatewayStrategy.OnePerAz,
           },
         },
-        PulumiUtil.getResourceOptions(awsRegion)
+        PulumiUtil.getResourceOptions(awsConfig.region)
       );
 
       uniqueResourceName = 'igw';
@@ -102,7 +102,7 @@ export class NetworkHipaa_Stack {
         {
           vpcId: vpc.vpcId,
         },
-        PulumiUtil.getResourceOptions(awsRegion)
+        PulumiUtil.getResourceOptions(awsConfig.region)
       );
 
       // Allocate EC2 security group.

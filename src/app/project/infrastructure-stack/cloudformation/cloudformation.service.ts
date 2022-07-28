@@ -195,7 +195,7 @@ export class CloudFormationService {
   }
 
   /**
-   * Delete stack
+   * Destroy stack
    *
    * @param {string} stackName
    * @returns
@@ -244,6 +244,10 @@ export class CloudFormationService {
     } finally {
       // finally.
     }
+  }
+
+  async delete() {
+    // Do nothing because destroying is enough for CloudFormation stack.
   }
 
   /**

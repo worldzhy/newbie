@@ -33,7 +33,7 @@ export class AwsEks_Stack {
         minInstanceCount?: number;
         maxInstanceCount?: number;
       },
-      awsRegion: string
+      awsConfig: any
     ) =>
     async () => {
       let vpcId = params.vpcId;
@@ -103,7 +103,7 @@ export class AwsEks_Stack {
             'scheduler',
           ],
         },
-        PulumiUtil.getResourceOptions(awsRegion)
+        PulumiUtil.getResourceOptions(awsConfig.region)
       );
 
       // [step 3] Deployment and running application.
@@ -135,8 +135,8 @@ export class AwsEks_Stack {
         },
         {
           provider: cluster.provider,
-          transformations:
-            PulumiUtil.getResourceOptions(awsRegion).transformations,
+          transformations: PulumiUtil.getResourceOptions(awsConfig.region)
+            .transformations,
         }
       );
 
@@ -153,8 +153,8 @@ export class AwsEks_Stack {
         },
         {
           provider: cluster.provider,
-          transformations:
-            PulumiUtil.getResourceOptions(awsRegion).transformations,
+          transformations: PulumiUtil.getResourceOptions(awsConfig.region)
+            .transformations,
         }
       );
 

@@ -43,7 +43,7 @@ export class ComputingFargate_Stack {
         minTaskCount?: number;
         maxTaskCount?: number;
       },
-      awsRegion: string
+      awsConfig: any
     ) =>
     async () => {
       let vpcId = params.vpcId;
@@ -55,7 +55,7 @@ export class ComputingFargate_Stack {
       let maxTaskCount = params.maxTaskCount;
 
       // Guard statement.
-      if (!AwsValidator.verifyRegion(awsRegion)) {
+      if (!AwsValidator.verifyRegion(awsConfig.region)) {
         return undefined;
       }
       if (vpcId === undefined || vpcId === null || vpcId.trim() === '') {
@@ -83,7 +83,7 @@ export class ComputingFargate_Stack {
       const cluster = new aws.ecs.Cluster(
         uniqueResourceName,
         {name: clusterName},
-        PulumiUtil.getResourceOptions(awsRegion)
+        PulumiUtil.getResourceOptions(awsConfig.region)
       );
 
       // [step 2] Prepare a task definition for container service.
@@ -109,7 +109,7 @@ export class ComputingFargate_Stack {
           },
           securityGroups: [securityGroup.id],
         },
-        PulumiUtil.getResourceOptions(awsRegion)
+        PulumiUtil.getResourceOptions(awsConfig.region)
       );
 
       // [step 2-3] Create a task definition. https://docs.aws.amazon.com/AmazonECS/latest/userguide/fargate-task-defs.html
@@ -210,7 +210,7 @@ export class ComputingFargate_Stack {
           scalableDimension: 'ecs:service:DesiredCount',
           serviceNamespace: 'ecs',
         },
-        PulumiUtil.getResourceOptions(awsRegion)
+        PulumiUtil.getResourceOptions(awsConfig.region)
       );
 
       // [step 4-2] Bind policies to the auto-scaling target.
@@ -235,7 +235,7 @@ export class ComputingFargate_Stack {
             ],
           },
         },
-        PulumiUtil.getResourceOptions(awsRegion)
+        PulumiUtil.getResourceOptions(awsConfig.region)
       );
 
       uniqueResourceName = 'scaling-down-policy';
@@ -259,7 +259,7 @@ export class ComputingFargate_Stack {
             ],
           },
         },
-        PulumiUtil.getResourceOptions(awsRegion)
+        PulumiUtil.getResourceOptions(awsConfig.region)
       );
 
       return {

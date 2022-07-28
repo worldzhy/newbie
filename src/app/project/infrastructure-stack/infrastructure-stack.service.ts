@@ -296,9 +296,8 @@ export class InfrastructureStackService {
     } else if (
       infrastructureStack.manager === InfrastructureStackManager.CLOUDFORMATION
     ) {
-      // Do nothing because destroying is enough for CloudFormation stack.
-    } /* else if (this.manager === InfrastructureManager.XXX) {
-} */ else {
+      await this.cloudformationService.delete();
+    } /* else if (this.manager === InfrastructureManager.XXX) {} */ else {
       return null;
     }
 
