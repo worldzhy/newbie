@@ -25,12 +25,18 @@ import {Null_Stack} from './stack/null.stack';
 @Injectable()
 export class PulumiService {
   private pulumiAwsVersion = PulumiConfig.getAwsVersion();
-  private awsConfig = {
+  private awsConfig: {
+    accountId: string;
+    region: string;
+    profile: string | null;
+    accessKey: string | null;
+    secretKey: string | null;
+  } = {
     accountId: '',
-    profile: '',
     region: '',
-    accessKey: '',
-    secretKey: '',
+    profile: null,
+    accessKey: null,
+    secretKey: null,
   };
 
   /**
@@ -41,19 +47,19 @@ export class PulumiService {
     this.awsConfig.accountId = awsAccountId;
     return this;
   }
-  setAwsProfile(awsProfile: string) {
-    this.awsConfig.profile = awsProfile;
-    return this;
-  }
   setAwsRegion(awsRegion: string) {
     this.awsConfig.region = awsRegion;
     return this;
   }
-  setAwsAccessKey(awsAccessKey: string) {
+  setAwsProfile(awsProfile: string | null) {
+    this.awsConfig.profile = awsProfile;
+    return this;
+  }
+  setAwsAccessKey(awsAccessKey: string | null) {
     this.awsConfig.accessKey = awsAccessKey;
     return this;
   }
-  setAwsSecretKey(awsSecretKey: string) {
+  setAwsSecretKey(awsSecretKey: string | null) {
     this.awsConfig.secretKey = awsSecretKey;
     return this;
   }
@@ -111,12 +117,18 @@ export class PulumiService {
     };
     const stack = await LocalWorkspace.createOrSelectStack(args);
     await stack.workspace.installPlugin('aws', this.pulumiAwsVersion);
-    await stack.setAllConfig({
-      'aws:profile': {value: this.awsConfig.profile},
-      'aws:accessKey': {value: this.awsConfig.accessKey},
-      'aws:secretKey': {value: this.awsConfig.secretKey},
-      'aws:region': {value: this.awsConfig.region},
-    });
+    if (this.awsConfig.profile) {
+      await stack.setAllConfig({
+        'aws:profile': {value: this.awsConfig.profile},
+        'aws:region': {value: this.awsConfig.region},
+      });
+    } else {
+      await stack.setAllConfig({
+        'aws:accessKey': {value: this.awsConfig.accessKey!},
+        'aws:secretKey': {value: this.awsConfig.secretKey!},
+        'aws:region': {value: this.awsConfig.region},
+      });
+    }
 
     try {
       return await stack.up({onOutput: console.log}); // pulumiStackResult.summary.result is one of ['failed', 'in-progress', 'not-started', 'succeeded']

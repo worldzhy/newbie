@@ -9,6 +9,7 @@ export class AwsS3_Stack {
   static getStackParams() {
     return {
       bucketName: 'example-bucket',
+      isPublic: false,
     };
   }
 
@@ -25,7 +26,9 @@ export class AwsS3_Stack {
   }
 
   static getStackProgram =
-    (params: {bucketName: string}, awsConfig: any) => async () => {
+    (params: {bucketName: string; isPublic: boolean}, awsConfig: any) =>
+    async () => {
+      const isPublic = params.isPublic;
       let bucketName = params.bucketName + '-' + CommonUtil.randomCode(4);
 
       // [step 1] Guard statement.
@@ -33,7 +36,7 @@ export class AwsS3_Stack {
         bucketName = 'example-bucket-' + CommonUtil.randomCode(4);
       }
 
-      // Create a bucket.
+      // [step 2] Create a bucket.
       let uniqueResourceName = 's3-bucket';
       const bucket = new aws.s3.Bucket(
         uniqueResourceName,
@@ -41,7 +44,19 @@ export class AwsS3_Stack {
         PulumiUtil.getResourceOptions(awsConfig.region)
       );
 
-      // Create an S3 Bucket Policy to allow public read of all objects in bucket.
+      // [step 3] Set public access policy to allow public read of all objects in bucket.
+      if (isPublic) {
+        uniqueResourceName = 's3-bucket-policy';
+        new aws.s3.BucketPolicy(
+          uniqueResourceName,
+          {
+            bucket: bucket.bucket, // Refer to the bucket created earlier.
+            policy: bucket.bucket.apply(publicReadPolicyForBucket), // Use output property `siteBucket.bucket`.
+          },
+          PulumiUtil.getResourceOptions(awsConfig.region)
+        );
+      }
+      // Define the function
       function publicReadPolicyForBucket(
         bucketName: string
       ): aws.iam.PolicyDocument {
@@ -61,17 +76,6 @@ export class AwsS3_Stack {
           ],
         };
       }
-
-      // Set the access policy for the bucket so all objects are readable.
-      uniqueResourceName = 's3-bucket-policy';
-      new aws.s3.BucketPolicy(
-        uniqueResourceName,
-        {
-          bucket: bucket.bucket, // Refer to the bucket created earlier.
-          policy: bucket.bucket.apply(publicReadPolicyForBucket), // Use output property `siteBucket.bucket`.
-        },
-        PulumiUtil.getResourceOptions(awsConfig.region)
-      );
 
       return {
         bucketName: bucketName,

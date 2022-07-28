@@ -15,7 +15,7 @@ import {CommonUtil} from 'src/_util/_common.util';
 export class InfrastructureStackController {
   private stackService = new InfrastructureStackService();
 
-  @Get('infrastructure-stacks/types/list')
+  @Get('infrastructure-stacks/types')
   async listStackTypes() {
     return Object.values(InfrastructureStackType);
   }
@@ -31,7 +31,7 @@ export class InfrastructureStackController {
   @ApiParam({
     name: 'type',
     schema: {type: 'string'},
-    example: InfrastructureStackType.P_AWS_CODE_COMMIT,
+    example: InfrastructureStackType.P_AWS_S3,
   })
   @ApiParam({
     name: 'stackManager',
@@ -51,42 +51,20 @@ export class InfrastructureStackController {
    * @returns
    * @memberof InfrastructureStackController
    */
-  @Get('infrastructure-stacks/:projectId/:environment')
-  @ApiParam({
-    name: 'projectId',
-    schema: {type: 'string'},
-    example: 'a9538079-2781-4e92-998b-293514d4a67b',
+  @Post('infrastructure-stacks/list')
+  @ApiBody({
+    description: 'List infrastructure stacks.',
+    examples: {
+      a: {
+        summary: '1. By projectId',
+        value: {
+          projectId: 'a9538079-2781-4e92-998b-293514d4a67b',
+        },
+      },
+    },
   })
-  @ApiParam({
-    name: 'environment',
-    schema: {type: 'string'},
-    example: 'development',
-  })
-  async getStacks(
-    @Param('projectId') projectId: string,
-    @Param('environment') environment: ProjectEnvironmentType
-  ) {
-    return await this.stackService.findMany({projectId, environment});
-  }
-
-  /**
-   * Get a stack information.
-   *
-   * @param {string} infrastructureStackId
-   * @returns
-   * @memberof InfrastructureStackController
-   */
-  @Get('infrastructure-stacks/:infrastructureStackId')
-  @ApiParam({
-    name: 'infrastructureStackId',
-    schema: {type: 'string'},
-    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
-  })
-  async getStack(
-    @Param('infrastructureStackId')
-    infrastructureStackId: string
-  ) {
-    return await this.stackService.findOne({id: infrastructureStackId});
+  async listStacks(@Body() body: {projectId: string}) {
+    return await this.stackService.findMany({projectId: body.projectId});
   }
 
   /**
@@ -138,16 +116,10 @@ export class InfrastructureStackController {
       environment: ProjectEnvironmentType;
       type: InfrastructureStackType;
       params?: object;
-      manager?: InfrastructureStackManager;
+      manager: InfrastructureStackManager;
     }
   ) {
-    const {
-      type,
-      params,
-      projectName,
-      environment,
-      manager = InfrastructureStackManager.PULUMI,
-    } = body;
+    const {projectName, environment, type, params, manager} = body;
 
     let stackName: string = type + '-' + CommonUtil.randomCode(8);
     let pulumiProjectName: string | undefined = undefined;
@@ -157,7 +129,7 @@ export class InfrastructureStackController {
     if (manager === InfrastructureStackManager.CLOUDFORMATION) {
       stackName = stackName.replace(/_/g, '-');
     } else if (manager === InfrastructureStackManager.PULUMI) {
-      pulumiProjectName = projectName;
+      pulumiProjectName = projectName?.replace(/ /g, '_');
     }
 
     return await this.stackService.create({
@@ -189,7 +161,7 @@ export class InfrastructureStackController {
     example: 'ff337f2d-d3a5-4f2e-be16-62c75477b605',
   })
   @ApiBody({
-    description: 'Create infrastructure stack.',
+    description: 'Update infrastructure stack.',
     examples: {
       a: {
         summary: '1. AWS VPC stack',
@@ -284,6 +256,31 @@ export class InfrastructureStackController {
 
     // [step 2] Destroy the infrastructure stack.
     return await this.stackService.build(infrastructureStackId);
+  }
+
+  @Get('infrastructure-stacks/:infrastructureStackId/describe')
+  @ApiParam({
+    name: 'infrastructureStackId',
+    schema: {type: 'string'},
+    example: 'ff337f2d-d3a5-4f2e-be16-62c75477b605',
+  })
+  async describeStack(
+    @Param('infrastructureStackId')
+    infrastructureStackId: string
+  ) {
+    // [step 1] Get the infrastructure stack.
+    const stack = await this.stackService.findOne({
+      id: infrastructureStackId,
+    });
+    if (!stack) {
+      return {
+        data: null,
+        err: {message: 'Invalid infrastructureStackId.'},
+      };
+    }
+
+    // [step 2] Describe the stack.
+    return await this.stackService.describe(stack.name, stack.manager);
   }
 
   /**

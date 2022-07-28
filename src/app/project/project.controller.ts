@@ -289,8 +289,21 @@ export class ProjectController {
     description: 'Update environment variables.',
     examples: {
       a: {
-        summary: '1. Update cfTemplateS3',
+        summary: '1. Without AWS profile',
         value: {
+          awsAccountId: '929553487761',
+          awsAccessKeyId: 'fakeAKIXXXXXQB3I56H72',
+          awsSecretAccessKey: 'fakeNyXXXXXXXXXrBJk7LUEhXBqHKxG4PiCJ6cQ',
+          awsRegion: 'us-east-1',
+          cfTemplateS3: 'aws-quickstart',
+        },
+      },
+      b: {
+        summary: '2. With AWS profile',
+        value: {
+          awsAccountId: '929555287761',
+          awsProfile: 'InceptionPad',
+          awsRegion: 'us-east-1',
           cfTemplateS3: 'aws-quickstart',
         },
       },
@@ -299,15 +312,24 @@ export class ProjectController {
   async updateProjectEnvironment(
     @Param('projectId') projectId: string,
     @Param('type') type: ProjectEnvironmentType,
-    @Body() body: {cfTemplateS3: string}
+    @Body()
+    body: {
+      awsAccountId: string;
+      awsProfile: string;
+      awsAccessKeyId: string;
+      awsSecretAccessKey: string;
+      awsRegion: string;
+      cfTemplateS3: string;
+    }
   ) {
     // [step 1] Guard statement.
-    const {cfTemplateS3} = body;
 
     // [step 2] Update environment.
     const result = await this.environmentService.update({
       where: {type_projectId: {type: type, projectId: projectId}},
-      data: {cfTemplateS3},
+      data: {
+        ...body,
+      },
     });
     if (result) {
       return {

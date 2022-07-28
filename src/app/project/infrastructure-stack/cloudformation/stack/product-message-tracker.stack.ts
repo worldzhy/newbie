@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 
 @Injectable()
-export class AppMessageTracker_Stack {
+export class ProductMessageTracker_Stack {
   static getStackParams() {
     return {
       DatabaseHost:

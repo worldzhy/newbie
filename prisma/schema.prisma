@@ -256,8 +256,6 @@ enum ProjectCheckpointType {
 model ProjectEnvironment {
   type               ProjectEnvironmentType
   awsAccountId       String?
-  awsIamUsername     String?
-  awsIamPassword     String? // hash
   awsProfile         String?
   awsAccessKeyId     String?
   awsSecretAccessKey String? // hash
@@ -303,7 +301,6 @@ enum InfrastructureStackManager {
 
 enum InfrastructureStackType {
   // CloudFormation stack types
-  C_AWS_S3
   C_CICD_BUILD
   C_CICD_PIPELINE
   C_CICD_REPOSITORY

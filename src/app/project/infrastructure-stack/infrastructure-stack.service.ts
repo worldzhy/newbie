@@ -74,7 +74,7 @@ export class InfrastructureStackService {
   }
 
   /**
-   *
+   * Check stack params.
    *
    * @param {InfrastructureStackType} stackType
    * @param {object} params
@@ -119,42 +119,45 @@ export class InfrastructureStackService {
     });
     if (
       !environment?.awsAccountId ||
-      !environment.awsProfile ||
       !environment.awsRegion ||
-      !environment.awsAccessKeyId ||
-      !environment.awsSecretAccessKey ||
-      !environment.cfTemplateS3
+      (!environment.awsProfile &&
+        !environment.awsAccessKeyId &&
+        !environment.awsSecretAccessKey)
     ) {
       return {
         data: null,
         err: {
-          message: 'Missing AWS profile or region.',
+          message: 'Missing AWS profile or credentials.',
         },
       };
     }
     let buildResult: any = undefined;
-    if (infrastructureStack.manager === InfrastructureStackManager.PULUMI) {
-      buildResult = await this.pulumiService
+    if (
+      infrastructureStack.manager === InfrastructureStackManager.CLOUDFORMATION
+    ) {
+      buildResult = await this.cloudformationService
         .setAwsAccountId(environment.awsAccountId)
-        .setAwsProfile(environment.awsProfile)
         .setAwsRegion(environment.awsRegion)
+        .setAwsProfile(environment.awsProfile)
         .setAwsAccessKey(environment.awsAccessKeyId)
         .setAwsSecretKey(environment.awsSecretAccessKey)
+        .setCfTemplateS3(environment.cfTemplateS3!)
         .build(
-          infrastructureStack.pulumiProjectName!,
           infrastructureStack.name,
           infrastructureStack.type,
           infrastructureStack.params
         );
     } else if (
-      infrastructureStack.manager === InfrastructureStackManager.CLOUDFORMATION
+      infrastructureStack.manager === InfrastructureStackManager.PULUMI
     ) {
-      buildResult = await this.cloudformationService
+      buildResult = await this.pulumiService
         .setAwsAccountId(environment.awsAccountId)
-        .setAwsProfile(environment.awsProfile)
         .setAwsRegion(environment.awsRegion)
-        .setCfTemplateS3(environment.cfTemplateS3)
+        .setAwsProfile(environment.awsProfile)
+        .setAwsAccessKey(environment.awsAccessKeyId)
+        .setAwsSecretKey(environment.awsSecretAccessKey)
         .build(
+          infrastructureStack.pulumiProjectName!,
           infrastructureStack.name,
           infrastructureStack.type,
           infrastructureStack.params
@@ -183,6 +186,20 @@ export class InfrastructureStackService {
   }
 
   /**
+   * Describe a stack.
+   * @param {string} stackName
+   * @memberof InfrastructureStackService
+   */
+  async describe(stackName: string, stackManager: InfrastructureStackManager) {
+    if (stackManager === InfrastructureStackManager.CLOUDFORMATION) {
+      return this.cloudformationService.describe(stackName);
+    } else if (stackManager === InfrastructureStackManager.PULUMI) {
+      // Todo
+    }
+    return null;
+  }
+
+  /**
    * Destroy infrastructure stack.
    *
    * @param {string} id
@@ -206,31 +223,36 @@ export class InfrastructureStackService {
       },
     });
     if (
-      !environment?.awsProfile ||
-      !environment.awsAccessKeyId ||
-      !environment.awsSecretAccessKey ||
-      !environment.awsRegion
+      !environment?.awsAccountId ||
+      !environment.awsRegion ||
+      (!environment.awsProfile &&
+        !environment.awsAccessKeyId &&
+        !environment.awsSecretAccessKey)
     ) {
       return {
         data: null,
         err: {
-          message: 'Missing AWS profile or region.',
+          message: 'Missing AWS profile or credentials.',
         },
       };
     }
     let destroyResult: any = undefined;
-    if (infrastructureStack.manager === InfrastructureStackManager.PULUMI) {
-      destroyResult = await this.pulumiService.destroy(
-        infrastructureStack.pulumiProjectName!,
-        infrastructureStack.name
-      );
-    } else if (
+    if (
       infrastructureStack.manager === InfrastructureStackManager.CLOUDFORMATION
     ) {
       destroyResult = await this.cloudformationService
         .setAwsProfile(environment.awsProfile)
         .setAwsRegion(environment.awsRegion)
+        .setAwsAccessKey(environment.awsAccessKeyId)
+        .setAwsSecretKey(environment.awsSecretAccessKey)
         .destroy(infrastructureStack.name);
+    } else if (
+      infrastructureStack.manager === InfrastructureStackManager.PULUMI
+    ) {
+      destroyResult = await this.pulumiService.destroy(
+        infrastructureStack.pulumiProjectName!,
+        infrastructureStack.name
+      );
     } else {
       return null;
     }
