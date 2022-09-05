@@ -88,27 +88,28 @@ enum JwtStatus {
 }
 
 model Profile {
-  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  givenName         String?
-  middleName        String?
-  familyName        String?
-  suffix            String?  
-  birthday          DateTime?
-  gender            String?
-  race              RaceType?
-  ethnicity         EthnicityType?
-  hasPCP            Boolean? // Primary Care Physician  
-  address           String?
-  zipcode           String?  
-  geoJSON           Json? // https://datatracker.ietf.org/doc/html/rfc7946
-  websites          Json? // {'facebook': 'https://www.facebook.com/grace', 'twitter': 'https://twitter.com/elonmusk'}
-  picture           String?
-  organizationId    String?   @db.Uuid
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  userId            String    @db.Uuid
-  user              User      @relation(fields: [userId], references: [id])
+  id             String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  givenName      String?
+  middleName     String?
+  familyName     String?
+  suffix         String?
+  birthday       DateTime?
+  gender         String?
+  race           RaceType?
+  ethnicity      EthnicityType?
+  hasPCP         Boolean? // Primary Care Physician  
+  address        String?
+  zipcode        String?
+  geoJSON        Json? // https://datatracker.ietf.org/doc/html/rfc7946
+  websites       Json? // {'facebook': 'https://www.facebook.com/grace', 'twitter': 'https://twitter.com/elonmusk'}
+  picture        String?
+  organizationId String?        @db.Uuid
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  user           User           @relation(fields: [userId], references: [id])
+  userId         String         @db.Uuid
 }
+
 enum RaceType {
   AA
   WHITE
@@ -116,6 +117,7 @@ enum RaceType {
   MULTI
   OTHER
 }
+
 enum EthnicityType {
   HISPANIC
   NOT_HISPANIC
@@ -351,3 +353,517 @@ enum MicroserviceStatus {
   RUNNING
   STOPPED
 }
+
+//
+// Connection
+//
+
+model Connection {
+  id        String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String           @unique
+  status    ConnectionStatus
+  type      ConnectionType
+  host      String
+  port      Int
+  database  String
+  schema    String
+  username  String
+  password  String
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+}
+
+enum ConnectionStatus {
+  UNKNOWN
+  SUCCEEDED
+  FAILED
+}
+
+enum ConnectionType {
+  MySQL
+  PostgreSQL
+  Elasticsearch
+}
+
+//
+// Searchview
+//
+
+model Searchview {
+  id           Int              @id @default(autoincrement())
+  name         String
+  indexName    String
+  description  String?
+  type         SearchviewType
+  status       SearchviewStatus
+  layoutConfig Json?
+  indexJson    Json?
+  processedAt  DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  deletedAt    DateTime?
+}
+
+enum SearchviewType {
+  ACTIVE
+  INACTIVE
+}
+
+enum SearchviewStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model ExpandColumn {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ideStatus       String?
+  ideScriptStatus String?
+  type            String?
+  value           String?
+  associationId   String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+}
+
+model IdeIndexConfig {
+  id                     Int                  @id @default(autoincrement())
+  schemaName             String
+  tableName              String
+  indexName              String
+  buildBulkBodyBatchSize Int
+  bulkEsDataInterval     Int
+  syncDataByCronInterval Int                  @default(0)
+  sqlFilterCondition     Boolean              @default(true)
+  status                 IdeIndexConfigStatus
+  tablesInfo             Json
+  relationTree           Json
+  deploymentConfig       Json
+  lastSyncDataByCronAt   DateTime
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
+}
+
+enum IdeIndexConfigStatus {
+  INITED
+  DEPLOYED
+  DISABLED
+}
+
+model IdeDataSyncQueue {
+  id                       Int                     @id @default(autoincrement())
+  schemaName               String?
+  tableName                String?
+  type                     String?
+  status                   IdeDataSyncQueueStatus?
+  primaryKeys              Json?
+  primaryKeyValues         Json?
+  changeDataCaptureBatchId String?
+  oldRow                   Json?
+  newRow                   Json?
+  createdAt                DateTime                @default(now())
+  updatedAt                DateTime                @updatedAt
+}
+
+enum IdeDataSyncQueueStatus {
+  PENDING
+  PROCESSED
+  RECEIVED
+  FAILED
+}
+
+model IdeCalDependencyLog {
+  id                       Int                        @id @default(autoincrement())
+  schemaName               String?
+  tableName                String?
+  status                   IdeCalDependencyLogStatus?
+  dataPK                   String?
+  changeDataCaptureBatchId String?
+  calDependentsBatchId     String?
+  oldRow                   Json?
+  newRow                   Json?
+  receivedAt               DateTime?
+  processedAt              DateTime?
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime                   @updatedAt
+}
+
+enum IdeCalDependencyLogStatus {
+  PENDING
+  PROCESSED
+  RECEIVED
+  FAILED
+}
+
+model IdeSyncDataLog {
+  id                   Int                   @id @default(autoincrement())
+  status               IdeSyncDataLogStatus?
+  dataPK               String?
+  calDependentsBatchId String?
+  syncDataBatchId      String?
+  receivedAt           DateTime?
+  processedAt          DateTime?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  indexConfigId        String?
+}
+
+enum IdeSyncDataLogStatus {
+  PENDING
+  PROCESSED
+  RECEIVED
+  FAILED
+}
+
+model IdeSyncDataByIndexLog {
+  id                       Int                          @id @default(autoincrement())
+  status                   IdeSyncDataByIndexLogStatus?
+  dataPK                   String?
+  triggerBatchId           String?
+  changeDataCaptureBatchId String?
+  syncDataBatchId          String?
+  receivedAt               DateTime?
+  processedAt              DateTime?
+  createdAt                DateTime                     @default(now())
+  updatedAt                DateTime                     @updatedAt
+  indexConfigId            String?
+}
+
+enum IdeSyncDataByIndexLogStatus {
+  PENDING
+  PROCESSED
+  RECEIVED
+  FAILED
+}
+
+model IdeSyncDataErrorLog {
+  id        Int      @id @default(autoincrement())
+  keyword   String?
+  context   String?
+  error     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model IdeCalDataLog {
+  id                   Int                  @id @default(autoincrement())
+  status               IdeCalDataLogStatus?
+  dataPK               String?
+  calDependentsBatchId String?
+  calDataBatchId       String?
+  receivedAt           DateTime?
+  processedAt          DateTime?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  indexConfigId        String?
+}
+
+enum IdeCalDataLogStatus {
+  PENDING
+  PROCESSED
+  RECEIVED
+  FAILED
+}
+
+model IdeCalDataByIndexLog {
+  id                       Int                         @id @default(autoincrement())
+  status                   IdeCalDataByIndexLogStatus?
+  dataPK                   String?
+  triggerBatchId           String?
+  changeDataCaptureBatchId String?
+  calDataBatchId           String?
+  receivedAt               DateTime?
+  processedAt              DateTime?
+  createdAt                DateTime                    @default(now())
+  updatedAt                DateTime                    @updatedAt
+  indexConfigId            String?
+}
+
+enum IdeCalDataByIndexLogStatus {
+  PENDING
+  PROCESSED
+  RECEIVED
+  FAILED
+}
+
+model IdeSyncDataToEsLog {
+  id                  Int                       @id @default(autoincrement())
+  status              IdeSyncDataToEsLogStatus?
+  dataPK              String?
+  esId                String?
+  calDataBatchId      String?
+  syncDataToESBatchId String?
+  action              String?
+  receivedAt          DateTime?
+  processedAt         DateTime?
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+  indexConfigId       String?
+}
+
+enum IdeSyncDataToEsLogStatus {
+  PENDING
+  PROCESSED
+  RECEIVED
+  FAILED
+}
+
+model IdeSyncDataToEsByIndexLog {
+  id                  Int                              @id @default(autoincrement())
+  status              IdeSyncDataToEsByIndexLogStatus?
+  dataPK              String?
+  esId                String?
+  calDataBatchId      String?
+  syncDataToESBatchId String?
+  action              String?
+  receivedAt          DateTime?
+  processedAt         DateTime?
+  createdAt           DateTime                         @default(now())
+  updatedAt           DateTime                         @updatedAt
+  indexConfigId       String?
+}
+
+enum IdeSyncDataToEsByIndexLogStatus {
+  PENDING
+  PROCESSED
+  RECEIVED
+  FAILED
+}
+
+model IdeSyncDataToEsErrorLog {
+  id        Int      @id @default(autoincrement())
+  keyword   String?
+  context   String?
+  error     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model IdeSyncPerfLog {
+  id        Int      @id @default(autoincrement())
+  logType   String?
+  logId     String?
+  error     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  indexConfigId String?
+  schemaName    String?
+  tableName     String?
+  indexName     String?
+
+  dataPK String?
+  esId   String?
+  param  Json?
+
+  changeDataCapture_createdAt   DateTime?
+  changeDataCapture_processedAt DateTime?
+
+  calDependents_createdAt   DateTime?
+  calDependents_receivedAt  DateTime?
+  calDependents_processedAt DateTime?
+
+  calData_createdAt   DateTime?
+  calData_receivedAt  DateTime?
+  calData_processedAt DateTime?
+
+  calDataByIndex_createdAt   DateTime?
+  calDataByIndex_receivedAt  DateTime?
+  calDataByIndex_processedAt DateTime?
+
+  syncDataToES_createdAt   DateTime?
+  syncDataToES_receivedAt  DateTime?
+  syncDataToES_processedAt DateTime?
+
+  syncDataToESByIndex_createdAt   DateTime?
+  syncDataToESByIndex_receivedAt  DateTime?
+  syncDataToESByIndex_processedAt DateTime?
+
+  changeDataCapture_duration Float?
+
+  calDependents_duration       Float?
+  calDependents_sqs_duration   Float?
+  calDependents_total_duration Float?
+
+  calData_duration       Float?
+  calData_sqs_duration   Float?
+  calData_total_duration Float?
+
+  calDataByIndex_duration       Float?
+  calDataByIndex_sqs_duration   Float?
+  calDataByIndex_total_duration Float?
+
+  syncDataToES_duration       Float?
+  syncDataToES_sqs_duration   Float?
+  syncDataToES_total_duration Float?
+
+  syncDataToESByIndex_duration       Float?
+  syncDataToESByIndex_sqs_duration   Float?
+  syncDataToESByIndex_total_duration Float?
+}
+
+//
+// Datasource
+//
+enum DatasourceType {
+  PostgreSQL
+  Elasticsearch
+}
+
+model DatasourcePostgresql {
+  id                       String                              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  host                     String
+  port                     Int
+  database                 String
+  schema                   String
+  createdAt                DateTime                            @default(now())
+  updatedAt                DateTime                            @updatedAt
+  postgresqlTableColumns   DatasourcePostgresqlTableColumn[]
+  postgresqlTableRelations DatasourcePostgresqlTableRelation[]
+}
+
+model DatasourcePostgresqlTableColumn {
+  id              String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  table           String
+  column          String
+  columnType      String
+  ordinalPosition Int
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  datasource      DatasourcePostgresql @relation(fields: [datasourceId], references: [id])
+  datasourceId    String               @db.Uuid
+  databoard       Databoard?           @relation(fields: [databoardId], references: [id])
+  databoardId     String?              @db.Uuid
+}
+
+enum DatasourcePostgresqlTableColumnType {
+  STRING
+  NUMBER
+  JSON
+}
+
+model DatasourcePostgresqlTableRelation {
+  id            Int                                            @id @default(autoincrement())
+  schema        String
+  table         String
+  column        String // It is primary key or foreign key.
+  columnKeyType DatasourcePostgresqlTableRelationColumnKeyType
+  foreignTable  String? // Has value when the type is FOREIGN_KEY. 
+  createdAt     DateTime                                       @default(now())
+  updatedAt     DateTime                                       @updatedAt
+  datasource    DatasourcePostgresql                           @relation(fields: [datasourceId], references: [id])
+  datasourceId  String                                         @db.Uuid
+}
+
+enum DatasourcePostgresqlTableRelationColumnKeyType {
+  PRIMARY_KEY
+  FOREIGN_KEY
+}
+
+model DatasourceElasticsearch {
+  id                      String                              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  node                    String
+  createdAt               DateTime                            @default(now())
+  updatedAt               DateTime                            @updatedAt
+  elasticsearchTypeFields DatasourceElasticsearchIndexField[]
+}
+
+model DatasourceElasticsearchIndexField {
+  id           String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  index        String
+  field        String
+  fieldBody    Json
+  createdAt    DateTime                @default(now())
+  updatedAt    DateTime                @updatedAt
+  datasource   DatasourceElasticsearch @relation(fields: [datasourceId], references: [id])
+  datasourceId String                  @db.Uuid
+  databoard    Databoard?              @relation(fields: [databoardId], references: [id])
+  databoardId  String?                 @db.Uuid
+}
+
+//
+// Databoard
+//
+
+model Databoard {
+  id                       String                              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                     String
+  datasourceType           DatasourceType
+  status                   DataboardStatus
+  createdAt                DateTime                            @default(now())
+  updatedAt                DateTime                            @updatedAt
+  postgresqlTableColumns   DatasourcePostgresqlTableColumn[]
+  elasticsearchIndexFields DatasourceElasticsearchIndexField[]
+}
+
+enum DataboardStatus {
+  PREPARING
+  BUILDING
+  BUILD_SUCCEEDED
+  BUILD_FAILED
+  DESTROYING
+  DESTROY_SUCCEEDED
+  DESTROY_FAILED
+  DELETED
+}
+
+//
+// DataPipeline
+//
+
+model Datapipe {
+  id                     String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                   String
+  status                 DatapipeStatus
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  datapipeColumnMappings DatapipeColumnMapping[]
+}
+
+enum DatapipeStatus {
+  PREPARING
+  BUILDING
+  BUILD_SUCCEEDED
+  BUILD_FAILED
+  DESTROYING
+  DESTROY_SUCCEEDED
+  DESTROY_FAILED
+  DELETED
+}
+
+model DatapipeColumnMapping {
+  id                      String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  expression              String?
+  fromDatacatalogColumnId String   @db.Uuid
+  toDatacatalogColumnId   String   @db.Uuid
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  datapipe                Datapipe @relation(fields: [datapipeId], references: [id])
+  datapipeId              String   @db.Uuid
+}
+
+// model DataboardActionMapping {
+//   id          Int                     @id @default(autoincrement())
+//   fromSchema  String
+//   fromTable   String
+//   fromAction  DataboardActionFromType
+//   toSchema    String?
+//   toTable     String
+//   toAction    DataboardActionToType
+//   createdAt   DateTime                @default(now())
+//   updatedAt   DateTime                @updatedAt
+//   databoard   Databoard               @relation(fields: [databoardId], references: [id])
+//   databoardId String                  @db.Uuid
+// }
+
+// enum DataboardActionFromType {
+//   CREATE
+//   UPDATE
+//   DELETE
+// }
+
+// enum DataboardActionToType {
+//   CREATE
+//   UPDATE
+//   DELETE
+// }

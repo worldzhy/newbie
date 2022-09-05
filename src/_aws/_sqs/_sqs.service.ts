@@ -1,5 +1,10 @@
 import {Injectable} from '@nestjs/common';
-import {SendMessageCommand, SQSClient} from '@aws-sdk/client-sqs';
+import {
+  SQSClient,
+  SendMessageCommand,
+  GetQueueAttributesCommand,
+  QueueAttributeName,
+} from '@aws-sdk/client-sqs';
 import {AwsConfig} from '../../_config/_aws.config';
 
 @Injectable()
@@ -29,7 +34,7 @@ export class SqsService {
       QueueUrl: queueUrl,
       MessageBody: JSON.stringify(messageBody),
     };
-    console.log(sendMessageRequest);
+
     const result = await this.client.send(
       new SendMessageCommand(sendMessageRequest)
     );
@@ -44,19 +49,21 @@ export class SqsService {
         err: result,
       };
     }
+  }
 
-    /*
-    return await request
-      .on('success', response => {
-        console.log(response.data);
-        console.log('~~~~~~~~~success~~~~~~~~~~~~');
-      })
-      .promise();
+  async getQueueAttributes(
+    queueUrl: string,
+    attributeNames: QueueAttributeName[]
+  ) {
+    const getQueueAttributesRequest = {
+      QueueUrl: queueUrl,
+      AttributeNames: attributeNames,
+    };
 
-    await request
-      .on('error', (err, response) => {
-        console.log(err);
-      })
-      .promise(); */
+    const result = await this.client.send(
+      new GetQueueAttributesCommand(getQueueAttributesRequest)
+    );
+
+    return result.Attributes;
   }
 }

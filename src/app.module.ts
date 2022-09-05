@@ -13,12 +13,18 @@ import {ProjectModule} from './app/project/project.module';
 import {QueueModule} from './_queue/_queue.module';
 import {UserModule} from './app/account/user/user.module';
 import {VerificationCodeModule} from './app/account/verification-code/verification-code.module';
+import {DataboardModule} from './app/databoard/databoard.module';
+import {DatapipeModule} from './app/datapipe/datapipe.module';
+import {DatasourceModule} from './app/datasource/datasource.module';
 
 @Module({
   imports: [
     AccountModule,
     AwsModule,
     CustomLoggerModule,
+    DataboardModule,
+    DatapipeModule,
+    DatasourceModule,
     InfrastructureStackModule,
     OrganizationModule,
     ProfileModule,
