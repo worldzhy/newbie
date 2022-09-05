@@ -4,12 +4,11 @@ import {PrismaService} from '../../_prisma/_prisma.service';
 
 @Injectable()
 export class ProjectService {
-  public readonly prisma: PrismaService = new PrismaService();
+  private prisma: PrismaService = new PrismaService();
 
   /**
    * Get a project
-   *
-   * @param {Prisma.ProjectWhereUniqueInput} ProjectWhereUniqueInput
+   * @param {Prisma.ProjectWhereUniqueInput} where
    * @returns {(Promise<Project | null>)}
    * @memberof ProjectService
    */

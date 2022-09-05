@@ -4,7 +4,7 @@ import {Prisma, Organization} from '@prisma/client';
 
 @Injectable()
 export class OrganizationService {
-  public readonly prisma: PrismaService = new PrismaService();
+  private prisma: PrismaService = new PrismaService();
 
   /**
    * Get a organization

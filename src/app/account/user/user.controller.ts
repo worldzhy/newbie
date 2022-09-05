@@ -11,10 +11,9 @@ export class UserController {
 
   /**
    * Get users by searching name.
-   *
-   * @param {string} str
+   * @param {string} search
    * @param {number} page
-   * @returns {Promise<{ data: object, err: object }>}
+   * @returns {Promise<{data: object;err: object;}>}
    * @memberof UserController
    */
   @Get('users/search/:search/pages/:page')

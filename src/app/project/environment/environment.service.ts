@@ -4,7 +4,7 @@ import {PrismaService} from '../../../_prisma/_prisma.service';
 
 @Injectable()
 export class EnvironmentService {
-  public readonly prisma: PrismaService = new PrismaService();
+  private prisma: PrismaService = new PrismaService();
 
   async findOne(where: Prisma.ProjectEnvironmentWhereUniqueInput) {
     return await this.prisma.projectEnvironment.findUnique({

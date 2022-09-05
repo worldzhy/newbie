@@ -4,7 +4,7 @@ import {PrismaService} from '../../../_prisma/_prisma.service';
 
 @Injectable()
 export class MicroserviceService {
-  public readonly prisma: PrismaService = new PrismaService();
+  private prisma: PrismaService = new PrismaService();
 
   async findOne(where: Prisma.MicroserviceWhereUniqueInput): Promise<
     | (Microservice & {

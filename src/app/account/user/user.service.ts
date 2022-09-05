@@ -2,13 +2,13 @@ import {Injectable} from '@nestjs/common';
 import {PrismaService} from '../../../_prisma/_prisma.service';
 import {Prisma, User} from '@prisma/client';
 import {CommonUtil} from '../../../_util/_common.util';
-import {AccountValidator} from 'src/_validator/_account.validator';
+import {AccountValidator} from '../../../_validator/_account.validator';
 
 const bcrypt = require('bcryptjs');
 
 @Injectable()
 export class UserService {
-  public readonly prisma: PrismaService = new PrismaService();
+  private prisma: PrismaService = new PrismaService();
 
   /**
    * Get a user

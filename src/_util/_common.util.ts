@@ -59,4 +59,49 @@ export class CommonUtil {
     const currentTime = new Date();
     return new Date(currentTime.getTime() + minutes * 60000); // 1 min = 60000 ms
   };
+
+  /**
+   * Sleep
+   *
+   * @param ms
+   * @returns
+   */
+  static sleep(ms = 1000) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  static shallowEqualObject(o1, o2) {
+    for (const p in o1) {
+      if (o1.hasOwnProperty(p)) {
+        if (o1[p] !== o2[p]) {
+          return false;
+        }
+      }
+    }
+    for (const p in o2) {
+      if (o2.hasOwnProperty(p)) {
+        if (o1[p] !== o2[p]) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  static removeDuplicateObjectInList(list: any) {
+    const newList = (list || []).reduce((prev: any[], cur: any) => {
+      let isDuplicate = false;
+      for (let i = 0; i < prev.length; i++) {
+        if (this.shallowEqualObject(prev[i], cur)) {
+          isDuplicate = true;
+          break;
+        }
+      }
+      if (!isDuplicate) {
+        prev.push(cur);
+      }
+      return prev;
+    }, []);
+    return newList;
+  }
 }
