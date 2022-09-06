@@ -1,32 +1,32 @@
 import {Controller, Get, Post, Param, Body} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {DatasourcePostgresqlService} from './postgresql.service';
-import {DatasourcePostgresqlTableColumnService} from './table-column/table-column.service';
-import {DatasourcePostgresqlTableRelationService} from './table-relation/table-relation.service';
+import {PostgresqlDatasourceService} from './postgresql-datasource.service';
+import {PostgresqlDatasourceTableColumnService} from './table-column/table-column.service';
+import {PostgresqlDatasourceTableRelationService} from './table-relation/table-relation.service';
 
 @ApiTags('App / Datasource')
 @ApiBearerAuth()
-@Controller('datasource')
-export class DatasourcePostgresqlController {
-  private datasourcePostgresqlService = new DatasourcePostgresqlService();
-  private datasourcePostgresqlTableColumnService =
-    new DatasourcePostgresqlTableColumnService();
-  private datasourcePostgresqlTableRelationService =
-    new DatasourcePostgresqlTableRelationService();
+@Controller('postgresql-datasources')
+export class PostgresqlDatasourceController {
+  private postgresqlDatasourceService = new PostgresqlDatasourceService();
+  private postgresqlDatasourceTableColumnService =
+    new PostgresqlDatasourceTableColumnService();
+  private postgresqlDatasourceTableRelationService =
+    new PostgresqlDatasourceTableRelationService();
 
   /**
-   * Get datasourcePostgresqls by page number. The order is by datasourcePostgresql name.
+   * Get postgresqlDatasources by page number. The order is by postgresqlDatasource name.
    *
    * @returns {Promise<{ data: object, err: object }>}
-   * @memberof DatasourcePostgresqlController
+   * @memberof PostgresqlDatasourceController
    */
-  @Get('/postgresql')
-  async getDatasourcePostgresqls(): Promise<{
+  @Get('/')
+  async getPostgresqlDatasources(): Promise<{
     data: object | null;
     err: object | null;
   }> {
-    const datasourcePostgresqls =
-      await this.datasourcePostgresqlService.findMany({
+    const postgresqlDatasources =
+      await this.postgresqlDatasourceService.findMany({
         orderBy: {
           _relevance: {
             fields: ['database'],
@@ -36,29 +36,29 @@ export class DatasourcePostgresqlController {
         },
       });
     return {
-      data: datasourcePostgresqls,
+      data: postgresqlDatasources,
       err: null,
     };
   }
 
   /**
-   * Get datasourcePostgresql by id
+   * Get postgresqlDatasource by id
    *
    * @param {string} datasourceId
    * @returns {Promise<{data: object;err: object;}>}
-   * @memberof DatasourcePostgresqlController
+   * @memberof PostgresqlDatasourceController
    */
-  @Get('/postgresql/:datasourceId')
+  @Get('/:datasourceId')
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},
-    description: 'The uuid of the datasourcePostgresql.',
+    description: 'The uuid of the postgresqlDatasource.',
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
-  async getDatasourcePostgresql(
+  async getPostgresqlDatasource(
     @Param('datasourceId') datasourceId: string
   ): Promise<{data: object | null; err: object | null}> {
-    const result = await this.datasourcePostgresqlService.findOne({
+    const result = await this.postgresqlDatasourceService.findOne({
       id: datasourceId,
     });
     if (result) {
@@ -69,13 +69,13 @@ export class DatasourcePostgresqlController {
     } else {
       return {
         data: null,
-        err: {message: 'Get datasourcePostgresql failed.'},
+        err: {message: 'Get postgresqlDatasource failed.'},
       };
     }
   }
 
   /**
-   * Create a new datasourcePostgresql.
+   * Create a new postgresqlDatasource.
    *
    * @param {{
    *        host: string;
@@ -84,12 +84,12 @@ export class DatasourcePostgresqlController {
    *        schema: string;
    *     }} body
    * @returns
-   * @memberof DatasourcePostgresqlController
+   * @memberof PostgresqlDatasourceController
    */
-  @Post('/postgresql')
+  @Post('/')
   @ApiBody({
     description:
-      "The 'datasourcePostgresqlName', 'clientName' and 'clientEmail' are required in request body.",
+      "The 'postgresqlDatasourceName', 'clientName' and 'clientEmail' are required in request body.",
     examples: {
       a: {
         summary: '1. Create',
@@ -102,7 +102,7 @@ export class DatasourcePostgresqlController {
       },
     },
   })
-  async createDatasourcePostgresql(
+  async createPostgresqlDatasource(
     @Body()
     body: {
       host: string;
@@ -113,8 +113,8 @@ export class DatasourcePostgresqlController {
   ) {
     // [step 1] Guard statement.
 
-    // [step 2] Create datasourcePostgresql.
-    const result = await this.datasourcePostgresqlService.create({
+    // [step 2] Create postgresqlDatasource.
+    const result = await this.postgresqlDatasourceService.create({
       ...body,
     });
     if (result) {
@@ -125,13 +125,13 @@ export class DatasourcePostgresqlController {
     } else {
       return {
         data: null,
-        err: {message: 'DatasourcePostgresql create failed.'},
+        err: {message: 'PostgresqlDatasource create failed.'},
       };
     }
   }
 
   /**
-   * Update datasourcePostgresql
+   * Update postgresqlDatasource
    *
    * @param {string} datasourceId
    * @param {{
@@ -140,16 +140,16 @@ export class DatasourcePostgresqlController {
    *        database: string;
    *      }} body
    * @returns
-   * @memberof DatasourcePostgresqlController
+   * @memberof PostgresqlDatasourceController
    */
-  @Post('/postgresql/:datasourceId')
+  @Post('/:datasourceId')
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},
     example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
   })
   @ApiBody({
-    description: 'Update datasourcePostgresql.',
+    description: 'Update postgresqlDatasource.',
     examples: {
       a: {
         summary: '1. Update',
@@ -161,14 +161,14 @@ export class DatasourcePostgresqlController {
       },
     },
   })
-  async updateDatasourcePostgresql(
+  async updatePostgresqlDatasource(
     @Param('datasourceId') datasourceId: string,
     @Body() body: {host: string; port: number; database: string}
   ) {
     // [step 1] Guard statement.
 
     // [step 2] Update name.
-    const result = await this.datasourcePostgresqlService.update({
+    const result = await this.postgresqlDatasourceService.update({
       where: {id: datasourceId},
       data: {...body},
     });
@@ -180,7 +180,7 @@ export class DatasourcePostgresqlController {
     } else {
       return {
         data: null,
-        err: {message: 'DatasourcePostgresql updated failed.'},
+        err: {message: 'PostgresqlDatasource updated failed.'},
       };
     }
   }
@@ -189,22 +189,22 @@ export class DatasourcePostgresqlController {
    * Generate a new postgresql table columns.
    *
    * @returns
-   * @memberof DatasourcePostgresqlTableColumnController
+   * @memberof PostgresqlDatasourceTableColumnController
    */
-  @Post('/postgresql/:datasourceId/extract')
+  @Post('/:datasourceId/extract')
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},
     description: 'The uuid of the postgresqlTableColumn.',
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
-  async extractDatasourcePostgresql(
+  async extractPostgresqlDatasource(
     @Param('datasourceId') datasourceId: string
   ) {
     // [step 1] Guard statement.
 
     // [step 2] Get postgresql.
-    const postgresql = await this.datasourcePostgresqlService.findOne({
+    const postgresql = await this.postgresqlDatasourceService.findOne({
       id: datasourceId,
     });
     if (!postgresql) {
@@ -213,21 +213,21 @@ export class DatasourcePostgresqlController {
 
     // [step 3] Extract datasource postgresql table columns.
     const tableColumns =
-      await this.datasourcePostgresqlTableColumnService.extract(postgresql);
+      await this.postgresqlDatasourceTableColumnService.extract(postgresql);
     if (!tableColumns) {
       return {
         data: null,
-        err: {message: 'DatasourcePostgresqlTableColumn create failed.'},
+        err: {message: 'PostgresqlDatasourceTableColumn create failed.'},
       };
     }
 
     // [step 4] Extract datasource postgresql table relations.
     const tableRelations =
-      await this.datasourcePostgresqlTableRelationService.extract(postgresql);
+      await this.postgresqlDatasourceTableRelationService.extract(postgresql);
     if (!tableRelations) {
       return {
         data: null,
-        err: {message: 'DatasourcePostgresqlTableRelation create failed.'},
+        err: {message: 'PostgresqlDatasourceTableRelation create failed.'},
       };
     }
 

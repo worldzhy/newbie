@@ -1,13 +1,13 @@
 import {Injectable} from '@nestjs/common';
 import {
-  DatasourcePostgresql,
-  DatasourcePostgresqlTableColumn,
+  PostgresqlDatasource,
+  PostgresqlDatasourceTableColumn,
   Prisma,
 } from '@prisma/client';
 import {PrismaService} from '../../../../_prisma/_prisma.service';
 
 @Injectable()
-export class DatasourcePostgresqlTableColumnService {
+export class PostgresqlDatasourceTableColumnService {
   private prisma: PrismaService = new PrismaService();
 
   /**
@@ -15,11 +15,11 @@ export class DatasourcePostgresqlTableColumnService {
    * @param datasource
    * @returns
    */
-  async extract(datasource: DatasourcePostgresql) {
+  async extract(datasource: PostgresqlDatasource) {
     const columns: [] = await this.prisma
       .$queryRaw`SELECT * FROM information_schema.columns WHERE (table_schema = ${datasource.schema})`;
 
-    // Prisma.DatasourcePostgresqlTableColumnCreateManyInput[] = [];
+    // Prisma.PostgresqlDatasourceTableColumnCreateManyInput[] = [];
     return await this.createMany(
       columns.map((column: any) => {
         return {
@@ -34,42 +34,42 @@ export class DatasourcePostgresqlTableColumnService {
   }
 
   /**
-   * Get a datasourcePostgresql table column
-   * @param {Prisma.DatasourcePostgresqlTableColumnWhereUniqueInput} where
-   * @returns {(Promise<DatasourcePostgresqlTableColumn | null>)}
-   * @memberof DatasourcePostgresqlTableColumnService
+   * Get a postgresqlDatasource table column
+   * @param {Prisma.PostgresqlDatasourceTableColumnWhereUniqueInput} where
+   * @returns {(Promise<PostgresqlDatasourceTableColumn | null>)}
+   * @memberof PostgresqlDatasourceTableColumnService
    */
   async findOne(
-    where: Prisma.DatasourcePostgresqlTableColumnWhereUniqueInput
-  ): Promise<DatasourcePostgresqlTableColumn | null> {
-    return await this.prisma.datasourcePostgresqlTableColumn.findUnique({
+    where: Prisma.PostgresqlDatasourceTableColumnWhereUniqueInput
+  ): Promise<PostgresqlDatasourceTableColumn | null> {
+    return await this.prisma.postgresqlDatasourceTableColumn.findUnique({
       where,
     });
   }
 
   /**
-   * Get many datasourcePostgresql table columns
+   * Get many postgresqlDatasource table columns
    *
    * @param {{
    *     skip?: number;
    *     take?: number;
-   *     where?: Prisma.DatasourcePostgresqlTableColumnWhereInput;
-   *     orderBy?: Prisma.DatasourcePostgresqlTableColumnOrderByWithRelationAndSearchRelevanceInput;
-   *     select?: Prisma.DatasourcePostgresqlTableColumnSelect;
+   *     where?: Prisma.PostgresqlDatasourceTableColumnWhereInput;
+   *     orderBy?: Prisma.PostgresqlDatasourceTableColumnOrderByWithRelationAndSearchRelevanceInput;
+   *     select?: Prisma.PostgresqlDatasourceTableColumnSelect;
    *   }} params
    * @returns
-   * @memberof DatasourcePostgresqlTableColumnService
+   * @memberof PostgresqlDatasourceTableColumnService
    */
   async findMany(params: {
     skip?: number;
     take?: number;
-    where?: Prisma.DatasourcePostgresqlTableColumnWhereInput;
-    orderBy?: Prisma.DatasourcePostgresqlTableColumnOrderByWithRelationAndSearchRelevanceInput;
-    select?: Prisma.DatasourcePostgresqlTableColumnSelect;
+    where?: Prisma.PostgresqlDatasourceTableColumnWhereInput;
+    orderBy?: Prisma.PostgresqlDatasourceTableColumnOrderByWithRelationAndSearchRelevanceInput;
+    select?: Prisma.PostgresqlDatasourceTableColumnSelect;
   }) {
     const {skip, take, where, orderBy, select} = params;
 
-    return await this.prisma.datasourcePostgresqlTableColumn.findMany({
+    return await this.prisma.postgresqlDatasourceTableColumn.findMany({
       skip,
       take,
       where,
@@ -84,74 +84,74 @@ export class DatasourcePostgresqlTableColumnService {
    * @returns
    */
   async groupBy(params: {
-    by: Prisma.DatasourcePostgresqlTableColumnScalarFieldEnum[];
-    where: Prisma.DatasourcePostgresqlTableColumnWhereInput;
-    orderBy?: Prisma.DatasourcePostgresqlTableColumnOrderByWithAggregationInput;
+    by: Prisma.PostgresqlDatasourceTableColumnScalarFieldEnum[];
+    where: Prisma.PostgresqlDatasourceTableColumnWhereInput;
+    orderBy?: Prisma.PostgresqlDatasourceTableColumnOrderByWithAggregationInput;
   }) {
-    return await this.prisma.datasourcePostgresqlTableColumn.groupBy(params);
+    return await this.prisma.postgresqlDatasourceTableColumn.groupBy(params);
   }
 
   /**
-   * Create a datasourcePostgresql table column
+   * Create a postgresqlDatasource table column
    *
-   * @param {Prisma.DatasourcePostgresqlTableColumnCreateInput} data
-   * @returns {Promise<DatasourcePostgresqlTableColumn>}
-   * @memberof DatasourcePostgresqlTableColumnService
+   * @param {Prisma.PostgresqlDatasourceTableColumnCreateInput} data
+   * @returns {Promise<PostgresqlDatasourceTableColumn>}
+   * @memberof PostgresqlDatasourceTableColumnService
    */
   async create(
-    data: Prisma.DatasourcePostgresqlTableColumnCreateInput
-  ): Promise<DatasourcePostgresqlTableColumn> {
-    return await this.prisma.datasourcePostgresqlTableColumn.create({
+    data: Prisma.PostgresqlDatasourceTableColumnCreateInput
+  ): Promise<PostgresqlDatasourceTableColumn> {
+    return await this.prisma.postgresqlDatasourceTableColumn.create({
       data,
     });
   }
 
   /**
-   * Create many datasourcePostgresql table columns.
+   * Create many postgresqlDatasource table columns.
    * @param data
    * @returns
    */
   async createMany(
-    data: Prisma.DatasourcePostgresqlTableColumnCreateManyInput[]
+    data: Prisma.PostgresqlDatasourceTableColumnCreateManyInput[]
   ) {
-    const result = await this.prisma.datasourcePostgresqlTableColumn.createMany(
+    const result = await this.prisma.postgresqlDatasourceTableColumn.createMany(
       {data}
     );
     return result.count;
   }
 
   /**
-   * Update a datasourcePostgresql table column
+   * Update a postgresqlDatasource table column
    *
    * @param {{
-   *     where: Prisma.DatasourcePostgresqlTableColumnWhereUniqueInput;
-   *     data: Prisma.DatasourcePostgresqlTableColumnUpdateInput;
+   *     where: Prisma.PostgresqlDatasourceTableColumnWhereUniqueInput;
+   *     data: Prisma.PostgresqlDatasourceTableColumnUpdateInput;
    *   }} params
-   * @returns {Promise<DatasourcePostgresqlTableColumn>}
-   * @memberof DatasourcePostgresqlTableColumnService
+   * @returns {Promise<PostgresqlDatasourceTableColumn>}
+   * @memberof PostgresqlDatasourceTableColumnService
    */
   async update(params: {
-    where: Prisma.DatasourcePostgresqlTableColumnWhereUniqueInput;
-    data: Prisma.DatasourcePostgresqlTableColumnUpdateInput;
-  }): Promise<DatasourcePostgresqlTableColumn> {
+    where: Prisma.PostgresqlDatasourceTableColumnWhereUniqueInput;
+    data: Prisma.PostgresqlDatasourceTableColumnUpdateInput;
+  }): Promise<PostgresqlDatasourceTableColumn> {
     const {where, data} = params;
-    return await this.prisma.datasourcePostgresqlTableColumn.update({
+    return await this.prisma.postgresqlDatasourceTableColumn.update({
       data,
       where,
     });
   }
 
   /**
-   * Delete a datasourcePostgresql table column
+   * Delete a postgresqlDatasource table column
    *
-   * @param {Prisma.DatasourcePostgresqlTableColumnWhereUniqueInput} where
-   * @returns {Promise<DatasourcePostgresqlTableColumn>}
-   * @memberof DatasourcePostgresqlTableColumnService
+   * @param {Prisma.PostgresqlDatasourceTableColumnWhereUniqueInput} where
+   * @returns {Promise<PostgresqlDatasourceTableColumn>}
+   * @memberof PostgresqlDatasourceTableColumnService
    */
   async delete(
-    where: Prisma.DatasourcePostgresqlTableColumnWhereUniqueInput
-  ): Promise<DatasourcePostgresqlTableColumn> {
-    return await this.prisma.datasourcePostgresqlTableColumn.delete({
+    where: Prisma.PostgresqlDatasourceTableColumnWhereUniqueInput
+  ): Promise<PostgresqlDatasourceTableColumn> {
+    return await this.prisma.postgresqlDatasourceTableColumn.delete({
       where,
     });
   }

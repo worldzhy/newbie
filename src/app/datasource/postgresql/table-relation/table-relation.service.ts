@@ -1,9 +1,9 @@
 import {Injectable} from '@nestjs/common';
 import {
   Prisma,
-  DatasourcePostgresqlTableRelation,
-  DatasourcePostgresql,
-  DatasourcePostgresqlTableRelationColumnKeyType,
+  PostgresqlDatasourceTableRelation,
+  PostgresqlDatasource,
+  PostgresqlDatasourceTableRelationColumnKeyType,
 } from '@prisma/client';
 import {PrismaService} from '../../../../_prisma/_prisma.service';
 
@@ -14,7 +14,7 @@ enum ConstraintType {
 }
 
 @Injectable()
-export class DatasourcePostgresqlTableRelationService {
+export class PostgresqlDatasourceTableRelationService {
   private prisma: PrismaService = new PrismaService();
 
   /**
@@ -22,7 +22,7 @@ export class DatasourcePostgresqlTableRelationService {
    * @param datasource
    * @returns
    */
-  async extract(datasource: DatasourcePostgresql) {
+  async extract(datasource: PostgresqlDatasource) {
     // [step 1-1] Prepare constraint_name, constraint_type
     const tableConstraints: [] = await this.prisma
       .$queryRaw`SELECT * FROM information_schema.table_constraints WHERE (constraint_schema = ${datasource.schema})`;
@@ -35,11 +35,11 @@ export class DatasourcePostgresqlTableRelationService {
     const keyColumnUsages: any[] = await this.prisma
       .$queryRaw`SELECT * FROM information_schema.key_column_usage WHERE (constraint_schema = ${datasource.schema})`;
 
-    let relations: Prisma.DatasourcePostgresqlTableRelationCreateManyInput[] =
+    let relations: Prisma.PostgresqlDatasourceTableRelationCreateManyInput[] =
       [];
     keyColumnUsages.map((keyColumnUsage: any) => {
       // Prepare columnKeyType and foreignTable for a relation.
-      let columnKeyType: DatasourcePostgresqlTableRelationColumnKeyType;
+      let columnKeyType: PostgresqlDatasourceTableRelationColumnKeyType;
       let foreignTable: string | undefined = undefined;
 
       const constraint: any = tableConstraints.find((tableConstraint: any) => {
@@ -50,10 +50,10 @@ export class DatasourcePostgresqlTableRelationService {
 
       if (constraint.constraint_type === ConstraintType.PRIMARY_KEY) {
         columnKeyType =
-          DatasourcePostgresqlTableRelationColumnKeyType.PRIMARY_KEY;
+          PostgresqlDatasourceTableRelationColumnKeyType.PRIMARY_KEY;
       } else {
         columnKeyType =
-          DatasourcePostgresqlTableRelationColumnKeyType.FOREIGN_KEY;
+          PostgresqlDatasourceTableRelationColumnKeyType.FOREIGN_KEY;
 
         // foreignTable is required if the keyColumn is a foreign key.
         const constraintUsage: any = constraintColumnUsages.find(
@@ -82,27 +82,27 @@ export class DatasourcePostgresqlTableRelationService {
   }
 
   /**
-   * Get many datasourcePostgresql table relations.
+   * Get many postgresqlDatasource table relations.
    *
    * @param {{
    *     skip?: number;
    *     take?: number;
-   *     where?: Prisma.DatasourcePostgresqlTableRelationWhereInput;
-   *     orderBy?: Prisma.DatasourcePostgresqlTableRelationOrderByWithRelationAndSearchRelevanceInput;
-   *     select?: Prisma.DatasourcePostgresqlTableRelationSelect;
+   *     where?: Prisma.PostgresqlDatasourceTableRelationWhereInput;
+   *     orderBy?: Prisma.PostgresqlDatasourceTableRelationOrderByWithRelationAndSearchRelevanceInput;
+   *     select?: Prisma.PostgresqlDatasourceTableRelationSelect;
    *   }} params
    * @returns
-   * @memberof DatasourcePostgresqlTableRelationService
+   * @memberof PostgresqlDatasourceTableRelationService
    */
   async findMany(params: {
     skip?: number;
     take?: number;
-    where?: Prisma.DatasourcePostgresqlTableRelationWhereInput;
-    orderBy?: Prisma.DatasourcePostgresqlTableRelationOrderByWithRelationAndSearchRelevanceInput;
-    select?: Prisma.DatasourcePostgresqlTableRelationSelect;
+    where?: Prisma.PostgresqlDatasourceTableRelationWhereInput;
+    orderBy?: Prisma.PostgresqlDatasourceTableRelationOrderByWithRelationAndSearchRelevanceInput;
+    select?: Prisma.PostgresqlDatasourceTableRelationSelect;
   }) {
     const {skip, take, where, orderBy, select} = params;
-    return await this.prisma.datasourcePostgresqlTableRelation.findMany({
+    return await this.prisma.postgresqlDatasourceTableRelation.findMany({
       skip,
       take,
       where,
@@ -112,65 +112,65 @@ export class DatasourcePostgresqlTableRelationService {
   }
 
   /**
-   * Create a datasourcePostgresql table relation.
+   * Create a postgresql datasource  table relation.
    *
-   * @param {Prisma.DatasourcePostgresqlTableRelationCreateInput} data
-   * @returns {Promise<DatasourcePostgresqlTableRelation>}
-   * @memberof DatasourcePostgresqlTableRelationService
+   * @param {Prisma.PostgresqlDatasourceTableRelationCreateInput} data
+   * @returns {Promise<PostgresqlDatasourceTableRelation>}
+   * @memberof PostgresqlDatasourceTableRelationService
    */
   async create(
-    data: Prisma.DatasourcePostgresqlTableRelationCreateInput
-  ): Promise<DatasourcePostgresqlTableRelation> {
-    return await this.prisma.datasourcePostgresqlTableRelation.create({
+    data: Prisma.PostgresqlDatasourceTableRelationCreateInput
+  ): Promise<PostgresqlDatasourceTableRelation> {
+    return await this.prisma.postgresqlDatasourceTableRelation.create({
       data,
     });
   }
 
   /**
-   * Create many datasourcePostgresql table relations.
+   * Create many postgresql datasource table relations.
    * @param data
    * @returns
    */
   async createMany(
-    data: Prisma.DatasourcePostgresqlTableRelationCreateManyInput[]
+    data: Prisma.PostgresqlDatasourceTableRelationCreateManyInput[]
   ) {
     const result =
-      await this.prisma.datasourcePostgresqlTableRelation.createMany({data});
+      await this.prisma.postgresqlDatasourceTableRelation.createMany({data});
     return result.count;
   }
 
   /**
-   * Update a datasourcePostgresqlTableRelation
+   * Update a postgresqlDatasourceTableRelation
    *
    * @param {{
-   *     where: Prisma.DatasourcePostgresqlTableRelationWhereUniqueInput;
-   *     data: Prisma.DatasourcePostgresqlTableRelationUpdateInput;
+   *     where: Prisma.PostgresqlDatasourceTableRelationWhereUniqueInput;
+   *     data: Prisma.PostgresqlDatasourceTableRelationUpdateInput;
    *   }} params
-   * @returns {Promise<DatasourcePostgresqlTableRelation>}
-   * @memberof DatasourcePostgresqlTableRelationService
+   * @returns {Promise<PostgresqlDatasourceTableRelation>}
+   * @memberof PostgresqlDatasourceTableRelationService
    */
   async update(params: {
-    where: Prisma.DatasourcePostgresqlTableRelationWhereUniqueInput;
-    data: Prisma.DatasourcePostgresqlTableRelationUpdateInput;
-  }): Promise<DatasourcePostgresqlTableRelation> {
+    where: Prisma.PostgresqlDatasourceTableRelationWhereUniqueInput;
+    data: Prisma.PostgresqlDatasourceTableRelationUpdateInput;
+  }): Promise<PostgresqlDatasourceTableRelation> {
     const {where, data} = params;
-    return await this.prisma.datasourcePostgresqlTableRelation.update({
+    return await this.prisma.postgresqlDatasourceTableRelation.update({
       data,
       where,
     });
   }
 
   /**
-   * Delete a datasourcePostgresqlTableRelation
+   * Delete a postgresql datasource table relation
    *
-   * @param {Prisma.DatasourcePostgresqlTableRelationWhereUniqueInput} where
-   * @returns {Promise<DatasourcePostgresqlTableRelation>}
-   * @memberof DatasourcePostgresqlTableRelationService
+   * @param {Prisma.PostgresqlDatasourceTableRelationWhereUniqueInput} where
+   * @returns {Promise<PostgresqlDatasourceTableRelation>}
+   * @memberof PostgresqlDatasourceTableRelationService
    */
   async delete(
-    where: Prisma.DatasourcePostgresqlTableRelationWhereUniqueInput
-  ): Promise<DatasourcePostgresqlTableRelation> {
-    return await this.prisma.datasourcePostgresqlTableRelation.delete({
+    where: Prisma.PostgresqlDatasourceTableRelationWhereUniqueInput
+  ): Promise<PostgresqlDatasourceTableRelation> {
+    return await this.prisma.postgresqlDatasourceTableRelation.delete({
       where,
     });
   }

@@ -1,35 +1,35 @@
 import {Controller, Get, Post, Param} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam} from '@nestjs/swagger';
 import {table} from 'console';
-import {DatasourcePostgresqlService} from '../postgresql.service';
-import {DatasourcePostgresqlTableColumnService} from './table-column.service';
+import {PostgresqlDatasourceService} from '../postgresql-datasource.service';
+import {PostgresqlDatasourceTableColumnService} from './table-column.service';
 
 @ApiTags('App / Datasource')
 @ApiBearerAuth()
-@Controller('datasource')
-export class DatasourcePostgresqlTableColumnController {
-  private datasourcePostgresqlService = new DatasourcePostgresqlService();
-  private datasourcePostgresqlTableColumnService =
-    new DatasourcePostgresqlTableColumnService();
+@Controller('postgresql-datasources')
+export class PostgresqlDatasourceTableColumnController {
+  private postgresqlDatasourceService = new PostgresqlDatasourceService();
+  private postgresqlDatasourceTableColumnService =
+    new PostgresqlDatasourceTableColumnService();
 
   /**
    * Get postgresql tables
    * @param {string} datasourceId
    * @returns {Promise<{data: object;err: object;}>}
-   * @memberof DatasourcePostgresqlTableColumnController
+   * @memberof PostgresqlDatasourceTableColumnController
    */
-  @Get('/postgresql/:datasourceId/tables')
+  @Get('/:datasourceId/tables')
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},
     description: 'The uuid of the datasource.',
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
-  async getDatasourcePostgresqlTables(
+  async getPostgresqlDatasourceTables(
     @Param('datasourceId') datasourceId: string
   ): Promise<{data: object | null; err: object | null}> {
     // [step 1] Get datasource.
-    const datasource = await this.datasourcePostgresqlService.findOne({
+    const datasource = await this.postgresqlDatasourceService.findOne({
       id: datasourceId,
     });
     if (!datasource) {
@@ -40,7 +40,7 @@ export class DatasourcePostgresqlTableColumnController {
     }
 
     // [step 2] Get tables.
-    const results = await this.datasourcePostgresqlTableColumnService.groupBy({
+    const results = await this.postgresqlDatasourceTableColumnService.groupBy({
       by: ['table'],
       where: {
         datasourceId: datasource.id,
@@ -70,20 +70,20 @@ export class DatasourcePostgresqlTableColumnController {
    * Get postgresql table columns
    * @param {string} datasourceId
    * @returns {Promise<{data: object;err: object;}>}
-   * @memberof DatasourcePostgresqlTableColumnController
+   * @memberof PostgresqlDatasourceTableColumnController
    */
-  @Get('/postgresql/:datasourceId/tables/columns')
+  @Get('/:datasourceId/tables/columns')
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},
     description: 'The uuid of the postgresqlTableColumn.',
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
-  async getDatasourcePostgresqlTableColumns(
+  async getPostgresqlDatasourceTableColumns(
     @Param('datasourceId') datasourceId: string
   ): Promise<{data: object | null; err: object | null}> {
     // [step 1] Get datasource.
-    const datasource = await this.datasourcePostgresqlService.findOne({
+    const datasource = await this.postgresqlDatasourceService.findOne({
       id: datasourceId,
     });
     if (!datasource) {
@@ -95,7 +95,7 @@ export class DatasourcePostgresqlTableColumnController {
 
     // [step 2] Get columns group by table.
     const columnsGroupByTable: any[] = [];
-    const results = await this.datasourcePostgresqlTableColumnService.groupBy({
+    const results = await this.postgresqlDatasourceTableColumnService.groupBy({
       by: ['table'],
       where: {
         datasourceId: datasource.id,
@@ -107,7 +107,7 @@ export class DatasourcePostgresqlTableColumnController {
     await Promise.all(
       results.map(async result => {
         const columns =
-          await this.datasourcePostgresqlTableColumnService.findMany({
+          await this.postgresqlDatasourceTableColumnService.findMany({
             where: {
               AND: {
                 datasourceId: datasource.id,
@@ -139,9 +139,9 @@ export class DatasourcePostgresqlTableColumnController {
    * Get postgresql table columns
    * @param {string} datasourceId
    * @returns {Promise<{data: object;err: object;}>}
-   * @memberof DatasourcePostgresqlTableColumnController
+   * @memberof PostgresqlDatasourceTableColumnController
    */
-  @Get('/postgresql/:datasourceId/tables/:tableName/columns')
+  @Get('/:datasourceId/tables/:tableName/columns')
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},
@@ -154,12 +154,12 @@ export class DatasourcePostgresqlTableColumnController {
     description: 'The name of the table.',
     example: 'User',
   })
-  async getDatasourcePostgresqlColumnsByTable(
+  async getPostgresqlDatasourceColumnsByTable(
     @Param('datasourceId') datasourceId: string,
     @Param('tableName') tableName: string
   ): Promise<{data: object | null; err: object | null}> {
     // [step 1] Get datasource.
-    const datasource = await this.datasourcePostgresqlService.findOne({
+    const datasource = await this.postgresqlDatasourceService.findOne({
       id: datasourceId,
     });
     if (!datasource) {
@@ -170,7 +170,7 @@ export class DatasourcePostgresqlTableColumnController {
     }
 
     // [step 2] Get columns group by table.
-    const columns = await this.datasourcePostgresqlTableColumnService.findMany({
+    const columns = await this.postgresqlDatasourceTableColumnService.findMany({
       where: {
         AND: {
           datasourceId: datasource.id,

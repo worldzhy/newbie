@@ -1,33 +1,35 @@
-import {Controller, Get, Post, Param} from '@nestjs/common';
+import {Controller, Get, Param} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam} from '@nestjs/swagger';
-import {DatasourceElasticsearchService} from '../elasticsearch.service';
-import {DatasourceElasticsearchIndexFieldService} from './index-field.service';
+import {ElasticsearchService} from 'src/_elasticsearch/_elasticsearch.service';
+import {ElasticsearchDatasourceService} from '../elasticsearch-datasource.service';
+import {ElasticsearchDatasourceIndexFieldService} from './index-field.service';
 
 @ApiTags('App / Datasource')
 @ApiBearerAuth()
-@Controller('datasource')
-export class DatasourceElasticsearchIndexFieldController {
-  private datasourceElasticsearchService = new DatasourceElasticsearchService();
-  private datasourceElasticsearchIndexFieldService =
-    new DatasourceElasticsearchIndexFieldService();
+@Controller('elasticsearch-datasources')
+export class ElasticsearchDatasourceIndexFieldController {
+  private elasticsearchDatasourceService = new ElasticsearchDatasourceService();
+  private elasticsearchDatasourceIndexFieldService =
+    new ElasticsearchDatasourceIndexFieldService();
+
   /**
    * Get elasticsearch all index fields.
    * @param {string} datasourceId
    * @returns {Promise<{data: object;err: object;}>}
-   * @memberof DatasourceElasticsearchIndexFieldController
+   * @memberof ElasticsearchDatasourceIndexFieldController
    */
-  @Get('/elasticsearch/:datasourceId/indices')
+  @Get('/:datasourceId/indices')
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},
     description: 'The uuid of the datasource.',
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
-  async getDatasourceElasticsearchIndices(
+  async getElasticsearchDatasourceIndices(
     @Param('datasourceId') datasourceId: string
   ): Promise<{data: object | null; err: object | null}> {
     // [step 1] Get datasource.
-    const datasource = await this.datasourceElasticsearchService.findOne({
+    const datasource = await this.elasticsearchDatasourceService.findOne({
       id: datasourceId,
     });
     if (!datasource) {
@@ -38,7 +40,7 @@ export class DatasourceElasticsearchIndexFieldController {
     }
 
     // [step 2] Get fields group by index.
-    const results = await this.datasourceElasticsearchIndexFieldService.groupBy(
+    const results = await this.elasticsearchDatasourceIndexFieldService.groupBy(
       {
         by: ['index'],
         where: {
@@ -48,15 +50,17 @@ export class DatasourceElasticsearchIndexFieldController {
       }
     );
 
-    const indices = results.map(result => {
-      return result.index;
-    });
+    const indices = results
+      .map(result => {
+        return result.index;
+      })
+      .filter(index => {
+        return !index.startsWith('.');
+      });
 
     if (indices.length > 0) {
       return {
-        data: indices.filter(index => {
-          return !index.startsWith('.');
-        }),
+        data: indices,
         err: null,
       };
     } else {
@@ -71,9 +75,9 @@ export class DatasourceElasticsearchIndexFieldController {
    * Get elasticsearch all index fields.
    * @param {string} datasourceId
    * @returns {Promise<{data: object;err: object;}>}
-   * @memberof DatasourceElasticsearchIndexFieldController
+   * @memberof ElasticsearchDatasourceIndexFieldController
    */
-  @Get('/elasticsearch/:datasourceId/indices/:indexName/fields')
+  @Get('/:datasourceId/indices/:indexName/fields')
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},
@@ -86,12 +90,12 @@ export class DatasourceElasticsearchIndexFieldController {
     description: 'The name of the index.',
     example: 'profiles_1650438833178',
   })
-  async getDatasourceElasticsearchIndexFields(
+  async getElasticsearchDatasourceIndexFields(
     @Param('datasourceId') datasourceId: string,
     @Param('indexName') indexName: string
   ): Promise<{data: object | null; err: object | null}> {
     // [step 1] Get datasource.
-    const datasource = await this.datasourceElasticsearchService.findOne({
+    const datasource = await this.elasticsearchDatasourceService.findOne({
       id: datasourceId,
     });
     if (!datasource) {
@@ -102,7 +106,7 @@ export class DatasourceElasticsearchIndexFieldController {
     }
 
     // [step 2] Get fields group by index.
-    const fields = await this.datasourceElasticsearchIndexFieldService.findMany(
+    const fields = await this.elasticsearchDatasourceIndexFieldService.findMany(
       {
         where: {
           AND: {

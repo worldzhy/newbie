@@ -705,12 +705,8 @@ model IdeSyncPerfLog {
 //
 // Datasource
 //
-enum DatasourceType {
-  PostgreSQL
-  Elasticsearch
-}
 
-model DatasourcePostgresql {
+model PostgresqlDatasource {
   id                       String                              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   host                     String
   port                     Int
@@ -718,11 +714,11 @@ model DatasourcePostgresql {
   schema                   String
   createdAt                DateTime                            @default(now())
   updatedAt                DateTime                            @updatedAt
-  postgresqlTableColumns   DatasourcePostgresqlTableColumn[]
-  postgresqlTableRelations DatasourcePostgresqlTableRelation[]
+  postgresqlTableColumns   PostgresqlDatasourceTableColumn[]
+  postgresqlTableRelations PostgresqlDatasourceTableRelation[]
 }
 
-model DatasourcePostgresqlTableColumn {
+model PostgresqlDatasourceTableColumn {
   id              String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   table           String
   column          String
@@ -730,54 +726,52 @@ model DatasourcePostgresqlTableColumn {
   ordinalPosition Int
   createdAt       DateTime             @default(now())
   updatedAt       DateTime             @updatedAt
-  datasource      DatasourcePostgresql @relation(fields: [datasourceId], references: [id])
+  datasource      PostgresqlDatasource @relation(fields: [datasourceId], references: [id])
   datasourceId    String               @db.Uuid
-  databoard       Databoard?           @relation(fields: [databoardId], references: [id])
-  databoardId     String?              @db.Uuid
 }
 
-enum DatasourcePostgresqlTableColumnType {
+enum PostgresqlDatasourceTableColumnType {
   STRING
   NUMBER
   JSON
 }
 
-model DatasourcePostgresqlTableRelation {
+model PostgresqlDatasourceTableRelation {
   id            Int                                            @id @default(autoincrement())
   schema        String
   table         String
   column        String // It is primary key or foreign key.
-  columnKeyType DatasourcePostgresqlTableRelationColumnKeyType
+  columnKeyType PostgresqlDatasourceTableRelationColumnKeyType
   foreignTable  String? // Has value when the type is FOREIGN_KEY. 
   createdAt     DateTime                                       @default(now())
   updatedAt     DateTime                                       @updatedAt
-  datasource    DatasourcePostgresql                           @relation(fields: [datasourceId], references: [id])
+  datasource    PostgresqlDatasource                           @relation(fields: [datasourceId], references: [id])
   datasourceId  String                                         @db.Uuid
 }
 
-enum DatasourcePostgresqlTableRelationColumnKeyType {
+enum PostgresqlDatasourceTableRelationColumnKeyType {
   PRIMARY_KEY
   FOREIGN_KEY
 }
 
-model DatasourceElasticsearch {
+model ElasticsearchDatasource {
   id                      String                              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   node                    String
   createdAt               DateTime                            @default(now())
   updatedAt               DateTime                            @updatedAt
-  elasticsearchTypeFields DatasourceElasticsearchIndexField[]
+  elasticsearchTypeFields ElasticsearchDatasourceIndexField[]
 }
 
-model DatasourceElasticsearchIndexField {
+model ElasticsearchDatasourceIndexField {
   id           String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   index        String
   field        String
   fieldBody    Json
   createdAt    DateTime                @default(now())
   updatedAt    DateTime                @updatedAt
-  datasource   DatasourceElasticsearch @relation(fields: [datasourceId], references: [id])
+  datasource   ElasticsearchDatasource @relation(fields: [datasourceId], references: [id])
   datasourceId String                  @db.Uuid
-  databoard    Databoard?              @relation(fields: [databoardId], references: [id])
+  databoard    ElasticsearchDataboard? @relation(fields: [databoardId], references: [id])
   databoardId  String?                 @db.Uuid
 }
 
@@ -785,26 +779,22 @@ model DatasourceElasticsearchIndexField {
 // Databoard
 //
 
-model Databoard {
-  id                       String                              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                     String
-  datasourceType           DatasourceType
-  status                   DataboardStatus
-  createdAt                DateTime                            @default(now())
-  updatedAt                DateTime                            @updatedAt
-  postgresqlTableColumns   DatasourcePostgresqlTableColumn[]
-  elasticsearchIndexFields DatasourceElasticsearchIndexField[]
+model ElasticsearchDataboard {
+  id                    String                              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                  String
+  description           String?
+  status                ElasticsearchDataboardStatus
+  indexJson             Json?
+  layoutConfig          Json?
+  visualSettings        Json?
+  createdAt             DateTime                            @default(now())
+  updatedAt             DateTime                            @updatedAt
+  datasourceIndexFields ElasticsearchDatasourceIndexField[]
 }
 
-enum DataboardStatus {
-  PREPARING
-  BUILDING
-  BUILD_SUCCEEDED
-  BUILD_FAILED
-  DESTROYING
-  DESTROY_SUCCEEDED
-  DESTROY_FAILED
-  DELETED
+enum ElasticsearchDataboardStatus {
+  ACTIVE
+  INACTIVE
 }
 
 //

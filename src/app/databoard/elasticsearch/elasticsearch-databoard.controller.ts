@@ -1,20 +1,20 @@
-import {Controller, Get, Post, Param, Body} from '@nestjs/common';
+import {Controller, Get, Post, Param, Body, Delete} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {DataboardService} from './databoard.service';
-import {DatasourceType, DataboardStatus} from '@prisma/client';
+import {ElasticsearchDataboardService} from './elasticsearch-databoard.service';
+import {ElasticsearchDataboardStatus} from '@prisma/client';
 
 @ApiTags('App / Databoard')
 @ApiBearerAuth()
-@Controller('databoards')
-export class DataboardController {
-  private databoardService = new DataboardService();
+@Controller('elasticsearch-databoards')
+export class ElasticsearchDataboardController {
+  private elasticsearchDataboardService = new ElasticsearchDataboardService();
 
   /**
    * Get databoards by page number. The order is by databoard name.
    *
    * @param {number} page
    * @returns {Promise<{ data: object, err: object }>}
-   * @memberof DataboardController
+   * @memberof ElasticsearchDataboardController
    */
   @Get('/pages/:page')
   @ApiParam({
@@ -24,7 +24,7 @@ export class DataboardController {
       'The page of the databoard list. It must be a LARGER THAN 0 integer.',
     example: 1,
   })
-  async getDataboardsByPage(
+  async getElasticsearchDataboardsByPage(
     @Param('page') page: number
   ): Promise<{data: object | null; err: object | null}> {
     // [step 1] Guard statement.
@@ -41,7 +41,7 @@ export class DataboardController {
     }
 
     // [step 2] Get databoards.
-    const databoards = await this.databoardService.findMany({
+    const databoards = await this.elasticsearchDataboardService.findMany({
       orderBy: {
         _relevance: {
           fields: ['name'],
@@ -63,7 +63,7 @@ export class DataboardController {
    *
    * @param {string} databoardId
    * @returns {Promise<{data: object;err: object;}>}
-   * @memberof DataboardController
+   * @memberof ElasticsearchDataboardController
    */
   @Get('/:databoardId')
   @ApiParam({
@@ -72,10 +72,12 @@ export class DataboardController {
     description: 'The uuid of the databoard.',
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
-  async getDataboard(
+  async getElasticsearchDataboard(
     @Param('databoardId') databoardId: string
   ): Promise<{data: object | null; err: object | null}> {
-    const result = await this.databoardService.findOne({id: databoardId});
+    const result = await this.elasticsearchDataboardService.findOne({
+      id: databoardId,
+    });
     if (result) {
       return {
         data: result,
@@ -93,36 +95,33 @@ export class DataboardController {
    * Create a new databoard.
    *
    * @param {{
-   *       databoardName: string;
-   *       clientName: string;
-   *       clientEmail: string;
+   *       name: string;
+   *       datasourceType: string;
    *     }} body
    * @returns
-   * @memberof DataboardController
+   * @memberof ElasticsearchDataboardController
    */
   @Post('/')
   @ApiBody({
     description:
-      "The 'databoardName', 'clientName' and 'clientEmail' are required in request body.",
+      "The 'name' and 'datasourceType' are required in request body.",
     examples: {
       a: {
         summary: '1. Create',
         value: {
           name: 'databoard_01',
-          datasourceType: DatasourceType.Elasticsearch,
         },
       },
     },
   })
-  async createDataboard(
+  async createElasticsearchDataboard(
     @Body()
     body: {
       name: string;
-      datasourceType: DatasourceType;
     }
   ) {
     // [step 1] Guard statement.
-    if (!body.name || !body.datasourceType) {
+    if (!body.name) {
       return {
         data: null,
         err: {
@@ -132,10 +131,9 @@ export class DataboardController {
     }
 
     // [step 2] Create databoard.
-    const result = await this.databoardService.create({
+    const result = await this.elasticsearchDataboardService.create({
       name: body.name,
-      datasourceType: body.datasourceType,
-      status: DataboardStatus.PREPARING,
+      status: ElasticsearchDataboardStatus.ACTIVE,
     });
     if (result) {
       return {
@@ -145,7 +143,7 @@ export class DataboardController {
     } else {
       return {
         data: null,
-        err: {message: 'Databoard create failed.'},
+        err: {message: 'ElasticsearchDataboard create failed.'},
       };
     }
   }
@@ -156,7 +154,7 @@ export class DataboardController {
    * @param {string} databoardId
    * @param {{name: string}} body
    * @returns
-   * @memberof DataboardController
+   * @memberof ElasticsearchDataboardController
    */
   @Post('/:databoardId')
   @ApiParam({
@@ -175,7 +173,7 @@ export class DataboardController {
       },
     },
   })
-  async updateDataboard(
+  async updateElasticsearchDataboard(
     @Param('databoardId') databoardId: string,
     @Body() body: {name: string}
   ) {
@@ -183,7 +181,7 @@ export class DataboardController {
     const {name} = body;
 
     // [step 2] Update name.
-    const result = await this.databoardService.update({
+    const result = await this.elasticsearchDataboardService.update({
       where: {id: databoardId},
       data: {name},
     });
@@ -195,7 +193,42 @@ export class DataboardController {
     } else {
       return {
         data: null,
-        err: {message: 'Databoard updated failed.'},
+        err: {message: 'ElasticsearchDataboard updated failed.'},
+      };
+    }
+  }
+
+  /**
+   * Delete databoard
+   *
+   * @param {string} databoardId
+   * @returns
+   * @memberof ElasticsearchDataboardController
+   */
+  @Delete('/:databoardId')
+  @ApiParam({
+    name: 'databoardId',
+    schema: {type: 'string'},
+    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
+  })
+  async deletrElasticsearchDataboard(
+    @Param('databoardId') databoardId: string
+  ) {
+    // [step 1] Guard statement.
+
+    // [step 2] Update name.
+    const result = await this.elasticsearchDataboardService.delete({
+      id: databoardId,
+    });
+    if (result) {
+      return {
+        data: result,
+        err: null,
+      };
+    } else {
+      return {
+        data: null,
+        err: {message: 'ElasticsearchDataboard delete failed.'},
       };
     }
   }

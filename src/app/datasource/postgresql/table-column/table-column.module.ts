@@ -1,12 +1,12 @@
 import {Module} from '@nestjs/common';
-import {DatasourcePostgresqlTableColumnController} from './table-column.controller';
-import {DatasourcePostgresqlTableColumnService} from './table-column.service';
+import {PostgresqlDatasourceTableColumnController} from './table-column.controller';
+import {PostgresqlDatasourceTableColumnService} from './table-column.service';
 import {PrismaModule} from '../../../../_prisma/_prisma.module';
 
 @Module({
   imports: [PrismaModule],
-  controllers: [DatasourcePostgresqlTableColumnController],
-  providers: [DatasourcePostgresqlTableColumnService],
-  exports: [DatasourcePostgresqlTableColumnService],
+  controllers: [PostgresqlDatasourceTableColumnController],
+  providers: [PostgresqlDatasourceTableColumnService],
+  exports: [PostgresqlDatasourceTableColumnService],
 })
-export class DatasourcePostgresqlTableColumnModule {}
+export class PostgresqlDatasourceTableColumnModule {}

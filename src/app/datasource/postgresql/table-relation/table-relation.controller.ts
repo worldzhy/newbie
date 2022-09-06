@@ -1,34 +1,34 @@
 import {Controller, Get, Post, Param} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam} from '@nestjs/swagger';
-import {DatasourcePostgresqlService} from '../postgresql.service';
-import {DatasourcePostgresqlTableRelationService} from './table-relation.service';
+import {PostgresqlDatasourceService} from '../postgresql-datasource.service';
+import {PostgresqlDatasourceTableRelationService} from './table-relation.service';
 
 @ApiTags('App / Datasource')
 @ApiBearerAuth()
-@Controller('datasource')
-export class DatasourcePostgresqlTableRelationController {
-  private datasourcePostgresqlService = new DatasourcePostgresqlService();
-  private datasourcePostgresqlTableRelationService =
-    new DatasourcePostgresqlTableRelationService();
+@Controller('postgresql-datasources')
+export class PostgresqlDatasourceTableRelationController {
+  private postgresqlDatasourceService = new PostgresqlDatasourceService();
+  private postgresqlDatasourceTableRelationService =
+    new PostgresqlDatasourceTableRelationService();
 
   /**
-   * Get datasourceDatasourcePostgresql table relations
+   * Get postgresqlDatasourceDatasource table relations
    * @param {string} datasourceId
    * @returns {Promise<{data: object;err: object;}>}
-   * @memberof DatasourcePostgresqlTableRelationController
+   * @memberof PostgresqlDatasourceTableRelationController
    */
-  @Get('/postgresql/:datasourceId/tables/relations')
+  @Get('/:datasourceId/tables/relations')
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},
-    description: 'The uuid of the datasourceDatasourcePostgresqlTableRelation.',
+    description: 'The uuid of the postgresqlDatasourceDatasourceTableRelation.',
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
-  async getDatasourcePostgresqlTableRelations(
+  async getPostgresqlDatasourceTableRelations(
     @Param('datasourceId')
     datasourceId: string
   ): Promise<{data: object | null; err: object | null}> {
-    const result = await this.datasourcePostgresqlTableRelationService.findMany(
+    const result = await this.postgresqlDatasourceTableRelationService.findMany(
       {
         where: {
           datasourceId: datasourceId,
@@ -44,7 +44,7 @@ export class DatasourcePostgresqlTableRelationController {
       return {
         data: null,
         err: {
-          message: 'Get datasourceDatasourcePostgresql table relation failed.',
+          message: 'Get postgresqlDatasourceDatasource table relation failed.',
         },
       };
     }
@@ -54,9 +54,9 @@ export class DatasourcePostgresqlTableRelationController {
    * Get postgresql table relations
    * @param {string} datasourceId
    * @returns {Promise<{data: object;err: object;}>}
-   * @memberof DatasourcePostgresqlTableColumnController
+   * @memberof PostgresqlDatasourceTableColumnController
    */
-  @Get('/postgresql/:datasourceId/tables/:tableName/relations')
+  @Get('/:datasourceId/tables/:tableName/relations')
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},
@@ -69,12 +69,12 @@ export class DatasourcePostgresqlTableRelationController {
     description: 'The name of the table.',
     example: 'User',
   })
-  async getDatasourcePostgresqlRelationsByTable(
+  async getPostgresqlDatasourceRelationsByTable(
     @Param('datasourceId') datasourceId: string,
     @Param('tableName') tableName: string
   ): Promise<{data: object | null; err: object | null}> {
     // [step 1] Get datasource.
-    const datasource = await this.datasourcePostgresqlService.findOne({
+    const datasource = await this.postgresqlDatasourceService.findOne({
       id: datasourceId,
     });
     if (!datasource) {
@@ -86,7 +86,7 @@ export class DatasourcePostgresqlTableRelationController {
 
     // [step 2] Get columns group by table.
     const relations =
-      await this.datasourcePostgresqlTableRelationService.findMany({
+      await this.postgresqlDatasourceTableRelationService.findMany({
         where: {
           AND: {
             datasourceId: datasource.id,
