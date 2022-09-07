@@ -3,7 +3,7 @@ import {Injectable} from '@nestjs/common';
 import {ElasticsearchDatasource, Prisma} from '@prisma/client';
 import {ElasticsearchService} from '../../../_elasticsearch/_elasticsearch.service';
 import {PrismaService} from '../../../_prisma/_prisma.service';
-import _ from 'lodash';
+import {get as lodash_get, split as lodash_split} from 'lodash';
 
 @Injectable()
 export class ElasticsearchDatasourceService {
@@ -122,21 +122,24 @@ export class ElasticsearchDatasourceService {
     const searchParams = this.parseSearchAggregationsParams(params);
 
     // [step 2] Search
-    return await this.elasticsearch.search(searchParams);
+    const result = await this.elasticsearch.search(searchParams);
+
+    // [step 3] Parse response
+    return this.parseSearchAggregationsResult(params, result);
   }
 
   private parseSearchAggregationsParams(params: any) {
     const {type} = params;
-    const index = _.get(params, 'searchDto.index');
-    const query = _.get(params, 'searchDto.body.query');
-    const aggregationMode = _.get(params, 'aggregationMode');
+    const index = lodash_get(params, 'searchDto.index');
+    const query = lodash_get(params, 'searchDto.body.query');
+    const aggregationMode = lodash_get(params, 'aggregationMode');
 
     let field: any;
     let termsSize: any;
     switch (type) {
       case 'terms':
-        field = _.get(params, 'option.column[0]');
-        termsSize = _.get(params, 'option.chartOption.termsSize') || 10;
+        field = lodash_get(params, 'option.column[0]');
+        termsSize = lodash_get(params, 'option.chartOption.termsSize') || 10;
         return {
           index,
           body: {
@@ -155,9 +158,9 @@ export class ElasticsearchDatasourceService {
         };
       case 'nested':
         if (aggregationMode === 'normal') {
-          field = _.get(params, 'option.column[0]');
-          termsSize = _.get(params, 'option.chartOption.termsSize') || 10;
-          const nestPath = _.get(_.split(field, '.'), '0');
+          field = lodash_get(params, 'option.column[0]');
+          termsSize = lodash_get(params, 'option.chartOption.termsSize') || 10;
+          const nestPath = lodash_get(lodash_split(field, '.'), '0');
           return {
             index,
             body: {
@@ -182,10 +185,10 @@ export class ElasticsearchDatasourceService {
           };
         }
         if (aggregationMode === 'reverse') {
-          field = _.get(params, 'option.column[0]');
-          termsSize = _.get(params, 'option.chartOption.termsSize') || 10;
-          const reverseColumns = _.get(params, 'reverseColumns');
-          const nestPath = _.get(_.split(field, '.'), '0');
+          field = lodash_get(params, 'option.column[0]');
+          termsSize = lodash_get(params, 'option.chartOption.termsSize') || 10;
+          const reverseColumns = lodash_get(params, 'reverseColumns');
+          const nestPath = lodash_get(lodash_split(field, '.'), '0');
           return {
             index,
             body: {
@@ -223,6 +226,32 @@ export class ElasticsearchDatasourceService {
         }
       default:
         return params;
+    }
+  }
+
+  private parseSearchAggregationsResult(params: any, response: any) {
+    const {type} = params;
+    const {statusCode} = response;
+
+    if (statusCode !== 200) {
+      return null;
+    }
+
+    const aggregations = lodash_get(response, 'body.aggregations');
+
+    switch (type) {
+      case 'terms':
+        return {
+          sum_other_doc_count: aggregations.terms.sum_other_doc_count,
+          list: aggregations.terms.buckets,
+        };
+      case 'nested':
+        return {
+          sum_other_doc_count: aggregations.terms.terms.sum_other_doc_count,
+          list: aggregations.terms.terms.buckets,
+        };
+      default:
+        return null;
     }
   }
 

@@ -197,7 +197,13 @@ export class ElasticsearchDatasourceController {
    * @returns
    * @memberof ElasticsearchDatasourceIndexFieldController
    */
-  @Post('/search')
+  @Post('/:datasourceId/search')
+  @ApiParam({
+    name: 'datasourceId',
+    schema: {type: 'string'},
+    description: 'The uuid of the datasource.',
+    example: 'd8141ece-f242-4288-a60a-8675538549cd',
+  })
   @ApiBody({
     description: 'Search elasticsearch datasource.',
     examples: {
@@ -214,6 +220,7 @@ export class ElasticsearchDatasourceController {
     },
   })
   async searchElasticsearchDatasource(
+    @Param('datasourceId') datasourceId: string,
     @Body()
     body: {
       index: string;
@@ -223,7 +230,16 @@ export class ElasticsearchDatasourceController {
       sort: string[];
     }
   ) {
-    // [step 1] Guard statement.
+    // [step 1] Get datasource.
+    const datasource = await this.elasticsearchDatasourceService.findOne({
+      id: datasourceId,
+    });
+    if (!datasource) {
+      return {
+        data: null,
+        err: {message: 'Invalid datasource id.'},
+      };
+    }
 
     // [step 2] Search datasource.
     return await this.elasticsearchDatasourceService.search(body);
@@ -235,7 +251,13 @@ export class ElasticsearchDatasourceController {
    * @returns
    * @memberof ElasticsearchDatasourceIndexFieldController
    */
-  @Post('/search-aggregations')
+  @Post('/:datasourceId/search-aggregations')
+  @ApiParam({
+    name: 'datasourceId',
+    schema: {type: 'string'},
+    description: 'The uuid of the datasource.',
+    example: 'd8141ece-f242-4288-a60a-8675538549cd',
+  })
   @ApiBody({
     description: 'Search aggregations.',
     examples: {
@@ -251,6 +273,7 @@ export class ElasticsearchDatasourceController {
     },
   })
   async searchAggregationsElasticsearchDatasource(
+    @Param('datasourceId') datasourceId: string,
     @Body()
     body: {
       aggregationMode: string;
@@ -259,7 +282,16 @@ export class ElasticsearchDatasourceController {
       type: string;
     }
   ) {
-    // [step 1] Guard statement.
+    // [step 1] Get datasource.
+    const datasource = await this.elasticsearchDatasourceService.findOne({
+      id: datasourceId,
+    });
+    if (!datasource) {
+      return {
+        data: null,
+        err: {message: 'Invalid datasource id.'},
+      };
+    }
 
     // [step 2] Search datasource.
     return await this.elasticsearchDatasourceService.searchAggregations(body);
