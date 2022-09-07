@@ -21,7 +21,7 @@ export class PostgresqlDatasourceConstraintController {
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},
-    description: 'The uuid of the postgresqlDatasourceDatasourceConstraint.',
+    description: 'The uuid of the postgresql datasource.',
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
   async getPostgresqlDatasourceConstraints(
@@ -102,7 +102,7 @@ export class PostgresqlDatasourceConstraintController {
     } else {
       return {
         data: null,
-        err: {message: 'Get postgresql table column failed.'},
+        err: {message: 'Get postgresql datasource constraints failed.'},
       };
     }
   }

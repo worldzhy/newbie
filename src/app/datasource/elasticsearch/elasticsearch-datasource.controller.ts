@@ -1,7 +1,6 @@
 import {Controller, Get, Post, Param, Body} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {ElasticsearchDatasourceService} from './elasticsearch-datasource.service';
-import {ElasticsearchDatasourceIndexFieldService} from './field/field.service';
 
 @ApiTags('App / Datasource / Elasticsearch')
 @ApiBearerAuth()
@@ -38,7 +37,7 @@ export class ElasticsearchDatasourceController {
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},
-    description: 'The uuid of the elasticsearchDatasource.',
+    description: 'The uuid of the elasticsearch datasource.',
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
   async getElasticsearchDatasource(
@@ -55,7 +54,7 @@ export class ElasticsearchDatasourceController {
     } else {
       return {
         data: null,
-        err: {message: 'Get elasticsearchDatasource failed.'},
+        err: {message: 'Get elasticsearch datasource failed.'},
       };
     }
   }
@@ -71,8 +70,7 @@ export class ElasticsearchDatasourceController {
    */
   @Post('/')
   @ApiBody({
-    description:
-      "The 'elasticsearchDatasourceName', 'clientName' and 'clientEmail' are required in request body.",
+    description: "The 'node' is required in request body.",
     examples: {
       a: {
         summary: '1. Create',
@@ -102,7 +100,7 @@ export class ElasticsearchDatasourceController {
     } else {
       return {
         data: null,
-        err: {message: 'ElasticsearchDatasource create failed.'},
+        err: {message: 'Elasticsearch datasource create failed.'},
       };
     }
   }
@@ -122,7 +120,7 @@ export class ElasticsearchDatasourceController {
     example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
   })
   @ApiBody({
-    description: 'Update datasource elasticsearch.',
+    description: 'Update elasticsearch datasource.',
     examples: {
       a: {
         summary: '1. Update',

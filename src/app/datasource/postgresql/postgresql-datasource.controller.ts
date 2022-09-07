@@ -86,7 +86,7 @@ export class PostgresqlDatasourceController {
   @Post('/')
   @ApiBody({
     description:
-      "The 'postgresqlDatasourceName', 'clientName' and 'clientEmail' are required in request body.",
+      "The 'host', 'port', 'database' and 'schema' are required in request body.",
     examples: {
       a: {
         summary: '1. Create',
@@ -122,7 +122,7 @@ export class PostgresqlDatasourceController {
     } else {
       return {
         data: null,
-        err: {message: 'PostgresqlDatasource create failed.'},
+        err: {message: 'Postgresql datasource created failed.'},
       };
     }
   }
