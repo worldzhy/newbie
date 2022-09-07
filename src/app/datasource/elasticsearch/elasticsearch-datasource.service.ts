@@ -4,11 +4,60 @@ import {ElasticsearchDatasource, Prisma} from '@prisma/client';
 import {ElasticsearchService} from '../../../_elasticsearch/_elasticsearch.service';
 import {PrismaService} from '../../../_prisma/_prisma.service';
 import {get as lodash_get, split as lodash_split} from 'lodash';
+import {ElasticsearchDatasourceIndexService} from './index/index.service';
+import {ElasticsearchDatasourceIndexFieldService} from './field/field.service';
 
 @Injectable()
 export class ElasticsearchDatasourceService {
   private prisma: PrismaService = new PrismaService();
   private elasticsearch: ElasticsearchService = new ElasticsearchService();
+  private elasticsearchDatasourceIndexService =
+    new ElasticsearchDatasourceIndexService();
+  private elasticsearchDatasourceIndexFieldService =
+    new ElasticsearchDatasourceIndexFieldService();
+
+  /**
+   * Generate the table relations of the schema.
+   * @param datasource
+   * @returns
+   */
+  async extract(datasource: ElasticsearchDatasource) {
+    // [step 1] Get mappings of all indices.
+    const result = await this.elasticsearch.indices.getMapping();
+    if (result.statusCode !== 200) {
+      return;
+    }
+
+    // [step 2] Save fields of all indices.
+    const indexNames = Object.keys(result.body);
+    for (let i = 0; i < indexNames.length; i++) {
+      const indexName = indexNames[i];
+      if (indexName.startsWith('.')) {
+        // The index name starts with '.' is not the customized index name.
+        continue;
+      }
+
+      // Save the index.
+      const index = await this.elasticsearchDatasourceIndexService.create({
+        name: indexName,
+        datasource: {connect: {id: datasource.id}},
+      });
+
+      // Save fields of the index.
+      const fieldNames = Object.keys(
+        result.body[indexName].mappings.properties
+      );
+      await this.elasticsearchDatasourceIndexFieldService.createMany(
+        fieldNames.map(fieldName => {
+          return {
+            field: fieldName,
+            fieldBody: result.body[indexName].mappings.properties[fieldName],
+            indexId: index.id,
+          };
+        })
+      );
+    }
+  }
 
   /**
    * Get a elasticsearchDatasource

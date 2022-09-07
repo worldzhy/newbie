@@ -1,15 +1,13 @@
 import {Controller, Get, Post, Param, Body} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {ElasticsearchDatasourceService} from './elasticsearch-datasource.service';
-import {ElasticsearchDatasourceIndexFieldService} from './index-field/index-field.service';
+import {ElasticsearchDatasourceIndexFieldService} from './field/field.service';
 
-@ApiTags('App / Datasource')
+@ApiTags('App / Datasource / Elasticsearch')
 @ApiBearerAuth()
 @Controller('elasticsearch-datasources')
 export class ElasticsearchDatasourceController {
   private elasticsearchDatasourceService = new ElasticsearchDatasourceService();
-  private elasticsearchDatasourceIndexFieldService =
-    new ElasticsearchDatasourceIndexFieldService();
 
   /**
    * Get datasource elasticsearchs by page number. The order is by elasticsearchDatasource name.
@@ -188,7 +186,7 @@ export class ElasticsearchDatasourceController {
     }
 
     // [step 3] Extract elasticsearch all index fields.
-    await this.elasticsearchDatasourceIndexFieldService.extract(datasource);
+    await this.elasticsearchDatasourceService.extract(datasource);
   }
 
   /**

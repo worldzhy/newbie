@@ -1,19 +1,23 @@
 import {Module} from '@nestjs/common';
 import {PrismaModule} from '../../_prisma/_prisma.module';
 import {ElasticsearchDatasourceModule} from './elasticsearch/elasticsearch-datasource.module';
-import {ElasticsearchDatasourceIndexFieldModule} from './elasticsearch/index-field/index-field.module';
+import {ElasticsearchDatasourceIndexModule} from './elasticsearch/index/index.module';
+import {ElasticsearchDatasourceIndexFieldModule} from './elasticsearch/field/field.module';
 import {PostgresqlDatasourceModule} from './postgresql/postgresql-datasource.module';
-import {PostgresqlDatasourceTableColumnModule} from './postgresql/table-column/table-column.module';
-import {PostgresqlDatasourceTableRelationModule} from './postgresql/table-relation/table-relation.module';
+import {PostgresqlDatasourceTableModule} from './postgresql/table/table.module';
+import {PostgresqlDatasourceTableColumnModule} from './postgresql/column/column.module';
+import {PostgresqlDatasourceConstraintModule} from './postgresql/constraint/constraint.module';
 
 @Module({
   imports: [
     PrismaModule,
     ElasticsearchDatasourceModule,
+    ElasticsearchDatasourceIndexModule,
     ElasticsearchDatasourceIndexFieldModule,
     PostgresqlDatasourceModule,
+    PostgresqlDatasourceTableModule,
     PostgresqlDatasourceTableColumnModule,
-    PostgresqlDatasourceTableRelationModule,
+    PostgresqlDatasourceConstraintModule,
   ],
 })
 export class DatasourceModule {}

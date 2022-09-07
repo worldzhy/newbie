@@ -1,4 +1,4 @@
-import {Controller, Get, Post, Param, Body} from '@nestjs/common';
+import {Controller, Get, Post, Param, Body, Delete} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {DatapipeService} from './datapipe.service';
 import {DatapipeStatus} from '@prisma/client';
@@ -132,7 +132,7 @@ export class DatapipeController {
     // [step 2] Create datapipe.
     const result = await this.datapipeService.create({
       name: body.name,
-      status: DatapipeStatus.PREPARING,
+      status: DatapipeStatus.INITED,
     });
     if (result) {
       return {
@@ -193,6 +193,143 @@ export class DatapipeController {
       return {
         data: null,
         err: {message: 'Datapipe updated failed.'},
+      };
+    }
+  }
+
+  /**
+   * Delete datapipe
+   *
+   * @param {string} datapipeId
+   * @param {{name: string}} body
+   * @returns
+   * @memberof DatapipeController
+   */
+  @Delete('/:datapipeId')
+  @ApiParam({
+    name: 'datapipeId',
+    schema: {type: 'string'},
+    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
+  })
+  async deleteDatapipe(@Param('datapipeId') datapipeId: string) {
+    // [step 1] Guard statement.
+
+    // [step 2] Delete datapipe.
+    const result = await this.datapipeService.delete({id: datapipeId});
+    if (result) {
+      return {
+        data: result,
+        err: null,
+      };
+    } else {
+      return {
+        data: null,
+        err: {message: 'Datapipe deleted failed.'},
+      };
+    }
+  }
+
+  /**
+   * Start datapipe
+   *
+   * @param {string} datapipeId
+   * @param {{name: string}} body
+   * @returns
+   * @memberof DatapipeController
+   */
+  @Get('/:datapipeId/start')
+  @ApiParam({
+    name: 'datapipeId',
+    schema: {type: 'string'},
+    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
+  })
+  async startDatapipe(@Param('datapipeId') datapipeId: string) {
+    // [step 1] Guard statement.
+
+    // [step 2] Update name.
+    const result = await this.datapipeService.update({
+      where: {id: datapipeId},
+      data: {status: DatapipeStatus.DEPLOYED},
+    });
+    if (result) {
+      return {
+        data: result,
+        err: null,
+      };
+    } else {
+      return {
+        data: null,
+        err: {message: 'Datapipe started failed.'},
+      };
+    }
+  }
+
+  /**
+   * Stop datapipe
+   *
+   * @param {string} datapipeId
+   * @param {{name: string}} body
+   * @returns
+   * @memberof DatapipeController
+   */
+  @Get('/:datapipeId/stop')
+  @ApiParam({
+    name: 'datapipeId',
+    schema: {type: 'string'},
+    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
+  })
+  async stopDatapipe(@Param('datapipeId') datapipeId: string) {
+    // [step 1] Guard statement.
+
+    // [step 2] Update name.
+    const result = await this.datapipeService.update({
+      where: {id: datapipeId},
+      data: {status: DatapipeStatus.DISABLED},
+    });
+    if (result) {
+      return {
+        data: result,
+        err: null,
+      };
+    } else {
+      return {
+        data: null,
+        err: {message: 'Datapipe stopped failed.'},
+      };
+    }
+  }
+
+  /**
+   * Purge datapipe
+   *
+   * @param {string} datapipeId
+   * @param {{name: string}} body
+   * @returns
+   * @memberof DatapipeController
+   */
+  @Get('/:datapipeId/purge')
+  @ApiParam({
+    name: 'datapipeId',
+    schema: {type: 'string'},
+    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
+  })
+  async purgeDatapipe(@Param('datapipeId') datapipeId: string) {
+    // [step 1] Guard statement.
+
+    // [step 2] Update name.
+    const result = await this.datapipeService.update({
+      where: {id: datapipeId},
+      data: {status: DatapipeStatus.INITED},
+    });
+    if (result) {
+      return {
+        data: result,
+        err: null,
+      };
+    } else {
+      return {
+        data: null,
+        err: {message: 'Datapipe purge failed.'},
       };
     }
   }

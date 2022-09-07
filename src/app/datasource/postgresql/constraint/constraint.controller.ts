@@ -1,40 +1,38 @@
 import {Controller, Get, Post, Param} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam} from '@nestjs/swagger';
 import {PostgresqlDatasourceService} from '../postgresql-datasource.service';
-import {PostgresqlDatasourceTableRelationService} from './table-relation.service';
+import {PostgresqlDatasourceConstraintService} from './constraint.service';
 
-@ApiTags('App / Datasource')
+@ApiTags('App / Datasource / Postgresql Constraint')
 @ApiBearerAuth()
 @Controller('postgresql-datasources')
-export class PostgresqlDatasourceTableRelationController {
+export class PostgresqlDatasourceConstraintController {
   private postgresqlDatasourceService = new PostgresqlDatasourceService();
-  private postgresqlDatasourceTableRelationService =
-    new PostgresqlDatasourceTableRelationService();
+  private postgresqlDatasourceConstraintService =
+    new PostgresqlDatasourceConstraintService();
 
   /**
-   * Get postgresqlDatasourceDatasource table relations
+   * Get postgresql datasource constraints.
    * @param {string} datasourceId
    * @returns {Promise<{data: object;err: object;}>}
-   * @memberof PostgresqlDatasourceTableRelationController
+   * @memberof PostgresqlDatasourceConstraintController
    */
-  @Get('/:datasourceId/tables/relations')
+  @Get('/:datasourceId/constraints')
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},
-    description: 'The uuid of the postgresqlDatasourceDatasourceTableRelation.',
+    description: 'The uuid of the postgresqlDatasourceDatasourceConstraint.',
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
-  async getPostgresqlDatasourceTableRelations(
+  async getPostgresqlDatasourceConstraints(
     @Param('datasourceId')
     datasourceId: string
   ): Promise<{data: object | null; err: object | null}> {
-    const result = await this.postgresqlDatasourceTableRelationService.findMany(
-      {
-        where: {
-          datasourceId: datasourceId,
-        },
-      }
-    );
+    const result = await this.postgresqlDatasourceConstraintService.findMany({
+      where: {
+        datasourceId: datasourceId,
+      },
+    });
     if (result) {
       return {
         data: result,
@@ -44,7 +42,7 @@ export class PostgresqlDatasourceTableRelationController {
       return {
         data: null,
         err: {
-          message: 'Get postgresqlDatasourceDatasource table relation failed.',
+          message: 'Get postgresql datasource constraints failed.',
         },
       };
     }
@@ -56,7 +54,7 @@ export class PostgresqlDatasourceTableRelationController {
    * @returns {Promise<{data: object;err: object;}>}
    * @memberof PostgresqlDatasourceTableColumnController
    */
-  @Get('/:datasourceId/tables/:tableName/relations')
+  @Get('/:datasourceId/constraints/:tableName')
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},
@@ -69,7 +67,7 @@ export class PostgresqlDatasourceTableRelationController {
     description: 'The name of the table.',
     example: 'User',
   })
-  async getPostgresqlDatasourceRelationsByTable(
+  async getPostgresqlDatasourceConstraintsByTable(
     @Param('datasourceId') datasourceId: string,
     @Param('tableName') tableName: string
   ): Promise<{data: object | null; err: object | null}> {
@@ -85,15 +83,16 @@ export class PostgresqlDatasourceTableRelationController {
     }
 
     // [step 2] Get columns group by table.
-    const relations =
-      await this.postgresqlDatasourceTableRelationService.findMany({
+    const relations = await this.postgresqlDatasourceConstraintService.findMany(
+      {
         where: {
           AND: {
             datasourceId: datasource.id,
             table: tableName,
           },
         },
-      });
+      }
+    );
 
     if (relations.length > 0) {
       return {

@@ -1,6 +1,6 @@
 import {Module} from '@nestjs/common';
-import {ElasticsearchDatasourceIndexFieldController} from './index-field.controller';
-import {ElasticsearchDatasourceIndexFieldService} from './index-field.service';
+import {ElasticsearchDatasourceIndexFieldController} from './field.controller';
+import {ElasticsearchDatasourceIndexFieldService} from './field.service';
 import {PrismaModule} from '../../../../_prisma/_prisma.module';
 import {ElasticsearchModule} from 'src/_elasticsearch/_elasticsearch.module';
 

@@ -11,30 +11,7 @@ export class PostgresqlDatasourceTableColumnService {
   private prisma: PrismaService = new PrismaService();
 
   /**
-   * Generate the table relations of the schema.
-   * @param datasource
-   * @returns
-   */
-  async extract(datasource: PostgresqlDatasource) {
-    const columns: [] = await this.prisma
-      .$queryRaw`SELECT * FROM information_schema.columns WHERE (table_schema = ${datasource.schema})`;
-
-    // Prisma.PostgresqlDatasourceTableColumnCreateManyInput[] = [];
-    return await this.createMany(
-      columns.map((column: any) => {
-        return {
-          table: column.table_name,
-          column: column.column_name,
-          columnType: column.data_type,
-          ordinalPosition: column.ordinal_position,
-          datasourceId: datasource.id,
-        };
-      })
-    );
-  }
-
-  /**
-   * Get a postgresqlDatasource table column
+   * Get a postgresqlDatasource table column.
    * @param {Prisma.PostgresqlDatasourceTableColumnWhereUniqueInput} where
    * @returns {(Promise<PostgresqlDatasourceTableColumn | null>)}
    * @memberof PostgresqlDatasourceTableColumnService
@@ -48,7 +25,7 @@ export class PostgresqlDatasourceTableColumnService {
   }
 
   /**
-   * Get many postgresqlDatasource table columns
+   * Get many postgresqlDatasource table columns.
    *
    * @param {{
    *     skip?: number;
@@ -79,20 +56,7 @@ export class PostgresqlDatasourceTableColumnService {
   }
 
   /**
-   * Get columns by group.
-   * @param params
-   * @returns
-   */
-  async groupBy(params: {
-    by: Prisma.PostgresqlDatasourceTableColumnScalarFieldEnum[];
-    where: Prisma.PostgresqlDatasourceTableColumnWhereInput;
-    orderBy?: Prisma.PostgresqlDatasourceTableColumnOrderByWithAggregationInput;
-  }) {
-    return await this.prisma.postgresqlDatasourceTableColumn.groupBy(params);
-  }
-
-  /**
-   * Create a postgresqlDatasource table column
+   * Create a postgresqlDatasource table column.
    *
    * @param {Prisma.PostgresqlDatasourceTableColumnCreateInput} data
    * @returns {Promise<PostgresqlDatasourceTableColumn>}
@@ -121,7 +85,7 @@ export class PostgresqlDatasourceTableColumnService {
   }
 
   /**
-   * Update a postgresqlDatasource table column
+   * Update a postgresqlDatasource table column.
    *
    * @param {{
    *     where: Prisma.PostgresqlDatasourceTableColumnWhereUniqueInput;
@@ -142,18 +106,32 @@ export class PostgresqlDatasourceTableColumnService {
   }
 
   /**
-   * Delete a postgresqlDatasource table column
-   *
-   * @param {Prisma.PostgresqlDatasourceTableColumnWhereUniqueInput} where
+   * Delete a postgresqlDatasource table column.
    * @returns {Promise<PostgresqlDatasourceTableColumn>}
    * @memberof PostgresqlDatasourceTableColumnService
    */
-  async delete(
-    where: Prisma.PostgresqlDatasourceTableColumnWhereUniqueInput
-  ): Promise<PostgresqlDatasourceTableColumn> {
-    return await this.prisma.postgresqlDatasourceTableColumn.delete({
-      where,
-    });
+  async delete(params: {
+    where: Prisma.PostgresqlDatasourceTableColumnWhereUniqueInput;
+    include?: Prisma.PostgresqlDatasourceTableColumnInclude;
+  }): Promise<PostgresqlDatasourceTableColumn> {
+    return await this.prisma.postgresqlDatasourceTableColumn.delete(params);
+  }
+
+  /**
+   * Delete many postgresql datasource table columns.
+   *
+   * @param {Prisma.PostgresqlDatasourceTableColumnWhereInput} where
+   * @returns {Promise<PostgresqlDatasourceTableColumn>}
+   * @memberof PostgresqlDatasourceTableColumnService
+   */
+  async deleteMany(
+    where: Prisma.PostgresqlDatasourceTableColumnWhereInput
+  ): Promise<number> {
+    const result = await this.prisma.postgresqlDatasourceTableColumn.deleteMany(
+      {where}
+    );
+
+    return result.count;
   }
 
   /* End */

@@ -1,21 +1,18 @@
 import {Controller, Get, Post, Param, Body} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {PostgresqlDatasourceService} from './postgresql-datasource.service';
-import {PostgresqlDatasourceTableColumnService} from './table-column/table-column.service';
-import {PostgresqlDatasourceTableRelationService} from './table-relation/table-relation.service';
+import {PostgresqlDatasourceTableService} from './table/table.service';
 
-@ApiTags('App / Datasource')
+@ApiTags('App / Datasource / Postgresql')
 @ApiBearerAuth()
 @Controller('postgresql-datasources')
 export class PostgresqlDatasourceController {
   private postgresqlDatasourceService = new PostgresqlDatasourceService();
-  private postgresqlDatasourceTableColumnService =
-    new PostgresqlDatasourceTableColumnService();
-  private postgresqlDatasourceTableRelationService =
-    new PostgresqlDatasourceTableRelationService();
+  private postgresqlDatasourceTableService =
+    new PostgresqlDatasourceTableService();
 
   /**
-   * Get postgresqlDatasources by page number. The order is by postgresqlDatasource name.
+   * Get postgresqlDatasources by page number. The order is by postgresql datasource name.
    *
    * @returns {Promise<{ data: object, err: object }>}
    * @memberof PostgresqlDatasourceController
@@ -42,7 +39,7 @@ export class PostgresqlDatasourceController {
   }
 
   /**
-   * Get postgresqlDatasource by id
+   * Get postgresql datasource by id
    *
    * @param {string} datasourceId
    * @returns {Promise<{data: object;err: object;}>}
@@ -52,7 +49,7 @@ export class PostgresqlDatasourceController {
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},
-    description: 'The uuid of the postgresqlDatasource.',
+    description: 'The uuid of the postgresql datasource.',
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
   async getPostgresqlDatasource(
@@ -69,13 +66,13 @@ export class PostgresqlDatasourceController {
     } else {
       return {
         data: null,
-        err: {message: 'Get postgresqlDatasource failed.'},
+        err: {message: 'Get postgresql datasource failed.'},
       };
     }
   }
 
   /**
-   * Create a new postgresqlDatasource.
+   * Create a new postgresql datasource.
    *
    * @param {{
    *        host: string;
@@ -97,7 +94,7 @@ export class PostgresqlDatasourceController {
           host: '24.323.232.23',
           port: 5432,
           database: 'postgres',
-          schema: '_basic',
+          schema: 'public',
         },
       },
     },
@@ -113,7 +110,7 @@ export class PostgresqlDatasourceController {
   ) {
     // [step 1] Guard statement.
 
-    // [step 2] Create postgresqlDatasource.
+    // [step 2] Create postgresql datasource.
     const result = await this.postgresqlDatasourceService.create({
       ...body,
     });
@@ -131,7 +128,7 @@ export class PostgresqlDatasourceController {
   }
 
   /**
-   * Update postgresqlDatasource
+   * Update postgresql datasource
    *
    * @param {string} datasourceId
    * @param {{
@@ -149,7 +146,7 @@ export class PostgresqlDatasourceController {
     example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
   })
   @ApiBody({
-    description: 'Update postgresqlDatasource.',
+    description: 'Update postgresql datasource.',
     examples: {
       a: {
         summary: '1. Update',
@@ -157,6 +154,7 @@ export class PostgresqlDatasourceController {
           host: '12.323.232.23',
           port: 5432,
           database: 'postgres',
+          schema: 'public',
         },
       },
     },
@@ -186,56 +184,82 @@ export class PostgresqlDatasourceController {
   }
 
   /**
-   * Generate a new postgresql table columns.
+   * Mount a postgresql datasource.
    *
    * @returns
    * @memberof PostgresqlDatasourceTableColumnController
    */
-  @Post('/:datasourceId/extract')
+  @Post('/:datasourceId/mount')
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},
-    description: 'The uuid of the postgresqlTableColumn.',
+    description: 'The uuid of the postgresql datasource.',
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
-  async extractPostgresqlDatasource(
-    @Param('datasourceId') datasourceId: string
-  ) {
-    // [step 1] Guard statement.
-
-    // [step 2] Get postgresql.
+  async mountPostgresqlDatasource(@Param('datasourceId') datasourceId: string) {
+    // [step 1] Get postgresql.
     const postgresql = await this.postgresqlDatasourceService.findOne({
       id: datasourceId,
     });
     if (!postgresql) {
-      return;
-    }
-
-    // [step 3] Extract datasource postgresql table columns.
-    const tableColumns =
-      await this.postgresqlDatasourceTableColumnService.extract(postgresql);
-    if (!tableColumns) {
       return {
         data: null,
-        err: {message: 'PostgresqlDatasourceTableColumn create failed.'},
+        err: {message: 'Invalid datasourceId.'},
       };
     }
 
-    // [step 4] Extract datasource postgresql table relations.
-    const tableRelations =
-      await this.postgresqlDatasourceTableRelationService.extract(postgresql);
-    if (!tableRelations) {
+    // [step 2] Check if the datasource has been mounted.
+    const count = await this.postgresqlDatasourceTableService.count({
+      datasourceId: datasourceId,
+    });
+    if (count > 0) {
       return {
         data: null,
-        err: {message: 'PostgresqlDatasourceTableRelation create failed.'},
+        err: {
+          message:
+            'The datasource can not be mounted again before it has been unmounted.',
+        },
       };
     }
+
+    // [step 3] Extract datasource postgresql tables, columns, constraints.
+    await this.postgresqlDatasourceService.mount(postgresql);
 
     return {
-      tableColumns,
-      tableRelations,
+      data: 'Done',
+      err: null,
     };
   }
 
+  /**
+   * Unmount a postgresql datasource.
+   *
+   * @returns
+   * @memberof PostgresqlDatasourceTableColumnController
+   */
+  @Post('/:datasourceId/unmount')
+  @ApiParam({
+    name: 'datasourceId',
+    schema: {type: 'string'},
+    description: 'The uuid of the postgresql datasource.',
+    example: 'd8141ece-f242-4288-a60a-8675538549cd',
+  })
+  async unmountPostgresqlDatasource(
+    @Param('datasourceId') datasourceId: string
+  ) {
+    // [step 1] Get postgresql.
+    const postgresql = await this.postgresqlDatasourceService.findOne({
+      id: datasourceId,
+    });
+    if (!postgresql) {
+      return {
+        data: null,
+        err: {message: 'Invalid datasourceId.'},
+      };
+    }
+
+    // [step 2] Clear datasource postgresql tables, columns and constraints.
+    await this.postgresqlDatasourceService.unmount(postgresql);
+  }
   /* End */
 }

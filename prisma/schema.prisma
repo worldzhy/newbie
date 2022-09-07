@@ -707,27 +707,36 @@ model IdeSyncPerfLog {
 //
 
 model PostgresqlDatasource {
-  id                       String                              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  host                     String
-  port                     Int
-  database                 String
-  schema                   String
-  createdAt                DateTime                            @default(now())
-  updatedAt                DateTime                            @updatedAt
-  postgresqlTableColumns   PostgresqlDatasourceTableColumn[]
-  postgresqlTableRelations PostgresqlDatasourceTableRelation[]
+  id          String                           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  host        String
+  port        Int
+  database    String
+  schema      String
+  createdAt   DateTime                         @default(now())
+  updatedAt   DateTime                         @updatedAt
+  tables      PostgresqlDatasourceTable[]
+  constraints PostgresqlDatasourceConstraint[]
+}
+
+model PostgresqlDatasourceTable {
+  id           Int                               @id @default(autoincrement())
+  name         String
+  createdAt    DateTime                          @default(now())
+  updatedAt    DateTime                          @updatedAt
+  datasource   PostgresqlDatasource              @relation(fields: [datasourceId], references: [id])
+  datasourceId String                            @db.Uuid
+  columns      PostgresqlDatasourceTableColumn[]
 }
 
 model PostgresqlDatasourceTableColumn {
-  id              String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  table           String
+  id              Int                       @id @default(autoincrement())
   column          String
   columnType      String
   ordinalPosition Int
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
-  datasource      PostgresqlDatasource @relation(fields: [datasourceId], references: [id])
-  datasourceId    String               @db.Uuid
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+  table           PostgresqlDatasourceTable @relation(fields: [tableId], references: [id], onDelete: Cascade)
+  tableId         Int
 }
 
 enum PostgresqlDatasourceTableColumnType {
@@ -736,43 +745,52 @@ enum PostgresqlDatasourceTableColumnType {
   JSON
 }
 
-model PostgresqlDatasourceTableRelation {
-  id            Int                                            @id @default(autoincrement())
+model PostgresqlDatasourceConstraint {
+  id            Int                                         @id @default(autoincrement())
   schema        String
   table         String
   column        String // It is primary key or foreign key.
-  columnKeyType PostgresqlDatasourceTableRelationColumnKeyType
+  columnKeyType PostgresqlDatasourceConstraintColumnKeyType
   foreignTable  String? // Has value when the type is FOREIGN_KEY. 
-  createdAt     DateTime                                       @default(now())
-  updatedAt     DateTime                                       @updatedAt
-  datasource    PostgresqlDatasource                           @relation(fields: [datasourceId], references: [id])
-  datasourceId  String                                         @db.Uuid
+  createdAt     DateTime                                    @default(now())
+  updatedAt     DateTime                                    @updatedAt
+  datasource    PostgresqlDatasource                        @relation(fields: [datasourceId], references: [id])
+  datasourceId  String                                      @db.Uuid
 }
 
-enum PostgresqlDatasourceTableRelationColumnKeyType {
+enum PostgresqlDatasourceConstraintColumnKeyType {
   PRIMARY_KEY
   FOREIGN_KEY
 }
 
 model ElasticsearchDatasource {
-  id                      String                              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  node                    String
-  createdAt               DateTime                            @default(now())
-  updatedAt               DateTime                            @updatedAt
-  elasticsearchTypeFields ElasticsearchDatasourceIndexField[]
+  id                             String                         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  node                           String
+  createdAt                      DateTime                       @default(now())
+  updatedAt                      DateTime                       @updatedAt
+  elasticsearchDatasourceIndices ElasticsearchDatasourceIndex[]
+}
+
+model ElasticsearchDatasourceIndex {
+  id           Int                                 @id @default(autoincrement())
+  name         String
+  createdAt    DateTime                            @default(now())
+  updatedAt    DateTime                            @updatedAt
+  datasource   ElasticsearchDatasource             @relation(fields: [datasourceId], references: [id])
+  datasourceId String                              @db.Uuid
+  fields       ElasticsearchDatasourceIndexField[]
 }
 
 model ElasticsearchDatasourceIndexField {
-  id           String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  index        String
-  field        String
-  fieldBody    Json
-  createdAt    DateTime                @default(now())
-  updatedAt    DateTime                @updatedAt
-  datasource   ElasticsearchDatasource @relation(fields: [datasourceId], references: [id])
-  datasourceId String                  @db.Uuid
-  databoard    ElasticsearchDataboard? @relation(fields: [databoardId], references: [id])
-  databoardId  String?                 @db.Uuid
+  id          String                       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  field       String
+  fieldBody   Json
+  createdAt   DateTime                     @default(now())
+  updatedAt   DateTime                     @updatedAt
+  index       ElasticsearchDatasourceIndex @relation(fields: [indexId], references: [id], onDelete: Cascade)
+  indexId     Int
+  databoard   ElasticsearchDataboard?      @relation(fields: [databoardId], references: [id])
+  databoardId String?                      @db.Uuid
 }
 
 //
@@ -805,20 +823,20 @@ model Datapipe {
   id                     String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name                   String
   status                 DatapipeStatus
+  buildBulkBodyBatchSize Int?
+  bulkEsDataInterval     Int?
+  syncDataByCronInterval Int?                    @default(0)
+  deploymentConfig       Json?
+  lastSyncDataByCronAt   DateTime?
   createdAt              DateTime                @default(now())
   updatedAt              DateTime                @updatedAt
   datapipeColumnMappings DatapipeColumnMapping[]
 }
 
 enum DatapipeStatus {
-  PREPARING
-  BUILDING
-  BUILD_SUCCEEDED
-  BUILD_FAILED
-  DESTROYING
-  DESTROY_SUCCEEDED
-  DESTROY_FAILED
-  DELETED
+  INITED
+  DEPLOYED
+  DISABLED
 }
 
 model DatapipeColumnMapping {
