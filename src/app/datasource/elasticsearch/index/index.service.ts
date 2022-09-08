@@ -120,6 +120,23 @@ export class ElasticsearchDatasourceIndexService {
     });
   }
 
+  /**
+   * Delete many elasticsearch datasource indices.
+   *
+   * @param {Prisma.ElasticsearchDatasourceIndexWhereInput} where
+   * @returns {Promise<ElasticsearchDatasourceIndex>}
+   * @memberof ElasticsearchDatasourceIndexService
+   */
+  async deleteMany(
+    where: Prisma.ElasticsearchDatasourceIndexWhereInput
+  ): Promise<number> {
+    const result = await this.prisma.elasticsearchDatasourceIndex.deleteMany({
+      where,
+    });
+
+    return result.count;
+  }
+
   async getIndices(datasourceId: string) {
     const indices = await this.elasticsearch.cat.indices({
       v: true, //If true, the response includes column headings. Defaults to false.

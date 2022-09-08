@@ -17,11 +17,11 @@ export class ElasticsearchDatasourceService {
     new ElasticsearchDatasourceIndexFieldService();
 
   /**
-   * Generate the table relations of the schema.
+   * Extract elasticsearch datasource indices and their fields.
    * @param datasource
    * @returns
    */
-  async extract(datasource: ElasticsearchDatasource) {
+  async mount(datasource: ElasticsearchDatasource) {
     // [step 1] Get mappings of all indices.
     const result = await this.elasticsearch.indices.getMapping();
     if (result.statusCode !== 200) {
@@ -57,6 +57,18 @@ export class ElasticsearchDatasourceService {
         })
       );
     }
+  }
+
+  /**
+   * Clear elasticsearch datasource indices and their fields.
+   * @param datasource
+   * @returns
+   */
+  async unmount(datasource: ElasticsearchDatasource) {
+    // [step 1] Delete indices, their fields will be cascade deleted.
+    await this.elasticsearchDatasourceIndexService.deleteMany({
+      datasourceId: datasource.id,
+    });
   }
 
   /**

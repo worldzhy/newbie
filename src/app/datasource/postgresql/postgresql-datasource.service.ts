@@ -126,21 +126,15 @@ export class PostgresqlDatasourceService {
   }
 
   /**
-   * Clear tables, columns and constraints.
+   * Clear constraints, tables and their columns.
    * @param datasource
    * @returns
    */
   async unmount(datasource: PostgresqlDatasource) {
-    // [step 1] Delete tables and columns.
-    const tables: any[] = await this.postgresqlDatasourceTableService.findMany({
-      where: {datasourceId: datasource.id},
+    // [step 1] Delete tables and their columns.
+    await this.postgresqlDatasourceTableService.deleteMany({
+      datasourceId: datasource.id,
     });
-
-    for (let i = 0; i < tables.length; i++) {
-      await this.postgresqlDatasourceTableService.delete({
-        where: {id: tables[i].id},
-      });
-    }
 
     // [step 2] Delete constraints.
     await this.postgresqlDatasourceConstraintService.deleteMany({

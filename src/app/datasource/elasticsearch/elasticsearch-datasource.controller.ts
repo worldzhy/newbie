@@ -155,43 +155,10 @@ export class ElasticsearchDatasourceController {
   }
 
   /**
-   * Extract elasticsearch all index fields.
-   *
-   * @returns
-   * @memberof ElasticsearchDatasourceIndexFieldController
-   */
-  @Post('/:datasourceId/extract')
-  @ApiParam({
-    name: 'datasourceId',
-    schema: {type: 'string'},
-    description: 'The uuid of the datasource.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
-  async extractElasticsearchDatasource(
-    @Param('datasourceId') datasourceId: string
-  ) {
-    // [step 1] Guard statement.
-
-    // [step 2] Get datasource.
-    const datasource = await this.elasticsearchDatasourceService.findOne({
-      id: datasourceId,
-    });
-    if (!datasource) {
-      return {
-        data: null,
-        err: {message: 'Invalid datasource id.'},
-      };
-    }
-
-    // [step 3] Extract elasticsearch all index fields.
-    await this.elasticsearchDatasourceService.extract(datasource);
-  }
-
-  /**
    * Search elasticsearch.
    *
    * @returns
-   * @memberof ElasticsearchDatasourceIndexFieldController
+   * @memberof ElasticsearchDatasourceController
    */
   @Post('/:datasourceId/search')
   @ApiParam({
@@ -245,7 +212,7 @@ export class ElasticsearchDatasourceController {
    * Search aggregations.
    *
    * @returns
-   * @memberof ElasticsearchDatasourceIndexFieldController
+   * @memberof ElasticsearchDatasourceController
    */
   @Post('/:datasourceId/search-aggregations')
   @ApiParam({
@@ -291,6 +258,70 @@ export class ElasticsearchDatasourceController {
 
     // [step 2] Search datasource.
     return await this.elasticsearchDatasourceService.searchAggregations(body);
+  }
+
+  /**
+   * Mount an elasticsearch datasource.
+   *
+   * @returns
+   * @memberof ElasticsearchDatasourceController
+   */
+  @Post('/:datasourceId/mount')
+  @ApiParam({
+    name: 'datasourceId',
+    schema: {type: 'string'},
+    description: 'The uuid of the datasource.',
+    example: 'd8141ece-f242-4288-a60a-8675538549cd',
+  })
+  async mountElasticsearchDatasource(
+    @Param('datasourceId') datasourceId: string
+  ) {
+    // [step 1] Guard statement.
+
+    // [step 2] Get datasource.
+    const datasource = await this.elasticsearchDatasourceService.findOne({
+      id: datasourceId,
+    });
+    if (!datasource) {
+      return {
+        data: null,
+        err: {message: 'Invalid datasource id.'},
+      };
+    }
+
+    // [step 3] Extract elasticsearch all index fields.
+    await this.elasticsearchDatasourceService.mount(datasource);
+  }
+
+  /**
+   * Unmount an elasticsearch datasource.
+   *
+   * @returns
+   * @memberof ElasticsearchDatasourceController
+   */
+  @Post('/:datasourceId/unmount')
+  @ApiParam({
+    name: 'datasourceId',
+    schema: {type: 'string'},
+    description: 'The uuid of the elasticsearch datasource.',
+    example: 'd8141ece-f242-4288-a60a-8675538549cd',
+  })
+  async unmountPostgresqlDatasource(
+    @Param('datasourceId') datasourceId: string
+  ) {
+    // [step 1] Get datasource.
+    const datasource = await this.elasticsearchDatasourceService.findOne({
+      id: datasourceId,
+    });
+    if (!datasource) {
+      return {
+        data: null,
+        err: {message: 'Invalid datasourceId.'},
+      };
+    }
+
+    // [step 2] Clear elasticsearch datasource indices and fields.
+    await this.elasticsearchDatasourceService.unmount(datasource);
   }
   /* End */
 }

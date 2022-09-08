@@ -782,7 +782,7 @@ model ElasticsearchDatasourceIndex {
 }
 
 model ElasticsearchDatasourceIndexField {
-  id          String                       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id          Int                          @id @default(autoincrement())
   field       String
   fieldBody   Json
   createdAt   DateTime                     @default(now())
