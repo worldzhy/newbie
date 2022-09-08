@@ -12,9 +12,9 @@ export class AppController {
    * @memberof AppController
    */
   @Public()
-  @Get('/')
+  @Get('/app/hi')
   hello() {
-    return 'Anyone can write code that a computer can understand. \nGood programmers can write code that people can understand!';
+    return 'Anyone can write code that a computer can understand. \nGood programmers can write code that PEOPLE can understand!';
   }
 
   /* End */

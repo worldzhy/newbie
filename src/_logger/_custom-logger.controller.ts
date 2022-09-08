@@ -2,7 +2,7 @@ import {Controller, Post, Body} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {CustomLoggerService} from './_custom-logger.service';
 
-@ApiTags('Logger')
+@ApiTags('_Logger')
 @ApiBearerAuth()
 @Controller()
 export class CustomLoggerController {

@@ -3,7 +3,7 @@ import {ApiBearerAuth, ApiBody, ApiTags} from '@nestjs/swagger';
 import {PinpointService} from './_pinpoint.service';
 import {AwsEnum} from '../../_config/_common.enum';
 
-@ApiTags('AWS')
+@ApiTags('_AWS')
 @ApiBearerAuth()
 @Controller()
 export class PinpointController {

@@ -2,7 +2,7 @@ import {Prisma, ProjectEnvironmentType, ProjectStatus} from '@prisma/client';
 import {PrismaService} from '../src/_prisma/_prisma.service';
 import {AccountService} from '../src/app/account/account.service';
 import {AccountController} from '../src/app/account/account.controller';
-import {ProjectService} from '../src/app/project/project.service';
+import {ProjectService} from '../src/app/pmgmt/project/project.service';
 import {RoleService} from '../src/app/account/role/role.service';
 
 const prisma = new PrismaService();

@@ -1,7 +1,7 @@
 import {Controller, Post, Body} from '@nestjs/common';
 import {ApiTags, ApiBody} from '@nestjs/swagger';
 import {Public} from '../auth/auth-jwt/auth-jwt.decorator';
-import {QueueService} from '../../../_queue/_queue.service';
+import {MtracService} from '../../mtrac/mtrac.service';
 import {UserService} from '../user/user.service';
 import {AccountValidator} from '../../../_validator/_account.validator';
 import {VerificationCodeService} from './verification-code.service';
@@ -106,7 +106,7 @@ export class VerificationCodeController {
 
     // [step 4: start] Send verification code.
     let result: {data: object | null; err: object | null};
-    const messageService = new QueueService();
+    const messageService = new MtracService();
     if (byEmail) {
       // Send verification code to user's email
       const subject = 'Your Verification Code';

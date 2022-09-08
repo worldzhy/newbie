@@ -6,16 +6,16 @@ import {AppController} from './app.controller';
 import {AccountModule} from './app/account/account.module';
 import {AwsModule} from './_aws/_aws.module';
 import {CustomLoggerModule} from './_logger/_custom-logger.module';
-import {InfrastructureStackModule} from './app/project/infrastructure-stack/infrastructure-stack.module';
+import {InfrastructureStackModule} from './app/pmgmt/infrastructure-stack/infrastructure-stack.module';
+import {MtracModule} from './app/mtrac/mtrac.module';
 import {OrganizationModule} from './app/account/organization/organization.module';
 import {ProfileModule} from './app/account/profile/profile.module';
-import {ProjectModule} from './app/project/project.module';
-import {QueueModule} from './_queue/_queue.module';
+import {ProjectModule} from './app/pmgmt/project/project.module';
 import {UserModule} from './app/account/user/user.module';
 import {VerificationCodeModule} from './app/account/verification-code/verification-code.module';
-import {DataboardModule} from './app/databoard/databoard.module';
-import {DatapipeModule} from './app/datapipe/datapipe.module';
-import {DatasourceModule} from './app/datasource/datasource.module';
+import {DataboardModule} from './app/ngind/databoard/databoard.module';
+import {DatapipeModule} from './app/ngind/datapipe/datapipe.module';
+import {DatasourceModule} from './app/ngind/datasource/datasource.module';
 
 @Module({
   imports: [
@@ -27,9 +27,9 @@ import {DatasourceModule} from './app/datasource/datasource.module';
     DatasourceModule,
     InfrastructureStackModule,
     OrganizationModule,
+    MtracModule,
     ProfileModule,
     ProjectModule,
-    QueueModule,
     UserModule,
     VerificationCodeModule,
   ],

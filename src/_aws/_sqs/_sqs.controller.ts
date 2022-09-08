@@ -2,7 +2,7 @@ import {Body, Controller, Post} from '@nestjs/common';
 import {ApiBearerAuth, ApiBody, ApiTags} from '@nestjs/swagger';
 import {SqsService} from './_sqs.service';
 
-@ApiTags('AWS')
+@ApiTags('_AWS')
 @ApiBearerAuth()
 @Controller()
 export class SqsController {
