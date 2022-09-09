@@ -1,7 +1,7 @@
 import {Controller, Get, Post, Param, Body, Delete} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {DatapipeService} from './datapipe.service';
-import {DatapipeStatus} from '@prisma/client';
+import {DatapipeStatus, PostgresqlDatasourceTable} from '@prisma/client';
 import {PostgresqlDatasourceTableService} from '../datasource/postgresql/table/table.service';
 import {ElasticsearchDatasourceIndexService} from '../datasource/elasticsearch/index/index.service';
 
@@ -101,10 +101,14 @@ export class DatapipeController {
    * Create a new datapipe.
    *
    * @param {{
-   *       datapipeName: string;
-   *       clientName: string;
-   *       clientEmail: string;
-   *     }} body
+   *   name: string;
+   *   status: DatapipeStatus;
+   *   queueUrl?: string;
+   *   hasManyTables: string[];
+   *   belongsToTables: string[];
+   *   fromTableId: number;
+   *   toIndexId: number;
+   * }} body
    * @returns
    * @memberof DatapipeController
    */
@@ -120,7 +124,7 @@ export class DatapipeController {
           status: DatapipeStatus.INACTIVE,
           queueUrl:
             'https://sqs.cn-northwest-1.amazonaws.com.cn/077767357755/dev-inceptionpad-message-service-email-level1',
-          loadsForeignTables: true,
+          withTables: [],
           fromTableId: 1,
           toIndexId: 1,
         },
@@ -133,7 +137,8 @@ export class DatapipeController {
       name: string;
       status: DatapipeStatus;
       queueUrl?: string;
-      loadsForeignTables: boolean;
+      hasManyTables: string[];
+      belongsToTables: string[];
       fromTableId: number;
       toIndexId: number;
     }
@@ -169,7 +174,8 @@ export class DatapipeController {
       name: body.name,
       status: DatapipeStatus.INACTIVE,
       queueUrl: body.queueUrl,
-      loadsForeignTables: body.loadsForeignTables,
+      hasManyTables: body.hasManyTables,
+      belongsToTables: body.belongsToTables,
       fromTable: {connect: {id: body.fromTableId}},
       toIndex: {connect: {id: body.toIndexId}},
     });
@@ -190,7 +196,7 @@ export class DatapipeController {
    * Update datapipe
    *
    * @param {string} datapipeId
-   * @param {{name: string}} body
+   * @param {{name: string; hasManyTables: string[]; belongsToTables: string[];}} body
    * @returns
    * @memberof DatapipeController
    */
@@ -207,21 +213,24 @@ export class DatapipeController {
         summary: '1. Update name',
         value: {
           name: 'datapipe-01',
+          hasManyTables: [],
+          belongsToTables: [],
         },
       },
     },
   })
   async updateDatapipe(
     @Param('datapipeId') datapipeId: string,
-    @Body() body: {name: string}
+    @Body()
+    body: {name: string; hasManyTables: string[]; belongsToTables: string[]}
   ) {
     // [step 1] Guard statement.
-    const {name} = body;
+    const {name, hasManyTables, belongsToTables} = body;
 
     // [step 2] Update name.
     const result = await this.datapipeService.update({
       where: {id: datapipeId},
-      data: {name},
+      data: {name, hasManyTables, belongsToTables},
     });
     if (result) {
       return {
@@ -238,9 +247,7 @@ export class DatapipeController {
 
   /**
    * Delete datapipe
-   *
    * @param {string} datapipeId
-   * @param {{name: string}} body
    * @returns
    * @memberof DatapipeController
    */
@@ -268,5 +275,42 @@ export class DatapipeController {
     }
   }
 
+  /**
+   * Probe datapipe
+   *
+   * @param {string} datapipeId
+   * @returns {Promise<{data: object;err: object;}>}
+   * @memberof DatapipePumpController
+   */
+  @Get('/:datapipeId/probe')
+  @ApiParam({
+    name: 'datapipeId',
+    schema: {type: 'string'},
+    description: 'The uuid of the datapipe.',
+    example: '81a37534-915c-4114-96d0-01be815d821b',
+  })
+  async probeDatapipeFromTable(
+    @Param('datapipeId') datapipeId: string
+  ): Promise<{data: object | null; err: object | null}> {
+    // [step 1] Get datapipe.
+    const datapipe = await this.datapipeService.findOne({
+      where: {id: datapipeId},
+      include: {fromTable: true},
+    });
+    if (!datapipe) {
+      return {
+        data: null,
+        err: {message: 'Get datapipe failed.'},
+      };
+    }
+
+    // [step 2] Probe the datapipe's fromTable.
+    const fromTable = datapipe['fromTable'] as PostgresqlDatasourceTable;
+    const probeResult = await this.datapipeService.probe(fromTable);
+    return {
+      data: probeResult,
+      err: null,
+    };
+  }
   /* End */
 }

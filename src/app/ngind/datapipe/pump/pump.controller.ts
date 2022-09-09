@@ -2,7 +2,7 @@ import {Controller, Get, Param} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam} from '@nestjs/swagger';
 import {DatapipePumpService} from './pump.service';
 import {DatapipeService} from '../datapipe.service';
-import {DatapipeStatus, PostgresqlDatasourceTable} from '@prisma/client';
+import {DatapipeStatus} from '@prisma/client';
 
 @ApiTags('App / Datapipe / Pump')
 @ApiBearerAuth()
@@ -12,22 +12,18 @@ export class DatapipePumpController {
   private datapipePumpService = new DatapipePumpService();
 
   /**
-   * Probe datapipe
-   *
+   * pump prepare
    * @param {string} datapipeId
-   * @returns {Promise<{data: object;err: object;}>}
+   * @returns
    * @memberof DatapipePumpController
    */
-  @Get('/:datapipeId/pump/probe')
+  @Get('/:datapipeId/pump/prepare')
   @ApiParam({
     name: 'datapipeId',
     schema: {type: 'string'},
-    description: 'The uuid of the datapipe.',
     example: '81a37534-915c-4114-96d0-01be815d821b',
   })
-  async probeDatapipeFromTable(
-    @Param('datapipeId') datapipeId: string
-  ): Promise<{data: object | null; err: object | null}> {
+  async prepareDatapipePump(@Param('datapipeId') datapipeId: string) {
     // [step 1] Get datapipe.
     const datapipe = await this.datapipeService.findOne({
       where: {id: datapipeId},
@@ -40,13 +36,19 @@ export class DatapipePumpController {
       };
     }
 
-    // [step 2] Probe the datapipe's fromTable.
-    const fromTable = datapipe['fromTable'] as PostgresqlDatasourceTable;
-    const probeResult = this.datapipePumpService.probe(fromTable);
-    return {
-      data: probeResult,
-      err: null,
-    };
+    // [step 2] Update name.
+    const result = await this.datapipePumpService.prepare(datapipe);
+    if (result) {
+      return {
+        data: result,
+        err: null,
+      };
+    } else {
+      return {
+        data: null,
+        err: {message: 'Datapipe pump started failed.'},
+      };
+    }
   }
 
   /**
@@ -62,13 +64,20 @@ export class DatapipePumpController {
     example: '81a37534-915c-4114-96d0-01be815d821b',
   })
   async startDatapipePump(@Param('datapipeId') datapipeId: string) {
-    // [step 1] Guard statement.
+    // [step 1] Get datapipe.
+    const datapipe = await this.datapipeService.findOne({
+      where: {id: datapipeId},
+      include: {fromTable: true},
+    });
+    if (!datapipe) {
+      return {
+        data: null,
+        err: {message: 'Get datapipe failed.'},
+      };
+    }
 
     // [step 2] Update name.
-    const result = await this.datapipeService.update({
-      where: {id: datapipeId},
-      data: {status: DatapipeStatus.ACTIVE},
-    });
+    const result = await this.datapipePumpService.start(datapipe);
     if (result) {
       return {
         data: result,

@@ -2,9 +2,14 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider        = "prisma-client-js"
+  provider = "prisma-client-js"
+
   // Enable Full-Text Search which is only available for PostgreSQL.
   previewFeatures = ["fullTextSearch"]
+
+  // For production deployment.
+  // binaryTargets   = ["native", "rhel-openssl-1.0.x"]
+  // binaryTargets   = ["native", "linux-arm64-openssl-1.0.x"]
 }
 
 datasource db {
@@ -474,17 +479,18 @@ enum ElasticsearchDataboardStatus {
 //
 
 model Datapipe {
-  id                 String                       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name               String
-  status             DatapipeStatus
-  queueUrl           String? // If the queueUrl is null, the datapipe's status can not be ACTIVE.
-  loadsForeignTables Boolean // If it's true, the fromTable's foreign tables should be loaded into the payload to be transported.
-  createdAt          DateTime                     @default(now())
-  updatedAt          DateTime                     @updatedAt
-  fromTable          PostgresqlDatasourceTable    @relation(fields: [fromTableId], references: [id])
-  fromTableId        Int
-  toIndex            ElasticsearchDatasourceIndex @relation(fields: [toIndexId], references: [id])
-  toIndexId          Int
+  id              String                       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String
+  status          DatapipeStatus
+  queueUrl        String? // If the queueUrl is null, the datapipe's status can not be ACTIVE.
+  hasManyTables   String[] // The child tables should be loaded into the payload to be transported.
+  belongsToTables String[] // The parent tables should be loaded into the payload to be transported.
+  createdAt       DateTime                     @default(now())
+  updatedAt       DateTime                     @updatedAt
+  fromTable       PostgresqlDatasourceTable    @relation(fields: [fromTableId], references: [id])
+  fromTableId     Int
+  toIndex         ElasticsearchDatasourceIndex @relation(fields: [toIndexId], references: [id])
+  toIndexId       Int
 }
 
 enum DatapipeStatus {

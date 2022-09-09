@@ -133,7 +133,8 @@ const datapipe = {
   status: DatapipeStatus.INACTIVE,
   queueUrl:
     'https://sqs.cn-northwest-1.amazonaws.com.cn/077767357755/dev-inceptionpad-message-service-email-level1',
-  loadsForeignTables: true,
+  hasManyTables: [],
+  belongsToTables: [],
   fromTableId: 1,
   toIndexId: 1,
 };

@@ -25,6 +25,14 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
         {emit: 'event', level: 'warn'},
         {emit: 'event', level: 'error'},
       ],
+
+      // Debug
+      // log: [
+      //   {emit: 'event', level: 'query'},
+      //   {emit: 'stdout', level: 'error'},
+      //   {emit: 'stdout', level: 'info'},
+      //   {emit: 'stdout', level: 'warn'},
+      // ],
     });
   }
 
@@ -35,6 +43,14 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     this.$on<any>('error', this.errorCallback);
 
     await this.$connect();
+
+    // Debug
+    // @ts-ignore
+    // this.$on('query', (e: any) => {
+    //   console.log(`Query: ${e.query}`);
+    //   console.log(`Params: ${e.params}`);
+    //   console.log(`Duration: ${e.duration}ms`);
+    // });
   }
 
   async enableShutdownHooks(app: INestApplication) {
