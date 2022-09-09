@@ -2,12 +2,18 @@ import {Controller, Get, Post, Param, Body, Delete} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {DatapipeService} from './datapipe.service';
 import {DatapipeStatus} from '@prisma/client';
+import {PostgresqlDatasourceTableService} from '../datasource/postgresql/table/table.service';
+import {ElasticsearchDatasourceIndexService} from '../datasource/elasticsearch/index/index.service';
 
 @ApiTags('App / Datapipe')
 @ApiBearerAuth()
 @Controller('datapipes')
 export class DatapipeController {
   private datapipeService = new DatapipeService();
+  private postgresqlDatasourceTableService =
+    new PostgresqlDatasourceTableService();
+  private elasticsearchDatasourceIndexService =
+    new ElasticsearchDatasourceIndexService();
 
   /**
    * Get datapipes by page number. The order is by datapipe name.
@@ -70,12 +76,14 @@ export class DatapipeController {
     name: 'datapipeId',
     schema: {type: 'string'},
     description: 'The uuid of the datapipe.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
+    example: '81a37534-915c-4114-96d0-01be815d821b',
   })
   async getDatapipe(
     @Param('datapipeId') datapipeId: string
   ): Promise<{data: object | null; err: object | null}> {
-    const result = await this.datapipeService.findOne({id: datapipeId});
+    const result = await this.datapipeService.findOne({
+      where: {id: datapipeId},
+    });
     if (result) {
       return {
         data: result,
@@ -109,6 +117,12 @@ export class DatapipeController {
         summary: '1. Create',
         value: {
           name: 'datapipe_01',
+          status: DatapipeStatus.INACTIVE,
+          queueUrl:
+            'https://sqs.cn-northwest-1.amazonaws.com.cn/077767357755/dev-inceptionpad-message-service-email-level1',
+          loadsForeignTables: true,
+          fromTableId: 1,
+          toIndexId: 1,
         },
       },
     },
@@ -117,14 +131,35 @@ export class DatapipeController {
     @Body()
     body: {
       name: string;
+      status: DatapipeStatus;
+      queueUrl?: string;
+      loadsForeignTables: boolean;
+      fromTableId: number;
+      toIndexId: number;
     }
   ) {
-    // [step 1] Guard statement.
-    if (!body.name) {
+    // [step 1] Check if the fromTable and toIndex are existed.
+    if (
+      !(await this.postgresqlDatasourceTableService.checkExistence(
+        body.fromTableId
+      ))
+    ) {
       return {
         data: null,
         err: {
-          message: 'Please provide valid paramters in the request body.',
+          message: 'Please provide valid fromTableId in the request body.',
+        },
+      };
+    }
+    if (
+      !(await this.elasticsearchDatasourceIndexService.checkExistence(
+        body.toIndexId
+      ))
+    ) {
+      return {
+        data: null,
+        err: {
+          message: 'Please provide valid toIndexId in the request body.',
         },
       };
     }
@@ -132,7 +167,11 @@ export class DatapipeController {
     // [step 2] Create datapipe.
     const result = await this.datapipeService.create({
       name: body.name,
-      status: DatapipeStatus.INITED,
+      status: DatapipeStatus.INACTIVE,
+      queueUrl: body.queueUrl,
+      loadsForeignTables: body.loadsForeignTables,
+      fromTable: {connect: {id: body.fromTableId}},
+      toIndex: {connect: {id: body.toIndexId}},
     });
     if (result) {
       return {
@@ -159,7 +198,7 @@ export class DatapipeController {
   @ApiParam({
     name: 'datapipeId',
     schema: {type: 'string'},
-    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
+    example: '81a37534-915c-4114-96d0-01be815d821b',
   })
   @ApiBody({
     description: 'Update datapipe.',
@@ -209,7 +248,7 @@ export class DatapipeController {
   @ApiParam({
     name: 'datapipeId',
     schema: {type: 'string'},
-    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
+    example: '81a37534-915c-4114-96d0-01be815d821b',
   })
   async deleteDatapipe(@Param('datapipeId') datapipeId: string) {
     // [step 1] Guard statement.
@@ -225,111 +264,6 @@ export class DatapipeController {
       return {
         data: null,
         err: {message: 'Datapipe deleted failed.'},
-      };
-    }
-  }
-
-  /**
-   * Start datapipe
-   *
-   * @param {string} datapipeId
-   * @param {{name: string}} body
-   * @returns
-   * @memberof DatapipeController
-   */
-  @Get('/:datapipeId/start')
-  @ApiParam({
-    name: 'datapipeId',
-    schema: {type: 'string'},
-    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
-  })
-  async startDatapipe(@Param('datapipeId') datapipeId: string) {
-    // [step 1] Guard statement.
-
-    // [step 2] Update name.
-    const result = await this.datapipeService.update({
-      where: {id: datapipeId},
-      data: {status: DatapipeStatus.DEPLOYED},
-    });
-    if (result) {
-      return {
-        data: result,
-        err: null,
-      };
-    } else {
-      return {
-        data: null,
-        err: {message: 'Datapipe started failed.'},
-      };
-    }
-  }
-
-  /**
-   * Stop datapipe
-   *
-   * @param {string} datapipeId
-   * @param {{name: string}} body
-   * @returns
-   * @memberof DatapipeController
-   */
-  @Get('/:datapipeId/stop')
-  @ApiParam({
-    name: 'datapipeId',
-    schema: {type: 'string'},
-    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
-  })
-  async stopDatapipe(@Param('datapipeId') datapipeId: string) {
-    // [step 1] Guard statement.
-
-    // [step 2] Update name.
-    const result = await this.datapipeService.update({
-      where: {id: datapipeId},
-      data: {status: DatapipeStatus.DISABLED},
-    });
-    if (result) {
-      return {
-        data: result,
-        err: null,
-      };
-    } else {
-      return {
-        data: null,
-        err: {message: 'Datapipe stopped failed.'},
-      };
-    }
-  }
-
-  /**
-   * Purge datapipe
-   *
-   * @param {string} datapipeId
-   * @param {{name: string}} body
-   * @returns
-   * @memberof DatapipeController
-   */
-  @Get('/:datapipeId/purge')
-  @ApiParam({
-    name: 'datapipeId',
-    schema: {type: 'string'},
-    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
-  })
-  async purgeDatapipe(@Param('datapipeId') datapipeId: string) {
-    // [step 1] Guard statement.
-
-    // [step 2] Update name.
-    const result = await this.datapipeService.update({
-      where: {id: datapipeId},
-      data: {status: DatapipeStatus.INITED},
-    });
-    if (result) {
-      return {
-        data: result,
-        err: null,
-      };
-    } else {
-      return {
-        data: null,
-        err: {message: 'Datapipe purge failed.'},
       };
     }
   }

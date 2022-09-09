@@ -35,13 +35,13 @@ export class RoleService {
     }
   }
 
-  async createRole(data: Prisma.RoleCreateInput): Promise<Role> {
+  async create(data: Prisma.RoleCreateInput): Promise<Role> {
     return this.prisma.role.create({
       data,
     });
   }
 
-  async updateRole(params: {
+  async update(params: {
     where: Prisma.RoleWhereUniqueInput;
     data: Prisma.RoleUpdateInput;
   }): Promise<Role> {
@@ -52,7 +52,7 @@ export class RoleService {
     });
   }
 
-  async deleteRole(where: Prisma.RoleWhereUniqueInput): Promise<Role> {
+  async delete(where: Prisma.RoleWhereUniqueInput): Promise<Role> {
     return this.prisma.role.delete({
       where,
     });

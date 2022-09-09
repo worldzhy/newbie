@@ -355,354 +355,6 @@ enum MicroserviceStatus {
 }
 
 //
-// Connection
-//
-
-model Connection {
-  id        String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name      String           @unique
-  status    ConnectionStatus
-  type      ConnectionType
-  host      String
-  port      Int
-  database  String
-  schema    String
-  username  String
-  password  String
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
-}
-
-enum ConnectionStatus {
-  UNKNOWN
-  SUCCEEDED
-  FAILED
-}
-
-enum ConnectionType {
-  MySQL
-  PostgreSQL
-  Elasticsearch
-}
-
-//
-// Searchview
-//
-
-model Searchview {
-  id           Int              @id @default(autoincrement())
-  name         String
-  indexName    String
-  description  String?
-  type         SearchviewType
-  status       SearchviewStatus
-  layoutConfig Json?
-  indexJson    Json?
-  processedAt  DateTime?
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
-  deletedAt    DateTime?
-}
-
-enum SearchviewType {
-  ACTIVE
-  INACTIVE
-}
-
-enum SearchviewStatus {
-  ACTIVE
-  INACTIVE
-}
-
-model ExpandColumn {
-  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  ideStatus       String?
-  ideScriptStatus String?
-  type            String?
-  value           String?
-  associationId   String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  deletedAt       DateTime?
-}
-
-model IdeIndexConfig {
-  id                     Int                  @id @default(autoincrement())
-  schemaName             String
-  tableName              String
-  indexName              String
-  buildBulkBodyBatchSize Int
-  bulkEsDataInterval     Int
-  syncDataByCronInterval Int                  @default(0)
-  sqlFilterCondition     Boolean              @default(true)
-  status                 IdeIndexConfigStatus
-  tablesInfo             Json
-  relationTree           Json
-  deploymentConfig       Json
-  lastSyncDataByCronAt   DateTime
-  createdAt              DateTime             @default(now())
-  updatedAt              DateTime             @updatedAt
-}
-
-enum IdeIndexConfigStatus {
-  INITED
-  DEPLOYED
-  DISABLED
-}
-
-model IdeDataSyncQueue {
-  id                       Int                     @id @default(autoincrement())
-  schemaName               String?
-  tableName                String?
-  type                     String?
-  status                   IdeDataSyncQueueStatus?
-  primaryKeys              Json?
-  primaryKeyValues         Json?
-  changeDataCaptureBatchId String?
-  oldRow                   Json?
-  newRow                   Json?
-  createdAt                DateTime                @default(now())
-  updatedAt                DateTime                @updatedAt
-}
-
-enum IdeDataSyncQueueStatus {
-  PENDING
-  PROCESSED
-  RECEIVED
-  FAILED
-}
-
-model IdeCalDependencyLog {
-  id                       Int                        @id @default(autoincrement())
-  schemaName               String?
-  tableName                String?
-  status                   IdeCalDependencyLogStatus?
-  dataPK                   String?
-  changeDataCaptureBatchId String?
-  calDependentsBatchId     String?
-  oldRow                   Json?
-  newRow                   Json?
-  receivedAt               DateTime?
-  processedAt              DateTime?
-  createdAt                DateTime                   @default(now())
-  updatedAt                DateTime                   @updatedAt
-}
-
-enum IdeCalDependencyLogStatus {
-  PENDING
-  PROCESSED
-  RECEIVED
-  FAILED
-}
-
-model IdeSyncDataLog {
-  id                   Int                   @id @default(autoincrement())
-  status               IdeSyncDataLogStatus?
-  dataPK               String?
-  calDependentsBatchId String?
-  syncDataBatchId      String?
-  receivedAt           DateTime?
-  processedAt          DateTime?
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  indexConfigId        String?
-}
-
-enum IdeSyncDataLogStatus {
-  PENDING
-  PROCESSED
-  RECEIVED
-  FAILED
-}
-
-model IdeSyncDataByIndexLog {
-  id                       Int                          @id @default(autoincrement())
-  status                   IdeSyncDataByIndexLogStatus?
-  dataPK                   String?
-  triggerBatchId           String?
-  changeDataCaptureBatchId String?
-  syncDataBatchId          String?
-  receivedAt               DateTime?
-  processedAt              DateTime?
-  createdAt                DateTime                     @default(now())
-  updatedAt                DateTime                     @updatedAt
-  indexConfigId            String?
-}
-
-enum IdeSyncDataByIndexLogStatus {
-  PENDING
-  PROCESSED
-  RECEIVED
-  FAILED
-}
-
-model IdeSyncDataErrorLog {
-  id        Int      @id @default(autoincrement())
-  keyword   String?
-  context   String?
-  error     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model IdeCalDataLog {
-  id                   Int                  @id @default(autoincrement())
-  status               IdeCalDataLogStatus?
-  dataPK               String?
-  calDependentsBatchId String?
-  calDataBatchId       String?
-  receivedAt           DateTime?
-  processedAt          DateTime?
-  createdAt            DateTime             @default(now())
-  updatedAt            DateTime             @updatedAt
-  indexConfigId        String?
-}
-
-enum IdeCalDataLogStatus {
-  PENDING
-  PROCESSED
-  RECEIVED
-  FAILED
-}
-
-model IdeCalDataByIndexLog {
-  id                       Int                         @id @default(autoincrement())
-  status                   IdeCalDataByIndexLogStatus?
-  dataPK                   String?
-  triggerBatchId           String?
-  changeDataCaptureBatchId String?
-  calDataBatchId           String?
-  receivedAt               DateTime?
-  processedAt              DateTime?
-  createdAt                DateTime                    @default(now())
-  updatedAt                DateTime                    @updatedAt
-  indexConfigId            String?
-}
-
-enum IdeCalDataByIndexLogStatus {
-  PENDING
-  PROCESSED
-  RECEIVED
-  FAILED
-}
-
-model IdeSyncDataToEsLog {
-  id                  Int                       @id @default(autoincrement())
-  status              IdeSyncDataToEsLogStatus?
-  dataPK              String?
-  esId                String?
-  calDataBatchId      String?
-  syncDataToESBatchId String?
-  action              String?
-  receivedAt          DateTime?
-  processedAt         DateTime?
-  createdAt           DateTime                  @default(now())
-  updatedAt           DateTime                  @updatedAt
-  indexConfigId       String?
-}
-
-enum IdeSyncDataToEsLogStatus {
-  PENDING
-  PROCESSED
-  RECEIVED
-  FAILED
-}
-
-model IdeSyncDataToEsByIndexLog {
-  id                  Int                              @id @default(autoincrement())
-  status              IdeSyncDataToEsByIndexLogStatus?
-  dataPK              String?
-  esId                String?
-  calDataBatchId      String?
-  syncDataToESBatchId String?
-  action              String?
-  receivedAt          DateTime?
-  processedAt         DateTime?
-  createdAt           DateTime                         @default(now())
-  updatedAt           DateTime                         @updatedAt
-  indexConfigId       String?
-}
-
-enum IdeSyncDataToEsByIndexLogStatus {
-  PENDING
-  PROCESSED
-  RECEIVED
-  FAILED
-}
-
-model IdeSyncDataToEsErrorLog {
-  id        Int      @id @default(autoincrement())
-  keyword   String?
-  context   String?
-  error     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model IdeSyncPerfLog {
-  id        Int      @id @default(autoincrement())
-  logType   String?
-  logId     String?
-  error     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  indexConfigId String?
-  schemaName    String?
-  tableName     String?
-  indexName     String?
-
-  dataPK String?
-  esId   String?
-  param  Json?
-
-  changeDataCapture_createdAt   DateTime?
-  changeDataCapture_processedAt DateTime?
-
-  calDependents_createdAt   DateTime?
-  calDependents_receivedAt  DateTime?
-  calDependents_processedAt DateTime?
-
-  calData_createdAt   DateTime?
-  calData_receivedAt  DateTime?
-  calData_processedAt DateTime?
-
-  calDataByIndex_createdAt   DateTime?
-  calDataByIndex_receivedAt  DateTime?
-  calDataByIndex_processedAt DateTime?
-
-  syncDataToES_createdAt   DateTime?
-  syncDataToES_receivedAt  DateTime?
-  syncDataToES_processedAt DateTime?
-
-  syncDataToESByIndex_createdAt   DateTime?
-  syncDataToESByIndex_receivedAt  DateTime?
-  syncDataToESByIndex_processedAt DateTime?
-
-  changeDataCapture_duration Float?
-
-  calDependents_duration       Float?
-  calDependents_sqs_duration   Float?
-  calDependents_total_duration Float?
-
-  calData_duration       Float?
-  calData_sqs_duration   Float?
-  calData_total_duration Float?
-
-  calDataByIndex_duration       Float?
-  calDataByIndex_sqs_duration   Float?
-  calDataByIndex_total_duration Float?
-
-  syncDataToES_duration       Float?
-  syncDataToES_sqs_duration   Float?
-  syncDataToES_total_duration Float?
-
-  syncDataToESByIndex_duration       Float?
-  syncDataToESByIndex_sqs_duration   Float?
-  syncDataToESByIndex_total_duration Float?
-}
-
-//
 // Datasource
 //
 
@@ -719,20 +371,21 @@ model PostgresqlDatasource {
 }
 
 model PostgresqlDatasourceTable {
-  id           Int                               @id @default(autoincrement())
-  name         String
-  createdAt    DateTime                          @default(now())
-  updatedAt    DateTime                          @updatedAt
-  datasource   PostgresqlDatasource              @relation(fields: [datasourceId], references: [id])
-  datasourceId String                            @db.Uuid
-  columns      PostgresqlDatasourceTableColumn[]
+  id                 Int                               @id @default(autoincrement())
+  name               String
+  createdAt          DateTime                          @default(now())
+  updatedAt          DateTime                          @updatedAt
+  datasource         PostgresqlDatasource              @relation(fields: [datasourceId], references: [id])
+  datasourceId       String                            @db.Uuid
+  columns            PostgresqlDatasourceTableColumn[]
+  connectedDatapipes Datapipe[]
 }
 
 model PostgresqlDatasourceTableColumn {
   id              Int                       @id @default(autoincrement())
-  column          String
+  column          String // The column name.
   columnType      String
-  ordinalPosition Int
+  ordinalPosition Int // The sort number of the column in the table.
   createdAt       DateTime                  @default(now())
   updatedAt       DateTime                  @updatedAt
   table           PostgresqlDatasourceTable @relation(fields: [tableId], references: [id], onDelete: Cascade)
@@ -746,19 +399,19 @@ enum PostgresqlDatasourceTableColumnType {
 }
 
 model PostgresqlDatasourceConstraint {
-  id            Int                                         @id @default(autoincrement())
-  schema        String
-  table         String
-  column        String // It is primary key or foreign key.
-  columnKeyType PostgresqlDatasourceConstraintColumnKeyType
-  foreignTable  String? // Has value when the type is FOREIGN_KEY. 
-  createdAt     DateTime                                    @default(now())
-  updatedAt     DateTime                                    @updatedAt
-  datasource    PostgresqlDatasource                        @relation(fields: [datasourceId], references: [id])
-  datasourceId  String                                      @db.Uuid
+  id           Int                                   @id @default(autoincrement())
+  schema       String // The schema name.
+  table        String // The table name.
+  keyColumn    String // The table's primary key column or foreign key column.
+  keyType      PostgresqlDatasourceConstraintKeyType
+  foreignTable String? // Has value when the type is FOREIGN_KEY. 
+  createdAt    DateTime                              @default(now())
+  updatedAt    DateTime                              @updatedAt
+  datasource   PostgresqlDatasource                  @relation(fields: [datasourceId], references: [id])
+  datasourceId String                                @db.Uuid
 }
 
-enum PostgresqlDatasourceConstraintColumnKeyType {
+enum PostgresqlDatasourceConstraintKeyType {
   PRIMARY_KEY
   FOREIGN_KEY
 }
@@ -772,19 +425,20 @@ model ElasticsearchDatasource {
 }
 
 model ElasticsearchDatasourceIndex {
-  id           Int                                 @id @default(autoincrement())
-  name         String
-  createdAt    DateTime                            @default(now())
-  updatedAt    DateTime                            @updatedAt
-  datasource   ElasticsearchDatasource             @relation(fields: [datasourceId], references: [id])
-  datasourceId String                              @db.Uuid
-  fields       ElasticsearchDatasourceIndexField[]
+  id                 Int                                 @id @default(autoincrement())
+  name               String
+  createdAt          DateTime                            @default(now())
+  updatedAt          DateTime                            @updatedAt
+  datasource         ElasticsearchDatasource             @relation(fields: [datasourceId], references: [id])
+  datasourceId       String                              @db.Uuid
+  fields             ElasticsearchDatasourceIndexField[]
+  connectedDatapipes Datapipe[]
 }
 
 model ElasticsearchDatasourceIndexField {
   id          Int                          @id @default(autoincrement())
-  field       String
-  fieldBody   Json
+  field       String // The field name. 
+  fieldBody   Json // The field's JSON format information from elasticsearch.
   createdAt   DateTime                     @default(now())
   updatedAt   DateTime                     @updatedAt
   index       ElasticsearchDatasourceIndex @relation(fields: [indexId], references: [id], onDelete: Cascade)
@@ -820,58 +474,20 @@ enum ElasticsearchDataboardStatus {
 //
 
 model Datapipe {
-  id                     String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                   String
-  status                 DatapipeStatus
-  buildBulkBodyBatchSize Int?
-  bulkEsDataInterval     Int?
-  syncDataByCronInterval Int?                    @default(0)
-  deploymentConfig       Json?
-  lastSyncDataByCronAt   DateTime?
-  createdAt              DateTime                @default(now())
-  updatedAt              DateTime                @updatedAt
-  datapipeColumnMappings DatapipeColumnMapping[]
+  id                 String                       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name               String
+  status             DatapipeStatus
+  queueUrl           String? // If the queueUrl is null, the datapipe's status can not be ACTIVE.
+  loadsForeignTables Boolean // If it's true, the fromTable's foreign tables should be loaded into the payload to be transported.
+  createdAt          DateTime                     @default(now())
+  updatedAt          DateTime                     @updatedAt
+  fromTable          PostgresqlDatasourceTable    @relation(fields: [fromTableId], references: [id])
+  fromTableId        Int
+  toIndex            ElasticsearchDatasourceIndex @relation(fields: [toIndexId], references: [id])
+  toIndexId          Int
 }
 
 enum DatapipeStatus {
-  INITED
-  DEPLOYED
-  DISABLED
+  ACTIVE
+  INACTIVE
 }
-
-model DatapipeColumnMapping {
-  id                      String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  expression              String?
-  fromDatacatalogColumnId String   @db.Uuid
-  toDatacatalogColumnId   String   @db.Uuid
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
-  datapipe                Datapipe @relation(fields: [datapipeId], references: [id])
-  datapipeId              String   @db.Uuid
-}
-
-// model DataboardActionMapping {
-//   id          Int                     @id @default(autoincrement())
-//   fromSchema  String
-//   fromTable   String
-//   fromAction  DataboardActionFromType
-//   toSchema    String?
-//   toTable     String
-//   toAction    DataboardActionToType
-//   createdAt   DateTime                @default(now())
-//   updatedAt   DateTime                @updatedAt
-//   databoard   Databoard               @relation(fields: [databoardId], references: [id])
-//   databoardId String                  @db.Uuid
-// }
-
-// enum DataboardActionFromType {
-//   CREATE
-//   UPDATE
-//   DELETE
-// }
-
-// enum DataboardActionToType {
-//   CREATE
-//   UPDATE
-//   DELETE
-// }

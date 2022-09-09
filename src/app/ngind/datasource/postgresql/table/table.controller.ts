@@ -1,6 +1,5 @@
 import {Controller, Get, Post, Param, Body} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {table} from 'console';
 import {PostgresqlDatasourceService} from '../postgresql-datasource.service';
 import {PostgresqlDatasourceTableService} from './table.service';
 

@@ -291,6 +291,11 @@ export class ElasticsearchDatasourceController {
 
     // [step 3] Extract elasticsearch all index fields.
     await this.elasticsearchDatasourceService.mount(datasource);
+
+    return {
+      data: 'Done',
+      err: null,
+    };
   }
 
   /**

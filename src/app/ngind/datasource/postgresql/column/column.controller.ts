@@ -1,4 +1,4 @@
-import {Controller, Get, Post, Param} from '@nestjs/common';
+import {Controller, Get, Param} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam} from '@nestjs/swagger';
 import {PostgresqlDatasourceTableColumnService} from './column.service';
 

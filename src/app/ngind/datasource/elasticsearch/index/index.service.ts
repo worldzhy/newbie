@@ -1,10 +1,6 @@
 import {Injectable} from '@nestjs/common';
-import {
-  ElasticsearchDatasource,
-  ElasticsearchDatasourceIndex,
-  Prisma,
-} from '@prisma/client';
-import {ElasticsearchService} from 'src/_elasticsearch/_elasticsearch.service';
+import {ElasticsearchDatasourceIndex, Prisma} from '@prisma/client';
+import {ElasticsearchService} from '../../../../../_elasticsearch/_elasticsearch.service';
 import {PrismaService} from '../../../../../_prisma/_prisma.service';
 
 @Injectable()
@@ -24,6 +20,21 @@ export class ElasticsearchDatasourceIndexService {
     return await this.prisma.elasticsearchDatasourceIndex.findUnique({
       where,
     });
+  }
+
+  /**
+   * Check if exist
+   *
+   * @param {number} id
+   * @returns
+   * @memberof ElasticsearchDatasourceIndexService
+   */
+  async checkExistence(id: number) {
+    const count = await this.prisma.elasticsearchDatasourceIndex.count({
+      where: {id: id},
+    });
+
+    return count > 0 ? true : false;
   }
 
   /**

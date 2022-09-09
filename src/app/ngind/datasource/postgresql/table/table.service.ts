@@ -21,6 +21,21 @@ export class PostgresqlDatasourceTableService {
   }
 
   /**
+   * Check if exist
+   *
+   * @param {number} id
+   * @returns
+   * @memberof PostgresqlDatasourceTableService
+   */
+  async checkExistence(id: number): Promise<boolean> {
+    const count = await this.prisma.postgresqlDatasourceTable.count({
+      where: {id: id},
+    });
+
+    return count > 0 ? true : false;
+  }
+
+  /**
    * Get many postgresql datasource tables.
    *
    * @param {{

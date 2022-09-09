@@ -8,16 +8,18 @@ export class DatapipeService {
 
   /**
    * Get a datapipe
-   * @param {Prisma.DatapipeWhereUniqueInput} where
+   * @param {{
+   *  where: Prisma.DatapipeWhereUniqueInput;
+   *  include?: Prisma.DatapipeInclude;
+   * }} params
    * @returns {(Promise<Datapipe | null>)}
    * @memberof DatapipeService
    */
-  async findOne(
-    where: Prisma.DatapipeWhereUniqueInput
-  ): Promise<Datapipe | null> {
-    return await this.prisma.datapipe.findUnique({
-      where,
-    });
+  async findOne(params: {
+    where: Prisma.DatapipeWhereUniqueInput;
+    include?: Prisma.DatapipeInclude;
+  }): Promise<Datapipe | null> {
+    return await this.prisma.datapipe.findUnique(params);
   }
 
   /**

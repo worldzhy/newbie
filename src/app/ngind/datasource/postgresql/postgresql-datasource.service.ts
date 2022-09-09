@@ -1,8 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {
   PostgresqlDatasource,
-  PostgresqlDatasourceConstraintColumnKeyType,
-  PostgresqlDatasourceTable,
+  PostgresqlDatasourceConstraintKeyType,
   Prisma,
 } from '@prisma/client';
 import {PrismaService} from '../../../../_prisma/_prisma.service';
@@ -84,7 +83,7 @@ export class PostgresqlDatasourceService {
 
     keyColumnUsages.map((keyColumnUsage: any) => {
       // Prepare columnKeyType and foreignTable for a relation.
-      let columnKeyType: PostgresqlDatasourceConstraintColumnKeyType;
+      let keyType: PostgresqlDatasourceConstraintKeyType;
       let foreignTable: string | undefined = undefined;
 
       const constraint: any = tableConstraints.find((tableConstraint: any) => {
@@ -94,9 +93,9 @@ export class PostgresqlDatasourceService {
       });
 
       if (constraint.constraint_type === ConstraintType.PRIMARY_KEY) {
-        columnKeyType = PostgresqlDatasourceConstraintColumnKeyType.PRIMARY_KEY;
+        keyType = PostgresqlDatasourceConstraintKeyType.PRIMARY_KEY;
       } else {
-        columnKeyType = PostgresqlDatasourceConstraintColumnKeyType.FOREIGN_KEY;
+        keyType = PostgresqlDatasourceConstraintKeyType.FOREIGN_KEY;
 
         // foreignTable is required if the keyColumn is a foreign key.
         const constraintUsage: any = constraintColumnUsages.find(
@@ -114,8 +113,8 @@ export class PostgresqlDatasourceService {
       constraints.push({
         schema: keyColumnUsage.table_schema,
         table: keyColumnUsage.table_name,
-        column: keyColumnUsage.column_name,
-        columnKeyType: columnKeyType,
+        keyColumn: keyColumnUsage.column_name,
+        keyType: keyType,
         foreignTable: foreignTable,
         datasourceId: datasource.id,
       });
