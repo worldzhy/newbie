@@ -1,7 +1,7 @@
 import {
-  ExceptionFilter,
   Catch,
   ArgumentsHost,
+  ExceptionFilter,
   HttpException,
 } from '@nestjs/common';
 import {Request, Response} from 'express';
@@ -20,7 +20,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     // [step 1] Assemble log message.
     let message = `${statusCode} ${exception.message} ${request.method} ${request.url} `;
-    if (request.body) {
+    if (request.body && Object.keys(request.body).length > 0) {
       message += `${CommonUtil.stringfy(request.body)}`;
     }
 

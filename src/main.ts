@@ -1,7 +1,7 @@
 import {NestFactory} from '@nestjs/core';
 import {
-  SwaggerModule,
   DocumentBuilder,
+  SwaggerModule,
   SwaggerCustomOptions,
 } from '@nestjs/swagger';
 import {AppModule} from './app.module';

@@ -21,36 +21,43 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
 
       // We care about 'info', 'warn' and 'error' levels among [info, query, warn, error].
       log: [
+        // Use 'query' level for debugging.
+        // {emit: 'event', level: 'query'},
         {emit: 'event', level: 'info'},
         {emit: 'event', level: 'warn'},
         {emit: 'event', level: 'error'},
       ],
+    });
 
-      // Debug
-      // log: [
-      //   {emit: 'event', level: 'query'},
-      //   {emit: 'stdout', level: 'error'},
-      //   {emit: 'stdout', level: 'info'},
-      //   {emit: 'stdout', level: 'warn'},
-      // ],
+    /* About event type */
+    this.$on<any>('query', (e: any) => {
+      this.logger.log(`👇👇👇`);
+      this.logger.log(`time: ${e.timestamp}`);
+      this.logger.log(`query: ${e.query}`);
+      this.logger.log(`params: ${e.params}`);
+      this.logger.log(`duration: ${e.duration} ms`);
+      this.logger.log(`target: ${e.target}`);
+      this.logger.log('');
+    });
+
+    this.$on<any>('info', (e: any) => {
+      const message = `time: ${e.timestamp} | message: ${e.message} | target: ${e.target}`;
+      this.logger.log(message);
+    });
+
+    this.$on<any>('warn', (e: any) => {
+      const message = `time: ${e.timestamp} | message: ${e.message} | target: ${e.target}`;
+      this.logger.warn(message);
+    });
+
+    this.$on<any>('error', (e: any) => {
+      const message = `time: ${e.timestamp} | message: ${e.message} | target: ${e.target}`;
+      this.logger.error(message);
     });
   }
 
   async onModuleInit() {
-    /* About event type */
-    this.$on<any>('info', this.infoCallback);
-    this.$on<any>('warn', this.warnCallback);
-    this.$on<any>('error', this.errorCallback);
-
     await this.$connect();
-
-    // Debug
-    // @ts-ignore
-    // this.$on('query', (e: any) => {
-    //   console.log(`Query: ${e.query}`);
-    //   console.log(`Params: ${e.params}`);
-    //   console.log(`Duration: ${e.duration}ms`);
-    // });
   }
 
   async enableShutdownHooks(app: INestApplication) {
@@ -58,17 +65,4 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
       await app.close();
     });
   }
-
-  private infoCallback = (e: any) => {
-    const message = `${e.message} | ${e.target} | ${e.timestamp}`;
-    this.logger.log(message);
-  };
-  private warnCallback = (e: any) => {
-    const message = `${e.message} | ${e.target} | ${e.timestamp}`;
-    this.logger.warn(message);
-  };
-  private errorCallback = (e: any) => {
-    const message = `${e.message} | ${e.target} | ${e.timestamp}`;
-    this.logger.error(message);
-  };
 }

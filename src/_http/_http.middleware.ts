@@ -14,7 +14,7 @@ export class HttpMiddleware implements NestMiddleware {
 
       // [step 1] Assemble log message.
       let message = `${statusCode} ${statusMessage} ${method} ${originalUrl} `;
-      if (request.body) {
+      if (request.body && Object.keys(request.body).length > 0) {
         message += `${CommonUtil.stringfy(request.body)}`;
       }
 
