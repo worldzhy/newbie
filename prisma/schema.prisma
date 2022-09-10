@@ -217,7 +217,7 @@ model SqsMessageBatch {
 model Project {
   id                   String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name                 String                @unique
-  status               ProjectStatus
+  state                ProjectState
   clientName           String?
   clientEmail          String?
   createdAt            DateTime              @default(now())
@@ -228,11 +228,10 @@ model Project {
   microservices        Microservice[]
 }
 
-enum ProjectStatus {
-  IN_DEVELOPMENT
-  IN_MAINTENANCE
-  ON_HOLD
-  END
+enum ProjectState {
+  DESIGNING
+  DEVELOPING
+  DONE
 }
 
 model ProjectCheckpoint {
@@ -287,7 +286,7 @@ model InfrastructureStack {
   name              String                     @unique
   params            Json?
   type              InfrastructureStackType
-  status            InfrastructureStackStatus
+  state             InfrastructureStackState
   manager           InfrastructureStackManager
   pulumiProjectName String?
   // We use 'stackProjectName' & 'name' to identify infrastructure stack(cloud resource stack).
@@ -331,7 +330,7 @@ enum InfrastructureStackType {
   P_NETWORK_HIPAA
 }
 
-enum InfrastructureStackStatus {
+enum InfrastructureStackState {
   PREPARING
   BUILDING
   BUILD_SUCCEEDED
@@ -345,7 +344,7 @@ enum InfrastructureStackStatus {
 model Microservice {
   id          String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name        String                 @unique
-  status      MicroserviceStatus
+  state       MicroserviceState
   environment ProjectEnvironmentType
   createdAt   DateTime               @default(now())
   updatedAt   DateTime               @updatedAt
@@ -353,7 +352,7 @@ model Microservice {
   project     Project                @relation(fields: [projectId], references: [id])
 }
 
-enum MicroserviceStatus {
+enum MicroserviceState {
   PREPARING
   RUNNING
   STOPPED
@@ -481,10 +480,11 @@ enum ElasticsearchDataboardStatus {
 model Datapipe {
   id              String                       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name            String
-  status          DatapipeStatus
-  queueUrl        String? // If the queueUrl is null, the datapipe's status can not be ACTIVE.
+  state           DatapipeState
   hasManyTables   String[] // The child tables should be loaded into the payload to be transported.
   belongsToTables String[] // The parent tables should be loaded into the payload to be transported.
+  batchQuantity   Int                          @default(100) // The quantity of a batch of payload to be transported.
+  queueUrl        String? // If the queueUrl is null, the datapipe's status can not be ACTIVE.
   createdAt       DateTime                     @default(now())
   updatedAt       DateTime                     @updatedAt
   fromTable       PostgresqlDatasourceTable    @relation(fields: [fromTableId], references: [id])
@@ -493,7 +493,8 @@ model Datapipe {
   toIndexId       Int
 }
 
-enum DatapipeStatus {
-  ACTIVE
-  INACTIVE
+enum DatapipeState {
+  IDLE
+  BATCHING
+  STREAMING
 }

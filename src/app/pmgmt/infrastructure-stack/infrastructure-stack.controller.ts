@@ -3,7 +3,7 @@ import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {InfrastructureStackService} from './infrastructure-stack.service';
 import {
   InfrastructureStackManager,
-  InfrastructureStackStatus,
+  InfrastructureStackState,
   InfrastructureStackType,
   ProjectEnvironmentType,
 } from '@prisma/client';
@@ -136,7 +136,7 @@ export class InfrastructureStackController {
       name: stackName,
       type: type,
       params: params,
-      status: InfrastructureStackStatus.PREPARING,
+      state: InfrastructureStackState.PREPARING,
       manager: manager,
       pulumiProjectName: pulumiProjectName,
       environment: environment,
@@ -196,7 +196,7 @@ export class InfrastructureStackController {
       {id: infrastructureStackId},
       {
         params: params,
-        status: InfrastructureStackStatus.PREPARING,
+        state: InfrastructureStackState.PREPARING,
       }
     );
   }
@@ -243,8 +243,8 @@ export class InfrastructureStackController {
       };
     } else if (
       //stack.status === InfrastructureStackStatus.BUILDING ||
-      stack.status === InfrastructureStackStatus.DESTROYING ||
-      stack.status === InfrastructureStackStatus.DELETED
+      stack.state === InfrastructureStackState.DESTROYING ||
+      stack.state === InfrastructureStackState.DELETED
     ) {
       return {
         data: null,
@@ -317,14 +317,14 @@ export class InfrastructureStackController {
           message: 'The stack has not been built.',
         },
       };
-    } else if (stack.status === InfrastructureStackStatus.DESTROY_SUCCEEDED) {
+    } else if (stack.state === InfrastructureStackState.DESTROY_SUCCEEDED) {
       return {
         data: null,
         err: {
           message: `The stack has been destroyed at ${stack.updatedAt}`,
         },
       };
-    } else if (stack.status === InfrastructureStackStatus.DELETED) {
+    } else if (stack.state === InfrastructureStackState.DELETED) {
       return {
         data: null,
         err: {
@@ -371,7 +371,7 @@ export class InfrastructureStackController {
           message: 'The stack has not been built.',
         },
       };
-    } else if (stack.status !== InfrastructureStackStatus.DESTROY_SUCCEEDED) {
+    } else if (stack.state !== InfrastructureStackState.DESTROY_SUCCEEDED) {
       return {
         data: null,
         err: {

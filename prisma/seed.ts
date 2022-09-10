@@ -1,10 +1,10 @@
 import {
-  DatapipeStatus,
+  DatapipeState,
   ElasticsearchDatasource,
   PostgresqlDatasource,
   Prisma,
   ProjectEnvironmentType,
-  ProjectStatus,
+  ProjectState,
 } from '@prisma/client';
 import {PrismaService} from '../src/_prisma/_prisma.service';
 import {AccountService} from '../src/app/account/account.service';
@@ -43,7 +43,7 @@ const projectService = new ProjectService();
 const projects: Prisma.ProjectCreateInput[] = [
   {
     name: 'Galaxy',
-    status: ProjectStatus.IN_DEVELOPMENT,
+    state: ProjectState.DESIGNING,
     environments: {
       createMany: {
         skipDuplicates: true,
@@ -78,7 +78,7 @@ const projects: Prisma.ProjectCreateInput[] = [
   },
   {
     name: 'InceptionPad',
-    status: ProjectStatus.IN_DEVELOPMENT,
+    state: ProjectState.DEVELOPING,
     environments: {
       createMany: {
         skipDuplicates: true,
@@ -130,12 +130,12 @@ const elasticsearch = {node: '127.0.0.1'};
 const datapipeController = new DatapipeController();
 const datapipe = {
   name: 'pg2es_datapipe',
-  status: DatapipeStatus.INACTIVE,
+  state: DatapipeState.IDLE,
   queueUrl:
     'https://sqs.cn-northwest-1.amazonaws.com.cn/077767357755/dev-inceptionpad-message-service-email-level1',
-  hasManyTables: [],
-  belongsToTables: [],
-  fromTableId: 1,
+  hasManyTables: ['PostgresqlDatasourceTableColumn', 'Datapipe'],
+  belongsToTables: ['PostgresqlDatasource'],
+  fromTableId: 19,
   toIndexId: 1,
 };
 

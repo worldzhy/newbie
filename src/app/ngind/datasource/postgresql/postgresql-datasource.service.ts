@@ -1,7 +1,9 @@
 import {Injectable} from '@nestjs/common';
 import {
   PostgresqlDatasource,
+  PostgresqlDatasourceConstraint,
   PostgresqlDatasourceConstraintKeyType,
+  PostgresqlDatasourceTable,
   Prisma,
 } from '@prisma/client';
 import {PrismaService} from '../../../../_prisma/_prisma.service';
@@ -142,15 +144,101 @@ export class PostgresqlDatasourceService {
   }
 
   /**
+   * Overview postgresql datasource.
+   * @param datasource
+   * @returns
+   */
+  async overview(datasource: PostgresqlDatasource) {
+    const tables = datasource['tables'] as PostgresqlDatasourceTable[];
+    const tableSummaries: {
+      name: string;
+      numberOfRecords: number;
+      hasMany: {}[];
+      belongsTo: {}[];
+    }[] = [];
+
+    for (let i = 0; i < tables.length; i++) {
+      const table = tables[i];
+
+      let constraints: PostgresqlDatasourceConstraint[];
+      let countResult: {count: bigint}[];
+      let childTables: {name: string; numberOfRecords: number}[] = [];
+      let parentTables: {name: string; numberOfRecords: number}[] = [];
+
+      // [step 1] Get information of child tables.
+      // [step 1-1] Get child tables's names.
+      constraints = (await this.postgresqlDatasourceConstraintService.findMany({
+        where: {foreignTable: table.name},
+      })) as PostgresqlDatasourceConstraint[];
+
+      // [step 1-2] Struct information of the child tables.
+      await Promise.all(
+        constraints.map(async constraint => {
+          countResult = await this.prisma.$queryRawUnsafe(
+            `SELECT COUNT(*) FROM "${constraint.table}"`
+          );
+
+          childTables.push({
+            name: constraint.table,
+            numberOfRecords: Number(countResult[0].count),
+          });
+        })
+      );
+
+      // [step 2] Get information of parent tables.
+      // [step 2-1] Get parent tables' name.
+      constraints = (await this.postgresqlDatasourceConstraintService.findMany({
+        where: {AND: {table: table.name, foreignTable: {not: null}}},
+      })) as PostgresqlDatasourceConstraint[];
+
+      // [step 2-2] Struct information of the parent tables.
+      await Promise.all(
+        constraints.map(async constraint => {
+          countResult = await this.prisma.$queryRawUnsafe(
+            `SELECT COUNT(*) FROM "${constraint.foreignTable}"`
+          );
+
+          parentTables.push({
+            name: constraint.foreignTable!,
+            numberOfRecords: Number(countResult[0].count),
+          });
+        })
+      );
+
+      // [step 3] Get the total count of the table records.
+      countResult = await this.prisma.$queryRawUnsafe(
+        `SELECT COUNT(*) FROM "${table.name}"`
+      );
+
+      tableSummaries.push({
+        name: table.name,
+        numberOfRecords: Number(countResult[0].count),
+        hasMany: childTables,
+        belongsTo: parentTables,
+      });
+    }
+
+    return {
+      host: datasource.host,
+      port: datasource.port,
+      database: datasource.database,
+      schema: datasource.schema,
+      tableCount: tables.length,
+      tables: tableSummaries,
+    };
+  }
+
+  /**
    * Get a postgresqlDatasource
    * @param {Prisma.PostgresqlDatasourceWhereUniqueInput} where
    * @returns {(Promise<PostgresqlDatasource | null>)}
    * @memberof PostgresqlDatasourceService
    */
-  async findOne(
-    where: Prisma.PostgresqlDatasourceWhereUniqueInput
-  ): Promise<PostgresqlDatasource | null> {
-    return await this.prisma.postgresqlDatasource.findUnique({where});
+  async findOne(params: {
+    where: Prisma.PostgresqlDatasourceWhereUniqueInput;
+    include?: Prisma.PostgresqlDatasourceInclude;
+  }): Promise<PostgresqlDatasource | null> {
+    return await this.prisma.postgresqlDatasource.findUnique(params);
   }
 
   /**

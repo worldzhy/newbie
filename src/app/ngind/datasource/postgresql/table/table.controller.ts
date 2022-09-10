@@ -29,7 +29,7 @@ export class PostgresqlDatasourceTableController {
   ): Promise<{data: object | null; err: object | null}> {
     // [step 1] Get datasource.
     const datasource = await this.postgresqlDatasourceService.findOne({
-      id: datasourceId,
+      where: {id: datasourceId},
     });
     if (!datasource) {
       return {
@@ -115,7 +115,7 @@ export class PostgresqlDatasourceTableController {
   ): Promise<{data: object | null; err: object | null}> {
     // [step 1] Get datasource.
     const datasource = await this.postgresqlDatasourceService.findOne({
-      id: datasourceId,
+      where: {id: datasourceId},
     });
     if (!datasource) {
       return {

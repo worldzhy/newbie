@@ -56,7 +56,7 @@ export class PostgresqlDatasourceController {
     @Param('datasourceId') datasourceId: string
   ): Promise<{data: object | null; err: object | null}> {
     const result = await this.postgresqlDatasourceService.findOne({
-      id: datasourceId,
+      where: {id: datasourceId},
     });
     if (result) {
       return {
@@ -199,7 +199,7 @@ export class PostgresqlDatasourceController {
   async mountPostgresqlDatasource(@Param('datasourceId') datasourceId: string) {
     // [step 1] Get postgresql.
     const postgresql = await this.postgresqlDatasourceService.findOne({
-      id: datasourceId,
+      where: {id: datasourceId},
     });
     if (!postgresql) {
       return {
@@ -249,7 +249,7 @@ export class PostgresqlDatasourceController {
   ) {
     // [step 1] Get postgresql.
     const postgresql = await this.postgresqlDatasourceService.findOne({
-      id: datasourceId,
+      where: {id: datasourceId},
     });
     if (!postgresql) {
       return {
@@ -260,6 +260,43 @@ export class PostgresqlDatasourceController {
 
     // [step 2] Clear datasource postgresql tables, columns and constraints.
     await this.postgresqlDatasourceService.unmount(postgresql);
+  }
+
+  /**
+   * Overview a postgresql datasource.
+   *
+   * @param {string} datasourceId
+   * @returns {Promise<{data: object;err: object;}>}
+   * @memberof DatapipePumpController
+   */
+  @Get('/:datasourceId/overview')
+  @ApiParam({
+    name: 'datasourceId',
+    schema: {type: 'string'},
+    description: 'The uuid of the datapipe.',
+    example: '81a37534-915c-4114-96d0-01be815d821b',
+  })
+  async overviewPostgresqlDatasource(
+    @Param('datasourceId') datasourceId: string
+  ): Promise<{data: object | null; err: object | null}> {
+    /// [step 1] Get postgresql.
+    const postgresql = await this.postgresqlDatasourceService.findOne({
+      where: {id: datasourceId},
+      include: {tables: true},
+    });
+    if (!postgresql) {
+      return {
+        data: null,
+        err: {message: 'Invalid datasourceId.'},
+      };
+    }
+
+    // [step 2] Overview the datasource.
+    const result = await this.postgresqlDatasourceService.overview(postgresql);
+    return {
+      data: result,
+      err: null,
+    };
   }
   /* End */
 }

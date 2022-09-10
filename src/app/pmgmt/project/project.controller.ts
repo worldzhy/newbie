@@ -7,7 +7,7 @@ import {ProjectValidator} from '../../../_validator/_project.validator';
 import {
   ProjectCheckpointType,
   ProjectEnvironmentType,
-  ProjectStatus,
+  ProjectState,
 } from '@prisma/client';
 import {CheckpointService} from '../checkpoint/checkpoint.service';
 
@@ -165,7 +165,7 @@ export class ProjectController {
       name: body.projectName,
       clientName: body.clientName,
       clientEmail: body.clientEmail,
-      status: ProjectStatus.IN_DEVELOPMENT,
+      state: ProjectState.DESIGNING,
       checkpoints: {
         createMany: {
           skipDuplicates: true,

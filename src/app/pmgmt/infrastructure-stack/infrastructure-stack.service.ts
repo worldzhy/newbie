@@ -6,7 +6,7 @@ import {EnvironmentService} from '../environment/environment.service';
 import {
   InfrastructureStack,
   InfrastructureStackManager,
-  InfrastructureStackStatus,
+  InfrastructureStackState,
   InfrastructureStackType,
   Prisma,
 } from '@prisma/client';
@@ -106,7 +106,7 @@ export class InfrastructureStackService {
     const infrastructureStack = await this.prisma.infrastructureStack.update({
       where: {id},
       data: {
-        status: InfrastructureStackStatus.BUILDING,
+        state: InfrastructureStackState.BUILDING,
       },
     });
 
@@ -167,19 +167,19 @@ export class InfrastructureStackService {
     }
 
     // [step 3] Update database record of infrastructureStack.
-    let stackStatus: InfrastructureStackStatus =
-      InfrastructureStackStatus.BUILD_FAILED;
+    let stackState: InfrastructureStackState =
+      InfrastructureStackState.BUILD_FAILED;
     if (buildResult.summary && buildResult.summary.result) {
-      stackStatus =
+      stackState =
         buildResult.summary.result === 'succeeded'
-          ? InfrastructureStackStatus.BUILD_SUCCEEDED
-          : InfrastructureStackStatus.BUILD_FAILED;
+          ? InfrastructureStackState.BUILD_SUCCEEDED
+          : InfrastructureStackState.BUILD_FAILED;
     }
 
     return await this.prisma.infrastructureStack.update({
       where: {id: infrastructureStack.id},
       data: {
-        status: stackStatus,
+        state: stackState,
         buildResult: buildResult,
       },
     });
@@ -211,7 +211,7 @@ export class InfrastructureStackService {
     const infrastructureStack = await this.prisma.infrastructureStack.update({
       where: {id},
       data: {
-        status: InfrastructureStackStatus.DESTROYING,
+        state: InfrastructureStackState.DESTROYING,
       },
     });
 
@@ -261,10 +261,10 @@ export class InfrastructureStackService {
     return await this.prisma.infrastructureStack.update({
       where: {id: infrastructureStack.id},
       data: {
-        status:
+        state:
           destroyResult.summary.result === 'succeeded'
-            ? InfrastructureStackStatus.DESTROY_SUCCEEDED
-            : InfrastructureStackStatus.DESTROY_FAILED,
+            ? InfrastructureStackState.DESTROY_SUCCEEDED
+            : InfrastructureStackState.DESTROY_FAILED,
         destroyResult: destroyResult,
       },
     });
@@ -305,7 +305,7 @@ export class InfrastructureStackService {
     return await this.prisma.infrastructureStack.update({
       where: {id: infrastructureStack.id},
       data: {
-        status: InfrastructureStackStatus.DELETED,
+        state: InfrastructureStackState.DELETED,
       },
     });
   }
@@ -341,7 +341,7 @@ export class InfrastructureStackService {
     return await this.prisma.infrastructureStack.update({
       where: {id: infrastructureStack.id},
       data: {
-        status: InfrastructureStackStatus.DELETED,
+        state: InfrastructureStackState.DELETED,
       },
     });
   }

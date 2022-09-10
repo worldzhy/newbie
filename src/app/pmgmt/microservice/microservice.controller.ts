@@ -1,6 +1,6 @@
 import {Controller, Get, Post, Delete, Param, Body} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {MicroserviceStatus, ProjectEnvironmentType} from '@prisma/client';
+import {MicroserviceState, ProjectEnvironmentType} from '@prisma/client';
 import {MicroserviceService} from './microservice.service';
 import {ProjectService} from '../project/project.service';
 
@@ -103,7 +103,7 @@ export class MicroserviceController {
     // [step 2] Create a microservice.
     return await this.microserviceService.create({
       name: body.name,
-      status: MicroserviceStatus.PREPARING,
+      state: MicroserviceState.PREPARING,
       environment: body.environment,
       project: {
         connect: {id: body.projectName},
@@ -136,7 +136,7 @@ export class MicroserviceController {
         summary: '1. Launch FileManager',
         value: {
           name: 'FileManager',
-          status: MicroserviceStatus.PREPARING,
+          state: MicroserviceState.PREPARING,
           environment: ProjectEnvironmentType.DEVELOPMENT,
         },
       },
@@ -147,14 +147,14 @@ export class MicroserviceController {
     @Body()
     body: {
       name: string;
-      status: MicroserviceStatus;
+      state: MicroserviceState;
       environment: ProjectEnvironmentType;
     }
   ) {
-    const {name, status, environment} = body;
+    const {name, state, environment} = body;
     return await this.microserviceService.update({
       where: {id: microserviceId},
-      data: {name, status, environment},
+      data: {name, state, environment},
     });
   }
 
