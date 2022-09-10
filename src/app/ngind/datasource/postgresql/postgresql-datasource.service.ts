@@ -36,8 +36,9 @@ export class PostgresqlDatasourceService {
     // [step 1] Extract tables and columns.
 
     // [step 1-1] Prepare table names.
-    const tables: any[] = await this.prisma
-      .$queryRaw`SELECT table_name FROM information_schema.tables WHERE (table_schema = ${datasource.schema})`;
+    const tables = await this.prisma.$queryRaw<
+      {table_name: string}[]
+    >`SELECT table_name FROM information_schema.tables WHERE (table_schema = ${datasource.schema})`;
     const tableNames = tables.flatMap(item =>
       item.table_name === '_prisma_migrations' ? [] : item.table_name
     );
@@ -51,8 +52,9 @@ export class PostgresqlDatasourceService {
       });
 
       // Get columns of a table.
-      const columns: any[] = await this.prisma
-        .$queryRaw`SELECT * FROM information_schema.columns WHERE (table_schema = ${datasource.schema} AND table_name = ${tableNames[i]})`;
+      const columns = await this.prisma.$queryRaw<
+        {column_name: string; data_type: string; ordinal_position: number}[]
+      >`SELECT * FROM information_schema.columns WHERE (table_schema = ${datasource.schema} AND table_name = ${tableNames[i]})`;
 
       // Save columns of a table.
       await this.postgresqlDatasourceTableColumnService.createMany(
@@ -70,45 +72,57 @@ export class PostgresqlDatasourceService {
     // [step 2] Extract constraints.
 
     // [step 2-1] Prepare constraint_name, constraint_type
-    const tableConstraints: [] = await this.prisma
-      .$queryRaw`SELECT * FROM information_schema.table_constraints WHERE (constraint_schema = ${datasource.schema})`;
+    const tableConstraints = await this.prisma.$queryRaw<
+      {constraint_name: string; constraint_type: string}[]
+    >`SELECT * FROM information_schema.table_constraints WHERE (constraint_schema = ${datasource.schema})`;
 
     // [step 2-2] Prepare foreign table_name
-    const constraintColumnUsages: [] = await this.prisma
-      .$queryRaw`SELECT * FROM information_schema.constraint_column_usage WHERE (constraint_schema = ${datasource.schema})`;
+    const constraintColumnUsages = await this.prisma.$queryRaw<
+      {constraint_name: string; table_name: string}[]
+    >`SELECT * FROM information_schema.constraint_column_usage WHERE (constraint_schema = ${datasource.schema})`;
 
     // [step 2-3] Struct constraints
-    let constraints: Prisma.PostgresqlDatasourceConstraintCreateManyInput[] =
+    const constraints: Prisma.PostgresqlDatasourceConstraintCreateManyInput[] =
       [];
-    const keyColumnUsages: any[] = await this.prisma
-      .$queryRaw`SELECT * FROM information_schema.key_column_usage WHERE (constraint_schema = ${datasource.schema})`;
+    const keyColumnUsages = await this.prisma.$queryRaw<
+      {
+        constraint_name: string;
+        table_schema: string;
+        table_name: string;
+        column_name: string;
+      }[]
+    >`SELECT * FROM information_schema.key_column_usage WHERE (constraint_schema = ${datasource.schema})`;
 
-    keyColumnUsages.map((keyColumnUsage: any) => {
+    keyColumnUsages.map(keyColumnUsage => {
       // Prepare columnKeyType and foreignTable for a relation.
       let keyType: PostgresqlDatasourceConstraintKeyType;
       let foreignTable: string | undefined = undefined;
 
-      const constraint: any = tableConstraints.find((tableConstraint: any) => {
+      const constraint = tableConstraints.find(tableConstraint => {
         return (
           tableConstraint.constraint_name === keyColumnUsage.constraint_name
         );
       });
 
-      if (constraint.constraint_type === ConstraintType.PRIMARY_KEY) {
+      if (
+        constraint &&
+        constraint.constraint_type === ConstraintType.PRIMARY_KEY
+      ) {
         keyType = PostgresqlDatasourceConstraintKeyType.PRIMARY_KEY;
       } else {
         keyType = PostgresqlDatasourceConstraintKeyType.FOREIGN_KEY;
 
         // foreignTable is required if the keyColumn is a foreign key.
-        const constraintUsage: any = constraintColumnUsages.find(
-          (constraintColumnUsage: any) => {
+        const constraintUsage = constraintColumnUsages.find(
+          constraintColumnUsage => {
             return (
               constraintColumnUsage.constraint_name ===
               keyColumnUsage.constraint_name
             );
           }
         );
-        foreignTable = constraintUsage.table_name;
+
+        foreignTable = constraintUsage ? constraintUsage.table_name : undefined;
       }
 
       // Finish a relation.
@@ -151,6 +165,7 @@ export class PostgresqlDatasourceService {
   async overview(datasource: PostgresqlDatasource) {
     const tables = datasource['tables'] as PostgresqlDatasourceTable[];
     const tableSummaries: {
+      id: number;
       name: string;
       numberOfRecords: number;
       hasMany: {}[];
@@ -162,8 +177,8 @@ export class PostgresqlDatasourceService {
 
       let constraints: PostgresqlDatasourceConstraint[];
       let countResult: {count: bigint}[];
-      let childTables: {name: string; numberOfRecords: number}[] = [];
-      let parentTables: {name: string; numberOfRecords: number}[] = [];
+      const childTables: {name: string; numberOfRecords: number}[] = [];
+      const parentTables: {name: string; numberOfRecords: number}[] = [];
 
       // [step 1] Get information of child tables.
       // [step 1-1] Get child tables's names.
@@ -211,6 +226,7 @@ export class PostgresqlDatasourceService {
       );
 
       tableSummaries.push({
+        id: table.id,
         name: table.name,
         numberOfRecords: Number(countResult[0].count),
         hasMany: childTables,
@@ -327,7 +343,7 @@ export class PostgresqlDatasourceService {
       .$queryRaw`SELECT * FROM information_schema.tables WHERE (table_schema = ${datasource.schema})`;
   }
 
-  async getTriggers(datasource: PostgresqlDatasource): Promise<any[]> {
+  async getTriggers(datasource: PostgresqlDatasource) {
     const result: any[] = await this.prisma
       .$queryRaw`SELECT * FROM information_schema.triggers WHERE event_object_schema = ${datasource.schema}`;
     const triggers: any[] = [];
@@ -346,10 +362,10 @@ export class PostgresqlDatasourceService {
   async selectFields(
     table: string,
     selectList: string[],
-    rows: number = 5000,
-    offset: number = 0,
+    rows = 5000,
+    offset = 0,
     datasource: PostgresqlDatasource
-  ): Promise<{}[]> {
+  ) {
     return await this.prisma
       .$queryRaw`SELECT ${selectList} FROM ${datasource.schema}.${table} ORDER BY ${selectList} DESC LIMIT ${rows} OFFSET ${offset}`;
   }

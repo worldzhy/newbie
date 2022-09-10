@@ -33,7 +33,7 @@ export class AwsEks_Stack {
         minInstanceCount?: number;
         maxInstanceCount?: number;
       },
-      awsConfig: any
+      awsConfig: {region: string}
     ) =>
     async () => {
       let vpcId = params.vpcId;

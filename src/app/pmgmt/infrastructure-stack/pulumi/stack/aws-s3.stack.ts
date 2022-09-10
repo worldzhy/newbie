@@ -26,7 +26,10 @@ export class AwsS3_Stack {
   }
 
   static getStackProgram =
-    (params: {bucketName: string; isPublic: boolean}, awsConfig: any) =>
+    (
+      params: {bucketName: string; isPublic: boolean},
+      awsConfig: {region: string}
+    ) =>
     async () => {
       const isPublic = params.isPublic;
       let bucketName = params.bucketName + '-' + CommonUtil.randomCode(4);

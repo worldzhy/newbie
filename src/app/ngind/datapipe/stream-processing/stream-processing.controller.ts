@@ -1,29 +1,30 @@
 import {Controller, Get, Param} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam} from '@nestjs/swagger';
-import {DatapipePumpService} from './pump.service';
+import {DatapipeStreamProcessingService} from './stream-processing.service';
 import {DatapipeService} from '../datapipe.service';
 import {DatapipeState} from '@prisma/client';
 
-@ApiTags('App / Datapipe / Pump')
+@ApiTags('App / Datapipe / Stream Processing')
 @ApiBearerAuth()
 @Controller('datapipes')
-export class DatapipePumpController {
+export class DatapipeStreamProcessingController {
   private datapipeService = new DatapipeService();
-  private datapipePumpService = new DatapipePumpService();
+  private datapipeStreamProcessingService =
+    new DatapipeStreamProcessingService();
 
   /**
-   * Start datapipe pump
+   * Start datapipe stream-processing
    * @param {string} datapipeId
    * @returns
-   * @memberof DatapipePumpController
+   * @memberof DatapipeStreamProcessingController
    */
-  @Get('/:datapipeId/pump/start')
+  @Get('/:datapipeId/stream-processing/start')
   @ApiParam({
     name: 'datapipeId',
     schema: {type: 'string'},
     example: '81a37534-915c-4114-96d0-01be815d821b',
   })
-  async startDatapipePump(@Param('datapipeId') datapipeId: string) {
+  async startDatapipeStreamProcessing(@Param('datapipeId') datapipeId: string) {
     // [step 1] Get datapipe.
     const datapipe = await this.datapipeService.findOne({
       where: {id: datapipeId},
@@ -37,7 +38,7 @@ export class DatapipePumpController {
     }
 
     // [step 2] Start datapipe.
-    const result = await this.datapipePumpService.start(datapipe);
+    const result = await this.datapipeStreamProcessingService.start(datapipe);
     if (result) {
       return {
         data: result,
@@ -46,18 +47,18 @@ export class DatapipePumpController {
     } else {
       return {
         data: null,
-        err: {message: 'Datapipe pump started failed.'},
+        err: {message: 'Datapipe stream-processing started failed.'},
       };
     }
   }
 
   /**
-   * Stop datapipe pump
+   * Stop datapipe stream-processing
    * @param {string} datapipeId
    * @returns
-   * @memberof DatapipePumpController
+   * @memberof DatapipeStreamProcessingController
    */
-  @Get('/:datapipeId/pump/stop')
+  @Get('/:datapipeId/stream-processing/stop')
   @ApiParam({
     name: 'datapipeId',
     schema: {type: 'string'},
@@ -85,12 +86,12 @@ export class DatapipePumpController {
   }
 
   /**
-   * Purge datapipe pump
+   * Purge datapipe stream-processing
    * @param {string} datapipeId
    * @returns
-   * @memberof DatapipePumpController
+   * @memberof DatapipeStreamProcessingController
    */
-  @Get('/:datapipeId/pump/purge')
+  @Get('/:datapipeId/stream-processing/purge')
   @ApiParam({
     name: 'datapipeId',
     schema: {type: 'string'},

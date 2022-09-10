@@ -9,9 +9,10 @@ export class DatapipeService {
   async overview(datapipe: Datapipe) {
     const fromTable = datapipe['fromTable'] as PostgresqlDatasourceTable;
     const batchQuantity = datapipe.batchQuantity;
+
+    const childTables: {name: string; numberOfRecords: number}[] = [];
+    const parentTables: {name: string; numberOfRecords: number}[] = [];
     let countResult: {count: bigint}[];
-    let childTables: {name: string; numberOfRecords: number}[] = [];
-    let parentTables: {name: string; numberOfRecords: number}[] = [];
     let packageAverageSize = 1.0;
 
     // [step 1] Get the total count of the table records.

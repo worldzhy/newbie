@@ -3,7 +3,7 @@ import {Datapipe, PostgresqlDatasourceTable} from '@prisma/client';
 import {PrismaService} from '../../../../_prisma/_prisma.service';
 
 @Injectable()
-export class DatapipePumpService {
+export class DatapipeStreamProcessingService {
   private prisma: PrismaService = new PrismaService();
 
   async start(datapipe: Datapipe) {

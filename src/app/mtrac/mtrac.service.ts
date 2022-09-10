@@ -3,7 +3,7 @@ import {SqsService} from '../../_aws/_sqs/_sqs.service';
 import {AwsConfig} from '../../_config/_aws.config';
 import {AwsEnum} from '../../_config/_common.enum';
 
-export class MtracService {
+export class MessageTrackerService {
   private sqs = new SqsService();
   private prisma = new PrismaService();
   private context = 'Message Tracker';

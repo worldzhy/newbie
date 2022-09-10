@@ -5,7 +5,6 @@ import {
   CreateStackCommand,
   DeleteStackCommand,
   DescribeStacksCommand,
-  ListExportsCommand,
 } from '@aws-sdk/client-cloudformation';
 import {fromIni} from '@aws-sdk/credential-providers';
 import {InfrastructureStackType} from '@prisma/client';

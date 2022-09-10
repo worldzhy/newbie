@@ -1,5 +1,4 @@
 import {Module} from '@nestjs/common';
-import {PrismaModule} from '../../../_prisma/_prisma.module';
 import {ElasticsearchDatasourceModule} from './elasticsearch/elasticsearch-datasource.module';
 import {ElasticsearchDatasourceIndexModule} from './elasticsearch/index/index.module';
 import {ElasticsearchDatasourceIndexFieldModule} from './elasticsearch/field/field.module';
@@ -10,7 +9,6 @@ import {PostgresqlDatasourceConstraintModule} from './postgresql/constraint/cons
 
 @Module({
   imports: [
-    PrismaModule,
     ElasticsearchDatasourceModule,
     ElasticsearchDatasourceIndexModule,
     ElasticsearchDatasourceIndexFieldModule,

@@ -148,7 +148,7 @@ export class ElasticsearchDatasourceIndexService {
     return result.count;
   }
 
-  async getIndices(datasourceId: string) {
+  async getIndices() {
     const indices = await this.elasticsearch.cat.indices({
       v: true, //If true, the response includes column headings. Defaults to false.
       health: 'green',
@@ -157,7 +157,7 @@ export class ElasticsearchDatasourceIndexService {
     return indices;
   }
 
-  async getAliases(datasourceId: string) {
+  async getAliases() {
     const aliases = await this.elasticsearch.cat.aliases({
       v: true,
       format: 'json',
@@ -165,7 +165,7 @@ export class ElasticsearchDatasourceIndexService {
     return aliases;
   }
 
-  async getMappings(datasourceId: string, indexName: string) {
+  async getMappings(indexName: string) {
     const mappings = await this.elasticsearch.indices.getMapping({
       index: indexName,
     });

@@ -24,7 +24,7 @@ export class AwsSqs_Stack {
   }
 
   static getStackProgram =
-    (params: {bucketName: string}, awsConfig: any) => async () => {
+    (params: {bucketName: string}, awsConfig: {region: string}) => async () => {
       let bucketName = params.bucketName;
 
       // [step 1] Guard statement.

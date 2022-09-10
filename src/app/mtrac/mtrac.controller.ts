@@ -1,12 +1,12 @@
 import {Controller, Post, Body} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {MtracService} from './mtrac.service';
+import {MessageTrackerService} from './mtrac.service';
 
 @ApiTags('App / Message Tracker')
 @ApiBearerAuth()
-@Controller('mtrac')
-export class MtracController {
-  constructor(private mtracService: MtracService) {}
+@Controller('message-tracker')
+export class MessageTrackerController {
+  constructor(private messageTrackerService: MessageTrackerService) {}
 
   /**
    * Send email message to SQS
@@ -37,7 +37,7 @@ export class MtracController {
     }
   ): Promise<{data: object | null; err: object | null}> {
     const {subject, content, toAddress} = body;
-    const result = await this.mtracService.sendEmail(
+    const result = await this.messageTrackerService.sendEmail(
       subject,
       content,
       toAddress
@@ -74,7 +74,7 @@ export class MtracController {
     }
   ): Promise<{data: {message: string} | null; err: null}> {
     const {content, phone} = body;
-    const result = await this.mtracService.sendSms(content, phone);
+    const result = await this.messageTrackerService.sendSms(content, phone);
     return {
       data: result.data,
       err: null,

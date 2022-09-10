@@ -43,7 +43,7 @@ export class ComputingFargate_Stack {
         minTaskCount?: number;
         maxTaskCount?: number;
       },
-      awsConfig: any
+      awsConfig: {region: string}
     ) =>
     async () => {
       let vpcId = params.vpcId;

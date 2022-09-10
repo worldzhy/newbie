@@ -43,7 +43,7 @@ export class AwsEcs_Stack {
         minTaskCount?: number;
         maxTaskCount?: number;
       },
-      awsConfig: any
+      awsConfig: {accountId: string; region: string}
     ) =>
     async () => {
       let vpcId = params.vpcId;

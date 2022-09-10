@@ -46,7 +46,7 @@ export class NetworkHipaa_Stack {
         vpcCidrBlock?: string;
         numberOfAvailabilityZones?: number;
       },
-      awsConfig: any
+      awsConfig: {region: string}
     ) =>
     async () => {
       let vpcName = params.vpcName;

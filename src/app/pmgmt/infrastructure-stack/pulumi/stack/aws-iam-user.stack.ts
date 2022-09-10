@@ -23,7 +23,8 @@ export class AwsIamUser_Stack {
   }
 
   static getStackProgram =
-    (params: {iamUserName: string}, awsConfig: any) => async () => {
+    (params: {iamUserName: string}, awsConfig: {region: string}) =>
+    async () => {
       // [step 1] Guard statement.
 
       // [step 2] Get or create IAM user group.

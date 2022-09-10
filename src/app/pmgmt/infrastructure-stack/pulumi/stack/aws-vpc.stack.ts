@@ -24,7 +24,10 @@ export class AwsVpc_Stack {
   }
 
   static getStackProgram =
-    (params: {vpcName?: string; vpcCidrBlock?: string}, awsConfig: any) =>
+    (
+      params: {vpcName?: string; vpcCidrBlock?: string},
+      awsConfig: {region: string}
+    ) =>
     async () => {
       let vpcName = params.vpcName;
       let vpcCidrBlock = params.vpcCidrBlock;

@@ -487,7 +487,7 @@ model Datapipe {
   queueUrl        String? // If the queueUrl is null, the datapipe's status can not be ACTIVE.
   createdAt       DateTime                     @default(now())
   updatedAt       DateTime                     @updatedAt
-  fromTable       PostgresqlDatasourceTable    @relation(fields: [fromTableId], references: [id])
+  fromTable       PostgresqlDatasourceTable    @relation(fields: [fromTableId], references: [id], onDelete: Cascade)
   fromTableId     Int
   toIndex         ElasticsearchDatasourceIndex @relation(fields: [toIndexId], references: [id])
   toIndexId       Int

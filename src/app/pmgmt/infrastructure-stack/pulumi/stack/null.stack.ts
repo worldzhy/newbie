@@ -7,16 +7,16 @@ export class Null_Stack {
   }
 
   static checkStackParams(params: object) {
-    if (params) {
-      return true;
-    } else {
-      return false;
-    }
+    console.log(params);
+    return false;
   }
 
   static getStackOutputKeys() {
     return [];
   }
 
-  static getStackProgram = (params: {}, awsConfig: any) => async () => {};
+  static getStackProgram = (params: {}, awsConfig: {}) => async () => {
+    console.log(params);
+    console.log(awsConfig);
+  };
 }

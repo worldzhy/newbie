@@ -1,12 +1,12 @@
 import {Module} from '@nestjs/common';
 import {PrismaModule} from '../../_prisma/_prisma.module';
-import {MtracController} from './mtrac.controller';
-import {MtracService} from './mtrac.service';
+import {MessageTrackerController} from './mtrac.controller';
+import {MessageTrackerService} from './mtrac.service';
 
 @Module({
   imports: [PrismaModule],
-  controllers: [MtracController],
-  providers: [MtracService],
-  exports: [MtracService],
+  controllers: [MessageTrackerController],
+  providers: [MessageTrackerService],
+  exports: [MessageTrackerService],
 })
-export class MtracModule {}
+export class MessageTrackerModule {}

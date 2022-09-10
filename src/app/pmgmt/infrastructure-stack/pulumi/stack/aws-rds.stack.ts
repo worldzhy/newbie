@@ -45,7 +45,7 @@ export class AwsRds_Stack {
         vpcSubnetIds: string[];
         isPublic: boolean;
       },
-      awsConfig: any
+      awsConfig: {region: string}
     ) =>
     async () => {
       // [step 1] The subnet group specifies the VPC and subnets where the RDS will be deployed to.

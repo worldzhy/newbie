@@ -24,7 +24,10 @@ export class AwsWaf_Stack {
   }
 
   static getStackProgram =
-    (params: {applicationLoadBalancerArn: string}, awsConfig: any) =>
+    (
+      params: {applicationLoadBalancerArn: string},
+      awsConfig: {region: string}
+    ) =>
     async () => {
       // [step 1] Create rule group.
       let uniqueResourceName = 'waf-rule-group';

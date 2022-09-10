@@ -23,7 +23,8 @@ export class AwsEcr_Stack {
   }
 
   static getStackProgram =
-    (params: {repositoryName: string}, awsConfig: any) => async () => {
+    (params: {repositoryName: string}, awsConfig: {region: string}) =>
+    async () => {
       // [step 1] Guard statement.
 
       // [step 2] Create a repository.
