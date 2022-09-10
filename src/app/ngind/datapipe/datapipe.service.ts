@@ -8,12 +8,12 @@ export class DatapipeService {
 
   async overview(datapipe: Datapipe) {
     const fromTable = datapipe['fromTable'] as PostgresqlDatasourceTable;
-    const batchQuantity = datapipe.batchQuantity;
+    const numberOfRecordsPerBatch = datapipe.numberOfRecordsPerBatch;
 
     const childTables: {name: string; numberOfRecords: number}[] = [];
     const parentTables: {name: string; numberOfRecords: number}[] = [];
     let countResult: {count: bigint}[];
-    let packageAverageSize = 1.0;
+    let recordAverageSize = 1.0;
 
     // [step 1] Get the total count of the table records.
     countResult = await this.prisma.$queryRawUnsafe(
@@ -37,7 +37,7 @@ export class DatapipeService {
           numberOfRecords: Number(countResult[0].count),
         });
 
-        packageAverageSize += Number(countResult[0].count) / total;
+        recordAverageSize += Number(countResult[0].count) / total;
       })
     );
 
@@ -53,20 +53,22 @@ export class DatapipeService {
           numberOfRecords: Number(countResult[0].count),
         });
 
-        packageAverageSize += 1.0;
+        recordAverageSize += 1.0;
       })
     );
 
     return {
-      table: {
-        name: fromTable.name,
-        numberOfRecords: total,
-        hasMany: childTables,
-        belongsTo: parentTables,
+      table: fromTable.name,
+      numberOfRecords: total,
+      hasMany: childTables,
+      belongsTo: parentTables,
+      batchProcessing: {
+        recordAverageSize: parseFloat(recordAverageSize.toFixed(2)),
+        numberOfRecordsPerBatch: numberOfRecordsPerBatch,
+        numberOfBatches: Math.ceil(
+          (total * recordAverageSize) / numberOfRecordsPerBatch
+        ),
       },
-      packageAverageSize: parseFloat(packageAverageSize.toFixed(2)),
-      batchQuantity: batchQuantity,
-      batches: Math.ceil((total * packageAverageSize) / batchQuantity),
     };
   }
 

@@ -8,7 +8,6 @@ export class DatapipeStreamProcessingService {
 
   async start(datapipe: Datapipe) {
     const fromTable = datapipe['fromTable'] as PostgresqlDatasourceTable;
-    const batchQuantity = datapipe.batchQuantity;
     const hasManyTables = datapipe.hasManyTables;
     const belongsToTables = datapipe.belongsToTables;
 

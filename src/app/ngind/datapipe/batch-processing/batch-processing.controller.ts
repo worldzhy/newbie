@@ -37,18 +37,7 @@ export class DatapipeBatchProcessingController {
     }
 
     // [step 2] Start datapipe.
-    const result = await this.datapipeBatchProcessingService.start(datapipe);
-    if (result) {
-      return {
-        data: result,
-        err: null,
-      };
-    } else {
-      return {
-        data: null,
-        err: {message: 'Datapipe batch-processing started failed.'},
-      };
-    }
+    return await this.datapipeBatchProcessingService.start(datapipe);
   }
 
   /**

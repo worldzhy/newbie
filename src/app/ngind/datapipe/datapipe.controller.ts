@@ -105,7 +105,7 @@ export class DatapipeController {
    *   status: DatapipeStatus;
    *   hasManyTables: string[];
    *   belongsToTables: string[];
-   *   batchQuantity: number;
+   *   numberOfRecordsPerBatch: number;
    *   queueUrl?: string;
    *   fromTableId: number;
    *   toIndexId: number;
@@ -124,7 +124,7 @@ export class DatapipeController {
           name: 'datapipe_01',
           hasManyTables: [],
           belongsToTables: [],
-          batchQuantity: 100,
+          numberOfRecordsPerBatch: 100,
           queueUrl:
             'https://sqs.cn-northwest-1.amazonaws.com.cn/077767357755/dev-inceptionpad-message-service-email-level1',
           fromTableId: 1,
@@ -139,7 +139,7 @@ export class DatapipeController {
       name: string;
       hasManyTables: string[];
       belongsToTables: string[];
-      batchQuantity?: number;
+      numberOfRecordsPerBatch?: number;
       queueUrl?: string;
       fromTableId: number;
       toIndexId: number;
@@ -177,7 +177,7 @@ export class DatapipeController {
       state: DatapipeState.IDLE,
       hasManyTables: body.hasManyTables,
       belongsToTables: body.belongsToTables,
-      batchQuantity: body.batchQuantity,
+      numberOfRecordsPerBatch: body.numberOfRecordsPerBatch,
       queueUrl: body.queueUrl,
       fromTable: {connect: {id: body.fromTableId}},
       toIndex: {connect: {id: body.toIndexId}},
@@ -218,7 +218,7 @@ export class DatapipeController {
           name: 'datapipe-01',
           hasManyTables: [],
           belongsToTables: [],
-          batchQuantity: 100,
+          numberOfRecordsPerBatch: 100,
         },
       },
     },
@@ -230,11 +230,12 @@ export class DatapipeController {
       name: string;
       hasManyTables: string[];
       belongsToTables: string[];
-      batchQuantity: number;
+      numberOfRecordsPerBatch: number;
     }
   ) {
     // [step 1] Guard statement.
-    const {name, hasManyTables, belongsToTables, batchQuantity} = body;
+    const {name, hasManyTables, belongsToTables, numberOfRecordsPerBatch} =
+      body;
 
     // [step 2] Update name.
     const result = await this.datapipeService.update({

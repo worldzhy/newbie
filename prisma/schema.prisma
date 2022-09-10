@@ -478,19 +478,19 @@ enum ElasticsearchDataboardStatus {
 //
 
 model Datapipe {
-  id              String                       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name            String
-  state           DatapipeState
-  hasManyTables   String[] // The child tables should be loaded into the payload to be transported.
-  belongsToTables String[] // The parent tables should be loaded into the payload to be transported.
-  batchQuantity   Int                          @default(100) // The quantity of a batch of payload to be transported.
-  queueUrl        String? // If the queueUrl is null, the datapipe's status can not be ACTIVE.
-  createdAt       DateTime                     @default(now())
-  updatedAt       DateTime                     @updatedAt
-  fromTable       PostgresqlDatasourceTable    @relation(fields: [fromTableId], references: [id], onDelete: Cascade)
-  fromTableId     Int
-  toIndex         ElasticsearchDatasourceIndex @relation(fields: [toIndexId], references: [id])
-  toIndexId       Int
+  id                      String                       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                    String
+  state                   DatapipeState
+  hasManyTables           String[] // The child tables should be loaded into the payload to be transported.
+  belongsToTables         String[] // The parent tables should be loaded into the payload to be transported.
+  numberOfRecordsPerBatch Int                          @default(100) // The quantity of a batch of payload to be transported.
+  queueUrl                String? // If the queueUrl is null, the datapipe's status can not be ACTIVE.
+  createdAt               DateTime                     @default(now())
+  updatedAt               DateTime                     @updatedAt
+  fromTable               PostgresqlDatasourceTable    @relation(fields: [fromTableId], references: [id], onDelete: Cascade)
+  fromTableId             Int
+  toIndex                 ElasticsearchDatasourceIndex @relation(fields: [toIndexId], references: [id])
+  toIndexId               Int
 }
 
 enum DatapipeState {
