@@ -17,25 +17,50 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ! Message Management //
-// * MessageGroup       //
-// * Message            //
+//       ! Microservice         //
+// ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
+// * Microservice               //
+// * MicroserviceConfiguration  //
+// ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
+
+model Microservice {
+  id             String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String                      @unique
+  params         String[]
+  createdAt      DateTime                    @default(now())
+  updatedAt      DateTime                    @updatedAt
+  configurations MicroserviceConfiguration[]
+}
+
+model MicroserviceConfiguration {
+  id             Int          @id @default(autoincrement())
+  product        String // The microservice is used by this product.
+  param          String
+  paramValue     String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  microservice   Microservice @relation(fields: [microserviceId], references: [id])
+  microserviceId String       @db.Uuid
+
+  @@unique([product, param, microserviceId])
+}
+
+enum MicroserviceName {
+  EMAIL_NOTIFICATION
+  SMS_NOTIFICATION
+  TASH
+}
+
+//   ! Notification     //
+// ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  //
+// * EmailNotification  //
+// * SmsNotification    //
 // ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  //
 
-model MessageGroup {
-  id                       String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                     String
-  pinpointAppId            String
-  pinpointEmailFromAddress String?
-  pinpointSmsSenderId      String?
-  createdAt                DateTime @default(now())
-  updatedAt                DateTime @updatedAt
-}
-
-model EamilMessage {
+model EmailNotification {
   id                Int      @id @default(autoincrement())
-  messageGroup      String
-  messageBody       Json
+  payload           Json // The notification content.
+  product           String // The microservice is used by this product.
   pinpointAppId     String
   pinpointMessageId String?
   pinpointResponse  Json?
@@ -43,10 +68,10 @@ model EamilMessage {
   updatedAt         DateTime @updatedAt
 }
 
-model SmsMessage {
+model SmsNotification {
   id                Int      @id @default(autoincrement())
-  messageGroup      String
-  messageBody       Json
+  payload           Json // The notification content.
+  product           String // The microservice is used by this product.
   pinpointAppId     String
   pinpointMessageId String?
   pinpointResponse  Json?
@@ -54,24 +79,16 @@ model SmsMessage {
   updatedAt         DateTime @updatedAt
 }
 
-// ! Task Management //
-// * TaskGroup       //
+//      ! Task       //
+// ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  //
 // * Task            //
 // ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  //
 
-model TaskGroup {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name        String
-  sqsQueueUrl String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
 model Task {
   id           Int       @id @default(autoincrement())
-  taskGroup    String
-  messageBody  Json
-  state        TaskState
+  payload      Json // The task content.
+  state        TaskState @default(PENDING)
+  product      String // The microservice is used by this product.
   sqsQueueUrl  String
   sqsMessageId String?
   sqsResponse  Json?
@@ -87,6 +104,7 @@ enum TaskState {
 }
 
 //     ! Account       //
+// ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
 // * Jwt               //
 // * VerificationCode  //
 // * User              //
@@ -255,11 +273,11 @@ model Organization {
 }
 
 //  ! Project Management  //
+// ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
 // * Project              //
 // * ProjectCheckpoint    //
 // * ProjectEnvironment   //
 // * InfrastructureStack  //
-// * Microservice         //
 // ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
 
 model Project {
@@ -273,7 +291,6 @@ model Project {
   checkpoints          ProjectCheckpoint[]
   environments         ProjectEnvironment[]
   infrastructureStacks InfrastructureStack[]
-  microservices        Microservice[]
 }
 
 enum ProjectState {
@@ -389,24 +406,8 @@ enum InfrastructureStackState {
   DELETED
 }
 
-model Microservice {
-  id          String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name        String                 @unique
-  state       MicroserviceState
-  environment ProjectEnvironmentType
-  createdAt   DateTime               @default(now())
-  updatedAt   DateTime               @updatedAt
-  projectId   String                 @db.Uuid
-  project     Project                @relation(fields: [projectId], references: [id])
-}
-
-enum MicroserviceState {
-  PREPARING
-  RUNNING
-  STOPPED
-}
-
 //            ! Engine D               //
+// ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  //
 // * PostgresqlDatasource              //
 // * PostgresqlDatasourceConstraint    //
 // * PostgresqlDatasourceTable         //

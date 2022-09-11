@@ -3,9 +3,9 @@ import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {TaskState} from '@prisma/client';
 import {TaskService} from './task.service';
 
-@ApiTags('Tool / Task Management')
+@ApiTags('Microservice / Task')
 @ApiBearerAuth()
-@Controller('task-group')
+@Controller('task')
 export class TaskController {
   private taskService = new TaskService();
 
@@ -91,8 +91,8 @@ export class TaskController {
    * Create a new task.
    *
    * @param {{
-   *   taskGroup: string;
-   *   messageBody: object;
+   *   product: string;
+   *   body: object;
    *   state: TaskState;
    *   sqsQueueUrl: string;
    * }} body
@@ -116,9 +116,8 @@ export class TaskController {
   async createTask(
     @Body()
     body: {
-      taskGroup: string;
-      messageBody: object;
-      state: TaskState;
+      payload: object;
+      product: string;
       sqsQueueUrl: string;
     }
   ) {
@@ -126,9 +125,8 @@ export class TaskController {
 
     // [step 2] Create task.
     const result = await this.taskService.create({
-      taskGroup: body.taskGroup,
-      messageBody: body.messageBody,
-      state: TaskState.PENDING,
+      payload: body.payload,
+      product: body.product,
       sqsQueueUrl: body.sqsQueueUrl,
     });
     if (result) {
@@ -149,8 +147,8 @@ export class TaskController {
    *
    * @param {number} taskId
    * @param {{
-   *   taskGroup?: string;
-   *   messageBody?: object;
+   *   product?: string;
+   *   body?: object;
    *   state?: TaskState;
    *   sqsQueueUrl?: string;
    * }} body
@@ -178,19 +176,19 @@ export class TaskController {
     @Param('taskId') taskId: number,
     @Body()
     body: {
-      taskGroup?: string;
-      messageBody?: object;
+      payload?: object;
       state?: TaskState;
+      product?: string;
       sqsQueueUrl?: string;
     }
   ) {
     // [step 1] Guard statement.
-    const {taskGroup, messageBody, state, sqsQueueUrl} = body;
+    const {product, payload, state, sqsQueueUrl} = body;
 
     // [step 2] Update name.
     const result = await this.taskService.update({
       where: {id: taskId},
-      data: {taskGroup, messageBody, state, sqsQueueUrl},
+      data: {product, payload, state, sqsQueueUrl},
     });
     if (result) {
       return {

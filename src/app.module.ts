@@ -6,13 +6,14 @@ import {AppController} from './app.controller';
 import {AccountModule} from './app/account/account.module';
 import {AwsModule} from './_aws/_aws.module';
 import {CustomLoggerModule} from './_logger/_custom-logger.module';
-import {NotificationModule} from './tool/notification/notification.module';
 import {OrganizationModule} from './app/account/organization/organization.module';
 import {DataboardModule} from './app/ngind/databoard/databoard.module';
 import {DatapipeModule} from './app/ngind/datapipe/datapipe.module';
 import {DatasourceModule} from './app/ngind/datasource/datasource.module';
 import {ProjectManagementModule} from './app/pmgmt/pmgmt.module';
-import {TaskModule} from './tool/task-mgmt/task/task.module';
+import {MicroserviceModule} from './microservice/microservice.module';
+import {NotificationModule} from './microservice/notification/notification.module';
+import {TaskModule} from './microservice/task/task.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import {TaskModule} from './tool/task-mgmt/task/task.module';
     CustomLoggerModule,
 
     // Tool modules
+    MicroserviceModule,
     NotificationModule,
     TaskModule,
 

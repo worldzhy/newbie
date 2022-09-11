@@ -1,39 +1,21 @@
 import {Controller, Get, Post, Delete, Param, Body} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {MicroserviceState, ProjectEnvironmentType} from '@prisma/client';
 import {MicroserviceService} from './microservice.service';
-import {ProjectService} from '../project/project.service';
 
-@ApiTags('App / Project Mgmt / Microservice')
+@ApiTags('Microservice')
 @ApiBearerAuth()
-@Controller()
+@Controller('microservices')
 export class MicroserviceController {
-  private projectService = new ProjectService();
   private microserviceService = new MicroserviceService();
 
   /**
-   * Get microservices for a project.
-   *
-   * @param {string} projectId
+   * Get microservices.
    * @returns
    * @memberof MicroserviceController
    */
-  @Get('microservices/:projectId/:environment')
-  @ApiParam({
-    name: 'projectId',
-    schema: {type: 'string'},
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
-  @ApiParam({
-    name: 'environment',
-    schema: {type: 'string'},
-    example: 'development',
-  })
-  async getMicroservices(
-    @Param('projectId') projectId: string,
-    @Param('environment') environment: ProjectEnvironmentType
-  ) {
-    return this.microserviceService.findMany({projectId, environment});
+  @Get('/list')
+  async getMicroservices() {
+    return this.microserviceService.findMany({where: {}});
   }
 
   /**
@@ -43,7 +25,7 @@ export class MicroserviceController {
    * @returns
    * @memberof MicroserviceController
    */
-  @Get('microservices/:microserviceId')
+  @Get('/:microserviceId')
   @ApiParam({
     name: 'microserviceId',
     schema: {type: 'string'},
@@ -52,7 +34,7 @@ export class MicroserviceController {
   async getMicroservice(@Param('microserviceId') microserviceId: string) {
     // [step 1] Get microservice database record.
     return await this.microserviceService.findOne({
-      id: microserviceId,
+      where: {id: microserviceId},
     });
   }
 
@@ -60,10 +42,8 @@ export class MicroserviceController {
    * Create a microservice.
    *
    * @param {{
-   *       projectName: string;
-   *       environment: ProjectEnvironmentType;
-   *       name: string;
-   *     }} body
+   *   name: string;
+   * }} body
    * @returns
    * @memberof MicroserviceController
    */
@@ -74,8 +54,6 @@ export class MicroserviceController {
       a: {
         summary: '1. Create successfully',
         value: {
-          projectName: 'InceptionPad',
-          environment: ProjectEnvironmentType.DEVELOPMENT,
           name: 'Email Outreaching',
         },
       },
@@ -84,30 +62,14 @@ export class MicroserviceController {
   async createMicroservice(
     @Body()
     body: {
-      projectName: string;
-      environment: ProjectEnvironmentType;
       name: string;
     }
   ) {
-    // [step 1] Verify projectId.
-    const project = await this.projectService.findOne({id: body.projectName});
-    if (project === null) {
-      return {
-        data: null,
-        err: {
-          message: "Please provide valid 'projectId' in the request body.",
-        },
-      };
-    }
+    // [step 1] Guard statement.
 
     // [step 2] Create a microservice.
     return await this.microserviceService.create({
       name: body.name,
-      state: MicroserviceState.PREPARING,
-      environment: body.environment,
-      project: {
-        connect: {id: body.projectName},
-      },
     });
   }
 
@@ -116,14 +78,12 @@ export class MicroserviceController {
    *
    * @param {string} microserviceId
    * @param {{
-   *       name: string;
-   *       status: MicroserviceStatus;
-   *       environment: ProjectEnvironmentType;
-   *     }} body
+   *   name: string;
+   * }} body
    * @returns
    * @memberof MicroserviceController
    */
-  @Post('microservices/:microserviceId')
+  @Post('/:microserviceId')
   @ApiParam({
     name: 'microserviceId',
     schema: {type: 'string'},
@@ -133,11 +93,9 @@ export class MicroserviceController {
     description: 'Enjoy coding :)',
     examples: {
       a: {
-        summary: '1. Launch FileManager',
+        summary: '1. Update name',
         value: {
           name: 'FileManager',
-          state: MicroserviceState.PREPARING,
-          environment: ProjectEnvironmentType.DEVELOPMENT,
         },
       },
     },
@@ -145,16 +103,12 @@ export class MicroserviceController {
   async updateMicroservice(
     @Param('microserviceId') microserviceId: string,
     @Body()
-    body: {
-      name: string;
-      state: MicroserviceState;
-      environment: ProjectEnvironmentType;
-    }
+    body: {name: string}
   ) {
-    const {name, state, environment} = body;
+    const {name} = body;
     return await this.microserviceService.update({
       where: {id: microserviceId},
-      data: {name, state, environment},
+      data: {name},
     });
   }
 
@@ -165,7 +119,7 @@ export class MicroserviceController {
    * @returns
    * @memberof MicroserviceController
    */
-  @Delete('microservices/:microserviceId')
+  @Delete('/:microserviceId')
   @ApiParam({
     name: 'microserviceId',
     schema: {type: 'string'},

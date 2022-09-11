@@ -2,7 +2,7 @@ import {Body, Controller, Post} from '@nestjs/common';
 import {ApiBearerAuth, ApiBody, ApiTags} from '@nestjs/swagger';
 import {EmailService} from './email.service';
 
-@ApiTags('Message')
+@ApiTags('Microservice / Notification')
 @ApiBearerAuth()
 @Controller('email')
 export class EmailController {

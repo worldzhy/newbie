@@ -1,27 +1,19 @@
 import {Injectable} from '@nestjs/common';
-import {Prisma, Microservice, Project} from '@prisma/client';
-import {PrismaService} from '../../../_prisma/_prisma.service';
+import {Prisma, Microservice} from '@prisma/client';
+import {PrismaService} from '../_prisma/_prisma.service';
 
 @Injectable()
 export class MicroserviceService {
   private prisma: PrismaService = new PrismaService();
 
-  async findOne(where: Prisma.MicroserviceWhereUniqueInput): Promise<
-    | (Microservice & {
-        project: Project;
-      })
-    | null
-  > {
-    return await this.prisma.microservice.findUnique({
-      where,
-      include: {project: true},
-    });
+  async findOne(params: {
+    where: Prisma.MicroserviceWhereUniqueInput;
+  }): Promise<Microservice | null> {
+    return await this.prisma.microservice.findUnique(params);
   }
 
-  async findMany(where: Prisma.MicroserviceWhereInput) {
-    return await this.prisma.microservice.findMany({
-      where,
-    });
+  async findMany(params: {where: Prisma.MicroserviceWhereInput}) {
+    return await this.prisma.microservice.findMany(params);
   }
 
   /**

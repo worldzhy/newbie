@@ -1,5 +1,5 @@
 import {Module} from '@nestjs/common';
-import {NotificationModule} from '../../../tool/notification/notification.module';
+import {NotificationModule} from '../../../microservice/notification/notification.module';
 import {UserModule} from '../user/user.module';
 import {VerificationCodeController} from './verification-code.controller';
 import {VerificationCodeService} from './verification-code.service';
