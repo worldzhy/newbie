@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {Datapipe, PostgresqlDatasourceTable} from '@prisma/client';
-import {SqsService} from 'src/_aws/_sqs/_sqs.service';
+import {SqsService} from 'src/_aws/_sqs.service';
 import {PrismaService} from '../../../../_prisma/_prisma.service';
 
 @Injectable()
@@ -25,6 +25,7 @@ export class DatapipeBatchProcessingService {
         skip: datapipe.numberOfRecordsPerBatch * i,
       };
 
+      // todo replace with task-mgmt.sendTask
       await this.sqs.sendMessage(datapipe.queueUrl!, messageBody);
     }
 

@@ -1,7 +1,8 @@
 import {Controller, Post, Body} from '@nestjs/common';
 import {ApiTags, ApiBody} from '@nestjs/swagger';
 import {Public} from '../auth/auth-jwt/auth-jwt.decorator';
-import {MessageTrackerService} from '../../mtrac/mtrac.service';
+import {EmailService} from '../../../tool/notification/email/email.service';
+import {SmsService} from '../../../tool/notification/sms/sms.service';
 import {UserService} from '../user/user.service';
 import {AccountValidator} from '../../../_validator/_account.validator';
 import {VerificationCodeService} from './verification-code.service';
@@ -11,6 +12,8 @@ import {VerificationCodeUse} from '@prisma/client';
 @Controller()
 export class VerificationCodeController {
   private verificationCodeService = new VerificationCodeService();
+  private emailService = new EmailService();
+  private smsService = new SmsService();
 
   /**
    * [1] Account parameter must be email or phone.
@@ -105,25 +108,27 @@ export class VerificationCodeController {
     const verificationCode = others;
 
     // [step 4: start] Send verification code.
-    let result: {data: object | null; err: object | null};
-    const messageService = new MessageTrackerService();
+    let result: object;
     if (byEmail) {
       // Send verification code to user's email
-      const subject = 'Your Verification Code';
-      const content = verificationCode.code;
-      const toAddress = account;
-      result = await messageService.sendEmail(subject, content, toAddress);
+      result = await this.emailService.sendOne({
+        email: account,
+        subject: 'Your Verification Code',
+        plainText: verificationCode.code,
+        html: verificationCode.code,
+      });
     } else if (byPhone) {
       // Send verification code to user's phone
-      const content = verificationCode.code;
-      const phone = account;
-      result = await messageService.sendSms(content, phone);
+      result = await this.smsService.sendOne({
+        phone: account,
+        text: verificationCode.code,
+      });
     } else {
       // No chance to arrive here.
       result = {data: null, err: null};
     }
 
-    if (result.data) {
+    if (result) {
       // [step 4: successful]
       return {
         data: verificationCode,

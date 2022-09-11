@@ -17,28 +17,95 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-//
-// Account tables
-//
-// [1] The 'User' and 'VerificationCode' models are both used for logging in.
-// [2] The 'User' is designed for long-term use and the 'VerificationCode' is designed for short-term use.
-// [3] Actually, the 'User' model should be named 'UserPassword' and the 'VerificationCode' should be named 'UserVerificationCode'.
-//
+// ! Message Management //
+// * MessageGroup       //
+// * Message            //
+// ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  //
 
-model User {
-  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email        String?    @unique
-  phone        String?    @unique
-  username     String?    @unique
-  passwordHash String?
-  status       UserStatus
-  lastLoginAt  DateTime?
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  profiles     Profile[]
+model MessageGroup {
+  id                       String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                     String
+  pinpointAppId            String
+  pinpointEmailFromAddress String?
+  pinpointSmsSenderId      String?
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
 }
 
-enum UserStatus {
+model EamilMessage {
+  id                Int      @id @default(autoincrement())
+  messageGroup      String
+  messageBody       Json
+  pinpointAppId     String
+  pinpointMessageId String?
+  pinpointResponse  Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model SmsMessage {
+  id                Int      @id @default(autoincrement())
+  messageGroup      String
+  messageBody       Json
+  pinpointAppId     String
+  pinpointMessageId String?
+  pinpointResponse  Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+// ! Task Management //
+// * TaskGroup       //
+// * Task            //
+// ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  //
+
+model TaskGroup {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  sqsQueueUrl String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Task {
+  id           Int       @id @default(autoincrement())
+  taskGroup    String
+  messageBody  Json
+  state        TaskState
+  sqsQueueUrl  String
+  sqsMessageId String?
+  sqsResponse  Json?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+enum TaskState {
+  PENDING
+  SUCCEEDED
+  FAILED
+  CANCELED
+}
+
+//     ! Account       //
+// * Jwt               //
+// * VerificationCode  //
+// * User              //
+// * Profile           //
+// * Role              //
+// * Permission        //
+// * Organization      //
+// ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
+
+model Jwt {
+  id        Int       @id @default(autoincrement())
+  userId    String
+  token     String
+  status    JwtStatus
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+enum JwtStatus {
   ACTIVE
   INACTIVE
 }
@@ -78,44 +145,52 @@ enum VerificationCodeStatus {
   INACTIVE
 }
 
-model JsonWebToken {
-  id        Int       @id @default(autoincrement())
-  userId    String
-  token     String
-  status    JwtStatus
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+model User {
+  // [1] The 'User' and 'VerificationCode' models are both used for logging in.
+  // [2] The 'User' is designed for long-term use and the 'VerificationCode' is designed for short-term use.
+  // [3] Actually, the 'User' model should be named 'UserPassword' and the 'VerificationCode' should be named 'UserVerificationCode'.
+
+  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email        String?    @unique
+  phone        String?    @unique
+  username     String?    @unique
+  passwordHash String?
+  status       UserStatus
+  lastLoginAt  DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  profiles     Profile[]
 }
 
-enum JwtStatus {
+enum UserStatus {
   ACTIVE
   INACTIVE
 }
 
 model Profile {
-  id             String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id             String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   givenName      String?
   middleName     String?
   familyName     String?
   suffix         String?
   birthday       DateTime?
   gender         String?
-  race           RaceType?
-  ethnicity      EthnicityType?
+  race           ProfileRaceType?
+  ethnicity      ProfileEthnicityType?
   hasPCP         Boolean? // Primary Care Physician  
   address        String?
   zipcode        String?
   geoJSON        Json? // https://datatracker.ietf.org/doc/html/rfc7946
   websites       Json? // {'facebook': 'https://www.facebook.com/grace', 'twitter': 'https://twitter.com/elonmusk'}
   picture        String?
-  organizationId String?        @db.Uuid
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  user           User           @relation(fields: [userId], references: [id])
-  userId         String         @db.Uuid
+  organizationId String?               @db.Uuid
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+  user           User                  @relation(fields: [userId], references: [id])
+  userId         String                @db.Uuid
 }
 
-enum RaceType {
+enum ProfileRaceType {
   AA
   WHITE
   ASIAN
@@ -123,7 +198,7 @@ enum RaceType {
   OTHER
 }
 
-enum EthnicityType {
+enum ProfileEthnicityType {
   HISPANIC
   NOT_HISPANIC
 }
@@ -136,15 +211,15 @@ model Role {
 }
 
 model Permission {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  resource   String
-  action     Action
-  attributes String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id            String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  resource      String
+  allowedAction PermissionAllowedAction
+  attributes    String
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
 }
 
-enum Action {
+enum PermissionAllowedAction {
   CREATE
   UPDATE
   RETRIEVE
@@ -172,10 +247,6 @@ model Role_Permission {
   @@id([roleId, permissionId])
 }
 
-//
-// Organization tables
-//
-
 model Organization {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name      String?
@@ -183,36 +254,13 @@ model Organization {
   updatedAt DateTime @updatedAt
 }
 
-//
-// SQS Message tables
-//
-
-model SqsMessage {
-  id           Int      @id @default(autoincrement())
-  messageId    String?
-  queueUrl     String
-  context      String?
-  message      Json
-  responseData Json?
-  responseErr  Json?
-  createdAt    DateTime @default(now()) // GMT
-}
-
-model SqsMessageBatch {
-  id            Int      @id @default(autoincrement())
-  queueUrl      String
-  context       String?
-  message       Json
-  responseData  Json?
-  responseErr   Json?
-  successfulCnt Int
-  failedCnt     Int
-  createdAt     DateTime @default(now())
-}
-
-//
-// Project management tables
-//
+//  ! Project Management  //
+// * Project              //
+// * ProjectCheckpoint    //
+// * ProjectEnvironment   //
+// * InfrastructureStack  //
+// * Microservice         //
+// ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
 
 model Project {
   id                   String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -239,8 +287,8 @@ model ProjectCheckpoint {
   content   String?
   createdAt DateTime              @default(now())
   updatedAt DateTime              @updatedAt
-  projectId String                @db.Uuid
   Project   Project               @relation(fields: [projectId], references: [id])
+  projectId String                @db.Uuid
 
   @@id([type, projectId])
 }
@@ -269,8 +317,8 @@ model ProjectEnvironment {
   cfTemplateS3       String?
   createdAt          DateTime               @default(now())
   updatedAt          DateTime               @updatedAt
-  projectId          String                 @db.Uuid
   project            Project                @relation(fields: [projectId], references: [id])
+  projectId          String                 @db.Uuid
 
   @@id([type, projectId])
 }
@@ -285,19 +333,19 @@ model InfrastructureStack {
   id                String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name              String                     @unique
   params            Json?
+  environment       ProjectEnvironmentType
   type              InfrastructureStackType
   state             InfrastructureStackState
   manager           InfrastructureStackManager
+  // We use 'pulumiProjectName' & 'name' to identify infrastructure stack(cloud resource stack).
+  // The pulumiProjectName Name is a concept of Pulumi. We set it with Project->name.
   pulumiProjectName String?
-  // We use 'stackProjectName' & 'name' to identify infrastructure stack(cloud resource stack).
-  // The stackProject Name is a concept of Pulumi. We set it with Project->name.
   buildResult       Json?
   destroyResult     Json?
   createdAt         DateTime                   @default(now())
   updatedAt         DateTime                   @updatedAt
-  projectId         String                     @db.Uuid
   project           Project                    @relation(fields: [projectId], references: [id])
-  environment       ProjectEnvironmentType
+  projectId         String                     @db.Uuid
 }
 
 enum InfrastructureStackManager {
@@ -358,9 +406,20 @@ enum MicroserviceState {
   STOPPED
 }
 
-//
-// Datasource
-//
+//            ! Engine D               //
+// * PostgresqlDatasource              //
+// * PostgresqlDatasourceConstraint    //
+// * PostgresqlDatasourceTable         //
+// * PostgresqlDatasourceTableColumn   //
+// ----------------------------------- //
+// * ElasticsearchDatasource           //
+// * ElasticsearchDatasourceIndex      //
+// * ElasticsearchDatasourceIndexField //
+// ----------------------------------- //
+// * Datapipe                          //
+// ----------------------------------- //
+// * ElasticsearchDataboard            //
+// ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  //
 
 model PostgresqlDatasource {
   id          String                           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -372,6 +431,24 @@ model PostgresqlDatasource {
   updatedAt   DateTime                         @updatedAt
   tables      PostgresqlDatasourceTable[]
   constraints PostgresqlDatasourceConstraint[]
+}
+
+model PostgresqlDatasourceConstraint {
+  id           Int                                   @id @default(autoincrement())
+  schema       String // The schema name.
+  table        String // The table name.
+  keyColumn    String // The table's primary key column or foreign key column.
+  keyType      PostgresqlDatasourceConstraintKeyType
+  foreignTable String? // Has value when the type is FOREIGN_KEY. 
+  createdAt    DateTime                              @default(now())
+  updatedAt    DateTime                              @updatedAt
+  datasource   PostgresqlDatasource                  @relation(fields: [datasourceId], references: [id])
+  datasourceId String                                @db.Uuid
+}
+
+enum PostgresqlDatasourceConstraintKeyType {
+  PRIMARY_KEY
+  FOREIGN_KEY
 }
 
 model PostgresqlDatasourceTable {
@@ -400,24 +477,6 @@ enum PostgresqlDatasourceTableColumnType {
   STRING
   NUMBER
   JSON
-}
-
-model PostgresqlDatasourceConstraint {
-  id           Int                                   @id @default(autoincrement())
-  schema       String // The schema name.
-  table        String // The table name.
-  keyColumn    String // The table's primary key column or foreign key column.
-  keyType      PostgresqlDatasourceConstraintKeyType
-  foreignTable String? // Has value when the type is FOREIGN_KEY. 
-  createdAt    DateTime                              @default(now())
-  updatedAt    DateTime                              @updatedAt
-  datasource   PostgresqlDatasource                  @relation(fields: [datasourceId], references: [id])
-  datasourceId String                                @db.Uuid
-}
-
-enum PostgresqlDatasourceConstraintKeyType {
-  PRIMARY_KEY
-  FOREIGN_KEY
 }
 
 model ElasticsearchDatasource {
@@ -451,32 +510,6 @@ model ElasticsearchDatasourceIndexField {
   databoardId String?                      @db.Uuid
 }
 
-//
-// Databoard
-//
-
-model ElasticsearchDataboard {
-  id                    String                              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                  String
-  description           String?
-  status                ElasticsearchDataboardStatus
-  indexJson             Json?
-  layoutConfig          Json?
-  visualSettings        Json?
-  createdAt             DateTime                            @default(now())
-  updatedAt             DateTime                            @updatedAt
-  datasourceIndexFields ElasticsearchDatasourceIndexField[]
-}
-
-enum ElasticsearchDataboardStatus {
-  ACTIVE
-  INACTIVE
-}
-
-//
-// DataPipeline
-//
-
 model Datapipe {
   id                      String                       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name                    String
@@ -497,4 +530,22 @@ enum DatapipeState {
   IDLE
   BATCHING
   STREAMING
+}
+
+model ElasticsearchDataboard {
+  id                    String                              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                  String
+  description           String?
+  status                ElasticsearchDataboardStatus
+  indexJson             Json?
+  layoutConfig          Json?
+  visualSettings        Json?
+  createdAt             DateTime                            @default(now())
+  updatedAt             DateTime                            @updatedAt
+  datasourceIndexFields ElasticsearchDatasourceIndexField[]
+}
+
+enum ElasticsearchDataboardStatus {
+  ACTIVE
+  INACTIVE
 }

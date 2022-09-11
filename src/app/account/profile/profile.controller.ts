@@ -1,6 +1,6 @@
 import {Controller, Get, Post, Param, Body} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {EthnicityType, Prisma, RaceType} from '@prisma/client';
+import {Prisma, ProfileEthnicityType, ProfileRaceType} from '@prisma/client';
 import {ProfileService} from './profile.service';
 
 @ApiTags('App / Account / Profile')
@@ -65,8 +65,8 @@ export class ProfileController {
           suffix: 'PhD',
           birthday: new Date(),
           gender: 'male',
-          race: RaceType.OTHER,
-          ethnicity: EthnicityType.HISPANIC,
+          race: ProfileRaceType.OTHER,
+          ethnicity: ProfileEthnicityType.HISPANIC,
           hasPCP: true,
           address: '456 White Finch St. North Augusta, SC 29860',
           zipcode: '21000',
@@ -138,8 +138,8 @@ export class ProfileController {
           suffix: 'PhD',
           birthday: '2019-05-27T11:53:32.118Z',
           gender: 'male',
-          race: RaceType.OTHER,
-          ethnicity: EthnicityType.HISPANIC,
+          race: ProfileRaceType.OTHER,
+          ethnicity: ProfileEthnicityType.HISPANIC,
           hasPCP: true,
           address: '456 White Finch St. North Augusta, SC 29860',
           zipcode: '21000',

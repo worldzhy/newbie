@@ -26,7 +26,7 @@ export class AuthJwtService {
    */
   async createJWT(payload: {userId: string; sub: string}) {
     const jwt = this.jwtService.sign(payload);
-    return await this.prisma.jsonWebToken.create({
+    return await this.prisma.jwt.create({
       data: {
         userId: payload.userId,
         token: jwt,
@@ -44,7 +44,7 @@ export class AuthJwtService {
    * @memberof UserService
    */
   async inactivateJWT(userId: string, accessToken: string) {
-    return await this.prisma.jsonWebToken.updateMany({
+    return await this.prisma.jwt.updateMany({
       where: {
         AND: [{userId: userId}, {token: accessToken}],
       },
@@ -62,7 +62,7 @@ export class AuthJwtService {
    * @memberof UserService
    */
   async inactivateJWTs(userId: string) {
-    return await this.prisma.jsonWebToken.updateMany({
+    return await this.prisma.jwt.updateMany({
       where: {
         userId: userId,
       },

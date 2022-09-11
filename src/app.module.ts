@@ -6,24 +6,31 @@ import {AppController} from './app.controller';
 import {AccountModule} from './app/account/account.module';
 import {AwsModule} from './_aws/_aws.module';
 import {CustomLoggerModule} from './_logger/_custom-logger.module';
-import {MessageTrackerModule} from './app/mtrac/mtrac.module';
+import {NotificationModule} from './tool/notification/notification.module';
 import {OrganizationModule} from './app/account/organization/organization.module';
 import {DataboardModule} from './app/ngind/databoard/databoard.module';
 import {DatapipeModule} from './app/ngind/datapipe/datapipe.module';
 import {DatasourceModule} from './app/ngind/datasource/datasource.module';
 import {ProjectManagementModule} from './app/pmgmt/pmgmt.module';
+import {TaskModule} from './tool/task-mgmt/task/task.module';
 
 @Module({
   imports: [
-    AccountModule,
+    // Basic modules
     AwsModule,
     CustomLoggerModule,
+
+    // Tool modules
+    NotificationModule,
+    TaskModule,
+
+    // Application modules
+    AccountModule,
+    OrganizationModule,
+    ProjectManagementModule,
     DataboardModule,
     DatapipeModule,
     DatasourceModule,
-    OrganizationModule,
-    MessageTrackerModule,
-    ProjectManagementModule,
   ],
   providers: [
     {

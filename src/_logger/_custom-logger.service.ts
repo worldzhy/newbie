@@ -1,5 +1,5 @@
 import {ConsoleLogger} from '@nestjs/common';
-import {SqsService} from '../_aws/_sqs/_sqs.service';
+import {SqsService} from '../_aws/_sqs.service';
 import {CommonConfig} from '../_config/_common.config';
 import {AwsConfig} from '../_config/_aws.config';
 import {Enum} from '../_config/_common.enum';
