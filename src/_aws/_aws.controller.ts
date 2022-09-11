@@ -1,4 +1,4 @@
-import {Body, Controller, Post} from '@nestjs/common';
+import {Body, Controller, Delete, Post} from '@nestjs/common';
 import {ApiBearerAuth, ApiBody, ApiTags} from '@nestjs/swagger';
 import {PinpointService} from './_pinpoint.service';
 import {S3Service} from './_s3.service';
@@ -30,8 +30,8 @@ export class AwsController {
       },
     },
   })
-  @Post('/s3/create-bucket')
-  async createBucket(@Body() body: {bucketName: string}) {
+  @Post('/s3/bucket')
+  async createS3Bucket(@Body() body: {bucketName: string}) {
     return await this.s3Service.createBucket(body.bucketName);
   }
 
@@ -51,8 +51,8 @@ export class AwsController {
       },
     },
   })
-  @Post('/s3/delete-bucket')
-  async deleteBucket(@Body() body: {bucketName: string}) {
+  @Delete('/s3/bucket')
+  async deleteS3Bucket(@Body() body: {bucketName: string}) {
     return await this.s3Service.deleteBucket(body.bucketName);
   }
 
@@ -76,7 +76,7 @@ export class AwsController {
       },
     },
   })
-  @Post('/sqs/send-message')
+  @Post('/sqs/message')
   async sendSqsMessage(@Body() body: {queueUrl: string; messageBody: object}) {
     return await this.sqsService.sendMessage(body.queueUrl, body.messageBody);
   }
@@ -124,8 +124,8 @@ export class AwsController {
     description:
       "The request body should be {'subject', 'content', 'toAddress'} or {'content', 'phone'}.",
   })
-  @Post('/pinpoint/send-email')
-  async sendEmailMessage(
+  @Post('/pinpoint/email')
+  async sendPinpointEmail(
     @Body()
     body: {
       channel: string;
@@ -169,8 +169,8 @@ export class AwsController {
     description:
       "The request body should be {'subject', 'content', 'toAddress'} or {'content', 'phone'}.",
   })
-  @Post('/pinpoint/send-sms')
-  async sendSmsMessage(
+  @Post('/pinpoint/text-message')
+  async sendPinpointTextMessage(
     @Body()
     body: {
       phone: string;

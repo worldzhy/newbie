@@ -2,9 +2,9 @@ import {Body, Controller, Post} from '@nestjs/common';
 import {ApiBearerAuth, ApiBody, ApiTags} from '@nestjs/swagger';
 import {SmsService} from './sms.service';
 
-@ApiTags('[Microservice] Notification / SMS')
+@ApiTags('[Microservice] Notification / Text Message')
 @ApiBearerAuth()
-@Controller('sms')
+@Controller('notification')
 export class SmsController {
   private smsService = new SmsService();
 
@@ -28,7 +28,7 @@ export class SmsController {
       },
     },
   })
-  @Post('/send-one')
+  @Post('/text-message')
   async sendSms(
     @Body()
     body: {
@@ -61,7 +61,7 @@ export class SmsController {
       },
     },
   })
-  @Post('/send-many')
+  @Post('/text-messages')
   async sendSmses(
     @Body()
     body: {

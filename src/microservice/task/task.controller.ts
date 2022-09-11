@@ -5,7 +5,7 @@ import {TaskService} from './task.service';
 
 @ApiTags('[Microservice] Task')
 @ApiBearerAuth()
-@Controller('task')
+@Controller('tasks')
 export class TaskController {
   private taskService = new TaskService();
 

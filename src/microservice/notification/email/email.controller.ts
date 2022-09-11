@@ -4,7 +4,7 @@ import {EmailService} from './email.service';
 
 @ApiTags('[Microservice] Notification / Email')
 @ApiBearerAuth()
-@Controller('email')
+@Controller('notification')
 export class EmailController {
   private emailService = new EmailService();
 
@@ -29,7 +29,7 @@ export class EmailController {
       },
     },
   })
-  @Post('/send-one')
+  @Post('/email')
   async sendEmail(
     @Body()
     body: {
@@ -65,7 +65,7 @@ export class EmailController {
       },
     },
   })
-  @Post('/send-many')
+  @Post('/emails')
   async sendEmails(
     @Body()
     body: {
