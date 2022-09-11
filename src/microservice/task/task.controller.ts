@@ -3,7 +3,7 @@ import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {TaskState} from '@prisma/client';
 import {TaskService} from './task.service';
 
-@ApiTags('Microservice / Task')
+@ApiTags('[Microservice] Task')
 @ApiBearerAuth()
 @Controller('task')
 export class TaskController {

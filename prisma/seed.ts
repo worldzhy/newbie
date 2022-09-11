@@ -7,13 +7,13 @@ import {
   ProjectState,
 } from '@prisma/client';
 import {PrismaService} from '../src/_prisma/_prisma.service';
-import {AccountService} from '../src/app/account/account.service';
-import {AccountController} from '../src/app/account/account.controller';
-import {ProjectService} from '../src/app/pmgmt/project/project.service';
-import {RoleService} from '../src/app/account/role/role.service';
-import {PostgresqlDatasourceService} from '../src/app/ngind/datasource/postgresql/postgresql-datasource.service';
-import {ElasticsearchDatasourceService} from '../src/app/ngind/datasource/elasticsearch/elasticsearch-datasource.service';
-import {DatapipeController} from '../src/app/ngind/datapipe/datapipe.controller';
+import {AccountService} from '../src/product/account/account.service';
+import {AccountController} from '../src/product/account/account.controller';
+import {ProjectService} from '../src/product/pmgmt/project/project.service';
+import {RoleService} from '../src/product/account/role/role.service';
+import {PostgresqlDatasourceService} from '../src/product/engined/datasource/postgresql/postgresql-datasource.service';
+import {ElasticsearchDatasourceService} from '../src/product/engined/datasource/elasticsearch/elasticsearch-datasource.service';
+import {DatapipeController} from '../src/product/engined/datapipe/datapipe.controller';
 
 const prisma = new PrismaService();
 

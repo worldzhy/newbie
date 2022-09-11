@@ -2,7 +2,7 @@ import {Controller, Get, Post, Delete, Param, Body} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {MicroserviceService} from './microservice.service';
 
-@ApiTags('Microservice')
+@ApiTags('[Microservice]')
 @ApiBearerAuth()
 @Controller('microservices')
 export class MicroserviceController {

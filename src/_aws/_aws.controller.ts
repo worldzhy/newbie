@@ -5,7 +5,7 @@ import {S3Service} from './_s3.service';
 import {SnsService} from './_sns.service';
 import {SqsService} from './_sqs.service';
 
-@ApiTags('_AWS')
+@ApiTags('[Base] AWS')
 @ApiBearerAuth()
 @Controller('aws')
 export class AwsController {

@@ -1,8 +1,8 @@
 import {Controller, Get} from '@nestjs/common';
 import {ApiTags} from '@nestjs/swagger';
-import {Public} from './app/account/auth/auth-jwt/auth-jwt.decorator';
+import {Public} from './product/account/auth/auth-jwt/auth-jwt.decorator';
 
-@ApiTags('App')
+@ApiTags('[App]')
 @Controller()
 export class AppController {
   /**
@@ -12,7 +12,7 @@ export class AppController {
    * @memberof AppController
    */
   @Public()
-  @Get('/app/hi')
+  @Get('/app/manifesto')
   hello() {
     return 'Anyone can write code that a computer can understand. \nGood programmers can write code that PEOPLE can understand!';
   }
