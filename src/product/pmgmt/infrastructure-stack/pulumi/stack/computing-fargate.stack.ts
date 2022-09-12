@@ -4,7 +4,7 @@ import * as aws from '@pulumi/aws';
 import * as awsx from '@pulumi/awsx';
 import {PulumiUtil} from '../pulumi.util';
 import {CommonUtil} from '../../../../../_util/_common.util';
-import {AwsValidator} from 'src/_validator/_aws.validator';
+import {AwsValidator} from '../../../../../_validator/_aws.validator';
 
 @Injectable()
 export class ComputingFargate_Stack {

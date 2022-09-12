@@ -1,5 +1,5 @@
 import {
-  DatapipeState,
+  DatatransPipelineState,
   ElasticsearchDatasource,
   PostgresqlDatasource,
   Prisma,
@@ -13,7 +13,7 @@ import {ProjectService} from '../src/product/pmgmt/project/project.service';
 import {RoleService} from '../src/product/account/role/role.service';
 import {PostgresqlDatasourceService} from '../src/product/engined/datasource/postgresql/postgresql-datasource.service';
 import {ElasticsearchDatasourceService} from '../src/product/engined/datasource/elasticsearch/elasticsearch-datasource.service';
-import {DatapipeController} from '../src/product/engined/datapipe/datapipe.controller';
+import {DatatransPipelineController} from '../src/product/engined/datatrans/pipeline/pipeline.controller';
 
 const prisma = new PrismaService();
 
@@ -127,10 +127,10 @@ const elasticsearchDatasourceService = new ElasticsearchDatasourceService();
 const elasticsearch = {node: '127.0.0.1'};
 
 //  Datapipe
-const datapipeController = new DatapipeController();
-const datapipe = {
-  name: 'pg2es_datapipe',
-  state: DatapipeState.IDLE,
+const pipelineController = new DatatransPipelineController();
+const pipeline = {
+  name: 'pg2es_pipeline',
+  state: DatatransPipelineState.IDLE,
   queueUrl:
     'https://sqs.cn-northwest-1.amazonaws.com.cn/077767357755/dev-inceptionpad-message-service-email-level1',
   hasManyTables: ['PostgresqlDatasourceTableColumn', 'Datapipe'],
@@ -164,8 +164,8 @@ async function main() {
   datasource = await elasticsearchDatasourceService.create(elasticsearch);
   await elasticsearchDatasourceService.mount(datasource);
 
-  console.log('- datapipes');
-  await datapipeController.createDatapipe(datapipe);
+  console.log('- pipelines');
+  await pipelineController.createPipeline(pipeline);
 
   console.log('Seeding finished.');
 }

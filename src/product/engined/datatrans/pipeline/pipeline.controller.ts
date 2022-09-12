@@ -1,36 +1,36 @@
 import {Controller, Get, Post, Param, Body, Delete} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {DatapipeService} from './datapipe.service';
-import {DatapipeState} from '@prisma/client';
-import {PostgresqlDatasourceTableService} from '../datasource/postgresql/table/table.service';
-import {ElasticsearchDatasourceIndexService} from '../datasource/elasticsearch/index/index.service';
+import {DatatransPipelineService} from './pipeline.service';
+import {DatatransPipelineState} from '@prisma/client';
+import {PostgresqlDatasourceTableService} from '../../datasource/postgresql/table/table.service';
+import {ElasticsearchDatasourceIndexService} from '../../datasource/elasticsearch/index/index.service';
 
-@ApiTags('[Product] EngineD / Datapipe')
+@ApiTags('[Product] EngineD / Datatrans / Pipeline')
 @ApiBearerAuth()
-@Controller('datapipes')
-export class DatapipeController {
-  private datapipeService = new DatapipeService();
+@Controller('datatrans')
+export class DatatransPipelineController {
+  private pipelineService = new DatatransPipelineService();
   private postgresqlDatasourceTableService =
     new PostgresqlDatasourceTableService();
   private elasticsearchDatasourceIndexService =
     new ElasticsearchDatasourceIndexService();
 
   /**
-   * Get datapipes by page number. The order is by datapipe name.
+   * Get pipelines by page number. The order is by pipeline name.
    *
    * @param {number} page
    * @returns {Promise<{ data: object, err: object }>}
-   * @memberof DatapipeController
+   * @memberof DatatransPipelineController
    */
-  @Get('/pages/:page')
+  @Get('/pipelines/pages/:page')
   @ApiParam({
     name: 'page',
     schema: {type: 'number'},
     description:
-      'The page of the datapipe list. It must be a LARGER THAN 0 integer.',
+      'The page of the pipeline list. It must be a LARGER THAN 0 integer.',
     example: 1,
   })
-  async getDatapipesByPage(
+  async getPipelinesByPage(
     @Param('page') page: number
   ): Promise<{data: object | null; err: object | null}> {
     // [step 1] Guard statement.
@@ -46,8 +46,8 @@ export class DatapipeController {
       };
     }
 
-    // [step 2] Get datapipes.
-    const datapipes = await this.datapipeService.findMany({
+    // [step 2] Get pipelines.
+    const pipelines = await this.pipelineService.findMany({
       orderBy: {
         _relevance: {
           fields: ['name'],
@@ -59,30 +59,30 @@ export class DatapipeController {
       skip: 10 * (p - 1),
     });
     return {
-      data: datapipes,
+      data: pipelines,
       err: null,
     };
   }
 
   /**
-   * Get datapipe by id
+   * Get pipeline by id
    *
-   * @param {string} datapipeId
+   * @param {string} pipelineId
    * @returns {Promise<{data: object;err: object;}>}
-   * @memberof DatapipeController
+   * @memberof DatatransPipelineController
    */
-  @Get('/:datapipeId')
+  @Get('/pipelines/:pipelineId')
   @ApiParam({
-    name: 'datapipeId',
+    name: 'pipelineId',
     schema: {type: 'string'},
-    description: 'The uuid of the datapipe.',
+    description: 'The uuid of the pipeline.',
     example: '81a37534-915c-4114-96d0-01be815d821b',
   })
-  async getDatapipe(
-    @Param('datapipeId') datapipeId: string
+  async getPipeline(
+    @Param('pipelineId') pipelineId: string
   ): Promise<{data: object | null; err: object | null}> {
-    const result = await this.datapipeService.findOne({
-      where: {id: datapipeId},
+    const result = await this.pipelineService.findOne({
+      where: {id: pipelineId},
     });
     if (result) {
       return {
@@ -92,17 +92,17 @@ export class DatapipeController {
     } else {
       return {
         data: null,
-        err: {message: 'Get datapipe failed.'},
+        err: {message: 'Get pipeline failed.'},
       };
     }
   }
 
   /**
-   * Create a new datapipe.
+   * Create a new pipeline.
    *
    * @param {{
    *   name: string;
-   *   status: DatapipeStatus;
+   *   status: DatatransPipelineStatus;
    *   hasManyTables: string[];
    *   belongsToTables: string[];
    *   numberOfRecordsPerBatch: number;
@@ -111,9 +111,9 @@ export class DatapipeController {
    *   toIndexId: number;
    * }} body
    * @returns
-   * @memberof DatapipeController
+   * @memberof DatatransPipelineController
    */
-  @Post('/')
+  @Post('/pipelines')
   @ApiBody({
     description:
       "The 'name', 'status' and 'clientEmail' are required in request body.",
@@ -121,7 +121,7 @@ export class DatapipeController {
       a: {
         summary: '1. Create',
         value: {
-          name: 'datapipe_01',
+          name: 'pipeline_01',
           hasManyTables: [],
           belongsToTables: [],
           numberOfRecordsPerBatch: 100,
@@ -133,7 +133,7 @@ export class DatapipeController {
       },
     },
   })
-  async createDatapipe(
+  async createPipeline(
     @Body()
     body: {
       name: string;
@@ -171,10 +171,10 @@ export class DatapipeController {
       };
     }
 
-    // [step 2] Create datapipe.
-    const result = await this.datapipeService.create({
+    // [step 2] Create pipeline.
+    const result = await this.pipelineService.create({
       name: body.name,
-      state: DatapipeState.IDLE,
+      state: DatatransPipelineState.IDLE,
       hasManyTables: body.hasManyTables,
       belongsToTables: body.belongsToTables,
       numberOfRecordsPerBatch: body.numberOfRecordsPerBatch,
@@ -190,32 +190,32 @@ export class DatapipeController {
     } else {
       return {
         data: null,
-        err: {message: 'Datapipe create failed.'},
+        err: {message: 'DatatransPipeline create failed.'},
       };
     }
   }
 
   /**
-   * Update datapipe
+   * Update pipeline
    *
-   * @param {string} datapipeId
+   * @param {string} pipelineId
    * @param {{name: string; hasManyTables: string[]; belongsToTables: string[];}} body
    * @returns
-   * @memberof DatapipeController
+   * @memberof DatatransPipelineController
    */
-  @Post('/:datapipeId')
+  @Post('/pipelines/:pipelineId')
   @ApiParam({
-    name: 'datapipeId',
+    name: 'pipelineId',
     schema: {type: 'string'},
     example: '81a37534-915c-4114-96d0-01be815d821b',
   })
   @ApiBody({
-    description: 'Update datapipe.',
+    description: 'Update pipeline.',
     examples: {
       a: {
         summary: '1. Update name',
         value: {
-          name: 'datapipe-01',
+          name: 'pipeline-01',
           hasManyTables: [],
           belongsToTables: [],
           numberOfRecordsPerBatch: 100,
@@ -223,8 +223,8 @@ export class DatapipeController {
       },
     },
   })
-  async updateDatapipe(
-    @Param('datapipeId') datapipeId: string,
+  async updatePipeline(
+    @Param('pipelineId') pipelineId: string,
     @Body()
     body: {
       name: string;
@@ -238,8 +238,8 @@ export class DatapipeController {
       body;
 
     // [step 2] Update name.
-    const result = await this.datapipeService.update({
-      where: {id: datapipeId},
+    const result = await this.pipelineService.update({
+      where: {id: pipelineId},
       data: {name, hasManyTables, belongsToTables},
     });
     if (result) {
@@ -250,28 +250,28 @@ export class DatapipeController {
     } else {
       return {
         data: null,
-        err: {message: 'Datapipe updated failed.'},
+        err: {message: 'DatatransPipeline updated failed.'},
       };
     }
   }
 
   /**
-   * Delete datapipe
-   * @param {string} datapipeId
+   * Delete pipeline
+   * @param {string} pipelineId
    * @returns
-   * @memberof DatapipeController
+   * @memberof DatatransPipelineController
    */
-  @Delete('/:datapipeId')
+  @Delete('/pipelines/:pipelineId')
   @ApiParam({
-    name: 'datapipeId',
+    name: 'pipelineId',
     schema: {type: 'string'},
     example: '81a37534-915c-4114-96d0-01be815d821b',
   })
-  async deleteDatapipe(@Param('datapipeId') datapipeId: string) {
+  async deletePipeline(@Param('pipelineId') pipelineId: string) {
     // [step 1] Guard statement.
 
-    // [step 2] Delete datapipe.
-    const result = await this.datapipeService.delete({id: datapipeId});
+    // [step 2] Delete pipeline.
+    const result = await this.pipelineService.delete({id: pipelineId});
     if (result) {
       return {
         data: result,
@@ -280,38 +280,38 @@ export class DatapipeController {
     } else {
       return {
         data: null,
-        err: {message: 'Datapipe deleted failed.'},
+        err: {message: 'DatatransPipeline deleted failed.'},
       };
     }
   }
 
   /**
-   * Overview datapipe
-   * @param {string} datapipeId
+   * Overview pipeline
+   * @param {string} pipelineId
    * @returns
-   * @memberof DatapipePumpController
+   * @memberof DatatransPipelinePumpController
    */
-  @Get('/:datapipeId/overview')
+  @Get('/pipelines/:pipelineId/overview')
   @ApiParam({
-    name: 'datapipeId',
+    name: 'pipelineId',
     schema: {type: 'string'},
     example: '81a37534-915c-4114-96d0-01be815d821b',
   })
-  async overviewDatapipePump(@Param('datapipeId') datapipeId: string) {
-    // [step 1] Get datapipe.
-    const datapipe = await this.datapipeService.findOne({
-      where: {id: datapipeId},
+  async overviewPipeline(@Param('pipelineId') pipelineId: string) {
+    // [step 1] Get pipeline.
+    const pipeline = await this.pipelineService.findOne({
+      where: {id: pipelineId},
       include: {fromTable: true},
     });
-    if (!datapipe) {
+    if (!pipeline) {
       return {
         data: null,
-        err: {message: 'Get datapipe failed.'},
+        err: {message: 'Get pipeline failed.'},
       };
     }
 
     // [step 2] Update name.
-    const result = await this.datapipeService.overview(datapipe);
+    const result = await this.pipelineService.overview(pipeline);
     if (result) {
       return {
         data: result,
@@ -320,7 +320,7 @@ export class DatapipeController {
     } else {
       return {
         data: null,
-        err: {message: 'Datapipe pump preview failed.'},
+        err: {message: 'DatatransPipeline pump preview failed.'},
       };
     }
   }

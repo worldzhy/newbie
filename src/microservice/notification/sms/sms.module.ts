@@ -1,13 +1,20 @@
 import {Module} from '@nestjs/common';
-import {AwsModule} from 'src/_aws/_aws.module';
-import {PrismaModule} from 'src/_prisma/_prisma.module';
+import {AwsModule} from '../../../_aws/_aws.module';
+import {PrismaModule} from '../../../_prisma/_prisma.module';
+import {NotificationConfigurationModule} from '../configuration/configuration.module';
 import {SmsController} from './sms.controller';
 import {SmsService} from './sms.service';
 
 @Module({
-  imports: [PrismaModule, AwsModule],
+  imports: [PrismaModule, AwsModule, NotificationConfigurationModule],
   controllers: [SmsController],
-  providers: [SmsService],
+  providers: [
+    {
+      provide: 'NotificationConfiguration',
+      useValue: 'notification-configuration',
+    },
+    SmsService,
+  ],
   exports: [SmsService],
 })
 export class SmsModule {}

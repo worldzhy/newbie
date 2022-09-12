@@ -7,13 +7,14 @@ import {UserService} from '../user/user.service';
 import {AccountValidator} from '../../../_validator/_account.validator';
 import {VerificationCodeService} from './verification-code.service';
 import {VerificationCodeUse} from '@prisma/client';
+import {NotificationConfigurationService} from '../../../microservice/notification/configuration/configuration.service';
 
 @ApiTags('[Product] Account / Verification Code')
 @Controller()
 export class VerificationCodeController {
   private verificationCodeService = new VerificationCodeService();
-  private emailService = new EmailService();
-  private smsService = new SmsService();
+  private notificationConfigurationService =
+    new NotificationConfigurationService();
 
   /**
    * [1] Account parameter must be email or phone.
@@ -110,16 +111,24 @@ export class VerificationCodeController {
     // [step 4: start] Send verification code.
     let result: object;
     if (byEmail) {
+      const configuration =
+        await this.notificationConfigurationService.defaultConfiguration();
+      const emailService = new EmailService(configuration!);
+
       // Send verification code to user's email
-      result = await this.emailService.sendOne({
+      result = await emailService.sendOne({
         email: account,
         subject: 'Your Verification Code',
         plainText: verificationCode.code,
         html: verificationCode.code,
       });
     } else if (byPhone) {
+      const configuration =
+        await this.notificationConfigurationService.defaultConfiguration();
+      const smsService = new SmsService(configuration!);
+
       // Send verification code to user's phone
-      result = await this.smsService.sendOne({
+      result = await smsService.sendOne({
         phone: account,
         text: verificationCode.code,
       });

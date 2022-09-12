@@ -1,45 +1,58 @@
 import {Injectable} from '@nestjs/common';
-import {Datapipe, PostgresqlDatasourceTable} from '@prisma/client';
-import {SqsService} from 'src/_aws/_sqs.service';
+import {
+  DatatransPipeline,
+  PostgresqlDatasourceTable,
+  Product,
+} from '@prisma/client';
+import {TaskConfigurationService} from '../../../../microservice/task-mgmt/configuration/configuration.service';
+import {TaskService} from '../../../../microservice/task-mgmt/task/task.service';
 import {PrismaService} from '../../../../_prisma/_prisma.service';
 
 @Injectable()
-export class DatapipeBatchProcessingService {
+export class DatatransBatchProcessingService {
   private prisma: PrismaService = new PrismaService();
-  private sqs: SqsService = new SqsService();
+  private taskConfigurationService = new TaskConfigurationService();
 
   /**
    * Start batch processing.
-   * @param datapipe
+   * @param pipeline
    * @returns
    */
-  async start(datapipe: Datapipe) {
+  async start(pipeline: DatatransPipeline) {
     // [step 1] Calculate the number of batches.
-    const numberOfBatches = await this.calculateNumberOfBatches(datapipe);
+    const numberOfBatches = await this.calculateNumberOfBatches(pipeline);
 
-    // [step 2] Send transportatioin tasks to SQS.
+    // [step 2] Configure a task microservice.
+    const config = await this.taskConfigurationService.findOne({
+      where: {product: Product.DATAPIPE_BATCH_PROCESSING},
+    });
+    if (!config) {
+      return 'You need to create a task microservice configuration for batch processing.';
+    }
+    const taskService = new TaskService(config);
+
+    // [step 3] Send transportation tasks to queue.
     for (let i = 0; i < numberOfBatches; i++) {
-      const messageBody = {
-        datapipeId: datapipe.id,
-        take: datapipe.numberOfRecordsPerBatch,
-        skip: datapipe.numberOfRecordsPerBatch * i,
+      const payload = {
+        pipelineId: pipeline.id,
+        take: pipeline.numberOfRecordsPerBatch,
+        skip: pipeline.numberOfRecordsPerBatch * i,
       };
 
-      // todo replace with task-mgmt.sendTask
-      await this.sqs.sendMessage(datapipe.queueUrl!, messageBody);
+      await taskService.sendOne(payload);
     }
 
-    return 'The datapipe has started batch processing.';
+    return 'The pipeline has started batch processing.';
   }
 
   /**
    * Calculate the number of transportatioin batches
-   * @param datapipe
+   * @param pipeline
    * @returns
    */
-  private async calculateNumberOfBatches(datapipe: Datapipe) {
-    const fromTable = datapipe['fromTable'] as PostgresqlDatasourceTable;
-    const numberOfRecordsPerBatch = datapipe.numberOfRecordsPerBatch;
+  private async calculateNumberOfBatches(pipeline: DatatransPipeline) {
+    const fromTable = pipeline['fromTable'] as PostgresqlDatasourceTable;
+    const numberOfRecordsPerBatch = pipeline.numberOfRecordsPerBatch;
     let countResult: {count: bigint}[];
     let recordAverageSize = 1.0;
 
@@ -55,7 +68,7 @@ export class DatapipeBatchProcessingService {
     await Promise.all(
       // Use 'map' instead of 'forEach'
       // https://www.becomebetterprogrammer.com/javascript-foreach-async-await/
-      datapipe.hasManyTables.map(async tableName => {
+      pipeline.hasManyTables.map(async tableName => {
         countResult = await this.prisma.$queryRawUnsafe(
           `SELECT COUNT(*) FROM "${tableName}"`
         );
@@ -66,7 +79,7 @@ export class DatapipeBatchProcessingService {
 
     // [step 3] Get the total count of the parent tables' records.
     await Promise.all(
-      datapipe.belongsToTables.map(async tableName => {
+      pipeline.belongsToTables.map(async tableName => {
         countResult = await this.prisma.$queryRawUnsafe(
           `SELECT COUNT(*) FROM "${tableName}"`
         );

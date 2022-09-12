@@ -1,12 +1,13 @@
 import {Body, Controller, Post} from '@nestjs/common';
 import {ApiBearerAuth, ApiBody, ApiTags} from '@nestjs/swagger';
+import {NotificationConfigurationService} from '../configuration/configuration.service';
 import {SmsService} from './sms.service';
 
 @ApiTags('[Microservice] Notification / Text Message')
 @ApiBearerAuth()
 @Controller('notification')
 export class SmsController {
-  private smsService = new SmsService();
+  private configuration = new NotificationConfigurationService();
 
   /**
    * Send SMS to one phone.
@@ -29,16 +30,18 @@ export class SmsController {
     },
   })
   @Post('/text-message')
-  async sendSms(
+  async sendTextMessage(
     @Body()
     body: {
       phone: string;
       text: string;
     }
   ) {
-    const {phone, text} = body;
+    const configuration = await this.configuration.defaultConfiguration();
+    const smsService = new SmsService(configuration!);
 
-    return await this.smsService.sendOne({phone, text});
+    const {phone, text} = body;
+    return await smsService.sendOne({phone, text});
   }
 
   /**
@@ -62,16 +65,18 @@ export class SmsController {
     },
   })
   @Post('/text-messages')
-  async sendSmses(
+  async sendTextMessages(
     @Body()
     body: {
       phones: string[];
       text: string;
     }
   ) {
-    const {phones, text} = body;
+    const configuration = await this.configuration.defaultConfiguration();
+    const smsService = new SmsService(configuration!);
 
-    return await this.smsService.sendMany({phones, text});
+    const {phones, text} = body;
+    return await smsService.sendMany({phones, text});
   }
   /* End */
 }

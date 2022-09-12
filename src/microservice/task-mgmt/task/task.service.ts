@@ -1,12 +1,33 @@
-import {Injectable} from '@nestjs/common';
-import {Prisma, Task} from '@prisma/client';
-import {SqsService} from 'src/_aws/_sqs.service';
-import {PrismaService} from '../../_prisma/_prisma.service';
+import {Inject, Injectable} from '@nestjs/common';
+import {Prisma, Task, TaskConfiguration} from '@prisma/client';
+import {SqsService} from '../../../_aws/_sqs.service';
+import {PrismaService} from '../../../_prisma/_prisma.service';
 
 @Injectable()
 export class TaskService {
   private prisma: PrismaService = new PrismaService();
-  private sqsService: SqsService = new SqsService();
+  private sqsService: SqsService;
+  private config: TaskConfiguration;
+
+  constructor(@Inject('TaskConfiguration') config: TaskConfiguration) {
+    this.config = config;
+    this.sqsService = new SqsService({queueUrl: config.sqsQueueUrl});
+  }
+
+  async sendOne(payload: object) {
+    // [step 1] Send AWS SQS message.
+    const output = await this.sqsService.sendMessage(payload);
+
+    // [step 2] Save task record.
+    return await this.prisma.task.create({
+      data: {
+        payload: payload,
+        sqsMessageId: output.MessageId,
+        sqsResponse: output as object,
+        configurationId: this.config.id,
+      },
+    });
+  }
 
   /**
    * Get a task.
@@ -61,13 +82,9 @@ export class TaskService {
    */
   async create(data: Prisma.TaskCreateInput): Promise<Task> {
     // Save a task in the database.
-    const task = await this.prisma.task.create({
+    return await this.prisma.task.create({
       data,
     });
-
-    // Send the task to the SQS queue.
-    await this.sqsService.sendMessage(task.sqsQueueUrl, task);
-    return task;
   }
 
   /**

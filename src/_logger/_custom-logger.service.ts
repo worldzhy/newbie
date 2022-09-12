@@ -15,7 +15,7 @@ import {Enum} from '../_config/_common.enum';
 export class CustomLoggerService extends ConsoleLogger {
   private env = CommonConfig.getEnvironment();
   private queueUrl = AwsConfig.getSqsLoggerQueueUrl();
-  private sqs = new SqsService();
+  private sqs = new SqsService({queueUrl: this.queueUrl});
 
   constructor(context: string) {
     super(context);
@@ -30,7 +30,7 @@ export class CustomLoggerService extends ConsoleLogger {
     if (this.env === Enum.environment.DEVELOPMENT) {
       super.log(message, ...optionalParams);
     } else {
-      this.sqs.sendMessage(this.queueUrl, {
+      this.sqs.sendMessage({
         message: message,
         context: this.context,
         ...optionalParams,
@@ -42,7 +42,7 @@ export class CustomLoggerService extends ConsoleLogger {
     if (this.env === Enum.environment.DEVELOPMENT) {
       super.warn(message, ...optionalParams);
     } else {
-      this.sqs.sendMessage(this.queueUrl, {
+      this.sqs.sendMessage({
         message: message,
         context: this.context,
         level: 'warn',
@@ -54,7 +54,7 @@ export class CustomLoggerService extends ConsoleLogger {
     if (this.env === Enum.environment.DEVELOPMENT) {
       super.error(message, ...optionalParams);
     } else {
-      this.sqs.sendMessage(this.queueUrl, {
+      this.sqs.sendMessage({
         message: message,
         context: this.context,
         level: 'error',

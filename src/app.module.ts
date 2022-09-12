@@ -8,12 +8,11 @@ import {AwsModule} from './_aws/_aws.module';
 import {CustomLoggerModule} from './_logger/_custom-logger.module';
 import {OrganizationModule} from './product/account/organization/organization.module';
 import {DataboardModule} from './product/engined/databoard/databoard.module';
-import {DatapipeModule} from './product/engined/datapipe/datapipe.module';
 import {DatasourceModule} from './product/engined/datasource/datasource.module';
+import {DatatransModule} from './product/engined/datatrans/datatrans.module';
 import {ProjectManagementModule} from './product/pmgmt/pmgmt.module';
-import {MicroserviceModule} from './microservice/microservice.module';
 import {NotificationModule} from './microservice/notification/notification.module';
-import {TaskModule} from './microservice/task/task.module';
+import {TaskManagementModule} from './microservice/task-mgmt/task-mgmt.module';
 
 @Module({
   imports: [
@@ -22,17 +21,16 @@ import {TaskModule} from './microservice/task/task.module';
     CustomLoggerModule,
 
     // Microservice modules
-    MicroserviceModule,
     NotificationModule,
-    TaskModule,
+    TaskManagementModule,
 
     // Product modules
     AccountModule,
     OrganizationModule,
     ProjectManagementModule,
     DataboardModule,
-    DatapipeModule,
     DatasourceModule,
+    DatatransModule,
   ],
   providers: [
     {

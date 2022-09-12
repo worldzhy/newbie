@@ -1,19 +1,29 @@
-import {Injectable} from '@nestjs/common';
+import {Inject, Injectable} from '@nestjs/common';
 import {
   PinpointClient,
   SendMessagesCommand,
   SendMessagesCommandOutput,
 } from '@aws-sdk/client-pinpoint';
-import {AwsConfig} from '../_config/_aws.config';
 
 @Injectable()
 export class PinpointService {
   private client: PinpointClient;
-  private pinpointAppId = AwsConfig.getPinpointAppId();
-  private pinpointEmailFromAddress = AwsConfig.getPinpointEmailFromAddress();
+  private pinpointAppId: string;
+  private pinpointFromAddress?: string; // For email message
+  private pinpointSenderId?: string; // For text message
 
-  constructor() {
+  constructor(
+    @Inject('PinpointConfiguration')
+    config: {
+      pinpointApplicationId: string;
+      pinpointFromAddress?: string;
+      pinpointSenderId?: string;
+    }
+  ) {
     this.client = new PinpointClient({});
+    this.pinpointAppId = config.pinpointApplicationId;
+    this.pinpointFromAddress = config.pinpointFromAddress;
+    this.pinpointSenderId = config.pinpointSenderId;
   }
 
   /**
@@ -54,7 +64,7 @@ export class PinpointService {
         Addresses: addresses,
         MessageConfiguration: {
           EmailMessage: {
-            FromAddress: this.pinpointEmailFromAddress,
+            FromAddress: this.pinpointFromAddress,
             SimpleEmail: {
               Subject: {
                 Charset: 'UTF-8',
@@ -89,7 +99,7 @@ export class PinpointService {
         Addresses: addresses,
         MessageConfiguration: {
           EmailMessage: {
-            FromAddress: this.pinpointEmailFromAddress,
+            FromAddress: this.pinpointFromAddress,
             RawEmail: {
               Data: data.rawData,
             },
@@ -109,7 +119,6 @@ export class PinpointService {
     text: string;
     keyword?: string;
     messageType?: string; // AwsEnum.pinpointSmsMessageType.TRANSACTIONAL
-    senderId?: string;
   }) {
     const addresses: {[phone: string]: {ChannelType: string}} = {};
     data.phones.map(phone => {
@@ -127,7 +136,7 @@ export class PinpointService {
             Body: data.text,
             Keyword: data.keyword,
             MessageType: data.messageType,
-            SenderId: data.senderId,
+            SenderId: this.pinpointSenderId,
           },
         },
       },
@@ -145,7 +154,7 @@ export class PinpointService {
     if (output && output.MessageResponse && output.MessageResponse.Result) {
       return output.MessageResponse.Result;
     } else {
-      return null;
+      return output;
     }
   }
 }

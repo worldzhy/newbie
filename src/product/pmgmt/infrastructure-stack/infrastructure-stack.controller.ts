@@ -7,11 +7,11 @@ import {
   InfrastructureStackType,
   ProjectEnvironmentType,
 } from '@prisma/client';
-import {CommonUtil} from 'src/_util/_common.util';
+import {CommonUtil} from '../../../_util/_common.util';
 
 @ApiTags('[Product] Project Management / Infrastructure')
 @ApiBearerAuth()
-@Controller()
+@Controller('project-management')
 export class InfrastructureStackController {
   private stackService = new InfrastructureStackService();
 

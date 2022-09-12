@@ -13,7 +13,7 @@ import {CheckpointService} from '../checkpoint/checkpoint.service';
 
 @ApiTags('[Product] Project Management / Project')
 @ApiBearerAuth()
-@Controller()
+@Controller('project-management')
 export class ProjectController {
   private projectService = new ProjectService();
   private checkpointService = new CheckpointService();

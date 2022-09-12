@@ -1,13 +1,14 @@
 import {Controller, Get, Post, Param, Body, Delete} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {TaskState} from '@prisma/client';
+import {TaskConfigurationService} from '../configuration/configuration.service';
 import {TaskService} from './task.service';
 
-@ApiTags('[Microservice] Task')
+@ApiTags('[Microservice] Task Management / Task')
 @ApiBearerAuth()
-@Controller('tasks')
+@Controller('task-management')
 export class TaskController {
-  private taskService = new TaskService();
+  private taskConfigurationService = new TaskConfigurationService();
 
   /**
    * Get tasks by page number. The order is by task name.
@@ -16,7 +17,7 @@ export class TaskController {
    * @returns {Promise<{ data: object, err: object }>}
    * @memberof TaskController
    */
-  @Get('/pages/:page')
+  @Get('/tasks/pages/:page')
   @ApiParam({
     name: 'page',
     schema: {type: 'number'},
@@ -41,7 +42,11 @@ export class TaskController {
     }
 
     // [step 2] Get tasks.
-    const datapipes = await this.taskService.findMany({
+    const configuration =
+      await this.taskConfigurationService.defaultConfiguration();
+    const taskService = new TaskService(configuration!);
+
+    const datapipes = await taskService.findMany({
       orderBy: {
         id: 'asc',
       },
@@ -61,7 +66,7 @@ export class TaskController {
    * @returns {Promise<{data: object;err: object;}>}
    * @memberof TaskController
    */
-  @Get('/:taskId')
+  @Get('/tasks/:taskId')
   @ApiParam({
     name: 'taskId',
     schema: {type: 'number'},
@@ -71,7 +76,11 @@ export class TaskController {
   async getTask(
     @Param('taskId') taskId: number
   ): Promise<{data: object | null; err: object | null}> {
-    const result = await this.taskService.findOne({
+    const configuration =
+      await this.taskConfigurationService.defaultConfiguration();
+    const taskService = new TaskService(configuration!);
+
+    const result = await taskService.findOne({
       where: {id: taskId},
     });
     if (result) {
@@ -88,7 +97,7 @@ export class TaskController {
   }
 
   /**
-   * Create a new task.
+   * Send a task to queue.
    *
    * @param {{
    *   product: string;
@@ -99,7 +108,7 @@ export class TaskController {
    * @returns
    * @memberof TaskController
    */
-  @Post('/')
+  @Post('/tasks')
   @ApiBody({
     description: '',
     examples: {
@@ -113,21 +122,21 @@ export class TaskController {
       },
     },
   })
-  async createTask(
+  async sendTask(
     @Body()
     body: {
       payload: object;
-      product: string;
-      sqsQueueUrl: string;
     }
   ) {
     // [step 1] Check if the task name is existed.
 
     // [step 2] Create task.
-    const result = await this.taskService.create({
+    const configuration =
+      await this.taskConfigurationService.defaultConfiguration();
+    const taskService = new TaskService(configuration!);
+
+    const result = await taskService.sendOne({
       payload: body.payload,
-      product: body.product,
-      sqsQueueUrl: body.sqsQueueUrl,
     });
     if (result) {
       return {
@@ -137,13 +146,13 @@ export class TaskController {
     } else {
       return {
         data: null,
-        err: {message: 'Task create failed.'},
+        err: {message: 'Task sent failed.'},
       };
     }
   }
 
   /**
-   * Update task
+   * Cancel a task.
    *
    * @param {number} taskId
    * @param {{
@@ -155,7 +164,7 @@ export class TaskController {
    * @returns
    * @memberof TaskController
    */
-  @Post('/:taskId')
+  @Post('/tasks/:taskId')
   @ApiParam({
     name: 'taskId',
     schema: {type: 'string'},
@@ -172,23 +181,24 @@ export class TaskController {
       },
     },
   })
-  async updateTask(
+  async cancelTask(
     @Param('taskId') taskId: number,
     @Body()
     body: {
-      payload?: object;
-      state?: TaskState;
-      product?: string;
-      sqsQueueUrl?: string;
+      state: TaskState;
     }
   ) {
     // [step 1] Guard statement.
-    const {product, payload, state, sqsQueueUrl} = body;
+    const {state} = body;
 
-    // [step 2] Update name.
-    const result = await this.taskService.update({
+    // [step 2] Update task state.
+    const configuration =
+      await this.taskConfigurationService.defaultConfiguration();
+    const taskService = new TaskService(configuration!);
+
+    const result = await taskService.update({
       where: {id: taskId},
-      data: {product, payload, state, sqsQueueUrl},
+      data: {state},
     });
     if (result) {
       return {
@@ -199,36 +209,6 @@ export class TaskController {
       return {
         data: null,
         err: {message: 'Task updated failed.'},
-      };
-    }
-  }
-
-  /**
-   * Delete task
-   * @param {string} taskId
-   * @returns
-   * @memberof TaskController
-   */
-  @Delete('/:taskId')
-  @ApiParam({
-    name: 'taskId',
-    schema: {type: 'number'},
-    example: '81a37534-915c-4114-96d0-01be815d821b',
-  })
-  async deleteTask(@Param('taskId') taskId: number) {
-    // [step 1] Guard statement.
-
-    // [step 2] Delete task.
-    const result = await this.taskService.delete({id: taskId});
-    if (result) {
-      return {
-        data: result,
-        err: null,
-      };
-    } else {
-      return {
-        data: null,
-        err: {message: 'Task deleted failed.'},
       };
     }
   }

@@ -1,4 +1,4 @@
-import {Injectable} from '@nestjs/common';
+import {Inject, Injectable} from '@nestjs/common';
 import {
   SQSClient,
   SendMessageCommand,
@@ -10,53 +10,35 @@ import {AwsConfig} from '../_config/_aws.config';
 @Injectable()
 export class SqsService {
   private client: SQSClient;
+  private queueUrl: string;
 
-  constructor() {
+  constructor(@Inject('SqsConfiguration') config: {queueUrl: string}) {
     this.client = new SQSClient({
       region: AwsConfig.getRegion(), // region is required for SQS service.
     });
+
+    this.queueUrl = config.queueUrl;
   }
 
   /**
    * See the API doc for more details:
    * https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_SendMessage.html
-   *
-   * @param {string} queueUrl
-   * @param {object} messageBody
-   * @returns {(Promise<{data: SQS.SendMessageResult | void; err: AWSError | void}>)}
+   * @param {object} body
+   * @returns {(Promise<{data: SQS.SendMessageResult | void;err: AWSError | void;}>)}
    * @memberof SqsService
    */
-  async sendMessage(
-    queueUrl: string,
-    messageBody: object
-  ): Promise<{data: any | null; err: any | null}> {
+  async sendMessage(body: object) {
     const sendMessageRequest = {
-      QueueUrl: queueUrl,
-      MessageBody: JSON.stringify(messageBody),
+      QueueUrl: this.queueUrl,
+      MessageBody: JSON.stringify(body),
     };
 
-    const result = await this.client.send(
-      new SendMessageCommand(sendMessageRequest)
-    );
-    if (result.MessageId) {
-      return {
-        data: result,
-        err: null,
-      };
-    } else {
-      return {
-        data: null,
-        err: result,
-      };
-    }
+    return await this.client.send(new SendMessageCommand(sendMessageRequest));
   }
 
-  async getQueueAttributes(
-    queueUrl: string,
-    attributeNames: QueueAttributeName[]
-  ) {
+  async getQueueAttributes(attributeNames: QueueAttributeName[]) {
     const getQueueAttributesRequest = {
-      QueueUrl: queueUrl,
+      QueueUrl: this.queueUrl,
       AttributeNames: attributeNames,
     };
 

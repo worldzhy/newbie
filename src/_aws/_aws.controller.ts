@@ -10,9 +10,15 @@ import {SqsService} from './_sqs.service';
 @Controller('aws')
 export class AwsController {
   private s3Service = new S3Service();
-  private sqsService = new SqsService();
   private snsService = new SnsService();
-  private pinpointService = new PinpointService();
+  private sqsService = new SqsService({
+    queueUrl: process.env.SQS_SMS_QUEUE_URL!,
+  });
+  private pinpointService = new PinpointService({
+    pinpointApplicationId: process.env.PINPOINT_APPLICATION_ID!,
+    pinpointFromAddress: process.env.PINPOINT_FROM_ADDRESS,
+    pinpointSenderId: process.env.PINPOINT_SENDER_ID,
+  });
 
   /**
    * S3 create bucket.
@@ -77,8 +83,8 @@ export class AwsController {
     },
   })
   @Post('/sqs/message')
-  async sendSqsMessage(@Body() body: {queueUrl: string; messageBody: object}) {
-    return await this.sqsService.sendMessage(body.queueUrl, body.messageBody);
+  async sendSqsMessage(@Body() body: {payload: object}) {
+    return await this.sqsService.sendMessage(body.payload);
   }
 
   /**

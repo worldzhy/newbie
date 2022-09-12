@@ -7,7 +7,7 @@ import {
   PulumiFn,
 } from '@pulumi/pulumi/automation';
 import {InfrastructureStackType} from '@prisma/client';
-import {PulumiConfig} from 'src/_config/_pulumi.config';
+import {PulumiConfig} from '../../../../_config/_pulumi.config';
 import {AwsCloudfront_Stack} from './stack/aws-cloudfront.stack';
 import {AwsCodecommit_Stack} from './stack/aws-codecommit.stack';
 import {AwsEcr_Stack} from './stack/aws-ecr.stack';

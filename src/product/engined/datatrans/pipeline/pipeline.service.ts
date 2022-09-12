@@ -1,14 +1,18 @@
 import {Injectable} from '@nestjs/common';
-import {Prisma, Datapipe, PostgresqlDatasourceTable} from '@prisma/client';
-import {PrismaService} from '../../../_prisma/_prisma.service';
+import {
+  Prisma,
+  DatatransPipeline,
+  PostgresqlDatasourceTable,
+} from '@prisma/client';
+import {PrismaService} from '../../../../_prisma/_prisma.service';
 
 @Injectable()
-export class DatapipeService {
+export class DatatransPipelineService {
   private prisma: PrismaService = new PrismaService();
 
-  async overview(datapipe: Datapipe) {
-    const fromTable = datapipe['fromTable'] as PostgresqlDatasourceTable;
-    const numberOfRecordsPerBatch = datapipe.numberOfRecordsPerBatch;
+  async overview(pipeline: DatatransPipeline) {
+    const fromTable = pipeline['fromTable'] as PostgresqlDatasourceTable;
+    const numberOfRecordsPerBatch = pipeline.numberOfRecordsPerBatch;
 
     const childTables: {name: string; numberOfRecords: number}[] = [];
     const parentTables: {name: string; numberOfRecords: number}[] = [];
@@ -27,7 +31,7 @@ export class DatapipeService {
     await Promise.all(
       // Use 'map' instead of 'forEach'
       // https://www.becomebetterprogrammer.com/javascript-foreach-async-await/
-      datapipe.hasManyTables.map(async tableName => {
+      pipeline.hasManyTables.map(async tableName => {
         countResult = await this.prisma.$queryRawUnsafe(
           `SELECT COUNT(*) FROM "${tableName}"`
         );
@@ -43,7 +47,7 @@ export class DatapipeService {
 
     // [step 3] Get the total count of the parent tables' records.
     await Promise.all(
-      datapipe.belongsToTables.map(async tableName => {
+      pipeline.belongsToTables.map(async tableName => {
         countResult = await this.prisma.$queryRawUnsafe(
           `SELECT COUNT(*) FROM "${tableName}"`
         );
@@ -73,43 +77,43 @@ export class DatapipeService {
   }
 
   /**
-   * Get a datapipe
+   * Get a pipeline
    * @param {{
-   *  where: Prisma.DatapipeWhereUniqueInput;
-   *  include?: Prisma.DatapipeInclude;
+   *  where: Prisma.DatatransPipelineWhereUniqueInput;
+   *  include?: Prisma.DatatransPipelineInclude;
    * }} params
-   * @returns {(Promise<Datapipe | null>)}
-   * @memberof DatapipeService
+   * @returns {(Promise<DatatransPipeline | null>)}
+   * @memberof DatatransPipelineService
    */
   async findOne(params: {
-    where: Prisma.DatapipeWhereUniqueInput;
-    include?: Prisma.DatapipeInclude;
-  }): Promise<Datapipe | null> {
-    return await this.prisma.datapipe.findUnique(params);
+    where: Prisma.DatatransPipelineWhereUniqueInput;
+    include?: Prisma.DatatransPipelineInclude;
+  }): Promise<DatatransPipeline | null> {
+    return await this.prisma.datatransPipeline.findUnique(params);
   }
 
   /**
-   * Get many datapipes
+   * Get many pipelines
    *
    * @param {{
    *     skip?: number;
    *     take?: number;
-   *     where?: Prisma.DatapipeWhereInput;
-   *     orderBy?: Prisma.DatapipeOrderByWithRelationAndSearchRelevanceInput;
-   *     select?: Prisma.DatapipeSelect;
+   *     where?: Prisma.DatatransPipelineWhereInput;
+   *     orderBy?: Prisma.DatatransPipelineOrderByWithRelationAndSearchRelevanceInput;
+   *     select?: Prisma.DatatransPipelineSelect;
    *   }} params
    * @returns
-   * @memberof DatapipeService
+   * @memberof DatatransPipelineService
    */
   async findMany(params: {
     skip?: number;
     take?: number;
-    where?: Prisma.DatapipeWhereInput;
-    orderBy?: Prisma.DatapipeOrderByWithRelationAndSearchRelevanceInput;
-    select?: Prisma.DatapipeSelect;
+    where?: Prisma.DatatransPipelineWhereInput;
+    orderBy?: Prisma.DatatransPipelineOrderByWithRelationAndSearchRelevanceInput;
+    select?: Prisma.DatatransPipelineSelect;
   }) {
     const {skip, take, where, orderBy, select} = params;
-    return await this.prisma.datapipe.findMany({
+    return await this.prisma.datatransPipeline.findMany({
       skip,
       take,
       where,
@@ -123,58 +127,62 @@ export class DatapipeService {
    *
    * @param {string} id
    * @returns
-   * @memberof DatapipeService
+   * @memberof DatatransPipelineService
    */
   async checkExistence(id: string) {
-    const count = await this.prisma.datapipe.count({
+    const count = await this.prisma.datatransPipeline.count({
       where: {id},
     });
     return count > 0 ? true : false;
   }
 
   /**
-   * Create a datapipe
+   * Create a pipeline
    *
-   * @param {Prisma.DatapipeCreateInput} data
-   * @returns {Promise<Datapipe>}
-   * @memberof DatapipeService
+   * @param {Prisma.DatatransPipelineCreateInput} data
+   * @returns {Promise<DatatransPipeline>}
+   * @memberof DatatransPipelineService
    */
-  async create(data: Prisma.DatapipeCreateInput): Promise<Datapipe> {
-    return await this.prisma.datapipe.create({
+  async create(
+    data: Prisma.DatatransPipelineCreateInput
+  ): Promise<DatatransPipeline> {
+    return await this.prisma.datatransPipeline.create({
       data,
     });
   }
 
   /**
-   * Update a datapipe
+   * Update a pipeline
    *
    * @param {{
-   *     where: Prisma.DatapipeWhereUniqueInput;
-   *     data: Prisma.DatapipeUpdateInput;
+   *     where: Prisma.DatatransPipelineWhereUniqueInput;
+   *     data: Prisma.DatatransPipelineUpdateInput;
    *   }} params
-   * @returns {Promise<Datapipe>}
-   * @memberof DatapipeService
+   * @returns {Promise<DatatransPipeline>}
+   * @memberof DatatransPipelineService
    */
   async update(params: {
-    where: Prisma.DatapipeWhereUniqueInput;
-    data: Prisma.DatapipeUpdateInput;
-  }): Promise<Datapipe> {
+    where: Prisma.DatatransPipelineWhereUniqueInput;
+    data: Prisma.DatatransPipelineUpdateInput;
+  }): Promise<DatatransPipeline> {
     const {where, data} = params;
-    return await this.prisma.datapipe.update({
+    return await this.prisma.datatransPipeline.update({
       data,
       where,
     });
   }
 
   /**
-   * Delete a datapipe
+   * Delete a pipeline
    *
-   * @param {Prisma.DatapipeWhereUniqueInput} where
-   * @returns {Promise<Datapipe>}
-   * @memberof DatapipeService
+   * @param {Prisma.DatatransPipelineWhereUniqueInput} where
+   * @returns {Promise<DatatransPipeline>}
+   * @memberof DatatransPipelineService
    */
-  async delete(where: Prisma.DatapipeWhereUniqueInput): Promise<Datapipe> {
-    return await this.prisma.datapipe.delete({
+  async delete(
+    where: Prisma.DatatransPipelineWhereUniqueInput
+  ): Promise<DatatransPipeline> {
+    return await this.prisma.datatransPipeline.delete({
       where,
     });
   }

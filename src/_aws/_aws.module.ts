@@ -7,7 +7,14 @@ import {AwsController} from './_aws.controller';
 
 @Module({
   controllers: [AwsController],
-  providers: [S3Service, SqsService, SnsService, PinpointService],
-  exports: [SqsService, S3Service, SnsService, PinpointService],
+  providers: [
+    {provide: 'SqsConfiguration', useValue: 'sqs-configuration'},
+    {provide: 'PinpointConfiguration', useValue: 'pinpoint-configuration'},
+    S3Service,
+    SqsService,
+    SnsService,
+    PinpointService,
+  ],
+  exports: [S3Service, SqsService, SnsService, PinpointService],
 })
 export class AwsModule {}

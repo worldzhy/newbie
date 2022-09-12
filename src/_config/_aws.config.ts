@@ -46,28 +46,4 @@ export class AwsConfig {
       return 'environment variable SQS_SMS_QUEUE_URL is invalid.';
     }
   };
-
-  static getPinpointAppId = (): string => {
-    if (typeof process.env.PINPOINT_APP_ID === 'string') {
-      return process.env.PINPOINT_APP_ID;
-    } else {
-      return 'environment variable PINPOINT_APP_ID is invalid.';
-    }
-  };
-
-  static getPinpointEmailFromAddress = (): string => {
-    if (typeof process.env.PINPOINT_EMAIL_FROM_ADDRESS === 'string') {
-      return process.env.PINPOINT_EMAIL_FROM_ADDRESS;
-    } else {
-      return 'environment variable PINPOINT_EMAIL_FROM_ADDRESS is invalid.';
-    }
-  };
-
-  static getPinpointSmsSenderId = (): string => {
-    if (typeof process.env.PINPOINT_SMS_SENDER_ID === 'string') {
-      return process.env.PINPOINT_SMS_SENDER_ID;
-    } else {
-      return 'environment variable PINPOINT_SMS_SENDER_ID is invalid.';
-    }
-  };
 }
