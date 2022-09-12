@@ -48,9 +48,13 @@ export class NotificationConfigurationService {
   async create(
     data: Prisma.NotificationConfigurationCreateInput
   ): Promise<NotificationConfiguration> {
-    return await this.prisma.notificationConfiguration.create({
-      data,
-    });
+    try {
+      return await this.prisma.notificationConfiguration.create({
+        data,
+      });
+    } catch (error) {
+      return error;
+    }
   }
 
   /**

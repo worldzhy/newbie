@@ -126,14 +126,14 @@ const postgresql = {
 const elasticsearchDatasourceService = new ElasticsearchDatasourceService();
 const elasticsearch = {node: '127.0.0.1'};
 
-//  Datapipe
+// Pipeline
 const pipelineController = new DatatransPipelineController();
 const pipeline = {
   name: 'pg2es_pipeline',
   state: DatatransPipelineState.IDLE,
   queueUrl:
     'https://sqs.cn-northwest-1.amazonaws.com.cn/077767357755/dev-inceptionpad-message-service-email-level1',
-  hasManyTables: ['PostgresqlDatasourceTableColumn', 'Datapipe'],
+  hasManyTables: ['PostgresqlDatasourceTableColumn'],
   belongsToTables: ['PostgresqlDatasource'],
   fromTableId: 19,
   toIndexId: 1,

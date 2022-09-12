@@ -59,7 +59,7 @@ export class NotificationConfigurationController {
       a: {
         summary: '1. Create successfully',
         value: {
-          product: Product.DATAPIPE_BATCH_PROCESSING,
+          product: Product.DATATRANS_BATCH_PROCESSING,
           pinpointApplicationId: '1ljfowejflkasjf',
           pinpointFromAddress: 'henry@inceptionpad.com',
           pinpointSenderId: 'Inception',

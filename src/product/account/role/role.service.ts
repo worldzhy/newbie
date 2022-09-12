@@ -36,9 +36,13 @@ export class RoleService {
   }
 
   async create(data: Prisma.RoleCreateInput): Promise<Role> {
-    return this.prisma.role.create({
-      data,
-    });
+    try {
+      return this.prisma.role.create({
+        data,
+      });
+    } catch (error) {
+      return error;
+    }
   }
 
   async update(params: {

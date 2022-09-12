@@ -72,9 +72,13 @@ export class ProjectService {
    * @memberof ProjectService
    */
   async create(data: Prisma.ProjectCreateInput): Promise<Project> {
-    return await this.prisma.project.create({
-      data,
-    });
+    try {
+      return await this.prisma.project.create({
+        data,
+      });
+    } catch (error) {
+      return error;
+    }
   }
 
   /**

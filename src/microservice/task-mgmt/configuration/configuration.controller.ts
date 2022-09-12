@@ -14,7 +14,7 @@ export class TaskConfigurationController {
    * @returns
    * @memberof TaskConfigurationController
    */
-  @Get('/configurations/list')
+  @Get('/configurations')
   async getTaskConfigurations() {
     return this.microserviceService.findMany({where: {}});
   }
@@ -58,7 +58,7 @@ export class TaskConfigurationController {
       a: {
         summary: '1. Create successfully',
         value: {
-          product: Product.DATAPIPE_BATCH_PROCESSING,
+          product: Product.DATATRANS_BATCH_PROCESSING,
           sqsQueueUrl: 'http://sjflajlfas',
         },
       },

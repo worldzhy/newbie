@@ -20,14 +20,14 @@ datasource db {
 //       ! Enum Product          //
 // ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  //
 // * DEFAULT                     //
-// * DATAPIPE_BATCH_PROCESSING   //
-// * DATAPIPE_STREAM_PROCESSING  //
+// * DATATRANS_BATCH_PROCESSING   //
+// * DATATRANS_STREAM_PROCESSING  //
 // ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  //
 
 enum Product {
   DEFAULT
-  DATAPIPE_BATCH_PROCESSING
-  DATAPIPE_STREAM_PROCESSING
+  DATATRANS_BATCH_PROCESSING
+  DATATRANS_STREAM_PROCESSING
 }
 
 //       ! Notification         //
@@ -420,7 +420,7 @@ enum InfrastructureStackState {
 // * ElasticsearchDatasourceIndex      //
 // * ElasticsearchDatasourceIndexField //
 // ----------------------------------- //
-// * Datapipe                          //
+// * DatatransPipeline                 //
 // ----------------------------------- //
 // * ElasticsearchDataboard            //
 // ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  //
@@ -517,7 +517,7 @@ model ElasticsearchDatasourceIndexField {
 model DatatransPipeline {
   id                      String                       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name                    String
-  state                   DatatransPipelineState
+  state                   DatatransPipelineState       @default(IDLE)
   hasManyTables           String[] // The child tables should be loaded into the payload to be transported.
   belongsToTables         String[] // The parent tables should be loaded into the payload to be transported.
   numberOfRecordsPerBatch Int                          @default(100) // The quantity of a batch of payload to be transported.

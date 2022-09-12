@@ -18,33 +18,37 @@ export class InfrastructureStackService {
   private cloudformationService = new CloudFormationService();
   private environmentService = new EnvironmentService();
 
-  async findOne(where: Prisma.InfrastructureStackWhereUniqueInput) {
-    return await this.prisma.infrastructureStack.findUnique({
-      where,
-    });
+  async findOne(params: {
+    where: Prisma.InfrastructureStackWhereUniqueInput;
+  }): Promise<InfrastructureStack | null> {
+    return await this.prisma.infrastructureStack.findUnique(params);
   }
 
-  async findMany(where: Prisma.InfrastructureStackWhereInput) {
-    return await this.prisma.infrastructureStack.findMany({where});
+  async findMany(params: {
+    where: Prisma.InfrastructureStackWhereInput;
+    include?: Prisma.InfrastructureStackInclude;
+  }): Promise<InfrastructureStack[]> {
+    return await this.prisma.infrastructureStack.findMany(params);
   }
 
   async create(
     data: Prisma.InfrastructureStackCreateInput
-  ): Promise<InfrastructureStack | null> {
-    return await this.prisma.infrastructureStack.create({
-      data,
-    });
+  ): Promise<InfrastructureStack> {
+    try {
+      return await this.prisma.infrastructureStack.create({
+        data,
+      });
+    } catch (error) {
+      return error;
+    }
   }
 
-  async update(
-    where: Prisma.InfrastructureStackWhereUniqueInput,
-    data: Prisma.InfrastructureStackUpdateInput
-  ) {
+  async update(params: {
+    where: Prisma.InfrastructureStackWhereUniqueInput;
+    data: Prisma.InfrastructureStackUpdateInput;
+  }): Promise<InfrastructureStack> {
     // [step 1] Update database record of infrastructureStack.
-    return await this.prisma.infrastructureStack.update({
-      where,
-      data,
-    });
+    return await this.prisma.infrastructureStack.update(params);
   }
 
   /**

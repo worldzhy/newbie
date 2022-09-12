@@ -114,9 +114,13 @@ export class UserService {
    * @memberof UserService
    */
   async create(data: Prisma.UserCreateInput): Promise<User> {
-    return await this.prisma.user.create({
-      data,
-    });
+    try {
+      return await this.prisma.user.create({
+        data,
+      });
+    } catch (error) {
+      return error;
+    }
   }
 
   /**

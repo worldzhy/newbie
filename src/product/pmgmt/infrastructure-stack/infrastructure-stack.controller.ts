@@ -64,7 +64,9 @@ export class InfrastructureStackController {
     },
   })
   async listStacks(@Body() body: {projectId: string}) {
-    return await this.stackService.findMany({projectId: body.projectId});
+    return await this.stackService.findMany({
+      where: {projectId: body.projectId},
+    });
   }
 
   /**
@@ -192,13 +194,13 @@ export class InfrastructureStackController {
   ) {
     const {params} = body;
 
-    return await this.stackService.update(
-      {id: infrastructureStackId},
-      {
+    return await this.stackService.update({
+      where: {id: infrastructureStackId},
+      data: {
         params: params,
         state: InfrastructureStackState.PREPARING,
-      }
-    );
+      },
+    });
   }
 
   /**
@@ -220,7 +222,9 @@ export class InfrastructureStackController {
   ) {
     // [step 1] Get the infrastructure stack.
     const stack = await this.stackService.findOne({
-      id: infrastructureStackId,
+      where: {
+        id: infrastructureStackId,
+      },
     });
     if (!stack) {
       return {
@@ -270,7 +274,9 @@ export class InfrastructureStackController {
   ) {
     // [step 1] Get the infrastructure stack.
     const stack = await this.stackService.findOne({
-      id: infrastructureStackId,
+      where: {
+        id: infrastructureStackId,
+      },
     });
     if (!stack) {
       return {
@@ -302,7 +308,9 @@ export class InfrastructureStackController {
   ) {
     // [step 1] Get the infrastructure stack.
     const stack = await this.stackService.findOne({
-      id: infrastructureStackId,
+      where: {
+        id: infrastructureStackId,
+      },
     });
     if (!stack) {
       return {
@@ -356,7 +364,9 @@ export class InfrastructureStackController {
   ) {
     // [step 1] Get the infrastructure stack.
     const stack = await this.stackService.findOne({
-      id: infrastructureStackId,
+      where: {
+        id: infrastructureStackId,
+      },
     });
     if (!stack) {
       return {
@@ -403,7 +413,9 @@ export class InfrastructureStackController {
   ) {
     // [step 1] Get the infrastructure stack.
     const stack = await this.stackService.findOne({
-      id: infrastructureStackId,
+      where: {
+        id: infrastructureStackId,
+      },
     });
     if (!stack) {
       return {

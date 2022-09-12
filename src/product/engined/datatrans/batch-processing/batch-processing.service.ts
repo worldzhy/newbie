@@ -24,7 +24,7 @@ export class DatatransBatchProcessingService {
 
     // [step 2] Configure a task microservice.
     const config = await this.taskConfigurationService.findOne({
-      where: {product: Product.DATAPIPE_BATCH_PROCESSING},
+      where: {product: Product.DATATRANS_BATCH_PROCESSING},
     });
     if (!config) {
       return 'You need to create a task microservice configuration for batch processing.';

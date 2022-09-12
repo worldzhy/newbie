@@ -1,7 +1,6 @@
 import {Controller, Get, Post, Param, Body, Delete} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {DatatransPipelineService} from './pipeline.service';
-import {DatatransPipelineState} from '@prisma/client';
 import {PostgresqlDatasourceTableService} from '../../datasource/postgresql/table/table.service';
 import {ElasticsearchDatasourceIndexService} from '../../datasource/elasticsearch/index/index.service';
 
@@ -18,46 +17,12 @@ export class DatatransPipelineController {
   /**
    * Get pipelines by page number. The order is by pipeline name.
    *
-   * @param {number} page
    * @returns {Promise<{ data: object, err: object }>}
    * @memberof DatatransPipelineController
    */
-  @Get('/pipelines/pages/:page')
-  @ApiParam({
-    name: 'page',
-    schema: {type: 'number'},
-    description:
-      'The page of the pipeline list. It must be a LARGER THAN 0 integer.',
-    example: 1,
-  })
-  async getPipelinesByPage(
-    @Param('page') page: number
-  ): Promise<{data: object | null; err: object | null}> {
-    // [step 1] Guard statement.
-    let p = page;
-    if (typeof page === 'string') {
-      // Actually 'page' is string because it comes from URL param.
-      p = parseInt(page);
-    }
-    if (p < 1) {
-      return {
-        data: null,
-        err: {message: "The 'page' must be a large than 0 integer."},
-      };
-    }
-
-    // [step 2] Get pipelines.
-    const pipelines = await this.pipelineService.findMany({
-      orderBy: {
-        _relevance: {
-          fields: ['name'],
-          search: 'database',
-          sort: 'asc',
-        },
-      },
-      take: 10,
-      skip: 10 * (p - 1),
-    });
+  @Get('/pipelines')
+  async getPipelines(): Promise<{data: object | null; err: object | null}> {
+    const pipelines = await this.pipelineService.findMany({});
     return {
       data: pipelines,
       err: null,
@@ -174,7 +139,6 @@ export class DatatransPipelineController {
     // [step 2] Create pipeline.
     const result = await this.pipelineService.create({
       name: body.name,
-      state: DatatransPipelineState.IDLE,
       hasManyTables: body.hasManyTables,
       belongsToTables: body.belongsToTables,
       numberOfRecordsPerBatch: body.numberOfRecordsPerBatch,

@@ -48,9 +48,13 @@ export class TaskConfigurationService {
   async create(
     data: Prisma.TaskConfigurationCreateInput
   ): Promise<TaskConfiguration> {
-    return await this.prisma.taskConfiguration.create({
-      data,
-    });
+    try {
+      return await this.prisma.taskConfiguration.create({
+        data,
+      });
+    } catch (error) {
+      return error;
+    }
   }
 
   /**
