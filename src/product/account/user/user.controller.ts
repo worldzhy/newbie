@@ -1,7 +1,7 @@
 import {Controller, Get, Post, Param, Body} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {UserService} from './user.service';
-import {AccountValidator} from '../../../_validator/_account.validator';
+import * as validator from '../../../_validator/_account.validator';
 
 @ApiTags('[Product] Account / User')
 @ApiBearerAuth()
@@ -236,7 +236,7 @@ export class UserController {
     }
 
     // [step 3] Validate the new password.
-    if (!AccountValidator.verifyPassword(body.newPassword)) {
+    if (!validator.verifyPassword(body.newPassword)) {
       return {
         data: null,
         err: {message: 'The new password is invalid.'},
@@ -305,7 +305,7 @@ export class UserController {
     }
 
     // [step 2] Validate the new password
-    if (!AccountValidator.verifyPassword(body.newPassword)) {
+    if (!validator.verifyPassword(body.newPassword)) {
       return {
         data: null,
         err: {message: 'The new password is invalid.'},

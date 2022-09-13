@@ -10,9 +10,10 @@ import {getServerConfig} from './_config/_server.config';
 async function bootstrap() {
   // Create a nestjs application.
   const app = await NestFactory.create(AppModule);
+  const serverConfig = getServerConfig();
 
   // API document is only available in development environment.
-  if (getServerConfig().environment === 'development') {
+  if (serverConfig.environment === 'development') {
     const config = new DocumentBuilder()
       .setTitle('Cloud Native InceptionPad Basic')
       .setDescription('The API description')
@@ -31,7 +32,7 @@ async function bootstrap() {
   }
 
   // Listen port
-  const port = getServerConfig().port;
+  const port = serverConfig.port;
   await app.listen(port);
 }
 bootstrap();

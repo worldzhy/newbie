@@ -9,7 +9,7 @@ import {LoggingInByVerificationCode} from './auth/auth-verification-code/auth-ve
 import {AccountService} from './account.service';
 import {UserService} from './user/user.service';
 import {ProfileService} from './profile/profile.service';
-import {AccountValidator} from '../../_validator/_account.validator';
+import * as validator from '../../_validator/_account.validator';
 
 @ApiTags('[Product] Account')
 @Controller()
@@ -175,7 +175,7 @@ export class AccountController {
 
     // [step 1] Validate parameters.
     if (signupUser.password) {
-      if (!AccountValidator.verifyPassword(signupUser.password)) {
+      if (!validator.verifyPassword(signupUser.password)) {
         return {
           data: null,
           err: {message: 'Your password is not strong enough.'},
@@ -187,7 +187,7 @@ export class AccountController {
     }
 
     if (signupUser.username) {
-      if (!AccountValidator.verifyUsername(signupUser.username)) {
+      if (!validator.verifyUsername(signupUser.username)) {
         return {
           data: null,
           err: {message: 'Your username is not valid.'},
@@ -199,7 +199,7 @@ export class AccountController {
     }
 
     if (signupUser.email) {
-      if (!AccountValidator.verifyEmail(signupUser.email)) {
+      if (!validator.verifyEmail(signupUser.email)) {
         return {
           data: null,
           err: {message: 'Your email is not valid.'},
@@ -211,7 +211,7 @@ export class AccountController {
     }
 
     if (signupUser.phone) {
-      if (!AccountValidator.verifyPhone(signupUser.phone)) {
+      if (!validator.verifyPhone(signupUser.phone)) {
         return {
           data: null,
           err: {message: 'Your phone is not valid.'},

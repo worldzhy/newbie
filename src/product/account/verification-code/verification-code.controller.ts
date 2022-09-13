@@ -4,7 +4,7 @@ import {Public} from '../auth/auth-jwt/auth-jwt.decorator';
 import {EmailService} from '../../../microservice/notification/email/email.service';
 import {SmsService} from '../../../microservice/notification/sms/sms.service';
 import {UserService} from '../user/user.service';
-import {AccountValidator} from '../../../_validator/_account.validator';
+import * as validator from '../../../_validator/_account.validator';
 import {VerificationCodeService} from './verification-code.service';
 import {
   EmailNotification,
@@ -60,8 +60,8 @@ export class VerificationCodeController {
     @Body() body: {account: string; use: string}
   ): Promise<{data: object | null; err: object | null}> {
     const {account, use} = body;
-    const byEmail = account ? AccountValidator.verifyEmail(account) : null;
-    const byPhone = account ? AccountValidator.verifyPhone(account) : null;
+    const byEmail = account ? validator.verifyEmail(account) : null;
+    const byPhone = account ? validator.verifyPhone(account) : null;
 
     // [step 1] Validate email/phone and verificaiton code use.
     if (!byEmail && !byPhone) {
@@ -176,8 +176,8 @@ export class VerificationCodeController {
     @Body() body: {account: string; code: string}
   ): Promise<boolean> {
     const {account, code} = body;
-    const byEmail = account ? AccountValidator.verifyEmail(account) : null;
-    const byPhone = account ? AccountValidator.verifyPhone(account) : null;
+    const byEmail = account ? validator.verifyEmail(account) : null;
+    const byPhone = account ? validator.verifyPhone(account) : null;
 
     // [step 1] Validate email/phone.
     if ((!byEmail && !byPhone) || !code) {

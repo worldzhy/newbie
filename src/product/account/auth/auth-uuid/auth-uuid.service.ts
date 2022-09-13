@@ -1,5 +1,5 @@
 import {Injectable} from '@nestjs/common';
-import {AccountValidator} from '../../../../_validator/_account.validator';
+import * as validator from '../../../../_validator/_account.validator';
 import {UserService} from '../../user/user.service';
 
 @Injectable()
@@ -17,7 +17,7 @@ export class AuthUuidService {
     uuid: string
   ): Promise<{data: object | null; err: object | null}> {
     // [step 1] Guard statement.
-    if (!AccountValidator.verifyUuid(uuid)) {
+    if (!validator.verifyUuid(uuid)) {
       return {
         data: null,
         err: {

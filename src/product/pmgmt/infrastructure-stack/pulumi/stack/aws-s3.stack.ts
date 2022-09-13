@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import * as aws from '@pulumi/aws';
-import {AwsValidator} from '../../../../../_validator/_aws.validator';
+import * as validator from '../../../../../_validator/_aws.validator';
 import {PulumiUtil} from '../pulumi.util';
 import {CommonUtil} from '../../../../../_util/_common.util';
 import {getAwsConfig} from '../../../../../_config/_aws.config';
@@ -32,7 +32,7 @@ export class AwsS3_Stack {
       let bucketName = params.bucketName + '-' + CommonUtil.randomCode(4);
 
       // [step 1] Guard statement.
-      if (false === AwsValidator.verifyS3Bucketname(bucketName)) {
+      if (false === validator.verifyS3Bucketname(bucketName)) {
         bucketName = 'example-bucket-' + CommonUtil.randomCode(4);
       }
 

@@ -4,7 +4,7 @@ import * as aws from '@pulumi/aws';
 import * as awsx from '@pulumi/awsx';
 import {PulumiUtil} from '../pulumi.util';
 import {CommonUtil} from '../../../../../_util/_common.util';
-import {AwsValidator} from '../../../../../_validator/_aws.validator';
+import * as validator from '../../../../../_validator/_aws.validator';
 import {getAwsConfig} from '../../../../../_config/_aws.config';
 
 @Injectable()
@@ -53,7 +53,7 @@ export class ComputingFargate_Stack {
       let maxTaskCount = params.maxTaskCount;
 
       // Guard statement.
-      if (!AwsValidator.verifyRegion(getAwsConfig().region!)) {
+      if (!validator.verifyRegion(getAwsConfig().region!)) {
         return undefined;
       }
       if (vpcId === undefined || vpcId === null || vpcId.trim() === '') {

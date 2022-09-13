@@ -5,7 +5,7 @@ import {
   VerificationCodeStatus,
   VerificationCodeUse,
 } from '@prisma/client';
-import {AccountValidator} from '../../../_validator/_account.validator';
+import * as validator from '../../../_validator/_account.validator';
 import {CommonUtil} from '../../../_util/_common.util';
 
 @Injectable()
@@ -60,7 +60,7 @@ export class VerificationCodeService {
           expiredAt: {gte: CommonUtil.nowPlusMinutes(4)},
         },
       });
-    } else if (email && AccountValidator.verifyEmail(email)) {
+    } else if (email && validator.verifyEmail(email)) {
       existedCode = await this.prisma.verificationCode.findFirst({
         where: {
           email: account.email,
@@ -68,7 +68,7 @@ export class VerificationCodeService {
           expiredAt: {gte: CommonUtil.nowPlusMinutes(4)},
         },
       });
-    } else if (phone && AccountValidator.verifyPhone(phone)) {
+    } else if (phone && validator.verifyPhone(phone)) {
       existedCode = await this.prisma.verificationCode.findFirst({
         where: {
           phone: account.phone,
@@ -151,7 +151,7 @@ export class VerificationCodeService {
           },
         },
       });
-    } else if (email && AccountValidator.verifyEmail(email)) {
+    } else if (email && validator.verifyEmail(email)) {
       existedCode = await this.prisma.verificationCode.findFirst({
         where: {
           email: email,
@@ -162,7 +162,7 @@ export class VerificationCodeService {
           },
         },
       });
-    } else if (phone && AccountValidator.verifyPhone(phone)) {
+    } else if (phone && validator.verifyPhone(phone)) {
       existedCode = await this.prisma.verificationCode.findFirst({
         where: {
           phone: phone,

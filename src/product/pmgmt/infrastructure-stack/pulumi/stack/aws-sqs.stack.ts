@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import * as aws from '@pulumi/aws';
 import {getAwsConfig} from '../../../../../_config/_aws.config';
-import {AwsValidator} from '../../../../../_validator/_aws.validator';
+import * as validator from '../../../../../_validator/_aws.validator';
 import {PulumiUtil} from '../pulumi.util';
 
 @Injectable()
@@ -28,7 +28,7 @@ export class AwsSqs_Stack {
     let bucketName = params.bucketName;
 
     // [step 1] Guard statement.
-    if (false === AwsValidator.verifyS3Bucketname(bucketName)) {
+    if (false === validator.verifyS3Bucketname(bucketName)) {
       bucketName = 'default-bucket-name';
     }
 

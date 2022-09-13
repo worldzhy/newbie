@@ -2,7 +2,7 @@ import {Injectable} from '@nestjs/common';
 import {PrismaService} from '../../../_prisma/_prisma.service';
 import {Prisma, User} from '@prisma/client';
 import {CommonUtil} from '../../../_util/_common.util';
-import {AccountValidator} from '../../../_validator/_account.validator';
+import * as validator from '../../../_validator/_account.validator';
 
 const bcrypt = require('bcryptjs');
 
@@ -64,7 +64,7 @@ export class UserService {
    * @memberof UserService
    */
   async findByAccount(account: string): Promise<User | null> {
-    if (AccountValidator.verifyUuid(account)) {
+    if (validator.verifyUuid(account)) {
       return await this.findOne({id: account});
     } else {
       const users = await this.findMany({
