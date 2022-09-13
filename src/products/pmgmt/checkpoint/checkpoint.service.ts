@@ -6,13 +6,17 @@ import {PrismaService} from '../../../_prisma/_prisma.service';
 export class CheckpointService {
   private prisma: PrismaService = new PrismaService();
 
-  async findOne(where: Prisma.ProjectCheckpointWhereUniqueInput) {
+  async findOne(
+    where: Prisma.ProjectCheckpointWhereUniqueInput
+  ): Promise<ProjectCheckpoint | null> {
     return await this.prisma.projectCheckpoint.findUnique({
       where,
     });
   }
 
-  async findMany(where: Prisma.ProjectCheckpointWhereInput) {
+  async findMany(
+    where: Prisma.ProjectCheckpointWhereInput
+  ): Promise<ProjectCheckpoint[]> {
     return await this.prisma.projectCheckpoint.findMany({
       where,
     });

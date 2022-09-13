@@ -3,14 +3,12 @@ import {
   ElasticsearchDatasource,
   PostgresqlDatasource,
   Prisma,
-  ProjectEnvironmentType,
-  ProjectState,
 } from '@prisma/client';
 import {PrismaService} from '../src/_prisma/_prisma.service';
 import {AccountService} from '../src/products/account/account.service';
 import {AccountController} from '../src/products/account/account.controller';
-import {ProjectService} from '../src/products/pmgmt/project/project.service';
 import {RoleService} from '../src/products/account/role/role.service';
+import {ProjectController} from '../src/products/pmgmt/project/project.controller';
 import {PostgresqlDatasourceService} from '../src/products/engined/datasource/postgresql/postgresql-datasource.service';
 import {ElasticsearchDatasourceService} from '../src/products/engined/datasource/elasticsearch/elasticsearch-datasource.service';
 import {DatatransPipelineController} from '../src/products/engined/datatrans/pipeline/pipeline.controller';
@@ -19,7 +17,7 @@ const prisma = new PrismaService();
 
 // Account
 const accountService = new AccountService();
-const auth = new AccountController(accountService);
+const accountController = new AccountController(accountService);
 const users = [
   {
     username: 'henry',
@@ -39,77 +37,15 @@ const roles: Prisma.RoleCreateInput[] = [
 ];
 
 // Project
-const projectService = new ProjectService();
-const projects: Prisma.ProjectCreateInput[] = [
+const projectController = new ProjectController();
+const projects = [
   {
     name: 'Galaxy',
-    state: ProjectState.DESIGNING,
-    environments: {
-      createMany: {
-        skipDuplicates: true,
-        data: [
-          {
-            type: ProjectEnvironmentType.DEVELOPMENT,
-            awsAccountId: '077767357755',
-            awsProfile: 'Galaxy',
-            awsAccessKeyId: 'fakeAKIAREGsfXsf4FY',
-            awsSecretAccessKey: 'fakeGVxCF0AEbjdsftVsfswRR8V+uhQg8QJiZxMy',
-            awsRegion: 'cn-northwest-1',
-          },
-          {
-            type: ProjectEnvironmentType.STAGING,
-            awsAccountId: '077767357755',
-            awsProfile: 'Galaxy',
-            awsAccessKeyId: 'fakeAKIAREGsfWUsfYEB4FY',
-            awsSecretAccessKey: 'fakeGVxCF0AEbj/xisfSsfwRR8V+uhQg8QJiZxMy',
-            awsRegion: 'cn-northwest-1',
-          },
-          {
-            type: ProjectEnvironmentType.PRODUCTION,
-            awsAccountId: '077767357755',
-            awsProfile: 'Galaxy',
-            awsAccessKeyId: 'fakeAKsffsdWU5RXYEB4FY',
-            awsSecretAccessKey: 'fakeGVxCsfEbj/xi3asfvVswRR8V+uhQg8QJiZxMy',
-            awsRegion: 'cn-northwest-1',
-          },
-        ],
-      },
-    },
+    clientName: 'Jim Green',
+    clientEmail: 'jim@galaxy.com',
   },
   {
     name: 'InceptionPad',
-    state: ProjectState.DEVELOPING,
-    environments: {
-      createMany: {
-        skipDuplicates: true,
-        data: [
-          {
-            type: ProjectEnvironmentType.DEVELOPMENT,
-            awsAccountId: '067174804713',
-            awsProfile: 'InceptionPad',
-            awsAccessKeyId: 'fakeAKIAQ734OFTUTLIKUV7D',
-            awsSecretAccessKey: 'fake7Nw/oOD34gsfoDBkec43s6B2ktqJj2MutiHyfwBUZ',
-            awsRegion: 'us-east-1',
-          },
-          {
-            type: ProjectEnvironmentType.STAGING,
-            awsAccountId: '067174804713',
-            awsProfile: 'InceptionPad',
-            awsAccessKeyId: 'fake434Q34OFsdfTLIKUV7D',
-            awsSecretAccessKey: 'fake7Nw/oOD34h345oafkecs6B2ktqJj2MsayfwBUZ',
-            awsRegion: 'us-east-1',
-          },
-          {
-            type: ProjectEnvironmentType.PRODUCTION,
-            awsAccountId: '067174804713',
-            awsProfile: 'InceptionPad',
-            awsAccessKeyId: 'fakeAKIAQ7IsOF23TLIKUV7D',
-            awsSecretAccessKey: 'fake7Nw/oODZ34Igf5oDsfcs6B2342MutiHyfwBUZ',
-            awsRegion: 'us-east-1',
-          },
-        ],
-      },
-    },
   },
 ];
 
@@ -144,7 +80,7 @@ async function main() {
 
   console.log('- users');
   for (const user of users) {
-    await auth.signup(user);
+    await accountController.signup(user);
   }
 
   console.log('- roles');
@@ -154,7 +90,7 @@ async function main() {
 
   console.log('- projects');
   for (const project of projects) {
-    await projectService.create(project);
+    await projectController.createProject(project);
   }
 
   console.log('- datasources');

@@ -33,21 +33,8 @@ export class ProjectService {
    * @returns
    * @memberof ProjectService
    */
-  async findMany(params: {
-    skip?: number;
-    take?: number;
-    where?: Prisma.ProjectWhereInput;
-    orderBy?: Prisma.ProjectOrderByWithRelationAndSearchRelevanceInput;
-    select?: Prisma.ProjectSelect;
-  }) {
-    const {skip, take, where, orderBy, select} = params;
-    return await this.prisma.project.findMany({
-      skip,
-      take,
-      where,
-      orderBy,
-      select,
-    });
+  async findMany(params: Prisma.ProjectFindManyArgs): Promise<Project[]> {
+    return await this.prisma.project.findMany(params);
   }
 
   /**

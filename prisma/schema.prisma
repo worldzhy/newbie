@@ -274,7 +274,7 @@ model Organization {
 model Project {
   id                   String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name                 String                @unique
-  state                ProjectState
+  state                ProjectState          @default(PLANNING)
   clientName           String?
   clientEmail          String?
   createdAt            DateTime              @default(now())
@@ -285,50 +285,61 @@ model Project {
 }
 
 enum ProjectState {
+  PLANNING
   DESIGNING
   DEVELOPING
   DONE
 }
 
 model ProjectCheckpoint {
+  id        Int                    @id @default(autoincrement())
   type      ProjectCheckpointType
-  content   String?
-  createdAt DateTime              @default(now())
-  updatedAt DateTime              @updatedAt
-  Project   Project               @relation(fields: [projectId], references: [id])
-  projectId String                @db.Uuid
+  state     ProjectCheckpointState @default(TODO)
+  createdAt DateTime               @default(now())
+  updatedAt DateTime               @updatedAt
+  Project   Project                @relation(fields: [projectId], references: [id])
+  projectId String                 @db.Uuid
 
-  @@id([type, projectId])
+  @@unique([type, projectId])
 }
 
 enum ProjectCheckpointType {
-  MGMT_JIRA
-  DESIGN_FIGMA
-  ACCOUNT_APPLE
-  ACCOUNT_GOOGLE
-  CODE_FE_REPO
-  CODE_FE_FRAMEWORK
-  CODE_BE_REPO
-  CODE_BE_FRAMEWORK
-  CODE_BE_DATABASE
-  CODE_BE_API
-  INFRASTRUCTURE
+  MANAGER_PRODUCT_REQUIREMENTS
+  MANAGER_PROJECT_KANBAN
+  DESIGNER_WIREFRAMES
+  DESIGNER_PROTOTYPES
+  DEVELOPER_ACCOUNT_APPLE
+  DEVELOPER_ACCOUNT_GOOGLE
+  DEVELOPER_BACKEND_REPO
+  DEVELOPER_BACKEND_FRAMEWORK
+  DEVELOPER_BACKEND_DATABASE
+  DEVELOPER_BACKEND_API
+  DEVELOPER_FRONTEND_REPO
+  DEVELOPER_FRONTEND_FRAMEWORK
+  DEVELOPER_INFRASTRUCTURE
+}
+
+enum ProjectCheckpointState {
+  TODO
+  PROCESSING
+  DONE
 }
 
 model ProjectEnvironment {
-  type               ProjectEnvironmentType
-  awsAccountId       String?
-  awsProfile         String?
-  awsAccessKeyId     String?
-  awsSecretAccessKey String? // hash
-  awsRegion          String?
-  cfTemplateS3       String?
-  createdAt          DateTime               @default(now())
-  updatedAt          DateTime               @updatedAt
-  project            Project                @relation(fields: [projectId], references: [id])
-  projectId          String                 @db.Uuid
+  id                  Int                    @id @default(autoincrement())
+  type                ProjectEnvironmentType
+  awsAccountId        String?
+  awsProfile          String?
+  awsAccessKeyId      String?
+  awsSecretAccessKey  String? // hash
+  awsRegion           String?
+  s3ForCloudformation String?
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+  project             Project                @relation(fields: [projectId], references: [id])
+  projectId           String                 @db.Uuid
 
-  @@id([type, projectId])
+  @@unique([type, projectId])
 }
 
 enum ProjectEnvironmentType {

@@ -6,13 +6,17 @@ import {PrismaService} from '../../../_prisma/_prisma.service';
 export class EnvironmentService {
   private prisma: PrismaService = new PrismaService();
 
-  async findOne(where: Prisma.ProjectEnvironmentWhereUniqueInput) {
+  async findOne(
+    where: Prisma.ProjectEnvironmentWhereUniqueInput
+  ): Promise<ProjectEnvironment | null> {
     return await this.prisma.projectEnvironment.findUnique({
       where,
     });
   }
 
-  async findMany(where: Prisma.ProjectEnvironmentWhereInput) {
+  async findMany(
+    where: Prisma.ProjectEnvironmentWhereInput
+  ): Promise<ProjectEnvironment[]> {
     return await this.prisma.projectEnvironment.findMany({
       where,
     });

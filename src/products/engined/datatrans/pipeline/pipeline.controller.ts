@@ -18,16 +18,12 @@ export class DatatransPipelineController {
   /**
    * Get pipelines by page number. The order is by pipeline name.
    *
-   * @returns {Promise<{ data: object, err: object }>}
+   * @returns {Promise<DatatransPipeline[]>}
    * @memberof DatatransPipelineController
    */
   @Get('/pipelines')
-  async getPipelines(): Promise<{data: object | null; err: object | null}> {
-    const pipelines = await this.pipelineService.findMany({});
-    return {
-      data: pipelines,
-      err: null,
-    };
+  async getPipelines() {
+    return await this.pipelineService.findMany({});
   }
 
   /**
