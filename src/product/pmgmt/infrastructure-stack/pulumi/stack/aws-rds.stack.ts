@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import * as aws from '@pulumi/aws';
 import {getAwsConfig} from '../../../../../_config/_aws.config';
-import {PulumiUtil} from '../pulumi.util';
+import {buildResourceOptions} from '../pulumi.util';
 
 @Injectable()
 export class AwsRds_Stack {
@@ -70,7 +70,7 @@ export class AwsRds_Stack {
           publiclyAccessible: params.isPublic,
           skipFinalSnapshot: true, // 'finalSnapshotIdentifier' is required when 'skipFinalSnapshot' is false.
         },
-        PulumiUtil.buildResourceOptions(getAwsConfig().region!)
+        buildResourceOptions(getAwsConfig().region!)
       );
 
       return {

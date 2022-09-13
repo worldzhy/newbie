@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import * as awsx from '@pulumi/awsx';
 import {getAwsConfig} from '../../../../../_config/_aws.config';
-import {PulumiUtil} from '../pulumi.util';
+import {buildResourceOptions} from '../pulumi.util';
 
 @Injectable()
 export class AwsEcr_Stack {
@@ -31,14 +31,14 @@ export class AwsEcr_Stack {
     const repository = new awsx.ecr.Repository(
       uniqueResourceName,
       {name: params.repositoryName},
-      PulumiUtil.buildResourceOptions(getAwsConfig().region!)
+      buildResourceOptions(getAwsConfig().region!)
     );
 
     uniqueResourceName = 'ecr-image';
     const image = new awsx.ecr.Image(
       uniqueResourceName,
       {repositoryUrl: repository.url},
-      PulumiUtil.buildResourceOptions(getAwsConfig().region!)
+      buildResourceOptions(getAwsConfig().region!)
     );
 
     return {

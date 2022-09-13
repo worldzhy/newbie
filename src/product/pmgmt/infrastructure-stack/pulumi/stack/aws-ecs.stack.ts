@@ -2,9 +2,9 @@ import {Injectable} from '@nestjs/common';
 import * as pulumi from '@pulumi/pulumi';
 import * as aws from '@pulumi/aws';
 import * as awsx from '@pulumi/awsx';
-import {PulumiUtil} from '../pulumi.util';
-import {CommonUtil} from '../../../../../_util/_common.util';
-import * as validator from '../../../../../_validator/_aws.validator';
+import {buildResourceOptions, generateSecurityGroup} from '../pulumi.util';
+import {randomCode} from '../../../../../_util/_util';
+import {verifyRegion} from '../../../../../_validator/_aws.validator';
 import {getAwsConfig} from '../../../../../_config/_aws.config';
 
 @Injectable()
@@ -53,7 +53,7 @@ export class AwsEcs_Stack {
       let maxTaskCount = params.maxTaskCount;
 
       // Guard statement.
-      if (!validator.verifyRegion(getAwsConfig().region!)) {
+      if (!verifyRegion(getAwsConfig().region!)) {
         return undefined;
       }
       if (vpcId === undefined || vpcId === null || vpcId.trim() === '') {
@@ -81,7 +81,7 @@ export class AwsEcs_Stack {
       const cluster = new aws.ecs.Cluster(
         uniqueResourceName,
         {name: clusterName},
-        PulumiUtil.buildResourceOptions(getAwsConfig().region!)
+        buildResourceOptions(getAwsConfig().region!)
       );
 
       // [step 2] Prepare a task definition for container service.
@@ -91,12 +91,9 @@ export class AwsEcs_Stack {
       });
 
       // [step 2-2] Create an application loadbalancer.
-      const securityGroup = PulumiUtil.generateSecurityGroup(
-        [ecsContainerPort],
-        vpcId
-      );
+      const securityGroup = generateSecurityGroup([ecsContainerPort], vpcId);
       uniqueResourceName = 'loadbalancer';
-      const lbName = ecrName + '-lb-' + CommonUtil.randomCode(4);
+      const lbName = ecrName + '-lb-' + randomCode(4);
       const lb = new awsx.lb.ApplicationLoadBalancer(
         uniqueResourceName,
         {
@@ -107,7 +104,7 @@ export class AwsEcs_Stack {
           },
           securityGroups: [securityGroup.id],
         },
-        PulumiUtil.buildResourceOptions(getAwsConfig().region!)
+        buildResourceOptions(getAwsConfig().region!)
       );
 
       // [step 2-3] Create a task definition. https://docs.aws.amazon.com/AmazonECS/latest/userguide/fargate-task-defs.html
@@ -157,8 +154,7 @@ export class AwsEcs_Stack {
 
       // [step 3] Create a constainer service.
       uniqueResourceName = 'fargate-service';
-      const fargateServiceName =
-        ecrName + '-service-' + CommonUtil.randomCode(4);
+      const fargateServiceName = ecrName + '-service-' + randomCode(4);
       const containerService = new awsx.ecs.FargateService(
         uniqueResourceName,
         {
@@ -214,7 +210,7 @@ export class AwsEcs_Stack {
           scalableDimension: 'ecs:service:DesiredCount',
           serviceNamespace: 'ecs',
         },
-        PulumiUtil.buildResourceOptions(getAwsConfig().region!)
+        buildResourceOptions(getAwsConfig().region!)
       );
 
       // [step 4-2] Bind policies to the auto-scaling target.
@@ -239,7 +235,7 @@ export class AwsEcs_Stack {
             ],
           },
         },
-        PulumiUtil.buildResourceOptions(getAwsConfig().region!)
+        buildResourceOptions(getAwsConfig().region!)
       );
 
       uniqueResourceName = 'scaling-down-policy';
@@ -263,7 +259,7 @@ export class AwsEcs_Stack {
             ],
           },
         },
-        PulumiUtil.buildResourceOptions(getAwsConfig().region!)
+        buildResourceOptions(getAwsConfig().region!)
       );
 
       return {

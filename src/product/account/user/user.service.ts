@@ -1,8 +1,8 @@
 import {Injectable} from '@nestjs/common';
 import {PrismaService} from '../../../_prisma/_prisma.service';
 import {Prisma, User} from '@prisma/client';
-import {CommonUtil} from '../../../_util/_common.util';
-import * as validator from '../../../_validator/_account.validator';
+import {generateHash} from '../../../_util/_util';
+import {verifyUuid} from '../../../_validator/_account.validator';
 
 const bcrypt = require('bcryptjs');
 
@@ -64,7 +64,7 @@ export class UserService {
    * @memberof UserService
    */
   async findByAccount(account: string): Promise<User | null> {
-    if (validator.verifyUuid(account)) {
+    if (verifyUuid(account)) {
       return await this.findOne({id: account});
     } else {
       const users = await this.findMany({
@@ -184,7 +184,7 @@ export class UserService {
     }
 
     // [step 3] Generate the new password hash.
-    const hash = await CommonUtil.generateHash(newPassword);
+    const hash = await generateHash(newPassword);
 
     // [step 4] Update the password.
     const result = await this.update({
@@ -201,7 +201,7 @@ export class UserService {
 
   async resetPassword(userId: string, newPassword: string): Promise<boolean> {
     // [step 1] Generate the new password hash.
-    const hash = await CommonUtil.generateHash(newPassword);
+    const hash = await generateHash(newPassword);
 
     // [step 2] Update the password.
     const result = await this.update({

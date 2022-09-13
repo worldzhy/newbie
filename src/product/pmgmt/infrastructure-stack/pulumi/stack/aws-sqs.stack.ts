@@ -2,7 +2,7 @@ import {Injectable} from '@nestjs/common';
 import * as aws from '@pulumi/aws';
 import {getAwsConfig} from '../../../../../_config/_aws.config';
 import * as validator from '../../../../../_validator/_aws.validator';
-import {PulumiUtil} from '../pulumi.util';
+import {buildResourceOptions} from '../pulumi.util';
 
 @Injectable()
 export class AwsSqs_Stack {
@@ -37,7 +37,7 @@ export class AwsSqs_Stack {
     const bucket = new aws.s3.Bucket(
       uniqueResourceName,
       {bucket: bucketName},
-      PulumiUtil.buildResourceOptions(getAwsConfig().region!)
+      buildResourceOptions(getAwsConfig().region!)
     );
 
     // Create an S3 Bucket Policy to allow public read of all objects in bucket.
@@ -69,7 +69,7 @@ export class AwsSqs_Stack {
         bucket: bucket.bucket, // Refer to the bucket created earlier.
         policy: bucket.bucket.apply(publicReadPolicyForBucket), // Use output property `siteBucket.bucket`.
       },
-      PulumiUtil.buildResourceOptions(getAwsConfig().region!)
+      buildResourceOptions(getAwsConfig().region!)
     );
 
     return {

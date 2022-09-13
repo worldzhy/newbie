@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import {Request, Response} from 'express';
 import {CustomLoggerService} from '../_logger/_custom-logger.service';
-import {CommonUtil} from '../_util/_common.util';
+import {stringfy} from '../_util/_util';
 
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -21,7 +21,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     // [step 1] Assemble log message.
     let message = `${statusCode} ${exception.message} ${request.method} ${request.url} `;
     if (request.body && Object.keys(request.body).length > 0) {
-      message += `${CommonUtil.stringfy(request.body)}`;
+      message += `${stringfy(request.body)}`;
     }
 
     // [step 2] Write log.

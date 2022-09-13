@@ -1,7 +1,7 @@
 import {Injectable, NestMiddleware} from '@nestjs/common';
 import {Request, Response, NextFunction} from 'express';
 import {CustomLoggerService} from '../_logger/_custom-logger.service';
-import {CommonUtil} from '../_util/_common.util';
+import {stringfy} from '../_util/_util';
 
 @Injectable()
 export class HttpMiddleware implements NestMiddleware {
@@ -15,7 +15,7 @@ export class HttpMiddleware implements NestMiddleware {
       // [step 1] Assemble log message.
       let message = `${statusCode} ${statusMessage} ${method} ${originalUrl} `;
       if (request.body && Object.keys(request.body).length > 0) {
-        message += `${CommonUtil.stringfy(request.body)}`;
+        message += `${stringfy(request.body)}`;
       }
 
       // [step 2] Write log.

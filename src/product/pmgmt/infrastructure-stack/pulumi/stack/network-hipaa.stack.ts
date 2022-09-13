@@ -3,7 +3,11 @@ import {InfrastructureStackType} from '@prisma/client';
 import * as aws from '@pulumi/aws';
 import * as awsx from '@pulumi/awsx';
 import {getAwsConfig} from '../../../../../_config/_aws.config';
-import {PulumiUtil} from '../pulumi.util';
+import {
+  buildResourceOptions,
+  generateSecurityGroupForEC2,
+  generateSecurityGroupForRDS,
+} from '../pulumi.util';
 
 @Injectable()
 export class NetworkHipaa_Stack {
@@ -91,7 +95,7 @@ export class NetworkHipaa_Stack {
             strategy: awsx.ec2.NatGatewayStrategy.OnePerAz,
           },
         },
-        PulumiUtil.buildResourceOptions(getAwsConfig().region!)
+        buildResourceOptions(getAwsConfig().region!)
       );
 
       uniqueResourceName = 'igw';
@@ -100,17 +104,17 @@ export class NetworkHipaa_Stack {
         {
           vpcId: vpc.vpcId,
         },
-        PulumiUtil.buildResourceOptions(getAwsConfig().region!)
+        buildResourceOptions(getAwsConfig().region!)
       );
 
       // Allocate EC2 security group.
-      const ec2SecurityGroup = PulumiUtil.generateSecurityGroupForEC2(
+      const ec2SecurityGroup = generateSecurityGroupForEC2(
         vpcName + '-ec2-sg',
         vpc.vpcId
       );
 
       // Allocate RDS security group.
-      const rdsSecurityGroup = PulumiUtil.generateSecurityGroupForRDS(
+      const rdsSecurityGroup = generateSecurityGroupForRDS(
         vpcName + '-rds-sg',
         vpc.vpcId,
         [ec2SecurityGroup.id]

@@ -3,7 +3,7 @@ import * as aws from '@pulumi/aws';
 import * as eks from '@pulumi/eks';
 import * as k8s from '@pulumi/kubernetes';
 import {getAwsConfig} from '../../../../../_config/_aws.config';
-import {PulumiUtil} from '../pulumi.util';
+import {buildResourceOptions} from '../pulumi.util';
 
 @Injectable()
 export class AwsEks_Stack {
@@ -101,7 +101,7 @@ export class AwsEks_Stack {
             'scheduler',
           ],
         },
-        PulumiUtil.buildResourceOptions(getAwsConfig().region!)
+        buildResourceOptions(getAwsConfig().region!)
       );
 
       // [step 3] Deployment and running application.
@@ -133,9 +133,8 @@ export class AwsEks_Stack {
         },
         {
           provider: cluster.provider,
-          transformations: PulumiUtil.buildResourceOptions(
-            getAwsConfig().region!
-          ).transformations,
+          transformations: buildResourceOptions(getAwsConfig().region!)
+            .transformations,
         }
       );
 
@@ -152,9 +151,8 @@ export class AwsEks_Stack {
         },
         {
           provider: cluster.provider,
-          transformations: PulumiUtil.buildResourceOptions(
-            getAwsConfig().region!
-          ).transformations,
+          transformations: buildResourceOptions(getAwsConfig().region!)
+            .transformations,
         }
       );
 

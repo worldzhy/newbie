@@ -6,7 +6,7 @@ import {
   VerificationCodeUse,
 } from '@prisma/client';
 import * as validator from '../../../_validator/_account.validator';
-import {CommonUtil} from '../../../_util/_common.util';
+import * as util from '../../../_util/_util';
 
 @Injectable()
 export class VerificationCodeService {
@@ -57,7 +57,7 @@ export class VerificationCodeService {
         where: {
           userId: account.userId,
           status: VerificationCodeStatus.ACTIVE,
-          expiredAt: {gte: CommonUtil.nowPlusMinutes(4)},
+          expiredAt: {gte: util.nowPlusMinutes(4)},
         },
       });
     } else if (email && validator.verifyEmail(email)) {
@@ -65,7 +65,7 @@ export class VerificationCodeService {
         where: {
           email: account.email,
           status: VerificationCodeStatus.ACTIVE,
-          expiredAt: {gte: CommonUtil.nowPlusMinutes(4)},
+          expiredAt: {gte: util.nowPlusMinutes(4)},
         },
       });
     } else if (phone && validator.verifyPhone(phone)) {
@@ -73,7 +73,7 @@ export class VerificationCodeService {
         where: {
           phone: account.phone,
           status: VerificationCodeStatus.ACTIVE,
-          expiredAt: {gte: CommonUtil.nowPlusMinutes(4)},
+          expiredAt: {gte: util.nowPlusMinutes(4)},
         },
       });
     } else {
@@ -97,7 +97,7 @@ export class VerificationCodeService {
 
     // [step 2: start] Generate verification code which is valid for 5 minutes.
     // Totally 1000000 different verification codes
-    const code = CommonUtil.randomCode(6);
+    const code = util.randomCode(6);
     const newCode = await this.prisma.verificationCode.create({
       data: {
         userId: userId,
@@ -106,7 +106,7 @@ export class VerificationCodeService {
         code: code,
         use: use,
         status: VerificationCodeStatus.ACTIVE,
-        expiredAt: CommonUtil.nowPlusMinutes(5),
+        expiredAt: util.nowPlusMinutes(5),
       },
     });
 

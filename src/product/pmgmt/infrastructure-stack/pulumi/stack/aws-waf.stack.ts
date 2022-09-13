@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import * as aws from '@pulumi/aws';
 import {getAwsConfig} from '../../../../../_config/_aws.config';
-import {PulumiUtil} from '../pulumi.util';
+import {buildResourceOptions} from '../pulumi.util';
 
 @Injectable()
 export class AwsWaf_Stack {
@@ -92,7 +92,7 @@ export class AwsWaf_Stack {
             sampledRequestsEnabled: false,
           },
         },
-        PulumiUtil.buildResourceOptions(getAwsConfig().region!)
+        buildResourceOptions(getAwsConfig().region!)
       );
 
       // [step 2] Create web ACL.
@@ -199,7 +199,7 @@ export class AwsWaf_Stack {
             sampledRequestsEnabled: false,
           },
         },
-        PulumiUtil.buildResourceOptions(getAwsConfig().region!)
+        buildResourceOptions(getAwsConfig().region!)
       );
 
       // [step 3] Associate web ACL with application loadbalancer.
@@ -210,7 +210,7 @@ export class AwsWaf_Stack {
           resourceArn: params.applicationLoadBalancerArn,
           webAclArn: webAcl.arn,
         },
-        PulumiUtil.buildResourceOptions(getAwsConfig().region!)
+        buildResourceOptions(getAwsConfig().region!)
       );
     };
 }

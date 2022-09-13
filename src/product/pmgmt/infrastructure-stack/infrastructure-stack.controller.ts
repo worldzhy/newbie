@@ -7,7 +7,7 @@ import {
   InfrastructureStackType,
   ProjectEnvironmentType,
 } from '@prisma/client';
-import {CommonUtil} from '../../../_util/_common.util';
+import {randomCode} from '../../../_util/_util';
 
 @ApiTags('[Product] Project Management / Infrastructure')
 @ApiBearerAuth()
@@ -123,7 +123,7 @@ export class InfrastructureStackController {
   ) {
     const {projectName, environment, type, params, manager} = body;
 
-    let stackName: string = type + '-' + CommonUtil.randomCode(8);
+    let stackName: string = type + '-' + randomCode(8);
     let pulumiProjectName: string | undefined = undefined;
 
     // CloudFormation stack name must satisfy regular expression pattern: [a-zA-Z][-a-zA-Z0-9]*".

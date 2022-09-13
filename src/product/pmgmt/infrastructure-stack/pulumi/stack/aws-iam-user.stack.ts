@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import * as aws from '@pulumi/aws';
 import {getAwsConfig} from '../../../../../_config/_aws.config';
-import {PulumiUtil} from '../pulumi.util';
+import {buildResourceOptions} from '../pulumi.util';
 
 @Injectable()
 export class AwsIamUser_Stack {
@@ -41,7 +41,7 @@ export class AwsIamUser_Stack {
         {
           name: userGroupName,
         },
-        PulumiUtil.buildResourceOptions(getAwsConfig().region!)
+        buildResourceOptions(getAwsConfig().region!)
       );
 
       uniqueResourceName = 'iam-usergroup-policy-attachment';
@@ -54,7 +54,7 @@ export class AwsIamUser_Stack {
               ? 'arn:aws-cn:'
               : 'arn:aws:') + 'iam::aws:policy/AWSCodeCommitPowerUser',
         },
-        PulumiUtil.buildResourceOptions(getAwsConfig().region!)
+        buildResourceOptions(getAwsConfig().region!)
       );
     }
 
@@ -65,7 +65,7 @@ export class AwsIamUser_Stack {
       {
         name: params.iamUserName,
       },
-      PulumiUtil.buildResourceOptions(getAwsConfig().region!)
+      buildResourceOptions(getAwsConfig().region!)
     );
 
     uniqueResourceName = 'iam-usergroup-membership';
@@ -75,7 +75,7 @@ export class AwsIamUser_Stack {
         user: iamUser.name,
         groups: [userGroupName],
       },
-      PulumiUtil.buildResourceOptions(getAwsConfig().region!)
+      buildResourceOptions(getAwsConfig().region!)
     );
 
     // [step 4] Create HTTPS Git credentials for Amazon CodeCommit
@@ -86,7 +86,7 @@ export class AwsIamUser_Stack {
         serviceName: 'codecommit.amazonaws.com',
         userName: iamUser.name,
       },
-      PulumiUtil.buildResourceOptions(getAwsConfig().region!)
+      buildResourceOptions(getAwsConfig().region!)
     );
 
     return {

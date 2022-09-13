@@ -1,8 +1,8 @@
 import {Injectable} from '@nestjs/common';
 import {AuthJwtService} from './auth/auth-jwt/auth-jwt.service';
 import {UserService} from './user/user.service';
-import {CommonUtil} from '../../_util/_common.util';
 import {UserStatus} from '@prisma/client';
+import {generateHash} from '../../_util/_util';
 
 @Injectable()
 export class AccountService {
@@ -36,7 +36,7 @@ export class AccountService {
     // [step 1] Generate password hash if needed.
     let passwordHash: string | null | undefined;
     if (signupUser.password) {
-      passwordHash = await CommonUtil.generateHash(signupUser.password);
+      passwordHash = await generateHash(signupUser.password);
     }
 
     // [step 2] Create new user.

@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import * as aws from '@pulumi/aws';
 import {getAwsConfig} from '../../../../../_config/_aws.config';
-import {PulumiUtil} from '../pulumi.util';
+import {buildResourceOptions} from '../pulumi.util';
 
 @Injectable()
 export class AwsCloudfront_Stack {
@@ -36,7 +36,7 @@ export class AwsCloudfront_Stack {
         repositoryName: params.repositoryName,
         defaultBranch: 'main',
       },
-      PulumiUtil.buildResourceOptions(getAwsConfig().region!)
+      buildResourceOptions(getAwsConfig().region!)
     );
 
     return {
