@@ -1,5 +1,5 @@
 import {Injectable} from '@nestjs/common';
-import * as validator from '../../../../_validator/_account.validator';
+import * as validator from '../../account.validator';
 import {UserService} from '../../user/user.service';
 
 @Injectable()

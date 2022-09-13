@@ -12,3 +12,7 @@ export function verifyProjectName(projectName: string) {
   // [step 2] For special characters, only '-' can be contained in the username.
   return validator.isAlphanumeric(projectName, 'en-US', {ignore: '[-_ ]'});
 }
+
+export function verifyEmail(email: string): boolean {
+  return validator.isEmail(email);
+}

@@ -2,8 +2,7 @@ import {Controller, Get, Post, Param, Body} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {ProjectService} from './project.service';
 import {EnvironmentService} from '../environment/environment.service';
-import * as accountValidator from '../../../_validator/_account.validator';
-import * as projectValidator from '../../../_validator/_project.validator';
+import * as validator from './project.validator';
 import {
   ProjectCheckpointType,
   ProjectEnvironmentType,
@@ -146,10 +145,10 @@ export class ProjectController {
     // [step 1] Guard statement.
     if (
       !body.projectName ||
-      !projectValidator.verifyProjectName(body.projectName) ||
+      !validator.verifyProjectName(body.projectName) ||
       !body.clientName ||
       !body.clientEmail ||
-      !accountValidator.verifyEmail(body.clientEmail)
+      !validator.verifyEmail(body.clientEmail)
     ) {
       return {
         data: null,

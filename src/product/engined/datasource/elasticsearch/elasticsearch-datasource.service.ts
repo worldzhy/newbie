@@ -1,7 +1,7 @@
 import {RequestParams} from '@elastic/elasticsearch';
 import {Injectable} from '@nestjs/common';
 import {ElasticsearchDatasource, Prisma} from '@prisma/client';
-import {ElasticsearchService} from '../../../../_elasticsearch/_elasticsearch.service';
+import {ElasticsearchService} from '../../../../_elastic/_elasticsearch.service';
 import {PrismaService} from '../../../../_prisma/_prisma.service';
 import {get as lodash_get, split as lodash_split} from 'lodash';
 import {ElasticsearchDatasourceIndexService} from './index/index.service';

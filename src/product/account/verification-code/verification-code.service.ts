@@ -5,7 +5,7 @@ import {
   VerificationCodeStatus,
   VerificationCodeUse,
 } from '@prisma/client';
-import * as validator from '../../../_validator/_account.validator';
+import * as validator from '../account.validator';
 import * as util from '../../../_util/_util';
 
 @Injectable()

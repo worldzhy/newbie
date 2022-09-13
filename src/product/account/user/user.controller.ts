@@ -1,7 +1,7 @@
 import {Controller, Get, Post, Param, Body} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {UserService} from './user.service';
-import * as validator from '../../../_validator/_account.validator';
+import * as validator from '../account.validator';
 
 @ApiTags('[Product] Account / User')
 @ApiBearerAuth()

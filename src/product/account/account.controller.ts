@@ -9,7 +9,7 @@ import {LoggingInByVerificationCode} from './auth/auth-verification-code/auth-ve
 import {AccountService} from './account.service';
 import {UserService} from './user/user.service';
 import {ProfileService} from './profile/profile.service';
-import * as validator from '../../_validator/_account.validator';
+import * as validator from './account.validator';
 
 @ApiTags('[Product] Account')
 @Controller()

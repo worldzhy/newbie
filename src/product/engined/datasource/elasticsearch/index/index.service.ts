@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {ElasticsearchDatasourceIndex, Prisma} from '@prisma/client';
-import {ElasticsearchService} from '../../../../../_elasticsearch/_elasticsearch.service';
+import {ElasticsearchService} from '../../../../../_elastic/_elasticsearch.service';
 import {PrismaService} from '../../../../../_prisma/_prisma.service';
 
 @Injectable()
