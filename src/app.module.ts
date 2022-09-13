@@ -12,7 +12,7 @@ import {DatasourceModule} from './product/engined/datasource/datasource.module';
 import {DatatransModule} from './product/engined/datatrans/datatrans.module';
 import {ProjectManagementModule} from './product/pmgmt/pmgmt.module';
 import {NotificationModule} from './microservice/notification/notification.module';
-import {TaskManagementModule} from './microservice/task-mgmt/task-mgmt.module';
+import {TaskModule} from './microservice/task/task.module';
 
 @Module({
   imports: [
@@ -22,7 +22,7 @@ import {TaskManagementModule} from './microservice/task-mgmt/task-mgmt.module';
 
     // Microservice modules
     NotificationModule,
-    TaskManagementModule,
+    TaskModule,
 
     // Product modules
     AccountModule,

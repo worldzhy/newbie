@@ -3,6 +3,7 @@ import * as aws from '@pulumi/aws';
 import {AwsValidator} from '../../../../../_validator/_aws.validator';
 import {PulumiUtil} from '../pulumi.util';
 import {CommonUtil} from '../../../../../_util/_common.util';
+import {getAwsConfig} from '../../../../../_config/_aws.config';
 
 @Injectable()
 export class AwsS3_Stack {
@@ -26,11 +27,7 @@ export class AwsS3_Stack {
   }
 
   static getStackProgram =
-    (
-      params: {bucketName: string; isPublic: boolean},
-      awsConfig: {region: string}
-    ) =>
-    async () => {
+    (params: {bucketName: string; isPublic: boolean}) => async () => {
       const isPublic = params.isPublic;
       let bucketName = params.bucketName + '-' + CommonUtil.randomCode(4);
 
@@ -44,7 +41,7 @@ export class AwsS3_Stack {
       const bucket = new aws.s3.Bucket(
         uniqueResourceName,
         {bucket: bucketName},
-        PulumiUtil.getResourceOptions(awsConfig.region)
+        PulumiUtil.buildResourceOptions(getAwsConfig().region!)
       );
 
       // [step 3] Set public access policy to allow public read of all objects in bucket.
@@ -56,7 +53,7 @@ export class AwsS3_Stack {
             bucket: bucket.bucket, // Refer to the bucket created earlier.
             policy: bucket.bucket.apply(publicReadPolicyForBucket), // Use output property `siteBucket.bucket`.
           },
-          PulumiUtil.getResourceOptions(awsConfig.region)
+          PulumiUtil.buildResourceOptions(getAwsConfig().region!)
         );
       }
       // Define the function
@@ -71,7 +68,7 @@ export class AwsS3_Stack {
               Principal: '*',
               Action: ['s3:GetObject'],
               Resource: [
-                awsConfig.region.startsWith('cn')
+                getAwsConfig().region!.startsWith('cn')
                   ? `arn:aws-cn:s3:::${bucketName}/*`
                   : `arn:aws:s3:::${bucketName}/*`, // Policy refers to bucket name explicitly.
               ],

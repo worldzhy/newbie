@@ -7,7 +7,6 @@ import {
   PulumiFn,
 } from '@pulumi/pulumi/automation';
 import {InfrastructureStackType} from '@prisma/client';
-import {PulumiConfig} from '../../../../_config/_pulumi.config';
 import {AwsCloudfront_Stack} from './stack/aws-cloudfront.stack';
 import {AwsCodecommit_Stack} from './stack/aws-codecommit.stack';
 import {AwsEcr_Stack} from './stack/aws-ecr.stack';
@@ -21,48 +20,12 @@ import {AwsWaf_Stack} from './stack/aws-waf.stack';
 import {ComputingFargate_Stack} from './stack/computing-fargate.stack';
 import {NetworkHipaa_Stack} from './stack/network-hipaa.stack';
 import {Null_Stack} from './stack/null.stack';
+import {getAwsConfig} from '../../../../_config/_aws.config';
+import {getPulumiConfig} from '../../../../_config/_pulumi.config';
 
 @Injectable()
 export class PulumiService {
-  private pulumiAwsVersion = PulumiConfig.getAwsVersion();
-  private awsConfig: {
-    accountId: string;
-    region: string;
-    profile: string | null;
-    accessKey: string | null;
-    secretKey: string | null;
-  } = {
-    accountId: '',
-    region: '',
-    profile: null,
-    accessKey: null,
-    secretKey: null,
-  };
-
-  /**
-   * Attention:
-   * These 5 functions must be called before 'PulumiService.build()'.
-   */
-  setAwsAccountId(awsAccountId: string) {
-    this.awsConfig.accountId = awsAccountId;
-    return this;
-  }
-  setAwsRegion(awsRegion: string) {
-    this.awsConfig.region = awsRegion;
-    return this;
-  }
-  setAwsProfile(awsProfile: string | null) {
-    this.awsConfig.profile = awsProfile;
-    return this;
-  }
-  setAwsAccessKey(awsAccessKey: string | null) {
-    this.awsConfig.accessKey = awsAccessKey;
-    return this;
-  }
-  setAwsSecretKey(awsSecretKey: string | null) {
-    this.awsConfig.secretKey = awsSecretKey;
-    return this;
-  }
+  private pulumiConfig = getPulumiConfig();
 
   /**
    * Start a stack.
@@ -116,17 +79,17 @@ export class PulumiService {
       program,
     };
     const stack = await LocalWorkspace.createOrSelectStack(args);
-    await stack.workspace.installPlugin('aws', this.pulumiAwsVersion);
-    if (this.awsConfig.profile) {
+    await stack.workspace.installPlugin('aws', this.pulumiConfig.awsVersion!);
+    if (getAwsConfig().profile) {
       await stack.setAllConfig({
-        'aws:profile': {value: this.awsConfig.profile},
-        'aws:region': {value: this.awsConfig.region},
+        'aws:profile': {value: getAwsConfig().profile!},
+        'aws:region': {value: getAwsConfig().region!},
       });
     } else {
       await stack.setAllConfig({
-        'aws:accessKey': {value: this.awsConfig.accessKey!},
-        'aws:secretKey': {value: this.awsConfig.secretKey!},
-        'aws:region': {value: this.awsConfig.region},
+        'aws:accessKey': {value: getAwsConfig().accessKeyId!},
+        'aws:secretKey': {value: getAwsConfig().secretAccessKey!},
+        'aws:region': {value: getAwsConfig().region!},
       });
     }
 
@@ -185,7 +148,7 @@ export class PulumiService {
       headers: {
         Accept: 'application/vnd.pulumi+8',
         'Content-Type': 'application/json',
-        Authorization: 'token ' + PulumiConfig.getAccessToken(),
+        Authorization: 'token ' + this.pulumiConfig.accessToken,
       },
       params: {
         force: true,
@@ -206,7 +169,7 @@ export class PulumiService {
       headers: {
         Accept: 'application/vnd.pulumi+8',
         'Content-Type': 'application/json',
-        Authorization: 'token ' + PulumiConfig.getAccessToken(),
+        Authorization: 'token ' + this.pulumiConfig.accessToken,
       },
     });
   }
@@ -233,9 +196,9 @@ export class PulumiService {
 
     // [step 2] Get stack.
     const stack = await LocalWorkspace.selectStack(args);
-    await stack.workspace.installPlugin('aws', this.pulumiAwsVersion);
+    await stack.workspace.installPlugin('aws', this.pulumiConfig.awsVersion!);
     await stack.setAllConfig({
-      'aws:region': {value: this.awsConfig.region},
+      'aws:region': {value: getAwsConfig().region!},
       'aws:profile': {value: stackProjectName},
     });
 
@@ -288,10 +251,7 @@ export class PulumiService {
     stackType: InfrastructureStackType,
     stackParams: any
   ) {
-    return this.getStackServiceByType(stackType).getStackProgram(
-      stackParams,
-      this.awsConfig
-    );
+    return this.getStackServiceByType(stackType).getStackProgram(stackParams);
   }
 
   /**

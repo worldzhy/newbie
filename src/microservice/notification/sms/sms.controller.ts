@@ -1,13 +1,12 @@
 import {Body, Controller, Post} from '@nestjs/common';
 import {ApiBearerAuth, ApiBody, ApiTags} from '@nestjs/swagger';
-import {NotificationConfigurationService} from '../configuration/configuration.service';
 import {SmsService} from './sms.service';
 
 @ApiTags('[Microservice] Notification / Text Message')
 @ApiBearerAuth()
 @Controller('notification')
 export class SmsController {
-  private configuration = new NotificationConfigurationService();
+  private smsService = new SmsService();
 
   /**
    * Send SMS to one phone.
@@ -37,11 +36,8 @@ export class SmsController {
       text: string;
     }
   ) {
-    const configuration = await this.configuration.defaultConfiguration();
-    const smsService = new SmsService(configuration!);
-
     const {phone, text} = body;
-    return await smsService.sendOne({phone, text});
+    return await this.smsService.sendOne({phone, text});
   }
 
   /**
@@ -72,11 +68,8 @@ export class SmsController {
       text: string;
     }
   ) {
-    const configuration = await this.configuration.defaultConfiguration();
-    const smsService = new SmsService(configuration!);
-
     const {phones, text} = body;
-    return await smsService.sendMany({phones, text});
+    return await this.smsService.sendMany({phones, text});
   }
   /* End */
 }

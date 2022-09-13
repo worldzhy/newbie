@@ -126,21 +126,21 @@ const postgresql = {
 const elasticsearchDatasourceService = new ElasticsearchDatasourceService();
 const elasticsearch = {node: '127.0.0.1'};
 
-// Pipeline
+// Datatrans Pipeline
 const pipelineController = new DatatransPipelineController();
 const pipeline = {
   name: 'pg2es_pipeline',
   state: DatatransPipelineState.IDLE,
   queueUrl:
     'https://sqs.cn-northwest-1.amazonaws.com.cn/077767357755/dev-inceptionpad-message-service-email-level1',
-  hasManyTables: ['PostgresqlDatasourceTableColumn'],
-  belongsToTables: ['PostgresqlDatasource'],
-  fromTableId: 19,
+  hasManyTables: [],
+  belongsToTables: [],
+  fromTableId: 16,
   toIndexId: 1,
 };
 
 async function main() {
-  console.log('start seeding ...');
+  console.log('Start seeding ...');
 
   console.log('- users');
   for (const user of users) {

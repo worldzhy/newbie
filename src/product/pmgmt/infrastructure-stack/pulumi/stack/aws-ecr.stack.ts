@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import * as awsx from '@pulumi/awsx';
+import {getAwsConfig} from '../../../../../_config/_aws.config';
 import {PulumiUtil} from '../pulumi.util';
 
 @Injectable()
@@ -22,29 +23,27 @@ export class AwsEcr_Stack {
     return ['repositoryUrl', 'imageUrn'];
   }
 
-  static getStackProgram =
-    (params: {repositoryName: string}, awsConfig: {region: string}) =>
-    async () => {
-      // [step 1] Guard statement.
+  static getStackProgram = (params: {repositoryName: string}) => async () => {
+    // [step 1] Guard statement.
 
-      // [step 2] Create a repository.
-      let uniqueResourceName = 'ecr';
-      const repository = new awsx.ecr.Repository(
-        uniqueResourceName,
-        {name: params.repositoryName},
-        PulumiUtil.getResourceOptions(awsConfig.region)
-      );
+    // [step 2] Create a repository.
+    let uniqueResourceName = 'ecr';
+    const repository = new awsx.ecr.Repository(
+      uniqueResourceName,
+      {name: params.repositoryName},
+      PulumiUtil.buildResourceOptions(getAwsConfig().region!)
+    );
 
-      uniqueResourceName = 'ecr-image';
-      const image = new awsx.ecr.Image(
-        uniqueResourceName,
-        {repositoryUrl: repository.url},
-        PulumiUtil.getResourceOptions(awsConfig.region)
-      );
+    uniqueResourceName = 'ecr-image';
+    const image = new awsx.ecr.Image(
+      uniqueResourceName,
+      {repositoryUrl: repository.url},
+      PulumiUtil.buildResourceOptions(getAwsConfig().region!)
+    );
 
-      return {
-        repositoryUrl: repository.url,
-        imageUrn: image.urn,
-      };
+    return {
+      repositoryUrl: repository.url,
+      imageUrn: image.urn,
     };
+  };
 }

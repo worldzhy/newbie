@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import * as aws from '@pulumi/aws';
+import {getAwsConfig} from '../../../../../_config/_aws.config';
 import {PulumiUtil} from '../pulumi.util';
 
 @Injectable()
@@ -22,25 +23,23 @@ export class AwsCodecommit_Stack {
     return ['username', 'password'];
   }
 
-  static getStackProgram =
-    (params: {repositoryName: string}, awsConfig: {region: string}) =>
-    async () => {
-      // [step 1] Guard statement.
+  static getStackProgram = (params: {repositoryName: string}) => async () => {
+    // [step 1] Guard statement.
 
-      // [step 2] Create a repository.
-      const uniqueResourceName = 'code-commit';
-      const repository = new aws.codecommit.Repository(
-        uniqueResourceName,
-        {
-          repositoryName: params.repositoryName,
-          defaultBranch: 'main',
-        },
-        PulumiUtil.getResourceOptions(awsConfig.region)
-      );
+    // [step 2] Create a repository.
+    const uniqueResourceName = 'code-commit';
+    const repository = new aws.codecommit.Repository(
+      uniqueResourceName,
+      {
+        repositoryName: params.repositoryName,
+        defaultBranch: 'main',
+      },
+      PulumiUtil.buildResourceOptions(getAwsConfig().region!)
+    );
 
-      return {
-        cloneUrlHttp: repository.cloneUrlHttp,
-        cloneUrlSsh: repository.cloneUrlSsh,
-      };
+    return {
+      cloneUrlHttp: repository.cloneUrlHttp,
+      cloneUrlSsh: repository.cloneUrlSsh,
     };
+  };
 }

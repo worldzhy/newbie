@@ -2,6 +2,7 @@ import {Injectable} from '@nestjs/common';
 import {InfrastructureStackType} from '@prisma/client';
 import * as aws from '@pulumi/aws';
 import * as awsx from '@pulumi/awsx';
+import {getAwsConfig} from '../../../../../_config/_aws.config';
 import {PulumiUtil} from '../pulumi.util';
 
 @Injectable()
@@ -40,14 +41,11 @@ export class NetworkHipaa_Stack {
   }
 
   static getStackProgram =
-    (
-      params: {
-        vpcName?: string;
-        vpcCidrBlock?: string;
-        numberOfAvailabilityZones?: number;
-      },
-      awsConfig: {region: string}
-    ) =>
+    (params: {
+      vpcName?: string;
+      vpcCidrBlock?: string;
+      numberOfAvailabilityZones?: number;
+    }) =>
     async () => {
       let vpcName = params.vpcName;
       let vpcCidrBlock = params.vpcCidrBlock;
@@ -93,7 +91,7 @@ export class NetworkHipaa_Stack {
             strategy: awsx.ec2.NatGatewayStrategy.OnePerAz,
           },
         },
-        PulumiUtil.getResourceOptions(awsConfig.region)
+        PulumiUtil.buildResourceOptions(getAwsConfig().region!)
       );
 
       uniqueResourceName = 'igw';
@@ -102,7 +100,7 @@ export class NetworkHipaa_Stack {
         {
           vpcId: vpc.vpcId,
         },
-        PulumiUtil.getResourceOptions(awsConfig.region)
+        PulumiUtil.buildResourceOptions(getAwsConfig().region!)
       );
 
       // Allocate EC2 security group.

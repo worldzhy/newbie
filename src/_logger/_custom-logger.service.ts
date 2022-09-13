@@ -1,8 +1,7 @@
 import {ConsoleLogger} from '@nestjs/common';
+import {getServerConfig} from '../_config/_server.config';
 import {SqsService} from '../_aws/_sqs.service';
-import {CommonConfig} from '../_config/_common.config';
-import {AwsConfig} from '../_config/_aws.config';
-import {Enum} from '../_config/_common.enum';
+import {getAwsConfig} from 'src/_config/_aws.config';
 
 /**
  * [1] Logs in development environment will output to stdout.
@@ -13,9 +12,8 @@ import {Enum} from '../_config/_common.enum';
  * @extends {ConsoleLogger}
  */
 export class CustomLoggerService extends ConsoleLogger {
-  private env = CommonConfig.getEnvironment();
-  private queueUrl = AwsConfig.getSqsLoggerQueueUrl();
-  private sqs = new SqsService({queueUrl: this.queueUrl});
+  private sqsService = new SqsService();
+  private awsConfig = getAwsConfig();
 
   constructor(context: string) {
     super(context);
@@ -27,10 +25,10 @@ export class CustomLoggerService extends ConsoleLogger {
   }
 
   log(message: any, ...optionalParams: any[]) {
-    if (this.env === Enum.environment.DEVELOPMENT) {
+    if (getServerConfig().environment === 'development') {
       super.log(message, ...optionalParams);
     } else {
-      this.sqs.sendMessage({
+      this.sqsService.sendMessage(this.awsConfig.sqsLogQueueUrl!, {
         message: message,
         context: this.context,
         ...optionalParams,
@@ -39,10 +37,10 @@ export class CustomLoggerService extends ConsoleLogger {
   }
 
   warn(message: any, ...optionalParams: any[]) {
-    if (this.env === Enum.environment.DEVELOPMENT) {
+    if (getServerConfig().environment === 'development') {
       super.warn(message, ...optionalParams);
     } else {
-      this.sqs.sendMessage({
+      this.sqsService.sendMessage(this.awsConfig.sqsLogQueueUrl!, {
         message: message,
         context: this.context,
         level: 'warn',
@@ -51,10 +49,10 @@ export class CustomLoggerService extends ConsoleLogger {
   }
 
   error(message: any, ...optionalParams: any[]) {
-    if (this.env === Enum.environment.DEVELOPMENT) {
+    if (getServerConfig().environment === 'development') {
       super.error(message, ...optionalParams);
     } else {
-      this.sqs.sendMessage({
+      this.sqsService.sendMessage(this.awsConfig.sqsLogQueueUrl!, {
         message: message,
         context: this.context,
         level: 'error',

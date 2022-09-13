@@ -139,33 +139,20 @@ export class InfrastructureStackService {
     if (
       infrastructureStack.manager === InfrastructureStackManager.CLOUDFORMATION
     ) {
-      buildResult = await this.cloudformationService
-        .setAwsAccountId(environment.awsAccountId)
-        .setAwsRegion(environment.awsRegion)
-        .setAwsProfile(environment.awsProfile)
-        .setAwsAccessKey(environment.awsAccessKeyId)
-        .setAwsSecretKey(environment.awsSecretAccessKey)
-        .setCfTemplateS3(environment.cfTemplateS3!)
-        .build(
-          infrastructureStack.name,
-          infrastructureStack.type,
-          infrastructureStack.params
-        );
+      buildResult = await this.cloudformationService.build(
+        infrastructureStack.name,
+        infrastructureStack.type,
+        infrastructureStack.params
+      );
     } else if (
       infrastructureStack.manager === InfrastructureStackManager.PULUMI
     ) {
-      buildResult = await this.pulumiService
-        .setAwsAccountId(environment.awsAccountId)
-        .setAwsRegion(environment.awsRegion)
-        .setAwsProfile(environment.awsProfile)
-        .setAwsAccessKey(environment.awsAccessKeyId)
-        .setAwsSecretKey(environment.awsSecretAccessKey)
-        .build(
-          infrastructureStack.pulumiProjectName!,
-          infrastructureStack.name,
-          infrastructureStack.type,
-          infrastructureStack.params
-        );
+      buildResult = await this.pulumiService.build(
+        infrastructureStack.pulumiProjectName!,
+        infrastructureStack.name,
+        infrastructureStack.type,
+        infrastructureStack.params
+      );
     } else {
       return null;
     }
@@ -244,12 +231,9 @@ export class InfrastructureStackService {
     if (
       infrastructureStack.manager === InfrastructureStackManager.CLOUDFORMATION
     ) {
-      destroyResult = await this.cloudformationService
-        .setAwsProfile(environment.awsProfile)
-        .setAwsRegion(environment.awsRegion)
-        .setAwsAccessKey(environment.awsAccessKeyId)
-        .setAwsSecretKey(environment.awsSecretAccessKey)
-        .destroy(infrastructureStack.name);
+      destroyResult = await this.cloudformationService.destroy(
+        infrastructureStack.name
+      );
     } else if (
       infrastructureStack.manager === InfrastructureStackManager.PULUMI
     ) {

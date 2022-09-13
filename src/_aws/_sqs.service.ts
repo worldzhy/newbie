@@ -1,23 +1,24 @@
-import {Inject, Injectable} from '@nestjs/common';
+import {Injectable} from '@nestjs/common';
 import {
   SQSClient,
   SendMessageCommand,
   GetQueueAttributesCommand,
   QueueAttributeName,
 } from '@aws-sdk/client-sqs';
-import {AwsConfig} from '../_config/_aws.config';
+import {getAwsConfig} from '../_config/_aws.config';
 
 @Injectable()
 export class SqsService {
   private client: SQSClient;
-  private queueUrl: string;
 
-  constructor(@Inject('SqsConfiguration') config: {queueUrl: string}) {
+  constructor() {
     this.client = new SQSClient({
-      region: AwsConfig.getRegion(), // region is required for SQS service.
+      credentials: {
+        accessKeyId: getAwsConfig().accessKeyId!,
+        secretAccessKey: getAwsConfig().secretAccessKey!,
+      },
+      region: getAwsConfig().region,
     });
-
-    this.queueUrl = config.queueUrl;
   }
 
   /**
@@ -27,18 +28,21 @@ export class SqsService {
    * @returns {(Promise<{data: SQS.SendMessageResult | void;err: AWSError | void;}>)}
    * @memberof SqsService
    */
-  async sendMessage(body: object) {
+  async sendMessage(queueUrl: string, body: object) {
     const sendMessageRequest = {
-      QueueUrl: this.queueUrl,
+      QueueUrl: queueUrl,
       MessageBody: JSON.stringify(body),
     };
 
     return await this.client.send(new SendMessageCommand(sendMessageRequest));
   }
 
-  async getQueueAttributes(attributeNames: QueueAttributeName[]) {
+  async getQueueAttributes(
+    queueUrl: string,
+    attributeNames: QueueAttributeName[]
+  ) {
     const getQueueAttributesRequest = {
-      QueueUrl: this.queueUrl,
+      QueueUrl: queueUrl,
       AttributeNames: attributeNames,
     };
 

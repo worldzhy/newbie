@@ -9,17 +9,6 @@ import {SqsService} from './_sqs.service';
 @ApiBearerAuth()
 @Controller('aws')
 export class AwsController {
-  private s3Service = new S3Service();
-  private snsService = new SnsService();
-  private sqsService = new SqsService({
-    queueUrl: process.env.SQS_SMS_QUEUE_URL!,
-  });
-  private pinpointService = new PinpointService({
-    pinpointApplicationId: process.env.PINPOINT_APPLICATION_ID!,
-    pinpointFromAddress: process.env.PINPOINT_FROM_ADDRESS,
-    pinpointSenderId: process.env.PINPOINT_SENDER_ID,
-  });
-
   /**
    * S3 create bucket.
    * @param body
@@ -38,7 +27,8 @@ export class AwsController {
   })
   @Post('/s3/bucket')
   async createS3Bucket(@Body() body: {bucketName: string}) {
-    return await this.s3Service.createBucket(body.bucketName);
+    const s3Service = new S3Service();
+    return await s3Service.createBucket(body.bucketName);
   }
 
   /**
@@ -59,7 +49,8 @@ export class AwsController {
   })
   @Delete('/s3/bucket')
   async deleteS3Bucket(@Body() body: {bucketName: string}) {
-    return await this.s3Service.deleteBucket(body.bucketName);
+    const s3Service = new S3Service();
+    return await s3Service.deleteBucket(body.bucketName);
   }
 
   /**
@@ -73,8 +64,8 @@ export class AwsController {
       a: {
         summary: '1. Send message with SMS body',
         value: {
-          queueUrl: 'example-queue-url',
-          messageBody: {
+          queueUrl: 'https://aws.sqs.queue',
+          payload: {
             content: 'This is a test message.',
             phone: '123456789',
           },
@@ -83,8 +74,9 @@ export class AwsController {
     },
   })
   @Post('/sqs/message')
-  async sendSqsMessage(@Body() body: {payload: object}) {
-    return await this.sqsService.sendMessage(body.payload);
+  async sendSqsMessage(@Body() body: {queueUrl: string; payload: object}) {
+    const sqsService = new SqsService();
+    return await sqsService.sendMessage(body.queueUrl, body.payload);
   }
 
   /**
@@ -97,17 +89,20 @@ export class AwsController {
       a: {
         summary: '1. Incorrect phone',
         value: {
-          PhoneNumber: '123456789',
-          Message: 'This is a test notification message.',
+          phone: '123456789',
+          message: 'This is a test notification message.',
         },
       },
     },
     description: "The request body should contain 'bucketName' attribute.",
   })
   @Post('/sns/publish')
-  async sendSnsMessage(@Body() body: {PhoneNumber: string; Message: string}) {
-    const {PhoneNumber, Message} = body;
-    return await this.snsService.publish({PhoneNumber, Message});
+  async sendSnsMessage(@Body() body: {phone: string; message: string}) {
+    const snsService = new SnsService();
+    return await snsService.publish({
+      PhoneNumber: body.phone,
+      Message: body.message,
+    });
   }
 
   /**
@@ -120,6 +115,10 @@ export class AwsController {
       a: {
         summary: '1. Send via email channel',
         value: {
+          config: {
+            pinpointApplicationId: 'aljflajsfa',
+            pinpointFromAddress: 'henry@inceptionpad.com',
+          },
           email: 'email@example.com',
           subject: 'Example Email',
           plainText: 'This is a test Pinpoint email.',
@@ -134,24 +133,21 @@ export class AwsController {
   async sendPinpointEmail(
     @Body()
     body: {
-      channel: string;
-      message: {
-        email: string;
-        subject: string;
-        plainText?: string;
-        html?: string;
-      };
+      email: string;
+      subject: string;
+      plainText?: string;
+      html?: string;
     }
   ) {
-    const {email, subject, plainText, html} = body.message;
-    const params = this.pinpointService.buildSendMessagesParams_Email({
-      emails: [email],
-      subject,
-      plainText,
-      html,
+    const pinpointService = new PinpointService();
+    const params = pinpointService.buildSendMessagesParams_Email({
+      emails: [body.email],
+      subject: body.subject,
+      plainText: body.plainText,
+      html: body.html,
     });
 
-    return await this.pinpointService.sendMessages(params);
+    return await pinpointService.sendMessages(params);
   }
 
   /**
@@ -164,11 +160,8 @@ export class AwsController {
       a: {
         summary: '1. Send via SMS channel',
         value: {
-          channel: 'sms',
-          message: {
-            content: 'This is a test Pinpoint text message.',
-            phone: '123456789',
-          },
+          phone: '123456789',
+          text: 'This is a test Pinpoint text message.',
         },
       },
     },
@@ -183,13 +176,13 @@ export class AwsController {
       text: string;
     }
   ) {
-    const {phone, text} = body;
-    const params = this.pinpointService.buildSendMessagesParams_Sms({
-      phones: [phone],
-      text,
+    const pinpointService = new PinpointService();
+    const params = pinpointService.buildSendMessagesParams_Sms({
+      phones: [body.phone],
+      text: body.text,
     });
 
-    return await this.pinpointService.sendMessages(params);
+    return await pinpointService.sendMessages(params);
   }
   /* End */
 }

@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import * as aws from '@pulumi/aws';
+import {getAwsConfig} from '../../../../../_config/_aws.config';
 import {PulumiUtil} from '../pulumi.util';
 
 @Injectable()
@@ -24,11 +25,7 @@ export class AwsVpc_Stack {
   }
 
   static getStackProgram =
-    (
-      params: {vpcName?: string; vpcCidrBlock?: string},
-      awsConfig: {region: string}
-    ) =>
-    async () => {
+    (params: {vpcName?: string; vpcCidrBlock?: string}) => async () => {
       let vpcName = params.vpcName;
       let vpcCidrBlock = params.vpcCidrBlock;
 
@@ -51,7 +48,7 @@ export class AwsVpc_Stack {
         {
           cidrBlock: vpcCidrBlock,
         },
-        PulumiUtil.getResourceOptions(awsConfig.region)
+        PulumiUtil.buildResourceOptions(getAwsConfig().region!)
       );
 
       return {

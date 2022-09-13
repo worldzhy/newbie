@@ -1,30 +1,29 @@
-import {Inject, Injectable} from '@nestjs/common';
-import {Prisma, Task, TaskConfiguration} from '@prisma/client';
-import {SqsService} from '../../../_aws/_sqs.service';
-import {PrismaService} from '../../../_prisma/_prisma.service';
+import {Injectable} from '@nestjs/common';
+import {Prisma, Task, TaskType} from '@prisma/client';
+import {getAwsConfig} from '../../_config/_aws.config';
+import {SqsService} from '../../_aws/_sqs.service';
+import {PrismaService} from '../../_prisma/_prisma.service';
 
 @Injectable()
 export class TaskService {
   private prisma: PrismaService = new PrismaService();
-  private sqsService: SqsService;
-  private config: TaskConfiguration;
 
-  constructor(@Inject('TaskConfiguration') config: TaskConfiguration) {
-    this.config = config;
-    this.sqsService = new SqsService({queueUrl: config.sqsQueueUrl});
-  }
+  private sqsService = new SqsService();
 
-  async sendOne(payload: object) {
+  async sendOne({type, payload}: {type: TaskType; payload: object}) {
     // [step 1] Send AWS SQS message.
-    const output = await this.sqsService.sendMessage(payload);
+    const output = await this.sqsService.sendMessage(
+      getAwsConfig().sqsTaskQueueUrl!,
+      payload
+    );
 
     // [step 2] Save task record.
     return await this.prisma.task.create({
       data: {
+        type: type,
         payload: payload,
         sqsMessageId: output.MessageId,
         sqsResponse: output as object,
-        configurationId: this.config.id,
       },
     });
   }

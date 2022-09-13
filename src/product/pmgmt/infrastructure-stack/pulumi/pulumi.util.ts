@@ -2,7 +2,7 @@ import * as aws from '@pulumi/aws';
 import * as pulumi from '@pulumi/pulumi';
 
 export class PulumiUtil {
-  static getResourceOptions = (awsRegion: string) => {
+  static buildResourceOptions = (awsRegion: string) => {
     return {
       transformations: [
         // Update all RolePolicyAttachment resources to use aws-cn ARNs.

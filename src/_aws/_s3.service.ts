@@ -8,7 +8,7 @@ import {
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
-import {AwsConfig} from '../_config/_aws.config';
+import {getAwsConfig} from '../_config/_aws.config';
 
 @Injectable()
 export class S3Service {
@@ -16,7 +16,7 @@ export class S3Service {
 
   constructor() {
     this.client = new S3Client({
-      region: AwsConfig.getRegion(),
+      region: getAwsConfig().region,
     });
   }
 

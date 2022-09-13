@@ -1,13 +1,12 @@
 import {Body, Controller, Post} from '@nestjs/common';
 import {ApiBearerAuth, ApiBody, ApiTags} from '@nestjs/swagger';
-import {NotificationConfigurationService} from '../configuration/configuration.service';
 import {EmailService} from './email.service';
 
 @ApiTags('[Microservice] Notification / Email')
 @ApiBearerAuth()
 @Controller('notification')
 export class EmailController {
-  private configuration = new NotificationConfigurationService();
+  private emailService = new EmailService();
 
   /**
    * Send to one email.
@@ -40,11 +39,8 @@ export class EmailController {
       html?: string;
     }
   ) {
-    const configuration = await this.configuration.defaultConfiguration();
-    const emailService = new EmailService(configuration!);
-
     const {email, subject, plainText, html} = body;
-    await emailService.sendOne({email, subject, plainText, html});
+    await this.emailService.sendOne({email, subject, plainText, html});
   }
 
   /**
@@ -78,11 +74,8 @@ export class EmailController {
       html?: string;
     }
   ) {
-    const configuration = await this.configuration.defaultConfiguration();
-    const emailService = new EmailService(configuration!);
-
     const {emails, subject, plainText, html} = body;
-    await emailService.sendMany({emails, subject, plainText, html});
+    await this.emailService.sendMany({emails, subject, plainText, html});
   }
 
   /* End */

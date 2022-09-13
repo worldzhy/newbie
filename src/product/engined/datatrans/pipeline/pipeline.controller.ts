@@ -3,6 +3,7 @@ import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {DatatransPipelineService} from './pipeline.service';
 import {PostgresqlDatasourceTableService} from '../../datasource/postgresql/table/table.service';
 import {ElasticsearchDatasourceIndexService} from '../../datasource/elasticsearch/index/index.service';
+import {Prisma} from '@prisma/client';
 
 @ApiTags('[Product] EngineD / Datatrans / Pipeline')
 @ApiBearerAuth()
@@ -190,21 +191,14 @@ export class DatatransPipelineController {
   async updatePipeline(
     @Param('pipelineId') pipelineId: string,
     @Body()
-    body: {
-      name: string;
-      hasManyTables: string[];
-      belongsToTables: string[];
-      numberOfRecordsPerBatch: number;
-    }
+    body: Prisma.DatatransPipelineUpdateInput
   ) {
     // [step 1] Guard statement.
-    const {name, hasManyTables, belongsToTables, numberOfRecordsPerBatch} =
-      body;
 
     // [step 2] Update name.
     const result = await this.pipelineService.update({
       where: {id: pipelineId},
-      data: {name, hasManyTables, belongsToTables},
+      data: body,
     });
     if (result) {
       return {

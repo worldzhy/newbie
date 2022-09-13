@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import * as aws from '@pulumi/aws';
+import {getAwsConfig} from '../../../../../_config/_aws.config';
 import {PulumiUtil} from '../pulumi.util';
 
 @Injectable()
@@ -32,21 +33,18 @@ export class AwsRds_Stack {
   }
 
   static getStackProgram =
-    (
-      params: {
-        // Instance parameters
-        instanceName: string;
-        instanceType: string;
-        allocatedStorage: number;
-        databaseName: string;
-        username: string;
-        password: string;
-        // Network parameters
-        vpcSubnetIds: string[];
-        isPublic: boolean;
-      },
-      awsConfig: {region: string}
-    ) =>
+    (params: {
+      // Instance parameters
+      instanceName: string;
+      instanceType: string;
+      allocatedStorage: number;
+      databaseName: string;
+      username: string;
+      password: string;
+      // Network parameters
+      vpcSubnetIds: string[];
+      isPublic: boolean;
+    }) =>
     async () => {
       // [step 1] The subnet group specifies the VPC and subnets where the RDS will be deployed to.
       let uniqueResourceName = 'subnet-group';
@@ -72,7 +70,7 @@ export class AwsRds_Stack {
           publiclyAccessible: params.isPublic,
           skipFinalSnapshot: true, // 'finalSnapshotIdentifier' is required when 'skipFinalSnapshot' is false.
         },
-        PulumiUtil.getResourceOptions(awsConfig.region)
+        PulumiUtil.buildResourceOptions(getAwsConfig().region!)
       );
 
       return {

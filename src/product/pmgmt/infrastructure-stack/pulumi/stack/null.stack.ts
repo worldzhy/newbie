@@ -15,8 +15,7 @@ export class Null_Stack {
     return [];
   }
 
-  static getStackProgram = (params: {}, awsConfig: {}) => async () => {
+  static getStackProgram = (params: {}) => async () => {
     console.log(params);
-    console.log(awsConfig);
   };
 }

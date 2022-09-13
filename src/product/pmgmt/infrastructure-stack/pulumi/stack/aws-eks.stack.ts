@@ -2,6 +2,7 @@ import {Injectable} from '@nestjs/common';
 import * as aws from '@pulumi/aws';
 import * as eks from '@pulumi/eks';
 import * as k8s from '@pulumi/kubernetes';
+import {getAwsConfig} from '../../../../../_config/_aws.config';
 import {PulumiUtil} from '../pulumi.util';
 
 @Injectable()
@@ -23,18 +24,15 @@ export class AwsEks_Stack {
   }
 
   static getStackProgram =
-    (
-      params: {
-        vpcId?: string;
-        clusterName?: string;
-        repositoryName: string;
-        instanceType: string;
-        desiredInstanceCount?: number;
-        minInstanceCount?: number;
-        maxInstanceCount?: number;
-      },
-      awsConfig: {region: string}
-    ) =>
+    (params: {
+      vpcId?: string;
+      clusterName?: string;
+      repositoryName: string;
+      instanceType: string;
+      desiredInstanceCount?: number;
+      minInstanceCount?: number;
+      maxInstanceCount?: number;
+    }) =>
     async () => {
       let vpcId = params.vpcId;
       let clusterName = params.clusterName;
@@ -103,7 +101,7 @@ export class AwsEks_Stack {
             'scheduler',
           ],
         },
-        PulumiUtil.getResourceOptions(awsConfig.region)
+        PulumiUtil.buildResourceOptions(getAwsConfig().region!)
       );
 
       // [step 3] Deployment and running application.
@@ -135,8 +133,9 @@ export class AwsEks_Stack {
         },
         {
           provider: cluster.provider,
-          transformations: PulumiUtil.getResourceOptions(awsConfig.region)
-            .transformations,
+          transformations: PulumiUtil.buildResourceOptions(
+            getAwsConfig().region!
+          ).transformations,
         }
       );
 
@@ -153,8 +152,9 @@ export class AwsEks_Stack {
         },
         {
           provider: cluster.provider,
-          transformations: PulumiUtil.getResourceOptions(awsConfig.region)
-            .transformations,
+          transformations: PulumiUtil.buildResourceOptions(
+            getAwsConfig().region!
+          ).transformations,
         }
       );
 

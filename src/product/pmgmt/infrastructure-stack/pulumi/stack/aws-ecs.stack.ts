@@ -5,6 +5,7 @@ import * as awsx from '@pulumi/awsx';
 import {PulumiUtil} from '../pulumi.util';
 import {CommonUtil} from '../../../../../_util/_common.util';
 import {AwsValidator} from '../../../../../_validator/_aws.validator';
+import {getAwsConfig} from '../../../../../_config/_aws.config';
 
 @Injectable()
 export class AwsEcs_Stack {
@@ -33,18 +34,15 @@ export class AwsEcs_Stack {
   }
 
   static getStackProgram =
-    (
-      params: {
-        vpcId?: string;
-        ecrName: string; // required
-        ecsContainerPort: number; // required
-        ecsLoadbalancerPort?: number; // default 80
-        ecsClusterName?: string;
-        minTaskCount?: number;
-        maxTaskCount?: number;
-      },
-      awsConfig: {accountId: string; region: string}
-    ) =>
+    (params: {
+      vpcId?: string;
+      ecrName: string; // required
+      ecsContainerPort: number; // required
+      ecsLoadbalancerPort?: number; // default 80
+      ecsClusterName?: string;
+      minTaskCount?: number;
+      maxTaskCount?: number;
+    }) =>
     async () => {
       let vpcId = params.vpcId;
       const ecrName = params.ecrName;
@@ -55,7 +53,7 @@ export class AwsEcs_Stack {
       let maxTaskCount = params.maxTaskCount;
 
       // Guard statement.
-      if (!AwsValidator.verifyRegion(awsConfig.region)) {
+      if (!AwsValidator.verifyRegion(getAwsConfig().region!)) {
         return undefined;
       }
       if (vpcId === undefined || vpcId === null || vpcId.trim() === '') {
@@ -83,7 +81,7 @@ export class AwsEcs_Stack {
       const cluster = new aws.ecs.Cluster(
         uniqueResourceName,
         {name: clusterName},
-        PulumiUtil.getResourceOptions(awsConfig.region)
+        PulumiUtil.buildResourceOptions(getAwsConfig().region!)
       );
 
       // [step 2] Prepare a task definition for container service.
@@ -109,7 +107,7 @@ export class AwsEcs_Stack {
           },
           securityGroups: [securityGroup.id],
         },
-        PulumiUtil.getResourceOptions(awsConfig.region)
+        PulumiUtil.buildResourceOptions(getAwsConfig().region!)
       );
 
       // [step 2-3] Create a task definition. https://docs.aws.amazon.com/AmazonECS/latest/userguide/fargate-task-defs.html
@@ -207,16 +205,16 @@ export class AwsEcs_Stack {
           minCapacity: minTaskCount,
           resourceId: pulumi.interpolate`service/${cluster.name}/${containerService.service.name}`,
           roleArn:
-            'arn:' + awsConfig.region.startsWith('cn')
+            'arn:' + getAwsConfig().region!.startsWith('cn')
               ? 'aws-cn'
               : 'aws' +
                 ':iam::' +
-                awsConfig.accountId +
+                getAwsConfig().accountId +
                 ':role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService',
           scalableDimension: 'ecs:service:DesiredCount',
           serviceNamespace: 'ecs',
         },
-        PulumiUtil.getResourceOptions(awsConfig.region)
+        PulumiUtil.buildResourceOptions(getAwsConfig().region!)
       );
 
       // [step 4-2] Bind policies to the auto-scaling target.
@@ -241,7 +239,7 @@ export class AwsEcs_Stack {
             ],
           },
         },
-        PulumiUtil.getResourceOptions(awsConfig.region)
+        PulumiUtil.buildResourceOptions(getAwsConfig().region!)
       );
 
       uniqueResourceName = 'scaling-down-policy';
@@ -265,7 +263,7 @@ export class AwsEcs_Stack {
             ],
           },
         },
-        PulumiUtil.getResourceOptions(awsConfig.region)
+        PulumiUtil.buildResourceOptions(getAwsConfig().region!)
       );
 
       return {

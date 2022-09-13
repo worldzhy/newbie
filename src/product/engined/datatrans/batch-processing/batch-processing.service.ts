@@ -2,16 +2,15 @@ import {Injectable} from '@nestjs/common';
 import {
   DatatransPipeline,
   PostgresqlDatasourceTable,
-  Product,
+  TaskType,
 } from '@prisma/client';
-import {TaskConfigurationService} from '../../../../microservice/task-mgmt/configuration/configuration.service';
-import {TaskService} from '../../../../microservice/task-mgmt/task/task.service';
+import {TaskService} from '../../../../microservice/task/task.service';
 import {PrismaService} from '../../../../_prisma/_prisma.service';
 
 @Injectable()
 export class DatatransBatchProcessingService {
   private prisma: PrismaService = new PrismaService();
-  private taskConfigurationService = new TaskConfigurationService();
+  private taskService = new TaskService();
 
   /**
    * Start batch processing.
@@ -22,16 +21,7 @@ export class DatatransBatchProcessingService {
     // [step 1] Calculate the number of batches.
     const numberOfBatches = await this.calculateNumberOfBatches(pipeline);
 
-    // [step 2] Configure a task microservice.
-    const config = await this.taskConfigurationService.findOne({
-      where: {product: Product.DATATRANS_BATCH_PROCESSING},
-    });
-    if (!config) {
-      return 'You need to create a task microservice configuration for batch processing.';
-    }
-    const taskService = new TaskService(config);
-
-    // [step 3] Send transportation tasks to queue.
+    // [step 2] Send transportation tasks to queue.
     for (let i = 0; i < numberOfBatches; i++) {
       const payload = {
         pipelineId: pipeline.id,
@@ -39,10 +29,13 @@ export class DatatransBatchProcessingService {
         skip: pipeline.numberOfRecordsPerBatch * i,
       };
 
-      await taskService.sendOne(payload);
+      await this.taskService.sendOne({
+        type: TaskType.DATATRANS_BATCH_PROCESSING,
+        payload: payload,
+      });
     }
 
-    return 'The pipeline has started batch processing.';
+    return 'Datatrans has started batch processing.';
   }
 
   /**

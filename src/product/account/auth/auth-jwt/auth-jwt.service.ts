@@ -2,18 +2,20 @@ import {Injectable} from '@nestjs/common';
 import {JwtService} from '@nestjs/jwt';
 import {PrismaService} from '../../../../_prisma/_prisma.service';
 import {JwtStatus} from '@prisma/client';
+import {getJwtConfig} from '../../../../_config/_jwt.config';
 
 @Injectable()
 export class AuthJwtService {
   private prisma = new PrismaService();
   private jwtService: JwtService;
-  private jwtSecret = process.env.JWT_SECRET;
 
   constructor() {
+    const jwtConfig = getJwtConfig();
     const config = {
-      secret: this.jwtSecret,
-      signOptions: {expiresIn: process.env.JWT_EXPIRES_IN},
+      secret: jwtConfig.secret,
+      signOptions: {expiresIn: jwtConfig.expiresIn},
     };
+
     this.jwtService = new JwtService(config);
   }
 

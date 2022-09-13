@@ -1,14 +1,13 @@
-import {Controller, Get, Post, Param, Body, Delete} from '@nestjs/common';
+import {Controller, Get, Post, Param, Body} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {TaskState} from '@prisma/client';
-import {TaskConfigurationService} from '../configuration/configuration.service';
+import {TaskState, TaskType} from '@prisma/client';
 import {TaskService} from './task.service';
 
 @ApiTags('[Microservice] Task Management / Task')
 @ApiBearerAuth()
 @Controller('task-management')
 export class TaskController {
-  private taskConfigurationService = new TaskConfigurationService();
+  private taskService = new TaskService();
 
   /**
    * Get tasks by page number. The order is by task name.
@@ -42,11 +41,7 @@ export class TaskController {
     }
 
     // [step 2] Get tasks.
-    const configuration =
-      await this.taskConfigurationService.defaultConfiguration();
-    const taskService = new TaskService(configuration!);
-
-    const datapipes = await taskService.findMany({
+    const datapipes = await this.taskService.findMany({
       orderBy: {
         id: 'asc',
       },
@@ -76,11 +71,7 @@ export class TaskController {
   async getTask(
     @Param('taskId') taskId: number
   ): Promise<{data: object | null; err: object | null}> {
-    const configuration =
-      await this.taskConfigurationService.defaultConfiguration();
-    const taskService = new TaskService(configuration!);
-
-    const result = await taskService.findOne({
+    const result = await this.taskService.findOne({
       where: {id: taskId},
     });
     if (result) {
@@ -115,9 +106,8 @@ export class TaskController {
       a: {
         summary: '1. Create',
         value: {
-          name: 'task-group-1',
-          sqsQueueUrl:
-            'https://sqs.cn-northwest-1.amazonaws.com.cn/077767357755/dev-inceptionpad-message-service-email-level1',
+          type: TaskType.DATATRANS_BATCH_PROCESSING,
+          payload: {name: 'Jim', age: 12},
         },
       },
     },
@@ -125,17 +115,15 @@ export class TaskController {
   async sendTask(
     @Body()
     body: {
+      type: TaskType;
       payload: object;
     }
   ) {
     // [step 1] Check if the task name is existed.
 
     // [step 2] Create task.
-    const configuration =
-      await this.taskConfigurationService.defaultConfiguration();
-    const taskService = new TaskService(configuration!);
-
-    const result = await taskService.sendOne({
+    const result = await this.taskService.sendOne({
+      type: body.type,
       payload: body.payload,
     });
     if (result) {
@@ -192,11 +180,7 @@ export class TaskController {
     const {state} = body;
 
     // [step 2] Update task state.
-    const configuration =
-      await this.taskConfigurationService.defaultConfiguration();
-    const taskService = new TaskService(configuration!);
-
-    const result = await taskService.update({
+    const result = await this.taskService.update({
       where: {id: taskId},
       data: {state},
     });

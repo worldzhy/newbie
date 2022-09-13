@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import * as aws from '@pulumi/aws';
+import {getAwsConfig} from '../../../../../_config/_aws.config';
 import {PulumiUtil} from '../pulumi.util';
 
 @Injectable()
@@ -22,78 +23,77 @@ export class AwsIamUser_Stack {
     return ['gitUsername', 'gitPassword'];
   }
 
-  static getStackProgram =
-    (params: {iamUserName: string}, awsConfig: {region: string}) =>
-    async () => {
-      // [step 1] Guard statement.
+  static getStackProgram = (params: {iamUserName: string}) => async () => {
+    // [step 1] Guard statement.
 
-      // [step 2] Get or create IAM user group.
-      let uniqueResourceName: string;
+    // [step 2] Get or create IAM user group.
+    let uniqueResourceName: string;
 
-      const userGroupName = 'Developer';
-      const developerUserGroup = await aws.iam.getGroup({
-        groupName: 'Developer',
-      });
+    const userGroupName = 'Developer';
+    const developerUserGroup = await aws.iam.getGroup({
+      groupName: 'Developer',
+    });
 
-      if (null === developerUserGroup || undefined === developerUserGroup) {
-        uniqueResourceName = 'UserGroup';
-        new aws.iam.Group(
-          uniqueResourceName,
-          {
-            name: userGroupName,
-          },
-          PulumiUtil.getResourceOptions(awsConfig.region)
-        );
-
-        uniqueResourceName = 'iam-usergroup-policy-attachment';
-        new aws.iam.GroupPolicyAttachment(
-          uniqueResourceName,
-          {
-            group: userGroupName,
-            policyArn:
-              (awsConfig.region.startsWith('cn') ? 'arn:aws-cn:' : 'arn:aws:') +
-              'iam::aws:policy/AWSCodeCommitPowerUser',
-          },
-          PulumiUtil.getResourceOptions(awsConfig.region)
-        );
-      }
-
-      // [step 3] Create a user.
-      uniqueResourceName = 'iam-user';
-      const iamUser = new aws.iam.User(
+    if (null === developerUserGroup || undefined === developerUserGroup) {
+      uniqueResourceName = 'UserGroup';
+      new aws.iam.Group(
         uniqueResourceName,
         {
-          name: params.iamUserName,
+          name: userGroupName,
         },
-        PulumiUtil.getResourceOptions(awsConfig.region)
+        PulumiUtil.buildResourceOptions(getAwsConfig().region!)
       );
 
-      uniqueResourceName = 'iam-usergroup-membership';
-      new aws.iam.UserGroupMembership(
+      uniqueResourceName = 'iam-usergroup-policy-attachment';
+      new aws.iam.GroupPolicyAttachment(
         uniqueResourceName,
         {
-          user: iamUser.name,
-          groups: [userGroupName],
+          group: userGroupName,
+          policyArn:
+            (getAwsConfig().region!.startsWith('cn')
+              ? 'arn:aws-cn:'
+              : 'arn:aws:') + 'iam::aws:policy/AWSCodeCommitPowerUser',
         },
-        PulumiUtil.getResourceOptions(awsConfig.region)
+        PulumiUtil.buildResourceOptions(getAwsConfig().region!)
       );
+    }
 
-      // [step 4] Create HTTPS Git credentials for Amazon CodeCommit
-      uniqueResourceName = 'service-specific-credential';
-      const serviceSpecificCredential = new aws.iam.ServiceSpecificCredential(
-        uniqueResourceName,
-        {
-          serviceName: 'codecommit.amazonaws.com',
-          userName: iamUser.name,
-        },
-        PulumiUtil.getResourceOptions(awsConfig.region)
-      );
+    // [step 3] Create a user.
+    uniqueResourceName = 'iam-user';
+    const iamUser = new aws.iam.User(
+      uniqueResourceName,
+      {
+        name: params.iamUserName,
+      },
+      PulumiUtil.buildResourceOptions(getAwsConfig().region!)
+    );
 
-      return {
-        gitUsername: serviceSpecificCredential.serviceUserName,
-        gitPassword: serviceSpecificCredential.servicePassword,
-      };
+    uniqueResourceName = 'iam-usergroup-membership';
+    new aws.iam.UserGroupMembership(
+      uniqueResourceName,
+      {
+        user: iamUser.name,
+        groups: [userGroupName],
+      },
+      PulumiUtil.buildResourceOptions(getAwsConfig().region!)
+    );
+
+    // [step 4] Create HTTPS Git credentials for Amazon CodeCommit
+    uniqueResourceName = 'service-specific-credential';
+    const serviceSpecificCredential = new aws.iam.ServiceSpecificCredential(
+      uniqueResourceName,
+      {
+        serviceName: 'codecommit.amazonaws.com',
+        userName: iamUser.name,
+      },
+      PulumiUtil.buildResourceOptions(getAwsConfig().region!)
+    );
+
+    return {
+      gitUsername: serviceSpecificCredential.serviceUserName,
+      gitPassword: serviceSpecificCredential.servicePassword,
     };
+  };
 
   /* End */
 }

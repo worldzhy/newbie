@@ -15,49 +15,10 @@ import {ComputingFargate_Stack} from './stack/computing-fargate.stack';
 import {NetworkHipaa_Stack} from './stack/network-hipaa.stack';
 import {ProductMessageTracker_Stack} from './stack/product-message-tracker.stack';
 import {Null_Stack} from './stack/null.stack';
+import {getAwsConfig} from '../../../../_config/_aws.config';
 
 @Injectable()
 export class CloudFormationService {
-  private awsAccountId: string;
-  private awsRegion: string;
-  private awsProfile: string | null;
-  private awsAccessKey: string | null;
-  private awsSecretKey: string | null;
-  private cfTemplateS3: string;
-
-  /**
-   * Attention:
-   * These 6 functions must be called before 'PulumiService.build()'.
-   *
-   * @param {string} awsAccountId
-   * @returns
-   * @memberof CloudFormationService
-   */
-  setAwsAccountId(awsAccountId: string) {
-    this.awsAccountId = awsAccountId;
-    return this;
-  }
-  setAwsRegion(awsRegion: string) {
-    this.awsRegion = awsRegion;
-    return this;
-  }
-  setAwsProfile(awsProfile: string | null) {
-    this.awsProfile = awsProfile;
-    return this;
-  }
-  setAwsAccessKey(awsAccessKey: string | null) {
-    this.awsAccessKey = awsAccessKey;
-    return this;
-  }
-  setAwsSecretKey(awsSecretKey: string | null) {
-    this.awsSecretKey = awsSecretKey;
-    return this;
-  }
-  setCfTemplateS3(cfTemplateS3: string) {
-    this.cfTemplateS3 = cfTemplateS3;
-    return this;
-  }
-
   /**
    * Build stack
    *
@@ -74,19 +35,19 @@ export class CloudFormationService {
   ) {
     // [step 1] Create a cloudformation client.
     let client: CloudFormationClient;
-    if (this.awsProfile) {
+    if (getAwsConfig().profile) {
       client = new CloudFormationClient({
         // Get credentials from local credentials file "~/.aws/credentials"
-        credentials: fromIni({profile: this.awsProfile}),
-        region: this.awsRegion,
+        credentials: fromIni({profile: getAwsConfig().profile}),
+        region: getAwsConfig().region,
       });
     } else {
       client = new CloudFormationClient({
         credentials: {
-          accessKeyId: this.awsAccessKey!,
-          secretAccessKey: this.awsSecretKey!,
+          accessKeyId: getAwsConfig().accessKeyId!,
+          secretAccessKey: getAwsConfig().secretAccessKey!,
         },
-        region: this.awsRegion,
+        region: getAwsConfig().region,
       });
     }
 
@@ -103,7 +64,7 @@ export class CloudFormationService {
       case InfrastructureStackType.C_NETWORK_HIPAA:
         stackParams['AWSConfigARN'] =
           'arn:aws:iam::' +
-          this.awsAccountId +
+          getAwsConfig().accountId +
           ':role/aws-service-role/config.amazonaws.com/AWSServiceRoleForConfig';
         break;
       case InfrastructureStackType.C_PRODUCT_IDE:
@@ -151,19 +112,19 @@ export class CloudFormationService {
   async describe(stackName: string) {
     // [step 1] Create a cloudformation client.
     let client: CloudFormationClient;
-    if (this.awsProfile) {
+    if (getAwsConfig().profile) {
       client = new CloudFormationClient({
         // Get credentials from local credentials file "~/.aws/credentials"
-        credentials: fromIni({profile: this.awsProfile}),
-        region: this.awsRegion,
+        credentials: fromIni({profile: getAwsConfig().profile}),
+        region: getAwsConfig().region,
       });
     } else {
       client = new CloudFormationClient({
         credentials: {
-          accessKeyId: this.awsAccessKey!,
-          secretAccessKey: this.awsSecretKey!,
+          accessKeyId: getAwsConfig().accessKeyId!,
+          secretAccessKey: getAwsConfig().secretAccessKey!,
         },
-        region: this.awsRegion,
+        region: getAwsConfig().region,
       });
     }
 
@@ -203,19 +164,19 @@ export class CloudFormationService {
   async destroy(stackName: string) {
     // [step 1] Create a cloudformation client.
     let client: CloudFormationClient;
-    if (this.awsProfile) {
+    if (getAwsConfig().profile) {
       client = new CloudFormationClient({
         // Get credentials from local credentials file "~/.aws/credentials"
-        credentials: fromIni({profile: this.awsProfile}),
-        region: this.awsRegion,
+        credentials: fromIni({profile: getAwsConfig().profile}),
+        region: getAwsConfig().region,
       });
     } else {
       client = new CloudFormationClient({
         credentials: {
-          accessKeyId: this.awsAccessKey!,
-          secretAccessKey: this.awsSecretKey!,
+          accessKeyId: getAwsConfig().accessKeyId!,
+          secretAccessKey: getAwsConfig().secretAccessKey!,
         },
-        region: this.awsRegion,
+        region: getAwsConfig().region,
       });
     }
 
@@ -283,18 +244,21 @@ export class CloudFormationService {
   private getStackTemplateByType(stackType: InfrastructureStackType) {
     const templatePath =
       this.getStackServiceByType(stackType).getStackTemplate();
-    if (this.awsRegion.startsWith('cn')) {
+    if (getAwsConfig().region!.startsWith('cn')) {
       return (
         'https://' +
-        this.cfTemplateS3 +
+        getAwsConfig().s3ForCloudformation +
         '.s3.' +
-        this.awsRegion +
+        getAwsConfig().region +
         '.amazonaws.com.cn/' +
         templatePath
       );
     } else {
       return (
-        'https://' + this.cfTemplateS3 + '.s3.amazonaws.com/' + templatePath
+        'https://' +
+        getAwsConfig().s3ForCloudformation +
+        '.s3.amazonaws.com/' +
+        templatePath
       );
     }
   }

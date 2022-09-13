@@ -6,15 +6,18 @@ import {SmsService} from '../../../microservice/notification/sms/sms.service';
 import {UserService} from '../user/user.service';
 import {AccountValidator} from '../../../_validator/_account.validator';
 import {VerificationCodeService} from './verification-code.service';
-import {VerificationCodeUse} from '@prisma/client';
-import {NotificationConfigurationService} from '../../../microservice/notification/configuration/configuration.service';
+import {
+  EmailNotification,
+  SmsNotification,
+  VerificationCodeUse,
+} from '@prisma/client';
 
 @ApiTags('[Product] Account / Verification Code')
 @Controller()
 export class VerificationCodeController {
   private verificationCodeService = new VerificationCodeService();
-  private notificationConfigurationService =
-    new NotificationConfigurationService();
+  private emailService = new EmailService();
+  private smsService = new SmsService();
 
   /**
    * [1] Account parameter must be email or phone.
@@ -109,32 +112,24 @@ export class VerificationCodeController {
     const verificationCode = others;
 
     // [step 4: start] Send verification code.
-    let result: object;
+    let result: EmailNotification | SmsNotification | null;
     if (byEmail) {
-      const configuration =
-        await this.notificationConfigurationService.defaultConfiguration();
-      const emailService = new EmailService(configuration!);
-
       // Send verification code to user's email
-      result = await emailService.sendOne({
+      result = await this.emailService.sendOne({
         email: account,
         subject: 'Your Verification Code',
         plainText: verificationCode.code,
         html: verificationCode.code,
       });
     } else if (byPhone) {
-      const configuration =
-        await this.notificationConfigurationService.defaultConfiguration();
-      const smsService = new SmsService(configuration!);
-
       // Send verification code to user's phone
-      result = await smsService.sendOne({
+      result = await this.smsService.sendOne({
         phone: account,
         text: verificationCode.code,
       });
     } else {
       // No chance to arrive here.
-      result = {data: null, err: null};
+      result = null;
     }
 
     if (result) {

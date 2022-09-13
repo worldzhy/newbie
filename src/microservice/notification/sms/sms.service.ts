@@ -1,30 +1,11 @@
-import {Inject, Injectable} from '@nestjs/common';
-import {NotificationConfiguration} from '@prisma/client';
+import {Injectable} from '@nestjs/common';
 import {PinpointService} from '../../../_aws/_pinpoint.service';
 import {PrismaService} from '../../../_prisma/_prisma.service';
 
 @Injectable()
 export class SmsService {
   private prisma = new PrismaService();
-  private pinpointService: PinpointService;
-  private config: NotificationConfiguration;
-
-  constructor(
-    @Inject('NotificationConfiguration') config: NotificationConfiguration
-  ) {
-    this.config = config;
-
-    if (config.pinpointSenderId) {
-      this.pinpointService = new PinpointService({
-        pinpointApplicationId: config.pinpointApplicationId,
-        pinpointSenderId: config.pinpointSenderId,
-      });
-    } else {
-      this.pinpointService = new PinpointService({
-        pinpointApplicationId: config.pinpointApplicationId,
-      });
-    }
-  }
+  private pinpointService = new PinpointService();
 
   /**
    * Send one text message
@@ -56,7 +37,6 @@ export class SmsService {
         pinpointRequestId: pinpointRequestId,
         pinpointMessageId: pinpointMessageId,
         pinpointResponse: output as object,
-        configurationId: this.config.id,
       },
     });
   }
@@ -69,6 +49,5 @@ export class SmsService {
   async sendMany(payload: {phones: string[]; text: string}) {
     const smsParams = this.pinpointService.buildSendMessagesParams_Sms(payload);
     const output = await this.pinpointService.sendMessages(smsParams);
-    const result = this.pinpointService.parseSendMessagesOutput(output);
   }
 }

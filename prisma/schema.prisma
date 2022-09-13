@@ -17,77 +17,74 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-//       ! Enum Product          //
-// ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  //
-// * DEFAULT                     //
-// * DATATRANS_BATCH_PROCESSING   //
-// * DATATRANS_STREAM_PROCESSING  //
-// ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  //
+// model AwsConfiguration {
+//   id                    String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+//   project               String                 @unique
+//   status                AwsConfigurationStatus // Only one active configuration
+//   region                String
+//   accessKeyId           String
+//   secretAccessKey       String
+//   sqsLogQueueUrl        String? // For logger
+//   sqsTaskQueueUrl       String? // For task management microservice
+//   pinpointApplicationId String?
+//   pinpointFromAddress   String? // For email message
+//   pinpointSenderId      String? // For text message
+//   createdAt             DateTime               @default(now())
+//   updatedAt             DateTime               @updatedAt
+// }
 
-enum Product {
-  DEFAULT
-  DATATRANS_BATCH_PROCESSING
-  DATATRANS_STREAM_PROCESSING
-}
+// enum AwsConfigurationStatus {
+//   ACTIVE
+//   INACTIVE
+// }
 
 //       ! Notification         //
 // ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
 // * EmailNotification          //
 // * SmsNotification            //
-// * NotificationConfiguration  //
 // ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
 
 model EmailNotification {
-  id                Int                       @id @default(autoincrement())
+  id                Int      @id @default(autoincrement())
   payload           Json //  The notification content for one phone.
   pinpointRequestId String? // RequestId is the Pinpoint request id. One request can contain many text messages.
   pinpointMessageId String? // MessageId is the text message id.
   pinpointResponse  Json?
-  createdAt         DateTime                  @default(now())
-  updatedAt         DateTime                  @updatedAt
-  configuration     NotificationConfiguration @relation(fields: [configurationId], references: [id])
-  configurationId   String                    @db.Uuid
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  // configuration     NotificationConfiguration @relation(fields: [configurationId], references: [id])
+  // configurationId   String                    @db.Uuid
 }
 
 model SmsNotification {
-  id                Int                       @id @default(autoincrement())
+  id                Int      @id @default(autoincrement())
   payload           Json //  The notification content for one phone.
   pinpointRequestId String? // RequestId is the Pinpoint request id. One request can contain many text messages.
   pinpointMessageId String? // MessageId is the text message id.
   pinpointResponse  Json?
-  createdAt         DateTime                  @default(now())
-  updatedAt         DateTime                  @updatedAt
-  configuration     NotificationConfiguration @relation(fields: [configurationId], references: [id])
-  configurationId   String                    @db.Uuid
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
-model NotificationConfiguration {
-  id                    String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  product               Product             @unique // The product that uses the notification.
-  pinpointApplicationId String
-  pinpointFromAddress   String? // For email message
-  pinpointSenderId      String? // For text message
-  createdAt             DateTime            @default(now())
-  updatedAt             DateTime            @updatedAt
-  emailNotifications    EmailNotification[]
-  smsNotifications      SmsNotification[]
-}
-
-//      ! Task       //
-// ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  //
-// * Task            //
-// ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  //
+// ! Task Management   //
+// ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
+// * Task              //
+// ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
 
 model Task {
-  id              Int               @id @default(autoincrement())
-  payload         Json // The task content.
-  state           TaskState         @default(PENDING)
-  sqsMessageId    String?
-  sqsResponse     Json?
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  configuration   TaskConfiguration @relation(fields: [configurationId], references: [id])
-  configurationId String            @db.Uuid
+  id           Int       @id @default(autoincrement())
+  type         TaskType
+  payload      Json // The task content.
+  state        TaskState @default(PENDING)
+  sqsMessageId String?
+  sqsResponse  Json?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+enum TaskType {
+  DATATRANS_BATCH_PROCESSING
+  DATATRANS_STREAM_PROCESSING
 }
 
 enum TaskState {
@@ -95,15 +92,6 @@ enum TaskState {
   SUCCEEDED
   FAILED
   CANCELED
-}
-
-model TaskConfiguration {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  product     Product  @unique // The product that uses the notification.
-  sqsQueueUrl String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  tasks       Task[]
 }
 
 //     ! Account       //

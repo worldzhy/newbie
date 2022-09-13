@@ -1,29 +1,24 @@
-import {Inject, Injectable} from '@nestjs/common';
+import {Injectable} from '@nestjs/common';
 import {
   PinpointClient,
   SendMessagesCommand,
   SendMessagesCommandOutput,
 } from '@aws-sdk/client-pinpoint';
+import {getAwsConfig} from '../_config/_aws.config';
 
 @Injectable()
 export class PinpointService {
   private client: PinpointClient;
-  private pinpointAppId: string;
-  private pinpointFromAddress?: string; // For email message
-  private pinpointSenderId?: string; // For text message
 
-  constructor(
-    @Inject('PinpointConfiguration')
-    config: {
-      pinpointApplicationId: string;
-      pinpointFromAddress?: string;
-      pinpointSenderId?: string;
-    }
-  ) {
+  private pinpointAppId: string;
+  private pinpointFromAddress?: string | null; // For email message
+  private pinpointSenderId?: string | null; // For text message
+
+  constructor() {
     this.client = new PinpointClient({});
-    this.pinpointAppId = config.pinpointApplicationId;
-    this.pinpointFromAddress = config.pinpointFromAddress;
-    this.pinpointSenderId = config.pinpointSenderId;
+    this.pinpointAppId = getAwsConfig().pinpointApplicationId!;
+    this.pinpointFromAddress = getAwsConfig().pinpointFromAddress;
+    this.pinpointSenderId = getAwsConfig().pinpointSenderId;
   }
 
   /**
@@ -118,7 +113,7 @@ export class PinpointService {
     phones: string[];
     text: string;
     keyword?: string;
-    messageType?: string; // AwsEnum.pinpointSmsMessageType.TRANSACTIONAL
+    messageType?: string; // 'TRANSACTIONAL' or 'PROMOTIONAL'
   }) {
     const addresses: {[phone: string]: {ChannelType: string}} = {};
     data.phones.map(phone => {
