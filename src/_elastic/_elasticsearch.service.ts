@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {Client} from '@elastic/elasticsearch';
-import {getElasticsearchConfig} from '../_config/_elasticsearch.config';
+import {getElasticsearchConfig} from '../_config/_elastic.config';
 
 @Injectable()
 export class ElasticsearchService extends Client {

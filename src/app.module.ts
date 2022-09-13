@@ -3,16 +3,16 @@ import {Module, MiddlewareConsumer} from '@nestjs/common';
 import {HttpMiddleware} from './_http/_http.middleware';
 import {HttpExceptionFilter} from './_http/_http-exception.filter';
 import {AppController} from './app.controller';
-import {AccountModule} from './product/account/account.module';
+import {AccountModule} from './products/account/account.module';
 import {AwsModule} from './_aws/_aws.module';
 import {CustomLoggerModule} from './_logger/_custom-logger.module';
-import {OrganizationModule} from './product/account/organization/organization.module';
-import {DataboardModule} from './product/engined/databoard/databoard.module';
-import {DatasourceModule} from './product/engined/datasource/datasource.module';
-import {DatatransModule} from './product/engined/datatrans/datatrans.module';
-import {ProjectManagementModule} from './product/pmgmt/pmgmt.module';
-import {NotificationModule} from './microservice/notification/notification.module';
-import {TaskModule} from './microservice/task/task.module';
+import {OrganizationModule} from './products/account/organization/organization.module';
+import {DataboardModule} from './products/engined/databoard/databoard.module';
+import {DatasourceModule} from './products/engined/datasource/datasource.module';
+import {DatatransModule} from './products/engined/datatrans/datatrans.module';
+import {ProjectManagementModule} from './products/pmgmt/pmgmt.module';
+import {NotificationModule} from './microservices/notification/notification.module';
+import {TaskModule} from './microservices/task/task.module';
 
 @Module({
   imports: [

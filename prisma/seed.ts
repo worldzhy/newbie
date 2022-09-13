@@ -7,13 +7,13 @@ import {
   ProjectState,
 } from '@prisma/client';
 import {PrismaService} from '../src/_prisma/_prisma.service';
-import {AccountService} from '../src/product/account/account.service';
-import {AccountController} from '../src/product/account/account.controller';
-import {ProjectService} from '../src/product/pmgmt/project/project.service';
-import {RoleService} from '../src/product/account/role/role.service';
-import {PostgresqlDatasourceService} from '../src/product/engined/datasource/postgresql/postgresql-datasource.service';
-import {ElasticsearchDatasourceService} from '../src/product/engined/datasource/elasticsearch/elasticsearch-datasource.service';
-import {DatatransPipelineController} from '../src/product/engined/datatrans/pipeline/pipeline.controller';
+import {AccountService} from '../src/products/account/account.service';
+import {AccountController} from '../src/products/account/account.controller';
+import {ProjectService} from '../src/products/pmgmt/project/project.service';
+import {RoleService} from '../src/products/account/role/role.service';
+import {PostgresqlDatasourceService} from '../src/products/engined/datasource/postgresql/postgresql-datasource.service';
+import {ElasticsearchDatasourceService} from '../src/products/engined/datasource/elasticsearch/elasticsearch-datasource.service';
+import {DatatransPipelineController} from '../src/products/engined/datatrans/pipeline/pipeline.controller';
 
 const prisma = new PrismaService();
 

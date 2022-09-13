@@ -1,8 +1,8 @@
 import {Controller, Post, Body} from '@nestjs/common';
 import {ApiTags, ApiBody} from '@nestjs/swagger';
 import {Public} from '../auth/auth-jwt/auth-jwt.decorator';
-import {EmailService} from '../../../microservice/notification/email/email.service';
-import {SmsService} from '../../../microservice/notification/sms/sms.service';
+import {EmailService} from '../../../microservices/notification/email/email.service';
+import {SmsService} from '../../../microservices/notification/sms/sms.service';
 import {UserService} from '../user/user.service';
 import * as validator from '../account.validator';
 import {VerificationCodeService} from './verification-code.service';

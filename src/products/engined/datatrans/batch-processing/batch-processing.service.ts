@@ -4,7 +4,7 @@ import {
   PostgresqlDatasourceTable,
   TaskType,
 } from '@prisma/client';
-import {TaskService} from '../../../../microservice/task/task.service';
+import {TaskService} from '../../../../microservices/task/task.service';
 import {PrismaService} from '../../../../_prisma/_prisma.service';
 
 @Injectable()
