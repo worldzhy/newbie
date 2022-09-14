@@ -2,7 +2,10 @@ import {Injectable} from '@nestjs/common';
 import * as pulumi from '@pulumi/pulumi';
 import * as aws from '@pulumi/aws';
 import * as awsx from '@pulumi/awsx';
-import {buildResourceOptions, generateSecurityGroup} from '../pulumi.util';
+import {
+  buildResourceOptions,
+  generateSecurityGroup,
+} from '../pulumi-stack.util';
 import {randomCode} from '../../../../../_util/_util';
 import {verifyRegion} from '../../../../../_aws/_aws.validator';
 import {getAwsConfig} from '../../../../../_config/_aws.config';

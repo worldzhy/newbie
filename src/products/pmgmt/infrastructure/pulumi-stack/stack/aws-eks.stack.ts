@@ -3,7 +3,7 @@ import * as aws from '@pulumi/aws';
 import * as eks from '@pulumi/eks';
 import * as k8s from '@pulumi/kubernetes';
 import {getAwsConfig} from '../../../../../_config/_aws.config';
-import {buildResourceOptions} from '../pulumi.util';
+import {buildResourceOptions} from '../pulumi-stack.util';
 
 @Injectable()
 export class AwsEks_Stack {

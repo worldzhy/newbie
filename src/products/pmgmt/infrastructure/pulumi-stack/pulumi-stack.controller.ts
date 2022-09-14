@@ -27,7 +27,7 @@ export class PulumiStackController {
    * @returns
    * @memberof PulumiStackController
    */
-  @Get('pulumi-stacks/:type/params')
+  @Get('pulumi-stacks/params/:type')
   @ApiParam({
     name: 'type',
     schema: {type: 'string'},
@@ -38,21 +38,14 @@ export class PulumiStackController {
   }
 
   /**
-   * Get stacks by projectId.
+   * Get stacks.
    *
    * @returns
    * @memberof CloudFormationController
    */
-  @Get('pulumi-stacks/projects/:projectId')
-  @ApiParam({
-    name: 'projectId',
-    schema: {type: 'string'},
-    example: 'a9538079-2781-4e92-998b-293514d4a67b',
-  })
-  async getStacks(@Param('projectId') projectId: string) {
-    return await this.stackService.findMany({
-      where: {projectId: projectId},
-    });
+  @Get('pulumi-stacks')
+  async getStacks() {
+    return await this.stackService.findMany({});
   }
 
   /**

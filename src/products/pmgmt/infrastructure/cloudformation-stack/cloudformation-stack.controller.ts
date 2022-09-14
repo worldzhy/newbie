@@ -12,7 +12,7 @@ import {randomCode} from '../../../../_util/_util';
 @ApiTags('[Product] Project Management / Infrastructure / CloudFormation Stack')
 @ApiBearerAuth()
 @Controller('project-management')
-export class CloudFormationController {
+export class CloudFormationStackController {
   private stackService = new CloudFormationStackService();
 
   @Get('cloudformation-stacks/types')
@@ -27,7 +27,7 @@ export class CloudFormationController {
    * @returns
    * @memberof CloudFormationController
    */
-  @Get('cloudformation-stacks/:type/params')
+  @Get('cloudformation-stacks/params/:type')
   @ApiParam({
     name: 'type',
     schema: {type: 'string'},
@@ -38,21 +38,14 @@ export class CloudFormationController {
   }
 
   /**
-   * Get stacks by projectId.
+   * Get stacks.
    *
    * @returns
    * @memberof CloudFormationController
    */
-  @Get('cloudformation-stacks/projects/:projectId')
-  @ApiParam({
-    name: 'projectId',
-    schema: {type: 'string'},
-    example: 'a9538079-2781-4e92-998b-293514d4a67b',
-  })
-  async getStacks(@Param('projectId') projectId: string) {
-    return await this.stackService.findMany({
-      where: {projectId: projectId},
-    });
+  @Get('cloudformation-stacks')
+  async getStacks() {
+    return await this.stackService.findMany({});
   }
 
   /**
