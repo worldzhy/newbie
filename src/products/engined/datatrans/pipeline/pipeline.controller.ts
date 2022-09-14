@@ -43,7 +43,7 @@ export class DatatransPipelineController {
   async getPipeline(
     @Param('pipelineId') pipelineId: string
   ): Promise<{data: object | null; err: object | null}> {
-    const result = await this.pipelineService.findOne({
+    const result = await this.pipelineService.findUnique({
       where: {id: pipelineId},
     });
     if (result) {
@@ -225,7 +225,7 @@ export class DatatransPipelineController {
     // [step 1] Guard statement.
 
     // [step 2] Delete pipeline.
-    const result = await this.pipelineService.delete({id: pipelineId});
+    const result = await this.pipelineService.delete({where: {id: pipelineId}});
     if (result) {
       return {
         data: result,
@@ -253,7 +253,7 @@ export class DatatransPipelineController {
   })
   async overviewPipeline(@Param('pipelineId') pipelineId: string) {
     // [step 1] Get pipeline.
-    const pipeline = await this.pipelineService.findOne({
+    const pipeline = await this.pipelineService.findUnique({
       where: {id: pipelineId},
       include: {fromTable: true},
     });

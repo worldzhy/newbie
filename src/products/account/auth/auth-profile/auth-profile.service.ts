@@ -39,11 +39,7 @@ export class AuthProfileService {
 
     // [step 2] Validate name and birthday.
     const profiles = await this.profileService.findMany({
-      givenName,
-      middleName,
-      familyName,
-      suffix,
-      birthday,
+      where: {givenName, middleName, familyName, suffix, birthday},
     });
     if (profiles.length === 1) {
       return {

@@ -6,7 +6,12 @@ import {
   LocalWorkspace,
   PulumiFn,
 } from '@pulumi/pulumi/automation';
-import {InfrastructureStackType} from '@prisma/client';
+import {
+  Prisma,
+  PulumiStack,
+  PulumiStackState,
+  PulumiStackType,
+} from '@prisma/client';
 import {AwsCloudfront_Stack} from './stack/aws-cloudfront.stack';
 import {AwsCodecommit_Stack} from './stack/aws-codecommit.stack';
 import {AwsEcr_Stack} from './stack/aws-ecr.stack';
@@ -22,10 +27,46 @@ import {NetworkHipaa_Stack} from './stack/network-hipaa.stack';
 import {Null_Stack} from './stack/null.stack';
 import {getAwsConfig} from '../../../../_config/_aws.config';
 import {getPulumiConfig} from '../../../../_config/_pulumi.config';
+import {PrismaService} from '../../../../_prisma/_prisma.service';
 
 @Injectable()
-export class PulumiService {
+export class PulumiStackService {
   private pulumiConfig = getPulumiConfig();
+  private prisma: PrismaService = new PrismaService();
+
+  async findUnique(
+    params: Prisma.PulumiStackFindUniqueArgs
+  ): Promise<PulumiStack | null> {
+    return await this.prisma.pulumiStack.findUnique(params);
+  }
+
+  async findMany(
+    params: Prisma.PulumiStackFindManyArgs
+  ): Promise<PulumiStack[]> {
+    return await this.prisma.pulumiStack.findMany(params);
+  }
+
+  async create(data: Prisma.PulumiStackCreateInput): Promise<PulumiStack> {
+    try {
+      return await this.prisma.pulumiStack.create({
+        data,
+      });
+    } catch (error) {
+      return error;
+    }
+  }
+
+  async update(params: Prisma.PulumiStackUpdateArgs): Promise<PulumiStack> {
+    try {
+      return await this.prisma.pulumiStack.update(params);
+    } catch (error) {
+      return error;
+    }
+  }
+
+  async delete(params: Prisma.PulumiStackDeleteArgs): Promise<PulumiStack> {
+    return await this.prisma.pulumiStack.delete(params);
+  }
 
   /**
    * Start a stack.
@@ -63,7 +104,7 @@ export class PulumiService {
   async build(
     stackProjectName: string,
     stackName: string,
-    stackType: InfrastructureStackType,
+    stackType: PulumiStackType,
     stackParams: any
   ): Promise<any> {
     // [step 1] Get Pulumi stack program.
@@ -125,25 +166,32 @@ export class PulumiService {
   /**
    * See the detail https://www.pulumi.com/docs/reference/service-rest-api/#delete-stack
    *
-   * @param {string} stackProjectName
-   * @param {string} stackName
+   * @param {PulumiStack} stack
    * @memberof PulumiService
    */
-  async delete(stackProjectName: string, stackName: string) {
+  async deleteOnPulumi(stack: PulumiStack) {
     const args: InlineProgramArgs = {
-      projectName: stackProjectName,
-      stackName,
+      projectName: stack.pulumiProject,
+      stackName: stack.name,
       program: async () => {},
     };
 
-    const stack = await LocalWorkspace.selectStack(args);
-    await stack.workspace.removeStack(stack.name);
+    // [step 1] Remove stack on Pulumi.
+    const pulumiStack = await LocalWorkspace.selectStack(args);
+    await pulumiStack.workspace.removeStack(stack.name);
+
+    // [step 2] Update database record of infrastructureStack.
+    return await this.prisma.pulumiStack.update({
+      where: {id: stack.id},
+      data: {state: PulumiStackState.DELETED},
+    });
   }
 
-  async deleteByForce(stackProjectName: string, stackName: string) {
-    const url = `https://api.pulumi.com/api/stacks/worldzhy/${stackProjectName}/${stackName}`;
-    console.log(url);
-    return await axios.delete(url, {
+  async forceDeleteOnPulumi(stack: PulumiStack) {
+    const url = `https://api.pulumi.com/api/stacks/worldzhy/${stack.pulumiProject}/${stack.name}`;
+
+    // [step 1] Force delete stack on Pulumi.
+    const response = await axios.delete(url, {
       maxRedirects: 5,
       headers: {
         Accept: 'application/vnd.pulumi+8',
@@ -153,6 +201,12 @@ export class PulumiService {
       params: {
         force: true,
       },
+    });
+
+    // [step 2] Update database record of infrastructureStack.
+    return await this.prisma.pulumiStack.update({
+      where: {id: stack.id},
+      data: {state: PulumiStackState.DELETED},
     });
   }
 
@@ -179,13 +233,13 @@ export class PulumiService {
    *
    * @param {string} stackProjectName
    * @param {string} stackName
-   * @param {InfrastructureStackType} stackType
+   * @param {PulumiStackType} stackType
    * @memberof PulumiService
    */
   async getStackOutputs(
     stackProjectName: string,
     stackName: string,
-    stackType: InfrastructureStackType
+    stackType: PulumiStackType
   ) {
     // [step 1] Create stack args.
     const args: InlineProgramArgs = {
@@ -218,23 +272,23 @@ export class PulumiService {
   /**
    * Get example parameters of stack.
    *
-   * @param {InfrastructureStackType} stackType
+   * @param {PulumiStackType} stackType
    * @returns
    * @memberof PulumiService
    */
-  getStackParams(stackType: InfrastructureStackType) {
+  getStackParams(stackType: PulumiStackType) {
     return this.getStackServiceByType(stackType)?.getStackParams();
   }
 
   /**
    * Check parameters before building stack.
    *
-   * @param {InfrastructureStackType} stackType
+   * @param {PulumiStackType} stackType
    * @param {object} params
    * @returns
    * @memberof PulumiService
    */
-  checkStackParams(stackType: InfrastructureStackType, params: object) {
+  checkStackParams(stackType: PulumiStackType, params: object) {
     return this.getStackServiceByType(stackType)?.checkStackParams(params);
   }
 
@@ -242,52 +296,49 @@ export class PulumiService {
    * Get Pulumi program for stack-up.
    *
    * @private
-   * @param {InfrastructureStackType} stackType
+   * @param {PulumiStackType} stackType
    * @param {*} stackParams
    * @returns
    * @memberof PulumiService
    */
-  private getStackProgramByType(
-    stackType: InfrastructureStackType,
-    stackParams: any
-  ) {
+  private getStackProgramByType(stackType: PulumiStackType, stackParams: any) {
     return this.getStackServiceByType(stackType).getStackProgram(stackParams);
   }
 
   /**
    * Get stack class
    *
-   * @param {InfrastructureStackType} type
+   * @param {PulumiStackType} type
    * @returns
-   * @memberof InfrastructureStackService
+   * @memberof PulumiStackService
    */
-  private getStackServiceByType(type: InfrastructureStackType) {
+  private getStackServiceByType(type: PulumiStackType) {
     switch (type) {
-      case InfrastructureStackType.P_AWS_CLOUDFRONT:
+      case PulumiStackType.AWS_CLOUDFRONT:
         return AwsCloudfront_Stack;
-      case InfrastructureStackType.P_AWS_CODE_COMMIT:
+      case PulumiStackType.AWS_CODE_COMMIT:
         return AwsCodecommit_Stack;
-      case InfrastructureStackType.P_AWS_ECR:
+      case PulumiStackType.AWS_ECR:
         return AwsEcr_Stack;
-      case InfrastructureStackType.P_AWS_ECS:
+      case PulumiStackType.AWS_ECS:
         return AwsEcs_Stack;
-      case InfrastructureStackType.P_AWS_EKS:
+      case PulumiStackType.AWS_EKS:
         return AwsEcs_Stack;
-      case InfrastructureStackType.P_AWS_IAM_USER:
+      case PulumiStackType.AWS_IAM_USER:
         return AwsIamUser_Stack;
-      case InfrastructureStackType.P_AWS_RDS:
+      case PulumiStackType.AWS_RDS:
         return AwsRds_Stack;
-      case InfrastructureStackType.P_AWS_S3:
+      case PulumiStackType.AWS_S3:
         return AwsS3_Stack;
-      case InfrastructureStackType.P_AWS_SQS:
+      case PulumiStackType.AWS_SQS:
         return AwsSqs_Stack;
-      case InfrastructureStackType.P_AWS_VPC:
+      case PulumiStackType.AWS_VPC:
         return AwsVpc_Stack;
-      case InfrastructureStackType.P_AWS_WAF:
+      case PulumiStackType.AWS_WAF:
         return AwsWaf_Stack;
-      case InfrastructureStackType.P_COMPUTING_FARGATE:
+      case PulumiStackType.COMPUTING_FARGATE:
         return ComputingFargate_Stack;
-      case InfrastructureStackType.P_NETWORK_HIPAA:
+      case PulumiStackType.NETWORK_HIPAA:
         return NetworkHipaa_Stack;
       default:
         return Null_Stack;

@@ -16,6 +16,38 @@ export class ElasticsearchDatasourceService {
   private elasticsearchDatasourceIndexFieldService =
     new ElasticsearchDatasourceIndexFieldService();
 
+  async findUnique(
+    params: Prisma.ElasticsearchDatasourceFindUniqueArgs
+  ): Promise<ElasticsearchDatasource | null> {
+    return await this.prisma.elasticsearchDatasource.findUnique(params);
+  }
+
+  async findMany(
+    params: Prisma.ElasticsearchDatasourceFindManyArgs
+  ): Promise<ElasticsearchDatasource[]> {
+    return await this.prisma.elasticsearchDatasource.findMany(params);
+  }
+
+  async create(
+    data: Prisma.ElasticsearchDatasourceCreateInput
+  ): Promise<ElasticsearchDatasource> {
+    return await this.prisma.elasticsearchDatasource.create({
+      data,
+    });
+  }
+
+  async update(
+    params: Prisma.ElasticsearchDatasourceUpdateArgs
+  ): Promise<ElasticsearchDatasource> {
+    return await this.prisma.elasticsearchDatasource.update(params);
+  }
+
+  async delete(
+    params: Prisma.ElasticsearchDatasourceDeleteArgs
+  ): Promise<ElasticsearchDatasource> {
+    return await this.prisma.elasticsearchDatasource.delete(params);
+  }
+
   /**
    * Extract elasticsearch datasource indices and their fields.
    * @param datasource
@@ -67,100 +99,7 @@ export class ElasticsearchDatasourceService {
   async unmount(datasource: ElasticsearchDatasource) {
     // [step 1] Delete indices, their fields will be cascade deleted.
     await this.elasticsearchDatasourceIndexService.deleteMany({
-      datasourceId: datasource.id,
-    });
-  }
-
-  /**
-   * Get a elasticsearchDatasource
-   * @param {Prisma.ElasticsearchDatasourceWhereUniqueInput} where
-   * @returns {(Promise<ElasticsearchDatasource | null>)}
-   * @memberof ElasticsearchDatasourceService
-   */
-  async findOne(
-    where: Prisma.ElasticsearchDatasourceWhereUniqueInput
-  ): Promise<ElasticsearchDatasource | null> {
-    return await this.prisma.elasticsearchDatasource.findUnique({where});
-  }
-
-  /**
-   * Get many elasticsearchDatasources
-   *
-   * @param {{
-   *     skip?: number;
-   *     take?: number;
-   *     where?: Prisma.ElasticsearchDatasourceWhereInput;
-   *     orderBy?: Prisma.ElasticsearchDatasourceOrderByWithRelationAndSearchRelevanceInput;
-   *     select?: Prisma.ElasticsearchDatasourceSelect;
-   *   }} params
-   * @returns
-   * @memberof ElasticsearchDatasourceService
-   */
-  async findMany(params: {
-    skip?: number;
-    take?: number;
-    where?: Prisma.ElasticsearchDatasourceWhereInput;
-    orderBy?: Prisma.ElasticsearchDatasourceOrderByWithRelationAndSearchRelevanceInput;
-    select?: Prisma.ElasticsearchDatasourceSelect;
-  }) {
-    const {skip, take, where, orderBy, select} = params;
-    return await this.prisma.elasticsearchDatasource.findMany({
-      skip,
-      take,
-      where,
-      orderBy,
-      select,
-    });
-  }
-
-  /**
-   * Create a elasticsearchDatasource
-   *
-   * @param {Prisma.ElasticsearchDatasourceCreateInput} data
-   * @returns {Promise<ElasticsearchDatasource>}
-   * @memberof ElasticsearchDatasourceService
-   */
-  async create(
-    data: Prisma.ElasticsearchDatasourceCreateInput
-  ): Promise<ElasticsearchDatasource> {
-    return await this.prisma.elasticsearchDatasource.create({
-      data,
-    });
-  }
-
-  /**
-   * Update a elasticsearchDatasource
-   *
-   * @param {{
-   *     where: Prisma.ElasticsearchDatasourceWhereUniqueInput;
-   *     data: Prisma.ElasticsearchDatasourceUpdateInput;
-   *   }} params
-   * @returns {Promise<ElasticsearchDatasource>}
-   * @memberof ElasticsearchDatasourceService
-   */
-  async update(params: {
-    where: Prisma.ElasticsearchDatasourceWhereUniqueInput;
-    data: Prisma.ElasticsearchDatasourceUpdateInput;
-  }): Promise<ElasticsearchDatasource> {
-    const {where, data} = params;
-    return await this.prisma.elasticsearchDatasource.update({
-      data,
-      where,
-    });
-  }
-
-  /**
-   * Delete a elasticsearchDatasource
-   *
-   * @param {Prisma.ElasticsearchDatasourceWhereUniqueInput} where
-   * @returns {Promise<ElasticsearchDatasource>}
-   * @memberof ElasticsearchDatasourceService
-   */
-  async delete(
-    where: Prisma.ElasticsearchDatasourceWhereUniqueInput
-  ): Promise<ElasticsearchDatasource> {
-    return await this.prisma.elasticsearchDatasource.delete({
-      where,
+      where: {datasourceId: datasource.id},
     });
   }
 

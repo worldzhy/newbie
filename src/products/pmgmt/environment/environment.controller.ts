@@ -36,7 +36,7 @@ export class EnvironmentController {
     @Param('projectId') projectId: string
   ): Promise<ProjectEnvironment[]> {
     return await this.environmentService.findMany({
-      projectId: projectId,
+      where: {projectId: projectId},
     });
   }
 

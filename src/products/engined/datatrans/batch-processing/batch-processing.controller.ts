@@ -26,7 +26,7 @@ export class DatatransBatchProcessingController {
   })
   async startBatchProcessing(@Param('pipelineId') pipelineId: string) {
     // [step 1] Get pipeline.
-    const pipeline = await this.pipelineService.findOne({
+    const pipeline = await this.pipelineService.findUnique({
       where: {id: pipelineId},
       include: {fromTable: true},
     });

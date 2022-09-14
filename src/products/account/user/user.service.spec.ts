@@ -79,10 +79,10 @@ describe('UserService', () => {
     });
   });
 
-  describe('findOne', () => {
+  describe('findUnique', () => {
     it('should return an email user', async () => {
       service.prisma.user.findUnique = jest.fn().mockReturnValueOnce(emailUser);
-      const user = await service.findOne({email: emailUser.email});
+      const user = await service.findUnique({email: emailUser.email});
 
       expect(user).toEqual(emailUser);
       expect(service.prisma.user.findUnique).toHaveBeenCalledTimes(1);
@@ -90,7 +90,7 @@ describe('UserService', () => {
 
     it('should return a phone user', async () => {
       service.prisma.user.findUnique = jest.fn().mockReturnValueOnce(phoneUser);
-      const user = await service.findOne({phone: phoneUser.phone});
+      const user = await service.findUnique({phone: phoneUser.phone});
 
       expect(user).toEqual(phoneUser);
       expect(service.prisma.user.findUnique).toHaveBeenCalledTimes(1);

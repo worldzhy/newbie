@@ -6,18 +6,14 @@ import {PrismaService} from '../../../_prisma/_prisma.service';
 export class ProfileService {
   private prisma = new PrismaService();
 
-  async findOne(
-    profileWhereUniqueInput: Prisma.ProfileWhereUniqueInput
+  async findUnique(
+    params: Prisma.ProfileFindUniqueArgs
   ): Promise<Profile | null> {
-    return await this.prisma.profile.findUnique({
-      where: profileWhereUniqueInput,
-    });
+    return await this.prisma.profile.findUnique(params);
   }
 
-  async findMany(whereInput: Prisma.ProfileWhereInput): Promise<Profile[]> {
-    return await this.prisma.profile.findMany({
-      where: whereInput,
-    });
+  async findMany(params: Prisma.ProfileFindManyArgs): Promise<Profile[]> {
+    return await this.prisma.profile.findMany(params);
   }
 
   async create(data: Prisma.ProfileCreateInput): Promise<Profile> {
@@ -26,15 +22,8 @@ export class ProfileService {
     });
   }
 
-  async update(params: {
-    where: Prisma.ProfileWhereUniqueInput;
-    data: Prisma.ProfileUpdateInput;
-  }): Promise<Profile> {
-    const {where, data} = params;
-    return await this.prisma.profile.update({
-      where,
-      data,
-    });
+  async update(params: Prisma.ProfileUpdateArgs): Promise<Profile> {
+    return await this.prisma.profile.update(params);
   }
 
   /* End */

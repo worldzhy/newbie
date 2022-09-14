@@ -1,5 +1,5 @@
 import {Injectable} from '@nestjs/common';
-import {InfrastructureStackType} from '@prisma/client';
+import {PulumiStackType} from '@prisma/client';
 import * as aws from '@pulumi/aws';
 import * as awsx from '@pulumi/awsx';
 import {getAwsConfig} from '../../../../../_config/_aws.config';
@@ -13,12 +13,12 @@ import {
 export class NetworkHipaa_Stack {
   static getStackParams() {
     return {
-      [InfrastructureStackType.P_AWS_ECS]: {
+      [PulumiStackType.AWS_ECS]: {
         vpcName: 'elastic-container-cluster',
         vpcCidrBlock: '10.10.0.0/16',
         numberOfAvailabilityZones: 2,
       },
-      [InfrastructureStackType.P_AWS_EKS]: {
+      [PulumiStackType.AWS_EKS]: {
         vpcName: 'elastic-server-cluster',
         vpcCidrBlock: '10.20.0.0/16',
         numberOfAvailabilityZones: 2,

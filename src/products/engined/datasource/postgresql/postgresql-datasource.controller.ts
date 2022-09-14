@@ -55,7 +55,7 @@ export class PostgresqlDatasourceController {
   async getPostgresqlDatasource(
     @Param('datasourceId') datasourceId: string
   ): Promise<{data: object | null; err: object | null}> {
-    const result = await this.postgresqlDatasourceService.findOne({
+    const result = await this.postgresqlDatasourceService.findUnique({
       where: {id: datasourceId},
     });
     if (result) {
@@ -198,7 +198,7 @@ export class PostgresqlDatasourceController {
   })
   async mountPostgresqlDatasource(@Param('datasourceId') datasourceId: string) {
     // [step 1] Get postgresql.
-    const postgresql = await this.postgresqlDatasourceService.findOne({
+    const postgresql = await this.postgresqlDatasourceService.findUnique({
       where: {id: datasourceId},
     });
     if (!postgresql) {
@@ -210,7 +210,7 @@ export class PostgresqlDatasourceController {
 
     // [step 2] Check if the datasource has been mounted.
     const count = await this.postgresqlDatasourceTableService.count({
-      datasourceId: datasourceId,
+      where: {datasourceId: datasourceId},
     });
     if (count > 0) {
       return {
@@ -248,7 +248,7 @@ export class PostgresqlDatasourceController {
     @Param('datasourceId') datasourceId: string
   ) {
     // [step 1] Get postgresql.
-    const postgresql = await this.postgresqlDatasourceService.findOne({
+    const postgresql = await this.postgresqlDatasourceService.findUnique({
       where: {id: datasourceId},
     });
     if (!postgresql) {
@@ -280,7 +280,7 @@ export class PostgresqlDatasourceController {
     @Param('datasourceId') datasourceId: string
   ): Promise<{data: object | null; err: object | null}> {
     /// [step 1] Get postgresql.
-    const postgresql = await this.postgresqlDatasourceService.findOne({
+    const postgresql = await this.postgresqlDatasourceService.findUnique({
       where: {id: datasourceId},
       include: {tables: true},
     });

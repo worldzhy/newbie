@@ -164,7 +164,10 @@ export class UserController {
   async getUser(
     @Param('userId') userId: string
   ): Promise<{data: object | null; err: object | null}> {
-    const result = await this.userService.findOne({id: userId});
+    const result = await this.userService.findUnique({
+      where: {id: userId},
+      include: {profiles: true},
+    });
     if (result) {
       return {
         data: result,

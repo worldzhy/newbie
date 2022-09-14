@@ -374,11 +374,7 @@ export class AccountController {
     // [step 1] It has been confirmed there is only one profile.
     const {givenName, middleName, familyName, suffix, birthday} = body;
     const profiles = await profileService.findMany({
-      givenName,
-      middleName,
-      familyName,
-      suffix,
-      birthday,
+      where: {givenName, middleName, familyName, suffix, birthday},
     });
 
     // [step 2] Login with userId.

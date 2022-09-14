@@ -71,7 +71,7 @@ export class TaskController {
   async getTask(
     @Param('taskId') taskId: number
   ): Promise<{data: object | null; err: object | null}> {
-    const result = await this.taskService.findOne({
+    const result = await this.taskService.findUnique({
       where: {id: taskId},
     });
     if (result) {

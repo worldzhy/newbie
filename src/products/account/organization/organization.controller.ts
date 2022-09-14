@@ -147,7 +147,9 @@ export class OrganizationController {
   async getOrganization(
     @Param('organizationId') organizationId: string
   ): Promise<{data: object | null; err: object | null}> {
-    const result = await this.organizationService.findOne({id: organizationId});
+    const result = await this.organizationService.findUnique({
+      where: {id: organizationId},
+    });
     if (result) {
       return {
         data: result,

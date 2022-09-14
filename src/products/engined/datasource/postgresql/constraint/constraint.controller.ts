@@ -72,7 +72,7 @@ export class PostgresqlDatasourceConstraintController {
     @Param('tableName') tableName: string
   ): Promise<{data: object | null; err: object | null}> {
     // [step 1] Get datasource.
-    const datasource = await this.postgresqlDatasourceService.findOne({
+    const datasource = await this.postgresqlDatasourceService.findUnique({
       where: {id: datasourceId},
     });
     if (!datasource) {

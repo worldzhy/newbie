@@ -27,6 +27,38 @@ export class PostgresqlDatasourceService {
   private postgresqlDatasourceTableColumnService =
     new PostgresqlDatasourceTableColumnService();
 
+  async findUnique(
+    params: Prisma.PostgresqlDatasourceFindUniqueArgs
+  ): Promise<PostgresqlDatasource | null> {
+    return await this.prisma.postgresqlDatasource.findUnique(params);
+  }
+
+  async findMany(
+    params: Prisma.PostgresqlDatasourceFindManyArgs
+  ): Promise<PostgresqlDatasource[]> {
+    return await this.prisma.postgresqlDatasource.findMany(params);
+  }
+
+  async create(
+    data: Prisma.PostgresqlDatasourceCreateInput
+  ): Promise<PostgresqlDatasource> {
+    return await this.prisma.postgresqlDatasource.create({
+      data,
+    });
+  }
+
+  async update(
+    params: Prisma.PostgresqlDatasourceUpdateArgs
+  ): Promise<PostgresqlDatasource> {
+    return await this.prisma.postgresqlDatasource.update(params);
+  }
+
+  async delete(
+    params: Prisma.PostgresqlDatasourceDeleteArgs
+  ): Promise<PostgresqlDatasource> {
+    return await this.prisma.postgresqlDatasource.delete(params);
+  }
+
   /**
    * Extract tables, columns and constraints.
    * @param datasource
@@ -148,7 +180,7 @@ export class PostgresqlDatasourceService {
   async unmount(datasource: PostgresqlDatasource) {
     // [step 1] Delete tables and their columns.
     await this.postgresqlDatasourceTableService.deleteMany({
-      datasourceId: datasource.id,
+      where: {datasourceId: datasource.id},
     });
 
     // [step 2] Delete constraints.
@@ -242,100 +274,6 @@ export class PostgresqlDatasourceService {
       tableCount: tables.length,
       tables: tableSummaries,
     };
-  }
-
-  /**
-   * Get a postgresqlDatasource
-   * @param {Prisma.PostgresqlDatasourceWhereUniqueInput} where
-   * @returns {(Promise<PostgresqlDatasource | null>)}
-   * @memberof PostgresqlDatasourceService
-   */
-  async findOne(params: {
-    where: Prisma.PostgresqlDatasourceWhereUniqueInput;
-    include?: Prisma.PostgresqlDatasourceInclude;
-  }): Promise<PostgresqlDatasource | null> {
-    return await this.prisma.postgresqlDatasource.findUnique(params);
-  }
-
-  /**
-   * Get many postgresqlDatasources
-   *
-   * @param {{
-   *     skip?: number;
-   *     take?: number;
-   *     where?: Prisma.PostgresqlDatasourceWhereInput;
-   *     orderBy?: Prisma.PostgresqlDatasourceOrderByWithRelationAndSearchRelevanceInput;
-   *     select?: Prisma.PostgresqlDatasourceSelect;
-   *   }} params
-   * @returns
-   * @memberof PostgresqlDatasourceService
-   */
-  async findMany(params: {
-    skip?: number;
-    take?: number;
-    where?: Prisma.PostgresqlDatasourceWhereInput;
-    orderBy?: Prisma.PostgresqlDatasourceOrderByWithRelationAndSearchRelevanceInput;
-    select?: Prisma.PostgresqlDatasourceSelect;
-  }) {
-    const {skip, take, where, orderBy, select} = params;
-    return await this.prisma.postgresqlDatasource.findMany({
-      skip,
-      take,
-      where,
-      orderBy,
-      select,
-    });
-  }
-
-  /**
-   * Create a postgresqlDatasource
-   *
-   * @param {Prisma.PostgresqlDatasourceCreateInput} data
-   * @returns {Promise<PostgresqlDatasource>}
-   * @memberof PostgresqlDatasourceService
-   */
-  async create(
-    data: Prisma.PostgresqlDatasourceCreateInput
-  ): Promise<PostgresqlDatasource> {
-    return await this.prisma.postgresqlDatasource.create({
-      data,
-    });
-  }
-
-  /**
-   * Update a postgresqlDatasource
-   *
-   * @param {{
-   *     where: Prisma.PostgresqlDatasourceWhereUniqueInput;
-   *     data: Prisma.PostgresqlDatasourceUpdateInput;
-   *   }} params
-   * @returns {Promise<PostgresqlDatasource>}
-   * @memberof PostgresqlDatasourceService
-   */
-  async update(params: {
-    where: Prisma.PostgresqlDatasourceWhereUniqueInput;
-    data: Prisma.PostgresqlDatasourceUpdateInput;
-  }): Promise<PostgresqlDatasource> {
-    const {where, data} = params;
-    return await this.prisma.postgresqlDatasource.update({
-      data,
-      where,
-    });
-  }
-
-  /**
-   * Delete a postgresqlDatasource
-   *
-   * @param {Prisma.PostgresqlDatasourceWhereUniqueInput} where
-   * @returns {Promise<PostgresqlDatasource>}
-   * @memberof PostgresqlDatasourceService
-   */
-  async delete(
-    where: Prisma.PostgresqlDatasourceWhereUniqueInput
-  ): Promise<PostgresqlDatasource> {
-    return await this.prisma.postgresqlDatasource.delete({
-      where,
-    });
   }
 
   async getTables(datasource: PostgresqlDatasource) {

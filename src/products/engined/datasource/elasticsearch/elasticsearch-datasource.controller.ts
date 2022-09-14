@@ -43,8 +43,8 @@ export class ElasticsearchDatasourceController {
   async getElasticsearchDatasource(
     @Param('datasourceId') datasourceId: string
   ): Promise<{data: object | null; err: object | null}> {
-    const result = await this.elasticsearchDatasourceService.findOne({
-      id: datasourceId,
+    const result = await this.elasticsearchDatasourceService.findUnique({
+      where: {id: datasourceId},
     });
     if (result) {
       return {
@@ -194,8 +194,8 @@ export class ElasticsearchDatasourceController {
     }
   ) {
     // [step 1] Get datasource.
-    const datasource = await this.elasticsearchDatasourceService.findOne({
-      id: datasourceId,
+    const datasource = await this.elasticsearchDatasourceService.findUnique({
+      where: {id: datasourceId},
     });
     if (!datasource) {
       return {
@@ -246,8 +246,8 @@ export class ElasticsearchDatasourceController {
     }
   ) {
     // [step 1] Get datasource.
-    const datasource = await this.elasticsearchDatasourceService.findOne({
-      id: datasourceId,
+    const datasource = await this.elasticsearchDatasourceService.findUnique({
+      where: {id: datasourceId},
     });
     if (!datasource) {
       return {
@@ -279,8 +279,8 @@ export class ElasticsearchDatasourceController {
     // [step 1] Guard statement.
 
     // [step 2] Get datasource.
-    const datasource = await this.elasticsearchDatasourceService.findOne({
-      id: datasourceId,
+    const datasource = await this.elasticsearchDatasourceService.findUnique({
+      where: {id: datasourceId},
     });
     if (!datasource) {
       return {
@@ -315,8 +315,8 @@ export class ElasticsearchDatasourceController {
     @Param('datasourceId') datasourceId: string
   ) {
     // [step 1] Get datasource.
-    const datasource = await this.elasticsearchDatasourceService.findOne({
-      id: datasourceId,
+    const datasource = await this.elasticsearchDatasourceService.findUnique({
+      where: {id: datasourceId},
     });
     if (!datasource) {
       return {

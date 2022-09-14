@@ -75,8 +75,8 @@ export class ElasticsearchDataboardController {
   async getElasticsearchDataboard(
     @Param('databoardId') databoardId: string
   ): Promise<{data: object | null; err: object | null}> {
-    const result = await this.elasticsearchDataboardService.findOne({
-      id: databoardId,
+    const result = await this.elasticsearchDataboardService.findUnique({
+      where: {id: databoardId},
     });
     if (result) {
       return {
@@ -218,7 +218,7 @@ export class ElasticsearchDataboardController {
 
     // [step 2] Update name.
     const result = await this.elasticsearchDataboardService.delete({
-      id: databoardId,
+      where: {id: databoardId},
     });
     if (result) {
       return {

@@ -29,8 +29,8 @@ export class ElasticsearchDatasourceIndexFieldController {
     @Param('indexId') indexId: number
   ): Promise<{data: object | null; err: object | null}> {
     // [step 1] Get index.
-    const index = await this.elasticsearchDatasourceIndexService.findOne({
-      id: indexId,
+    const index = await this.elasticsearchDatasourceIndexService.findUnique({
+      where: {id: indexId},
     });
     if (!index) {
       return {

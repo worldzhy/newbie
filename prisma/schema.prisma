@@ -281,7 +281,8 @@ model Project {
   updatedAt            DateTime              @updatedAt
   checkpoints          ProjectCheckpoint[]
   environments         ProjectEnvironment[]
-  infrastructureStacks InfrastructureStack[]
+  cloudformationStacks CloudFormationStack[]
+  pulumiStacks         PulumiStack[]
 }
 
 enum ProjectState {
@@ -348,56 +349,78 @@ enum ProjectEnvironmentType {
   PRODUCTION
 }
 
-model InfrastructureStack {
-  id                String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name              String                     @unique
-  params            Json?
-  environment       ProjectEnvironmentType
-  type              InfrastructureStackType
-  state             InfrastructureStackState
-  manager           InfrastructureStackManager
-  // We use 'pulumiProjectName' & 'name' to identify infrastructure stack(cloud resource stack).
-  // The pulumiProjectName Name is a concept of Pulumi. We set it with Project->name.
-  pulumiProjectName String?
-  buildResult       Json?
-  destroyResult     Json?
-  createdAt         DateTime                   @default(now())
-  updatedAt         DateTime                   @updatedAt
-  project           Project                    @relation(fields: [projectId], references: [id])
-  projectId         String                     @db.Uuid
+model CloudFormationStack {
+  id            String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String                   @unique
+  params        Json?
+  environment   ProjectEnvironmentType
+  type          CloudFormationStackType
+  state         CloudFormationStackState
+  buildResult   Json?
+  destroyResult Json?
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
+  project       Project                  @relation(fields: [projectId], references: [id])
+  projectId     String                   @db.Uuid
 }
 
-enum InfrastructureStackManager {
-  PULUMI
-  CLOUDFORMATION
-}
-
-enum InfrastructureStackType {
+enum CloudFormationStackType {
   // CloudFormation stack types
-  C_CICD_BUILD
-  C_CICD_PIPELINE
-  C_CICD_REPOSITORY
-  C_COMPUTING_FARGATE
-  C_NETWORK_HIPAA
-  C_PRODUCT_IDE
-  C_PRODUCT_MESSAGE_TRACKER
-  // Pulumi stack types
-  P_AWS_CLOUDFRONT
-  P_AWS_CODE_COMMIT
-  P_AWS_ECR
-  P_AWS_ECS
-  P_AWS_EKS
-  P_AWS_IAM_USER
-  P_AWS_RDS
-  P_AWS_S3
-  P_AWS_SQS
-  P_AWS_VPC
-  P_AWS_WAF
-  P_COMPUTING_FARGATE
-  P_NETWORK_HIPAA
+  CICD_BUILD
+  CICD_PIPELINE
+  CICD_REPOSITORY
+  COMPUTING_FARGATE
+  NETWORK_HIPAA
+  PRODUCT_DATA_ENGINE
+  PRODUCT_MESSAGE_TRACKER
 }
 
-enum InfrastructureStackState {
+enum CloudFormationStackState {
+  PREPARING
+  BUILDING
+  BUILD_SUCCEEDED
+  BUILD_FAILED
+  DESTROYING
+  DESTROY_SUCCEEDED
+  DESTROY_FAILED
+  DELETED
+}
+
+model PulumiStack {
+  id            String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String                 @unique
+  // The pulumi project is a concept of Pulumi. We set it with Project->name.
+  // We use 'pulumiProject' & 'name' to identify infrastructure stack(cloud resource stack).
+  pulumiProject String
+  params        Json?
+  environment   ProjectEnvironmentType
+  type          PulumiStackType
+  state         PulumiStackState
+  buildResult   Json?
+  destroyResult Json?
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+  project       Project                @relation(fields: [projectId], references: [id])
+  projectId     String                 @db.Uuid
+}
+
+enum PulumiStackType {
+  AWS_CLOUDFRONT
+  AWS_CODE_COMMIT
+  AWS_ECR
+  AWS_ECS
+  AWS_EKS
+  AWS_IAM_USER
+  AWS_RDS
+  AWS_S3
+  AWS_SQS
+  AWS_VPC
+  AWS_WAF
+  COMPUTING_FARGATE
+  NETWORK_HIPAA
+}
+
+enum PulumiStackState {
   PREPARING
   BUILDING
   BUILD_SUCCEEDED

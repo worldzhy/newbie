@@ -6,20 +6,16 @@ import {PrismaService} from '../../../_prisma/_prisma.service';
 export class EnvironmentService {
   private prisma: PrismaService = new PrismaService();
 
-  async findOne(
-    where: Prisma.ProjectEnvironmentWhereUniqueInput
+  async findUnique(
+    params: Prisma.ProjectEnvironmentFindUniqueArgs
   ): Promise<ProjectEnvironment | null> {
-    return await this.prisma.projectEnvironment.findUnique({
-      where,
-    });
+    return await this.prisma.projectEnvironment.findUnique(params);
   }
 
   async findMany(
-    where: Prisma.ProjectEnvironmentWhereInput
+    params: Prisma.ProjectEnvironmentFindManyArgs
   ): Promise<ProjectEnvironment[]> {
-    return await this.prisma.projectEnvironment.findMany({
-      where,
-    });
+    return await this.prisma.projectEnvironment.findMany(params);
   }
 
   async create(
@@ -30,23 +26,10 @@ export class EnvironmentService {
     });
   }
 
-  async update(params: {
-    where: Prisma.ProjectEnvironmentWhereUniqueInput;
-    data: Prisma.ProjectEnvironmentUpdateInput;
-  }): Promise<ProjectEnvironment> {
-    const {where, data} = params;
-    return await this.prisma.projectEnvironment.update({
-      data,
-      where,
-    });
-  }
-
-  async delete(
-    where: Prisma.ProjectEnvironmentWhereUniqueInput
+  async update(
+    params: Prisma.ProjectEnvironmentUpdateArgs
   ): Promise<ProjectEnvironment> {
-    return await this.prisma.projectEnvironment.delete({
-      where,
-    });
+    return await this.prisma.projectEnvironment.update(params);
   }
 
   /* End */

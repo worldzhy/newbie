@@ -26,7 +26,9 @@ export class ProfileController {
   async getProfile(
     @Param('profileId') profileId: string
   ): Promise<{data: object | null; err: object | null}> {
-    const result = await this.profileService.findOne({id: profileId});
+    const result = await this.profileService.findUnique({
+      where: {id: profileId},
+    });
     if (result) {
       return {
         data: result,

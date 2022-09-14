@@ -8,18 +8,53 @@ export class ElasticsearchDatasourceIndexService {
   private prisma: PrismaService = new PrismaService();
   private elasticsearch: ElasticsearchService = new ElasticsearchService();
 
-  /**
-   * Get an elasticsearch index.
-   * @param {Prisma.ElasticsearchDatasourceIndexWhereUniqueInput} where
-   * @returns {(Promise<ElasticsearchDatasourceIndex | null>)}
-   * @memberof ElasticsearchDatasourceIndexService
-   */
-  async findOne(
-    where: Prisma.ElasticsearchDatasourceIndexWhereUniqueInput
+  async findUnique(
+    params: Prisma.ElasticsearchDatasourceIndexFindUniqueArgs
   ): Promise<ElasticsearchDatasourceIndex | null> {
-    return await this.prisma.elasticsearchDatasourceIndex.findUnique({
-      where,
+    return await this.prisma.elasticsearchDatasourceIndex.findUnique(params);
+  }
+
+  async findMany(
+    params: Prisma.ElasticsearchDatasourceIndexFindManyArgs
+  ): Promise<ElasticsearchDatasourceIndex[]> {
+    return await this.prisma.elasticsearchDatasourceIndex.findMany(params);
+  }
+
+  async create(
+    data: Prisma.ElasticsearchDatasourceIndexCreateInput
+  ): Promise<ElasticsearchDatasourceIndex> {
+    return await this.prisma.elasticsearchDatasourceIndex.create({
+      data,
     });
+  }
+
+  async createMany(data: Prisma.ElasticsearchDatasourceIndexCreateManyInput[]) {
+    const result = await this.prisma.elasticsearchDatasourceIndex.createMany({
+      data,
+    });
+    return result.count;
+  }
+
+  async update(
+    params: Prisma.ElasticsearchDatasourceIndexUpdateArgs
+  ): Promise<ElasticsearchDatasourceIndex> {
+    return await this.prisma.elasticsearchDatasourceIndex.update(params);
+  }
+
+  async delete(
+    params: Prisma.ElasticsearchDatasourceIndexDeleteArgs
+  ): Promise<ElasticsearchDatasourceIndex> {
+    return await this.prisma.elasticsearchDatasourceIndex.delete(params);
+  }
+
+  async deleteMany(
+    params: Prisma.ElasticsearchDatasourceIndexDeleteManyArgs
+  ): Promise<number> {
+    const result = await this.prisma.elasticsearchDatasourceIndex.deleteMany(
+      params
+    );
+
+    return result.count;
   }
 
   /**
@@ -35,117 +70,6 @@ export class ElasticsearchDatasourceIndexService {
     });
 
     return count > 0 ? true : false;
-  }
-
-  /**
-   * Get many elasticsearch indices.
-   *
-   * @param {{
-   *     skip?: number;
-   *     take?: number;
-   *     where?: Prisma.ElasticsearchDatasourceIndexWhereInput;
-   *     orderBy?: Prisma.ElasticsearchDatasourceIndexOrderByWithRelationAndSearchRelevanceInput;
-   *     select?: Prisma.ElasticsearchDatasourceIndexSelect;
-   *   }} params
-   * @returns
-   * @memberof ElasticsearchDatasourceIndexService
-   */
-  async findMany(params: {
-    skip?: number;
-    take?: number;
-    where?: Prisma.ElasticsearchDatasourceIndexWhereInput;
-    orderBy?: Prisma.ElasticsearchDatasourceIndexOrderByWithRelationAndSearchRelevanceInput;
-    select?: Prisma.ElasticsearchDatasourceIndexSelect;
-  }) {
-    const {skip, take, where, orderBy, select} = params;
-
-    return await this.prisma.elasticsearchDatasourceIndex.findMany({
-      skip,
-      take,
-      where,
-      orderBy,
-      select,
-    });
-  }
-
-  /**
-   * Create an elasticsearch index.
-   *
-   * @param {Prisma.ElasticsearchDatasourceIndexCreateInput} data
-   * @returns {Promise<ElasticsearchDatasourceIndex>}
-   * @memberof ElasticsearchDatasourceIndexService
-   */
-  async create(
-    data: Prisma.ElasticsearchDatasourceIndexCreateInput
-  ): Promise<ElasticsearchDatasourceIndex> {
-    return await this.prisma.elasticsearchDatasourceIndex.create({
-      data,
-    });
-  }
-
-  /**
-   * Create many elasticsearch indices.
-   * @param data
-   * @returns
-   */
-  async createMany(data: Prisma.ElasticsearchDatasourceIndexCreateManyInput[]) {
-    const result = await this.prisma.elasticsearchDatasourceIndex.createMany({
-      data,
-    });
-    return result.count;
-  }
-
-  /**
-   * Update an elasticsearch index.
-   *
-   * @param {{
-   *     where: Prisma.ElasticsearchDatasourceIndexWhereUniqueInput;
-   *     data: Prisma.ElasticsearchDatasourceIndexUpdateInput;
-   *   }} params
-   * @returns {Promise<ElasticsearchDatasourceIndex>}
-   * @memberof ElasticsearchDatasourceIndexService
-   */
-  async update(params: {
-    where: Prisma.ElasticsearchDatasourceIndexWhereUniqueInput;
-    data: Prisma.ElasticsearchDatasourceIndexUpdateInput;
-  }): Promise<ElasticsearchDatasourceIndex> {
-    const {where, data} = params;
-    return await this.prisma.elasticsearchDatasourceIndex.update({
-      data,
-      where,
-    });
-  }
-
-  /**
-   * Delete an elasticsearch index.
-   *
-   * @param {Prisma.ElasticsearchDatasourceIndexWhereUniqueInput} where
-   * @returns {Promise<ElasticsearchDatasourceIndex>}
-   * @memberof ElasticsearchDatasourceIndexService
-   */
-  async delete(
-    where: Prisma.ElasticsearchDatasourceIndexWhereUniqueInput
-  ): Promise<ElasticsearchDatasourceIndex> {
-    return await this.prisma.elasticsearchDatasourceIndex.delete({
-      where,
-    });
-  }
-
-  /**
-   * Delete many elasticsearch datasource indices.
-   *
-   * @param {Prisma.ElasticsearchDatasourceIndexWhereInput} where
-   * @returns {Promise<ElasticsearchDatasourceIndex>}
-   * @memberof ElasticsearchDatasourceIndexService
-   */
-  async deleteMany(
-    where: Prisma.ElasticsearchDatasourceIndexWhereInput
-  ): Promise<number> {
-    const result = await this.prisma.elasticsearchDatasourceIndex.deleteMany({
-      where,
-    });
-
-    return result.count;
   }
 
   async getIndices() {

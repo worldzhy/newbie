@@ -36,7 +36,7 @@ export class CheckpointController {
     @Param('projectId') projectId: string
   ): Promise<ProjectCheckpoint[]> {
     return await this.checkpointService.findMany({
-      projectId: projectId,
+      where: {projectId: projectId},
     });
   }
 

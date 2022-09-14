@@ -28,7 +28,7 @@ export class PostgresqlDatasourceTableController {
     @Param('datasourceId') datasourceId: string
   ): Promise<{data: object | null; err: object | null}> {
     // [step 1] Get datasource.
-    const datasource = await this.postgresqlDatasourceService.findOne({
+    const datasource = await this.postgresqlDatasourceService.findUnique({
       where: {id: datasourceId},
     });
     if (!datasource) {
@@ -68,8 +68,8 @@ export class PostgresqlDatasourceTableController {
   async getPostgresqlDatasourceTable(
     @Param('datasourceId') tableId: number
   ): Promise<{data: object | null; err: object | null}> {
-    const table = await this.postgresqlDatasourceTableService.findOne({
-      id: tableId,
+    const table = await this.postgresqlDatasourceTableService.findUnique({
+      where: {id: tableId},
     });
 
     if (table) {
@@ -114,7 +114,7 @@ export class PostgresqlDatasourceTableController {
     @Body() body: {name: string}
   ): Promise<{data: object | null; err: object | null}> {
     // [step 1] Get datasource.
-    const datasource = await this.postgresqlDatasourceService.findOne({
+    const datasource = await this.postgresqlDatasourceService.findUnique({
       where: {id: datasourceId},
     });
     if (!datasource) {

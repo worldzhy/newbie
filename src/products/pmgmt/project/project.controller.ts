@@ -44,7 +44,9 @@ export class ProjectController {
   async getProject(
     @Param('projectId') projectId: string
   ): Promise<{data: object | null; err: object | null}> {
-    const result = await this.projectService.findOne({id: projectId});
+    const result = await this.projectService.findUnique({
+      where: {id: projectId},
+    });
     if (result) {
       return {
         data: result,

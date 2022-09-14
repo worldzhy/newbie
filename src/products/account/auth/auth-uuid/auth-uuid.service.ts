@@ -27,8 +27,8 @@ export class AuthUuidService {
     }
 
     // [step 2] Validate uuid.
-    const user = await this.userService.findOne({
-      id: uuid,
+    const user = await this.userService.findUnique({
+      where: {id: uuid},
     });
     if (user) {
       return {

@@ -6,20 +6,16 @@ import {PrismaService} from '../../../_prisma/_prisma.service';
 export class CheckpointService {
   private prisma: PrismaService = new PrismaService();
 
-  async findOne(
-    where: Prisma.ProjectCheckpointWhereUniqueInput
+  async findUnique(
+    params: Prisma.ProjectCheckpointFindUniqueArgs
   ): Promise<ProjectCheckpoint | null> {
-    return await this.prisma.projectCheckpoint.findUnique({
-      where,
-    });
+    return await this.prisma.projectCheckpoint.findUnique(params);
   }
 
   async findMany(
-    where: Prisma.ProjectCheckpointWhereInput
+    params: Prisma.ProjectCheckpointFindManyArgs
   ): Promise<ProjectCheckpoint[]> {
-    return await this.prisma.projectCheckpoint.findMany({
-      where,
-    });
+    return await this.prisma.projectCheckpoint.findMany(params);
   }
 
   async create(
@@ -30,23 +26,16 @@ export class CheckpointService {
     });
   }
 
-  async update(params: {
-    where: Prisma.ProjectCheckpointWhereUniqueInput;
-    data: Prisma.ProjectCheckpointUpdateInput;
-  }): Promise<ProjectCheckpoint> {
-    const {where, data} = params;
-    return await this.prisma.projectCheckpoint.update({
-      data,
-      where,
-    });
+  async update(
+    params: Prisma.ProjectCheckpointUpdateArgs
+  ): Promise<ProjectCheckpoint> {
+    return await this.prisma.projectCheckpoint.update(params);
   }
 
   async delete(
-    where: Prisma.ProjectCheckpointWhereUniqueInput
+    params: Prisma.ProjectCheckpointDeleteArgs
   ): Promise<ProjectCheckpoint> {
-    return await this.prisma.projectCheckpoint.delete({
-      where,
-    });
+    return await this.prisma.projectCheckpoint.delete(params);
   }
 
   /* End */

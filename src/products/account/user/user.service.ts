@@ -10,50 +10,30 @@ const bcrypt = require('bcryptjs');
 export class UserService {
   private prisma: PrismaService = new PrismaService();
 
-  /**
-   * Get a user
-   *
-   * @param {Prisma.UserWhereUniqueInput} userWhereUniqueInput
-   * @returns {(Promise<User | null>)}
-   * @memberof UserService
-   */
-  async findOne(
-    userWhereUniqueInput: Prisma.UserWhereUniqueInput
-  ): Promise<User | null> {
-    return await this.prisma.user.findUnique({
-      where: userWhereUniqueInput,
-      include: {profiles: true},
-    });
+  async findUnique(params: Prisma.UserFindUniqueArgs): Promise<User | null> {
+    return await this.prisma.user.findUnique(params);
   }
 
-  /**
-   * Get many users
-   *
-   * @param {{
-   *     skip?: number;
-   *     take?: number;
-   *     where?: Prisma.UserWhereInput;
-   *     orderBy?: Prisma.UserOrderByWithRelationAndSearchRelevanceInput;
-   *     select?: Prisma.UserSelect;
-   *   }} params
-   * @returns
-   * @memberof UserService
-   */
-  async findMany(params: {
-    skip?: number;
-    take?: number;
-    where?: Prisma.UserWhereInput;
-    orderBy?: Prisma.UserOrderByWithRelationAndSearchRelevanceInput;
-    select?: Prisma.UserSelect;
-  }) {
-    const {skip, take, where, orderBy, select} = params;
-    return await this.prisma.user.findMany({
-      skip,
-      take,
-      where,
-      orderBy,
-      select,
-    });
+  async findMany(params: Prisma.UserFindManyArgs): Promise<User[]> {
+    return await this.prisma.user.findMany(params);
+  }
+
+  async create(data: Prisma.UserCreateInput): Promise<User> {
+    try {
+      return await this.prisma.user.create({
+        data,
+      });
+    } catch (error) {
+      return error;
+    }
+  }
+
+  async update(params: Prisma.UserUpdateArgs): Promise<User> {
+    return await this.prisma.user.update(params);
+  }
+
+  async delete(params: Prisma.UserDeleteArgs): Promise<User> {
+    return await this.prisma.user.delete(params);
   }
 
   /**
@@ -65,7 +45,7 @@ export class UserService {
    */
   async findByAccount(account: string): Promise<User | null> {
     if (verifyUuid(account)) {
-      return await this.findOne({id: account});
+      return await this.findUnique({where: {id: account}});
     } else {
       const users = await this.findMany({
         where: {
@@ -107,57 +87,6 @@ export class UserService {
   }
 
   /**
-   * Create a user
-   *
-   * @param {Prisma.UserCreateInput} data
-   * @returns {Promise<User>}
-   * @memberof UserService
-   */
-  async create(data: Prisma.UserCreateInput): Promise<User> {
-    try {
-      return await this.prisma.user.create({
-        data,
-      });
-    } catch (error) {
-      return error;
-    }
-  }
-
-  /**
-   * Update a user
-   *
-   * @param {{
-   *     where: Prisma.UserWhereUniqueInput;
-   *     data: Prisma.UserUpdateInput;
-   *   }} params
-   * @returns {Promise<User>}
-   * @memberof UserService
-   */
-  async update(params: {
-    where: Prisma.UserWhereUniqueInput;
-    data: Prisma.UserUpdateInput;
-  }): Promise<User> {
-    const {where, data} = params;
-    return await this.prisma.user.update({
-      data,
-      where,
-    });
-  }
-
-  /**
-   * Delete a user
-   *
-   * @param {Prisma.UserWhereUniqueInput} where
-   * @returns {Promise<User>}
-   * @memberof UserService
-   */
-  async delete(where: Prisma.UserWhereUniqueInput): Promise<User> {
-    return await this.prisma.user.delete({
-      where,
-    });
-  }
-
-  /**
    * Change password
    *
    * @param {string} userId
@@ -172,7 +101,7 @@ export class UserService {
     newPassword: string
   ) {
     // [step 1] Get user.
-    const user = await this.findOne({id: userId});
+    const user = await this.findUnique({where: {id: userId}});
     if (!user) {
       return false;
     }

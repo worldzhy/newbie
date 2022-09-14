@@ -28,8 +28,8 @@ export class ElasticsearchDatasourceIndexController {
     @Param('datasourceId') datasourceId: string
   ): Promise<{data: object | null; err: object | null}> {
     // [step 1] Get datasource.
-    const datasource = await this.elasticsearchDatasourceService.findOne({
-      id: datasourceId,
+    const datasource = await this.elasticsearchDatasourceService.findUnique({
+      where: {id: datasourceId},
     });
     if (!datasource) {
       return {
@@ -66,8 +66,8 @@ export class ElasticsearchDatasourceIndexController {
   async getElasticsearchDatasourceIndex(
     @Param('indexId') indexId: number
   ): Promise<{data: object | null; err: object | null}> {
-    const index = await this.elasticsearchDatasourceIndexService.findOne({
-      id: indexId,
+    const index = await this.elasticsearchDatasourceIndexService.findUnique({
+      where: {id: indexId},
     });
 
     if (index) {
@@ -112,8 +112,8 @@ export class ElasticsearchDatasourceIndexController {
     @Body() body: {name: string}
   ): Promise<{data: object | null; err: object | null}> {
     // [step 1] Get datasource.
-    const datasource = await this.elasticsearchDatasourceService.findOne({
-      id: datasourceId,
+    const datasource = await this.elasticsearchDatasourceService.findUnique({
+      where: {id: datasourceId},
     });
     if (!datasource) {
       return {
