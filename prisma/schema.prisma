@@ -350,22 +350,21 @@ enum ProjectEnvironmentType {
 }
 
 model CloudFormationStack {
-  id            String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name          String                   @unique
-  params        Json?
-  environment   ProjectEnvironmentType
-  type          CloudFormationStackType
-  state         CloudFormationStackState
-  buildResult   Json?
-  destroyResult Json?
-  createdAt     DateTime                 @default(now())
-  updatedAt     DateTime                 @updatedAt
-  project       Project                  @relation(fields: [projectId], references: [id])
-  projectId     String                   @db.Uuid
+  id                String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name              String?                  @unique // Set default value via prisma middleware.
+  type              CloudFormationStackType
+  params            Json?
+  state             CloudFormationStackState @default(PREPARING)
+  environment       ProjectEnvironmentType
+  createStackOutput Json?
+  deleteStackOutput Json?
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @updatedAt
+  project           Project                  @relation(fields: [projectId], references: [id])
+  projectId         String                   @db.Uuid
 }
 
 enum CloudFormationStackType {
-  // CloudFormation stack types
   CICD_BUILD
   CICD_PIPELINE
   CICD_REPOSITORY
@@ -377,26 +376,18 @@ enum CloudFormationStackType {
 
 enum CloudFormationStackState {
   PREPARING
-  BUILDING
-  BUILD_SUCCEEDED
-  BUILD_FAILED
-  DESTROYING
-  DESTROY_SUCCEEDED
-  DESTROY_FAILED
-  DELETED
+  BUILD
+  DESTROYED
 }
 
 model PulumiStack {
   id            String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name          String                 @unique
-  // The pulumi project is a concept of Pulumi. We set it with Project->name.
-  // We use 'pulumiProject' & 'name' to identify infrastructure stack(cloud resource stack).
-  pulumiProject String
-  params        Json?
-  environment   ProjectEnvironmentType
+  name          String?                @unique // Set default value via prisma middleware.
   type          PulumiStackType
-  state         PulumiStackState
-  buildResult   Json?
+  params        Json?
+  state         PulumiStackState       @default(PREPARING)
+  environment   ProjectEnvironmentType
+  upResult      Json?
   destroyResult Json?
   createdAt     DateTime               @default(now())
   updatedAt     DateTime               @updatedAt
@@ -426,9 +417,7 @@ enum PulumiStackState {
   BUILD_SUCCEEDED
   BUILD_FAILED
   DESTROYING
-  DESTROY_SUCCEEDED
-  DESTROY_FAILED
-  DELETED
+  DESTROYED
 }
 
 //            ! Engine D               //

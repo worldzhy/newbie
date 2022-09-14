@@ -15,8 +15,8 @@ async function bootstrap() {
   // API document is only available in development environment.
   if (serverConfig.environment === 'development') {
     const config = new DocumentBuilder()
-      .setTitle('Cloud Native InceptionPad Basic')
-      .setDescription('The API description')
+      .setTitle("I'm a newbie")
+      .setDescription("It's good to see you:)")
       .setVersion('1.0')
       .addBearerAuth()
       .build();
@@ -26,7 +26,7 @@ async function bootstrap() {
         persistAuthorization: true,
         tagsSorter: 'alpha',
       },
-      customSiteTitle: 'InceptionPad API Docs',
+      customSiteTitle: 'Newbie API Docs',
     };
     SwaggerModule.setup('api', app, document, customOptions);
   }

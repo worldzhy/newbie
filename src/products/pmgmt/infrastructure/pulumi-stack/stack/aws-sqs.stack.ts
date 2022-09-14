@@ -1,80 +1,36 @@
 import {Injectable} from '@nestjs/common';
 import * as aws from '@pulumi/aws';
-import {getAwsConfig} from '../../../../../_config/_aws.config';
-import * as validator from '../../../../../_aws/_aws.validator';
-import {buildResourceOptions} from '../pulumi-stack.util';
+import {verifySqsQueueName} from '../../../../../_aws/_aws.validator';
 
 @Injectable()
 export class AwsSqs_Stack {
   static getStackParams() {
     return {
-      bucketName: 'example-bucket',
+      queueName: 'default-queue-name',
     };
   }
 
-  static checkStackParams(params: object) {
-    if (params) {
-      return true;
-    } else {
-      return false;
+  static checkStackParams(params: any) {
+    if (params.queueName) {
+      return verifySqsQueueName(params.queueName) ? true : false;
     }
+    return false;
   }
 
   static getStackOutputKeys() {
-    return ['username', 'password'];
+    return ['queueUrl', 'queueArn'];
   }
 
-  static getStackProgram = (params: {bucketName: string}) => async () => {
-    let bucketName = params.bucketName;
-
-    // [step 1] Guard statement.
-    if (false === validator.verifyS3Bucketname(bucketName)) {
-      bucketName = 'default-bucket-name';
-    }
-
-    // Create a bucket.
-    let uniqueResourceName = 's3-bucket';
-    const bucket = new aws.s3.Bucket(
-      uniqueResourceName,
-      {bucket: bucketName},
-      buildResourceOptions(getAwsConfig().region!)
-    );
-
-    // Create an S3 Bucket Policy to allow public read of all objects in bucket.
-    function publicReadPolicyForBucket(
-      bucketName: string
-    ): aws.iam.PolicyDocument {
-      return {
-        Version: '2012-10-17',
-        Statement: [
-          {
-            Effect: 'Allow',
-            Principal: '*',
-            Action: ['s3:GetObject'],
-            Resource: [
-              getAwsConfig().region!.startsWith('cn')
-                ? `arn:aws-cn:s3:::${bucketName}/*`
-                : `arn:aws:s3:::${bucketName}/*`, // Policy refers to bucket name explicitly.
-            ],
-          },
-        ],
-      };
-    }
-
-    // Set the access policy for the bucket so all objects are readable.
-    uniqueResourceName = 's3-bucket-policy';
-    new aws.s3.BucketPolicy(
-      uniqueResourceName,
-      {
-        bucket: bucket.bucket, // Refer to the bucket created earlier.
-        policy: bucket.bucket.apply(publicReadPolicyForBucket), // Use output property `siteBucket.bucket`.
-      },
-      buildResourceOptions(getAwsConfig().region!)
-    );
+  static getStackProgram = (params: {queueName: string}) => async () => {
+    // Create a queue.
+    let uniqueResourceName = 'queue';
+    const queue = new aws.sqs.Queue(uniqueResourceName, {
+      name: params.queueName,
+    });
 
     return {
-      bucketName: bucketName,
-      bucketArn: bucket.arn,
+      queueUrl: queue.url,
+      queueArn: queue.arn,
     };
   };
 }

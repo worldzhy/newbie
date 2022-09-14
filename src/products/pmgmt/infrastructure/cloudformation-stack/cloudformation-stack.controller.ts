@@ -7,7 +7,6 @@ import {
   Prisma,
   ProjectEnvironmentType,
 } from '@prisma/client';
-import {randomCode} from '../../../../_util/_util';
 
 @ApiTags('[Product] Project Management / Infrastructure / CloudFormation Stack')
 @ApiBearerAuth()
@@ -20,13 +19,6 @@ export class CloudFormationStackController {
     return Object.values(CloudFormationStackType);
   }
 
-  /**
-   * Get an cloudformation stack params with example values.
-   *
-   * @param {string} type
-   * @returns
-   * @memberof CloudFormationController
-   */
   @Get('cloudformation-stacks/params/:type')
   @ApiParam({
     name: 'type',
@@ -37,28 +29,11 @@ export class CloudFormationStackController {
     return this.stackService.getStackParams(type);
   }
 
-  /**
-   * Get stacks.
-   *
-   * @returns
-   * @memberof CloudFormationController
-   */
   @Get('cloudformation-stacks')
   async getStacks() {
     return await this.stackService.findMany({});
   }
 
-  /**
-   * Create a stack.
-   *
-   * @param {{
-   *       stackType: string;
-   *       stackName: string;
-   *       stackParams: object;
-   *     }} body
-   * @returns
-   * @memberof CloudFormationController
-   */
   @Post('cloudformation-stacks')
   @ApiBody({
     description: 'Create cloudformation stack.',
@@ -66,60 +41,35 @@ export class CloudFormationStackController {
       a: {
         summary: '1. HIPAA network stack',
         value: {
-          projectName: 'InceptionPad',
-          environment: ProjectEnvironmentType.DEVELOPMENT,
+          projectId: '5a91888b-0b60-49ac-9a32-493f21bd5545',
           type: CloudFormationStackType.NETWORK_HIPAA,
           params: {
             SNSAlarmEmail: 'henry@inceptionpad.com',
           },
+          environment: ProjectEnvironmentType.DEVELOPMENT,
         },
       },
       b: {
         summary: '2. Data engine stack',
         value: {
-          projectName: 'Galaxy',
-          environment: ProjectEnvironmentType.DEVELOPMENT,
+          projectId: '5a91888b-0b60-49ac-9a32-493f21bd5545',
           type: CloudFormationStackType.PRODUCT_DATA_ENGINE,
           params: {
             instanceName: 'postgres-default',
             instanceClass: 'db.t3.micro',
           },
+          environment: ProjectEnvironmentType.DEVELOPMENT,
         },
       },
     },
   })
   async createStack(
     @Body()
-    body: {
-      projectName: string;
-      environment: ProjectEnvironmentType;
-      type: CloudFormationStackType;
-      params?: object;
-    }
+    body: Prisma.CloudFormationStackUncheckedCreateInput
   ) {
-    const {projectName, environment, type, params} = body;
-
-    // CloudFormation stack name must satisfy regular expression pattern: [a-zA-Z][-a-zA-Z0-9]*".
-    const stackName = (type + '-' + randomCode(8)).replace(/_/g, '-');
-
-    return await this.stackService.create({
-      name: stackName,
-      type: type,
-      params: params,
-      state: CloudFormationStackState.PREPARING,
-      environment: environment,
-      project: {connect: {name: projectName}},
-    });
+    return await this.stackService.create({data: body});
   }
 
-  /**
-   * Update a stack.
-   *
-   * @param {string} stackId
-   * @param {Prisma.CloudFormationStackUpdateInput} body
-   * @returns
-   * @memberof CloudFormationController
-   */
   @Post('cloudformation-stacks/:stackId')
   @ApiParam({
     name: 'stackId',
@@ -160,20 +110,49 @@ export class CloudFormationStackController {
     });
   }
 
-  /**
-   * Build cloudformation stack.
-   *
-   * @param {string} stackId
-   * @returns
-   * @memberof CloudFormationController
-   */
-  @Post('cloudformation-stacks/:stackId/build')
+  @Delete('cloudformation-stacks/:stackId')
   @ApiParam({
     name: 'stackId',
     schema: {type: 'string'},
     example: 'ff337f2d-d3a5-4f2e-be16-62c75477b605',
   })
-  async buildStack(
+  async deleteStack(
+    @Param('stackId')
+    stackId: string
+  ) {
+    // [step 1] Get the cloudformation stack.
+    const stack = await this.stackService.findUnique({
+      where: {id: stackId},
+    });
+    if (!stack) {
+      return {err: {message: 'Invalid stackId.'}};
+    }
+    if (stack.state === CloudFormationStackState.BUILD) {
+      return {
+        err: {
+          message: 'The stack record can not be deleted before destroying.',
+        },
+      };
+    }
+
+    // [step 2] Delete the stack record on database.
+    return await this.stackService.delete({where: {id: stackId}});
+  }
+
+  /**
+   * Build cloudformation stack.
+   *
+   * @param {string} stackId
+   * @returns
+   * @memberof CloudFormationStackController
+   */
+  @Post('cloudformation-stacks/:stackId/create-resources')
+  @ApiParam({
+    name: 'stackId',
+    schema: {type: 'string'},
+    example: 'ff337f2d-d3a5-4f2e-be16-62c75477b605',
+  })
+  async createResources(
     @Param('stackId')
     stackId: string
   ) {
@@ -196,62 +175,33 @@ export class CloudFormationStackController {
           message: 'This cloudformation is not ready for building.',
         },
       };
-    } else if (
-      //stack.status === CloudFormationStatus.BUILDING ||
-      stack.state === CloudFormationStackState.DESTROYING ||
-      stack.state === CloudFormationStackState.DELETED
-    ) {
+    } else if (stack.state === CloudFormationStackState.BUILD) {
       return {
         data: null,
         err: {
-          message: 'Please check the cloudformation status.',
+          message: 'The cloudformation has been built.',
         },
       };
     }
 
     // [step 2] Build the cloudformation stack.
-    return await this.stackService.build(stack.name, stack.type, stack.params);
-  }
-
-  @Get('cloudformation-stacks/:stackId/describe')
-  @ApiParam({
-    name: 'stackId',
-    schema: {type: 'string'},
-    example: 'ff337f2d-d3a5-4f2e-be16-62c75477b605',
-  })
-  async describeStack(
-    @Param('stackId')
-    stackId: string
-  ) {
-    // [step 1] Get the cloudformation stack.
-    const stack = await this.stackService.findUnique({
-      where: {id: stackId},
-    });
-    if (!stack) {
-      return {
-        data: null,
-        err: {message: 'Invalid stackId.'},
-      };
-    }
-
-    // [step 2] Describe the stack.
-    return await this.stackService.describe(stack.name);
+    return await this.stackService.createResources(stack);
   }
 
   /**
-   * Destroy cloudformation stack.
+   * Destroy stack resources.
    *
    * @param {string} stackId
    * @returns
-   * @memberof CloudFormationController
+   * @memberof CloudFormationStackController
    */
-  @Delete('cloudformation-stacks/:stackId/destroy')
+  @Post('cloudformation-stacks/:stackId/destroy-resources')
   @ApiParam({
     name: 'stackId',
     schema: {type: 'string'},
     example: 'ff337f2d-d3a5-4f2e-be16-62c75477b605',
   })
-  async destroyStack(
+  async destroyResources(
     @Param('stackId')
     stackId: string
   ) {
@@ -265,74 +215,24 @@ export class CloudFormationStackController {
         err: {message: 'Invalid stackId.'},
       };
     }
-    if (stack.buildResult === null) {
+    if (stack.createStackOutput === null) {
       return {
         data: null,
         err: {
           message: 'The stack has not been built.',
         },
       };
-    } else if (stack.state === CloudFormationStackState.DESTROY_SUCCEEDED) {
+    } else if (stack.state === CloudFormationStackState.DESTROYED) {
       return {
         data: null,
         err: {
           message: `The stack has been destroyed at ${stack.updatedAt}`,
         },
       };
-    } else if (stack.state === CloudFormationStackState.DELETED) {
-      return {
-        data: null,
-        err: {
-          message: 'The stack has been deleted.',
-        },
-      };
     }
 
-    // [step 2] Destroy the cloudformation stack.
-    return await this.stackService.destroy(stackId);
-  }
-
-  /**
-   * Delete cloudformation stack.
-   *
-   * @param {string} stackId
-   * @returns
-   * @memberof CloudFormationController
-   */
-  @Delete('cloudformation-stacks/:stackId/delete')
-  @ApiParam({
-    name: 'stackId',
-    schema: {type: 'string'},
-    example: 'ff337f2d-d3a5-4f2e-be16-62c75477b605',
-  })
-  async deleteStack(
-    @Param('stackId')
-    stackId: string
-  ) {
-    // [step 1] Get the cloudformation stack.
-    const stack = await this.stackService.findUnique({
-      where: {id: stackId},
-    });
-    if (!stack) {
-      return {
-        data: null,
-        err: {message: 'Invalid stackId.'},
-      };
-    }
-    if (
-      stack.buildResult !== null &&
-      stack.state !== CloudFormationStackState.DESTROY_SUCCEEDED
-    ) {
-      return {
-        data: null,
-        err: {
-          message: 'The stack can not be deleted before destroying.',
-        },
-      };
-    }
-
-    // [step 2] Delete the cloudformation stack.
-    return await this.stackService.delete({where: {id: stackId}});
+    // [step 2] Delete the stack on AWS CloudFormation.
+    return await this.stackService.destroyResources(stack);
   }
 
   /* End */

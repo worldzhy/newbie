@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import * as aws from '@pulumi/aws';
-import {verifyS3Bucketname} from '../../../../../_aws/_aws.validator';
+import {verifyS3BucketName} from '../../../../../_aws/_aws.validator';
 import {buildResourceOptions} from '../pulumi-stack.util';
 import {randomCode} from '../../../../../_util/_util';
 import {getAwsConfig} from '../../../../../_config/_aws.config';
@@ -14,9 +14,11 @@ export class AwsS3_Stack {
     };
   }
 
-  static checkStackParams(params: object) {
-    if (params) {
-      return true;
+  static checkStackParams(params: any) {
+    if (params.bucketName) {
+      return verifyS3BucketName(params.bucketName + randomCode(4))
+        ? true
+        : false;
     } else {
       return false;
     }
@@ -29,14 +31,9 @@ export class AwsS3_Stack {
   static getStackProgram =
     (params: {bucketName: string; isPublic: boolean}) => async () => {
       const isPublic = params.isPublic;
-      let bucketName = params.bucketName + '-' + randomCode(4);
+      const bucketName = params.bucketName + '-' + randomCode(4);
 
-      // [step 1] Guard statement.
-      if (false === verifyS3Bucketname(bucketName)) {
-        bucketName = 'example-bucket-' + randomCode(4);
-      }
-
-      // [step 2] Create a bucket.
+      // [step 1] Create a bucket.
       let uniqueResourceName = 's3-bucket';
       const bucket = new aws.s3.Bucket(
         uniqueResourceName,
@@ -44,7 +41,7 @@ export class AwsS3_Stack {
         buildResourceOptions(getAwsConfig().region!)
       );
 
-      // [step 3] Set public access policy to allow public read of all objects in bucket.
+      // [step 2] Set public access policy to allow public read of all objects in bucket.
       if (isPublic) {
         uniqueResourceName = 's3-bucket-policy';
         new aws.s3.BucketPolicy(

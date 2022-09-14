@@ -28,6 +28,7 @@ import {Null_Stack} from './stack/null.stack';
 import {getAwsConfig} from '../../../../_config/_aws.config';
 import {getPulumiConfig} from '../../../../_config/_pulumi.config';
 import {PrismaService} from '../../../../_prisma/_prisma.service';
+import {randomCode} from '../../../../_util/_util';
 
 @Injectable()
 export class PulumiStackService {
@@ -46,11 +47,22 @@ export class PulumiStackService {
     return await this.prisma.pulumiStack.findMany(params);
   }
 
-  async create(data: Prisma.PulumiStackCreateInput): Promise<PulumiStack> {
+  async create(params: Prisma.PulumiStackCreateArgs): Promise<PulumiStack> {
+    // [middleware] Set the default stack name.
+    this.prisma.$use(async (params, next) => {
+      if (params.model == 'PulumiStack') {
+        if (params.action == 'create') {
+          if (!params.args['data']['name']) {
+            params.args['data']['name'] =
+              params.args['data']['type'] + '-' + randomCode(8);
+          }
+        }
+      }
+      return next(params);
+    });
+
     try {
-      return await this.prisma.pulumiStack.create({
-        data,
-      });
+      return await this.prisma.pulumiStack.create(params);
     } catch (error) {
       return error;
     }
@@ -101,33 +113,31 @@ export class PulumiStackService {
    * @returns
    * @memberof PulumiService
    */
-  async build(
-    stackProjectName: string,
-    stackName: string,
-    stackType: PulumiStackType,
-    stackParams: any
-  ): Promise<any> {
+  async createResources(stack: PulumiStack): Promise<any> {
     // [step 1] Get Pulumi stack program.
     const program: PulumiFn = this.getStackProgramByType(
-      stackType,
-      stackParams
+      stack.type,
+      stack.params
     );
 
     // [step 2] Create the stack.
     const args: InlineProgramArgs = {
-      projectName: stackProjectName,
-      stackName,
+      projectName: stack['project'].name.replace(/ /g, '_'),
+      stackName: stack.name!,
       program,
     };
-    const stack = await LocalWorkspace.createOrSelectStack(args);
-    await stack.workspace.installPlugin('aws', this.pulumiConfig.awsVersion!);
+    const pulumiStack = await LocalWorkspace.createOrSelectStack(args);
+    await pulumiStack.workspace.installPlugin(
+      'aws',
+      this.pulumiConfig.awsVersion!
+    );
     if (getAwsConfig().profile) {
-      await stack.setAllConfig({
+      await pulumiStack.setAllConfig({
         'aws:profile': {value: getAwsConfig().profile!},
         'aws:region': {value: getAwsConfig().region!},
       });
     } else {
-      await stack.setAllConfig({
+      await pulumiStack.setAllConfig({
         'aws:accessKey': {value: getAwsConfig().accessKeyId!},
         'aws:secretKey': {value: getAwsConfig().secretAccessKey!},
         'aws:region': {value: getAwsConfig().region!},
@@ -135,63 +145,54 @@ export class PulumiStackService {
     }
 
     try {
-      return await stack.up({onOutput: console.log}); // pulumiStackResult.summary.result is one of ['failed', 'in-progress', 'not-started', 'succeeded']
+      return await pulumiStack.up({onOutput: console.log}); // pulumiStackResult.summary.result is one of ['failed', 'in-progress', 'not-started', 'succeeded']
     } catch (error) {
       return error;
     }
   }
 
   /**
-   * Destroy a stack.
+   * Destroy stack resources.
    *
-   * @param {string} stackProjectName
-   * @param {string} stackName
+   * @param {PulumiStack} stack
    * @returns {Promise<DestroyResult>}
    * @memberof PulumiService
    */
-  async destroy(
-    stackProjectName: string,
-    stackName: string
-  ): Promise<DestroyResult> {
+  async destroyResources(stack: PulumiStack): Promise<PulumiStack> {
     const args: InlineProgramArgs = {
-      projectName: stackProjectName,
-      stackName,
+      projectName: stack['project'].name.replace(/ /g, '_'),
+      stackName: stack.name!,
       program: async () => {},
     };
 
-    const stack = await LocalWorkspace.selectStack(args);
-    return await stack.destroy({onOutput: console.log});
-  }
-
-  /**
-   * See the detail https://www.pulumi.com/docs/reference/service-rest-api/#delete-stack
-   *
-   * @param {PulumiStack} stack
-   * @memberof PulumiService
-   */
-  async deleteOnPulumi(stack: PulumiStack) {
-    const args: InlineProgramArgs = {
-      projectName: stack.pulumiProject,
-      stackName: stack.name,
-      program: async () => {},
-    };
-
-    // [step 1] Remove stack on Pulumi.
+    // [step 1] Destroy the stack resources.
     const pulumiStack = await LocalWorkspace.selectStack(args);
-    await pulumiStack.workspace.removeStack(stack.name);
+    const destroyResult = await pulumiStack.destroy({onOutput: console.log});
 
-    // [step 2] Update database record of infrastructureStack.
+    // [step 2] Remove the stack information from Pulumi.
+    // https://www.pulumi.com/docs/reference/service-rest-api/#delete-stack
+    await pulumiStack.workspace.removeStack(stack.name!);
+
+    // [step 3] Update the stack state in database.
     return await this.prisma.pulumiStack.update({
       where: {id: stack.id},
-      data: {state: PulumiStackState.DELETED},
+      data: {
+        state: PulumiStackState.DESTROYED,
+        destroyResult: destroyResult as object,
+      },
     });
   }
 
+  /**
+   * Sometimes, destroying stack failed makes the Pulumi stack is not able to be removed.
+   * Then, it's time to use this function.
+   */
   async forceDeleteOnPulumi(stack: PulumiStack) {
-    const url = `https://api.pulumi.com/api/stacks/worldzhy/${stack.pulumiProject}/${stack.name}`;
+    const pulumiProject = stack['project'].name.replace(/ /g, '_');
+    const url = `https://api.pulumi.com/api/stacks/worldzhy/${pulumiProject}/${stack.name}`;
 
     // [step 1] Force delete stack on Pulumi.
-    const response = await axios.delete(url, {
+    return await axios.delete(url, {
       maxRedirects: 5,
       headers: {
         Accept: 'application/vnd.pulumi+8',
@@ -201,12 +202,6 @@ export class PulumiStackService {
       params: {
         force: true,
       },
-    });
-
-    // [step 2] Update database record of infrastructureStack.
-    return await this.prisma.pulumiStack.update({
-      where: {id: stack.id},
-      data: {state: PulumiStackState.DELETED},
     });
   }
 
