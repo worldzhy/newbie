@@ -4,12 +4,12 @@ import {
   SwaggerModule,
   SwaggerCustomOptions,
 } from '@nestjs/swagger';
-import {AppModule} from './app.module';
+import {ApplicationModule} from './application/application.module';
 import {getServerConfig} from './_config/_server.config';
 
 async function bootstrap() {
   // Create a nestjs application.
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(ApplicationModule);
   const serverConfig = getServerConfig();
 
   // API document is only available in development environment.

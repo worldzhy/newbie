@@ -48,6 +48,7 @@ export class SmsService {
    */
   async sendMany(payload: {phones: string[]; text: string}) {
     const smsParams = this.pinpointService.buildSendMessagesParams_Sms(payload);
-    const output = await this.pinpointService.sendMessages(smsParams);
+
+    return await this.pinpointService.sendMessages(smsParams);
   }
 }

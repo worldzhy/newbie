@@ -2,6 +2,7 @@ import {Injectable} from '@nestjs/common';
 import {
   PinpointClient,
   SendMessagesCommand,
+  SendMessagesCommandInput,
   SendMessagesCommandOutput,
 } from '@aws-sdk/client-pinpoint';
 import {getAwsConfig} from '../_config/_aws.config';
@@ -11,8 +12,8 @@ export class PinpointService {
   private client: PinpointClient;
 
   private pinpointAppId: string;
-  private pinpointFromAddress?: string | null; // For email message
-  private pinpointSenderId?: string | null; // For text message
+  private pinpointFromAddress?: string; // For email message
+  private pinpointSenderId?: string; // For text message
 
   constructor() {
     this.client = new PinpointClient({});
@@ -28,7 +29,7 @@ export class PinpointService {
    * @returns
    * @memberof PinpointService
    */
-  async sendMessages(params: any) {
+  async sendMessages(params: SendMessagesCommandInput) {
     return await this.client.send(new SendMessagesCommand(params));
   }
 
@@ -45,7 +46,7 @@ export class PinpointService {
     subject: string;
     plainText?: string;
     html?: string;
-  }) {
+  }): SendMessagesCommandInput {
     const addresses: {[email: string]: {ChannelType: string}} = {};
     data.emails.map(email => {
       addresses[email] = {
@@ -80,7 +81,10 @@ export class PinpointService {
     };
   }
 
-  buildSendMessagesParams_RawEmail(data: {emails: string[]; rawData: any}) {
+  buildSendMessagesParams_RawEmail(data: {
+    emails: string[];
+    rawData: any;
+  }): SendMessagesCommandInput {
     const addresses: {[email: string]: {ChannelType: string}} = {};
     data.emails.map(email => {
       addresses[email] = {
@@ -114,7 +118,7 @@ export class PinpointService {
     text: string;
     keyword?: string;
     messageType?: string; // 'TRANSACTIONAL' or 'PROMOTIONAL'
-  }) {
+  }): SendMessagesCommandInput {
     const addresses: {[phone: string]: {ChannelType: string}} = {};
     data.phones.map(phone => {
       addresses[phone] = {

@@ -412,11 +412,12 @@ enum PulumiStackType {
 
 enum PulumiStackState {
   PREPARING
-  BUILDING
+  BUILD_PROCESSING
   BUILD_SUCCEEDED
   BUILD_FAILED
-  DESTROYING
-  DESTROYED
+  DESTROY_PROCESSING
+  DESTROY_SUCCEEDED
+  DESTROY_FAILED
 }
 
 //            ! Engine D               //
