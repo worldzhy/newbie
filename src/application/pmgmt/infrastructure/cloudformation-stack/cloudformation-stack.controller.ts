@@ -10,6 +10,7 @@ import {
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {CloudFormationStackService} from './cloudformation-stack.service';
 import {
+  CloudFormationStack,
   CloudFormationStackState,
   CloudFormationStackType,
   Prisma,
@@ -29,7 +30,7 @@ export class CloudFormationStackController {
     return Object.values(CloudFormationStackType);
   }
 
-  @Get('cloudformation-stacks/params/:type')
+  @Get('cloudformation-stacks/:type/params')
   @ApiParam({
     name: 'type',
     schema: {type: 'string'},
@@ -71,12 +72,12 @@ export class CloudFormationStackController {
   async createStack(
     @Body()
     body: Prisma.CloudFormationStackUncheckedCreateInput
-  ) {
+  ): Promise<CloudFormationStack> {
     return await this.stackService.create({data: body});
   }
 
   @Get('cloudformation-stacks')
-  async getStacks() {
+  async getStacks(): Promise<CloudFormationStack[]> {
     return await this.stackService.findMany({});
   }
 
@@ -86,7 +87,9 @@ export class CloudFormationStackController {
     schema: {type: 'string'},
     example: 'ff337f2d-d3a5-4f2e-be16-62c75477b605',
   })
-  async getStack(@Param('stackId') stackId: string) {
+  async getStack(
+    @Param('stackId') stackId: string
+  ): Promise<CloudFormationStack | null> {
     return await this.stackService.findUnique({where: {id: stackId}});
   }
 
@@ -123,7 +126,7 @@ export class CloudFormationStackController {
     @Param('stackId') stackId: string,
     @Body()
     body: Prisma.CloudFormationStackUpdateInput
-  ) {
+  ): Promise<CloudFormationStack> {
     return await this.stackService.update({
       where: {id: stackId},
       data: body,
@@ -139,7 +142,7 @@ export class CloudFormationStackController {
   async deleteStack(
     @Param('stackId')
     stackId: string
-  ) {
+  ): Promise<CloudFormationStack | {err: {message: string}}> {
     // [step 1] Get the cloudformation stack.
     const stack = await this.stackService.findUnique({
       where: {id: stackId},

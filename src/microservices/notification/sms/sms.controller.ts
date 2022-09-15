@@ -28,7 +28,7 @@ export class SmsController {
       },
     },
   })
-  @Post('/text-message')
+  @Post('text-message')
   async sendTextMessage(
     @Body()
     body: {
@@ -60,7 +60,7 @@ export class SmsController {
       },
     },
   })
-  @Post('/text-messages')
+  @Post('text-messages')
   async sendTextMessages(
     @Body()
     body: {

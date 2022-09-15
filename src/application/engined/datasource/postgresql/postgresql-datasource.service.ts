@@ -40,11 +40,9 @@ export class PostgresqlDatasourceService {
   }
 
   async create(
-    data: Prisma.PostgresqlDatasourceCreateInput
+    params: Prisma.PostgresqlDatasourceCreateArgs
   ): Promise<PostgresqlDatasource> {
-    return await this.prisma.postgresqlDatasource.create({
-      data,
-    });
+    return await this.prisma.postgresqlDatasource.create(params);
   }
 
   async update(

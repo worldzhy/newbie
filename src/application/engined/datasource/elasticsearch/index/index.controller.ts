@@ -1,4 +1,12 @@
-import {Body, Controller, Get, Param, Post} from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {
   ElasticsearchDatasourceIndex,
@@ -56,6 +64,36 @@ export class ElasticsearchDatasourceIndexController {
     @Param('indexId') indexId: number
   ): Promise<ElasticsearchDatasourceIndex | null> {
     return await this.elasticsearchDatasourceIndexService.findUnique({
+      where: {id: indexId},
+    });
+  }
+
+  @Patch('indices/:indexId')
+  @ApiParam({
+    name: 'indexId',
+    schema: {type: 'number'},
+    example: 1,
+  })
+  async updateElasticsearchDatasourceIndex(
+    @Param('indexId') indexId: number,
+    @Body() body: Prisma.ElasticsearchDatasourceIndexUpdateInput
+  ): Promise<ElasticsearchDatasourceIndex> {
+    return await this.elasticsearchDatasourceIndexService.update({
+      where: {id: indexId},
+      data: body,
+    });
+  }
+
+  @Delete('indices/:indexId')
+  @ApiParam({
+    name: 'indexId',
+    schema: {type: 'number'},
+    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
+  })
+  async deleteElasticsearchDatasourceIndex(
+    @Param('indexId') indexId: number
+  ): Promise<ElasticsearchDatasourceIndex> {
+    return await this.elasticsearchDatasourceIndexService.delete({
       where: {id: indexId},
     });
   }

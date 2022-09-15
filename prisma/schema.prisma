@@ -163,7 +163,7 @@ model User {
   phone        String?       @unique
   username     String?       @unique
   passwordHash String?
-  status       UserStatus
+  status       UserStatus    @default(ACTIVE)
   lastLoginAt  DateTime?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
@@ -457,7 +457,7 @@ model PostgresqlDatasourceConstraint {
   foreignTable String? // Has value when the type is FOREIGN_KEY. 
   createdAt    DateTime                              @default(now())
   updatedAt    DateTime                              @updatedAt
-  datasource   PostgresqlDatasource                  @relation(fields: [datasourceId], references: [id])
+  datasource   PostgresqlDatasource                  @relation(fields: [datasourceId], references: [id], onDelete: Cascade)
   datasourceId String                                @db.Uuid
 }
 
@@ -471,7 +471,7 @@ model PostgresqlDatasourceTable {
   name               String
   createdAt          DateTime                          @default(now())
   updatedAt          DateTime                          @updatedAt
-  datasource         PostgresqlDatasource              @relation(fields: [datasourceId], references: [id])
+  datasource         PostgresqlDatasource              @relation(fields: [datasourceId], references: [id], onDelete: Cascade)
   datasourceId       String                            @db.Uuid
   columns            PostgresqlDatasourceTableColumn[]
   datatransPipelines DatatransPipeline[]
@@ -507,7 +507,7 @@ model ElasticsearchDatasourceIndex {
   name               String
   createdAt          DateTime                            @default(now())
   updatedAt          DateTime                            @updatedAt
-  datasource         ElasticsearchDatasource             @relation(fields: [datasourceId], references: [id])
+  datasource         ElasticsearchDatasource             @relation(fields: [datasourceId], references: [id], onDelete: Cascade)
   datasourceId       String                              @db.Uuid
   fields             ElasticsearchDatasourceIndexField[]
   datatransPipelines DatatransPipeline[]
@@ -551,16 +551,10 @@ model ElasticsearchDataboard {
   id                    String                              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name                  String
   description           String?
-  status                ElasticsearchDataboardStatus
   indexJson             Json?
   layoutConfig          Json?
   visualSettings        Json?
   createdAt             DateTime                            @default(now())
   updatedAt             DateTime                            @updatedAt
   datasourceIndexFields ElasticsearchDatasourceIndexField[]
-}
-
-enum ElasticsearchDataboardStatus {
-  ACTIVE
-  INACTIVE
 }

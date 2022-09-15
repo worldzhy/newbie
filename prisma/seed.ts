@@ -95,9 +95,11 @@ async function main() {
 
   console.log('- datasources');
   let datasource: PostgresqlDatasource | ElasticsearchDatasource;
-  datasource = await postgresqlDatasourceService.create(postgresql);
+  datasource = await postgresqlDatasourceService.create({data: postgresql});
   await postgresqlDatasourceService.mount(datasource);
-  datasource = await elasticsearchDatasourceService.create(elasticsearch);
+  datasource = await elasticsearchDatasourceService.create({
+    data: elasticsearch,
+  });
   await elasticsearchDatasourceService.mount(datasource);
 
   console.log('- pipelines');

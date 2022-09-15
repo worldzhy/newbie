@@ -2,6 +2,7 @@ import {Controller, Get, Param, Body, Patch} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {CheckpointService} from './checkpoint.service';
 import {
+  Prisma,
   ProjectCheckpoint,
   ProjectCheckpointState,
   ProjectCheckpointType,
@@ -13,41 +14,11 @@ import {
 export class CheckpointController {
   private checkpointService = new CheckpointService();
 
-  @Get('/checkpoints/types')
+  @Get('checkpoints/types')
   async listCheckpointCheckpoints() {
     return Object.values(ProjectCheckpointType);
   }
 
-  /**
-   * Get checkpoints
-   *
-   * @param {string} projectId
-   * @returns {Promise<{data: object;err: object;}>}
-   * @memberof CheckpointController
-   */
-  @Get('/checkpoints/projects/:projectId')
-  @ApiParam({
-    name: 'projectId',
-    schema: {type: 'string'},
-    description: 'The uuid of the checkpoint.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
-  async getCheckpoints(
-    @Param('projectId') projectId: string
-  ): Promise<ProjectCheckpoint[]> {
-    return await this.checkpointService.findMany({
-      where: {projectId: projectId},
-    });
-  }
-
-  /**
-   * Update checkpoint
-   *
-   * @param {int} checkpointId
-   * @param {{cfTemplateS3: string}} body
-   * @returns
-   * @memberof CheckpointController
-   */
   @Patch('checkpoints/:checkpointId')
   @ApiParam({
     name: 'checkpointId',
@@ -67,27 +38,12 @@ export class CheckpointController {
   })
   async updateCheckpoint(
     @Param('checkpointId') checkpointId: number,
-    @Body() body: {state: ProjectCheckpointState}
+    @Body() body: Prisma.ProjectCheckpointUpdateInput
   ) {
-    // [step 1] Guard statement.
-    const {state} = body;
-
-    // [step 2] Update environment.
-    const result = await this.checkpointService.update({
+    return await this.checkpointService.update({
       where: {id: checkpointId},
-      data: {state: state},
+      data: body,
     });
-    if (result) {
-      return {
-        data: result,
-        err: null,
-      };
-    } else {
-      return {
-        data: null,
-        err: {message: 'Checkpoint updated failed.'},
-      };
-    }
   }
 
   /* End */

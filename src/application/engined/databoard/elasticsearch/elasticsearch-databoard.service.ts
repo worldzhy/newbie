@@ -19,11 +19,9 @@ export class ElasticsearchDataboardService {
   }
 
   async create(
-    data: Prisma.ElasticsearchDataboardCreateInput
+    params: Prisma.ElasticsearchDataboardCreateArgs
   ): Promise<ElasticsearchDataboard> {
-    return await this.prisma.elasticsearchDataboard.create({
-      data,
-    });
+    return await this.prisma.elasticsearchDataboard.create(params);
   }
 
   async update(

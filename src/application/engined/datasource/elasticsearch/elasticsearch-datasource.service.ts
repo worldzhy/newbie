@@ -29,11 +29,9 @@ export class ElasticsearchDatasourceService {
   }
 
   async create(
-    data: Prisma.ElasticsearchDatasourceCreateInput
+    params: Prisma.ElasticsearchDatasourceCreateArgs
   ): Promise<ElasticsearchDatasource> {
-    return await this.prisma.elasticsearchDatasource.create({
-      data,
-    });
+    return await this.prisma.elasticsearchDatasource.create(params);
   }
 
   async update(

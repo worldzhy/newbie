@@ -23,7 +23,7 @@ export class DatatransPipelineController {
   private elasticsearchDatasourceIndexService =
     new ElasticsearchDatasourceIndexService();
 
-  @Post('/pipelines')
+  @Post('pipelines')
   @ApiBody({
     description:
       "The 'name', 'status' and 'clientEmail' are required in request body.",
@@ -93,12 +93,12 @@ export class DatatransPipelineController {
     });
   }
 
-  @Get('/pipelines')
+  @Get('pipelines')
   async getPipelines(): Promise<DatatransPipeline[]> {
     return await this.pipelineService.findMany({});
   }
 
-  @Get('/pipelines/:pipelineId')
+  @Get('pipelines/:pipelineId')
   @ApiParam({
     name: 'pipelineId',
     schema: {type: 'string'},
@@ -121,7 +121,7 @@ export class DatatransPipelineController {
    * @returns
    * @memberof DatatransPipelineController
    */
-  @Patch('/pipelines/:pipelineId')
+  @Patch('pipelines/:pipelineId')
   @ApiParam({
     name: 'pipelineId',
     schema: {type: 'string'},
@@ -152,7 +152,7 @@ export class DatatransPipelineController {
     });
   }
 
-  @Delete('/pipelines/:pipelineId')
+  @Delete('pipelines/:pipelineId')
   @ApiParam({
     name: 'pipelineId',
     schema: {type: 'string'},
@@ -170,7 +170,7 @@ export class DatatransPipelineController {
    * @returns
    * @memberof DatatransPipelinePumpController
    */
-  @Get('/pipelines/:pipelineId/overview')
+  @Get('pipelines/:pipelineId/overview')
   @ApiParam({
     name: 'pipelineId',
     schema: {type: 'string'},

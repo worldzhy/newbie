@@ -18,7 +18,7 @@ export class DatatransStreamProcessingController {
    * @returns
    * @memberof DatatransStreamProcessingController
    */
-  @Get('/stream-processing/:pipelineId/start')
+  @Get('stream-processing/:pipelineId/start')
   @ApiParam({
     name: 'pipelineId',
     schema: {type: 'string'},
@@ -58,7 +58,7 @@ export class DatatransStreamProcessingController {
    * @returns
    * @memberof DatatransStreamProcessingController
    */
-  @Get('/stream-processing/:pipelineId/stop')
+  @Get('stream-processing/:pipelineId/stop')
   @ApiParam({
     name: 'pipelineId',
     schema: {type: 'string'},
@@ -91,7 +91,7 @@ export class DatatransStreamProcessingController {
    * @returns
    * @memberof DatatransStreamProcessingController
    */
-  @Get('/stream-processing/:pipelineId/purge')
+  @Get('stream-processing/:pipelineId/purge')
   @ApiParam({
     name: 'pipelineId',
     schema: {type: 'string'},

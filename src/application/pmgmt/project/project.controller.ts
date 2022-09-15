@@ -1,11 +1,15 @@
 import {Controller, Get, Post, Param, Body, Patch} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {ProjectService} from './project.service';
+import {CheckpointService} from '../checkpoint/checkpoint.service';
+import {EnvironmentService} from '../environment/environment.service';
 import * as validator from './project.validator';
 import {
   Prisma,
   Project,
+  ProjectCheckpoint,
   ProjectCheckpointType,
+  ProjectEnvironment,
   ProjectEnvironmentType,
   ProjectState,
 } from '@prisma/client';
@@ -15,6 +19,8 @@ import {
 @Controller('project-management')
 export class ProjectController {
   private projectService = new ProjectService();
+  private checkpointService = new CheckpointService();
+  private environmentService = new EnvironmentService();
 
   @Post('projects')
   @ApiBody({
@@ -34,11 +40,10 @@ export class ProjectController {
   async createProject(
     @Body()
     body: Prisma.ProjectCreateInput
-  ) {
+  ): Promise<Project | {err: {message: string}}> {
     // [step 1] Guard statement.
     if (!body.name || !validator.verifyProjectName(body.name)) {
       return {
-        data: null,
         err: {
           message: 'Please provide valid project name in the request body.',
         },
@@ -84,21 +89,10 @@ export class ProjectController {
   })
   async getProject(
     @Param('projectId') projectId: string
-  ): Promise<{data: object | null; err: object | null}> {
-    const result = await this.projectService.findUnique({
+  ): Promise<Project | null> {
+    return await this.projectService.findUnique({
       where: {id: projectId},
     });
-    if (result) {
-      return {
-        data: result,
-        err: null,
-      };
-    } else {
-      return {
-        data: null,
-        err: {message: 'Get project failed.'},
-      };
-    }
   }
 
   @Patch('projects/:projectId')
@@ -125,12 +119,41 @@ export class ProjectController {
   async updateProject(
     @Param('projectId') projectId: string,
     @Body() body: Prisma.ProjectUpdateInput
-  ) {
+  ): Promise<Project> {
     return await this.projectService.update({
       where: {id: projectId},
       data: body,
     });
   }
 
+  @Get('projects/:projectId/checkpoints')
+  @ApiParam({
+    name: 'projectId',
+    schema: {type: 'string'},
+    description: 'The uuid of the checkpoint.',
+    example: 'd8141ece-f242-4288-a60a-8675538549cd',
+  })
+  async getProjectCheckpoints(
+    @Param('projectId') projectId: string
+  ): Promise<ProjectCheckpoint[]> {
+    return await this.checkpointService.findMany({
+      where: {projectId: projectId},
+    });
+  }
+
+  @Get('projects/:projectId/environments')
+  @ApiParam({
+    name: 'projectId',
+    schema: {type: 'string'},
+    description: 'The uuid of the environment.',
+    example: 'd8141ece-f242-4288-a60a-8675538549cd',
+  })
+  async getProjectEnvironments(
+    @Param('projectId') projectId: string
+  ): Promise<ProjectEnvironment[]> {
+    return await this.environmentService.findMany({
+      where: {projectId: projectId},
+    });
+  }
   /* End */
 }

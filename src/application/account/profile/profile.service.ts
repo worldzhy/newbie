@@ -26,5 +26,9 @@ export class UserProfileService {
     return await this.prisma.userProfile.update(params);
   }
 
+  async delete(params: Prisma.UserProfileDeleteArgs): Promise<UserProfile> {
+    return await this.prisma.userProfile.delete(params);
+  }
+
   /* End */
 }

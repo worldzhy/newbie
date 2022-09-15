@@ -1,4 +1,12 @@
-import {Controller, Get, Post, Param, Body} from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Body,
+  Delete,
+  Patch,
+} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {
   PostgresqlDatasourceTable,
@@ -54,6 +62,36 @@ export class PostgresqlDatasourceTableController {
     @Param('datasourceId') tableId: number
   ): Promise<PostgresqlDatasourceTable | null> {
     return await this.postgresqlDatasourceTableService.findUnique({
+      where: {id: tableId},
+    });
+  }
+
+  @Patch('tables/:tableId')
+  @ApiParam({
+    name: 'tableId',
+    schema: {type: 'number'},
+    example: 1,
+  })
+  async updateElasticsearchDatasourceIndex(
+    @Param('tableId') tableId: number,
+    @Body() body: Prisma.PostgresqlDatasourceTableUpdateInput
+  ): Promise<PostgresqlDatasourceTable> {
+    return await this.postgresqlDatasourceTableService.update({
+      where: {id: tableId},
+      data: body,
+    });
+  }
+
+  @Delete('tables/:tableId')
+  @ApiParam({
+    name: 'tableId',
+    schema: {type: 'number'},
+    example: 1,
+  })
+  async deletePostgresqlDatasourceTable(
+    @Param('tableId') tableId: number
+  ): Promise<PostgresqlDatasourceTable> {
+    return await this.postgresqlDatasourceTableService.delete({
       where: {id: tableId},
     });
   }

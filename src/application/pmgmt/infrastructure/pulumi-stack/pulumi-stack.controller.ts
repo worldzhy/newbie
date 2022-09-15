@@ -14,6 +14,7 @@ import {
   PulumiStackType,
   ProjectEnvironmentType,
   Prisma,
+  PulumiStack,
 } from '@prisma/client';
 
 @ApiTags('[Application] Project Management / Infrastructure / Pulumi Stack')
@@ -27,7 +28,7 @@ export class PulumiStackController {
     return Object.values(PulumiStackType);
   }
 
-  @Get('pulumi-stacks/params/:type')
+  @Get('pulumi-stacks/:type/params')
   @ApiParam({
     name: 'type',
     schema: {type: 'string'},
@@ -69,12 +70,12 @@ export class PulumiStackController {
   async createStack(
     @Body()
     body: Prisma.PulumiStackUncheckedCreateInput
-  ) {
+  ): Promise<PulumiStack> {
     return await this.stackService.create({data: body});
   }
 
   @Get('pulumi-stacks')
-  async getStacks() {
+  async getStacks(): Promise<PulumiStack[]> {
     return await this.stackService.findMany({});
   }
 
@@ -84,7 +85,9 @@ export class PulumiStackController {
     schema: {type: 'string'},
     example: 'ff337f2d-d3a5-4f2e-be16-62c75477b605',
   })
-  async getStack(@Param('stackId') stackId: string) {
+  async getStack(
+    @Param('stackId') stackId: string
+  ): Promise<PulumiStack | null> {
     return await this.stackService.findUnique({where: {id: stackId}});
   }
 
@@ -121,7 +124,7 @@ export class PulumiStackController {
     @Param('stackId') stackId: string,
     @Body()
     body: Prisma.PulumiStackUpdateInput
-  ) {
+  ): Promise<PulumiStack> {
     return await this.stackService.update({
       where: {id: stackId},
       data: body,
@@ -137,16 +140,13 @@ export class PulumiStackController {
   async deleteStack(
     @Param('stackId')
     stackId: string
-  ) {
+  ): Promise<PulumiStack | {err: {message: string}}> {
     // [step 1] Get the cloudformation stack.
     const stack = await this.stackService.findUnique({
       where: {id: stackId},
     });
     if (!stack) {
-      return {
-        data: null,
-        err: {message: 'Invalid stackId.'},
-      };
+      return {err: {message: 'Invalid stackId.'}};
     }
     if (
       stack.state === PulumiStackState.PREPARING ||

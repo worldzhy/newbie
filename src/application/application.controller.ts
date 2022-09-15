@@ -6,13 +6,13 @@ import {Public} from './account/auth/auth-jwt/auth-jwt.decorator';
 @Controller()
 export class ApplicationController {
   @Public()
-  @Get('/')
+  @Get('')
   hello(): string {
     return 'Anyone can write code that a computer can understand. \nGood programmers can write code that PEOPLE can understand!';
   }
 
   @Public()
-  @Get('/manifesto')
+  @Get('manifesto')
   manifesto(): string {
     return 'Anyone can write code that a computer can understand. \nGood programmers can write code that PEOPLE can understand!';
   }

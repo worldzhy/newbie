@@ -29,7 +29,7 @@ export class EmailController {
       },
     },
   })
-  @Post('/email')
+  @Post('email')
   async sendEmail(
     @Body()
     body: {
@@ -64,7 +64,7 @@ export class EmailController {
       },
     },
   })
-  @Post('/emails')
+  @Post('emails')
   async sendEmails(
     @Body()
     body: {

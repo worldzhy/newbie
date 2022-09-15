@@ -1,9 +1,17 @@
-import {Controller, Get, Param, Body, Patch, Req, Query} from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Body,
+  Patch,
+  Query,
+  Post,
+  Delete,
+} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {UserService} from './user.service';
 import * as validator from '../account.validator';
 import {Prisma, User} from '@prisma/client';
-import {Public} from '../auth/auth-jwt/auth-jwt.decorator';
 
 @ApiTags('[Application] Account / User')
 @ApiBearerAuth()
@@ -11,7 +19,24 @@ import {Public} from '../auth/auth-jwt/auth-jwt.decorator';
 export class UserController {
   constructor(private userService: UserService) {}
 
-  @Public()
+  @Post('')
+  @ApiBody({
+    description: '',
+    examples: {
+      a: {
+        summary: '1. Create',
+        value: {
+          phone: '13260000999',
+        },
+      },
+    },
+  })
+  async createUser(@Body() body: Prisma.UserCreateInput): Promise<User> {
+    return await this.userService.create({
+      data: body,
+    });
+  }
+
   @Get('')
   @ApiParam({
     required: false,
@@ -34,7 +59,7 @@ export class UserController {
     // [step 1] Construct where argument.
     let where: Prisma.UserWhereInput | undefined;
     if (query.name) {
-      const name = (query.name as string).trim();
+      const name = query.name.trim();
       if (name.length > 0) {
         where = {
           OR: [
@@ -103,6 +128,18 @@ export class UserController {
     return await this.userService.findUnique({
       where: {id: userId},
       include: {profiles: true},
+    });
+  }
+
+  @Delete(':userId')
+  @ApiParam({
+    name: 'userId',
+    schema: {type: 'string'},
+    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
+  })
+  async deleteUser(@Param('userId') userId: string): Promise<User> {
+    return await this.userService.delete({
+      where: {id: userId},
     });
   }
 

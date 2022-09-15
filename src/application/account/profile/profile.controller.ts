@@ -1,4 +1,13 @@
-import {Controller, Get, Post, Param, Body, Patch} from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Body,
+  Patch,
+  Query,
+  Delete,
+} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {
   Prisma,
@@ -54,6 +63,49 @@ export class UserProfileController {
     @Body() body: Prisma.UserProfileUncheckedCreateInput
   ): Promise<UserProfile> {
     return await this.userProfileService.create({data: body});
+  }
+
+  @Get('profiles')
+  async getUserProfiles(
+    @Query() query: {name?: string; page?: string}
+  ): Promise<UserProfile[] | {err: {message: string}}> {
+    // [step 1] Construct where argument.
+    let where: Prisma.UserProfileWhereInput | undefined;
+    if (query.name) {
+      const name = query.name.trim();
+      if (name.length > 0) {
+        where = {
+          OR: [
+            {givenName: {search: name}},
+            {familyName: {search: name}},
+            {middleName: {search: name}},
+          ],
+        };
+      }
+    }
+
+    // [step 2] Construct take and skip arguments.
+    let take: number, skip: number;
+    if (query.page) {
+      // Actually 'page' is string because it comes from URL param.
+      const page = parseInt(query.page);
+      if (page > 0) {
+        take = 10;
+        skip = 10 * (page - 1);
+      } else {
+        return {err: {message: 'The page must be larger than 0.'}};
+      }
+    } else {
+      take = 10;
+      skip = 0;
+    }
+
+    // [step 3] Get user profiles.
+    return await this.userProfileService.findMany({
+      where: where,
+      take: take,
+      skip: skip,
+    });
   }
 
   @Get('profiles/:profileId')
@@ -120,5 +172,18 @@ export class UserProfileController {
     });
   }
 
+  @Delete('profiles/:profileId')
+  @ApiParam({
+    name: 'profileId',
+    schema: {type: 'string'},
+    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
+  })
+  async deleteUser(
+    @Param('profileId') profileId: string
+  ): Promise<UserProfile> {
+    return await this.userProfileService.delete({
+      where: {id: profileId},
+    });
+  }
   /* End */
 }

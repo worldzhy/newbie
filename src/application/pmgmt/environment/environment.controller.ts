@@ -13,41 +13,11 @@ import {
 export class EnvironmentController {
   private environmentService = new EnvironmentService();
 
-  @Get('/environments/types')
+  @Get('environments/types')
   async listEnvironmentEnvironments() {
     return Object.values(ProjectEnvironmentType);
   }
 
-  /**
-   * Get environments
-   *
-   * @param {string} projectId
-   * @returns {Promise<{data: object;err: object;}>}
-   * @memberof EnvironmentController
-   */
-  @Get('/environments/projects/:projectId')
-  @ApiParam({
-    name: 'projectId',
-    schema: {type: 'string'},
-    description: 'The uuid of the environment.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
-  async getEnvironments(
-    @Param('projectId') projectId: string
-  ): Promise<ProjectEnvironment[]> {
-    return await this.environmentService.findMany({
-      where: {projectId: projectId},
-    });
-  }
-
-  /**
-   * Update environment
-   *
-   * @param {number} environmentId
-   * @param {Prisma.ProjectEnvironmentUpdateInput} body
-   * @returns
-   * @memberof EnvironmentController
-   */
   @Patch('environments/:environmentId')
   @ApiParam({
     name: 'environmentId',
@@ -79,25 +49,11 @@ export class EnvironmentController {
   async updateEnvironment(
     @Param('environmentId') environmentId: number,
     @Body() body: Prisma.ProjectEnvironmentUpdateInput
-  ) {
-    // [step 1] Guard statement.
-
-    // [step 2] Update environment.
-    const result = await this.environmentService.update({
+  ): Promise<ProjectEnvironment> {
+    return await this.environmentService.update({
       where: {id: environmentId},
       data: body,
     });
-    if (result) {
-      return {
-        data: result,
-        err: null,
-      };
-    } else {
-      return {
-        data: null,
-        err: {message: 'Environment updated failed.'},
-      };
-    }
   }
 
   /* End */

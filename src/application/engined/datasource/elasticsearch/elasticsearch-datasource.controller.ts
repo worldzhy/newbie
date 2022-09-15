@@ -1,6 +1,18 @@
-import {Controller, Get, Post, Param, Body, Patch} from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Body,
+  Patch,
+  Delete,
+} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {ElasticsearchDatasourceIndex} from '@prisma/client';
+import {
+  ElasticsearchDatasource,
+  ElasticsearchDatasourceIndex,
+  Prisma,
+} from '@prisma/client';
 import {ElasticsearchDatasourceService} from './elasticsearch-datasource.service';
 import {ElasticsearchDatasourceIndexService} from './index/index.service';
 
@@ -12,7 +24,7 @@ export class ElasticsearchDatasourceController {
   private elasticsearchDatasourceIndexService =
     new ElasticsearchDatasourceIndexService();
 
-  @Post('/')
+  @Post('')
   @ApiBody({
     description: "The 'node' is required in request body.",
     examples: {
@@ -26,40 +38,14 @@ export class ElasticsearchDatasourceController {
   })
   async createElasticsearchDatasource(
     @Body()
-    body: {
-      node: string;
-    }
-  ) {
-    // [step 1] Guard statement.
-
-    // [step 2] Create datasource elasticsearch.
-    const result = await this.elasticsearchDatasourceService.create({
-      ...body,
-    });
-    if (result) {
-      return {
-        data: result,
-        err: null,
-      };
-    } else {
-      return {
-        data: null,
-        err: {message: 'Elasticsearch datasource create failed.'},
-      };
-    }
+    body: Prisma.ElasticsearchDatasourceCreateInput
+  ): Promise<ElasticsearchDatasource> {
+    return await this.elasticsearchDatasourceService.create({data: body});
   }
 
-  @Get('/')
-  async getElasticsearchDatasources(): Promise<{
-    data: object | null;
-    err: object | null;
-  }> {
-    const elasticsearchDatasources =
-      await this.elasticsearchDatasourceService.findMany({});
-    return {
-      data: elasticsearchDatasources,
-      err: null,
-    };
+  @Get('')
+  async getElasticsearchDatasources(): Promise<ElasticsearchDatasource[]> {
+    return await this.elasticsearchDatasourceService.findMany({});
   }
 
   /**
@@ -68,7 +54,7 @@ export class ElasticsearchDatasourceController {
    * @returns {Promise<{data: object;err: object;}>}
    * @memberof ElasticsearchDatasourceController
    */
-  @Get('/:datasourceId')
+  @Get(':datasourceId')
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},
@@ -77,24 +63,13 @@ export class ElasticsearchDatasourceController {
   })
   async getElasticsearchDatasource(
     @Param('datasourceId') datasourceId: string
-  ): Promise<{data: object | null; err: object | null}> {
-    const result = await this.elasticsearchDatasourceService.findUnique({
+  ): Promise<ElasticsearchDatasource | null> {
+    return await this.elasticsearchDatasourceService.findUnique({
       where: {id: datasourceId},
     });
-    if (result) {
-      return {
-        data: result,
-        err: null,
-      };
-    } else {
-      return {
-        data: null,
-        err: {message: 'Get elasticsearch datasource failed.'},
-      };
-    }
   }
 
-  @Patch('/:datasourceId')
+  @Patch(':datasourceId')
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},
@@ -113,26 +88,26 @@ export class ElasticsearchDatasourceController {
   })
   async updateElasticsearchDatasource(
     @Param('datasourceId') datasourceId: string,
-    @Body() body: {node: string}
+    @Body() body: Prisma.ElasticsearchDatasourceUpdateInput
   ) {
-    // [step 1] Guard statement.
-
-    // [step 2] Update name.
-    const result = await this.elasticsearchDatasourceService.update({
+    return await this.elasticsearchDatasourceService.update({
       where: {id: datasourceId},
-      data: {...body},
+      data: body,
     });
-    if (result) {
-      return {
-        data: result,
-        err: null,
-      };
-    } else {
-      return {
-        data: null,
-        err: {message: 'Datasource elasticsearch updated failed.'},
-      };
-    }
+  }
+
+  @Delete(':datasourceId')
+  @ApiParam({
+    name: 'datasourceId',
+    schema: {type: 'string'},
+    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
+  })
+  async deleteElasticsearchDatasource(
+    @Param('datasourceId') datasourceId: string
+  ): Promise<ElasticsearchDatasource> {
+    return await this.elasticsearchDatasourceService.delete({
+      where: {id: datasourceId},
+    });
   }
 
   @Get(':datasourceId/indices')
@@ -160,13 +135,7 @@ export class ElasticsearchDatasourceController {
     });
   }
 
-  /**
-   * Search elasticsearch.
-   *
-   * @returns
-   * @memberof ElasticsearchDatasourceController
-   */
-  @Post('/:datasourceId/search')
+  @Post(':datasourceId/search')
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},
@@ -214,13 +183,7 @@ export class ElasticsearchDatasourceController {
     return await this.elasticsearchDatasourceService.search(body);
   }
 
-  /**
-   * Search aggregations.
-   *
-   * @returns
-   * @memberof ElasticsearchDatasourceController
-   */
-  @Post('/:datasourceId/search-aggregations')
+  @Post(':datasourceId/search-aggregations')
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},
@@ -272,7 +235,7 @@ export class ElasticsearchDatasourceController {
    * @returns
    * @memberof ElasticsearchDatasourceController
    */
-  @Post('/:datasourceId/mount')
+  @Post(':datasourceId/mount')
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},
@@ -310,7 +273,7 @@ export class ElasticsearchDatasourceController {
    * @returns
    * @memberof ElasticsearchDatasourceController
    */
-  @Post('/:datasourceId/unmount')
+  @Post(':datasourceId/unmount')
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},

@@ -25,7 +25,7 @@ export class AwsController {
       },
     },
   })
-  @Post('/s3/bucket')
+  @Post('s3/bucket')
   async createS3Bucket(@Body() body: {bucketName: string}) {
     const s3Service = new S3Service();
     return await s3Service.createBucket(body.bucketName);
@@ -47,7 +47,7 @@ export class AwsController {
       },
     },
   })
-  @Delete('/s3/bucket')
+  @Delete('s3/bucket')
   async deleteS3Bucket(@Body() body: {bucketName: string}) {
     const s3Service = new S3Service();
     return await s3Service.deleteBucket(body.bucketName);
@@ -73,7 +73,7 @@ export class AwsController {
       },
     },
   })
-  @Post('/sqs/message')
+  @Post('sqs/message')
   async sendSqsMessage(@Body() body: {queueUrl: string; payload: object}) {
     const sqsService = new SqsService();
     return await sqsService.sendMessage(body.queueUrl, body.payload);
@@ -96,7 +96,7 @@ export class AwsController {
     },
     description: "The request body should contain 'bucketName' attribute.",
   })
-  @Post('/sns/publish')
+  @Post('sns/publish')
   async sendSnsMessage(@Body() body: {phone: string; message: string}) {
     const snsService = new SnsService();
     return await snsService.publish({
@@ -129,7 +129,7 @@ export class AwsController {
     description:
       "The request body should be {'subject', 'content', 'toAddress'} or {'content', 'phone'}.",
   })
-  @Post('/pinpoint/email')
+  @Post('pinpoint/email')
   async sendPinpointEmail(
     @Body()
     body: {
@@ -168,7 +168,7 @@ export class AwsController {
     description:
       "The request body should be {'subject', 'content', 'toAddress'} or {'content', 'phone'}.",
   })
-  @Post('/pinpoint/text-message')
+  @Post('pinpoint/text-message')
   async sendPinpointTextMessage(
     @Body()
     body: {

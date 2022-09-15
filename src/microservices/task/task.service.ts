@@ -17,11 +17,9 @@ export class TaskService {
     return await this.prisma.task.findMany(params);
   }
 
-  async create(data: Prisma.TaskCreateInput): Promise<Task> {
+  async create(params: Prisma.TaskCreateArgs): Promise<Task> {
     // Save a task in the database.
-    return await this.prisma.task.create({
-      data,
-    });
+    return await this.prisma.task.create(params);
   }
 
   async update(params: Prisma.TaskUpdateArgs): Promise<Task> {

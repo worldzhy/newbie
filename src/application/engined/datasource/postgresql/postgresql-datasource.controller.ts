@@ -1,4 +1,12 @@
-import {Controller, Get, Post, Param, Body, Patch} from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Body,
+  Patch,
+  Delete,
+} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {
   PostgresqlDatasource,
@@ -19,7 +27,7 @@ export class PostgresqlDatasourceController {
   private postgresqlDatasourceConstraintService =
     new PostgresqlDatasourceConstraintService();
 
-  @Post('/')
+  @Post('')
   @ApiBody({
     description:
       "The 'host', 'port', 'database' and 'schema' are required in request body.",
@@ -44,12 +52,10 @@ export class PostgresqlDatasourceController {
       schema: string;
     }
   ): Promise<PostgresqlDatasource> {
-    return await this.postgresqlDatasourceService.create({
-      ...body,
-    });
+    return await this.postgresqlDatasourceService.create({data: body});
   }
 
-  @Get('/')
+  @Get('')
   async getPostgresqlDatasources(): Promise<PostgresqlDatasource[]> {
     return await this.postgresqlDatasourceService.findMany({
       orderBy: {
@@ -62,7 +68,7 @@ export class PostgresqlDatasourceController {
     });
   }
 
-  @Get('/:datasourceId')
+  @Get(':datasourceId')
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},
@@ -77,7 +83,7 @@ export class PostgresqlDatasourceController {
     });
   }
 
-  @Patch('/:datasourceId')
+  @Patch(':datasourceId')
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},
@@ -107,7 +113,21 @@ export class PostgresqlDatasourceController {
     });
   }
 
-  @Get('/:datasourceId/tables')
+  @Delete(':datasourceId')
+  @ApiParam({
+    name: 'datasourceId',
+    schema: {type: 'string'},
+    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
+  })
+  async deletePostgresqlDatasourceTable(
+    @Param('datasourceId') datasourceId: string
+  ): Promise<PostgresqlDatasource> {
+    return await this.postgresqlDatasourceService.delete({
+      where: {id: datasourceId},
+    });
+  }
+
+  @Get(':datasourceId/tables')
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},
@@ -134,7 +154,7 @@ export class PostgresqlDatasourceController {
     });
   }
 
-  @Get('/:datasourceId/constraints')
+  @Get(':datasourceId/constraints')
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},
@@ -152,7 +172,7 @@ export class PostgresqlDatasourceController {
     });
   }
 
-  @Get('/:datasourceId/constraints/:tableName')
+  @Get(':datasourceId/constraints/:tableName')
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},
@@ -194,7 +214,7 @@ export class PostgresqlDatasourceController {
    * @returns
    * @memberof PostgresqlDatasourceTableColumnController
    */
-  @Post('/:datasourceId/mount')
+  @Post(':datasourceId/mount')
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},
@@ -242,7 +262,7 @@ export class PostgresqlDatasourceController {
    * @returns
    * @memberof PostgresqlDatasourceTableColumnController
    */
-  @Post('/:datasourceId/unmount')
+  @Post(':datasourceId/unmount')
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},
@@ -274,7 +294,7 @@ export class PostgresqlDatasourceController {
    * @returns {Promise<{data: object;err: object;}>}
    * @memberof DatapipePumpController
    */
-  @Get('/:datasourceId/overview')
+  @Get(':datasourceId/overview')
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},

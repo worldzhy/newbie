@@ -18,7 +18,7 @@ export class DatatransBatchProcessingController {
    * @returns
    * @memberof DatatransBatchProcessingController
    */
-  @Get('/batch-processing/:pipelineId/start')
+  @Get('batch-processing/:pipelineId/start')
   @ApiParam({
     name: 'pipelineId',
     schema: {type: 'string'},
@@ -47,7 +47,7 @@ export class DatatransBatchProcessingController {
    * @returns
    * @memberof DatatransBatchProcessingController
    */
-  @Get('/batch-processing/:pipelineId/stop')
+  @Get('batch-processing/:pipelineId/stop')
   @ApiParam({
     name: 'pipelineId',
     schema: {type: 'string'},
@@ -80,7 +80,7 @@ export class DatatransBatchProcessingController {
    * @returns
    * @memberof DatatransBatchProcessingController
    */
-  @Get('/batch-processing/:pipelineId/purge')
+  @Get('batch-processing/:pipelineId/purge')
   @ApiParam({
     name: 'pipelineId',
     schema: {type: 'string'},
