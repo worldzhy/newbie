@@ -1,16 +1,16 @@
 import {RequestParams} from '@elastic/elasticsearch';
 import {Injectable} from '@nestjs/common';
 import {ElasticsearchDatasource, Prisma} from '@prisma/client';
-import {ElasticsearchService} from '../../../../_elastic/_elasticsearch.service';
-import {PrismaService} from '../../../../_prisma/_prisma.service';
+import {ElasticService} from '../../../../tools/elastic/elastic.service';
+import {PrismaService} from '../../../../tools/prisma/prisma.service';
 import {get as lodash_get, split as lodash_split} from 'lodash';
 import {ElasticsearchDatasourceIndexService} from './index/index.service';
 import {ElasticsearchDatasourceIndexFieldService} from './field/field.service';
 
 @Injectable()
 export class ElasticsearchDatasourceService {
+  private elastic: ElasticService = new ElasticService();
   private prisma: PrismaService = new PrismaService();
-  private elasticsearch: ElasticsearchService = new ElasticsearchService();
   private elasticsearchDatasourceIndexService =
     new ElasticsearchDatasourceIndexService();
   private elasticsearchDatasourceIndexFieldService =
@@ -53,7 +53,7 @@ export class ElasticsearchDatasourceService {
    */
   async mount(datasource: ElasticsearchDatasource) {
     // [step 1] Get mappings of all indices.
-    const result = await this.elasticsearch.indices.getMapping();
+    const result = await this.elastic.indices.getMapping();
     if (result.statusCode !== 200) {
       return;
     }
@@ -109,7 +109,7 @@ export class ElasticsearchDatasourceService {
    * @returns
    */
   async search(params: RequestParams.Search) {
-    return await this.elasticsearch.search(params);
+    return await this.elastic.search(params);
   }
 
   /**
@@ -122,7 +122,7 @@ export class ElasticsearchDatasourceService {
     const searchParams = this.parseSearchAggregationsParams(params);
 
     // [step 2] Search
-    const result = await this.elasticsearch.search(searchParams);
+    const result = await this.elastic.search(searchParams);
 
     // [step 3] Parse response
     return this.parseSearchAggregationsResult(params, result);

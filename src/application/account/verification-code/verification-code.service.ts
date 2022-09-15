@@ -1,12 +1,12 @@
 import {Injectable} from '@nestjs/common';
-import {PrismaService} from '../../../_prisma/_prisma.service';
+import {PrismaService} from '../../../tools/prisma/prisma.service';
 import {
   VerificationCode,
   VerificationCodeStatus,
   VerificationCodeUse,
 } from '@prisma/client';
 import * as validator from '../account.validator';
-import * as util from '../../../_util/_util';
+import * as util from '../account.util';
 import {EmailService} from '../../../microservices/notification/email/email.service';
 import {SmsService} from '../../../microservices/notification/sms/sms.service';
 

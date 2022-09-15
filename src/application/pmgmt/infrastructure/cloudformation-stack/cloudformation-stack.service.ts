@@ -21,8 +21,8 @@ import {
   CloudFormationStackType,
   Prisma,
 } from '@prisma/client';
-import {PrismaService} from '../../../../_prisma/_prisma.service';
-import {randomCode} from '../../../../_util/_util';
+import {PrismaService} from '../../../../tools/prisma/prisma.service';
+import {randomCode} from '../infrastructure.util';
 
 @Injectable()
 export class CloudFormationStackService {

@@ -143,7 +143,7 @@ $ npm run start:prod
 
 ## Stay in touch
 
-- Author - [Henry Zhao](https://blog.csdn.net/worldzhy)
+- Author - [worldzhy](https://blog.csdn.net/worldzhy)
 - Website - [https://blog.csdn.net/worldzhy](https://blog.csdn.net/worldzhy)
 
 ## License

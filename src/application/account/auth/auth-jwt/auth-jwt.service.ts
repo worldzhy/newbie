@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {JwtService} from '@nestjs/jwt';
-import {PrismaService} from '../../../../_prisma/_prisma.service';
+import {PrismaService} from '../../../../tools/prisma/prisma.service';
 import {JwtStatus} from '@prisma/client';
 import {getJwtConfig} from '../../../../_config/_jwt.config';
 

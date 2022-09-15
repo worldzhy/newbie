@@ -5,8 +5,7 @@ import {
   HttpException,
 } from '@nestjs/common';
 import {Request, Response} from 'express';
-import {CustomLoggerService} from '../_logger/_custom-logger.service';
-import {stringfy} from '../_util/_util';
+import {CustomLoggerService} from '../tools/logger/custom-logger.service';
 
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -19,9 +18,9 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const statusCode = exception.getStatus();
 
     // [step 1] Assemble log message.
-    let message = `${statusCode} ${exception.message} ${request.method} ${request.url} `;
+    let message = `${statusCode} ${exception.message} >> ${request.method} ${request.url}`;
     if (request.body && Object.keys(request.body).length > 0) {
-      message += `${stringfy(request.body)}`;
+      message += ` >> ${JSON.stringify(request.body)}`;
     }
 
     // [step 2] Write log.

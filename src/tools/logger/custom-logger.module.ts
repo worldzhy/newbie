@@ -1,7 +1,7 @@
 import {Module} from '@nestjs/common';
-import {CustomLoggerController} from './_custom-logger.controller';
-import {CustomLoggerService} from './_custom-logger.service';
-import {AwsModule} from '../_aws/_aws.module';
+import {CustomLoggerController} from './custom-logger.controller';
+import {CustomLoggerService} from './custom-logger.service';
+import {AwsModule} from '../aws/aws.module';
 
 @Module({
   imports: [AwsModule],

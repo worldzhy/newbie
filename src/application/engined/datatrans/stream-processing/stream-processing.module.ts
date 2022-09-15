@@ -1,7 +1,7 @@
 import {Module} from '@nestjs/common';
 import {DatatransStreamProcessingController} from './stream-processing.controller';
 import {DatatransStreamProcessingService} from './stream-processing.service';
-import {PrismaModule} from '../../../../_prisma/_prisma.module';
+import {PrismaModule} from '../../../../tools/prisma/prisma.module';
 
 @Module({
   imports: [PrismaModule],

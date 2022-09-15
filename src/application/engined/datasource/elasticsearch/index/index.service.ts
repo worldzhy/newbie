@@ -1,12 +1,12 @@
 import {Injectable} from '@nestjs/common';
 import {ElasticsearchDatasourceIndex, Prisma} from '@prisma/client';
-import {ElasticsearchService} from '../../../../../_elastic/_elasticsearch.service';
-import {PrismaService} from '../../../../../_prisma/_prisma.service';
+import {ElasticService} from '../../../../../tools/elastic/elastic.service';
+import {PrismaService} from '../../../../../tools/prisma/prisma.service';
 
 @Injectable()
 export class ElasticsearchDatasourceIndexService {
   private prisma: PrismaService = new PrismaService();
-  private elasticsearch: ElasticsearchService = new ElasticsearchService();
+  private elastic: ElasticService = new ElasticService();
 
   async findUnique(
     params: Prisma.ElasticsearchDatasourceIndexFindUniqueArgs
@@ -71,7 +71,7 @@ export class ElasticsearchDatasourceIndexService {
   }
 
   async getIndices() {
-    const indices = await this.elasticsearch.cat.indices({
+    const indices = await this.elastic.cat.indices({
       v: true, //If true, the response includes column headings. Defaults to false.
       health: 'green',
       format: 'json',
@@ -80,7 +80,7 @@ export class ElasticsearchDatasourceIndexService {
   }
 
   async getAliases() {
-    const aliases = await this.elasticsearch.cat.aliases({
+    const aliases = await this.elastic.cat.aliases({
       v: true,
       format: 'json',
     });
@@ -88,7 +88,7 @@ export class ElasticsearchDatasourceIndexService {
   }
 
   async getMappings(indexName: string) {
-    const mappings = await this.elasticsearch.indices.getMapping({
+    const mappings = await this.elastic.indices.getMapping({
       index: indexName,
     });
     return mappings;

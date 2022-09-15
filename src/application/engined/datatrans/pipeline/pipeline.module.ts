@@ -1,7 +1,7 @@
 import {Module} from '@nestjs/common';
 import {DatatransPipelineController} from './pipeline.controller';
 import {DatatransPipelineService} from './pipeline.service';
-import {PrismaModule} from '../../../../_prisma/_prisma.module';
+import {PrismaModule} from '../../../../tools/prisma/prisma.module';
 import {DatasourceModule} from '../../datasource/datasource.module';
 
 @Module({

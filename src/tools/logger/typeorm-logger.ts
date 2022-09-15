@@ -1,6 +1,5 @@
 import {Logger as TypeOrmLogger, QueryRunner} from 'typeorm';
-import {CustomLoggerService} from './_custom-logger.service';
-import {stringfy} from '../_util/_util';
+import {CustomLoggerService} from './custom-logger.service';
 
 /**
  * This logger is prepared for typeorm developers.
@@ -22,7 +21,7 @@ export class CustomTypeOrmLogger implements TypeOrmLogger {
     if (queryRunner?.data?.isCreatingLogs) {
       return;
     }
-    this.logger.log(`${query} -- Parameters: ${stringfy(parameters)}`);
+    this.logger.log(`${query} -- Parameters: ${JSON.stringify(parameters)}`);
   }
 
   logQueryError(
@@ -35,7 +34,7 @@ export class CustomTypeOrmLogger implements TypeOrmLogger {
       return;
     }
     this.logger.error(
-      `${query} -- Parameters: ${stringfy(parameters)} -- ${error}`
+      `${query} -- Parameters: ${JSON.stringify(parameters)} -- ${error}`
     );
   }
 
@@ -49,7 +48,7 @@ export class CustomTypeOrmLogger implements TypeOrmLogger {
       return;
     }
     this.logger.warn(
-      `Time: ${time} -- Parameters: ${stringfy(parameters)} -- ${query}`
+      `Time: ${time} -- Parameters: ${JSON.stringify(parameters)} -- ${query}`
     );
   }
 

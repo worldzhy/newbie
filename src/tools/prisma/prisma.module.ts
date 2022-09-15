@@ -1,6 +1,6 @@
 import {Module} from '@nestjs/common';
-import {CustomLoggerModule} from '../_logger/_custom-logger.module';
-import {PrismaService} from './_prisma.service';
+import {CustomLoggerModule} from '../logger/custom-logger.module';
+import {PrismaService} from './prisma.service';
 
 @Module({
   imports: [CustomLoggerModule],

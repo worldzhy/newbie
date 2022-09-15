@@ -1,11 +1,11 @@
 import {Injectable} from '@nestjs/common';
 import {Client} from '@elastic/elasticsearch';
-import {getElasticsearchConfig} from '../_config/_elastic.config';
+import {getElasticConfig} from '../../_config/_elastic.config';
 
 @Injectable()
-export class ElasticsearchService extends Client {
+export class ElasticService extends Client {
   constructor() {
-    const config = getElasticsearchConfig();
+    const config = getElasticConfig();
     super({
       node: config.node,
       auth: {

@@ -1,7 +1,7 @@
 import {Module} from '@nestjs/common';
 import {PostgresqlDatasourceTableController} from './table.controller';
 import {PostgresqlDatasourceTableService} from './table.service';
-import {PrismaModule} from '../../../../../_prisma/_prisma.module';
+import {PrismaModule} from '../../../../../tools/prisma/prisma.module';
 
 @Module({
   imports: [PrismaModule],

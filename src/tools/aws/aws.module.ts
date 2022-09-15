@@ -1,9 +1,9 @@
 import {Module} from '@nestjs/common';
-import {S3Service} from './_s3.service';
-import {SqsService} from './_sqs.service';
-import {SnsService} from './_sns.service';
-import {PinpointService} from './_pinpoint.service';
-import {AwsController} from './_aws.controller';
+import {S3Service} from './s3.service';
+import {SqsService} from './sqs.service';
+import {SnsService} from './sns.service';
+import {PinpointService} from './pinpoint.service';
+import {AwsController} from './aws.controller';
 
 @Module({
   controllers: [AwsController],

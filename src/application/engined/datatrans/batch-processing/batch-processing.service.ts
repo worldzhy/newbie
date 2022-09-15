@@ -5,7 +5,7 @@ import {
   TaskType,
 } from '@prisma/client';
 import {TaskService} from '../../../../microservices/task/task.service';
-import {PrismaService} from '../../../../_prisma/_prisma.service';
+import {PrismaService} from '../../../../tools/prisma/prisma.service';
 
 @Injectable()
 export class DatatransBatchProcessingService {

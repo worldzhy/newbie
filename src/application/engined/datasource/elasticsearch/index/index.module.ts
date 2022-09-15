@@ -1,11 +1,11 @@
 import {Module} from '@nestjs/common';
 import {ElasticsearchDatasourceIndexController} from './index.controller';
 import {ElasticsearchDatasourceIndexService} from './index.service';
-import {PrismaModule} from '../../../../../_prisma/_prisma.module';
-import {ElasticsearchModule} from '../../../../../_elastic/_elasticsearch.module';
+import {ElasticModule} from '../../../../../tools/elastic/elastic.module';
+import {PrismaModule} from '../../../../../tools/prisma/prisma.module';
 
 @Module({
-  imports: [PrismaModule, ElasticsearchModule],
+  imports: [ElasticModule, PrismaModule],
   controllers: [ElasticsearchDatasourceIndexController],
   providers: [ElasticsearchDatasourceIndexService],
   exports: [ElasticsearchDatasourceIndexService],

@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
-import {PinpointService} from '../../../_aws/_pinpoint.service';
-import {PrismaService} from '../../../_prisma/_prisma.service';
+import {PinpointService} from '../../../tools/aws/pinpoint.service';
+import {PrismaService} from '../../../tools/prisma/prisma.service';
 
 @Injectable()
 export class EmailService {

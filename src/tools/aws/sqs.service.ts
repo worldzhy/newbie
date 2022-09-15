@@ -5,7 +5,7 @@ import {
   GetQueueAttributesCommand,
   QueueAttributeName,
 } from '@aws-sdk/client-sqs';
-import {getAwsConfig} from '../_config/_aws.config';
+import {getAwsConfig} from '../../_config/_aws.config';
 
 @Injectable()
 export class SqsService {

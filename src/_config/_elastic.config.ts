@@ -1,4 +1,4 @@
-export function getElasticsearchConfig(): {
+export function getElasticConfig(): {
   node: string | undefined;
   username: string | undefined;
   password: string | undefined;

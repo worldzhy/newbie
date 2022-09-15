@@ -2,7 +2,7 @@ import {Injectable} from '@nestjs/common';
 import {AuthJwtService} from './auth/auth-jwt/auth-jwt.service';
 import {UserService} from './user/user.service';
 import {UserStatus} from '@prisma/client';
-import {generateHash} from '../../_util/_util';
+import {generateHash} from './account.util';
 
 @Injectable()
 export class AccountService {

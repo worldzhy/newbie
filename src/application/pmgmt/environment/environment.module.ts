@@ -1,5 +1,5 @@
 import {Module} from '@nestjs/common';
-import {PrismaModule} from '../../../_prisma/_prisma.module';
+import {PrismaModule} from '../../../tools/prisma/prisma.module';
 import {EnvironmentController} from './environment.controller';
 import {EnvironmentService} from './environment.service';
 

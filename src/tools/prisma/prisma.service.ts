@@ -1,6 +1,6 @@
 import {INestApplication, Injectable, OnModuleInit} from '@nestjs/common';
 import {PrismaClient} from '@prisma/client';
-import {CustomLoggerService} from '../_logger/_custom-logger.service';
+import {CustomLoggerService} from '../logger/custom-logger.service';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
@@ -41,17 +41,17 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     });
 
     this.$on<any>('info', (e: any) => {
-      const message = `time: ${e.timestamp} | message: ${e.message} | target: ${e.target}`;
+      const message = `${e.timestamp} >> ${e.message} >> [Target] ${e.target}`;
       this.logger.log(message);
     });
 
     this.$on<any>('warn', (e: any) => {
-      const message = `time: ${e.timestamp} | message: ${e.message} | target: ${e.target}`;
+      const message = `${e.timestamp} >> ${e.message} >> [Target] ${e.target}`;
       this.logger.warn(message);
     });
 
     this.$on<any>('error', (e: any) => {
-      const message = `time: ${e.timestamp} | message: ${e.message} | target: ${e.target}`;
+      const message = `${e.timestamp} >> ${e.message} >> [Target] ${e.target}`;
       this.logger.error(message);
     });
   }

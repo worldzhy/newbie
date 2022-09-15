@@ -8,7 +8,7 @@ import {
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
-import {getAwsConfig} from '../_config/_aws.config';
+import {getAwsConfig} from '../../_config/_aws.config';
 
 @Injectable()
 export class S3Service {

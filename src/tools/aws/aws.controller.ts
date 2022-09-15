@@ -1,9 +1,9 @@
 import {Body, Controller, Delete, Post} from '@nestjs/common';
 import {ApiBearerAuth, ApiBody, ApiTags} from '@nestjs/swagger';
-import {PinpointService} from './_pinpoint.service';
-import {S3Service} from './_s3.service';
-import {SnsService} from './_sns.service';
-import {SqsService} from './_sqs.service';
+import {PinpointService} from './pinpoint.service';
+import {S3Service} from './s3.service';
+import {SnsService} from './sns.service';
+import {SqsService} from './sqs.service';
 
 @ApiTags('[Utility] AWS')
 @ApiBearerAuth()

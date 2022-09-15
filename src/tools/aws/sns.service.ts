@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {PublishCommand, SNSClient} from '@aws-sdk/client-sns';
-import {getAwsConfig} from '../_config/_aws.config';
+import {getAwsConfig} from '../../_config/_aws.config';
 
 @Injectable()
 export class SnsService {

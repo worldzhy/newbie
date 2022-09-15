@@ -5,7 +5,7 @@ import {
   SendMessagesCommandInput,
   SendMessagesCommandOutput,
 } from '@aws-sdk/client-pinpoint';
-import {getAwsConfig} from '../_config/_aws.config';
+import {getAwsConfig} from '../../_config/_aws.config';
 
 @Injectable()
 export class PinpointService {
