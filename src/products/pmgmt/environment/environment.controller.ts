@@ -1,4 +1,4 @@
-import {Controller, Get, Post, Param, Body} from '@nestjs/common';
+import {Controller, Get, Param, Body, Patch} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {EnvironmentService} from './environment.service';
 import {
@@ -48,7 +48,7 @@ export class EnvironmentController {
    * @returns
    * @memberof EnvironmentController
    */
-  @Post('environments/:environmentId')
+  @Patch('environments/:environmentId')
   @ApiParam({
     name: 'environmentId',
     schema: {type: 'number'},

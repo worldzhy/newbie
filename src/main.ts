@@ -16,7 +16,7 @@ async function bootstrap() {
   if (serverConfig.environment === 'development') {
     const config = new DocumentBuilder()
       .setTitle("I'm a newbie")
-      .setDescription("It's good to see you:)")
+      .setDescription("It's good to see you guys 🥤")
       .setVersion('1.0')
       .addBearerAuth()
       .build();
@@ -26,7 +26,7 @@ async function bootstrap() {
         persistAuthorization: true,
         tagsSorter: 'alpha',
       },
-      customSiteTitle: 'Newbie API Docs',
+      customSiteTitle: 'Newbie APIs',
     };
     SwaggerModule.setup('api', app, document, customOptions);
   }

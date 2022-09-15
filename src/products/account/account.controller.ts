@@ -108,16 +108,6 @@ export class AccountController {
    * [3] phone: password is optional
    *
    * [Constraint] 'password' is required if neither email nor phone is provided.
-   *
-   * @param {{
-   *       username?: string;
-   *       password?: string;
-   *       email?: string;
-   *       phone?: string;
-   *       profile?: object;
-   *     }} signupUser
-   * @returns {(Promise<{data: object | null; err: object | null}>)}
-   * @memberof AccountController
    */
   @Post('account/signup')
   @Public()
@@ -268,17 +258,10 @@ export class AccountController {
   }
 
   /**
-   * The 'account' parameter accepts:
+   * The 'account' parameter supports:
    * [1] account
    * [2] email
    * [3] phone
-   *
-   * @param {{
-   *       account: string;
-   *       password: string;
-   *     }} loginUser
-   * @returns {(Promise<{data: object | null; err: object | null}>)}
-   * @memberof AccountController
    */
   @Post('account/login-by-password')
   @LoggingInByPassword()
@@ -315,23 +298,10 @@ export class AccountController {
       account: string;
       password: string;
     }
-  ): Promise<{data: object | null; err: object | null}> {
+  ): Promise<{userId: string; token: string} | {err: {message: string}}> {
     return await this.accountService.login(body.account);
   }
 
-  /**
-   * Login by profile.
-   *
-   * @param {{
-   *       givenName: string;
-   *       middleName: string;
-   *       familyName: string;
-   *       suffix?: string;
-   *       birthday: Date;
-   *     }} body
-   * @returns {(Promise<{data: object | null; err: object | null}>)}
-   * @memberof AccountController
-   */
   @Post('account/login-by-profile')
   @LoggingInByProfile()
   @ApiBody({
@@ -368,7 +338,7 @@ export class AccountController {
       suffix?: string;
       birthday: Date;
     }
-  ): Promise<{data: object | null; err: object | null}> {
+  ): Promise<{userId: string; token: string} | {err: {message: string}}> {
     const profileService = new ProfileService();
 
     // [step 1] It has been confirmed there is only one profile.
@@ -381,15 +351,6 @@ export class AccountController {
     return await this.accountService.login(profiles[0].userId);
   }
 
-  /**
-   * Login by uuid.
-   *
-   * @param {{
-   *       uuid: string;
-   *     }} body
-   * @returns {(Promise<{data: object | null; err: object | null}>)}
-   * @memberof AccountController
-   */
   @Post('account/login-by-uuid')
   @LoggingInByUuid()
   @ApiBody({
@@ -408,22 +369,14 @@ export class AccountController {
     body: {
       uuid: string;
     }
-  ): Promise<{data: object | null; err: object | null}> {
+  ): Promise<{userId: string; token: string} | {err: {message: string}}> {
     return await this.accountService.login(body.uuid);
   }
 
   /**
-   * The 'account' parameter accepts:
-   * [1] username
-   * [2] email
-   * [3] phone
-   *
-   * @param {{
-   *       account: string;
-   *       verificationCode: string;
-   *     }} body
-   * @returns {(Promise<{data: object | null; err: object | null}>)}
-   * @memberof AccountController
+   * The 'account' parameter supports:
+   * [1] email
+   * [2] phone
    */
   @Post('account/login-by-verification-code')
   @LoggingInByVerificationCode()
@@ -445,13 +398,6 @@ export class AccountController {
           verificationCode: '123456',
         },
       },
-      c: {
-        summary: '3. Log in with username',
-        value: {
-          account: 'henry',
-          verificationCode: '123456',
-        },
-      },
     },
   })
   async loginByVerificationCode(
@@ -460,18 +406,10 @@ export class AccountController {
       account: string;
       verificationCode: string;
     }
-  ): Promise<{data: object | null; err: object | null}> {
+  ): Promise<{userId: string; token: string} | {err: {message: string}}> {
     return await this.accountService.login(body.account);
   }
 
-  /**
-   * Log out
-   *
-   * @param {*} request
-   * @param {{userId: string}} body
-   * @returns {(Promise<{data: object | null; err: object | null}>)}
-   * @memberof AccountController
-   */
   @ApiBearerAuth()
   @ApiBody({
     description: "The request body must contain 'userId' attribute.",
@@ -504,10 +442,6 @@ export class AccountController {
    * Close account
    * 1. Call account/apply-verification-code first.
    * 2. Use verification code and userId to close account.
-   *
-   * @param {{account: string; verificationCode: string}} body
-   * @returns {(Promise<{data: object | null; err: object | null}>)}
-   * @memberof AccountController
    */
   @Post('account/close')
   @LoggingInByVerificationCode()
@@ -549,10 +483,6 @@ export class AccountController {
    * Recover account:
    * 1. Call account/apply-verification-code first.
    * 2. Use verification code and userId to recover account.
-   *
-   * @param {{account: string; verificationCode: string}} body
-   * @returns {(Promise<{data: object | null; err: object | null}>)}
-   * @memberof AccountController
    */
   @Post('account/recover')
   @LoggingInByVerificationCode()
@@ -588,5 +518,6 @@ export class AccountController {
       err: null,
     };
   }
+
   /* End */
 }

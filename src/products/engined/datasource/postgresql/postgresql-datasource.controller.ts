@@ -1,5 +1,6 @@
-import {Controller, Get, Post, Param, Body} from '@nestjs/common';
+import {Controller, Get, Post, Param, Body, Patch} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {PostgresqlDatasource} from '@prisma/client';
 import {PostgresqlDatasourceService} from './postgresql-datasource.service';
 import {PostgresqlDatasourceTableService} from './table/table.service';
 
@@ -11,78 +12,6 @@ export class PostgresqlDatasourceController {
   private postgresqlDatasourceTableService =
     new PostgresqlDatasourceTableService();
 
-  /**
-   * Get postgresqlDatasources by page number. The order is by postgresql datasource name.
-   *
-   * @returns {Promise<{ data: object, err: object }>}
-   * @memberof PostgresqlDatasourceController
-   */
-  @Get('/')
-  async getPostgresqlDatasources(): Promise<{
-    data: object | null;
-    err: object | null;
-  }> {
-    const postgresqlDatasources =
-      await this.postgresqlDatasourceService.findMany({
-        orderBy: {
-          _relevance: {
-            fields: ['database'],
-            search: 'database',
-            sort: 'asc',
-          },
-        },
-      });
-    return {
-      data: postgresqlDatasources,
-      err: null,
-    };
-  }
-
-  /**
-   * Get postgresql datasource by id
-   *
-   * @param {string} datasourceId
-   * @returns {Promise<{data: object;err: object;}>}
-   * @memberof PostgresqlDatasourceController
-   */
-  @Get('/:datasourceId')
-  @ApiParam({
-    name: 'datasourceId',
-    schema: {type: 'string'},
-    description: 'The uuid of the postgresql datasource.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
-  async getPostgresqlDatasource(
-    @Param('datasourceId') datasourceId: string
-  ): Promise<{data: object | null; err: object | null}> {
-    const result = await this.postgresqlDatasourceService.findUnique({
-      where: {id: datasourceId},
-    });
-    if (result) {
-      return {
-        data: result,
-        err: null,
-      };
-    } else {
-      return {
-        data: null,
-        err: {message: 'Get postgresql datasource failed.'},
-      };
-    }
-  }
-
-  /**
-   * Create a new postgresql datasource.
-   *
-   * @param {{
-   *        host: string;
-   *        port: number;
-   *        database: string;
-   *        schema: string;
-   *     }} body
-   * @returns
-   * @memberof PostgresqlDatasourceController
-   */
   @Post('/')
   @ApiBody({
     description:
@@ -107,39 +36,41 @@ export class PostgresqlDatasourceController {
       database: string;
       schema: string;
     }
-  ) {
-    // [step 1] Guard statement.
-
-    // [step 2] Create postgresql datasource.
-    const result = await this.postgresqlDatasourceService.create({
+  ): Promise<PostgresqlDatasource> {
+    return await this.postgresqlDatasourceService.create({
       ...body,
     });
-    if (result) {
-      return {
-        data: result,
-        err: null,
-      };
-    } else {
-      return {
-        data: null,
-        err: {message: 'Postgresql datasource created failed.'},
-      };
-    }
   }
 
-  /**
-   * Update postgresql datasource
-   *
-   * @param {string} datasourceId
-   * @param {{
-   *        host: string;
-   *        port: number;
-   *        database: string;
-   *      }} body
-   * @returns
-   * @memberof PostgresqlDatasourceController
-   */
-  @Post('/:datasourceId')
+  @Get('/')
+  async getPostgresqlDatasources(): Promise<PostgresqlDatasource[]> {
+    return await this.postgresqlDatasourceService.findMany({
+      orderBy: {
+        _relevance: {
+          fields: ['database'],
+          search: 'database',
+          sort: 'asc',
+        },
+      },
+    });
+  }
+
+  @Get('/:datasourceId')
+  @ApiParam({
+    name: 'datasourceId',
+    schema: {type: 'string'},
+    description: 'The uuid of the postgresql datasource.',
+    example: 'd8141ece-f242-4288-a60a-8675538549cd',
+  })
+  async getPostgresqlDatasource(
+    @Param('datasourceId') datasourceId: string
+  ): Promise<PostgresqlDatasource | null> {
+    return await this.postgresqlDatasourceService.findUnique({
+      where: {id: datasourceId},
+    });
+  }
+
+  @Patch('/:datasourceId')
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},
@@ -162,25 +93,11 @@ export class PostgresqlDatasourceController {
   async updatePostgresqlDatasource(
     @Param('datasourceId') datasourceId: string,
     @Body() body: {host: string; port: number; database: string}
-  ) {
-    // [step 1] Guard statement.
-
-    // [step 2] Update name.
-    const result = await this.postgresqlDatasourceService.update({
+  ): Promise<PostgresqlDatasource> {
+    return await this.postgresqlDatasourceService.update({
       where: {id: datasourceId},
       data: {...body},
     });
-    if (result) {
-      return {
-        data: result,
-        err: null,
-      };
-    } else {
-      return {
-        data: null,
-        err: {message: 'PostgresqlDatasource updated failed.'},
-      };
-    }
   }
 
   /**

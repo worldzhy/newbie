@@ -1,4 +1,12 @@
-import {Controller, Get, Post, Delete, Param, Body} from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Param,
+  Body,
+  Patch,
+} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {PulumiStackService} from './pulumi-stack.service';
 import {
@@ -28,11 +36,6 @@ export class PulumiStackController {
   })
   async getStackParams(@Param('type') type: PulumiStackType) {
     return this.stackService.getStackParams(type);
-  }
-
-  @Get('pulumi-stacks')
-  async getStacks() {
-    return await this.stackService.findMany({});
   }
 
   @Post('pulumi-stacks')
@@ -71,7 +74,22 @@ export class PulumiStackController {
     return await this.stackService.create({data: body});
   }
 
-  @Post('pulumi-stacks/:stackId')
+  @Get('pulumi-stacks')
+  async getStacks() {
+    return await this.stackService.findMany({});
+  }
+
+  @Get('pulumi-stacks/:stackId')
+  @ApiParam({
+    name: 'stackId',
+    schema: {type: 'string'},
+    example: 'ff337f2d-d3a5-4f2e-be16-62c75477b605',
+  })
+  async getStack(@Param('stackId') stackId: string) {
+    return await this.stackService.findUnique({where: {id: stackId}});
+  }
+
+  @Patch('pulumi-stacks/:stackId')
   @ApiParam({
     name: 'stackId',
     schema: {type: 'string'},

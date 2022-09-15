@@ -12,12 +12,6 @@ export class ElasticsearchDatasourceIndexFieldController {
   private elasticsearchDatasourceIndexFieldService =
     new ElasticsearchDatasourceIndexFieldService();
 
-  /**
-   * Get index fields.
-   * @param {string} indexId
-   * @returns {Promise<{data: object;err: object;}>}
-   * @memberof ElasticsearchDatasourceIndexFieldController
-   */
   @Get('/indices/:indexId/fields')
   @ApiParam({
     name: 'indexId',

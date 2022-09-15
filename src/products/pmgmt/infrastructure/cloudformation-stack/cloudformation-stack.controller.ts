@@ -1,4 +1,12 @@
-import {Controller, Get, Post, Delete, Param, Body} from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Param,
+  Body,
+  Patch,
+} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {CloudFormationStackService} from './cloudformation-stack.service';
 import {
@@ -27,11 +35,6 @@ export class CloudFormationStackController {
   })
   async getStackParams(@Param('type') type: CloudFormationStackType) {
     return this.stackService.getStackParams(type);
-  }
-
-  @Get('cloudformation-stacks')
-  async getStacks() {
-    return await this.stackService.findMany({});
   }
 
   @Post('cloudformation-stacks')
@@ -70,7 +73,22 @@ export class CloudFormationStackController {
     return await this.stackService.create({data: body});
   }
 
-  @Post('cloudformation-stacks/:stackId')
+  @Get('cloudformation-stacks')
+  async getStacks() {
+    return await this.stackService.findMany({});
+  }
+
+  @Get('cloudformation-stacks/:stackId')
+  @ApiParam({
+    name: 'stackId',
+    schema: {type: 'string'},
+    example: 'ff337f2d-d3a5-4f2e-be16-62c75477b605',
+  })
+  async getStack(@Param('stackId') stackId: string) {
+    return await this.stackService.findUnique({where: {id: stackId}});
+  }
+
+  @Patch('cloudformation-stacks/:stackId')
   @ApiParam({
     name: 'stackId',
     schema: {type: 'string'},

@@ -11,12 +11,6 @@ export class PostgresqlDatasourceConstraintController {
   private postgresqlDatasourceConstraintService =
     new PostgresqlDatasourceConstraintService();
 
-  /**
-   * Get postgresql datasource constraints.
-   * @param {string} datasourceId
-   * @returns {Promise<{data: object;err: object;}>}
-   * @memberof PostgresqlDatasourceConstraintController
-   */
   @Get('/:datasourceId/constraints')
   @ApiParam({
     name: 'datasourceId',
@@ -48,12 +42,6 @@ export class PostgresqlDatasourceConstraintController {
     }
   }
 
-  /**
-   * Get postgresql table relations
-   * @param {string} datasourceId
-   * @returns {Promise<{data: object;err: object;}>}
-   * @memberof PostgresqlDatasourceTableColumnController
-   */
   @Get('/:datasourceId/constraints/:tableName')
   @ApiParam({
     name: 'datasourceId',

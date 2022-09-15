@@ -121,7 +121,6 @@ enum JwtStatus {
 
 model VerificationCode {
   id        Int                    @id @default(autoincrement())
-  userId    String?
   email     String?
   phone     String?
   code      String
@@ -258,7 +257,7 @@ model Role_Permission {
 
 model Organization {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name      String?
+  name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

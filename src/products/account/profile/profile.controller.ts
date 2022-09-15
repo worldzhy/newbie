@@ -1,4 +1,4 @@
-import {Controller, Get, Post, Param, Body} from '@nestjs/common';
+import {Controller, Get, Post, Param, Body, Put} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {Prisma, ProfileEthnicityType, ProfileRaceType} from '@prisma/client';
 import {ProfileService} from './profile.service';
@@ -121,7 +121,7 @@ export class ProfileController {
    * @returns
    * @memberof ProfileController
    */
-  @Post('profiles/:profileId')
+  @Put('profiles/:profileId')
   @ApiParam({
     name: 'profileId',
     schema: {type: 'string'},

@@ -1,4 +1,4 @@
-import {Controller, Get, Post, Param, Body} from '@nestjs/common';
+import {Controller, Get, Param, Body, Patch} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {CheckpointService} from './checkpoint.service';
 import {
@@ -48,7 +48,7 @@ export class CheckpointController {
    * @returns
    * @memberof CheckpointController
    */
-  @Post('checkpoints/:checkpointId')
+  @Patch('checkpoints/:checkpointId')
   @ApiParam({
     name: 'checkpointId',
     schema: {type: 'number'},

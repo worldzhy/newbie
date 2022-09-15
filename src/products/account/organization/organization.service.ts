@@ -16,10 +16,8 @@ export class OrganizationService {
     return await this.prisma.organization.findMany(params);
   }
 
-  async create(data: Prisma.OrganizationCreateInput): Promise<Organization> {
-    return await this.prisma.organization.create({
-      data,
-    });
+  async create(params: Prisma.OrganizationCreateArgs): Promise<Organization> {
+    return await this.prisma.organization.create(params);
   }
 
   async update(params: Prisma.OrganizationUpdateArgs): Promise<Organization> {

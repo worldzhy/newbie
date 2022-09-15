@@ -1,6 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {VerificationCodeService} from '../../verification-code/verification-code.service';
 import {UserService} from '../../user/user.service';
+import {verifyEmail, verifyPhone} from '../../account.validator';
 
 @Injectable()
 export class AuthVerificationCodeService {
@@ -10,40 +11,35 @@ export class AuthVerificationCodeService {
   /**
    * Validate by verification code
    *
-   * @param {*} account can be username, email or phone.
+   * @param {string} account can be email or phone.
    * @param {string} verificationCode
-   * @returns {(Promise<{data: object | null; err: object | null}>)}
+   * @returns {(Promise<boolean>)}
    * @memberof VerificationCodeAuthService
    */
   async validateByVerificationCode(
     account: string,
     verificationCode: string
-  ): Promise<{data: object | null; err: object | null}> {
+  ): Promise<boolean> {
     // [step 1] Get the user.
     const user = await this.userService.findByAccount(account);
     if (!user) {
       // The user does not exist.
-      return {
-        data: null,
-        err: {message: 'The user is not existed.'},
-      };
+      return false;
     }
 
     // [step 2] Validate verification code.
-    const result = await this.verificationCodeService.validate({
-      userId: user.id,
-      code: verificationCode,
-    });
-    if (result) {
-      return {
-        data: user,
-        err: null,
-      };
+    if (verifyEmail(account)) {
+      return await this.verificationCodeService.validateWithEmail(
+        verificationCode,
+        account
+      );
+    } else if (verifyPhone(account)) {
+      return await this.verificationCodeService.validateWithPhone(
+        verificationCode,
+        account
+      );
     } else {
-      return {
-        data: null,
-        err: {message: 'The verification code is invalid.'},
-      };
+      return false;
     }
   }
 }

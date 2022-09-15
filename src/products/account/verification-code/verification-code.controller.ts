@@ -1,156 +1,71 @@
 import {Controller, Post, Body} from '@nestjs/common';
 import {ApiTags, ApiBody} from '@nestjs/swagger';
 import {Public} from '../auth/auth-jwt/auth-jwt.decorator';
-import {EmailService} from '../../../microservices/notification/email/email.service';
-import {SmsService} from '../../../microservices/notification/sms/sms.service';
 import {UserService} from '../user/user.service';
-import * as validator from '../account.validator';
 import {VerificationCodeService} from './verification-code.service';
-import {
-  EmailNotification,
-  SmsNotification,
-  VerificationCodeUse,
-} from '@prisma/client';
+import {VerificationCodeUse} from '@prisma/client';
+import * as validator from '../account.validator';
 
 @ApiTags('[Product] Account / Verification Code')
 @Controller()
 export class VerificationCodeController {
   private verificationCodeService = new VerificationCodeService();
-  private emailService = new EmailService();
-  private smsService = new SmsService();
 
-  /**
-   * [1] Account parameter must be email or phone.
-   * [2] Won't success if the same user apply again within 1 minute.
-   *
-   * @param {{account: string; use: string}} body
-   * @returns {(Promise<{data: object | null; err: object | null}>)}
-   * @memberof AccountController
-   */
-  @Post('verification-code/apply')
+  // *
+  // * Won't send message if the same email apply again within 1 minute.
+  // *
+  @Post('verification-code/email/generate')
   @Public()
   @ApiBody({
     description:
-      "The request body must contain 'account' and 'use' attributes. Valid 'use' can be 'login-by-email', 'login-by-phone', 'close-account-by-email', 'close-account-by-phone', 'recover-account-by-email', 'recover-account-by-phone'...",
+      "Valid 'use' can be 'login-by-email', 'close-account-by-email', 'recover-account-by-email'...",
     examples: {
       a: {
         summary: '1. Login by email',
         value: {
-          account: 'email@example.com',
+          email: 'email@example.com',
           use: VerificationCodeUse.LOGIN_BY_EMAIL,
         },
       },
       b: {
         summary: '2. Close account by email',
         value: {
-          account: 'email@example.com',
+          email: 'email@example.com',
           use: VerificationCodeUse.CLOSE_ACCOUNT_BY_EMAIL,
-        },
-      },
-      c: {
-        summary: '3. Recover account by phone',
-        value: {
-          account: '13960068008',
-          use: VerificationCodeUse.RECOVER_ACCOUNT_BY_PHONE,
         },
       },
     },
   })
-  async apply(
-    @Body() body: {account: string; use: string}
-  ): Promise<{data: object | null; err: object | null}> {
-    const {account, use} = body;
-    const byEmail = account ? validator.verifyEmail(account) : null;
-    const byPhone = account ? validator.verifyPhone(account) : null;
+  async send2Email(@Body() body: {email: string; use: VerificationCodeUse}) {
+    const {email, use} = body;
 
-    // [step 1] Validate email/phone and verificaiton code use.
-    if (!byEmail && !byPhone) {
-      return {
-        data: null,
-        err: {
-          message: "The request body must contain valid 'account' attribute.",
-        },
-      };
+    // [step 1] Guard statement.
+    if (!validator.verifyEmail(email)) {
+      return {err: {message: 'The email is invalid.'}};
     }
+
     if (
       use !== VerificationCodeUse.LOGIN_BY_EMAIL &&
-      use !== VerificationCodeUse.LOGIN_BY_PHONE &&
       use !== VerificationCodeUse.CLOSE_ACCOUNT_BY_EMAIL &&
-      use !== VerificationCodeUse.CLOSE_ACCOUNT_BY_PHONE &&
-      use !== VerificationCodeUse.RECOVER_ACCOUNT_BY_EMAIL &&
-      use !== VerificationCodeUse.RECOVER_ACCOUNT_BY_PHONE
+      use !== VerificationCodeUse.RECOVER_ACCOUNT_BY_EMAIL
     ) {
-      return {
-        data: null,
-        err: {
-          message: "The request body must contain valid 'use' attribute.",
-        },
-      };
+      return {err: {message: "The 'use' is invalid."}};
     }
 
     // [step 2] Check if the account exists.
     const userService = new UserService();
-    const user = await userService.findByAccount(account);
+    const user = await userService.findByAccount(email);
     if (!user) {
       return {
-        data: null,
-        err: {
-          message: 'Your account is not registered.',
-        },
+        err: {message: 'Your account is not registered.'},
       };
     }
 
-    // [step 3] Generate verification code.
-    const res = await this.verificationCodeService.generate({
-      userId: user.id,
-      use: use,
-    });
-    if (!res.data) {
-      return res;
-    }
-    const {createdAt, updatedAt, ...others} = res.data;
-    const verificationCode = others;
-
-    // [step 4: start] Send verification code.
-    let result: EmailNotification | SmsNotification | null;
-    if (byEmail) {
-      // Send verification code to user's email
-      result = await this.emailService.sendOne({
-        email: account,
-        subject: 'Your Verification Code',
-        plainText: verificationCode.code,
-        html: verificationCode.code,
-      });
-    } else if (byPhone) {
-      // Send verification code to user's phone
-      result = await this.smsService.sendOne({
-        phone: account,
-        text: verificationCode.code,
-      });
-    } else {
-      // No chance to arrive here.
-      result = null;
-    }
-
-    if (result) {
-      // [step 4: successful]
-      return {
-        data: verificationCode,
-        err: null,
-      };
-    } else {
-      // [step 4: failed]
-      return {
-        data: null,
-        err: {
-          message:
-            'Apply verification code successfully, but send verification code failed.',
-        },
-      };
-    }
+    // [step 3] Generate and send verification code.
+    return await this.verificationCodeService.send2Email(email, use);
   }
 
-  @Post('verification-code/validate')
+  @Post('verification-code/email/validate')
   @Public()
   @ApiBody({
     description:
@@ -159,40 +74,114 @@ export class VerificationCodeController {
       a: {
         summary: '1. Validate with email',
         value: {
-          account: 'email@example.com',
-          code: '123456',
-        },
-      },
-      b: {
-        summary: '2. Validate with phone',
-        value: {
-          account: '13960068008',
+          email: 'email@example.com',
           code: '123456',
         },
       },
     },
   })
-  async validate(
-    @Body() body: {account: string; code: string}
+  async validateWithEmail(
+    @Body() body: {code: string; email: string}
   ): Promise<boolean> {
-    const {account, code} = body;
-    const byEmail = account ? validator.verifyEmail(account) : null;
-    const byPhone = account ? validator.verifyPhone(account) : null;
-
-    // [step 1] Validate email/phone.
-    if ((!byEmail && !byPhone) || !code) {
+    // [step 1] Guard statement.
+    const {code, email} = body;
+    if (!code || !validator.verifyEmail(email)) {
       return false;
     }
 
     // [step 2] Check if the account exists.
     const userService = new UserService();
-    const user = await userService.findByAccount(account);
+    const user = await userService.findByAccount(email);
     if (!user) {
       return false;
     }
 
-    return await this.verificationCodeService.validate(body);
+    // [step 3] Validate code.
+    return await this.verificationCodeService.validateWithEmail(code, email);
   }
 
+  // *
+  // * Won't send message if the same phone apply again within 1 minute.
+  // *
+  @Post('verification-code/text-message/generate')
+  @Public()
+  @ApiBody({
+    description:
+      "Valid 'use' can be 'login-by-phone', 'close-account-by-phone', 'recover-account-by-phone'...",
+    examples: {
+      a: {
+        summary: '3. Recover account by phone',
+        value: {
+          phone: '13960068008',
+          use: VerificationCodeUse.RECOVER_ACCOUNT_BY_PHONE,
+        },
+      },
+    },
+  })
+  async send2TextMessage(
+    @Body() body: {phone: string; use: VerificationCodeUse}
+  ) {
+    const {phone, use} = body;
+
+    // [step 1] Guard statement.
+    if (!validator.verifyPhone(phone)) {
+      return {err: {message: 'The phone is invalid.'}};
+    }
+
+    if (
+      use !== VerificationCodeUse.LOGIN_BY_PHONE &&
+      use !== VerificationCodeUse.CLOSE_ACCOUNT_BY_PHONE &&
+      use !== VerificationCodeUse.RECOVER_ACCOUNT_BY_PHONE
+    ) {
+      return {err: {message: "The 'use' is invalid."}};
+    }
+
+    // [step 2] Check if the account exists.
+    const userService = new UserService();
+    const user = await userService.findByAccount(phone);
+    if (!user) {
+      return {
+        err: {message: 'Your account is not registered.'},
+      };
+    }
+
+    // [step 3] Generate verification code.
+    return await this.verificationCodeService.send2Phone(phone, use);
+  }
+
+  @Post('verification-code/text-message/validate')
+  @Public()
+  @ApiBody({
+    description:
+      "The request body must contain one of ['userId', 'email', 'phone'] and 'code'.",
+    examples: {
+      a: {
+        summary: '2. Validate with phone',
+        value: {
+          phone: '13960068008',
+          code: '123456',
+        },
+      },
+    },
+  })
+  async validateWithPhone(
+    @Body() body: {code: string; phone: string}
+  ): Promise<boolean> {
+    // [step 1] Validate phone.
+    const {code, phone} = body;
+    if (!code || !validator.verifyPhone(phone)) {
+      return false;
+    }
+
+    // [step 2] Check if the account exists.
+    const userService = new UserService();
+    const user = await userService.findByAccount(phone);
+    if (!user) {
+      return false;
+    }
+
+    // [step 3] Validate code.
+    return await this.verificationCodeService.validateWithPhone(code, phone);
+  }
   /* End */
 }

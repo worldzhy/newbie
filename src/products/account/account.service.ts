@@ -40,21 +40,24 @@ export class AccountService {
     }
 
     // [step 2] Create new user.
-    const user = await this.userService.create({
-      username: signupUser.username,
-      passwordHash: passwordHash,
-      email: signupUser.email,
-      phone: signupUser.phone,
-      status: UserStatus.ACTIVE,
-      profiles: {create: {...signupUser.profile}},
+    return await this.userService.create({
+      data: {
+        username: signupUser.username,
+        passwordHash: passwordHash,
+        email: signupUser.email,
+        phone: signupUser.phone,
+        status: UserStatus.ACTIVE,
+        profiles: {create: {...signupUser.profile}},
+      },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        phone: true,
+        status: true,
+        profiles: true,
+      },
     });
-    if (user) {
-      // Return user info except passwordHash, createdAt, updatedAt
-      const {passwordHash, createdAt, updatedAt, ...others} = user;
-      return others;
-    } else {
-      return null;
-    }
   }
 
   /**
@@ -76,7 +79,6 @@ export class AccountService {
     const user = await this.userService.findByAccount(account);
     if (!user) {
       return {
-        data: null,
         err: {
           message: 'Your account does not exist.',
         },
@@ -86,7 +88,6 @@ export class AccountService {
     // [step 2] Check if the account is active.
     if (user.status === UserStatus.INACTIVE) {
       return {
-        data: null,
         err: {
           message: 'You have closed your account, do you want to recover it?',
         },
@@ -103,7 +104,6 @@ export class AccountService {
     });
     if (!jwt) {
       return {
-        data: null,
         err: {
           message: 'Your login process has failed. Please try again later.',
         },
@@ -112,21 +112,11 @@ export class AccountService {
 
     // [step 5] Update last login time.
     await this.userService.update({
-      where: {
-        id: user.id,
-      },
-      data: {
-        lastLoginAt: new Date(),
-      },
+      where: {id: user.id},
+      data: {lastLoginAt: new Date()},
     });
 
-    return {
-      data: {
-        userId: user.id,
-        token: jwt.token,
-      },
-      err: null,
-    };
+    return {userId: user.id, token: jwt.token};
   }
 
   /**

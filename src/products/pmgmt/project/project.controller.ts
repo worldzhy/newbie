@@ -1,4 +1,4 @@
-import {Controller, Get, Post, Param, Body} from '@nestjs/common';
+import {Controller, Get, Post, Param, Body, Patch} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {ProjectService} from './project.service';
 import * as validator from './project.validator';
@@ -16,61 +16,6 @@ import {
 export class ProjectController {
   private projectService = new ProjectService();
 
-  /**
-   * Get projects. The order is by name.
-   *
-   * @returns {Promise<Project[]>}
-   * @memberof ProjectController
-   */
-  @Get('projects')
-  async getProjects(): Promise<Project[]> {
-    return await this.projectService.findMany({});
-  }
-
-  /**
-   * Get project by id
-   *
-   * @param {string} projectId
-   * @returns {Promise<{data: object;err: object;}>}
-   * @memberof ProjectController
-   */
-  @Get('projects/:projectId')
-  @ApiParam({
-    name: 'projectId',
-    schema: {type: 'string'},
-    description: 'The uuid of the project.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
-  async getProject(
-    @Param('projectId') projectId: string
-  ): Promise<{data: object | null; err: object | null}> {
-    const result = await this.projectService.findUnique({
-      where: {id: projectId},
-    });
-    if (result) {
-      return {
-        data: result,
-        err: null,
-      };
-    } else {
-      return {
-        data: null,
-        err: {message: 'Get project failed.'},
-      };
-    }
-  }
-
-  /**
-   * Create a new project.
-   *
-   * @param {{
-   *       projectName: string;
-   *       clientName: string;
-   *       clientEmail: string;
-   *     }} body
-   * @returns
-   * @memberof ProjectController
-   */
   @Post('projects')
   @ApiBody({
     description:
@@ -101,7 +46,7 @@ export class ProjectController {
     }
 
     // [step 2] Create project.
-    const result = await this.projectService.create({
+    return await this.projectService.create({
       name: body.name,
       clientName: body.clientName,
       clientEmail: body.clientEmail,
@@ -123,6 +68,26 @@ export class ProjectController {
         },
       },
     });
+  }
+
+  @Get('projects')
+  async getProjects(): Promise<Project[]> {
+    return await this.projectService.findMany({});
+  }
+
+  @Get('projects/:projectId')
+  @ApiParam({
+    name: 'projectId',
+    schema: {type: 'string'},
+    description: 'The uuid of the project.',
+    example: 'd8141ece-f242-4288-a60a-8675538549cd',
+  })
+  async getProject(
+    @Param('projectId') projectId: string
+  ): Promise<{data: object | null; err: object | null}> {
+    const result = await this.projectService.findUnique({
+      where: {id: projectId},
+    });
     if (result) {
       return {
         data: result,
@@ -131,9 +96,40 @@ export class ProjectController {
     } else {
       return {
         data: null,
-        err: {message: 'Project create failed.'},
+        err: {message: 'Get project failed.'},
       };
     }
+  }
+
+  @Patch('projects/:projectId')
+  @ApiParam({
+    name: 'projectId',
+    schema: {type: 'string'},
+    description: 'The uuid of the project.',
+    example: 'd8141ece-f242-4288-a60a-8675538549cd',
+  })
+  @ApiBody({
+    description:
+      "The 'projectName', 'clientName' and 'clientEmail' are required in request body.",
+    examples: {
+      a: {
+        summary: '1. Update',
+        value: {
+          name: 'Galaxy',
+          clientName: 'Henry Zhao',
+          clientEmail: 'henry@inceptionpad.com',
+        },
+      },
+    },
+  })
+  async updateProject(
+    @Param('projectId') projectId: string,
+    @Body() body: Prisma.ProjectUpdateInput
+  ) {
+    return await this.projectService.update({
+      where: {id: projectId},
+      data: body,
+    });
   }
 
   /* End */

@@ -11,18 +11,20 @@ export class UserService {
   private prisma: PrismaService = new PrismaService();
 
   async findUnique(params: Prisma.UserFindUniqueArgs): Promise<User | null> {
-    return await this.prisma.user.findUnique(params);
+    try {
+      return await this.prisma.user.findUnique(params);
+    } catch (error) {
+      return error;
+    }
   }
 
   async findMany(params: Prisma.UserFindManyArgs): Promise<User[]> {
     return await this.prisma.user.findMany(params);
   }
 
-  async create(data: Prisma.UserCreateInput): Promise<User> {
+  async create(params: Prisma.UserCreateArgs): Promise<User> {
     try {
-      return await this.prisma.user.create({
-        data,
-      });
+      return await this.prisma.user.create(params);
     } catch (error) {
       return error;
     }

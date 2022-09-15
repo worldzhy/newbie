@@ -1,4 +1,4 @@
-import {Controller, Get, Post, Param, Body} from '@nestjs/common';
+import {Controller, Get, Post, Param, Body, Patch} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {ElasticsearchDatasourceService} from './elasticsearch-datasource.service';
 
@@ -8,12 +8,43 @@ import {ElasticsearchDatasourceService} from './elasticsearch-datasource.service
 export class ElasticsearchDatasourceController {
   private elasticsearchDatasourceService = new ElasticsearchDatasourceService();
 
-  /**
-   * Get datasource elasticsearchs by page number. The order is by elasticsearchDatasource name.
-   *
-   * @returns {Promise<{ data: object, err: object }>}
-   * @memberof ElasticsearchDatasourceController
-   */
+  @Post('/')
+  @ApiBody({
+    description: "The 'node' is required in request body.",
+    examples: {
+      a: {
+        summary: '1. Create',
+        value: {
+          node: '24.323.232.23',
+        },
+      },
+    },
+  })
+  async createElasticsearchDatasource(
+    @Body()
+    body: {
+      node: string;
+    }
+  ) {
+    // [step 1] Guard statement.
+
+    // [step 2] Create datasource elasticsearch.
+    const result = await this.elasticsearchDatasourceService.create({
+      ...body,
+    });
+    if (result) {
+      return {
+        data: result,
+        err: null,
+      };
+    } else {
+      return {
+        data: null,
+        err: {message: 'Elasticsearch datasource create failed.'},
+      };
+    }
+  }
+
   @Get('/')
   async getElasticsearchDatasources(): Promise<{
     data: object | null;
@@ -59,61 +90,7 @@ export class ElasticsearchDatasourceController {
     }
   }
 
-  /**
-   * Create a new datasource elasticsearch.
-   *
-   * @param {{
-   *        node: string;
-   *     }} body
-   * @returns
-   * @memberof ElasticsearchDatasourceController
-   */
-  @Post('/')
-  @ApiBody({
-    description: "The 'node' is required in request body.",
-    examples: {
-      a: {
-        summary: '1. Create',
-        value: {
-          node: '24.323.232.23',
-        },
-      },
-    },
-  })
-  async createElasticsearchDatasource(
-    @Body()
-    body: {
-      node: string;
-    }
-  ) {
-    // [step 1] Guard statement.
-
-    // [step 2] Create datasource elasticsearch.
-    const result = await this.elasticsearchDatasourceService.create({
-      ...body,
-    });
-    if (result) {
-      return {
-        data: result,
-        err: null,
-      };
-    } else {
-      return {
-        data: null,
-        err: {message: 'Elasticsearch datasource create failed.'},
-      };
-    }
-  }
-
-  /**
-   * Update datasource elasticsearch
-   * @param datasourceId
-   * @param {{
-   *        node: string;
-   *     }} body
-   * @returns
-   */
-  @Post('/:datasourceId')
+  @Patch('/:datasourceId')
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},

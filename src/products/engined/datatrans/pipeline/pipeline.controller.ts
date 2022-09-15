@@ -1,9 +1,17 @@
-import {Controller, Get, Post, Param, Body, Delete} from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Body,
+  Delete,
+  Patch,
+} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {DatatransPipelineService} from './pipeline.service';
 import {PostgresqlDatasourceTableService} from '../../datasource/postgresql/table/table.service';
 import {ElasticsearchDatasourceIndexService} from '../../datasource/elasticsearch/index/index.service';
-import {Prisma} from '@prisma/client';
+import {DatatransPipeline, Prisma} from '@prisma/client';
 
 @ApiTags('[Product] EngineD / Datatrans / Pipeline')
 @ApiBearerAuth()
@@ -15,66 +23,6 @@ export class DatatransPipelineController {
   private elasticsearchDatasourceIndexService =
     new ElasticsearchDatasourceIndexService();
 
-  /**
-   * Get pipelines by page number. The order is by pipeline name.
-   *
-   * @returns {Promise<DatatransPipeline[]>}
-   * @memberof DatatransPipelineController
-   */
-  @Get('/pipelines')
-  async getPipelines() {
-    return await this.pipelineService.findMany({});
-  }
-
-  /**
-   * Get pipeline by id
-   *
-   * @param {string} pipelineId
-   * @returns {Promise<{data: object;err: object;}>}
-   * @memberof DatatransPipelineController
-   */
-  @Get('/pipelines/:pipelineId')
-  @ApiParam({
-    name: 'pipelineId',
-    schema: {type: 'string'},
-    description: 'The uuid of the pipeline.',
-    example: '81a37534-915c-4114-96d0-01be815d821b',
-  })
-  async getPipeline(
-    @Param('pipelineId') pipelineId: string
-  ): Promise<{data: object | null; err: object | null}> {
-    const result = await this.pipelineService.findUnique({
-      where: {id: pipelineId},
-    });
-    if (result) {
-      return {
-        data: result,
-        err: null,
-      };
-    } else {
-      return {
-        data: null,
-        err: {message: 'Get pipeline failed.'},
-      };
-    }
-  }
-
-  /**
-   * Create a new pipeline.
-   *
-   * @param {{
-   *   name: string;
-   *   status: DatatransPipelineStatus;
-   *   hasManyTables: string[];
-   *   belongsToTables: string[];
-   *   numberOfRecordsPerBatch: number;
-   *   queueUrl?: string;
-   *   fromTableId: number;
-   *   toIndexId: number;
-   * }} body
-   * @returns
-   * @memberof DatatransPipelineController
-   */
   @Post('/pipelines')
   @ApiBody({
     description:
@@ -134,7 +82,7 @@ export class DatatransPipelineController {
     }
 
     // [step 2] Create pipeline.
-    const result = await this.pipelineService.create({
+    return await this.pipelineService.create({
       name: body.name,
       hasManyTables: body.hasManyTables,
       belongsToTables: body.belongsToTables,
@@ -143,17 +91,26 @@ export class DatatransPipelineController {
       fromTable: {connect: {id: body.fromTableId}},
       toIndex: {connect: {id: body.toIndexId}},
     });
-    if (result) {
-      return {
-        data: result,
-        err: null,
-      };
-    } else {
-      return {
-        data: null,
-        err: {message: 'DatatransPipeline create failed.'},
-      };
-    }
+  }
+
+  @Get('/pipelines')
+  async getPipelines(): Promise<DatatransPipeline[]> {
+    return await this.pipelineService.findMany({});
+  }
+
+  @Get('/pipelines/:pipelineId')
+  @ApiParam({
+    name: 'pipelineId',
+    schema: {type: 'string'},
+    description: 'The uuid of the pipeline.',
+    example: '81a37534-915c-4114-96d0-01be815d821b',
+  })
+  async getPipeline(
+    @Param('pipelineId') pipelineId: string
+  ): Promise<DatatransPipeline | null> {
+    return await this.pipelineService.findUnique({
+      where: {id: pipelineId},
+    });
   }
 
   /**
@@ -164,7 +121,7 @@ export class DatatransPipelineController {
    * @returns
    * @memberof DatatransPipelineController
    */
-  @Post('/pipelines/:pipelineId')
+  @Patch('/pipelines/:pipelineId')
   @ApiParam({
     name: 'pipelineId',
     schema: {type: 'string'},
@@ -188,55 +145,23 @@ export class DatatransPipelineController {
     @Param('pipelineId') pipelineId: string,
     @Body()
     body: Prisma.DatatransPipelineUpdateInput
-  ) {
-    // [step 1] Guard statement.
-
-    // [step 2] Update name.
-    const result = await this.pipelineService.update({
+  ): Promise<DatatransPipeline> {
+    return await this.pipelineService.update({
       where: {id: pipelineId},
       data: body,
     });
-    if (result) {
-      return {
-        data: result,
-        err: null,
-      };
-    } else {
-      return {
-        data: null,
-        err: {message: 'DatatransPipeline updated failed.'},
-      };
-    }
   }
 
-  /**
-   * Delete pipeline
-   * @param {string} pipelineId
-   * @returns
-   * @memberof DatatransPipelineController
-   */
   @Delete('/pipelines/:pipelineId')
   @ApiParam({
     name: 'pipelineId',
     schema: {type: 'string'},
     example: '81a37534-915c-4114-96d0-01be815d821b',
   })
-  async deletePipeline(@Param('pipelineId') pipelineId: string) {
-    // [step 1] Guard statement.
-
-    // [step 2] Delete pipeline.
-    const result = await this.pipelineService.delete({where: {id: pipelineId}});
-    if (result) {
-      return {
-        data: result,
-        err: null,
-      };
-    } else {
-      return {
-        data: null,
-        err: {message: 'DatatransPipeline deleted failed.'},
-      };
-    }
+  async deletePipeline(
+    @Param('pipelineId') pipelineId: string
+  ): Promise<DatatransPipeline> {
+    return await this.pipelineService.delete({where: {id: pipelineId}});
   }
 
   /**

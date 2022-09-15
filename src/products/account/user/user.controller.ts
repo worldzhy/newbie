@@ -1,7 +1,8 @@
-import {Controller, Get, Post, Param, Body} from '@nestjs/common';
+import {Controller, Get, Param, Body, Patch} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {UserService} from './user.service';
 import * as validator from '../account.validator';
+import {User} from '@prisma/client';
 
 @ApiTags('[Product] Account / User')
 @ApiBearerAuth()
@@ -10,15 +11,85 @@ export class UserController {
   constructor(private userService: UserService) {}
 
   /**
+   * Get user by id
+   *
+   * @param {string} userId
+   * @returns {Promise<{ data: object, err: object}>}
+   * @memberof UserController
+   */
+  @Get('users/:userId')
+  @ApiParam({
+    name: 'userId',
+    schema: {type: 'string'},
+    description: 'The uuid of the user.',
+    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
+  })
+  async getUser(@Param('userId') userId: string): Promise<User | null> {
+    return await this.userService.findUnique({
+      where: {id: userId},
+      include: {profiles: true},
+    });
+  }
+
+  /**
+   * Get users by page number. The order is by username.
+   *
+   * @param {number} page
+   * @returns {Promise<{ data: object, err: object }>}
+   * @memberof UserController
+   */
+  @Get('users/page=:page')
+  @ApiParam({
+    name: 'page',
+    schema: {type: 'number'},
+    description:
+      'The page of the user list. It must be a LARGER THAN 0 integer.',
+    example: 1,
+  })
+  async getUsers(@Param('page') page: number): Promise<User[] | {err: object}> {
+    // [step 1] Guard statement.
+    let p = page;
+    if (typeof page === 'string') {
+      // Actually 'page' is string because it comes from URL param.
+      p = parseInt(page);
+    }
+    if (p < 1) {
+      return {
+        err: {message: "The 'page' must be a large than 0 integer."},
+      };
+    }
+
+    // [step 2] Get users.
+    return await this.userService.findMany({
+      orderBy: {
+        _relevance: {
+          fields: ['username'],
+          search: 'database',
+          sort: 'asc',
+        },
+      },
+      take: 10,
+      skip: 10 * (p - 1),
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        phone: true,
+        passwordHash: false,
+      },
+    });
+  }
+
+  /**
    * Get users by searching name.
-   * @param {string} search
+   * @param {string} name
    * @param {number} page
    * @returns {Promise<{data: object;err: object;}>}
    * @memberof UserController
    */
-  @Get('users/search/:search/pages/:page')
+  @Get('users/name=:name&page=:page')
   @ApiParam({
-    name: 'search',
+    name: 'name',
     description: 'The string you want to search in the user pool.',
     example: 'jack',
     schema: {type: 'string'},
@@ -30,12 +101,12 @@ export class UserController {
       'The page of the user list. It must be a number and LARGER THAN 0.',
     example: 1,
   })
-  async getUsersBySearch(
-    @Param('search') search: string,
+  async getUsersByName(
+    @Param('name') name: string,
     @Param('page') page: number
-  ): Promise<{data: object | null; err: object | null}> {
+  ): Promise<User[] | {err: object}> {
     // [step 1] Guard statement.
-    const s = search.trim();
+    const s = name.trim();
     let p = page;
     if (typeof page === 'string') {
       // Actually 'page' is string because it comes from URL param.
@@ -43,7 +114,6 @@ export class UserController {
     }
     if (s.length < 1 || p < 1) {
       return {
-        data: null,
         err: {
           message:
             "The 'str' length and 'page' must be larger than 0 integers.",
@@ -52,7 +122,7 @@ export class UserController {
     }
 
     // [step 2] Search username, given name, family name...
-    const users = await this.userService.findMany({
+    return await this.userService.findMany({
       where: {
         OR: [
           {username: {search: s}},
@@ -85,100 +155,6 @@ export class UserController {
         passwordHash: false,
       },
     });
-    return {
-      data: users,
-      err: null,
-    };
-  }
-
-  /**
-   * Get users by page number. The order is by username.
-   *
-   * @param {number} page
-   * @returns {Promise<{ data: object, err: object }>}
-   * @memberof UserController
-   */
-  @Get('users/pages/:page')
-  @ApiParam({
-    name: 'page',
-    schema: {type: 'number'},
-    description:
-      'The page of the user list. It must be a LARGER THAN 0 integer.',
-    example: 1,
-  })
-  async getUsersByPage(
-    @Param('page') page: number
-  ): Promise<{data: object | null; err: object | null}> {
-    // [step 1] Guard statement.
-    let p = page;
-    if (typeof page === 'string') {
-      // Actually 'page' is string because it comes from URL param.
-      p = parseInt(page);
-    }
-    if (p < 1) {
-      return {
-        data: null,
-        err: {message: "The 'page' must be a large than 0 integer."},
-      };
-    }
-
-    // [step 2] Get users.
-    const users = await this.userService.findMany({
-      orderBy: {
-        _relevance: {
-          fields: ['username'],
-          search: 'database',
-          sort: 'asc',
-        },
-      },
-      take: 10,
-      skip: 10 * (p - 1),
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        phone: true,
-        passwordHash: false,
-      },
-    });
-    return {
-      data: users,
-      err: null,
-    };
-  }
-
-  /**
-   * Get user by id
-   *
-   * @param {string} userId
-   * @returns {Promise<{ data: object, err: object}>}
-   * @memberof UserController
-   */
-  @Get('users/:userId')
-  @ApiParam({
-    name: 'userId',
-    schema: {type: 'string'},
-    description: 'The uuid of the user.',
-    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
-  })
-  async getUser(
-    @Param('userId') userId: string
-  ): Promise<{data: object | null; err: object | null}> {
-    const result = await this.userService.findUnique({
-      where: {id: userId},
-      include: {profiles: true},
-    });
-    if (result) {
-      return {
-        data: result,
-        err: null,
-      };
-    } else {
-      return {
-        data: null,
-        err: {message: 'Get user failed.'},
-      };
-    }
   }
 
   /**
@@ -188,7 +164,7 @@ export class UserController {
    * @returns {Promise<{data: object | null; err: object | null}>}
    * @memberof AuthController
    */
-  @Post('users/change-password')
+  @Patch('users/change-password')
   @ApiBearerAuth()
   @ApiBody({
     description:
@@ -272,7 +248,7 @@ export class UserController {
    * @returns {(Promise<{data: object | null; err: object | null}>)}
    * @memberof UserController
    */
-  @Post('users/reset-password')
+  @Patch('users/reset-password')
   @ApiBearerAuth()
   @ApiBody({
     description: 'The new password.',

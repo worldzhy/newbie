@@ -9,12 +9,6 @@ export class PostgresqlDatasourceTableColumnController {
   private postgresqlDatasourceTableColumnService =
     new PostgresqlDatasourceTableColumnService();
 
-  /**
-   * Get postgresql table columns
-   * @param {string} tableId
-   * @returns {Promise<{data: object;err: object;}>}
-   * @memberof PostgresqlDatasourceTableColumnController
-   */
   @Get('/tables/:tableId/columns')
   @ApiParam({
     name: 'tableId',
