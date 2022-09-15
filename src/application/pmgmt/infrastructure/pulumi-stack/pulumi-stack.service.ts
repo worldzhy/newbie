@@ -22,7 +22,7 @@ import {NetworkHipaa_Stack} from './stack/network-hipaa.stack';
 import {Null_Stack} from './stack/null.stack';
 import {getAwsConfig} from '../../../../_config/_aws.config';
 import {getPulumiConfig} from '../../../../_config/_pulumi.config';
-import {PrismaService} from '../../../../tools/prisma/prisma.service';
+import {PrismaService} from '../../../../toolkits/prisma/prisma.service';
 import {randomCode} from '../infrastructure.util';
 
 @Injectable()

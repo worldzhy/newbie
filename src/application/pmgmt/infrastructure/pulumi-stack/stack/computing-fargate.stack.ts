@@ -7,7 +7,7 @@ import {
   generateSecurityGroup,
 } from '../pulumi-stack.util';
 import {randomCode} from '../../infrastructure.util';
-import {verifyRegion} from '../../../../../tools/aws/aws.validator';
+import {verifyRegion} from '../../../../../toolkits/aws/aws.validator';
 import {getAwsConfig} from '../../../../../_config/_aws.config';
 
 @Injectable()

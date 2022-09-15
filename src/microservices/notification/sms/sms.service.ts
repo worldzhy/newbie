@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
-import {PinpointService} from '../../../tools/aws/pinpoint.service';
-import {PrismaService} from '../../../tools/prisma/prisma.service';
+import {PinpointService} from '../../../toolkits/aws/pinpoint.service';
+import {PrismaService} from '../../../toolkits/prisma/prisma.service';
 
 @Injectable()
 export class SmsService {

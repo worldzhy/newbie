@@ -1,7 +1,7 @@
 import {Module} from '@nestjs/common';
 import {DatatransBatchProcessingController} from './batch-processing.controller';
 import {DatatransBatchProcessingService} from './batch-processing.service';
-import {PrismaModule} from '../../../../tools/prisma/prisma.module';
+import {PrismaModule} from '../../../../toolkits/prisma/prisma.module';
 import {TaskModule} from '../../../../microservices/task/task.module';
 
 @Module({

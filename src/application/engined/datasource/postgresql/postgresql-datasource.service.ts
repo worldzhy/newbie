@@ -6,7 +6,7 @@ import {
   PostgresqlDatasourceTable,
   Prisma,
 } from '@prisma/client';
-import {PrismaService} from '../../../../tools/prisma/prisma.service';
+import {PrismaService} from '../../../../toolkits/prisma/prisma.service';
 import {PostgresqlDatasourceTableColumnService} from './column/column.service';
 import {PostgresqlDatasourceConstraintService} from './constraint/constraint.service';
 import {PostgresqlDatasourceTableService} from './table/table.service';

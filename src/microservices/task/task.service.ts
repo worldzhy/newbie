@@ -1,8 +1,8 @@
 import {Injectable} from '@nestjs/common';
 import {Prisma, Task, TaskType} from '@prisma/client';
 import {getAwsConfig} from '../../_config/_aws.config';
-import {SqsService} from '../../tools/aws/sqs.service';
-import {PrismaService} from '../../tools/prisma/prisma.service';
+import {SqsService} from '../../toolkits/aws/sqs.service';
+import {PrismaService} from '../../toolkits/prisma/prisma.service';
 
 @Injectable()
 export class TaskService {

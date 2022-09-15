@@ -1,5 +1,5 @@
 import {Logger as TypeOrmLogger, QueryRunner} from 'typeorm';
-import {CustomLoggerService} from './custom-logger.service';
+import {CustomLoggerService} from './_logger.service';
 
 /**
  * This logger is prepared for typeorm developers.

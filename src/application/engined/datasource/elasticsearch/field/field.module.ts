@@ -1,6 +1,6 @@
 import {Module} from '@nestjs/common';
 import {ElasticsearchDatasourceIndexFieldService} from './field.service';
-import {PrismaModule} from '../../../../../tools/prisma/prisma.module';
+import {PrismaModule} from '../../../../../toolkits/prisma/prisma.module';
 
 @Module({
   imports: [PrismaModule],

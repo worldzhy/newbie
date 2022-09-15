@@ -4,7 +4,7 @@ import {
   PostgresqlDatasource,
   Prisma,
 } from '@prisma/client';
-import {PrismaService} from '../src/tools/prisma/prisma.service';
+import {PrismaService} from '../src/toolkits/prisma/prisma.service';
 import {AccountService} from '../src/application/account/account.service';
 import {AccountController} from '../src/application/account/account.controller';
 import {RoleService} from '../src/application/account/role/role.service';

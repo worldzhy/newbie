@@ -8,7 +8,7 @@ import {AuthPasswordModule} from '../auth-password/auth-password.module';
 import {AuthProfileModule} from '../auth-profile/auth-profile.module';
 import {AuthUuidModule} from '../auth-uuid/auth-uuid.module';
 import {AuthVerificationCodeModule} from '../auth-verification-code/auth-verification-code.module';
-import {PrismaModule} from '../../../../tools/prisma/prisma.module';
+import {PrismaModule} from '../../../../toolkits/prisma/prisma.module';
 
 @Module({
   imports: [
