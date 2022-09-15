@@ -21,17 +21,15 @@ export class ElasticsearchDatasourceIndexService {
   }
 
   async create(
-    data: Prisma.ElasticsearchDatasourceIndexCreateInput
+    params: Prisma.ElasticsearchDatasourceIndexCreateArgs
   ): Promise<ElasticsearchDatasourceIndex> {
-    return await this.prisma.elasticsearchDatasourceIndex.create({
-      data,
-    });
+    return await this.prisma.elasticsearchDatasourceIndex.create(params);
   }
 
-  async createMany(data: Prisma.ElasticsearchDatasourceIndexCreateManyInput[]) {
-    const result = await this.prisma.elasticsearchDatasourceIndex.createMany({
-      data,
-    });
+  async createMany(params: Prisma.ElasticsearchDatasourceIndexCreateManyArgs) {
+    const result = await this.prisma.elasticsearchDatasourceIndex.createMany(
+      params
+    );
     return result.count;
   }
 

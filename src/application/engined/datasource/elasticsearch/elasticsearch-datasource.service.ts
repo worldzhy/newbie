@@ -71,23 +71,25 @@ export class ElasticsearchDatasourceService {
 
       // Save the index.
       const index = await this.elasticsearchDatasourceIndexService.create({
-        name: indexName,
-        datasource: {connect: {id: datasource.id}},
+        data: {
+          name: indexName,
+          datasource: {connect: {id: datasource.id}},
+        },
       });
 
       // Save fields of the index.
       const fieldNames = Object.keys(
         result.body[indexName].mappings.properties
       );
-      await this.elasticsearchDatasourceIndexFieldService.createMany(
-        fieldNames.map(fieldName => {
+      await this.elasticsearchDatasourceIndexFieldService.createMany({
+        data: fieldNames.map(fieldName => {
           return {
             field: fieldName,
             fieldBody: result.body[indexName].mappings.properties[fieldName],
             indexId: index.id,
           };
-        })
-      );
+        }),
+      });
     }
   }
 

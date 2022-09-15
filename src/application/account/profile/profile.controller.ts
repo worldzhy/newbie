@@ -1,74 +1,35 @@
-import {Controller, Get, Post, Param, Body, Put} from '@nestjs/common';
+import {Controller, Get, Post, Param, Body, Patch} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {Prisma, ProfileEthnicityType, ProfileRaceType} from '@prisma/client';
-import {ProfileService} from './profile.service';
+import {
+  Prisma,
+  UserProfile,
+  UserProfileEthnicityType,
+  UserProfileRaceType,
+} from '@prisma/client';
+import {UserProfileService} from './profile.service';
 
-@ApiTags('[Application] Account / Profile')
+@ApiTags('[Application] Account / User / Profile')
 @ApiBearerAuth()
-@Controller()
-export class ProfileController {
-  constructor(private profileService: ProfileService) {}
+@Controller('users')
+export class UserProfileController {
+  constructor(private userProfileService: UserProfileService) {}
 
-  /**
-   * Get profile by id
-   *
-   * @param {string} profileId
-   * @returns {Promise<{data: object;err: object;}>}
-   * @memberof ProfileController
-   */
-  @Get('profiles/:profileId')
-  @ApiParam({
-    name: 'profileId',
-    schema: {type: 'string'},
-    description: 'The uuid of the profile.',
-    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
-  })
-  async getProfile(
-    @Param('profileId') profileId: string
-  ): Promise<{data: object | null; err: object | null}> {
-    const result = await this.profileService.findUnique({
-      where: {id: profileId},
-    });
-    if (result) {
-      return {
-        data: result,
-        err: null,
-      };
-    } else {
-      return {
-        data: null,
-        err: {message: 'Get profile failed.'},
-      };
-    }
-  }
-
-  /**
-   * Create profile.
-   *
-   * @returns
-   * @memberof ProfileController
-   */
-  @Post('profiles/users/:userId')
-  @ApiParam({
-    name: 'userId',
-    schema: {type: 'string'},
-    description: 'The uuid of the user.',
-    example: '924da395-1921-45fe-b7f5-1198ed78ac24',
-  })
+  @Post('profiles')
   @ApiBody({
     description: 'Create a user profile.',
     examples: {
       a: {
         summary: '1. Create',
         value: {
+          userId: '924da395-1921-45fe-b7f5-1198ed78ac24',
           givenName: 'Mary',
           middleName: 'Rose',
           familyName: 'Johnson',
           suffix: 'PhD',
           birthday: new Date(),
           gender: 'male',
-          race: ProfileRaceType.OTHER,
-          ethnicity: ProfileEthnicityType.HISPANIC,
+          race: UserProfileRaceType.OTHER,
+          ethnicity: UserProfileEthnicityType.HISPANIC,
           hasPCP: true,
           address: '456 White Finch St. North Augusta, SC 29860',
           zipcode: '21000',
@@ -89,39 +50,26 @@ export class ProfileController {
       },
     },
   })
-  async createProfile(
-    @Param('userId') userId: string,
-    @Body() body: Prisma.ProfileCreateWithoutUserInput
-  ) {
-    // [step 1] Guard statement.
-
-    // [step 2] Create profile.
-    const result = await this.profileService.create({
-      ...body,
-      user: {connect: {id: userId}},
-    });
-    if (result) {
-      return {
-        data: result,
-        err: null,
-      };
-    } else {
-      return {
-        data: null,
-        err: {message: 'Create profile failed.'},
-      };
-    }
+  async createUserProfile(
+    @Body() body: Prisma.UserProfileUncheckedCreateInput
+  ): Promise<UserProfile> {
+    return await this.userProfileService.create({data: body});
   }
 
-  /**
-   * Update user profile.
-   *
-   * @param {string} profileId
-   * @param {Prisma.ProfileUpdateInput} body
-   * @returns
-   * @memberof ProfileController
-   */
-  @Put('profiles/:profileId')
+  @Get('profiles/:profileId')
+  @ApiParam({
+    name: 'profileId',
+    schema: {type: 'string'},
+    description: 'The uuid of the profile.',
+    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
+  })
+  async getUserProfile(
+    @Param('profileId') profileId: string
+  ): Promise<UserProfile | null> {
+    return await this.userProfileService.findUnique({where: {id: profileId}});
+  }
+
+  @Patch('profiles/:profileId')
   @ApiParam({
     name: 'profileId',
     schema: {type: 'string'},
@@ -140,8 +88,8 @@ export class ProfileController {
           suffix: 'PhD',
           birthday: '2019-05-27T11:53:32.118Z',
           gender: 'male',
-          race: ProfileRaceType.OTHER,
-          ethnicity: ProfileEthnicityType.HISPANIC,
+          race: UserProfileRaceType.OTHER,
+          ethnicity: UserProfileEthnicityType.HISPANIC,
           hasPCP: true,
           address: '456 White Finch St. North Augusta, SC 29860',
           zipcode: '21000',
@@ -162,28 +110,14 @@ export class ProfileController {
       },
     },
   })
-  async updateProfile(
+  async updateUserProfile(
     @Param('profileId') profileId: string,
-    @Body() body: Prisma.ProfileUpdateInput
-  ) {
-    // [step 1] Guard statement.
-
-    // [step 2] Update profile.
-    const result = await this.profileService.update({
+    @Body() body: Prisma.UserProfileUpdateInput
+  ): Promise<UserProfile> {
+    return await this.userProfileService.update({
       where: {id: profileId},
       data: body,
     });
-    if (result) {
-      return {
-        data: result,
-        err: null,
-      };
-    } else {
-      return {
-        data: null,
-        err: {message: 'Update profile failed.'},
-      };
-    }
   }
 
   /* End */

@@ -1,102 +1,51 @@
 import {Body, Controller, Get, Param, Post} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {ElasticsearchDatasourceService} from '../elasticsearch-datasource.service';
+import {
+  ElasticsearchDatasourceIndex,
+  ElasticsearchDatasourceIndexField,
+  Prisma,
+} from '@prisma/client';
+import {ElasticsearchDatasourceIndexFieldService} from '../field/field.service';
 import {ElasticsearchDatasourceIndexService} from './index.service';
 
 @ApiTags('[Application] EngineD / Datasource / Elasticsearch / Index')
 @ApiBearerAuth()
 @Controller('elasticsearch-datasources')
 export class ElasticsearchDatasourceIndexController {
-  private elasticsearchDatasourceService = new ElasticsearchDatasourceService();
   private elasticsearchDatasourceIndexService =
     new ElasticsearchDatasourceIndexService();
+  private elasticsearchDatasourceIndexFieldService =
+    new ElasticsearchDatasourceIndexFieldService();
 
-  @Post('/:datasourceId/indices')
-  @ApiParam({
-    name: 'datasourceId',
-    schema: {type: 'string'},
-    description: 'The uuid of the datasource.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
+  @Post('indices')
   @ApiBody({
     description: "The 'name' is required in request body.",
     examples: {
       a: {
         summary: '1. Create index',
         value: {
+          datasourceId: 'd8141ece-f242-4288-a60a-8675538549cd',
           name: 'example_index_name',
         },
       },
     },
   })
   async createElasticsearchDatasourceIndex(
-    @Param('datasourceId') datasourceId: string,
-    @Body() body: {name: string}
-  ): Promise<{data: object | null; err: object | null}> {
-    // [step 1] Get datasource.
-    const datasource = await this.elasticsearchDatasourceService.findUnique({
-      where: {id: datasourceId},
+    @Body() body: Prisma.ElasticsearchDatasourceIndexUncheckedCreateInput
+  ): Promise<ElasticsearchDatasourceIndex> {
+    return await this.elasticsearchDatasourceIndexService.create({
+      data: body,
     });
-    if (!datasource) {
-      return {
-        data: null,
-        err: {message: 'Invalid datasource id.'},
-      };
-    }
-
-    // [step 2] Create index.
-    const index = await this.elasticsearchDatasourceIndexService.create({
-      name: body.name,
-      datasource: {connect: {id: datasourceId}},
-    });
-
-    if (index) {
-      return {
-        data: index,
-        err: null,
-      };
-    } else {
-      return {
-        data: null,
-        err: {message: 'Create elasticsearch index failed.'},
-      };
-    }
   }
 
-  @Get('/:datasourceId/indices')
-  @ApiParam({
-    name: 'datasourceId',
-    schema: {type: 'string'},
-    description: 'The uuid of the datasource.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
-  async getElasticsearchDatasourceIndices(
-    @Param('datasourceId') datasourceId: string
-  ): Promise<{data: object | null; err: object | null}> {
-    // [step 1] Get datasource.
-    const datasource = await this.elasticsearchDatasourceService.findUnique({
-      where: {id: datasourceId},
-    });
-    if (!datasource) {
-      return {
-        data: null,
-        err: {message: 'Invalid datasource id.'},
-      };
-    }
-
-    // [step 2] Get indices.
-    const indices = await this.elasticsearchDatasourceIndexService.findMany({
-      where: {datasourceId: datasource.id},
-      orderBy: {name: 'asc'},
-    });
-
-    return {
-      data: indices,
-      err: null,
-    };
+  @Get('indices')
+  async getElasticsearchDatasourceIndices(): Promise<
+    ElasticsearchDatasourceIndex[]
+  > {
+    return await this.elasticsearchDatasourceIndexService.findMany({});
   }
 
-  @Get('/indices/:indexId')
+  @Get('indices/:indexId')
   @ApiParam({
     name: 'indexId',
     schema: {type: 'number'},
@@ -105,22 +54,34 @@ export class ElasticsearchDatasourceIndexController {
   })
   async getElasticsearchDatasourceIndex(
     @Param('indexId') indexId: number
-  ): Promise<{data: object | null; err: object | null}> {
+  ): Promise<ElasticsearchDatasourceIndex | null> {
+    return await this.elasticsearchDatasourceIndexService.findUnique({
+      where: {id: indexId},
+    });
+  }
+
+  @Get('indices/:indexId/fields')
+  @ApiParam({
+    name: 'indexId',
+    schema: {type: 'number'},
+    description: 'The uuid of the index.',
+    example: 'd8141ece-f242-4288-a60a-8675538549cd',
+  })
+  async getElasticsearchDatasourceIndexFields(
+    @Param('indexId') indexId: number
+  ): Promise<ElasticsearchDatasourceIndexField[] | {err: {message: string}}> {
+    // [step 1] Get index.
     const index = await this.elasticsearchDatasourceIndexService.findUnique({
       where: {id: indexId},
     });
-
-    if (index) {
-      return {
-        data: index,
-        err: null,
-      };
-    } else {
-      return {
-        data: null,
-        err: {message: 'Invalid datasource id.'},
-      };
+    if (!index) {
+      return {err: {message: 'Invalid index id.'}};
     }
+
+    // [step 2] Get fields group by index.
+    return await this.elasticsearchDatasourceIndexFieldService.findMany({
+      where: {indexId: indexId},
+    });
   }
 
   /* End */

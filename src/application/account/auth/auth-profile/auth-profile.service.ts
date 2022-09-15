@@ -1,9 +1,9 @@
 import {Injectable} from '@nestjs/common';
-import {ProfileService} from '../../profile/profile.service';
+import {UserProfileService} from '../../profile/profile.service';
 
 @Injectable()
 export class AuthProfileService {
-  private profileService = new ProfileService();
+  private userProfileService = new UserProfileService();
 
   /**
    * Entry of the verification is in 'auth-profile.strategy.ts'.
@@ -38,7 +38,7 @@ export class AuthProfileService {
     }
 
     // [step 2] Validate name and birthday.
-    const profiles = await this.profileService.findMany({
+    const profiles = await this.userProfileService.findMany({
       where: {givenName, middleName, familyName, suffix, birthday},
     });
     if (profiles.length === 1) {

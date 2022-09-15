@@ -1,12 +1,16 @@
 import {Controller, Get, Post, Param, Body, Patch} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {ElasticsearchDatasourceIndex} from '@prisma/client';
 import {ElasticsearchDatasourceService} from './elasticsearch-datasource.service';
+import {ElasticsearchDatasourceIndexService} from './index/index.service';
 
 @ApiTags('[Application] EngineD / Datasource / Elasticsearch')
 @ApiBearerAuth()
 @Controller('elasticsearch-datasources')
 export class ElasticsearchDatasourceController {
   private elasticsearchDatasourceService = new ElasticsearchDatasourceService();
+  private elasticsearchDatasourceIndexService =
+    new ElasticsearchDatasourceIndexService();
 
   @Post('/')
   @ApiBody({
@@ -129,6 +133,31 @@ export class ElasticsearchDatasourceController {
         err: {message: 'Datasource elasticsearch updated failed.'},
       };
     }
+  }
+
+  @Get(':datasourceId/indices')
+  @ApiParam({
+    name: 'datasourceId',
+    schema: {type: 'string'},
+    description: 'The uuid of the datasource.',
+    example: 'd8141ece-f242-4288-a60a-8675538549cd',
+  })
+  async getElasticsearchDatasourceIndicesByDatasource(
+    @Param('datasourceId') datasourceId: string
+  ): Promise<ElasticsearchDatasourceIndex[] | {err: {message: string}}> {
+    // [step 1] Get datasource.
+    const datasource = await this.elasticsearchDatasourceService.findUnique({
+      where: {id: datasourceId},
+    });
+    if (!datasource) {
+      return {err: {message: 'Invalid datasource id.'}};
+    }
+
+    // [step 2] Get indices.
+    return await this.elasticsearchDatasourceIndexService.findMany({
+      where: {datasourceId: datasource.id},
+      orderBy: {name: 'asc'},
+    });
   }
 
   /**

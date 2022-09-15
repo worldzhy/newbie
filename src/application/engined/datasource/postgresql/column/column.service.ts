@@ -19,18 +19,16 @@ export class PostgresqlDatasourceTableColumnService {
   }
 
   async create(
-    data: Prisma.PostgresqlDatasourceTableColumnCreateInput
+    params: Prisma.PostgresqlDatasourceTableColumnCreateArgs
   ): Promise<PostgresqlDatasourceTableColumn> {
-    return await this.prisma.postgresqlDatasourceTableColumn.create({
-      data,
-    });
+    return await this.prisma.postgresqlDatasourceTableColumn.create(params);
   }
 
   async createMany(
-    data: Prisma.PostgresqlDatasourceTableColumnCreateManyInput[]
+    params: Prisma.PostgresqlDatasourceTableColumnCreateManyArgs
   ): Promise<number> {
     const result = await this.prisma.postgresqlDatasourceTableColumn.createMany(
-      {data}
+      params
     );
     return result.count;
   }

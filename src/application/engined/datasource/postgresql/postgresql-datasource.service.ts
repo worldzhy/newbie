@@ -79,8 +79,10 @@ export class PostgresqlDatasourceService {
     for (let i = 0; i < tableNames.length; i++) {
       // Save a table.
       const table = await this.postgresqlDatasourceTableService.create({
-        name: tableNames[i],
-        datasource: {connect: {id: datasource.id}},
+        data: {
+          name: tableNames[i],
+          datasource: {connect: {id: datasource.id}},
+        },
       });
 
       // Get columns of a table.
@@ -89,16 +91,16 @@ export class PostgresqlDatasourceService {
       >`SELECT * FROM information_schema.columns WHERE (table_schema = ${datasource.schema} AND table_name = ${tableNames[i]})`;
 
       // Save columns of a table.
-      await this.postgresqlDatasourceTableColumnService.createMany(
-        columns.map(column => {
+      await this.postgresqlDatasourceTableColumnService.createMany({
+        data: columns.map(column => {
           return {
             column: column.column_name,
             columnType: column.data_type,
             ordinalPosition: column.ordinal_position,
             tableId: table.id,
           };
-        })
-      );
+        }),
+      });
     }
 
     // [step 2] Extract constraints.
@@ -113,7 +115,7 @@ export class PostgresqlDatasourceService {
       {constraint_name: string; table_name: string}[]
     >`SELECT * FROM information_schema.constraint_column_usage WHERE (constraint_schema = ${datasource.schema})`;
 
-    // [step 2-3] Struct constraints
+    // [step 2-3] Construct constraints
     const constraints: Prisma.PostgresqlDatasourceConstraintCreateManyInput[] =
       [];
     const keyColumnUsages = await this.prisma.$queryRaw<
@@ -169,7 +171,9 @@ export class PostgresqlDatasourceService {
     });
 
     // [step 2-4] Save constraints.
-    await this.postgresqlDatasourceConstraintService.createMany(constraints);
+    await this.postgresqlDatasourceConstraintService.createMany({
+      data: constraints,
+    });
   }
 
   /**
@@ -218,7 +222,7 @@ export class PostgresqlDatasourceService {
         where: {foreignTable: table.name},
       })) as PostgresqlDatasourceConstraint[];
 
-      // [step 1-2] Struct information of the child tables.
+      // [step 1-2] Construct information of the child tables.
       await Promise.all(
         constraints.map(async constraint => {
           countResult = await this.prisma.$queryRawUnsafe(
@@ -238,7 +242,7 @@ export class PostgresqlDatasourceService {
         where: {AND: {table: table.name, foreignTable: {not: null}}},
       })) as PostgresqlDatasourceConstraint[];
 
-      // [step 2-2] Struct information of the parent tables.
+      // [step 2-2] Construct information of the parent tables.
       await Promise.all(
         constraints.map(async constraint => {
           countResult = await this.prisma.$queryRawUnsafe(

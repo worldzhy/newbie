@@ -1,6 +1,11 @@
 import {Controller, Get, Post, Param, Body, Patch} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {PostgresqlDatasource} from '@prisma/client';
+import {
+  PostgresqlDatasource,
+  PostgresqlDatasourceConstraint,
+  PostgresqlDatasourceTable,
+} from '@prisma/client';
+import {PostgresqlDatasourceConstraintService} from './constraint/constraint.service';
 import {PostgresqlDatasourceService} from './postgresql-datasource.service';
 import {PostgresqlDatasourceTableService} from './table/table.service';
 
@@ -11,6 +16,8 @@ export class PostgresqlDatasourceController {
   private postgresqlDatasourceService = new PostgresqlDatasourceService();
   private postgresqlDatasourceTableService =
     new PostgresqlDatasourceTableService();
+  private postgresqlDatasourceConstraintService =
+    new PostgresqlDatasourceConstraintService();
 
   @Post('/')
   @ApiBody({
@@ -97,6 +104,87 @@ export class PostgresqlDatasourceController {
     return await this.postgresqlDatasourceService.update({
       where: {id: datasourceId},
       data: {...body},
+    });
+  }
+
+  @Get('/:datasourceId/tables')
+  @ApiParam({
+    name: 'datasourceId',
+    schema: {type: 'string'},
+    description: 'The uuid of the datasource.',
+    example: 'd8141ece-f242-4288-a60a-8675538549cd',
+  })
+  async getPostgresqlDatasourceTables(
+    @Param('datasourceId') datasourceId: string
+  ): Promise<PostgresqlDatasourceTable[] | {err: {message: string}}> {
+    // [step 1] Get datasource.
+    const datasource = await this.postgresqlDatasourceService.findUnique({
+      where: {id: datasourceId},
+    });
+    if (!datasource) {
+      return {err: {message: 'Invalid postgresql id.'}};
+    }
+
+    // [step 2] Get tables.
+    return await this.postgresqlDatasourceTableService.findMany({
+      where: {
+        datasourceId: datasource.id,
+      },
+      orderBy: {name: 'asc'},
+    });
+  }
+
+  @Get('/:datasourceId/constraints')
+  @ApiParam({
+    name: 'datasourceId',
+    schema: {type: 'string'},
+    description: 'The uuid of the postgresql datasource.',
+    example: 'd8141ece-f242-4288-a60a-8675538549cd',
+  })
+  async getPostgresqlDatasourceConstraints(
+    @Param('datasourceId')
+    datasourceId: string
+  ): Promise<PostgresqlDatasourceConstraint[]> {
+    return await this.postgresqlDatasourceConstraintService.findMany({
+      where: {
+        datasourceId: datasourceId,
+      },
+    });
+  }
+
+  @Get('/:datasourceId/constraints/:tableName')
+  @ApiParam({
+    name: 'datasourceId',
+    schema: {type: 'string'},
+    description: 'The uuid of the datasource.',
+    example: 'd8141ece-f242-4288-a60a-8675538549cd',
+  })
+  @ApiParam({
+    name: 'tableName',
+    schema: {type: 'string'},
+    description: 'The name of the table.',
+    example: 'User',
+  })
+  async getPostgresqlDatasourceConstraintsByTable(
+    @Param('datasourceId') datasourceId: string,
+    @Param('tableName') tableName: string
+  ): Promise<PostgresqlDatasourceConstraint[] | {err: {message: string}}> {
+    // [step 1] Get datasource.
+    const datasource = await this.postgresqlDatasourceService.findUnique({
+      where: {id: datasourceId},
+    });
+    if (!datasource) {
+      return {err: {message: 'Invalid postgresql id.'}};
+    }
+
+    // [step 2] Get columns group by table.
+    return await this.postgresqlDatasourceConstraintService.findMany({
+      where: {
+        AND: {
+          datasourceId: datasource.id,
+          table: tableName,
+        },
+      },
     });
   }
 

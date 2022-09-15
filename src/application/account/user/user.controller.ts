@@ -1,23 +1,98 @@
-import {Controller, Get, Param, Body, Patch} from '@nestjs/common';
+import {Controller, Get, Param, Body, Patch, Req, Query} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {UserService} from './user.service';
 import * as validator from '../account.validator';
-import {User} from '@prisma/client';
+import {Prisma, User} from '@prisma/client';
+import {Public} from '../auth/auth-jwt/auth-jwt.decorator';
 
 @ApiTags('[Application] Account / User')
 @ApiBearerAuth()
-@Controller()
+@Controller('users')
 export class UserController {
   constructor(private userService: UserService) {}
 
-  /**
-   * Get user by id
-   *
-   * @param {string} userId
-   * @returns {Promise<{ data: object, err: object}>}
-   * @memberof UserController
-   */
-  @Get('users/:userId')
+  @Public()
+  @Get('')
+  @ApiParam({
+    required: false,
+    name: 'name',
+    description: 'The string you want to search in the user pool.',
+    example: 'jack',
+    schema: {type: 'string'},
+  })
+  @ApiParam({
+    required: false,
+    name: 'page',
+    schema: {type: 'number'},
+    description:
+      'The page of the user list. It must be a number and LARGER THAN 0.',
+    example: 1,
+  })
+  async getUsers(
+    @Query() query: {name?: string; page?: string}
+  ): Promise<User[] | {err: {message: string}}> {
+    // [step 1] Construct where argument.
+    let where: Prisma.UserWhereInput | undefined;
+    if (query.name) {
+      const name = (query.name as string).trim();
+      if (name.length > 0) {
+        where = {
+          OR: [
+            {username: {search: name}},
+            {
+              profiles: {
+                some: {
+                  OR: [
+                    {givenName: {search: name}},
+                    {familyName: {search: name}},
+                    {middleName: {search: name}},
+                  ],
+                },
+              },
+            },
+          ],
+        };
+      }
+    }
+
+    // [step 2] Construct take and skip arguments.
+    let take: number, skip: number;
+    if (query.page) {
+      // Actually 'page' is string because it comes from URL param.
+      const page = parseInt(query.page);
+      if (page > 0) {
+        take = 10;
+        skip = 10 * (page - 1);
+      } else {
+        return {err: {message: 'The page must be larger than 0.'}};
+      }
+    } else {
+      take = 10;
+      skip = 0;
+    }
+
+    // [step 3] Get users.
+    return await this.userService.findMany({
+      select: {
+        id: true,
+        username: true,
+        profiles: true,
+        passwordHash: false,
+      },
+      orderBy: {
+        _relevance: {
+          fields: ['username'],
+          search: 'database',
+          sort: 'asc',
+        },
+      },
+      where: where,
+      take: take,
+      skip: skip,
+    });
+  }
+
+  @Get(':userId')
   @ApiParam({
     name: 'userId',
     schema: {type: 'string'},
@@ -31,140 +106,7 @@ export class UserController {
     });
   }
 
-  /**
-   * Get users by page number. The order is by username.
-   *
-   * @param {number} page
-   * @returns {Promise<{ data: object, err: object }>}
-   * @memberof UserController
-   */
-  @Get('users/page=:page')
-  @ApiParam({
-    name: 'page',
-    schema: {type: 'number'},
-    description:
-      'The page of the user list. It must be a LARGER THAN 0 integer.',
-    example: 1,
-  })
-  async getUsers(@Param('page') page: number): Promise<User[] | {err: object}> {
-    // [step 1] Guard statement.
-    let p = page;
-    if (typeof page === 'string') {
-      // Actually 'page' is string because it comes from URL param.
-      p = parseInt(page);
-    }
-    if (p < 1) {
-      return {
-        err: {message: "The 'page' must be a large than 0 integer."},
-      };
-    }
-
-    // [step 2] Get users.
-    return await this.userService.findMany({
-      orderBy: {
-        _relevance: {
-          fields: ['username'],
-          search: 'database',
-          sort: 'asc',
-        },
-      },
-      take: 10,
-      skip: 10 * (p - 1),
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        phone: true,
-        passwordHash: false,
-      },
-    });
-  }
-
-  /**
-   * Get users by searching name.
-   * @param {string} name
-   * @param {number} page
-   * @returns {Promise<{data: object;err: object;}>}
-   * @memberof UserController
-   */
-  @Get('users/name=:name&page=:page')
-  @ApiParam({
-    name: 'name',
-    description: 'The string you want to search in the user pool.',
-    example: 'jack',
-    schema: {type: 'string'},
-  })
-  @ApiParam({
-    name: 'page',
-    schema: {type: 'number'},
-    description:
-      'The page of the user list. It must be a number and LARGER THAN 0.',
-    example: 1,
-  })
-  async getUsersByName(
-    @Param('name') name: string,
-    @Param('page') page: number
-  ): Promise<User[] | {err: object}> {
-    // [step 1] Guard statement.
-    const s = name.trim();
-    let p = page;
-    if (typeof page === 'string') {
-      // Actually 'page' is string because it comes from URL param.
-      p = parseInt(page);
-    }
-    if (s.length < 1 || p < 1) {
-      return {
-        err: {
-          message:
-            "The 'str' length and 'page' must be larger than 0 integers.",
-        },
-      };
-    }
-
-    // [step 2] Search username, given name, family name...
-    return await this.userService.findMany({
-      where: {
-        OR: [
-          {username: {search: s}},
-          {
-            profiles: {
-              some: {
-                OR: [
-                  {givenName: {search: s}},
-                  {familyName: {search: s}},
-                  {middleName: {search: s}},
-                ],
-              },
-            },
-          },
-        ],
-      },
-      orderBy: {
-        _relevance: {
-          fields: ['username'],
-          search: 'database',
-          sort: 'asc',
-        },
-      },
-      take: 10,
-      skip: 10 * (p - 1),
-      select: {
-        id: true,
-        username: true,
-        profiles: true,
-        passwordHash: false,
-      },
-    });
-  }
-
-  /**
-   * Change password
-   *
-   * @param {Request} request.body should be {userId, currentPassword, newPassword}
-   * @returns {Promise<{data: object | null; err: object | null}>}
-   * @memberof AuthController
-   */
-  @Patch('users/change-password')
+  @Patch('change-password')
   @ApiBearerAuth()
   @ApiBody({
     description:
@@ -241,14 +183,7 @@ export class UserController {
     }
   }
 
-  /**
-   * Reset password
-   *
-   * @param {*} request.body should be {userId, newPassword}
-   * @returns {(Promise<{data: object | null; err: object | null}>)}
-   * @memberof UserController
-   */
-  @Patch('users/reset-password')
+  @Patch('reset-password')
   @ApiBearerAuth()
   @ApiBody({
     description: 'The new password.',

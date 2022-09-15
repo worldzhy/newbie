@@ -8,7 +8,7 @@ import {LoggingInByUuid} from './auth/auth-uuid/auth-uuid.decorator';
 import {LoggingInByVerificationCode} from './auth/auth-verification-code/auth-verification-code.decorator';
 import {AccountService} from './account.service';
 import {UserService} from './user/user.service';
-import {ProfileService} from './profile/profile.service';
+import {UserProfileService} from './profile/profile.service';
 import * as validator from './account.validator';
 
 @ApiTags('[Application] Account')
@@ -80,7 +80,7 @@ export class AccountController {
 
     // [step 2] Check account existence with profile.
     if (body.profile) {
-      const profileService = new ProfileService();
+      const profileService = new UserProfileService();
       const profiles = await profileService.findMany({...body.profile});
       if (profiles.length === 1) {
         return {
@@ -309,7 +309,7 @@ export class AccountController {
       "The request body should contain 'giveName', 'middleName', 'familyName' and 'birthday' attributes. The 'suffix' is optional.",
     examples: {
       a: {
-        summary: '1. Profile with suffix',
+        summary: '1. UserProfile with suffix',
         value: {
           givenName: 'Robert',
           middleName: 'William',
@@ -319,7 +319,7 @@ export class AccountController {
         },
       },
       b: {
-        summary: '2. Profile without suffix',
+        summary: '2. UserProfile without suffix',
         value: {
           givenName: 'Mary',
           middleName: 'Rose',
@@ -329,7 +329,7 @@ export class AccountController {
       },
     },
   })
-  async loginByProfile(
+  async loginByUserProfile(
     @Body()
     body: {
       givenName: string;
@@ -339,7 +339,7 @@ export class AccountController {
       birthday: Date;
     }
   ): Promise<{userId: string; token: string} | {err: {message: string}}> {
-    const profileService = new ProfileService();
+    const profileService = new UserProfileService();
 
     // [step 1] It has been confirmed there is only one profile.
     const {givenName, middleName, familyName, suffix, birthday} = body;

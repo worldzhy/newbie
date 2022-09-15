@@ -1,4 +1,4 @@
-import {Controller, Get, Post, Param, Body, Put} from '@nestjs/common';
+import {Controller, Get, Post, Param, Body, Patch} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {Prisma} from '@prisma/client';
 import {OrganizationService} from './organization.service';
@@ -8,6 +8,24 @@ import {OrganizationService} from './organization.service';
 @Controller('organizations')
 export class OrganizationController {
   constructor(private organizationService: OrganizationService) {}
+
+  @Post('/')
+  @ApiBody({
+    description: "The 'name' is required in request body.",
+    examples: {
+      a: {
+        summary: '1. Create',
+        value: {
+          name: 'InceptionPad Inc',
+        },
+      },
+    },
+  })
+  async createOrganization(@Body() body: Prisma.OrganizationCreateInput) {
+    return await this.organizationService.create({
+      data: body,
+    });
+  }
 
   @Get('/pages/:page')
   @ApiParam({
@@ -62,25 +80,7 @@ export class OrganizationController {
     });
   }
 
-  @Post('/')
-  @ApiBody({
-    description: "The 'name' is required in request body.",
-    examples: {
-      a: {
-        summary: '1. Create',
-        value: {
-          name: 'InceptionPad Inc',
-        },
-      },
-    },
-  })
-  async createOrganization(@Body() body: Prisma.OrganizationCreateInput) {
-    return await this.organizationService.create({
-      data: body,
-    });
-  }
-
-  @Put('/:organizationId')
+  @Patch('/:organizationId')
   @ApiParam({
     name: 'organizationId',
     schema: {type: 'string'},

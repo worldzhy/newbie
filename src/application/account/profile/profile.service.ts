@@ -1,29 +1,29 @@
 import {Injectable} from '@nestjs/common';
-import {Prisma, Profile} from '@prisma/client';
+import {Prisma, UserProfile} from '@prisma/client';
 import {PrismaService} from '../../../_prisma/_prisma.service';
 
 @Injectable()
-export class ProfileService {
+export class UserProfileService {
   private prisma = new PrismaService();
 
   async findUnique(
-    params: Prisma.ProfileFindUniqueArgs
-  ): Promise<Profile | null> {
-    return await this.prisma.profile.findUnique(params);
+    params: Prisma.UserProfileFindUniqueArgs
+  ): Promise<UserProfile | null> {
+    return await this.prisma.userProfile.findUnique(params);
   }
 
-  async findMany(params: Prisma.ProfileFindManyArgs): Promise<Profile[]> {
-    return await this.prisma.profile.findMany(params);
+  async findMany(
+    params: Prisma.UserProfileFindManyArgs
+  ): Promise<UserProfile[]> {
+    return await this.prisma.userProfile.findMany(params);
   }
 
-  async create(data: Prisma.ProfileCreateInput): Promise<Profile> {
-    return await this.prisma.profile.create({
-      data: data,
-    });
+  async create(params: Prisma.UserProfileCreateArgs): Promise<UserProfile> {
+    return await this.prisma.userProfile.create(params);
   }
 
-  async update(params: Prisma.ProfileUpdateArgs): Promise<Profile> {
-    return await this.prisma.profile.update(params);
+  async update(params: Prisma.UserProfileUpdateArgs): Promise<UserProfile> {
+    return await this.prisma.userProfile.update(params);
   }
 
   /* End */

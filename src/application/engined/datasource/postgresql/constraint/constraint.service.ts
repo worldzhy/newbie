@@ -6,106 +6,43 @@ import {PrismaService} from '../../../../../_prisma/_prisma.service';
 export class PostgresqlDatasourceConstraintService {
   private prisma: PrismaService = new PrismaService();
 
-  /**
-   * Get many postgresql datasource constraints.
-   *
-   * @param {{
-   *     skip?: number;
-   *     take?: number;
-   *     where?: Prisma.PostgresqlDatasourceConstraintWhereInput;
-   *     orderBy?: Prisma.PostgresqlDatasourceConstraintOrderByWithRelationAndSearchRelevanceInput;
-   *     select?: Prisma.PostgresqlDatasourceConstraintSelect;
-   *   }} params
-   * @returns
-   * @memberof PostgresqlDatasourceConstraintService
-   */
-  async findMany(params: {
-    skip?: number;
-    take?: number;
-    where?: Prisma.PostgresqlDatasourceConstraintWhereInput;
-    orderBy?: Prisma.PostgresqlDatasourceConstraintOrderByWithRelationAndSearchRelevanceInput;
-    select?: Prisma.PostgresqlDatasourceConstraintSelect;
-  }) {
+  async findMany(params: Prisma.PostgresqlDatasourceConstraintFindManyArgs) {
     const {skip, take, where, orderBy, select} = params;
-    return await this.prisma.postgresqlDatasourceConstraint.findMany({
-      skip,
-      take,
-      where,
-      orderBy,
-      select,
-    });
+    return await this.prisma.postgresqlDatasourceConstraint.findMany(params);
   }
 
-  /**
-   * Create a postgresql datasource constraint.
-   *
-   * @param {Prisma.PostgresqlDatasourceConstraintCreateInput} data
-   * @returns {Promise<PostgresqlDatasourceConstraint>}
-   * @memberof PostgresqlDatasourceConstraintService
-   */
   async create(
-    data: Prisma.PostgresqlDatasourceConstraintCreateInput
+    params: Prisma.PostgresqlDatasourceConstraintCreateArgs
   ): Promise<PostgresqlDatasourceConstraint> {
-    return await this.prisma.postgresqlDatasourceConstraint.create({
-      data,
-    });
+    try {
+      return await this.prisma.postgresqlDatasourceConstraint.create(params);
+    } catch (error) {
+      return error;
+    }
   }
 
-  /**
-   * Create many postgresql datasource constraints.
-   * @param data
-   * @returns
-   */
   async createMany(
-    data: Prisma.PostgresqlDatasourceConstraintCreateManyInput[]
+    params: Prisma.PostgresqlDatasourceConstraintCreateManyArgs
   ): Promise<number> {
-    const result = await this.prisma.postgresqlDatasourceConstraint.createMany({
-      data,
-    });
+    const result = await this.prisma.postgresqlDatasourceConstraint.createMany(
+      params
+    );
 
     return result.count;
   }
 
-  /**
-   * Update a postgresql datasource constraint.
-   *
-   * @param {{
-   *     where: Prisma.PostgresqlDatasourceConstraintWhereUniqueInput;
-   *     data: Prisma.PostgresqlDatasourceConstraintUpdateInput;
-   *   }} params
-   * @returns {Promise<PostgresqlDatasourceConstraint>}
-   * @memberof PostgresqlDatasourceConstraintService
-   */
-  async update(params: {
-    where: Prisma.PostgresqlDatasourceConstraintWhereUniqueInput;
-    data: Prisma.PostgresqlDatasourceConstraintUpdateInput;
-  }): Promise<PostgresqlDatasourceConstraint> {
-    const {where, data} = params;
-    return await this.prisma.postgresqlDatasourceConstraint.update({
-      data,
-      where,
-    });
+  async update(
+    params: Prisma.PostgresqlDatasourceConstraintUpdateArgs
+  ): Promise<PostgresqlDatasourceConstraint> {
+    return await this.prisma.postgresqlDatasourceConstraint.update(params);
   }
 
-  /**
-   * Delete a postgresql datasource constraint.
-   * @returns {Promise<PostgresqlDatasourceConstraint>}
-   * @memberof PostgresqlDatasourceConstraintService
-   */
-  async delete(params: {
-    where: Prisma.PostgresqlDatasourceConstraintWhereUniqueInput;
-    include?: Prisma.PostgresqlDatasourceConstraintInclude;
-  }): Promise<PostgresqlDatasourceConstraint> {
+  async delete(
+    params: Prisma.PostgresqlDatasourceConstraintDeleteArgs
+  ): Promise<PostgresqlDatasourceConstraint> {
     return await this.prisma.postgresqlDatasourceConstraint.delete(params);
   }
 
-  /**
-   * Delete many postgresql datasource constraints.
-   *
-   * @param {Prisma.PostgresqlDatasourceConstraintWhereInput} where
-   * @returns {Promise<PostgresqlDatasourceConstraint>}
-   * @memberof PostgresqlDatasourceConstraintService
-   */
   async deleteMany(
     where: Prisma.PostgresqlDatasourceConstraintWhereInput
   ): Promise<number> {
