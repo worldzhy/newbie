@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {JwtService} from '@nestjs/jwt';
+import {UserJwtStatus} from '@prisma/client';
 import {PrismaService} from '../../../../toolkits/prisma/prisma.service';
-import {JwtStatus} from '@prisma/client';
 import {getJwtConfig} from '../../../../_config/_jwt.config';
 
 @Injectable()
@@ -28,11 +28,11 @@ export class UserJwtService {
    */
   async createJWT(payload: {userId: string; sub: string}) {
     const jwt = this.jwtService.sign(payload);
-    return await this.prisma.jwt.create({
+    return await this.prisma.userJwt.create({
       data: {
         userId: payload.userId,
         token: jwt,
-        status: JwtStatus.ACTIVE,
+        status: UserJwtStatus.ACTIVE,
       },
     });
   }
@@ -46,12 +46,12 @@ export class UserJwtService {
    * @memberof UserService
    */
   async inactivateJWT(userId: string, accessToken: string) {
-    return await this.prisma.jwt.updateMany({
+    return await this.prisma.userJwt.updateMany({
       where: {
         AND: [{userId: userId}, {token: accessToken}],
       },
       data: {
-        status: JwtStatus.INACTIVE,
+        status: UserJwtStatus.INACTIVE,
       },
     });
   }
@@ -64,12 +64,12 @@ export class UserJwtService {
    * @memberof UserService
    */
   async inactivateJWTs(userId: string) {
-    return await this.prisma.jwt.updateMany({
+    return await this.prisma.userJwt.updateMany({
       where: {
         userId: userId,
       },
       data: {
-        status: JwtStatus.INACTIVE,
+        status: UserJwtStatus.INACTIVE,
       },
     });
   }

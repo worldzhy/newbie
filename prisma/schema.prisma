@@ -96,81 +96,47 @@ enum TaskState {
 
 //     ! Account       //
 // ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
-// * Jwt               //
-// * VerificationCode  //
 // * User              //
-// * Profile           //
+// * UserJwt           //
+// * UserProfile       //
+// * VerificationCode  //
 // * Role              //
 // * Permission        //
 // * Organization      //
 // ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
-
-model Jwt {
-  id        Int       @id @default(autoincrement())
-  userId    String
-  token     String
-  status    JwtStatus
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-}
-
-enum JwtStatus {
-  ACTIVE
-  INACTIVE
-}
-
-model VerificationCode {
-  id        Int                    @id @default(autoincrement())
-  email     String?
-  phone     String?
-  code      String
-  use       VerificationCodeUse
-  status    VerificationCodeStatus
-  expiredAt DateTime
-  createdAt DateTime               @default(now())
-  updatedAt DateTime               @updatedAt
-}
-
-enum VerificationCodeUse {
-  UNKNOWN
-  // For generating JWT.
-  LOGIN_BY_EMAIL
-  LOGIN_BY_PHONE
-  // For closing and recovering account.
-  CLOSE_ACCOUNT_BY_EMAIL
-  CLOSE_ACCOUNT_BY_PHONE
-  RECOVER_ACCOUNT_BY_EMAIL
-  RECOVER_ACCOUNT_BY_PHONE
-  // For other operations
-  BIND_EMAIL
-  BIND_PHONE
-  CHANGE_PASSWORD
-  RESET_PASSWORD
-}
-
-enum VerificationCodeStatus {
-  ACTIVE
-  INACTIVE
-}
 
 model User {
   // [1] The 'User' and 'VerificationCode' models are both used for logging in.
   // [2] The 'User' is designed for long-term use and the 'VerificationCode' is designed for short-term use.
   // [3] Actually, the 'User' model should be named 'UserPassword' and the 'VerificationCode' should be named 'UserVerificationCode'.
 
-  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email        String?       @unique
-  phone        String?       @unique
-  username     String?       @unique
-  passwordHash String?
-  status       UserStatus    @default(ACTIVE)
-  lastLoginAt  DateTime?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  profiles     UserProfile[]
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email       String?       @unique
+  phone       String?       @unique
+  username    String?       @unique
+  password    String? // hash
+  status      UserStatus    @default(ACTIVE)
+  lastLoginAt DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  profiles    UserProfile[]
 }
 
 enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model UserJwt {
+  id        Int           @id @default(autoincrement())
+  userId    String
+  token     String
+  status    UserJwtStatus
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+enum UserJwtStatus {
   ACTIVE
   INACTIVE
 }
@@ -209,6 +175,40 @@ enum UserProfileRaceType {
 enum UserProfileEthnicityType {
   HISPANIC
   NOT_HISPANIC
+}
+
+model VerificationCode {
+  id        Int                    @id @default(autoincrement())
+  email     String?
+  phone     String?
+  code      String
+  status    VerificationCodeStatus
+  use       VerificationCodeUse
+  expiredAt DateTime
+  createdAt DateTime               @default(now())
+  updatedAt DateTime               @updatedAt
+}
+
+enum VerificationCodeStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum VerificationCodeUse {
+  UNKNOWN
+  // For generating JWT.
+  LOGIN_BY_EMAIL
+  LOGIN_BY_PHONE
+  // For closing and recovering account.
+  CLOSE_ACCOUNT_BY_EMAIL
+  CLOSE_ACCOUNT_BY_PHONE
+  RECOVER_ACCOUNT_BY_EMAIL
+  RECOVER_ACCOUNT_BY_PHONE
+  // For other operations
+  BIND_EMAIL
+  BIND_PHONE
+  CHANGE_PASSWORD
+  RESET_PASSWORD
 }
 
 model Role {

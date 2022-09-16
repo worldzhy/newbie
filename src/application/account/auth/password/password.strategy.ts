@@ -33,7 +33,7 @@ export class AuthPasswordStrategy extends PassportStrategy(
     }
 
     // [step 2] Validate password.
-    const match = await bcrypt.compare(password, user.passwordHash);
+    const match = await bcrypt.compare(password, user.password);
     if (match === true) {
       return true;
     } else {

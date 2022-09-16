@@ -14,6 +14,7 @@ import {UserService} from './user.service';
 import {UserJwtService} from './jwt/jwt.service';
 import {UserProfileService} from './profile/profile.service';
 import * as validator from '../../../toolkits/validators/account.validator';
+const bcrypt = require('bcryptjs');
 
 @ApiTags('[Application] Account / User')
 @ApiBearerAuth()
@@ -106,7 +107,7 @@ export class UserController {
         id: true,
         username: true,
         profiles: true,
-        passwordHash: false,
+        password: false,
       },
       orderBy: {
         _relevance: {
@@ -147,8 +148,14 @@ export class UserController {
     });
   }
 
-  @Patch('change-password')
   @ApiBearerAuth()
+  @Patch(':userId/change-password')
+  @ApiParam({
+    name: 'userId',
+    schema: {type: 'string'},
+    description: 'The uuid of the user.',
+    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
+  })
   @ApiBody({
     description:
       "The 'userId', 'currentPassword' and 'newPassword' are required in request body.",
@@ -156,7 +163,6 @@ export class UserController {
       a: {
         summary: '1. new password != current password',
         value: {
-          userId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
           currentPassword: 'Abc1234!',
           newPassword: 'Abc12345!',
         },
@@ -164,7 +170,6 @@ export class UserController {
       b: {
         summary: '2. new password == current password',
         value: {
-          userId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
           currentPassword: 'Abc1234!',
           newPassword: 'Abc1234!',
         },
@@ -172,8 +177,9 @@ export class UserController {
     },
   })
   async changePassword(
-    @Body() body: {userId: string; currentPassword: string; newPassword: string}
-  ): Promise<{data: object | null; err: object | null}> {
+    @Param('userId') userId: string,
+    @Body() body: {currentPassword: string; newPassword: string}
+  ): Promise<User | {err: {message: string}}> {
     // [step 1] Guard statement.
     if (
       !('userId' in body) ||
@@ -181,7 +187,6 @@ export class UserController {
       !('newPassword' in body)
     ) {
       return {
-        data: null,
         err: {
           message:
             "Please carry 'userId', 'currentPassword' and 'newPassword' in the request body.",
@@ -192,93 +197,84 @@ export class UserController {
     // [step 2] Verify if the new password is same with the current password.
     if (body.currentPassword.trim() === body.newPassword.trim()) {
       return {
-        data: null,
         err: {message: 'The new password is same with the current password.'},
       };
     }
 
     // [step 3] Validate the new password.
     if (!validator.verifyPassword(body.newPassword)) {
+      return {err: {message: 'The new password is invalid.'}};
+    }
+
+    // [step 4] Verify the current password.
+    const user = await this.userService.findUnique({where: {id: userId}});
+    if (!user) {
       return {
-        data: null,
-        err: {message: 'The new password is invalid.'},
+        err: {message: 'The user is not existed.'},
+      };
+    }
+    const match = await bcrypt.compare(body.currentPassword, user.password);
+    if (match === false) {
+      return {
+        err: {message: 'The current password is incorrect.'},
       };
     }
 
-    // [step 4] Change password.
-    const result = await this.userService.changePassword(
-      body.userId,
-      body.currentPassword,
-      body.newPassword
-    );
-    if (result) {
-      return {
-        data: {message: 'Change password successfully.'},
-        err: null,
-      };
-    } else {
-      return {
-        data: null,
-        err: {message: 'Change password failed.'},
-      };
-    }
+    // [step 5] Change password.
+    return await this.userService.update({
+      where: {id: userId},
+      data: {password: body.newPassword},
+      select: {id: true, username: true, email: true, phone: true},
+    });
   }
 
-  @Patch('reset-password')
   @ApiBearerAuth()
+  @Patch(':userId/reset-password')
+  @ApiParam({
+    name: 'userId',
+    schema: {type: 'string'},
+    description: 'The uuid of the user.',
+    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
+  })
   @ApiBody({
     description: 'The new password.',
     examples: {
       a: {
         summary: '1. Missing uppercase letter(s)',
         value: {
-          userId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
           newPassword: 'abc1234!',
         },
       },
       b: {
         summary: '2. Correct format',
         value: {
-          userId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
           newPassword: 'Abc1234!',
         },
       },
     },
   })
   async resetPassword(
-    @Body() body: {userId: string; newPassword: string}
-  ): Promise<{data: object | null; err: object | null}> {
+    @Param('userId') userId: string,
+    @Body() body: {newPassword: string}
+  ): Promise<User | {err: {message: string}}> {
     // [step 1] Guard statement
-    if (!('userId' in body) || !('newPassword' in body)) {
+    if (!('newPassword' in body)) {
       return {
-        data: null,
-        err: {
-          message:
-            "Please carry 'userId' and 'newPassword' in the request body.",
-        },
+        err: {message: "Please carry 'newPassword' in the request body."},
       };
     }
 
     // [step 2] Validate the new password
     if (!validator.verifyPassword(body.newPassword)) {
-      return {
-        data: null,
-        err: {message: 'The new password is invalid.'},
-      };
+      return {err: {message: 'The new password is invalid.'}};
     }
 
     // [step 3] Reset password
-    if (await this.userService.resetPassword(body.userId, body.newPassword)) {
-      return {
-        data: {message: 'Reset password successfully.'},
-        err: null,
-      };
-    } else {
-      return {
-        data: null,
-        err: {message: 'Reset password failed.'},
-      };
-    }
+    return await this.userService.update({
+      where: {id: userId},
+      data: {password: body.newPassword},
+      select: {id: true, username: true, email: true, phone: true},
+    });
   }
 
   /* End */

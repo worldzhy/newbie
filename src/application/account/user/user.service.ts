@@ -1,10 +1,8 @@
 import {Injectable} from '@nestjs/common';
 import {PrismaService} from '../../../toolkits/prisma/prisma.service';
-import {Prisma, User, UserStatus} from '@prisma/client';
+import {Prisma, User} from '@prisma/client';
 import {generateHash} from '../../../toolkits/utilities/common.util';
 import {verifyUuid} from '../../../toolkits/validators/account.validator';
-
-const bcrypt = require('bcryptjs');
 
 @Injectable()
 export class UserService {
@@ -23,6 +21,20 @@ export class UserService {
   }
 
   async create(params: Prisma.UserCreateArgs): Promise<User> {
+    // [middleware] Hash password.
+    this.prisma.$use(async (params, next) => {
+      if (params.model === 'User') {
+        if (params.action === 'create') {
+          if (params.args['data']['password']) {
+            // [step 3] Generate the new password hash.
+            const hash = await generateHash(params.args['data']['password']);
+            params.args['data']['password'] = hash;
+          }
+        }
+      }
+      return next(params);
+    });
+
     try {
       return await this.prisma.user.create(params);
     } catch (error) {
@@ -31,6 +43,20 @@ export class UserService {
   }
 
   async update(params: Prisma.UserUpdateArgs): Promise<User> {
+    // [middleware] Hash password.
+    this.prisma.$use(async (params, next) => {
+      if (params.model === 'User') {
+        if (params.action === 'update') {
+          if (params.args['data']['password']) {
+            // [step 3] Generate the new password hash.
+            const hash = await generateHash(params.args['data']['password']);
+            params.args['data']['password'] = hash;
+          }
+        }
+      }
+      return next(params);
+    });
+
     return await this.prisma.user.update(params);
   }
 
@@ -56,93 +82,6 @@ export class UserService {
         },
       });
       return users.length > 0 ? (users[0] as User) : null;
-    }
-  }
-
-  /**
-   * Check if a user exists
-   *
-   * @param {{
-   *     username: string;
-   *     email: string;
-   *     phone: string;
-   *   }} account
-   * @returns {Promise<boolean>}
-   * @memberof UserService
-   */
-  async checkAccount(account: {
-    username?: string;
-    email?: string;
-    phone?: string;
-  }): Promise<boolean> {
-    const {username, email, phone} = account;
-    const users = await this.findMany({
-      where: {
-        OR: [{username}, {email}, {phone}],
-      },
-    });
-    if (users.length > 0) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  /**
-   * Change password
-   * @param {string} userId
-   * @param {string} currentPassword
-   * @param {string} newPassword
-   * @returns
-   * @memberof AuthService
-   */
-  async changePassword(
-    userId: string,
-    currentPassword: string,
-    newPassword: string
-  ) {
-    // [step 1] Get user.
-    const user = await this.findUnique({where: {id: userId}});
-    if (!user) {
-      return false;
-    }
-
-    // [step 2] Verify the current password.
-    const match = await bcrypt.compare(currentPassword, user.passwordHash);
-    if (match === false) {
-      return false;
-    }
-
-    // [step 3] Generate the new password hash.
-    const hash = await generateHash(newPassword);
-
-    // [step 4] Update the password.
-    const result = await this.update({
-      where: {id: userId},
-      data: {passwordHash: hash},
-    });
-    if (result) {
-      return true;
-    } else {
-      // [Mark] Update password failed. We need to investgate.
-      return false;
-    }
-  }
-
-  async resetPassword(userId: string, newPassword: string): Promise<boolean> {
-    // [step 1] Generate the new password hash.
-    const hash = await generateHash(newPassword);
-
-    // [step 2] Update the password.
-    const result = await this.update({
-      where: {id: userId},
-      data: {passwordHash: hash},
-    });
-    if (result) {
-      return true;
-    } else {
-      // [Mark] Update password failed. We need to investgate.
-      return false;
     }
   }
 

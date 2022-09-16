@@ -4,9 +4,11 @@ import {
   Body,
   Post,
   NotFoundException,
+  Get,
+  Param,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {User, UserStatus, VerificationCodeUse} from '@prisma/client';
+import {ApiTags, ApiBearerAuth, ApiBody, ApiParam} from '@nestjs/swagger';
+import {Prisma, User, UserStatus, VerificationCodeUse} from '@prisma/client';
 import {UserService} from './user/user.service';
 import {UserJwtService} from './user/jwt/jwt.service';
 import {UserProfileService} from './user/profile/profile.service';
@@ -76,12 +78,16 @@ export class AccountController {
     }
   ): Promise<{count: number; message: string}> {
     // [step 1] Check account existence with username, email and phone.
-    const existed = await this.userService.checkAccount({
-      username: body.username,
-      email: body.email,
-      phone: body.phone,
+    const users = await this.userService.findMany({
+      where: {
+        OR: [
+          {username: body.username},
+          {email: body.email},
+          {phone: body.phone},
+        ],
+      },
     });
-    if (existed) {
+    if (users.length > 0) {
       return {
         count: 1,
         message: 'Your account exists.',
@@ -90,7 +96,9 @@ export class AccountController {
 
     // [step 2] Check account existence with profile.
     if (body.profile) {
-      const profiles = await this.profileService.findMany({...body.profile});
+      const profiles = await this.profileService.findMany({
+        where: {...body.profile},
+      });
       if (profiles.length === 1) {
         return {
           count: 1,
@@ -108,175 +116,6 @@ export class AccountController {
       count: 0,
       message: 'Your account does not exist.',
     };
-  }
-
-  // *
-  // * Won't send message if the same email apply again within 1 minute.
-  // *
-  @Public()
-  @Post('verification-code/email/generate')
-  @ApiBody({
-    description:
-      "Valid 'use' can be 'login-by-email', 'close-account-by-email', 'recover-account-by-email'...",
-    examples: {
-      a: {
-        summary: '1. Login by email',
-        value: {
-          email: 'email@example.com',
-          use: VerificationCodeUse.LOGIN_BY_EMAIL,
-        },
-      },
-      b: {
-        summary: '2. Close account by email',
-        value: {
-          email: 'email@example.com',
-          use: VerificationCodeUse.CLOSE_ACCOUNT_BY_EMAIL,
-        },
-      },
-    },
-  })
-  async send2Email(@Body() body: {email: string; use: VerificationCodeUse}) {
-    const {email, use} = body;
-
-    // [step 1] Guard statement.
-    if (!validator.verifyEmail(email)) {
-      return {err: {message: 'The email is invalid.'}};
-    }
-
-    if (
-      use !== VerificationCodeUse.LOGIN_BY_EMAIL &&
-      use !== VerificationCodeUse.CLOSE_ACCOUNT_BY_EMAIL &&
-      use !== VerificationCodeUse.RECOVER_ACCOUNT_BY_EMAIL
-    ) {
-      return {err: {message: "The 'use' is invalid."}};
-    }
-
-    // [step 2] Check if the account exists.
-    const user = await this.userService.findByAccount(email);
-    if (!user) {
-      return {
-        err: {message: 'Your account is not registered.'},
-      };
-    }
-
-    // [step 3] Generate and send verification code.
-    return await this.verificationCodeService.send2Email(email, use);
-  }
-
-  @Public()
-  @Post('verification-code/email/validate')
-  @ApiBody({
-    description:
-      "The request body must contain one of ['userId', 'email', 'phone'] and 'code'.",
-    examples: {
-      a: {
-        summary: '1. Validate with email',
-        value: {
-          email: 'email@example.com',
-          code: '123456',
-        },
-      },
-    },
-  })
-  async validateWithEmail(
-    @Body() body: {code: string; email: string}
-  ): Promise<boolean> {
-    // [step 1] Guard statement.
-    const {code, email} = body;
-    if (!code || !validator.verifyEmail(email)) {
-      return false;
-    }
-
-    // [step 2] Check if the account exists.
-    const user = await this.userService.findByAccount(email);
-    if (!user) {
-      return false;
-    }
-
-    // [step 3] Validate code.
-    return await this.verificationCodeService.validateWithEmail(code, email);
-  }
-
-  // *
-  // * Won't send message if the same phone apply again within 1 minute.
-  // *
-  @Public()
-  @Post('verification-code/text-message/generate')
-  @ApiBody({
-    description:
-      "Valid 'use' can be 'login-by-phone', 'close-account-by-phone', 'recover-account-by-phone'...",
-    examples: {
-      a: {
-        summary: '3. Recover account by phone',
-        value: {
-          phone: '13960068008',
-          use: VerificationCodeUse.RECOVER_ACCOUNT_BY_PHONE,
-        },
-      },
-    },
-  })
-  async send2TextMessage(
-    @Body() body: {phone: string; use: VerificationCodeUse}
-  ) {
-    const {phone, use} = body;
-
-    // [step 1] Guard statement.
-    if (!validator.verifyPhone(phone)) {
-      return {err: {message: 'The phone is invalid.'}};
-    }
-
-    if (
-      use !== VerificationCodeUse.LOGIN_BY_PHONE &&
-      use !== VerificationCodeUse.CLOSE_ACCOUNT_BY_PHONE &&
-      use !== VerificationCodeUse.RECOVER_ACCOUNT_BY_PHONE
-    ) {
-      return {err: {message: "The 'use' is invalid."}};
-    }
-
-    // [step 2] Check if the account exists.
-    const user = await this.userService.findByAccount(phone);
-    if (!user) {
-      return {
-        err: {message: 'Your account is not registered.'},
-      };
-    }
-
-    // [step 3] Generate verification code.
-    return await this.verificationCodeService.send2Phone(phone, use);
-  }
-
-  @Public()
-  @Post('verification-code/text-message/validate')
-  @ApiBody({
-    description:
-      "The request body must contain one of ['userId', 'email', 'phone'] and 'code'.",
-    examples: {
-      a: {
-        summary: '2. Validate with phone',
-        value: {
-          phone: '13960068008',
-          code: '123456',
-        },
-      },
-    },
-  })
-  async validateWithPhone(
-    @Body() body: {code: string; phone: string}
-  ): Promise<boolean> {
-    // [step 1] Validate phone.
-    const {code, phone} = body;
-    if (!code || !validator.verifyPhone(phone)) {
-      return false;
-    }
-
-    // [step 2] Check if the account exists.
-    const user = await this.userService.findByAccount(phone);
-    if (!user) {
-      return false;
-    }
-
-    // [step 3] Validate code.
-    return await this.verificationCodeService.validateWithPhone(code, phone);
   }
 
   /**
@@ -328,13 +167,7 @@ export class AccountController {
   })
   async signup(
     @Body()
-    signupUser: {
-      username?: string;
-      password?: string;
-      email?: string;
-      phone?: string;
-      profile?: object;
-    }
+    body: Prisma.UserCreateInput
   ): Promise<User | {err: {message: string}}> {
     let usernameCount = 0;
     let emailCount = 0;
@@ -342,8 +175,8 @@ export class AccountController {
     let profileCount = 0;
 
     // [step 1] Validate parameters.
-    if (signupUser.password) {
-      if (!validator.verifyPassword(signupUser.password)) {
+    if (body.password) {
+      if (!validator.verifyPassword(body.password)) {
         return {err: {message: 'Your password is not strong enough.'}};
       } else {
         // Go on validating...
@@ -351,8 +184,8 @@ export class AccountController {
       }
     }
 
-    if (signupUser.username) {
-      if (!validator.verifyUsername(signupUser.username)) {
+    if (body.username) {
+      if (!validator.verifyUsername(body.username)) {
         return {err: {message: 'Your username is not valid.'}};
       } else {
         // Go on validating...
@@ -360,8 +193,8 @@ export class AccountController {
       }
     }
 
-    if (signupUser.email) {
-      if (!validator.verifyEmail(signupUser.email)) {
+    if (body.email) {
+      if (!validator.verifyEmail(body.email)) {
         return {err: {message: 'Your email is not valid.'}};
       } else {
         // Go on validating...
@@ -369,8 +202,8 @@ export class AccountController {
       }
     }
 
-    if (signupUser.phone) {
-      if (!validator.verifyPhone(signupUser.phone)) {
+    if (body.phone) {
+      if (!validator.verifyPhone(body.phone)) {
         return {err: {message: 'Your phone is not valid.'}};
       } else {
         // End of validating.
@@ -378,17 +211,21 @@ export class AccountController {
       }
     }
 
-    if (signupUser.profile) {
+    if (body.profiles) {
       profileCount += 1;
     }
 
     // [step 2] Check account existence.
-    const existed = await this.userService.checkAccount({
-      username: signupUser.username,
-      email: signupUser.email,
-      phone: signupUser.phone,
+    const users = await this.userService.findMany({
+      where: {
+        OR: [
+          {username: body.username},
+          {email: body.email},
+          {phone: body.phone},
+        ],
+      },
     });
-    if (existed) {
+    if (users.length > 0) {
       return {err: {message: 'Your username exists.'}};
     }
 
@@ -400,13 +237,8 @@ export class AccountController {
       profileCount === 1
     ) {
       // Generate password hash if needed.
-      let passwordHash: string | null | undefined;
-      if (signupUser.password) {
-        passwordHash = await generateHash(signupUser.password);
-      }
-
       return this.userService.create({
-        data: signupUser,
+        data: body,
         select: {
           id: true,
           username: true,
@@ -538,6 +370,68 @@ export class AccountController {
     }
   ): Promise<{userId: string; token: string} | {err: {message: string}}> {
     return await this.login(body.uuid);
+  }
+
+  // *
+  // * Won't send message if the same email apply again within 1 minute.
+  // *
+  @Public()
+  @Get('verification-code/email/:email')
+  @ApiParam({
+    name: 'email',
+    schema: {type: 'string'},
+    example: 'email@example.com',
+  })
+  async getVerificationCodeByEmail(@Param('email') email: string) {
+    // [step 1] Guard statement.
+    if (!validator.verifyEmail(email)) {
+      return {err: {message: 'The email is invalid.'}};
+    }
+
+    // [step 2] Check if the account exists.
+    const user = await this.userService.findByAccount(email);
+    if (!user) {
+      return {
+        err: {message: 'Your account is not registered.'},
+      };
+    }
+
+    // [step 3] Generate and send verification code.
+    return await this.verificationCodeService.send2Email(
+      email,
+      VerificationCodeUse.LOGIN_BY_EMAIL
+    );
+  }
+
+  // *
+  // * Won't send message if the same phone apply again within 1 minute.
+  // *
+  @Public()
+  @Get('verification-code/phone/:phone')
+  @ApiParam({
+    name: 'phone',
+    schema: {type: 'string'},
+    example: '13260000999',
+  })
+  async getVerificationCodeByPhone(@Param('phone') phone: string) {
+    // [step 1] Guard statement.
+    if (!validator.verifyPhone(phone)) {
+      return {err: {message: 'The phone is invalid.'}};
+    }
+
+    // [step 2] Check if the account exists.
+    const user = await this.userService.findByAccount(phone);
+    if (!user) {
+      return {
+        err: {message: 'Your account is not registered.'},
+      };
+    }
+
+    // [step 3] Generate verification code.
+    return await this.verificationCodeService.send2Phone(
+      phone,
+      VerificationCodeUse.LOGIN_BY_PHONE
+    );
   }
 
   /**
