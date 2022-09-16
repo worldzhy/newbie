@@ -9,15 +9,19 @@ import {
   Delete,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {UserService} from './user.service';
-import * as validator from '../../../toolkits/validators/account.validator';
 import {Prisma, User} from '@prisma/client';
+import {UserService} from './user.service';
+import {UserJwtService} from './jwt/jwt.service';
+import {UserProfileService} from './profile/profile.service';
+import * as validator from '../../../toolkits/validators/account.validator';
 
 @ApiTags('[Application] Account / User')
 @ApiBearerAuth()
 @Controller('users')
 export class UserController {
-  constructor(private userService: UserService) {}
+  private userService = new UserService();
+  private userJwtService = new UserJwtService();
+  private profileService = new UserProfileService();
 
   @Post('')
   @ApiBody({

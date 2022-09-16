@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {PrismaService} from '../../../toolkits/prisma/prisma.service';
-import {Prisma, User} from '@prisma/client';
+import {Prisma, User, UserStatus} from '@prisma/client';
 import {generateHash} from '../../../toolkits/utilities/common.util';
 import {verifyUuid} from '../../../toolkits/validators/account.validator';
 
@@ -90,9 +90,8 @@ export class UserService {
 
   /**
    * Change password
-   *
    * @param {string} userId
-   * @param {string} oldPassword
+   * @param {string} currentPassword
    * @param {string} newPassword
    * @returns
    * @memberof AuthService

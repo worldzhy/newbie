@@ -5,9 +5,8 @@ import {
   Prisma,
 } from '@prisma/client';
 import {PrismaService} from '../src/toolkits/prisma/prisma.service';
-import {AuthService} from '../src/application/account/auth/auth.service';
-import {AuthController} from '../src/application/account/auth/auth.controller';
-import {RoleService} from '../src/application/account/role/role.service';
+import {AccountController} from '../src/application/account/account.controller';
+import {RoleService} from '../src/application/account/user/role/role.service';
 import {ProjectController} from '../src/application/pmgmt/project/project.controller';
 import {PostgresqlDatasourceService} from '../src/application/engined/datasource/postgresql/postgresql-datasource.service';
 import {ElasticsearchDatasourceService} from '../src/application/engined/datasource/elasticsearch/elasticsearch-datasource.service';
@@ -16,8 +15,7 @@ import {DatatransPipelineController} from '../src/application/engined/datatrans/
 const prisma = new PrismaService();
 
 // Auth
-const authService = new AuthService();
-const authController = new AuthController(authService);
+const authController = new AccountController();
 const users = [
   {
     username: 'henry',
