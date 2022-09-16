@@ -6,6 +6,7 @@ import {
   NotFoundException,
   Get,
   Param,
+  Patch,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody, ApiParam} from '@nestjs/swagger';
 import {Prisma, User, UserStatus, VerificationCodeUse} from '@prisma/client';
@@ -19,10 +20,8 @@ import {LoggingInByPassword} from './auth/password/password.decorator';
 import {LoggingInByProfile} from './auth/profile/profile.decorator';
 import {LoggingInByUuid} from './auth/uuid/uuid.decorator';
 import {LoggingInByVerificationCode} from './auth/verification-code/verification-code.decorator';
-import {generateHash} from '../../toolkits/utilities/common.util';
 
 @ApiTags('[Application] Account')
-@ApiBearerAuth()
 @Controller('account')
 export class AccountController {
   private userService = new UserService();
@@ -262,8 +261,10 @@ export class AccountController {
    * [2] email
    * [3] phone
    */
+
   @LoggingInByPassword()
   @Post('login/password')
+  @ApiBearerAuth()
   @ApiBody({
     description:
       "The request body should contain 'account' and 'password' attributes.",
@@ -303,6 +304,7 @@ export class AccountController {
 
   @LoggingInByProfile()
   @Post('login/profile')
+  @ApiBearerAuth()
   @ApiBody({
     description:
       "The request body should contain 'giveName', 'middleName', 'familyName' and 'birthday' attributes. The 'suffix' is optional.",
@@ -352,6 +354,7 @@ export class AccountController {
 
   @LoggingInByUuid()
   @Post('login/uuid')
+  @ApiBearerAuth()
   @ApiBody({
     description: 'Verfiy account by uuid.',
     examples: {
@@ -372,68 +375,6 @@ export class AccountController {
     return await this.login(body.uuid);
   }
 
-  // *
-  // * Won't send message if the same email apply again within 1 minute.
-  // *
-  @Public()
-  @Get('verification-code/email/:email')
-  @ApiParam({
-    name: 'email',
-    schema: {type: 'string'},
-    example: 'email@example.com',
-  })
-  async getVerificationCodeByEmail(@Param('email') email: string) {
-    // [step 1] Guard statement.
-    if (!validator.verifyEmail(email)) {
-      return {err: {message: 'The email is invalid.'}};
-    }
-
-    // [step 2] Check if the account exists.
-    const user = await this.userService.findByAccount(email);
-    if (!user) {
-      return {
-        err: {message: 'Your account is not registered.'},
-      };
-    }
-
-    // [step 3] Generate and send verification code.
-    return await this.verificationCodeService.send2Email(
-      email,
-      VerificationCodeUse.LOGIN_BY_EMAIL
-    );
-  }
-
-  // *
-  // * Won't send message if the same phone apply again within 1 minute.
-  // *
-  @Public()
-  @Get('verification-code/phone/:phone')
-  @ApiParam({
-    name: 'phone',
-    schema: {type: 'string'},
-    example: '13260000999',
-  })
-  async getVerificationCodeByPhone(@Param('phone') phone: string) {
-    // [step 1] Guard statement.
-    if (!validator.verifyPhone(phone)) {
-      return {err: {message: 'The phone is invalid.'}};
-    }
-
-    // [step 2] Check if the account exists.
-    const user = await this.userService.findByAccount(phone);
-    if (!user) {
-      return {
-        err: {message: 'Your account is not registered.'},
-      };
-    }
-
-    // [step 3] Generate verification code.
-    return await this.verificationCodeService.send2Phone(
-      phone,
-      VerificationCodeUse.LOGIN_BY_PHONE
-    );
-  }
-
   /**
    * The 'account' parameter supports:
    * [1] email
@@ -441,6 +382,7 @@ export class AccountController {
    */
   @LoggingInByVerificationCode()
   @Post('login/verification-code')
+  @ApiBearerAuth()
   @ApiBody({
     description:
       "The request body must contain 'account' and 'verificationCode' attributes. The 'username' accepts username, email or phone.",
@@ -471,6 +413,7 @@ export class AccountController {
     return await this.login(body.account);
   }
 
+  @Post('logout')
   @ApiBearerAuth()
   @ApiBody({
     description: "The request body must contain 'userId' attribute.",
@@ -483,7 +426,6 @@ export class AccountController {
       },
     },
   })
-  @Post('logout')
   async logout(
     @Request() request: any,
     @Body() body: {userId: string}
@@ -503,7 +445,8 @@ export class AccountController {
    * 2. Use verification code and userId to close account.
    */
   @LoggingInByVerificationCode()
-  @Post('close')
+  @Patch('close')
+  @ApiBearerAuth()
   @ApiBody({
     description: "The request body must contain 'userId' attribute.",
     examples: {
@@ -545,7 +488,8 @@ export class AccountController {
    * 2. Use verification code and userId to recover account.
    */
   @LoggingInByVerificationCode()
-  @Post('recover')
+  @Patch('recover')
+  @ApiBearerAuth()
   @ApiBody({
     description: "The request body must contain 'userId' attribute.",
     examples: {
@@ -624,6 +568,68 @@ export class AccountController {
     });
 
     return {userId: user.id, token: jwt.token};
+  }
+
+  // *
+  // * Won't send message if the same email apply again within 1 minute.
+  // *
+  @Public()
+  @Get('verification-code/email/:email')
+  @ApiParam({
+    name: 'email',
+    schema: {type: 'string'},
+    example: 'email@example.com',
+  })
+  async getVerificationCodeByEmail(@Param('email') email: string) {
+    // [step 1] Guard statement.
+    if (!validator.verifyEmail(email)) {
+      return {err: {message: 'The email is invalid.'}};
+    }
+
+    // [step 2] Check if the account exists.
+    const user = await this.userService.findByAccount(email);
+    if (!user) {
+      return {
+        err: {message: 'Your account is not registered.'},
+      };
+    }
+
+    // [step 3] Generate and send verification code.
+    return await this.verificationCodeService.send2Email(
+      email,
+      VerificationCodeUse.LOGIN_BY_EMAIL
+    );
+  }
+
+  // *
+  // * Won't send message if the same phone apply again within 1 minute.
+  // *
+  @Public()
+  @Get('verification-code/phone/:phone')
+  @ApiParam({
+    name: 'phone',
+    schema: {type: 'string'},
+    example: '13260000999',
+  })
+  async getVerificationCodeByPhone(@Param('phone') phone: string) {
+    // [step 1] Guard statement.
+    if (!validator.verifyPhone(phone)) {
+      return {err: {message: 'The phone is invalid.'}};
+    }
+
+    // [step 2] Check if the account exists.
+    const user = await this.userService.findByAccount(phone);
+    if (!user) {
+      return {
+        err: {message: 'Your account is not registered.'},
+      };
+    }
+
+    // [step 3] Generate verification code.
+    return await this.verificationCodeService.send2Phone(
+      phone,
+      VerificationCodeUse.LOGIN_BY_PHONE
+    );
   }
   /* End */
 }

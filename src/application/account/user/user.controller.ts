@@ -106,8 +106,9 @@ export class UserController {
       select: {
         id: true,
         username: true,
+        email: true,
+        phone: true,
         profiles: true,
-        password: false,
       },
       orderBy: {
         _relevance: {
