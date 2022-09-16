@@ -9,12 +9,7 @@ import {ProjectManagementModule} from './pmgmt/pmgmt.module';
 
 @Module({
   imports: [AccountModule, EnginedModule, ProjectManagementModule],
-  providers: [
-    {
-      provide: APP_FILTER,
-      useClass: HttpExceptionFilter,
-    },
-  ],
+  providers: [{provide: APP_FILTER, useClass: HttpExceptionFilter}],
   controllers: [ApplicationController],
 })
 export class ApplicationModule {

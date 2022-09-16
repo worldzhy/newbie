@@ -10,6 +10,7 @@ import {AccountService} from './account.service';
 import {UserService} from './user/user.service';
 import {UserProfileService} from './profile/profile.service';
 import * as validator from './account.validator';
+import {User} from '@prisma/client';
 
 @ApiTags('[Application] Account')
 @Controller()
@@ -157,7 +158,7 @@ export class AccountController {
       phone?: string;
       profile?: object;
     }
-  ): Promise<{data: object | null; err: object | null}> {
+  ): Promise<User | {err: {message: string}}> {
     let usernameCount = 0;
     let emailCount = 0;
     let phoneCount = 0;
@@ -166,10 +167,7 @@ export class AccountController {
     // [step 1] Validate parameters.
     if (signupUser.password) {
       if (!validator.verifyPassword(signupUser.password)) {
-        return {
-          data: null,
-          err: {message: 'Your password is not strong enough.'},
-        };
+        return {err: {message: 'Your password is not strong enough.'}};
       } else {
         // Go on validating...
         usernameCount += 1;
@@ -178,10 +176,7 @@ export class AccountController {
 
     if (signupUser.username) {
       if (!validator.verifyUsername(signupUser.username)) {
-        return {
-          data: null,
-          err: {message: 'Your username is not valid.'},
-        };
+        return {err: {message: 'Your username is not valid.'}};
       } else {
         // Go on validating...
         usernameCount += 1;
@@ -190,10 +185,7 @@ export class AccountController {
 
     if (signupUser.email) {
       if (!validator.verifyEmail(signupUser.email)) {
-        return {
-          data: null,
-          err: {message: 'Your email is not valid.'},
-        };
+        return {err: {message: 'Your email is not valid.'}};
       } else {
         // Go on validating...
         emailCount += 1;
@@ -202,10 +194,7 @@ export class AccountController {
 
     if (signupUser.phone) {
       if (!validator.verifyPhone(signupUser.phone)) {
-        return {
-          data: null,
-          err: {message: 'Your phone is not valid.'},
-        };
+        return {err: {message: 'Your phone is not valid.'}};
       } else {
         // End of validating.
         phoneCount += 1;
@@ -223,10 +212,7 @@ export class AccountController {
       phone: signupUser.phone,
     });
     if (existed) {
-      return {
-        data: null,
-        err: {message: 'Your username exists.'},
-      };
+      return {err: {message: 'Your username exists.'}};
     }
 
     // [step 3] Sign up a new account.
@@ -236,24 +222,9 @@ export class AccountController {
       phoneCount === 1 ||
       profileCount === 1
     ) {
-      const user = await this.accountService.signup(signupUser);
-      if (user) {
-        return {
-          data: user,
-          err: null,
-        };
-      } else {
-        // [Tip] This should not happen.
-        return {
-          data: null,
-          err: {message: 'Create user failed.'},
-        };
-      }
+      return this.accountService.signup(signupUser);
     } else {
-      return {
-        data: null,
-        err: {message: 'Your parameters are invalid.'},
-      };
+      return {err: {message: 'Your parameters are invalid.'}};
     }
   }
 
