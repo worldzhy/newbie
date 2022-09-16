@@ -7,7 +7,7 @@ import {
   buildResourceOptions,
   generateSecurityGroupForEC2,
   generateSecurityGroupForRDS,
-} from '../pulumi-stack.util';
+} from '../../../../../toolkits/utilities/pulumi.util';
 
 @Injectable()
 export class NetworkHipaa_Stack {

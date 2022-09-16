@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import * as aws from '@pulumi/aws';
-import {verifySqsQueueName} from '../../../../../toolkits/aws/aws.validator';
+import {verifySqsQueueName} from '../../../../../toolkits/validators/aws.validator';
 
 @Injectable()
 export class AwsSqs_Stack {

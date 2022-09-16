@@ -11,25 +11,19 @@ export class HttpMiddleware implements NestMiddleware {
       const {method, originalUrl} = request;
       const {statusCode, statusMessage} = response;
 
-      // [step 1] Assemble log message.
-      let message = `${statusCode} ${statusMessage} >> ${method} ${originalUrl}`;
+      // [step 1] Assemble log content.
+      let content = `${statusCode} ${statusMessage} >> ${method} ${originalUrl}`;
       if (request.body && Object.keys(request.body).length > 0) {
-        // const body =
-        //   typeof request.body === 'string'
-        //     ? request.body
-        //     : JSON.stringify(request.body);
-
-        // message += `${body}`;
-        message += ` >> ${JSON.stringify(request.body)}`;
+        content += ` ${JSON.stringify(request.body)}`;
       }
 
       // [step 2] Write log.
       if (statusCode >= 500) {
-        return this.logger.error(message);
+        return this.logger.error(content);
       } else if (statusCode >= 400) {
-        return this.logger.warn(message);
+        return this.logger.warn(content);
       } else {
-        return this.logger.log(message);
+        return this.logger.log(content);
       }
     });
 

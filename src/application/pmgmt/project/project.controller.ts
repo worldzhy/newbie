@@ -3,7 +3,8 @@ import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {ProjectService} from './project.service';
 import {CheckpointService} from '../checkpoint/checkpoint.service';
 import {EnvironmentService} from '../environment/environment.service';
-import * as validator from './project.validator';
+import {verifyProjectName} from '../../../toolkits/validators/project.validator';
+
 import {
   Prisma,
   Project,
@@ -42,7 +43,7 @@ export class ProjectController {
     body: Prisma.ProjectCreateInput
   ): Promise<Project | {err: {message: string}}> {
     // [step 1] Guard statement.
-    if (!body.name || !validator.verifyProjectName(body.name)) {
+    if (!body.name || !verifyProjectName(body.name)) {
       return {
         err: {
           message: 'Please provide valid project name in the request body.',

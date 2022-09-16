@@ -1,10 +1,10 @@
 import {Controller, Post, Body} from '@nestjs/common';
 import {ApiTags, ApiBody} from '@nestjs/swagger';
-import {Public} from '../auth/auth-jwt/auth-jwt.decorator';
+import {Public} from '../auth/public/public.decorator';
 import {UserService} from '../user/user.service';
 import {VerificationCodeService} from './verification-code.service';
 import {VerificationCodeUse} from '@prisma/client';
-import * as validator from '../account.validator';
+import * as validator from '../../../toolkits/validators/account.validator';
 
 @ApiTags('[Application] Account / Verification Code')
 @Controller()

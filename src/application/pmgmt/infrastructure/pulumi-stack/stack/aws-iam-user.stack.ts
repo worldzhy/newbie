@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import * as aws from '@pulumi/aws';
 import {getAwsConfig} from '../../../../../_config/_aws.config';
-import {buildResourceOptions} from '../pulumi-stack.util';
+import {buildResourceOptions} from '../../../../../toolkits/utilities/pulumi.util';
 
 @Injectable()
 export class AwsIamUser_Stack {

@@ -12,31 +12,35 @@ export class HttpExceptionFilter implements ExceptionFilter {
   private readonly logger = new CustomLoggerService('HttpException');
 
   catch(exception: HttpException, host: ArgumentsHost) {
-    const ctx = host.switchToHttp();
-    const response = ctx.getResponse<Response>();
-    const request = ctx.getRequest<Request>();
-    const statusCode = exception.getStatus();
+    const statusCode = exception.getStatus(); // such as: 401
+    const statusName = exception.name; // such as: UnauthorizedException
+    const message = exception.message;
 
-    // [step 1] Assemble log message.
-    let message = `${statusCode} ${exception.message} >> ${request.method} ${request.url}`;
+    const request = host.switchToHttp().getRequest<Request>();
+    const response = host.switchToHttp().getResponse<Response>();
+
+    // [step 1] Assemble log content.
+    let content = `${statusCode} ${statusName} >> ${request.method} ${request.url}`;
+
     if (request.body && Object.keys(request.body).length > 0) {
-      message += ` >> ${JSON.stringify(request.body)}`;
+      content += ` ${JSON.stringify(request.body)}`;
     }
+    content += ` >> ${message}`;
 
     // [step 2] Write log.
     if (statusCode >= 500) {
-      this.logger.error(message);
+      this.logger.error(content);
     } else if (statusCode >= 400) {
-      this.logger.warn(message);
+      this.logger.warn(content);
     } else {
-      this.logger.log(message);
+      this.logger.log(content);
     }
 
     // [step 3] Response.
     response.status(statusCode).json({
-      statusCode: statusCode,
-      uri: request.url,
-      timestamp: new Date().toISOString(),
+      StatusCode: statusCode,
+      Message: message,
+      Time: new Date().toISOString(),
     });
   }
 }

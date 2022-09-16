@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {UserService} from './user.service';
-import * as validator from '../account.validator';
+import * as validator from '../../../toolkits/validators/account.validator';
 import {Prisma, User} from '@prisma/client';
 
 @ApiTags('[Application] Account / User')

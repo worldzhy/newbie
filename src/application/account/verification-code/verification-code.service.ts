@@ -5,8 +5,8 @@ import {
   VerificationCodeStatus,
   VerificationCodeUse,
 } from '@prisma/client';
-import * as validator from '../account.validator';
-import * as util from '../account.util';
+import * as validator from '../../../toolkits/validators/account.validator';
+import * as util from '../../../toolkits/utilities/common.util';
 import {EmailService} from '../../../microservices/notification/email/email.service';
 import {SmsService} from '../../../microservices/notification/sms/sms.service';
 
@@ -46,12 +46,12 @@ export class VerificationCodeService {
 
     // [step 3] Generate and send verification code.
     const newCode = util.randomCode(6);
-    // await this.emailService.sendOne({
-    //   email: email,
-    //   subject: 'Your Verification Code',
-    //   plainText: newCode,
-    //   html: newCode,
-    // });
+    await this.emailService.sendOne({
+      email: email,
+      subject: 'Your Verification Code',
+      plainText: newCode,
+      html: newCode,
+    });
 
     // [step 4] Save the code in database.
     return await this.prisma.verificationCode.create({
@@ -93,10 +93,10 @@ export class VerificationCodeService {
 
     // [step 3] Generate and send verification code.
     const newCode = util.randomCode(6);
-    // await this.smsService.sendOne({
-    //   phone: phone,
-    //   text: newCode,
-    // });
+    await this.smsService.sendOne({
+      phone: phone,
+      text: newCode,
+    });
 
     // [step 4] Save the code in database.
     return await this.prisma.verificationCode.create({

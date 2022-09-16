@@ -1,8 +1,8 @@
 import {Injectable} from '@nestjs/common';
 import {PrismaService} from '../../../toolkits/prisma/prisma.service';
 import {Prisma, User} from '@prisma/client';
-import {generateHash} from '../account.util';
-import {verifyUuid} from '../account.validator';
+import {generateHash} from '../../../toolkits/utilities/common.util';
+import {verifyUuid} from '../../../toolkits/validators/account.validator';
 
 const bcrypt = require('bcryptjs');
 

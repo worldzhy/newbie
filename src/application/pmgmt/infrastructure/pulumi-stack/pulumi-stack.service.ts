@@ -23,7 +23,7 @@ import {Null_Stack} from './stack/null.stack';
 import {getAwsConfig} from '../../../../_config/_aws.config';
 import {getPulumiConfig} from '../../../../_config/_pulumi.config';
 import {PrismaService} from '../../../../toolkits/prisma/prisma.service';
-import {randomCode} from '../infrastructure.util';
+import {randomCode} from '../../../../toolkits/utilities/common.util';
 
 @Injectable()
 export class PulumiStackService {

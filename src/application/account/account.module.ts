@@ -1,22 +1,10 @@
 import {Module} from '@nestjs/common';
-import {AccountService} from './account.service';
-import {AccountController} from './account.controller';
-import {AuthJwtModule} from './auth/auth-jwt/auth-jwt.module';
+import {AuthModule} from './auth/auth.module';
 import {UserModule} from './user/user.module';
-import {UserProfileModule} from './profile/profile.module';
-import {VerificationCodeModule} from './verification-code/verification-code.module';
 import {OrganizationModule} from './organization/organization.module';
+import {VerificationCodeModule} from './verification-code/verification-code.module';
 
 @Module({
-  imports: [
-    AuthJwtModule,
-    UserModule,
-    UserProfileModule,
-    VerificationCodeModule,
-    OrganizationModule,
-  ],
-  providers: [AccountService],
-  controllers: [AccountController],
-  exports: [AccountService],
+  imports: [AuthModule, UserModule, OrganizationModule, VerificationCodeModule],
 })
 export class AccountModule {}

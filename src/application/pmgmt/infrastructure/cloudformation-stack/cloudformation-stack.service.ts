@@ -22,7 +22,7 @@ import {
   Prisma,
 } from '@prisma/client';
 import {PrismaService} from '../../../../toolkits/prisma/prisma.service';
-import {randomCode} from '../infrastructure.util';
+import {randomCode} from '../../../../toolkits/utilities/common.util';
 
 @Injectable()
 export class CloudFormationStackService {

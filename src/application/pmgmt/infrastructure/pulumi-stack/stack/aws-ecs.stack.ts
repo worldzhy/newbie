@@ -5,9 +5,9 @@ import * as awsx from '@pulumi/awsx';
 import {
   buildResourceOptions,
   generateSecurityGroup,
-} from '../pulumi-stack.util';
-import {randomCode} from '../../infrastructure.util';
-import {verifyRegion} from '../../../../../toolkits/aws/aws.validator';
+} from '../../../../../toolkits/utilities/pulumi.util';
+import {randomCode} from '../../../../../toolkits/utilities/common.util';
+import {verifyRegion} from '../../../../../toolkits/validators/aws.validator';
 import {getAwsConfig} from '../../../../../_config/_aws.config';
 
 @Injectable()
