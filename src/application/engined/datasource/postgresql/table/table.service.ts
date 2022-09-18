@@ -21,21 +21,13 @@ export class PostgresqlDatasourceTableService {
   async create(
     params: Prisma.PostgresqlDatasourceTableCreateArgs
   ): Promise<PostgresqlDatasourceTable> {
-    try {
-      return await this.prisma.postgresqlDatasourceTable.create(params);
-    } catch (error) {
-      return error;
-    }
+    return await this.prisma.postgresqlDatasourceTable.create(params);
   }
 
   async createMany(
     params: Prisma.PostgresqlDatasourceTableCreateManyArgs
-  ): Promise<number> {
-    const result = await this.prisma.postgresqlDatasourceTable.createMany(
-      params
-    );
-
-    return result.count;
+  ): Promise<Prisma.BatchPayload> {
+    return await this.prisma.postgresqlDatasourceTable.createMany(params);
   }
 
   async update(
@@ -52,12 +44,8 @@ export class PostgresqlDatasourceTableService {
 
   async deleteMany(
     params: Prisma.PostgresqlDatasourceTableDeleteManyArgs
-  ): Promise<number> {
-    const result = await this.prisma.postgresqlDatasourceTable.deleteMany(
-      params
-    );
-
-    return result.count;
+  ): Promise<Prisma.BatchPayload> {
+    return await this.prisma.postgresqlDatasourceTable.deleteMany(params);
   }
 
   async count(
@@ -66,18 +54,10 @@ export class PostgresqlDatasourceTableService {
     return await this.prisma.postgresqlDatasourceTable.count(params);
   }
 
-  /**
-   * Check if exist
-   *
-   * @param {number} id
-   * @returns
-   * @memberof PostgresqlDatasourceTableService
-   */
   async checkExistence(id: number): Promise<boolean> {
     const count = await this.prisma.postgresqlDatasourceTable.count({
       where: {id: id},
     });
-
     return count > 0 ? true : false;
   }
 

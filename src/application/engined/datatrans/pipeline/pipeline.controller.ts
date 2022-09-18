@@ -1,11 +1,12 @@
 import {
   Controller,
-  Get,
-  Post,
-  Param,
-  Body,
   Delete,
+  Get,
   Patch,
+  Post,
+  Body,
+  Param,
+  NotFoundException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {DatatransPipelineService} from './pipeline.service';
@@ -54,31 +55,21 @@ export class DatatransPipelineController {
       fromTableId: number;
       toIndexId: number;
     }
-  ) {
+  ): Promise<DatatransPipeline> {
     // [step 1] Check if the fromTable and toIndex are existed.
     if (
       !(await this.postgresqlDatasourceTableService.checkExistence(
         body.fromTableId
       ))
     ) {
-      return {
-        data: null,
-        err: {
-          message: 'Please provide valid fromTableId in the request body.',
-        },
-      };
+      throw new NotFoundException('Not found the postgresql table.');
     }
     if (
       !(await this.elasticsearchDatasourceIndexService.checkExistence(
         body.toIndexId
       ))
     ) {
-      return {
-        data: null,
-        err: {
-          message: 'Please provide valid toIndexId in the request body.',
-        },
-      };
+      throw new NotFoundException('Not found the elasticsearch index.');
     }
 
     // [step 2] Create pipeline.
@@ -86,8 +77,6 @@ export class DatatransPipelineController {
       name: body.name,
       hasManyTables: body.hasManyTables,
       belongsToTables: body.belongsToTables,
-      numberOfRecordsPerBatch: body.numberOfRecordsPerBatch,
-      queueUrl: body.queueUrl,
       fromTable: {connect: {id: body.fromTableId}},
       toIndex: {connect: {id: body.toIndexId}},
     });
@@ -113,14 +102,6 @@ export class DatatransPipelineController {
     });
   }
 
-  /**
-   * Update pipeline
-   *
-   * @param {string} pipelineId
-   * @param {{name: string; hasManyTables: string[]; belongsToTables: string[];}} body
-   * @returns
-   * @memberof DatatransPipelineController
-   */
   @Patch('pipelines/:pipelineId')
   @ApiParam({
     name: 'pipelineId',
@@ -164,44 +145,30 @@ export class DatatransPipelineController {
     return await this.pipelineService.delete({where: {id: pipelineId}});
   }
 
-  /**
-   * Overview pipeline
-   * @param {string} pipelineId
-   * @returns
-   * @memberof DatatransPipelinePumpController
-   */
   @Get('pipelines/:pipelineId/overview')
   @ApiParam({
     name: 'pipelineId',
     schema: {type: 'string'},
     example: '81a37534-915c-4114-96d0-01be815d821b',
   })
-  async overviewPipeline(@Param('pipelineId') pipelineId: string) {
+  async overviewPipeline(@Param('pipelineId') pipelineId: string): Promise<{
+    table: string;
+    numberOfRecords: number;
+    recordAverageSize: number;
+    hasMany: {name: string; numberOfRecords: number}[];
+    belongsTo: {name: string; numberOfRecords: number}[];
+  }> {
     // [step 1] Get pipeline.
     const pipeline = await this.pipelineService.findUnique({
       where: {id: pipelineId},
       include: {fromTable: true},
     });
     if (!pipeline) {
-      return {
-        data: null,
-        err: {message: 'Get pipeline failed.'},
-      };
+      throw new NotFoundException('Not found the pipeline.');
     }
 
     // [step 2] Update name.
-    const result = await this.pipelineService.overview(pipeline);
-    if (result) {
-      return {
-        data: result,
-        err: null,
-      };
-    } else {
-      return {
-        data: null,
-        err: {message: 'DatatransPipeline pump preview failed.'},
-      };
-    }
+    return await this.pipelineService.overview(pipeline);
   }
 
   /* End */

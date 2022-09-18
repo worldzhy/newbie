@@ -1,11 +1,13 @@
 import {
   Controller,
-  Get,
-  Post,
-  Param,
-  Body,
-  Patch,
   Delete,
+  Get,
+  Patch,
+  Post,
+  Body,
+  Param,
+  BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {
@@ -136,20 +138,18 @@ export class PostgresqlDatasourceController {
   })
   async getPostgresqlDatasourceTables(
     @Param('datasourceId') datasourceId: string
-  ): Promise<PostgresqlDatasourceTable[] | {err: {message: string}}> {
+  ): Promise<PostgresqlDatasourceTable[]> {
     // [step 1] Get datasource.
     const datasource = await this.postgresqlDatasourceService.findUnique({
       where: {id: datasourceId},
     });
     if (!datasource) {
-      return {err: {message: 'Invalid postgresql id.'}};
+      throw new NotFoundException('Not found the datasource.');
     }
 
     // [step 2] Get tables.
     return await this.postgresqlDatasourceTableService.findMany({
-      where: {
-        datasourceId: datasource.id,
-      },
+      where: {datasourceId: datasource.id},
       orderBy: {name: 'asc'},
     });
   }
@@ -166,9 +166,7 @@ export class PostgresqlDatasourceController {
     datasourceId: string
   ): Promise<PostgresqlDatasourceConstraint[]> {
     return await this.postgresqlDatasourceConstraintService.findMany({
-      where: {
-        datasourceId: datasourceId,
-      },
+      where: {datasourceId: datasourceId},
     });
   }
 
@@ -188,13 +186,13 @@ export class PostgresqlDatasourceController {
   async getPostgresqlDatasourceConstraintsByTable(
     @Param('datasourceId') datasourceId: string,
     @Param('tableName') tableName: string
-  ): Promise<PostgresqlDatasourceConstraint[] | {err: {message: string}}> {
+  ): Promise<PostgresqlDatasourceConstraint[]> {
     // [step 1] Get datasource.
     const datasource = await this.postgresqlDatasourceService.findUnique({
       where: {id: datasourceId},
     });
     if (!datasource) {
-      return {err: {message: 'Invalid postgresql id.'}};
+      throw new NotFoundException('Not found the datasource.');
     }
 
     // [step 2] Get columns group by table.
@@ -208,12 +206,6 @@ export class PostgresqlDatasourceController {
     });
   }
 
-  /**
-   * Mount a postgresql datasource.
-   *
-   * @returns
-   * @memberof PostgresqlDatasourceTableColumnController
-   */
   @Post(':datasourceId/mount')
   @ApiParam({
     name: 'datasourceId',
@@ -221,16 +213,15 @@ export class PostgresqlDatasourceController {
     description: 'The uuid of the postgresql datasource.',
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
-  async mountPostgresqlDatasource(@Param('datasourceId') datasourceId: string) {
+  async mountPostgresqlDatasource(
+    @Param('datasourceId') datasourceId: string
+  ): Promise<boolean> {
     // [step 1] Get postgresql.
     const postgresql = await this.postgresqlDatasourceService.findUnique({
       where: {id: datasourceId},
     });
     if (!postgresql) {
-      return {
-        data: null,
-        err: {message: 'Invalid datasourceId.'},
-      };
+      throw new NotFoundException('Not found the datasource.');
     }
 
     // [step 2] Check if the datasource has been mounted.
@@ -238,29 +229,17 @@ export class PostgresqlDatasourceController {
       where: {datasourceId: datasourceId},
     });
     if (count > 0) {
-      return {
-        data: null,
-        err: {
-          message:
-            'The datasource can not be mounted again before it has been unmounted.',
-        },
-      };
+      throw new BadRequestException(
+        'The datasource can not be mounted again before it has been unmounted.'
+      );
     }
 
     // [step 3] Extract datasource postgresql tables, columns, constraints.
-    await this.postgresqlDatasourceService.mount(postgresql);
-
-    return {
-      data: 'Done',
-      err: null,
-    };
+    return await this.postgresqlDatasourceService.mount(postgresql);
   }
 
   /**
    * Unmount a postgresql datasource.
-   *
-   * @returns
-   * @memberof PostgresqlDatasourceTableColumnController
    */
   @Post(':datasourceId/unmount')
   @ApiParam({
@@ -271,28 +250,21 @@ export class PostgresqlDatasourceController {
   })
   async unmountPostgresqlDatasource(
     @Param('datasourceId') datasourceId: string
-  ) {
+  ): Promise<boolean> {
     // [step 1] Get postgresql.
     const postgresql = await this.postgresqlDatasourceService.findUnique({
       where: {id: datasourceId},
     });
     if (!postgresql) {
-      return {
-        data: null,
-        err: {message: 'Invalid datasourceId.'},
-      };
+      throw new NotFoundException('Not found the datasource.');
     }
 
     // [step 2] Clear datasource postgresql tables, columns and constraints.
-    await this.postgresqlDatasourceService.unmount(postgresql);
+    return await this.postgresqlDatasourceService.unmount(postgresql);
   }
 
   /**
    * Overview a postgresql datasource.
-   *
-   * @param {string} datasourceId
-   * @returns {Promise<{data: object;err: object;}>}
-   * @memberof DatapipePumpController
    */
   @Get(':datasourceId/overview')
   @ApiParam({
@@ -303,25 +275,32 @@ export class PostgresqlDatasourceController {
   })
   async overviewPostgresqlDatasource(
     @Param('datasourceId') datasourceId: string
-  ): Promise<{data: object | null; err: object | null}> {
-    /// [step 1] Get postgresql.
+  ): Promise<{
+    host: string;
+    port: number;
+    database: string;
+    schema: string;
+    tableCount: number;
+    tables: {
+      id: number;
+      name: string;
+      numberOfRecords: number;
+      hasMany: {}[];
+      belongsTo: {}[];
+    }[];
+  }> {
+    // [step 1] Get postgresql.
     const postgresql = await this.postgresqlDatasourceService.findUnique({
       where: {id: datasourceId},
       include: {tables: true},
     });
     if (!postgresql) {
-      return {
-        data: null,
-        err: {message: 'Invalid datasourceId.'},
-      };
+      throw new NotFoundException('Not found the datasource.');
     }
 
     // [step 2] Overview the datasource.
-    const result = await this.postgresqlDatasourceService.overview(postgresql);
-    return {
-      data: result,
-      err: null,
-    };
+    return await this.postgresqlDatasourceService.overview(postgresql);
   }
+
   /* End */
 }

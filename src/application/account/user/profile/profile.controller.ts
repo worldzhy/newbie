@@ -1,12 +1,13 @@
 import {
   Controller,
-  Get,
-  Post,
-  Param,
-  Body,
-  Patch,
-  Query,
   Delete,
+  Get,
+  Patch,
+  Post,
+  Body,
+  Param,
+  Query,
+  BadRequestException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {
@@ -68,7 +69,7 @@ export class UserProfileController {
   @Get('profiles')
   async getUserProfiles(
     @Query() query: {name?: string; page?: string}
-  ): Promise<UserProfile[] | {err: {message: string}}> {
+  ): Promise<UserProfile[]> {
     // [step 1] Construct where argument.
     let where: Prisma.UserProfileWhereInput | undefined;
     if (query.name) {
@@ -93,7 +94,7 @@ export class UserProfileController {
         take = 10;
         skip = 10 * (page - 1);
       } else {
-        return {err: {message: 'The page must be larger than 0.'}};
+        throw new BadRequestException('The page must be larger than 0.');
       }
     } else {
       take = 10;

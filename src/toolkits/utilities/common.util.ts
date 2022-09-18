@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 
-export function randomCode(length = 6) {
+export function randomCode(length = 6): string {
   let result = '';
   const characters = '0123456789';
   const charactersLength = characters.length;
@@ -18,7 +18,7 @@ export async function generateHash(password: string) {
   return await bcrypt.hash(password, saltRounds);
 }
 
-export function nowPlusMinutes(minutes: number) {
+export function nowPlusMinutes(minutes: number): Date {
   const currentTime = new Date();
   return new Date(currentTime.getTime() + minutes * 60000); // 1 min = 60000 ms
 }

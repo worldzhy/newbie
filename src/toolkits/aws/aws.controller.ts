@@ -1,6 +1,5 @@
-import {Body, Controller, Delete, Post} from '@nestjs/common';
+import {Controller, Delete, Post, Body} from '@nestjs/common';
 import {ApiBearerAuth, ApiBody, ApiTags} from '@nestjs/swagger';
-import {PinpointService} from './pinpoint.service';
 import {S3Service} from './s3.service';
 import {SnsService} from './sns.service';
 import {SqsService} from './sqs.service';
@@ -9,11 +8,7 @@ import {SqsService} from './sqs.service';
 @ApiBearerAuth()
 @Controller('aws')
 export class AwsController {
-  /**
-   * S3 create bucket.
-   * @param body
-   * @returns
-   */
+  //* S3 create bucket.
   @ApiBody({
     description: "The request body should contain 'bucketName' attribute.",
     examples: {
@@ -31,11 +26,7 @@ export class AwsController {
     return await s3Service.createBucket(body.bucketName);
   }
 
-  /**
-   * S3 delete bucket.
-   * @param body
-   * @returns
-   */
+  //* S3 delete bucket.
   @ApiBody({
     description: "The request body should contain 'bucketName' attribute.",
     examples: {
@@ -53,11 +44,7 @@ export class AwsController {
     return await s3Service.deleteBucket(body.bucketName);
   }
 
-  /**
-   * SQS send message.
-   * @param body
-   * @returns
-   */
+  //* SQS send message.
   @ApiBody({
     description: '',
     examples: {
@@ -79,11 +66,7 @@ export class AwsController {
     return await sqsService.sendMessage(body.queueUrl, body.payload);
   }
 
-  /**
-   * SNS publish.
-   * @param body
-   * @returns
-   */
+  //* SNS publish.
   @ApiBody({
     examples: {
       a: {
@@ -105,84 +88,5 @@ export class AwsController {
     });
   }
 
-  /**
-   * Pinpoint send email message.
-   * @param body
-   * @returns
-   */
-  @ApiBody({
-    examples: {
-      a: {
-        summary: '1. Send via email channel',
-        value: {
-          config: {
-            pinpointApplicationId: 'aljflajsfa',
-            pinpointFromAddress: 'henry@inceptionpad.com',
-          },
-          email: 'email@example.com',
-          subject: 'Example Email',
-          plainText: 'This is a test Pinpoint email.',
-          html: 'This is a test Pinpoint email.',
-        },
-      },
-    },
-    description:
-      "The request body should be {'subject', 'content', 'toAddress'} or {'content', 'phone'}.",
-  })
-  @Post('pinpoint/email')
-  async sendPinpointEmail(
-    @Body()
-    body: {
-      email: string;
-      subject: string;
-      plainText?: string;
-      html?: string;
-    }
-  ) {
-    const pinpointService = new PinpointService();
-    const params = pinpointService.buildSendMessagesParams_Email({
-      emails: [body.email],
-      subject: body.subject,
-      plainText: body.plainText,
-      html: body.html,
-    });
-
-    return await pinpointService.sendMessages(params);
-  }
-
-  /**
-   * Pinpoint send SMS message.
-   * @param body
-   * @returns
-   */
-  @ApiBody({
-    examples: {
-      a: {
-        summary: '1. Send via SMS channel',
-        value: {
-          phone: '123456789',
-          text: 'This is a test Pinpoint text message.',
-        },
-      },
-    },
-    description:
-      "The request body should be {'subject', 'content', 'toAddress'} or {'content', 'phone'}.",
-  })
-  @Post('pinpoint/text-message')
-  async sendPinpointTextMessage(
-    @Body()
-    body: {
-      phone: string;
-      text: string;
-    }
-  ) {
-    const pinpointService = new PinpointService();
-    const params = pinpointService.buildSendMessagesParams_Sms({
-      phones: [body.phone],
-      text: body.text,
-    });
-
-    return await pinpointService.sendMessages(params);
-  }
   /* End */
 }

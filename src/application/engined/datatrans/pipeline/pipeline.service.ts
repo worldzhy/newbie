@@ -25,9 +25,7 @@ export class DatatransPipelineService {
   async create(
     data: Prisma.DatatransPipelineCreateInput
   ): Promise<DatatransPipeline> {
-    return await this.prisma.datatransPipeline.create({
-      data,
-    });
+    return await this.prisma.datatransPipeline.create({data});
   }
 
   async update(
@@ -42,23 +40,21 @@ export class DatatransPipelineService {
     return await this.prisma.datatransPipeline.delete(params);
   }
 
-  /**
-   * Check if exist
-   *
-   * @param {string} id
-   * @returns
-   * @memberof DatatransPipelineService
-   */
-  async checkExistence(id: string) {
+  async checkExistence(id: string): Promise<boolean> {
     const count = await this.prisma.datatransPipeline.count({
       where: {id},
     });
     return count > 0 ? true : false;
   }
 
-  async overview(pipeline: DatatransPipeline) {
+  async overview(pipeline: DatatransPipeline): Promise<{
+    table: string;
+    numberOfRecords: number;
+    recordAverageSize: number; //
+    hasMany: {name: string; numberOfRecords: number}[];
+    belongsTo: {name: string; numberOfRecords: number}[];
+  }> {
     const fromTable = pipeline['fromTable'] as PostgresqlDatasourceTable;
-    const numberOfRecordsPerBatch = pipeline.numberOfRecordsPerBatch;
 
     const childTables: {name: string; numberOfRecords: number}[] = [];
     const parentTables: {name: string; numberOfRecords: number}[] = [];
@@ -110,15 +106,9 @@ export class DatatransPipelineService {
     return {
       table: fromTable.name,
       numberOfRecords: total,
+      recordAverageSize: parseFloat(recordAverageSize.toFixed(2)),
       hasMany: childTables,
       belongsTo: parentTables,
-      batchProcessing: {
-        recordAverageSize: parseFloat(recordAverageSize.toFixed(2)),
-        numberOfRecordsPerBatch: numberOfRecordsPerBatch,
-        numberOfBatches: Math.ceil(
-          (total * recordAverageSize) / numberOfRecordsPerBatch
-        ),
-      },
     };
   }
   /* End */

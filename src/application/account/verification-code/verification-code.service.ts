@@ -1,31 +1,53 @@
 import {Injectable} from '@nestjs/common';
 import {PrismaService} from '../../../toolkits/prisma/prisma.service';
 import {
+  Prisma,
   VerificationCode,
   VerificationCodeStatus,
   VerificationCodeUse,
 } from '@prisma/client';
-import * as validator from '../../../toolkits/validators/account.validator';
 import * as util from '../../../toolkits/utilities/common.util';
-import {EmailService} from '../../../microservices/notification/email/email.service';
-import {SmsService} from '../../../microservices/notification/sms/sms.service';
+
+// Todo: We do not support inactivate verification code automatically now.
 
 @Injectable()
 export class VerificationCodeService {
-  // Todo: We do not support inactivate verification code automatically now.
-
   private prisma = new PrismaService();
-  private emailService = new EmailService();
-  private smsService = new SmsService();
 
-  async send2Email(
+  async findUnique(
+    params: Prisma.VerificationCodeFindUniqueArgs
+  ): Promise<VerificationCode | null> {
+    return await this.prisma.verificationCode.findUnique(params);
+  }
+
+  async findMany(
+    params: Prisma.VerificationCodeFindManyArgs
+  ): Promise<VerificationCode[]> {
+    return await this.prisma.verificationCode.findMany(params);
+  }
+
+  async create(
+    params: Prisma.VerificationCodeCreateArgs
+  ): Promise<VerificationCode> {
+    return await this.prisma.verificationCode.create(params);
+  }
+
+  async update(
+    params: Prisma.VerificationCodeUpdateArgs
+  ): Promise<VerificationCode> {
+    return await this.prisma.verificationCode.update(params);
+  }
+
+  async delete(
+    params: Prisma.VerificationCodeDeleteArgs
+  ): Promise<VerificationCode> {
+    return await this.prisma.verificationCode.delete(params);
+  }
+
+  async generateForEmail(
     email: string,
     use: VerificationCodeUse
-  ): Promise<VerificationCode | {err: {message: string}}> {
-    if (!email || !validator.verifyEmail(email)) {
-      return {err: {message: 'Invalid parameters.'}};
-    }
-
+  ): Promise<VerificationCode> {
     // [step 1] Return verification code generated within 1 minute.
     const validCode = await this.prisma.verificationCode.findFirst({
       where: {
@@ -46,14 +68,6 @@ export class VerificationCodeService {
 
     // [step 3] Generate and send verification code.
     const newCode = util.randomCode(6);
-    await this.emailService.sendOne({
-      email: email,
-      subject: 'Your Verification Code',
-      plainText: newCode,
-      html: newCode,
-    });
-
-    // [step 4] Save the code in database.
     return await this.prisma.verificationCode.create({
       data: {
         email: email,
@@ -65,14 +79,10 @@ export class VerificationCodeService {
     });
   }
 
-  async send2Phone(
+  async generateForPhone(
     phone: string,
     use: VerificationCodeUse
-  ): Promise<VerificationCode | {err: {message: string}}> {
-    if (!phone || !validator.verifyEmail(phone)) {
-      return {err: {message: 'Invalid parameters.'}};
-    }
-
+  ): Promise<VerificationCode> {
     // [step 1] Return verification code generated within 1 minute.
     const validCode = await this.prisma.verificationCode.findFirst({
       where: {
@@ -93,10 +103,6 @@ export class VerificationCodeService {
 
     // [step 3] Generate and send verification code.
     const newCode = util.randomCode(6);
-    await this.smsService.sendOne({
-      phone: phone,
-      text: newCode,
-    });
 
     // [step 4] Save the code in database.
     return await this.prisma.verificationCode.create({
@@ -110,13 +116,7 @@ export class VerificationCodeService {
     });
   }
 
-  async validateWithEmail(code: string, email: string): Promise<boolean> {
-    // [step 1] Guard statement.
-    if (!email || !validator.verifyEmail(email)) {
-      return false;
-    }
-
-    // [step 2] Check if the verification code is valid.
+  async validateForEmail(code: string, email: string): Promise<boolean> {
     const existedCode = await this.prisma.verificationCode.findFirst({
       where: {
         email: email,
@@ -127,17 +127,10 @@ export class VerificationCodeService {
         },
       },
     });
-
     return existedCode ? true : false;
   }
 
-  async validateWithPhone(code: string, phone: string): Promise<boolean> {
-    // [step 1] Guard statement.
-    if (!phone && !validator.verifyPhone(phone)) {
-      return false;
-    }
-
-    // [step 2] Check if the verification code is valid.
+  async validateForPhone(code: string, phone: string): Promise<boolean> {
     const existedCode = await this.prisma.verificationCode.findFirst({
       where: {
         phone: phone,
@@ -148,7 +141,6 @@ export class VerificationCodeService {
         },
       },
     });
-
     return existedCode ? true : false;
   }
 }

@@ -11,7 +11,7 @@ export class AwsEks_Stack {
     return {};
   }
 
-  static checkStackParams(params: object) {
+  static checkStackParams(params: {}) {
     if (params) {
       return true;
     } else {

@@ -8,7 +8,7 @@ export class ApplicationController {
   @Public()
   @Get('')
   hello(): string {
-    return `<h1>Welcome to Newbie!</h1>`;
+    return '<h1>Welcome to Newbie!</h1>';
   }
 
   @Public()

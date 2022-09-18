@@ -9,11 +9,7 @@ export class UserService {
   private prisma: PrismaService = new PrismaService();
 
   async findUnique(params: Prisma.UserFindUniqueArgs): Promise<User | null> {
-    try {
-      return await this.prisma.user.findUnique(params);
-    } catch (error) {
-      return error;
-    }
+    return await this.prisma.user.findUnique(params);
   }
 
   async findMany(params: Prisma.UserFindManyArgs): Promise<User[]> {
@@ -35,11 +31,7 @@ export class UserService {
       return next(params);
     });
 
-    try {
-      return await this.prisma.user.create(params);
-    } catch (error) {
-      return error;
-    }
+    return await this.prisma.user.create(params);
   }
 
   async update(params: Prisma.UserUpdateArgs): Promise<User> {
@@ -65,11 +57,7 @@ export class UserService {
   }
 
   /**
-   * Get a user by username / email / phone.
-   *
-   * @param {string} account can be username, email, or phone.
-   * @returns {(Promise<User | null>)}
-   * @memberof UserService
+   * The account supports username / email / phone.
    */
   async findByAccount(account: string): Promise<User | null> {
     if (verifyUuid(account)) {
@@ -77,7 +65,6 @@ export class UserService {
     } else {
       const users = await this.findMany({
         where: {
-          // {id: account} will cause crash because 'id' must accept uuid parameter.
           OR: [{username: account}, {email: account}, {phone: account}],
         },
       });

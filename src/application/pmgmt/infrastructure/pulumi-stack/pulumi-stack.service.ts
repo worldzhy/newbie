@@ -56,19 +56,11 @@ export class PulumiStackService {
       return next(params);
     });
 
-    try {
-      return await this.prisma.pulumiStack.create(params);
-    } catch (error) {
-      return error;
-    }
+    return await this.prisma.pulumiStack.create(params);
   }
 
   async update(params: Prisma.PulumiStackUpdateArgs): Promise<PulumiStack> {
-    try {
-      return await this.prisma.pulumiStack.update(params);
-    } catch (error) {
-      return error;
-    }
+    return await this.prisma.pulumiStack.update(params);
   }
 
   async delete(params: Prisma.PulumiStackDeleteArgs): Promise<PulumiStack> {
@@ -105,8 +97,6 @@ export class PulumiStackService {
         "outputs": {}
       }
    *
-   * @returns
-   * @memberof PulumiService
    */
   async createResources(stack: PulumiStack): Promise<PulumiStack> {
     // [step 1] Create or select pulumi stack.
@@ -160,13 +150,7 @@ export class PulumiStackService {
     });
   }
 
-  /**
-   * Destroy stack resources.
-   *
-   * @param {PulumiStack} stack
-   * @returns {Promise<DestroyResult>}
-   * @memberof PulumiService
-   */
+  //* Destroy resources
   async destroyResources(stack: PulumiStack): Promise<PulumiStack> {
     // [step 1] Get pulumi stack.
     const args: InlineProgramArgs = {
@@ -211,7 +195,6 @@ export class PulumiStackService {
     const pulumiProject = stack['project'].name.replace(/ /g, '_');
     const url = `https://api.pulumi.com/api/stacks/worldzhy/${pulumiProject}/${stack.name}`;
 
-    // [step 1] Force delete stack on Pulumi.
     return await axios.delete(url, {
       maxRedirects: 5,
       headers: {
@@ -225,14 +208,10 @@ export class PulumiStackService {
     });
   }
 
-  /**
-   * See the detail https://www.pulumi.com/docs/reference/service-rest-api/#list-stacks
-   *
-   * @returns
-   * @memberof PulumiService
-   */
+  //* @See https://www.pulumi.com/docs/reference/service-rest-api/#list-stacks
   async getStacks(stackProjectName: string) {
     const url = `https://api.pulumi.com/api/user/stacks?project=${stackProjectName}`;
+
     return await axios.get(url, {
       maxRedirects: 5,
       headers: {
@@ -243,14 +222,7 @@ export class PulumiStackService {
     });
   }
 
-  /**
-   * Get stack outputs.
-   *
-   * @param {string} stackProjectName
-   * @param {string} stackName
-   * @param {PulumiStackType} stackType
-   * @memberof PulumiService
-   */
+  //* Get stack outputs.
   async getStackOutputs(
     stackProjectName: string,
     stackName: string,
@@ -284,49 +256,22 @@ export class PulumiStackService {
     });
   }
 
-  /**
-   * Get example parameters of stack.
-   *
-   * @param {PulumiStackType} stackType
-   * @returns
-   * @memberof PulumiService
-   */
+  //* Get example parameters of stack.
   getStackParams(stackType: PulumiStackType) {
     return this.getStackServiceByType(stackType)?.getStackParams();
   }
 
-  /**
-   * Check parameters before building stack.
-   *
-   * @param {PulumiStackType} stackType
-   * @param {object} params
-   * @returns
-   * @memberof PulumiService
-   */
+  //* Check parameters before building stack.
   checkStackParams(stackType: PulumiStackType, params: any) {
     return this.getStackServiceByType(stackType)?.checkStackParams(params);
   }
 
-  /**
-   * Get Pulumi program for stack-up.
-   *
-   * @private
-   * @param {PulumiStackType} stackType
-   * @param {*} stackParams
-   * @returns
-   * @memberof PulumiService
-   */
+  //* Get Pulumi program for stack-up.
   private getStackProgramByType(stackType: PulumiStackType, stackParams: any) {
     return this.getStackServiceByType(stackType).getStackProgram(stackParams);
   }
 
-  /**
-   * Get stack class
-   *
-   * @param {PulumiStackType} type
-   * @returns
-   * @memberof PulumiStackService
-   */
+  //* Get stack class
   private getStackServiceByType(type: PulumiStackType) {
     switch (type) {
       case PulumiStackType.AWS_CLOUDFRONT:

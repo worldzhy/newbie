@@ -1,4 +1,4 @@
-import {Controller, Get, Param, Body, Patch} from '@nestjs/common';
+import {Controller, Get, Patch, Body, Param} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {CheckpointService} from './checkpoint.service';
 import {
@@ -39,7 +39,7 @@ export class CheckpointController {
   async updateCheckpoint(
     @Param('checkpointId') checkpointId: number,
     @Body() body: Prisma.ProjectCheckpointUpdateInput
-  ) {
+  ): Promise<ProjectCheckpoint> {
     return await this.checkpointService.update({
       where: {id: checkpointId},
       data: body,

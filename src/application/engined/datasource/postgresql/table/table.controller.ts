@@ -1,11 +1,11 @@
 import {
   Controller,
-  Get,
-  Post,
-  Param,
-  Body,
   Delete,
+  Get,
   Patch,
+  Post,
+  Body,
+  Param,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {
@@ -111,5 +111,6 @@ export class PostgresqlDatasourceTableController {
       orderBy: {ordinalPosition: 'asc'},
     });
   }
+
   /* End */
 }

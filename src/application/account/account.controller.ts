@@ -1,19 +1,28 @@
 import {
   Controller,
-  Request,
-  Body,
-  Post,
-  NotFoundException,
   Get,
-  Param,
   Patch,
+  Post,
+  Body,
+  Param,
+  Request,
+  BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody, ApiParam} from '@nestjs/swagger';
-import {Prisma, User, UserStatus, VerificationCodeUse} from '@prisma/client';
+import {
+  Prisma,
+  User,
+  UserJwt,
+  UserStatus,
+  VerificationCodeUse,
+} from '@prisma/client';
 import {UserService} from './user/user.service';
 import {UserJwtService} from './user/jwt/jwt.service';
 import {UserProfileService} from './user/profile/profile.service';
 import {VerificationCodeService} from './verification-code/verification-code.service';
+import {EmailNotificationService} from '../../microservices/notification/email/email.service';
+import {SmsNotificationService} from '../../microservices/notification/sms/sms.service';
 import * as validator from '../../toolkits/validators/account.validator';
 import {Public} from './auth/public/public.decorator';
 import {LoggingInByPassword} from './auth/password/password.decorator';
@@ -28,6 +37,8 @@ export class AccountController {
   private userJwtService = new UserJwtService();
   private profileService = new UserProfileService();
   private verificationCodeService = new VerificationCodeService();
+  private emailNotificationService = new EmailNotificationService();
+  private smsNotificationService = new SmsNotificationService();
 
   @Public()
   @Post('check')
@@ -167,7 +178,7 @@ export class AccountController {
   async signup(
     @Body()
     body: Prisma.UserCreateInput
-  ): Promise<User | {err: {message: string}}> {
+  ): Promise<User> {
     let usernameCount = 0;
     let emailCount = 0;
     let phoneCount = 0;
@@ -176,7 +187,7 @@ export class AccountController {
     // [step 1] Validate parameters.
     if (body.password) {
       if (!validator.verifyPassword(body.password)) {
-        return {err: {message: 'Your password is not strong enough.'}};
+        throw new BadRequestException('Your password is not strong enough.');
       } else {
         // Go on validating...
         usernameCount += 1;
@@ -185,7 +196,7 @@ export class AccountController {
 
     if (body.username) {
       if (!validator.verifyUsername(body.username)) {
-        return {err: {message: 'Your username is not valid.'}};
+        throw new BadRequestException('Your username is not valid.');
       } else {
         // Go on validating...
         usernameCount += 1;
@@ -194,7 +205,7 @@ export class AccountController {
 
     if (body.email) {
       if (!validator.verifyEmail(body.email)) {
-        return {err: {message: 'Your email is not valid.'}};
+        throw new BadRequestException('Your email is not valid.');
       } else {
         // Go on validating...
         emailCount += 1;
@@ -203,7 +214,7 @@ export class AccountController {
 
     if (body.phone) {
       if (!validator.verifyPhone(body.phone)) {
-        return {err: {message: 'Your phone is not valid.'}};
+        throw new BadRequestException('Your phone is not valid.');
       } else {
         // End of validating.
         phoneCount += 1;
@@ -225,7 +236,7 @@ export class AccountController {
       },
     });
     if (users.length > 0) {
-      return {err: {message: 'Your username exists.'}};
+      throw new BadRequestException('Your username exists.');
     }
 
     // [step 3] Create(Sign up) a new account.
@@ -248,7 +259,7 @@ export class AccountController {
         },
       });
     } else {
-      return {err: {message: 'Your parameters are invalid.'}};
+      throw new BadRequestException('Your parameters are invalid.');
     }
   }
 
@@ -298,7 +309,7 @@ export class AccountController {
       account: string;
       password: string;
     }
-  ): Promise<{userId: string; token: string} | {err: {message: string}}> {
+  ): Promise<UserJwt> {
     return await this.login(body.account);
   }
 
@@ -339,7 +350,7 @@ export class AccountController {
       suffix?: string;
       birthday: Date;
     }
-  ): Promise<{userId: string; token: string} | {err: {message: string}}> {
+  ): Promise<UserJwt> {
     const profileService = new UserProfileService();
 
     // [step 1] It has been confirmed there is only one profile.
@@ -371,7 +382,7 @@ export class AccountController {
     body: {
       uuid: string;
     }
-  ): Promise<{userId: string; token: string} | {err: {message: string}}> {
+  ): Promise<UserJwt> {
     return await this.login(body.uuid);
   }
 
@@ -409,7 +420,7 @@ export class AccountController {
       account: string;
       verificationCode: string;
     }
-  ): Promise<{userId: string; token: string} | {err: {message: string}}> {
+  ): Promise<UserJwt> {
     return await this.login(body.account);
   }
 
@@ -427,7 +438,7 @@ export class AccountController {
     },
   })
   async logout(
-    @Request() request: any,
+    @Request() request: Request,
     @Body() body: {userId: string}
   ): Promise<{data: {message: string}}> {
     const accessToken = request.headers['authorization'].split(' ')[1];
@@ -525,51 +536,6 @@ export class AccountController {
     });
   }
 
-  private async login(account: string) {
-    // [step 1] Get user.
-    const user = await this.userService.findByAccount(account);
-    if (!user) {
-      return {
-        err: {
-          message: 'Your account does not exist.',
-        },
-      };
-    }
-
-    // [step 2] Check if the account is active.
-    if (user.status === UserStatus.INACTIVE) {
-      return {
-        err: {
-          message: 'You have closed your account, do you want to recover it?',
-        },
-      };
-    }
-
-    // [step 3] Disable active JSON web token if existed.
-    await this.userJwtService.inactivateJWTs(user.id);
-
-    // [step 4] Generate a new JSON web token.
-    const jwt = await this.userJwtService.createJWT({
-      userId: user.id,
-      sub: account,
-    });
-    if (!jwt) {
-      return {
-        err: {
-          message: 'Your login process has failed. Please try again later.',
-        },
-      };
-    }
-
-    // [step 5] Update last login time.
-    await this.userService.update({
-      where: {id: user.id},
-      data: {lastLoginAt: new Date()},
-    });
-
-    return {userId: user.id, token: jwt.token};
-  }
-
   // *
   // * Won't send message if the same email apply again within 1 minute.
   // *
@@ -583,22 +549,29 @@ export class AccountController {
   async getVerificationCodeByEmail(@Param('email') email: string) {
     // [step 1] Guard statement.
     if (!validator.verifyEmail(email)) {
-      return {err: {message: 'The email is invalid.'}};
+      throw new BadRequestException('The email is invalid.');
     }
 
     // [step 2] Check if the account exists.
     const user = await this.userService.findByAccount(email);
     if (!user) {
-      return {
-        err: {message: 'Your account is not registered.'},
-      };
+      throw new NotFoundException('Your account is not registered.');
     }
 
-    // [step 3] Generate and send verification code.
-    return await this.verificationCodeService.send2Email(
-      email,
-      VerificationCodeUse.LOGIN_BY_EMAIL
-    );
+    // [step 3] Generate verification code.
+    const verificationCode =
+      await this.verificationCodeService.generateForEmail(
+        email,
+        VerificationCodeUse.LOGIN_BY_EMAIL
+      );
+
+    // [step 4] Send verification code.
+    await this.emailNotificationService.sendEmail({
+      email: email,
+      subject: 'Your Verification Code',
+      plainText: verificationCode.code,
+      html: verificationCode.code,
+    });
   }
 
   // *
@@ -614,22 +587,57 @@ export class AccountController {
   async getVerificationCodeByPhone(@Param('phone') phone: string) {
     // [step 1] Guard statement.
     if (!validator.verifyPhone(phone)) {
-      return {err: {message: 'The phone is invalid.'}};
+      throw new BadRequestException('The phone is invalid.');
     }
 
     // [step 2] Check if the account exists.
     const user = await this.userService.findByAccount(phone);
     if (!user) {
-      return {
-        err: {message: 'Your account is not registered.'},
-      };
+      throw new NotFoundException('Your account is not registered.');
     }
 
     // [step 3] Generate verification code.
-    return await this.verificationCodeService.send2Phone(
-      phone,
-      VerificationCodeUse.LOGIN_BY_PHONE
-    );
+    const verificationCode =
+      await this.verificationCodeService.generateForPhone(
+        phone,
+        VerificationCodeUse.LOGIN_BY_PHONE
+      );
+
+    // [step 4] Send verification code.
+    await this.smsNotificationService.sendTextMessage({
+      phone: phone,
+      text: verificationCode.code,
+    });
+  }
+
+  private async login(account: string) {
+    // [step 1] Get user.
+    const user = await this.userService.findByAccount(account);
+    if (!user) {
+      throw new NotFoundException('Your account does not exist.');
+    }
+
+    // [step 2] Check if the account is active.
+    if (user.status === UserStatus.INACTIVE) {
+      throw new NotFoundException(
+        'You have closed your account, do you want to recover it?'
+      );
+    }
+
+    // [step 3] Disable active JSON web token if existed.
+    await this.userJwtService.inactivateJWTs(user.id);
+
+    // [step 4] Update last login time.
+    await this.userService.update({
+      where: {id: user.id},
+      data: {lastLoginAt: new Date()},
+    });
+
+    // [step 5] Generate a new JSON web token.
+    return await this.userJwtService.createJWT({
+      userId: user.id,
+      sub: account,
+    });
   }
   /* End */
 }

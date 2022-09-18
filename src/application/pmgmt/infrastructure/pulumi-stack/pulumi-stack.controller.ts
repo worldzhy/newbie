@@ -1,11 +1,13 @@
 import {
   Controller,
-  Get,
-  Post,
   Delete,
-  Param,
-  Body,
+  Get,
   Patch,
+  Post,
+  Body,
+  Param,
+  BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {PulumiStackService} from './pulumi-stack.service';
@@ -38,6 +40,7 @@ export class PulumiStackController {
     return this.stackService.getStackParams(type);
   }
 
+  //* Create
   @Post('pulumi-stacks')
   @ApiBody({
     description: 'Create pulumi stack.',
@@ -74,11 +77,13 @@ export class PulumiStackController {
     return await this.stackService.create({data: body});
   }
 
+  //* Get many
   @Get('pulumi-stacks')
   async getStacks(): Promise<PulumiStack[]> {
     return await this.stackService.findMany({});
   }
 
+  //* Get
   @Get('pulumi-stacks/:stackId')
   @ApiParam({
     name: 'stackId',
@@ -91,6 +96,7 @@ export class PulumiStackController {
     return await this.stackService.findUnique({where: {id: stackId}});
   }
 
+  //* Update
   @Patch('pulumi-stacks/:stackId')
   @ApiParam({
     name: 'stackId',
@@ -131,6 +137,7 @@ export class PulumiStackController {
     });
   }
 
+  //* Delete
   @Delete('pulumi-stacks/:stackId')
   @ApiParam({
     name: 'stackId',
@@ -140,13 +147,13 @@ export class PulumiStackController {
   async deleteStack(
     @Param('stackId')
     stackId: string
-  ): Promise<PulumiStack | {err: {message: string}}> {
+  ): Promise<PulumiStack> {
     // [step 1] Get the cloudformation stack.
     const stack = await this.stackService.findUnique({
       where: {id: stackId},
     });
     if (!stack) {
-      return {err: {message: 'Invalid stackId.'}};
+      throw new NotFoundException('Not found the stack.');
     }
     if (
       stack.state === PulumiStackState.PREPARING ||
@@ -154,19 +161,13 @@ export class PulumiStackController {
     ) {
       return await this.stackService.delete({where: {id: stackId}});
     } else {
-      return {
-        err: {message: 'The stack can not be deleted before destroying.'},
-      };
+      throw new BadRequestException(
+        'The stack can not be deleted before destroying.'
+      );
     }
   }
 
-  /**
-   * Create stack resources.
-   *
-   * @param {string} stackId
-   * @returns
-   * @memberof PulumiStackController
-   */
+  //* Create resources
   @Post('pulumi-stacks/:stackId/create-resources')
   @ApiParam({
     name: 'stackId',
@@ -176,14 +177,14 @@ export class PulumiStackController {
   async createResources(
     @Param('stackId')
     stackId: string
-  ) {
+  ): Promise<PulumiStack> {
     // [step 1] Get the stack.
     const stack = await this.stackService.findUnique({
       where: {id: stackId},
       include: {project: true},
     });
     if (!stack) {
-      return {err: {message: 'Invalid stackId.'}};
+      throw new NotFoundException('Not found the stack.');
     }
 
     // [step 2] Check stack parameters.
@@ -191,7 +192,7 @@ export class PulumiStackController {
       false ===
       this.stackService.checkStackParams(stack.type, stack.params as object)
     ) {
-      return {err: {message: 'Checking stack parameters failed.'}};
+      throw new BadRequestException('Checking stack parameters failed.');
     }
 
     // [step 3] Create stack resources.
@@ -201,17 +202,11 @@ export class PulumiStackController {
     ) {
       return await this.stackService.createResources(stack);
     } else {
-      return {err: {message: 'Please check the pulumi status.'}};
+      throw new BadRequestException('Please check the pulumi status.');
     }
   }
 
-  /**
-   * Destroy stack resources.
-   *
-   * @param {string} stackId
-   * @returns
-   * @memberof PulumiStackController
-   */
+  //* Destroy resources
   @Post('pulumi-stacks/:stackId/destroy-resources')
   @ApiParam({
     name: 'stackId',
@@ -221,16 +216,13 @@ export class PulumiStackController {
   async destroyResources(
     @Param('stackId')
     stackId: string
-  ) {
+  ): Promise<PulumiStack> {
     // [step 1] Get the stack.
     const stack = await this.stackService.findUnique({
       where: {id: stackId},
     });
     if (!stack) {
-      return {
-        data: null,
-        err: {message: 'Invalid stackId.'},
-      };
+      throw new NotFoundException('Not found the stack.');
     }
 
     // [step 2] Destroy the pulumi stack.
@@ -240,19 +232,13 @@ export class PulumiStackController {
     ) {
       return await this.stackService.destroyResources(stack);
     } else {
-      return {
-        err: {message: 'The stack resources have not been created.'},
-      };
+      throw new BadRequestException(
+        'The stack resources have not been created.'
+      );
     }
   }
 
-  /**
-   * Force remove a stack from Pulumi.
-   *
-   * @param {string} stackId
-   * @returns
-   * @memberof PulumiStackController
-   */
+  //* Force remove a stack from Pulumi.
   @Post('pulumi-stacks/:stackId/force-delete-on-pulumi')
   @ApiParam({
     name: 'stackId',
@@ -268,19 +254,11 @@ export class PulumiStackController {
       where: {id: stackId},
     });
     if (!stack) {
-      return {
-        data: null,
-        err: {message: 'Invalid stackId.'},
-      };
+      throw new NotFoundException('Not found the stack.');
     }
 
     // [step 2] Destroy the pulumi stack.
-    try {
-      await this.stackService.destroyResources(stack);
-    } catch (error) {
-      // Do nothing
-      console.log('Exception for destroying pulumi stack [', stack.name, ']');
-    }
+    this.stackService.destroyResources(stack);
 
     // [step 3] Force delete the pulumi stack.
     return await this.stackService.forceDeleteOnPulumi(stack);

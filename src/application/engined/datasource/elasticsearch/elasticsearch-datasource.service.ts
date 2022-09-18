@@ -48,14 +48,12 @@ export class ElasticsearchDatasourceService {
 
   /**
    * Extract elasticsearch datasource indices and their fields.
-   * @param datasource
-   * @returns
    */
-  async mount(datasource: ElasticsearchDatasource) {
+  async mount(datasource: ElasticsearchDatasource): Promise<boolean> {
     // [step 1] Get mappings of all indices.
     const result = await this.elastic.indices.getMapping();
     if (result.statusCode !== 200) {
-      return;
+      return false;
     }
 
     // [step 2] Save fields of all indices.
@@ -89,24 +87,24 @@ export class ElasticsearchDatasourceService {
         }),
       });
     }
+    return true;
   }
 
   /**
    * Clear elasticsearch datasource indices and their fields.
-   * @param datasource
-   * @returns
    */
-  async unmount(datasource: ElasticsearchDatasource) {
+  async unmount(datasource: ElasticsearchDatasource): Promise<boolean> {
     // [step 1] Delete indices, their fields will be cascade deleted.
+
     await this.elasticsearchDatasourceIndexService.deleteMany({
       where: {datasourceId: datasource.id},
     });
+
+    return true;
   }
 
   /**
    * Search
-   * @param params
-   * @returns
    */
   async search(params: RequestParams.Search) {
     return await this.elastic.search(params);
@@ -114,8 +112,6 @@ export class ElasticsearchDatasourceService {
 
   /**
    * Search aggregations
-   * @param params
-   * @returns
    */
   async searchAggregations(params: any) {
     // [step 1] Parse params
@@ -134,13 +130,14 @@ export class ElasticsearchDatasourceService {
     const query = lodash_get(params, 'searchDto.body.query');
     const aggregationMode = lodash_get(params, 'aggregationMode');
 
+    let result = {};
     let field: any;
     let termsSize: any;
     switch (type) {
       case 'terms':
         field = lodash_get(params, 'option.column[0]');
         termsSize = lodash_get(params, 'option.chartOption.termsSize') || 10;
-        return {
+        result = {
           index,
           body: {
             track_total_hits: true,
@@ -156,12 +153,13 @@ export class ElasticsearchDatasourceService {
             },
           },
         };
+        break;
       case 'nested':
         if (aggregationMode === 'normal') {
           field = lodash_get(params, 'option.column[0]');
           termsSize = lodash_get(params, 'option.chartOption.termsSize') || 10;
           const nestPath = lodash_get(lodash_split(field, '.'), '0');
-          return {
+          result = {
             index,
             body: {
               track_total_hits: true,
@@ -183,13 +181,12 @@ export class ElasticsearchDatasourceService {
               },
             },
           };
-        }
-        if (aggregationMode === 'reverse') {
+        } else if (aggregationMode === 'reverse') {
           field = lodash_get(params, 'option.column[0]');
           termsSize = lodash_get(params, 'option.chartOption.termsSize') || 10;
           const reverseColumns = lodash_get(params, 'reverseColumns');
           const nestPath = lodash_get(lodash_split(field, '.'), '0');
-          return {
+          result = {
             index,
             body: {
               track_total_hits: true,
@@ -224,9 +221,11 @@ export class ElasticsearchDatasourceService {
             },
           };
         }
+        break;
       default:
-        return params;
+        break;
     }
+    return result;
   }
 
   private parseSearchAggregationsResult(params: any, response: any) {

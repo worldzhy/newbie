@@ -1,24 +1,68 @@
 import {Injectable} from '@nestjs/common';
-import {PinpointService} from '../../../toolkits/aws/pinpoint.service';
+import {
+  PinpointClient,
+  SendMessagesCommand,
+  SendMessagesCommandInput,
+  SendMessagesCommandOutput,
+} from '@aws-sdk/client-pinpoint';
+import {SmsNotification, Prisma} from '@prisma/client';
 import {PrismaService} from '../../../toolkits/prisma/prisma.service';
-
+import {getAwsConfig} from '../../../_config/_aws.config';
 @Injectable()
-export class SmsService {
+export class SmsNotificationService {
   private prisma = new PrismaService();
-  private pinpointService = new PinpointService();
+  private client: PinpointClient;
+  private pinpointAppId: string;
+  private pinpointSenderId: string;
 
-  /**
-   * Send one text message
-   * @param payload
-   * @returns
-   */
-  async sendOne(payload: {phone: string; text: string}) {
+  constructor() {
+    this.client = new PinpointClient({});
+    this.pinpointAppId = getAwsConfig().pinpointApplicationId!;
+    this.pinpointSenderId = getAwsConfig().pinpointSenderId!;
+  }
+
+  async findUnique(
+    params: Prisma.SmsNotificationFindUniqueArgs
+  ): Promise<SmsNotification | null> {
+    return await this.prisma.smsNotification.findUnique(params);
+  }
+
+  async findMany(
+    params: Prisma.SmsNotificationFindManyArgs
+  ): Promise<SmsNotification[]> {
+    return await this.prisma.smsNotification.findMany(params);
+  }
+
+  async create(
+    params: Prisma.SmsNotificationCreateArgs
+  ): Promise<SmsNotification> {
+    return await this.prisma.smsNotification.create(params);
+  }
+
+  async update(
+    params: Prisma.SmsNotificationUpdateArgs
+  ): Promise<SmsNotification> {
+    return await this.prisma.smsNotification.update(params);
+  }
+
+  async delete(
+    params: Prisma.SmsNotificationDeleteArgs
+  ): Promise<SmsNotification> {
+    return await this.prisma.smsNotification.delete(params);
+  }
+
+  async sendTextMessage(params: {
+    phone: string;
+    text: string;
+  }): Promise<SmsNotification> {
     // [step 1] Send AWS Pinpoint message.
-    const smsParams = this.pinpointService.buildSendMessagesParams_Sms({
-      phones: [payload.phone],
-      text: payload.text,
+    const commandInput = this.buildSendMessagesParams_Sms({
+      phones: [params.phone],
+      text: params.text,
     });
-    const output = await this.pinpointService.sendMessages(smsParams);
+    const output: SendMessagesCommandOutput = await this.client.send(
+      new SendMessagesCommand(commandInput)
+    );
 
     // [step 2] Save notification record.
     let pinpointRequestId: string | undefined;
@@ -27,13 +71,13 @@ export class SmsService {
       pinpointRequestId = output.MessageResponse.RequestId;
       if (output.MessageResponse?.Result) {
         pinpointMessageId =
-          output.MessageResponse?.Result[payload.phone].MessageId;
+          output.MessageResponse?.Result[params.phone].MessageId;
       }
     }
 
     return await this.prisma.smsNotification.create({
       data: {
-        payload: payload,
+        payload: params,
         pinpointRequestId: pinpointRequestId,
         pinpointMessageId: pinpointMessageId,
         pinpointResponse: output as object,
@@ -42,13 +86,36 @@ export class SmsService {
   }
 
   /**
-   * Send many text messages
-   * @param payload
+   * Construct params for sending text messages.
+   * @param data
    * @returns
    */
-  async sendMany(payload: {phones: string[]; text: string}) {
-    const smsParams = this.pinpointService.buildSendMessagesParams_Sms(payload);
+  private buildSendMessagesParams_Sms(data: {
+    phones: string[];
+    text: string;
+    keyword?: string;
+    messageType?: string; // 'TRANSACTIONAL' or 'PROMOTIONAL'
+  }): SendMessagesCommandInput {
+    const addresses: {[phone: string]: {ChannelType: string}} = {};
+    data.phones.map(phone => {
+      addresses[phone] = {
+        ChannelType: 'SMS',
+      };
+    });
 
-    return await this.pinpointService.sendMessages(smsParams);
+    return {
+      ApplicationId: this.pinpointAppId,
+      MessageRequest: {
+        Addresses: addresses,
+        MessageConfiguration: {
+          SMSMessage: {
+            Body: data.text,
+            Keyword: data.keyword,
+            MessageType: data.messageType,
+            SenderId: this.pinpointSenderId,
+          },
+        },
+      },
+    };
   }
 }

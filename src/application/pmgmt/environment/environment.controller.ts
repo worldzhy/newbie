@@ -1,4 +1,4 @@
-import {Controller, Get, Param, Body, Patch} from '@nestjs/common';
+import {Controller, Get, Patch, Body, Param} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {EnvironmentService} from './environment.service';
 import {

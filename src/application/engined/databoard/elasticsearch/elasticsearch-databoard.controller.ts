@@ -1,12 +1,13 @@
 import {
   Controller,
-  Get,
-  Post,
-  Param,
-  Body,
   Delete,
+  Get,
   Patch,
+  Post,
+  Body,
+  Param,
   Query,
+  BadRequestException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {ElasticsearchDataboardService} from './elasticsearch-databoard.service';
@@ -55,7 +56,7 @@ export class ElasticsearchDataboardController {
   })
   async getElasticsearchDataboards(
     @Query() query: {name?: string; page?: string}
-  ): Promise<ElasticsearchDataboard[] | {err: {message: string}}> {
+  ): Promise<ElasticsearchDataboard[]> {
     // [step 1] Construct where argument.
     let where: Prisma.ElasticsearchDataboardWhereInput | undefined;
     if (query.name) {
@@ -74,7 +75,7 @@ export class ElasticsearchDataboardController {
         take = 10;
         skip = 10 * (page - 1);
       } else {
-        return {err: {message: 'The page must be larger than 0.'}};
+        throw new BadRequestException('The page must be larger than 0.');
       }
     } else {
       take = 10;

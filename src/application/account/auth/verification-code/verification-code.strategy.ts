@@ -40,12 +40,12 @@ export class AuthVerificationCodeStrategy extends PassportStrategy(
 
     // [step 2] Validate verification code.
     if (verifyEmail(account)) {
-      return await this.verificationCodeService.validateWithEmail(
+      return await this.verificationCodeService.validateForEmail(
         verificationCode,
         account
       );
     } else if (verifyPhone(account)) {
-      return await this.verificationCodeService.validateWithPhone(
+      return await this.verificationCodeService.validateForPhone(
         verificationCode,
         account
       );

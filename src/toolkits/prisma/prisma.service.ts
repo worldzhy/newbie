@@ -2,6 +2,8 @@ import {INestApplication, Injectable, OnModuleInit} from '@nestjs/common';
 import {PrismaClient} from '@prisma/client';
 import {CustomLoggerService} from '../../_logger/_logger.service';
 
+type PrismaEventType = {timestamp: Date; message: string; target: string};
+
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
   private readonly logger = new CustomLoggerService('Prisma');
@@ -31,7 +33,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
 
     /* About event type */
     this.$on<any>('query', (e: any) => {
-      this.logger.log(`👇👇👇`);
+      this.logger.log('👇👇👇');
       this.logger.log(`time: ${e.timestamp}`);
       this.logger.log(`query: ${e.query}`);
       this.logger.log(`params: ${e.params}`);
@@ -40,17 +42,17 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
       this.logger.log('');
     });
 
-    this.$on<any>('info', (e: any) => {
+    this.$on<any>('info', (e: PrismaEventType): void => {
       const message = `${e.timestamp} >> ${e.message} >> [Target] ${e.target}`;
       this.logger.log(message);
     });
 
-    this.$on<any>('warn', (e: any) => {
+    this.$on<any>('warn', (e: PrismaEventType) => {
       const message = `${e.timestamp} >> ${e.message} >> [Target] ${e.target}`;
       this.logger.warn(message);
     });
 
-    this.$on<any>('error', (e: any) => {
+    this.$on<any>('error', (e: PrismaEventType) => {
       const message = `${e.timestamp} >> ${e.message} >> [Target] ${e.target}`;
       this.logger.error(message);
     });

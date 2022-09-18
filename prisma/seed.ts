@@ -1,18 +1,9 @@
-import {
-  DatatransPipelineState,
-  ElasticsearchDatasource,
-  PostgresqlDatasource,
-  Prisma,
-} from '@prisma/client';
-import {PrismaService} from '../src/toolkits/prisma/prisma.service';
+import {ElasticsearchDatasource, PostgresqlDatasource} from '@prisma/client';
 import {AccountController} from '../src/application/account/account.controller';
-import {RoleService} from '../src/application/account/user/role/role.service';
 import {ProjectController} from '../src/application/pmgmt/project/project.controller';
 import {PostgresqlDatasourceService} from '../src/application/engined/datasource/postgresql/postgresql-datasource.service';
 import {ElasticsearchDatasourceService} from '../src/application/engined/datasource/elasticsearch/elasticsearch-datasource.service';
 import {DatatransPipelineController} from '../src/application/engined/datatrans/pipeline/pipeline.controller';
-
-const prisma = new PrismaService();
 
 // Auth
 const authController = new AccountController();
@@ -20,17 +11,6 @@ const users = [
   {
     username: 'henry',
     password: 'Abc1234!',
-  },
-];
-
-// Role
-const roleService = new RoleService(prisma);
-const roles: Prisma.RoleCreateInput[] = [
-  {
-    name: 'admin',
-  },
-  {
-    name: 'user',
   },
 ];
 
@@ -64,9 +44,6 @@ const elasticsearch = {node: '127.0.0.1'};
 const pipelineController = new DatatransPipelineController();
 const pipeline = {
   name: 'pg2es_pipeline',
-  state: DatatransPipelineState.IDLE,
-  queueUrl:
-    'https://sqs.cn-northwest-1.amazonaws.com.cn/077767357755/dev-inceptionpad-message-service-email-level1',
   hasManyTables: [],
   belongsToTables: [],
   fromTableId: 16,
@@ -79,11 +56,6 @@ async function main() {
   console.log('- users');
   for (const user of users) {
     await authController.signup(user);
-  }
-
-  console.log('- roles');
-  for (const role of roles) {
-    await roleService.create(role);
   }
 
   console.log('- projects');

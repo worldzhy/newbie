@@ -7,6 +7,12 @@ import {
   DescribeStacksCommand,
 } from '@aws-sdk/client-cloudformation';
 import {fromIni} from '@aws-sdk/credential-providers';
+import {
+  CloudFormationStack,
+  CloudFormationStackState,
+  CloudFormationStackType,
+  Prisma,
+} from '@prisma/client';
 import {CicdBuild_Stack} from './stack/cicd-build.stack';
 import {CicdPipeline_Stack} from './stack/cicd-pipeline.stack';
 import {CicdRepository_Stack} from './stack/cicd-repository.stack';
@@ -14,15 +20,9 @@ import {ComputingFargate_Stack} from './stack/computing-fargate.stack';
 import {NetworkHipaa_Stack} from './stack/network-hipaa.stack';
 import {ProductMessageTracker_Stack} from './stack/product-message-tracker.stack';
 import {Null_Stack} from './stack/null.stack';
-import {getAwsConfig} from '../../../../_config/_aws.config';
-import {
-  CloudFormationStack,
-  CloudFormationStackState,
-  CloudFormationStackType,
-  Prisma,
-} from '@prisma/client';
 import {PrismaService} from '../../../../toolkits/prisma/prisma.service';
 import {randomCode} from '../../../../toolkits/utilities/common.util';
+import {getAwsConfig} from '../../../../_config/_aws.config';
 
 @Injectable()
 export class CloudFormationStackService {
@@ -59,21 +59,13 @@ export class CloudFormationStackService {
       return next(params);
     });
 
-    try {
-      return await this.prisma.cloudFormationStack.create(params);
-    } catch (error) {
-      return error;
-    }
+    return await this.prisma.cloudFormationStack.create(params);
   }
 
   async update(
     params: Prisma.CloudFormationStackUpdateArgs
   ): Promise<CloudFormationStack> {
-    try {
-      return await this.prisma.cloudFormationStack.update(params);
-    } catch (error) {
-      return error;
-    }
+    return await this.prisma.cloudFormationStack.update(params);
   }
 
   async delete(
@@ -82,14 +74,10 @@ export class CloudFormationStackService {
     return await this.prisma.cloudFormationStack.delete(params);
   }
 
-  /**
-   * Build stack
-   *
-   * @param {CloudFormationStack} stack
-   * @returns
-   * @memberof CloudFormationStackService
-   */
-  async createResources(stack: CloudFormationStack) {
+  //* Create resources
+  async createResources(
+    stack: CloudFormationStack
+  ): Promise<CloudFormationStack> {
     // [step 1] Create a cloudformation client.
     let client: CloudFormationClient;
     if (getAwsConfig().profile) {
@@ -141,33 +129,21 @@ export class CloudFormationStackService {
     });
 
     // [step 3] Send command and update state.
-    try {
-      const output = await client.send(command);
-      return await this.prisma.cloudFormationStack.update({
-        where: {id: stack.id},
-        data: {
-          state: CloudFormationStackState.BUILD,
-          createStackOutput: output as object,
-        },
-      });
-    } catch (error) {
-      // error handling.
-      return {
-        summary: {result: 'failed'},
-        error: error,
-      };
-    } finally {
-      // finally.
-    }
+
+    const output = await client.send(command);
+    return await this.prisma.cloudFormationStack.update({
+      where: {id: stack.id},
+      data: {
+        state: CloudFormationStackState.BUILD,
+        createStackOutput: output as object,
+      },
+    });
   }
 
-  /**
-   * Describe stack
-   *
-   * @param {string} stackName
-   * @memberof CloudFormationStackService
-   */
-  async describe(stackName: string) {
+  //* Describe resources
+  async describeResources(
+    stack: CloudFormationStack
+  ): Promise<CloudFormationStack> {
     // [step 1] Create a cloudformation client.
     let client: CloudFormationClient;
     if (getAwsConfig().profile) {
@@ -187,35 +163,23 @@ export class CloudFormationStackService {
     }
 
     // [step 2] Build parameters for cloudformation command.
-    const command = new DescribeStacksCommand({StackName: stackName});
+    const command = new DescribeStacksCommand({StackName: stack.name!});
 
     // [step 3] Send command.
-    try {
-      const data = await client.send(command);
-      // process data.
-      return {
-        summary: {result: 'succeeded'},
-        data: data,
-      };
-    } catch (error) {
-      // error handling.
-      return {
-        summary: {result: 'failed'},
-        error: error,
-      };
-    } finally {
-      // finally.
-    }
+
+    const output = await client.send(command);
+    return await this.prisma.cloudFormationStack.update({
+      where: {id: stack.id},
+      data: {
+        describeStackOutput: output as object,
+      },
+    });
   }
 
-  /**
-   * Destroy stack resources.
-   *
-   * @param {CloudFormationStack} stack
-   * @returns
-   * @memberof CloudFormationStackService
-   */
-  async destroyResources(stack: CloudFormationStack) {
+  //* Destroy resources.
+  async destroyResources(
+    stack: CloudFormationStack
+  ): Promise<CloudFormationStack> {
     // [step 1] Create a cloudformation client.
     let client: CloudFormationClient;
     if (getAwsConfig().profile) {
@@ -238,56 +202,32 @@ export class CloudFormationStackService {
     const command = new DeleteStackCommand({StackName: stack.name!});
 
     // [step 3] Send command and update state.
-    try {
-      const output = await client.send(command);
-      return await this.prisma.cloudFormationStack.update({
-        where: {id: stack.id},
-        data: {
-          state: CloudFormationStackState.DESTROYED,
-          deleteStackOutput: output as object,
-        },
-      });
-    } catch (error) {
-      // error handling.
-      return {
-        summary: {result: 'failed'},
-        error: error,
-      };
-    }
+
+    const output = await client.send(command);
+    return await this.prisma.cloudFormationStack.update({
+      where: {id: stack.id},
+      data: {
+        state: CloudFormationStackState.DESTROYED,
+        deleteStackOutput: output as object,
+      },
+    });
   }
 
-  /**
-   * Get example parameters of stack.
-   *
-   * @param {CloudFormationStackType} stackType
-   * @returns
-   * @memberof PulumiService
-   */
-  getStackParams(stackType: CloudFormationStackType) {
+  //* Get example parameters of stack.
+  getStackParams(stackType: CloudFormationStackType): {} {
     return this.getStackServiceByType(stackType)?.getStackParams();
   }
 
-  /**
-   * Check parameters before building stack.
-   *
-   * @param {CloudFormationStackType} stackType
-   * @param {object} params
-   * @returns
-   * @memberof PulumiService
-   */
-  checkStackParams(stackType: CloudFormationStackType, params: object) {
+  //* Check parameters before building stack.
+  checkStackParams(
+    stackType: CloudFormationStackType,
+    params: object
+  ): boolean {
     return this.getStackServiceByType(stackType)?.checkStackParams(params);
   }
 
-  /**
-   * Get CloudFormation template URL.
-   *
-   * @private
-   * @param {CloudFormationStackType} stackType
-   * @returns
-   * @memberof CloudFormationStackService
-   */
-  private getStackTemplateByType(stackType: CloudFormationStackType) {
+  //* Get CloudFormation template URL.
+  private getStackTemplateByType(stackType: CloudFormationStackType): string {
     const templatePath =
       this.getStackServiceByType(stackType).getStackTemplate();
     if (getAwsConfig().region!.startsWith('cn')) {
@@ -309,13 +249,7 @@ export class CloudFormationStackService {
     }
   }
 
-  /**
-   * Get stack class
-   *
-   * @param {CloudFormationStackType} type
-   * @returns
-   * @memberof CloudFormationStackService
-   */
+  //* Get stack class
   private getStackServiceByType(type: CloudFormationStackType) {
     switch (type) {
       case CloudFormationStackType.CICD_BUILD:

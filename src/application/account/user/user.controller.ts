@@ -1,18 +1,17 @@
 import {
   Controller,
-  Get,
-  Param,
-  Body,
-  Patch,
-  Query,
-  Post,
   Delete,
+  Get,
+  Patch,
+  Post,
+  Body,
+  Param,
+  Query,
+  BadRequestException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {Prisma, User} from '@prisma/client';
 import {UserService} from './user.service';
-import {UserJwtService} from './jwt/jwt.service';
-import {UserProfileService} from './profile/profile.service';
 import * as validator from '../../../toolkits/validators/account.validator';
 const bcrypt = require('bcryptjs');
 
@@ -21,8 +20,6 @@ const bcrypt = require('bcryptjs');
 @Controller('users')
 export class UserController {
   private userService = new UserService();
-  private userJwtService = new UserJwtService();
-  private profileService = new UserProfileService();
 
   @Post('')
   @ApiBody({
@@ -60,7 +57,7 @@ export class UserController {
   })
   async getUsers(
     @Query() query: {name?: string; page?: string}
-  ): Promise<User[] | {err: {message: string}}> {
+  ): Promise<User[]> {
     // [step 1] Construct where argument.
     let where: Prisma.UserWhereInput | undefined;
     if (query.name) {
@@ -94,7 +91,7 @@ export class UserController {
         take = 10;
         skip = 10 * (page - 1);
       } else {
-        return {err: {message: 'The page must be larger than 0.'}};
+        throw new BadRequestException('The page must be larger than 0.');
       }
     } else {
       take = 10;
@@ -180,45 +177,38 @@ export class UserController {
   async changePassword(
     @Param('userId') userId: string,
     @Body() body: {currentPassword: string; newPassword: string}
-  ): Promise<User | {err: {message: string}}> {
+  ): Promise<User> {
     // [step 1] Guard statement.
     if (
       !('userId' in body) ||
       !('currentPassword' in body) ||
       !('newPassword' in body)
     ) {
-      return {
-        err: {
-          message:
-            "Please carry 'userId', 'currentPassword' and 'newPassword' in the request body.",
-        },
-      };
+      throw new BadRequestException(
+        "Please carry 'userId', 'currentPassword' and 'newPassword' in the request body."
+      );
     }
 
     // [step 2] Verify if the new password is same with the current password.
     if (body.currentPassword.trim() === body.newPassword.trim()) {
-      return {
-        err: {message: 'The new password is same with the current password.'},
-      };
+      throw new BadRequestException(
+        'The new password is same with the current password.'
+      );
     }
 
     // [step 3] Validate the new password.
     if (!validator.verifyPassword(body.newPassword)) {
-      return {err: {message: 'The new password is invalid.'}};
+      throw new BadRequestException('The new password is invalid.');
     }
 
     // [step 4] Verify the current password.
     const user = await this.userService.findUnique({where: {id: userId}});
     if (!user) {
-      return {
-        err: {message: 'The user is not existed.'},
-      };
+      throw new BadRequestException('The user is not existed.');
     }
     const match = await bcrypt.compare(body.currentPassword, user.password);
     if (match === false) {
-      return {
-        err: {message: 'The current password is incorrect.'},
-      };
+      throw new BadRequestException('The current password is incorrect.');
     }
 
     // [step 5] Change password.
@@ -257,17 +247,17 @@ export class UserController {
   async resetPassword(
     @Param('userId') userId: string,
     @Body() body: {newPassword: string}
-  ): Promise<User | {err: {message: string}}> {
+  ): Promise<User> {
     // [step 1] Guard statement
     if (!('newPassword' in body)) {
-      return {
-        err: {message: "Please carry 'newPassword' in the request body."},
-      };
+      throw new BadRequestException(
+        "Please carry 'newPassword' in the request body."
+      );
     }
 
     // [step 2] Validate the new password
     if (!validator.verifyPassword(body.newPassword)) {
-      return {err: {message: 'The new password is invalid.'}};
+      throw new BadRequestException('The new password is invalid.');
     }
 
     // [step 3] Reset password

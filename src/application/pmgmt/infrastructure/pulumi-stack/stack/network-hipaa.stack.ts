@@ -26,7 +26,7 @@ export class NetworkHipaa_Stack {
     };
   }
 
-  static checkStackParams(params: object) {
+  static checkStackParams(params: {}) {
     if (params) {
       return true;
     } else {

@@ -6,7 +6,7 @@ export class Null_Stack {
     return {};
   }
 
-  static checkStackParams(params: object) {
+  static checkStackParams(params: {}) {
     console.log(params);
     return false;
   }

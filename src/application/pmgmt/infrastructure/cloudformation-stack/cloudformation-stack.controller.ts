@@ -1,11 +1,13 @@
 import {
   Controller,
-  Get,
-  Post,
   Delete,
-  Param,
-  Body,
+  Get,
   Patch,
+  Post,
+  Body,
+  Param,
+  BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {CloudFormationStackService} from './cloudformation-stack.service';
@@ -26,7 +28,17 @@ export class CloudFormationStackController {
   private stackService = new CloudFormationStackService();
 
   @Get('cloudformation-stacks/types')
-  async listStackTypes() {
+  async listStackTypes(): Promise<
+    (
+      | 'COMPUTING_FARGATE'
+      | 'NETWORK_HIPAA'
+      | 'CICD_BUILD'
+      | 'CICD_PIPELINE'
+      | 'CICD_REPOSITORY'
+      | 'PRODUCT_DATA_ENGINE'
+      | 'PRODUCT_MESSAGE_TRACKER'
+    )[]
+  > {
     return Object.values(CloudFormationStackType);
   }
 
@@ -36,10 +48,13 @@ export class CloudFormationStackController {
     schema: {type: 'string'},
     example: CloudFormationStackType.CICD_BUILD,
   })
-  async getStackParams(@Param('type') type: CloudFormationStackType) {
+  async getStackParams(
+    @Param('type') type: CloudFormationStackType
+  ): Promise<{}> {
     return this.stackService.getStackParams(type);
   }
 
+  //* Create
   @Post('cloudformation-stacks')
   @ApiBody({
     description: 'Create cloudformation stack.',
@@ -76,11 +91,13 @@ export class CloudFormationStackController {
     return await this.stackService.create({data: body});
   }
 
+  //* Get many
   @Get('cloudformation-stacks')
   async getStacks(): Promise<CloudFormationStack[]> {
     return await this.stackService.findMany({});
   }
 
+  //* Get
   @Get('cloudformation-stacks/:stackId')
   @ApiParam({
     name: 'stackId',
@@ -93,6 +110,7 @@ export class CloudFormationStackController {
     return await this.stackService.findUnique({where: {id: stackId}});
   }
 
+  //* Update
   @Patch('cloudformation-stacks/:stackId')
   @ApiParam({
     name: 'stackId',
@@ -133,6 +151,7 @@ export class CloudFormationStackController {
     });
   }
 
+  //* Delete
   @Delete('cloudformation-stacks/:stackId')
   @ApiParam({
     name: 'stackId',
@@ -142,33 +161,25 @@ export class CloudFormationStackController {
   async deleteStack(
     @Param('stackId')
     stackId: string
-  ): Promise<CloudFormationStack | {err: {message: string}}> {
+  ): Promise<CloudFormationStack> {
     // [step 1] Get the cloudformation stack.
     const stack = await this.stackService.findUnique({
       where: {id: stackId},
     });
     if (!stack) {
-      return {err: {message: 'Invalid stackId.'}};
+      throw new NotFoundException('Not found the stack.');
     }
     if (stack.state === CloudFormationStackState.BUILD) {
-      return {
-        err: {
-          message: 'The stack record can not be deleted before destroying.',
-        },
-      };
+      throw new BadRequestException(
+        'The stack record can not be deleted before destroying.'
+      );
     }
 
     // [step 2] Delete the stack record on database.
     return await this.stackService.delete({where: {id: stackId}});
   }
 
-  /**
-   * Build cloudformation stack.
-   *
-   * @param {string} stackId
-   * @returns
-   * @memberof CloudFormationStackController
-   */
+  //* Create resources
   @Post('cloudformation-stacks/:stackId/create-resources')
   @ApiParam({
     name: 'stackId',
@@ -178,46 +189,29 @@ export class CloudFormationStackController {
   async createResources(
     @Param('stackId')
     stackId: string
-  ) {
+  ): Promise<CloudFormationStack> {
     // [step 1] Get the cloudformation stack.
     const stack = await this.stackService.findUnique({
       where: {id: stackId},
     });
     if (!stack) {
-      return {
-        data: null,
-        err: {message: 'Invalid stackId.'},
-      };
+      throw new NotFoundException('Not found the stack.');
     } else if (
       false ===
       this.stackService.checkStackParams(stack.type, stack.params as object)
     ) {
-      return {
-        data: null,
-        err: {
-          message: 'This cloudformation is not ready for building.',
-        },
-      };
+      throw new BadRequestException(
+        'This cloudformation is not ready for building.'
+      );
     } else if (stack.state === CloudFormationStackState.BUILD) {
-      return {
-        data: null,
-        err: {
-          message: 'The cloudformation has been built.',
-        },
-      };
+      throw new BadRequestException('The cloudformation has been built.');
     }
 
     // [step 2] Build the cloudformation stack.
     return await this.stackService.createResources(stack);
   }
 
-  /**
-   * Destroy stack resources.
-   *
-   * @param {string} stackId
-   * @returns
-   * @memberof CloudFormationStackController
-   */
+  //* Destroy resources
   @Post('cloudformation-stacks/:stackId/destroy-resources')
   @ApiParam({
     name: 'stackId',
@@ -227,31 +221,20 @@ export class CloudFormationStackController {
   async destroyResources(
     @Param('stackId')
     stackId: string
-  ) {
+  ): Promise<CloudFormationStack> {
     // [step 1] Get the cloudformation stack.
     const stack = await this.stackService.findUnique({
       where: {id: stackId},
     });
     if (!stack) {
-      return {
-        data: null,
-        err: {message: 'Invalid stackId.'},
-      };
+      throw new NotFoundException('Not found the stack.');
     }
     if (stack.createStackOutput === null) {
-      return {
-        data: null,
-        err: {
-          message: 'The stack has not been built.',
-        },
-      };
+      throw new BadRequestException('The stack has not been built.');
     } else if (stack.state === CloudFormationStackState.DESTROYED) {
-      return {
-        data: null,
-        err: {
-          message: `The stack has been destroyed at ${stack.updatedAt}`,
-        },
-      };
+      throw new BadRequestException(
+        `The stack has been destroyed at ${stack.updatedAt}`
+      );
     }
 
     // [step 2] Delete the stack on AWS CloudFormation.

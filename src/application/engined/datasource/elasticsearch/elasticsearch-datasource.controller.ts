@@ -1,11 +1,12 @@
 import {
   Controller,
-  Get,
-  Post,
-  Param,
-  Body,
-  Patch,
   Delete,
+  Get,
+  Patch,
+  Post,
+  Body,
+  Param,
+  NotFoundException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {
@@ -48,12 +49,6 @@ export class ElasticsearchDatasourceController {
     return await this.elasticsearchDatasourceService.findMany({});
   }
 
-  /**
-   * Get datasource elasticsearch by id
-   * @param {string} datasourceId
-   * @returns {Promise<{data: object;err: object;}>}
-   * @memberof ElasticsearchDatasourceController
-   */
   @Get(':datasourceId')
   @ApiParam({
     name: 'datasourceId',
@@ -89,7 +84,7 @@ export class ElasticsearchDatasourceController {
   async updateElasticsearchDatasource(
     @Param('datasourceId') datasourceId: string,
     @Body() body: Prisma.ElasticsearchDatasourceUpdateInput
-  ) {
+  ): Promise<ElasticsearchDatasource> {
     return await this.elasticsearchDatasourceService.update({
       where: {id: datasourceId},
       data: body,
@@ -119,13 +114,13 @@ export class ElasticsearchDatasourceController {
   })
   async getElasticsearchDatasourceIndicesByDatasource(
     @Param('datasourceId') datasourceId: string
-  ): Promise<ElasticsearchDatasourceIndex[] | {err: {message: string}}> {
+  ): Promise<ElasticsearchDatasourceIndex[]> {
     // [step 1] Get datasource.
     const datasource = await this.elasticsearchDatasourceService.findUnique({
       where: {id: datasourceId},
     });
     if (!datasource) {
-      return {err: {message: 'Invalid datasource id.'}};
+      throw new NotFoundException('Not found the datasource.');
     }
 
     // [step 2] Get indices.
@@ -173,10 +168,7 @@ export class ElasticsearchDatasourceController {
       where: {id: datasourceId},
     });
     if (!datasource) {
-      return {
-        data: null,
-        err: {message: 'Invalid datasource id.'},
-      };
+      throw new NotFoundException('Not found the datasource.');
     }
 
     // [step 2] Search datasource.
@@ -219,10 +211,7 @@ export class ElasticsearchDatasourceController {
       where: {id: datasourceId},
     });
     if (!datasource) {
-      return {
-        data: null,
-        err: {message: 'Invalid datasource id.'},
-      };
+      throw new NotFoundException('Not found the datasource.');
     }
 
     // [step 2] Search datasource.
@@ -231,9 +220,6 @@ export class ElasticsearchDatasourceController {
 
   /**
    * Mount an elasticsearch datasource.
-   *
-   * @returns
-   * @memberof ElasticsearchDatasourceController
    */
   @Post(':datasourceId/mount')
   @ApiParam({
@@ -244,7 +230,7 @@ export class ElasticsearchDatasourceController {
   })
   async mountElasticsearchDatasource(
     @Param('datasourceId') datasourceId: string
-  ) {
+  ): Promise<boolean> {
     // [step 1] Guard statement.
 
     // [step 2] Get datasource.
@@ -252,26 +238,15 @@ export class ElasticsearchDatasourceController {
       where: {id: datasourceId},
     });
     if (!datasource) {
-      return {
-        data: null,
-        err: {message: 'Invalid datasource id.'},
-      };
+      throw new NotFoundException('Not found the datasource.');
     }
 
     // [step 3] Extract elasticsearch all index fields.
-    await this.elasticsearchDatasourceService.mount(datasource);
-
-    return {
-      data: 'Done',
-      err: null,
-    };
+    return this.elasticsearchDatasourceService.mount(datasource);
   }
 
   /**
    * Unmount an elasticsearch datasource.
-   *
-   * @returns
-   * @memberof ElasticsearchDatasourceController
    */
   @Post(':datasourceId/unmount')
   @ApiParam({
@@ -282,20 +257,18 @@ export class ElasticsearchDatasourceController {
   })
   async unmountPostgresqlDatasource(
     @Param('datasourceId') datasourceId: string
-  ) {
+  ): Promise<boolean> {
     // [step 1] Get datasource.
     const datasource = await this.elasticsearchDatasourceService.findUnique({
       where: {id: datasourceId},
     });
     if (!datasource) {
-      return {
-        data: null,
-        err: {message: 'Invalid datasourceId.'},
-      };
+      throw new NotFoundException('Not found the datasource.');
     }
 
     // [step 2] Clear elasticsearch datasource indices and fields.
-    await this.elasticsearchDatasourceService.unmount(datasource);
+    return await this.elasticsearchDatasourceService.unmount(datasource);
   }
+
   /* End */
 }

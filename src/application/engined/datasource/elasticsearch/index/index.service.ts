@@ -26,11 +26,10 @@ export class ElasticsearchDatasourceIndexService {
     return await this.prisma.elasticsearchDatasourceIndex.create(params);
   }
 
-  async createMany(params: Prisma.ElasticsearchDatasourceIndexCreateManyArgs) {
-    const result = await this.prisma.elasticsearchDatasourceIndex.createMany(
-      params
-    );
-    return result.count;
+  async createMany(
+    params: Prisma.ElasticsearchDatasourceIndexCreateManyArgs
+  ): Promise<Prisma.BatchPayload> {
+    return await this.prisma.elasticsearchDatasourceIndex.createMany(params);
   }
 
   async update(
@@ -47,26 +46,14 @@ export class ElasticsearchDatasourceIndexService {
 
   async deleteMany(
     params: Prisma.ElasticsearchDatasourceIndexDeleteManyArgs
-  ): Promise<number> {
-    const result = await this.prisma.elasticsearchDatasourceIndex.deleteMany(
-      params
-    );
-
-    return result.count;
+  ): Promise<Prisma.BatchPayload> {
+    return await this.prisma.elasticsearchDatasourceIndex.deleteMany(params);
   }
 
-  /**
-   * Check if exist
-   *
-   * @param {number} id
-   * @returns
-   * @memberof ElasticsearchDatasourceIndexService
-   */
-  async checkExistence(id: number) {
+  async checkExistence(id: number): Promise<boolean> {
     const count = await this.prisma.elasticsearchDatasourceIndex.count({
       where: {id: id},
     });
-
     return count > 0 ? true : false;
   }
 

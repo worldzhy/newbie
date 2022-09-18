@@ -21,9 +21,7 @@ export class CheckpointService {
   async create(
     data: Prisma.ProjectCheckpointCreateInput
   ): Promise<ProjectCheckpoint> {
-    return await this.prisma.projectCheckpoint.create({
-      data,
-    });
+    return await this.prisma.projectCheckpoint.create({data});
   }
 
   async update(

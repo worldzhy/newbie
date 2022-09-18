@@ -19,11 +19,9 @@ export class EnvironmentService {
   }
 
   async create(
-    data: Prisma.ProjectEnvironmentCreateInput
+    params: Prisma.ProjectEnvironmentCreateArgs
   ): Promise<ProjectEnvironment> {
-    return await this.prisma.projectEnvironment.create({
-      data,
-    });
+    return await this.prisma.projectEnvironment.create(params);
   }
 
   async update(

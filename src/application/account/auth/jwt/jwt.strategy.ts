@@ -19,12 +19,11 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'passport-jwt') {
    *
    * For the jwt-strategy, Passport first verifies the JWT's signature and decodes the JSON.
    * Then it invokes our validate() method passing the decoded JSON as its single parameter
-   *
-   * @param {*} payload
-   * @returns
-   * @memberof JwtStrategy
    */
-  async validate(payload: any) {
+  async validate(payload: {
+    userId: string;
+    sub: string;
+  }): Promise<{userId: string; username: string}> {
     /* payload sample
     {
       userId: 'cee65873-f194-4a35-bd5b-21aea534704c',

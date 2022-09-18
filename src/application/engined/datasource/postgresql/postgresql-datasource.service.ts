@@ -59,12 +59,9 @@ export class PostgresqlDatasourceService {
 
   /**
    * Extract tables, columns and constraints.
-   * @param datasource
-   * @returns
    */
-  async mount(datasource: PostgresqlDatasource) {
-    // [step 1] Extract tables and columns.
-
+  async mount(datasource: PostgresqlDatasource): Promise<boolean> {
+    //*[step 1] Extract tables and columns.
     // [step 1-1] Prepare table names.
     const tables = await this.prisma.$queryRaw<
       {table_name: string}[]
@@ -101,8 +98,7 @@ export class PostgresqlDatasourceService {
       });
     }
 
-    // [step 2] Extract constraints.
-
+    //*[step 2] Extract constraints.
     // [step 2-1] Prepare constraint_name, constraint_type
     const tableConstraints = await this.prisma.$queryRaw<
       {constraint_name: string; constraint_type: string}[]
@@ -172,14 +168,14 @@ export class PostgresqlDatasourceService {
     await this.postgresqlDatasourceConstraintService.createMany({
       data: constraints,
     });
+
+    return true;
   }
 
   /**
    * Clear constraints, tables and their columns.
-   * @param datasource
-   * @returns
    */
-  async unmount(datasource: PostgresqlDatasource) {
+  async unmount(datasource: PostgresqlDatasource): Promise<boolean> {
     // [step 1] Delete tables and their columns.
     await this.postgresqlDatasourceTableService.deleteMany({
       where: {datasourceId: datasource.id},
@@ -189,14 +185,27 @@ export class PostgresqlDatasourceService {
     await this.postgresqlDatasourceConstraintService.deleteMany({
       datasourceId: datasource.id,
     });
+
+    return true;
   }
 
   /**
    * Overview postgresql datasource.
-   * @param datasource
-   * @returns
    */
-  async overview(datasource: PostgresqlDatasource) {
+  async overview(datasource: PostgresqlDatasource): Promise<{
+    host: string;
+    port: number;
+    database: string;
+    schema: string;
+    tableCount: number;
+    tables: {
+      id: number;
+      name: string;
+      numberOfRecords: number;
+      hasMany: {}[];
+      belongsTo: {}[];
+    }[];
+  }> {
     const tables = datasource['tables'] as PostgresqlDatasourceTable[];
     const tableSummaries: {
       id: number;
@@ -214,7 +223,7 @@ export class PostgresqlDatasourceService {
       const childTables: {name: string; numberOfRecords: number}[] = [];
       const parentTables: {name: string; numberOfRecords: number}[] = [];
 
-      // [step 1] Get information of child tables.
+      //*[step 1] Get information of child tables.
       // [step 1-1] Get child tables's names.
       constraints = (await this.postgresqlDatasourceConstraintService.findMany({
         where: {foreignTable: table.name},
@@ -234,7 +243,7 @@ export class PostgresqlDatasourceService {
         })
       );
 
-      // [step 2] Get information of parent tables.
+      //*[step 2] Get information of parent tables.
       // [step 2-1] Get parent tables' name.
       constraints = (await this.postgresqlDatasourceConstraintService.findMany({
         where: {AND: {table: table.name, foreignTable: {not: null}}},
@@ -254,7 +263,7 @@ export class PostgresqlDatasourceService {
         })
       );
 
-      // [step 3] Get the total count of the table records.
+      //*[step 3] Get the total count of the table records.
       countResult = await this.prisma.$queryRawUnsafe(
         `SELECT COUNT(*) FROM "${table.name}"`
       );
@@ -278,16 +287,16 @@ export class PostgresqlDatasourceService {
     };
   }
 
-  async getTables(datasource: PostgresqlDatasource) {
+  async getTables(datasource: PostgresqlDatasource): Promise<unknown> {
     return await this.prisma
       .$queryRaw`SELECT * FROM information_schema.tables WHERE (table_schema = ${datasource.schema})`;
   }
 
-  async getTriggers(datasource: PostgresqlDatasource) {
-    const result: any[] = await this.prisma
+  async getTriggers(datasource: PostgresqlDatasource): Promise<{}[]> {
+    const result: {}[] = await this.prisma
       .$queryRaw`SELECT * FROM information_schema.triggers WHERE event_object_schema = ${datasource.schema}`;
-    const triggers: any[] = [];
 
+    const triggers: {}[] = [];
     result.forEach((item: any) => {
       triggers.push({
         tableName: item.event_object_table,
@@ -305,7 +314,7 @@ export class PostgresqlDatasourceService {
     rows = 5000,
     offset = 0,
     datasource: PostgresqlDatasource
-  ) {
+  ): Promise<unknown> {
     return await this.prisma
       .$queryRaw`SELECT ${selectList} FROM ${datasource.schema}.${table} ORDER BY ${selectList} DESC LIMIT ${rows} OFFSET ${offset}`;
   }

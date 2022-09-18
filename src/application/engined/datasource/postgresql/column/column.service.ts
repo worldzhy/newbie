@@ -26,11 +26,8 @@ export class PostgresqlDatasourceTableColumnService {
 
   async createMany(
     params: Prisma.PostgresqlDatasourceTableColumnCreateManyArgs
-  ): Promise<number> {
-    const result = await this.prisma.postgresqlDatasourceTableColumn.createMany(
-      params
-    );
-    return result.count;
+  ): Promise<Prisma.BatchPayload> {
+    return await this.prisma.postgresqlDatasourceTableColumn.createMany(params);
   }
 
   async update(
@@ -47,12 +44,8 @@ export class PostgresqlDatasourceTableColumnService {
 
   async deleteMany(
     params: Prisma.PostgresqlDatasourceTableColumnDeleteManyArgs
-  ): Promise<number> {
-    const result = await this.prisma.postgresqlDatasourceTableColumn.deleteMany(
-      params
-    );
-
-    return result.count;
+  ): Promise<Prisma.BatchPayload> {
+    return await this.prisma.postgresqlDatasourceTableColumn.deleteMany(params);
   }
 
   /* End */

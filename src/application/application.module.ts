@@ -7,8 +7,10 @@ import {AccountModule} from './account/account.module';
 import {EnginedModule} from './engined/engined.module';
 import {ProjectManagementModule} from './pmgmt/pmgmt.module';
 import {GlobalAuthGuard} from './account/auth/auth.guard';
-import {HttpMiddleware} from '../_middleware/_http.middleware';
+import {AllExceptionsFilter} from '../_filter/_all-exceptions.filter';
 import {HttpExceptionFilter} from '../_filter/_http-exception.filter';
+import {PrismaExceptionFilter} from '../_filter/_prisma-exception.filter';
+import {HttpMiddleware} from '../_middleware/_http.middleware';
 import {ApplicationController} from './application.controller';
 
 @Module({
@@ -24,8 +26,10 @@ import {ApplicationController} from './application.controller';
     ProjectManagementModule,
   ],
   providers: [
-    {provide: APP_FILTER, useClass: HttpExceptionFilter},
-    {provide: APP_GUARD, useClass: GlobalAuthGuard},
+    // {provide: APP_GUARD, useClass: GlobalAuthGuard},
+    {provide: APP_FILTER, useClass: AllExceptionsFilter}, // 3rd priority for all exceptions.
+    {provide: APP_FILTER, useClass: PrismaExceptionFilter}, // 2nd priority for exceptions thrown by services.
+    {provide: APP_FILTER, useClass: HttpExceptionFilter}, // 1st priority for exceptions thrown by controllers.
   ],
   controllers: [ApplicationController],
 })

@@ -7,28 +7,19 @@ export class PostgresqlDatasourceConstraintService {
   private prisma: PrismaService = new PrismaService();
 
   async findMany(params: Prisma.PostgresqlDatasourceConstraintFindManyArgs) {
-    const {skip, take, where, orderBy, select} = params;
     return await this.prisma.postgresqlDatasourceConstraint.findMany(params);
   }
 
   async create(
     params: Prisma.PostgresqlDatasourceConstraintCreateArgs
   ): Promise<PostgresqlDatasourceConstraint> {
-    try {
-      return await this.prisma.postgresqlDatasourceConstraint.create(params);
-    } catch (error) {
-      return error;
-    }
+    return await this.prisma.postgresqlDatasourceConstraint.create(params);
   }
 
   async createMany(
     params: Prisma.PostgresqlDatasourceConstraintCreateManyArgs
-  ): Promise<number> {
-    const result = await this.prisma.postgresqlDatasourceConstraint.createMany(
-      params
-    );
-
-    return result.count;
+  ): Promise<Prisma.BatchPayload> {
+    return await this.prisma.postgresqlDatasourceConstraint.createMany(params);
   }
 
   async update(
@@ -45,12 +36,10 @@ export class PostgresqlDatasourceConstraintService {
 
   async deleteMany(
     where: Prisma.PostgresqlDatasourceConstraintWhereInput
-  ): Promise<number> {
-    const result = await this.prisma.postgresqlDatasourceConstraint.deleteMany({
+  ): Promise<Prisma.BatchPayload> {
+    return await this.prisma.postgresqlDatasourceConstraint.deleteMany({
       where,
     });
-
-    return result.count;
   }
   /* End */
 }

@@ -1,4 +1,3 @@
-import {APP_GUARD} from '@nestjs/core';
 import {Module} from '@nestjs/common';
 import {AuthPasswordModule} from './password/password.module';
 import {AuthProfileModule} from './profile/profile.module';

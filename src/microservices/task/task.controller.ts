@@ -1,41 +1,47 @@
-import {Controller, Get, Post, Param, Body, Query} from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  Patch,
+  Post,
+  Body,
+  Param,
+  Query,
+  BadRequestException,
+} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {Prisma, Task, TaskState, TaskType} from '@prisma/client';
+import {Prisma, Task, TaskType} from '@prisma/client';
 import {TaskService} from './task.service';
 
-@ApiTags('[Microservice] Task Management / Task')
+@ApiTags('[Microservice] Task')
 @ApiBearerAuth()
-@Controller('task-management')
+@Controller('tasks')
 export class TaskController {
   private taskService = new TaskService();
 
-  @Post('tasks')
+  //* Create
+  @Post('')
   @ApiBody({
-    description: '',
+    description: 'Create a task.',
     examples: {
       a: {
         summary: '1. Create',
         value: {
-          type: TaskType.DATATRANS_BATCH_PROCESSING,
-          payload: {name: 'Jim', age: 12},
+          websites: {facebook: 'https://www.facebook.com/grace'},
+          picture:
+            'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Steve_Jobs_Headshot_2010-CROP_%28cropped_2%29.jpg/800px-Steve_Jobs_Headshot_2010-CROP_%28cropped_2%29.jpg',
         },
       },
     },
   })
-  async sendTask(
-    @Body()
-    body: {
-      type: TaskType;
-      payload: object;
-    }
-  ) {
-    return await this.taskService.sendOne({
-      type: body.type,
-      payload: body.payload,
-    });
+  async createTask(
+    @Body() body: Prisma.TaskUncheckedCreateInput
+  ): Promise<Task> {
+    return await this.taskService.create({data: body});
   }
 
-  @Get('tasks')
+  //* Get many
+  @Get('')
   @ApiParam({
     name: 'type',
     schema: {type: 'string'},
@@ -45,7 +51,7 @@ export class TaskController {
   })
   async getTasks(
     @Query() query: {type?: TaskType; page?: string}
-  ): Promise<Task[] | {err: {message: string}}> {
+  ): Promise<Task[]> {
     // [step 1] Construct where argument.
     let where: Prisma.TaskWhereInput | undefined;
     if (query.type) {
@@ -61,7 +67,7 @@ export class TaskController {
         take = 10;
         skip = 10 * (page - 1);
       } else {
-        return {err: {message: 'The page must be larger than 0.'}};
+        throw new BadRequestException('The page must be larger than 0.');
       }
     } else {
       take = 10;
@@ -76,7 +82,8 @@ export class TaskController {
     });
   }
 
-  @Get('tasks/:taskId')
+  //* Get
+  @Get(':taskId')
   @ApiParam({
     name: 'taskId',
     schema: {type: 'number'},
@@ -89,19 +96,35 @@ export class TaskController {
     });
   }
 
-  /**
-   * Cancel a task.
-   */
-  @Post('tasks/:taskId/cancel')
+  //* Update
+  @Patch(':taskId')
   @ApiParam({
     name: 'taskId',
-    schema: {type: 'string'},
-    example: '81a37534-915c-4114-96d0-01be815d821b',
+    schema: {type: 'number'},
+    description: 'The id of the task.',
+    example: '81',
   })
-  async cancelTask(@Param('taskId') taskId: number) {
+  async updateTask(
+    @Param('taskId') taskId: number,
+    @Body() body: Prisma.TaskUpdateInput
+  ): Promise<Task> {
     return await this.taskService.update({
       where: {id: taskId},
-      data: {state: TaskState.CANCELED},
+      data: body,
+    });
+  }
+
+  //* Delete
+  @Delete(':taskId')
+  @ApiParam({
+    name: 'taskId',
+    schema: {type: 'number'},
+    description: 'The id of the task.',
+    example: '81',
+  })
+  async deleteTask(@Param('taskId') taskId: number): Promise<Task> {
+    return await this.taskService.delete({
+      where: {id: taskId},
     });
   }
 

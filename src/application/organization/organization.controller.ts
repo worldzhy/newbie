@@ -1,12 +1,13 @@
 import {
   Controller,
-  Get,
-  Post,
-  Param,
-  Body,
-  Patch,
-  Query,
   Delete,
+  Get,
+  Patch,
+  Post,
+  Body,
+  Param,
+  Query,
+  BadRequestException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {Organization, Prisma} from '@prisma/client';
@@ -56,7 +57,7 @@ export class OrganizationController {
   })
   async getOrganizations(
     @Query() query: {name?: string; page?: string}
-  ): Promise<Organization[] | {err: {message: string}}> {
+  ): Promise<Organization[]> {
     // [step 1] Construct where argument.
     let where: Prisma.OrganizationWhereInput | undefined;
     if (query.name) {
@@ -75,7 +76,7 @@ export class OrganizationController {
         take = 10;
         skip = 10 * (page - 1);
       } else {
-        return {err: {message: 'The page must be larger than 0.'}};
+        throw new BadRequestException('The page must be larger than 0.');
       }
     } else {
       take = 10;
@@ -154,5 +155,6 @@ export class OrganizationController {
       where: {id: organizationId},
     });
   }
+
   /* End */
 }

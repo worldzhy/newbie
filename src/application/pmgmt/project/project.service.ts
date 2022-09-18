@@ -16,14 +16,8 @@ export class ProjectService {
     return await this.prisma.project.findMany(params);
   }
 
-  async create(data: Prisma.ProjectCreateInput): Promise<Project> {
-    try {
-      return await this.prisma.project.create({
-        data,
-      });
-    } catch (error) {
-      return error;
-    }
+  async create(params: Prisma.ProjectCreateArgs): Promise<Project> {
+    return await this.prisma.project.create(params);
   }
 
   async update(params: Prisma.ProjectUpdateArgs): Promise<Project> {
@@ -34,18 +28,12 @@ export class ProjectService {
     return await this.prisma.project.delete(params);
   }
 
-  /**
-   * Check if exist
-   *
-   * @param {string} id
-   * @returns
-   * @memberof ProjectService
-   */
   async checkExistence(id: string) {
     const count = await this.prisma.project.count({
       where: {id},
     });
     return count > 0 ? true : false;
   }
+
   /* End */
 }

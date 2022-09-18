@@ -1,4 +1,13 @@
-import {Controller, Get, Post, Param, Body, Patch} from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  Patch,
+  Post,
+  Body,
+  Param,
+  BadRequestException,
+} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {ProjectService} from './project.service';
 import {CheckpointService} from '../checkpoint/checkpoint.service';
@@ -23,6 +32,7 @@ export class ProjectController {
   private checkpointService = new CheckpointService();
   private environmentService = new EnvironmentService();
 
+  //* Create
   @Post('projects')
   @ApiBody({
     description:
@@ -41,46 +51,48 @@ export class ProjectController {
   async createProject(
     @Body()
     body: Prisma.ProjectCreateInput
-  ): Promise<Project | {err: {message: string}}> {
+  ): Promise<Project> {
     // [step 1] Guard statement.
     if (!body.name || !verifyProjectName(body.name)) {
-      return {
-        err: {
-          message: 'Please provide valid project name in the request body.',
-        },
-      };
+      throw new BadRequestException(
+        'Please provide valid project name in the request body.'
+      );
     }
 
     // [step 2] Create project.
     return await this.projectService.create({
-      name: body.name,
-      clientName: body.clientName,
-      clientEmail: body.clientEmail,
-      state: ProjectState.DESIGNING,
-      checkpoints: {
-        createMany: {
-          skipDuplicates: true,
-          data: Object.values(ProjectCheckpointType).map(checkpointType => {
-            return {type: checkpointType};
-          }),
+      data: {
+        name: body.name,
+        clientName: body.clientName,
+        clientEmail: body.clientEmail,
+        state: ProjectState.DESIGNING,
+        checkpoints: {
+          createMany: {
+            skipDuplicates: true,
+            data: Object.values(ProjectCheckpointType).map(checkpointType => {
+              return {type: checkpointType};
+            }),
+          },
         },
-      },
-      environments: {
-        createMany: {
-          skipDuplicates: true,
-          data: Object.values(ProjectEnvironmentType).map(environmentType => {
-            return {type: environmentType};
-          }),
+        environments: {
+          createMany: {
+            skipDuplicates: true,
+            data: Object.values(ProjectEnvironmentType).map(environmentType => {
+              return {type: environmentType};
+            }),
+          },
         },
       },
     });
   }
 
+  //* Get many
   @Get('projects')
   async getProjects(): Promise<Project[]> {
     return await this.projectService.findMany({});
   }
 
+  //* Get
   @Get('projects/:projectId')
   @ApiParam({
     name: 'projectId',
@@ -96,6 +108,7 @@ export class ProjectController {
     });
   }
 
+  //* Update
   @Patch('projects/:projectId')
   @ApiParam({
     name: 'projectId',
@@ -127,6 +140,19 @@ export class ProjectController {
     });
   }
 
+  //* Delete
+  @Delete('projects/:projectId')
+  @ApiParam({
+    name: 'projectId',
+    schema: {type: 'string'},
+    description: 'The uuid of the project.',
+    example: 'd8141ece-f242-4288-a60a-8675538549cd',
+  })
+  async deleteProject(@Param('projectId') projectId: string): Promise<Project> {
+    return await this.projectService.delete({where: {id: projectId}});
+  }
+
+  //* Get checkpoints
   @Get('projects/:projectId/checkpoints')
   @ApiParam({
     name: 'projectId',
@@ -142,6 +168,7 @@ export class ProjectController {
     });
   }
 
+  //* Get environments
   @Get('projects/:projectId/environments')
   @ApiParam({
     name: 'projectId',

@@ -1,11 +1,12 @@
 import {
-  Body,
   Controller,
   Delete,
   Get,
-  Param,
   Patch,
   Post,
+  Body,
+  Param,
+  NotFoundException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {
@@ -13,8 +14,8 @@ import {
   ElasticsearchDatasourceIndexField,
   Prisma,
 } from '@prisma/client';
-import {ElasticsearchDatasourceIndexFieldService} from '../field/field.service';
 import {ElasticsearchDatasourceIndexService} from './index.service';
+import {ElasticsearchDatasourceIndexFieldService} from '../field/field.service';
 
 @ApiTags('[Application] EngineD / Datasource / Elasticsearch / Index')
 @ApiBearerAuth()
@@ -107,13 +108,13 @@ export class ElasticsearchDatasourceIndexController {
   })
   async getElasticsearchDatasourceIndexFields(
     @Param('indexId') indexId: number
-  ): Promise<ElasticsearchDatasourceIndexField[] | {err: {message: string}}> {
+  ): Promise<ElasticsearchDatasourceIndexField[]> {
     // [step 1] Get index.
     const index = await this.elasticsearchDatasourceIndexService.findUnique({
       where: {id: indexId},
     });
     if (!index) {
-      return {err: {message: 'Invalid index id.'}};
+      throw new NotFoundException('Not found the index.');
     }
 
     // [step 2] Get fields group by index.

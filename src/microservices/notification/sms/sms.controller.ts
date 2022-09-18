@@ -1,18 +1,14 @@
-import {Body, Controller, Post} from '@nestjs/common';
+import {Controller, Post, Body} from '@nestjs/common';
 import {ApiBearerAuth, ApiBody, ApiTags} from '@nestjs/swagger';
-import {SmsService} from './sms.service';
+import {SmsNotification} from '@prisma/client';
+import {SmsNotificationService} from './sms.service';
 
-@ApiTags('[Microservice] Notification / Text Message')
+@ApiTags('[Microservice] Notification')
 @ApiBearerAuth()
 @Controller('notification')
-export class SmsController {
-  private smsService = new SmsService();
+export class SmsNotificationController {
+  private smsNotificationService = new SmsNotificationService();
 
-  /**
-   * Send SMS to one phone.
-   * @param body
-   * @returns
-   */
   @ApiBody({
     description: "The request body should be {'phone', 'text'}.",
     examples: {
@@ -35,41 +31,9 @@ export class SmsController {
       phone: string;
       text: string;
     }
-  ) {
-    const {phone, text} = body;
-    return await this.smsService.sendOne({phone, text});
+  ): Promise<SmsNotification> {
+    return await this.smsNotificationService.sendTextMessage(body);
   }
 
-  /**
-   * Send SMS to many phones.
-   * @param body
-   * @returns
-   */
-  @ApiBody({
-    description: "The request body should be {'phone', 'text'}.",
-    examples: {
-      a: {
-        summary: '2. Send via SMS channel',
-        value: {
-          channel: 'sms',
-          message: {
-            phones: ['123456789', '234567891'],
-            text: 'This is a test Pinpoint text message.',
-          },
-        },
-      },
-    },
-  })
-  @Post('text-messages')
-  async sendTextMessages(
-    @Body()
-    body: {
-      phones: string[];
-      text: string;
-    }
-  ) {
-    const {phones, text} = body;
-    return await this.smsService.sendMany({phones, text});
-  }
   /* End */
 }

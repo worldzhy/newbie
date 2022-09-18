@@ -1,13 +1,27 @@
+import {
+  SQSClient,
+  SendMessageCommand,
+  SendMessageCommandOutput,
+} from '@aws-sdk/client-sqs';
 import {Injectable} from '@nestjs/common';
 import {Prisma, Task, TaskType} from '@prisma/client';
-import {getAwsConfig} from '../../_config/_aws.config';
-import {SqsService} from '../../toolkits/aws/sqs.service';
 import {PrismaService} from '../../toolkits/prisma/prisma.service';
+import {getAwsConfig} from '../../_config/_aws.config';
 
 @Injectable()
 export class TaskService {
   private prisma: PrismaService = new PrismaService();
-  private sqsService = new SqsService();
+  private client: SQSClient;
+
+  constructor() {
+    this.client = new SQSClient({
+      credentials: {
+        accessKeyId: getAwsConfig().accessKeyId!,
+        secretAccessKey: getAwsConfig().secretAccessKey!,
+      },
+      region: getAwsConfig().region,
+    });
+  }
 
   async findUnique(params: Prisma.TaskFindUniqueArgs): Promise<Task | null> {
     return await this.prisma.task.findUnique(params);
@@ -18,30 +32,50 @@ export class TaskService {
   }
 
   async create(params: Prisma.TaskCreateArgs): Promise<Task> {
-    // Save a task in the database.
     return await this.prisma.task.create(params);
+  }
+
+  async createMany(
+    params: Prisma.TaskCreateManyArgs
+  ): Promise<Prisma.BatchPayload> {
+    return await this.prisma.task.createMany(params);
   }
 
   async update(params: Prisma.TaskUpdateArgs): Promise<Task> {
     return await this.prisma.task.update(params);
   }
 
+  async updateMany(
+    params: Prisma.TaskUpdateManyArgs
+  ): Promise<Prisma.BatchPayload> {
+    return await this.prisma.task.updateMany(params);
+  }
+
   async delete(params: Prisma.TaskDeleteArgs): Promise<Task> {
     return await this.prisma.task.delete(params);
   }
 
-  async sendOne({type, payload}: {type: TaskType; payload: object}) {
-    // [step 1] Send AWS SQS message.
-    const output = await this.sqsService.sendMessage(
-      getAwsConfig().sqsTaskQueueUrl!,
-      payload
+  async sendTask(params: {
+    type: TaskType;
+    group: string;
+    payload: object;
+  }): Promise<Task> {
+    // [step 1] Send queue message.
+    const commandInput = {
+      QueueUrl: getAwsConfig().sqsTaskQueueUrl,
+      MessageBody: JSON.stringify(params.payload),
+    };
+
+    const output: SendMessageCommandOutput = await this.client.send(
+      new SendMessageCommand(commandInput)
     );
 
     // [step 2] Save task record.
     return await this.prisma.task.create({
       data: {
-        type: type,
-        payload: payload,
+        type: params.type,
+        group: params.group,
+        payload: params.payload,
         sqsMessageId: output.MessageId,
         sqsResponse: output as object,
       },

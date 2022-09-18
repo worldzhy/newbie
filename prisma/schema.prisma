@@ -74,7 +74,8 @@ model SmsNotification {
 model Task {
   id           Int       @id @default(autoincrement())
   type         TaskType
-  payload      Json // The task content.
+  group        String? // Provided by task microservice's client.
+  payload      Json // Task content
   state        TaskState @default(PENDING)
   sqsMessageId String?
   sqsResponse  Json?
@@ -114,7 +115,7 @@ model User {
   email       String?       @unique
   phone       String?       @unique
   username    String?       @unique
-  password    String? // hash
+  password    String? // automatic hashing
   status      UserStatus    @default(ACTIVE)
   lastLoginAt DateTime?
   createdAt   DateTime      @default(now())
@@ -331,7 +332,7 @@ model ProjectEnvironment {
   awsAccountId        String?
   awsProfile          String?
   awsAccessKeyId      String?
-  awsSecretAccessKey  String? // hash
+  awsSecretAccessKey  String? // automatic hashing
   awsRegion           String?
   s3ForCloudformation String?
   createdAt           DateTime               @default(now())
@@ -349,18 +350,19 @@ enum ProjectEnvironmentType {
 }
 
 model CloudFormationStack {
-  id                String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name              String?                  @unique // Set default value via prisma middleware.
-  type              CloudFormationStackType
-  params            Json?
-  state             CloudFormationStackState @default(PREPARING)
-  environment       ProjectEnvironmentType
-  createStackOutput Json?
-  deleteStackOutput Json?
-  createdAt         DateTime                 @default(now())
-  updatedAt         DateTime                 @updatedAt
-  project           Project                  @relation(fields: [projectId], references: [id])
-  projectId         String                   @db.Uuid
+  id                  String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                String?                  @unique // Set default value via prisma middleware.
+  type                CloudFormationStackType
+  params              Json?
+  state               CloudFormationStackState @default(PREPARING)
+  environment         ProjectEnvironmentType
+  createStackOutput   Json?
+  describeStackOutput Json?
+  deleteStackOutput   Json?
+  createdAt           DateTime                 @default(now())
+  updatedAt           DateTime                 @updatedAt
+  project             Project                  @relation(fields: [projectId], references: [id])
+  projectId           String                   @db.Uuid
 }
 
 enum CloudFormationStackType {
@@ -526,25 +528,34 @@ model ElasticsearchDatasourceIndexField {
 }
 
 model DatatransPipeline {
-  id                      String                       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                    String
-  state                   DatatransPipelineState       @default(IDLE)
-  hasManyTables           String[] // The child tables should be loaded into the payload to be transported.
-  belongsToTables         String[] // The parent tables should be loaded into the payload to be transported.
-  numberOfRecordsPerBatch Int                          @default(100) // The quantity of a batch of payload to be transported.
-  queueUrl                String? // If the queueUrl is null, the datapipe's status can not be ACTIVE.
-  createdAt               DateTime                     @default(now())
-  updatedAt               DateTime                     @updatedAt
-  fromTable               PostgresqlDatasourceTable    @relation(fields: [fromTableId], references: [id], onDelete: Cascade)
-  fromTableId             Int
-  toIndex                 ElasticsearchDatasourceIndex @relation(fields: [toIndexId], references: [id])
-  toIndexId               Int
+  id                String                       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name              String
+  hasManyTables     String[] // The child tables should be loaded into the payload to be transported.
+  belongsToTables   String[] // The parent tables should be loaded into the payload to be transported.
+  createdAt         DateTime                     @default(now())
+  updatedAt         DateTime                     @updatedAt
+  fromTable         PostgresqlDatasourceTable    @relation(fields: [fromTableId], references: [id], onDelete: Cascade)
+  fromTableId       Int
+  toIndex           ElasticsearchDatasourceIndex @relation(fields: [toIndexId], references: [id])
+  toIndexId         Int
+  datatransMissions DatatransMission[]
 }
 
-enum DatatransPipelineState {
-  IDLE
-  BATCHING
-  STREAMING
+model DatatransMission {
+  id                  String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  state               DatatransMissionState @default(PREPARING)
+  numberOfRecords     Int // Number of records that will be sent from datasource table
+  numberOfBatches     Int
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  datatransPipeline   DatatransPipeline     @relation(fields: [datatransPipelineId], references: [id])
+  datatransPipelineId String                @db.Uuid
+}
+
+enum DatatransMissionState {
+  PREPARING
+  STARTED
+  STOPPED
 }
 
 model ElasticsearchDataboard {

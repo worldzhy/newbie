@@ -30,10 +30,10 @@ export class ElasticsearchDatasourceIndexFieldService {
 
   async createMany(
     params: Prisma.ElasticsearchDatasourceIndexFieldCreateManyArgs
-  ): Promise<number> {
-    const result =
-      await this.prisma.elasticsearchDatasourceIndexField.createMany(params);
-    return result.count;
+  ): Promise<Prisma.BatchPayload> {
+    return await this.prisma.elasticsearchDatasourceIndexField.createMany(
+      params
+    );
   }
 
   async update(
