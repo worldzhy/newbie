@@ -191,10 +191,12 @@ export class PulumiStackService {
    * Sometimes, destroying stack failed makes the Pulumi stack is not able to be removed.
    * Then, it's time to use this function.
    */
-  async forceDeleteOnPulumi(stack: PulumiStack) {
-    const pulumiProject = stack['project'].name.replace(/ /g, '_');
-    const url = `https://api.pulumi.com/api/stacks/worldzhy/${pulumiProject}/${stack.name}`;
-
+  async forceDeleteOnPulumi(params: {
+    pulumiOrganization: string;
+    pulumiProject: string;
+    pulumiStack: string;
+  }) {
+    const url = `https://api.pulumi.com/api/stacks/${params.pulumiOrganization}/${params.pulumiProject}/${params.pulumiStack}`;
     return await axios.delete(url, {
       maxRedirects: 5,
       headers: {

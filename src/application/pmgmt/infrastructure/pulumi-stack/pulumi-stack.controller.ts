@@ -168,7 +168,7 @@ export class PulumiStackController {
   }
 
   //* Create resources
-  @Post('pulumi-stacks/:stackId/create-resources')
+  @Patch('pulumi-stacks/:stackId/create-resources')
   @ApiParam({
     name: 'stackId',
     schema: {type: 'string'},
@@ -207,7 +207,7 @@ export class PulumiStackController {
   }
 
   //* Destroy resources
-  @Post('pulumi-stacks/:stackId/destroy-resources')
+  @Patch('pulumi-stacks/:stackId/destroy-resources')
   @ApiParam({
     name: 'stackId',
     schema: {type: 'string'},
@@ -220,6 +220,7 @@ export class PulumiStackController {
     // [step 1] Get the stack.
     const stack = await this.stackService.findUnique({
       where: {id: stackId},
+      include: {project: true},
     });
     if (!stack) {
       throw new NotFoundException('Not found the stack.');
@@ -239,29 +240,31 @@ export class PulumiStackController {
   }
 
   //* Force remove a stack from Pulumi.
-  @Post('pulumi-stacks/:stackId/force-delete-on-pulumi')
-  @ApiParam({
-    name: 'stackId',
-    schema: {type: 'string'},
-    example: 'a143f94d-8698-4fc5-bd9c-45a3d965a08b',
+  @Post('pulumi-stacks/force-delete')
+  @ApiBody({
+    description: '',
+    examples: {
+      a: {
+        summary: 'Force delete',
+        value: {
+          params: {
+            pulumiOrganization: 'worldzhy',
+            pulumiProject: 'InceptionPad',
+            pulumiStack: 'P_AWS_RDS-35137057',
+          },
+        },
+      },
+    },
   })
   async forceDeleteOnPulumi(
-    @Param('stackId')
-    stackId: string
-  ) {
-    // [step 1] Get the pulumi stack.
-    const stack = await this.stackService.findUnique({
-      where: {id: stackId},
-    });
-    if (!stack) {
-      throw new NotFoundException('Not found the stack.');
+    @Body()
+    body: {
+      pulumiOrganization: string;
+      pulumiProject: string;
+      pulumiStack: string;
     }
-
-    // [step 2] Destroy the pulumi stack.
-    this.stackService.destroyResources(stack);
-
-    // [step 3] Force delete the pulumi stack.
-    return await this.stackService.forceDeleteOnPulumi(stack);
+  ) {
+    return await this.stackService.forceDeleteOnPulumi(body);
   }
 
   /* End */

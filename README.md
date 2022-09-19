@@ -36,27 +36,20 @@
 
 #### Pulumi
 
-> https://www.pulumi.com/docs/get-started/install/
+> [Install CLI] https://www.pulumi.com/docs/get-started/install/
+
+> [Fix NotFound] Add the pulumi CLI path "~/.pulumi/bin" to $PATH.
 
 ```bash
-$ curl -fsSL https://get.pulumi.com | sh
+PATH=~/.pulumi/bin:$PATH
+export PATH
 ```
 
-```bash
-$ pulumi version
-```
-
-> https://www.pulumi.com/docs/reference/cli/pulumi_plugin/
+> [Install Plugin] https://www.pulumi.com/docs/reference/cli/pulumi_plugin/
 
 ```bash
 $ pulumi plugin install resource aws
 $ pulumi plugin install resource awsx v1.0.0-beta.5
-$ pulumi plugin install resource docker
-$ pulumi plugin install resource eks
-$ pulumi plugin install resource kubernetes
-```
-
-```bash
 $ pulumi plugin ls
 ```
 

@@ -8,7 +8,7 @@ import {
   Param,
   NotFoundException,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {
   Prisma,
   DatatransMission,
@@ -28,6 +28,19 @@ export class DatatransMissionController {
 
   //* Create
   @Post('missions')
+  @ApiBody({
+    description: '',
+    examples: {
+      a: {
+        summary: '1. Create',
+        value: {
+          numberOfRecords: 6,
+          numberOfBatches: 1,
+          datatransPipelineId: '5842956f-7dce-4c60-928d-575450c96d19',
+        },
+      },
+    },
+  })
   async createDatatransMission(
     @Body() body: Prisma.DatatransMissionUncheckedCreateInput
   ): Promise<DatatransMission> {
@@ -90,26 +103,6 @@ export class DatatransMissionController {
     });
   }
 
-  //* Advice
-  @Get('missions/:missionId/prepare')
-  @ApiParam({
-    name: 'missionId',
-    schema: {type: 'string'},
-    example: '81a37534-915c-4114-96d0-01be815d821b',
-  })
-  async prepareDatatransMission(@Param('missionId') missionId: string) {
-    // [step 1] Get mission.
-    const mission = await this.datatransMissionService.findUnique({
-      where: {id: missionId},
-    });
-    if (!mission) {
-      throw new NotFoundException('Not found the mission.');
-    }
-
-    mission.numberOfRecords;
-    mission.numberOfBatches;
-  }
-
   //* Start
   @Post('missions/:missionId/start')
   @ApiParam({
@@ -145,15 +138,17 @@ export class DatatransMissionController {
         },
       });
     }
-    await this.taskService.sendTask({
-      type: TaskType.DATATRANS_BATCH_PROCESSING,
-      group: missionId,
-      payload: {
-        missionId: missionId,
-        take: numberOfRecordsForLastBatch,
-        skip: mission.numberOfRecords - numberOfRecordsForLastBatch,
-      },
-    });
+    if (numberOfRecordsForLastBatch > 0) {
+      await this.taskService.sendTask({
+        type: TaskType.DATATRANS_BATCH_PROCESSING,
+        group: missionId,
+        payload: {
+          missionId: missionId,
+          take: numberOfRecordsForLastBatch,
+          skip: mission.numberOfRecords - numberOfRecordsForLastBatch,
+        },
+      });
+    }
 
     // [step 3] Update mission state.
     return await this.datatransMissionService.update({
