@@ -20,11 +20,11 @@ import {UserProfileService} from './profile.service';
 
 @ApiTags('[Application] Account / User / Profile')
 @ApiBearerAuth()
-@Controller('users')
+@Controller('user-profiles')
 export class UserProfileController {
   constructor(private userProfileService: UserProfileService) {}
 
-  @Post('profiles')
+  @Post('')
   @ApiBody({
     description: 'Create a user profile.',
     examples: {
@@ -66,7 +66,7 @@ export class UserProfileController {
     return await this.userProfileService.create({data: body});
   }
 
-  @Get('profiles')
+  @Get('')
   async getUserProfiles(
     @Query() query: {name?: string; page?: string}
   ): Promise<UserProfile[]> {
@@ -109,7 +109,7 @@ export class UserProfileController {
     });
   }
 
-  @Get('profiles/:profileId')
+  @Get(':profileId')
   @ApiParam({
     name: 'profileId',
     schema: {type: 'string'},
@@ -122,7 +122,7 @@ export class UserProfileController {
     return await this.userProfileService.findUnique({where: {id: profileId}});
   }
 
-  @Patch('profiles/:profileId')
+  @Patch(':profileId')
   @ApiParam({
     name: 'profileId',
     schema: {type: 'string'},
@@ -173,7 +173,7 @@ export class UserProfileController {
     });
   }
 
-  @Delete('profiles/:profileId')
+  @Delete(':profileId')
   @ApiParam({
     name: 'profileId',
     schema: {type: 'string'},

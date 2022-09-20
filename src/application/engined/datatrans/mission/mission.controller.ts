@@ -21,13 +21,13 @@ import {TaskService} from '../../../../microservices/task/task.service';
 
 @ApiTags('[Application] EngineD / Datatrans / Mission')
 @ApiBearerAuth()
-@Controller('datatrans')
+@Controller('datatrans-missions')
 export class DatatransMissionController {
   private datatransMissionService = new DatatransMissionService();
   private taskService = new TaskService();
 
   //* Create
-  @Post('missions')
+  @Post('')
   @ApiBody({
     description: '',
     examples: {
@@ -48,13 +48,13 @@ export class DatatransMissionController {
   }
 
   //* Get many
-  @Get('missions')
+  @Get('')
   async getDatatransMissions(): Promise<DatatransMission[]> {
     return await this.datatransMissionService.findMany({});
   }
 
   //* Get
-  @Get('missions/:missionId')
+  @Get(':missionId')
   @ApiParam({
     name: 'missionId',
     schema: {type: 'string'},
@@ -70,7 +70,7 @@ export class DatatransMissionController {
   }
 
   //* Update
-  @Patch('missions/:missionId')
+  @Patch(':missionId')
   @ApiParam({
     name: 'missionId',
     schema: {type: 'string'},
@@ -88,7 +88,7 @@ export class DatatransMissionController {
   }
 
   //* Delete
-  @Delete('missions/:missionId')
+  @Delete(':missionId')
   @ApiParam({
     name: 'missionId',
     schema: {type: 'string'},
@@ -104,7 +104,7 @@ export class DatatransMissionController {
   }
 
   //* Start
-  @Post('missions/:missionId/start')
+  @Patch(':missionId/start')
   @ApiParam({
     name: 'missionId',
     schema: {type: 'string'},
@@ -158,7 +158,7 @@ export class DatatransMissionController {
   }
 
   //* Stop
-  @Get('missions/:missionId/stop')
+  @Patch(':missionId/stop')
   @ApiParam({
     name: 'missionId',
     schema: {type: 'string'},

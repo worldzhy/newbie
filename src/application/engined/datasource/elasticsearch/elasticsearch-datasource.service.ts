@@ -1,6 +1,10 @@
 import {RequestParams} from '@elastic/elasticsearch';
-import {Injectable} from '@nestjs/common';
-import {ElasticsearchDatasource, Prisma} from '@prisma/client';
+import {Injectable, NotFoundException} from '@nestjs/common';
+import {
+  ElasticsearchDatasource,
+  ElasticsearchDatasourceState,
+  Prisma,
+} from '@prisma/client';
 import {ElasticService} from '../../../../toolkits/elastic/elastic.service';
 import {PrismaService} from '../../../../toolkits/prisma/prisma.service';
 import {get as lodash_get, split as lodash_split} from 'lodash';
@@ -20,6 +24,12 @@ export class ElasticsearchDatasourceService {
     params: Prisma.ElasticsearchDatasourceFindUniqueArgs
   ): Promise<ElasticsearchDatasource | null> {
     return await this.prisma.elasticsearchDatasource.findUnique(params);
+  }
+
+  async findUniqueOrThrow(
+    params: Prisma.ElasticsearchDatasourceFindUniqueOrThrowArgs
+  ): Promise<ElasticsearchDatasource> {
+    return await this.prisma.elasticsearchDatasource.findUniqueOrThrow(params);
   }
 
   async findMany(
@@ -49,11 +59,15 @@ export class ElasticsearchDatasourceService {
   /**
    * Extract elasticsearch datasource indices and their fields.
    */
-  async mount(datasource: ElasticsearchDatasource): Promise<boolean> {
+  async load(
+    datasource: ElasticsearchDatasource
+  ): Promise<ElasticsearchDatasource> {
     // [step 1] Get mappings of all indices.
     const result = await this.elastic.indices.getMapping();
     if (result.statusCode !== 200) {
-      return false;
+      throw new NotFoundException(
+        'Not found the elasticsearch mappings of indices'
+      );
     }
 
     // [step 2] Save fields of all indices.
@@ -80,27 +94,37 @@ export class ElasticsearchDatasourceService {
       await this.elasticsearchDatasourceIndexFieldService.createMany({
         data: fieldNames.map(fieldName => {
           return {
-            field: fieldName,
-            fieldBody: result.body[indexName].mappings.properties[fieldName],
+            name: fieldName,
+            properties: result.body[indexName].mappings.properties[fieldName],
             indexId: index.id,
           };
         }),
       });
     }
-    return true;
+
+    // [step 3] Update datasource state.
+    return await this.prisma.elasticsearchDatasource.update({
+      where: {id: datasource.id},
+      data: {state: ElasticsearchDatasourceState.READY},
+    });
   }
 
   /**
    * Clear elasticsearch datasource indices and their fields.
    */
-  async unmount(datasource: ElasticsearchDatasource): Promise<boolean> {
+  async unload(
+    datasource: ElasticsearchDatasource
+  ): Promise<ElasticsearchDatasource> {
     // [step 1] Delete indices, their fields will be cascade deleted.
-
     await this.elasticsearchDatasourceIndexService.deleteMany({
       where: {datasourceId: datasource.id},
     });
 
-    return true;
+    // [step 2] Update datasource state.
+    return await this.prisma.elasticsearchDatasource.update({
+      where: {id: datasource.id},
+      data: {state: ElasticsearchDatasourceState.PREPARING},
+    });
   }
 
   /**

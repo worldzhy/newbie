@@ -16,7 +16,7 @@ import {DatatransPipeline, Prisma} from '@prisma/client';
 
 @ApiTags('[Application] EngineD / Datatrans / Pipeline')
 @ApiBearerAuth()
-@Controller('datatrans')
+@Controller('datatrans-pipelines')
 export class DatatransPipelineController {
   private pipelineService = new DatatransPipelineService();
   private postgresqlDatasourceTableService =
@@ -24,7 +24,7 @@ export class DatatransPipelineController {
   private elasticsearchDatasourceIndexService =
     new ElasticsearchDatasourceIndexService();
 
-  @Post('pipelines')
+  @Post('')
   @ApiBody({
     description:
       "The 'name', 'status' and 'clientEmail' are required in request body.",
@@ -82,12 +82,12 @@ export class DatatransPipelineController {
     });
   }
 
-  @Get('pipelines')
+  @Get('')
   async getPipelines(): Promise<DatatransPipeline[]> {
     return await this.pipelineService.findMany({});
   }
 
-  @Get('pipelines/:pipelineId')
+  @Get(':pipelineId')
   @ApiParam({
     name: 'pipelineId',
     schema: {type: 'string'},
@@ -102,7 +102,7 @@ export class DatatransPipelineController {
     });
   }
 
-  @Patch('pipelines/:pipelineId')
+  @Patch(':pipelineId')
   @ApiParam({
     name: 'pipelineId',
     schema: {type: 'string'},
@@ -133,7 +133,7 @@ export class DatatransPipelineController {
     });
   }
 
-  @Delete('pipelines/:pipelineId')
+  @Delete(':pipelineId')
   @ApiParam({
     name: 'pipelineId',
     schema: {type: 'string'},
@@ -145,7 +145,7 @@ export class DatatransPipelineController {
     return await this.pipelineService.delete({where: {id: pipelineId}});
   }
 
-  @Get('pipelines/:pipelineId/overview')
+  @Get(':pipelineId/overview')
   @ApiParam({
     name: 'pipelineId',
     schema: {type: 'string'},

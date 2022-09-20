@@ -444,10 +444,16 @@ model PostgresqlDatasource {
   port        Int
   database    String
   schema      String
+  state       PostgresqlDatasourceState        @default(PREPARING)
   createdAt   DateTime                         @default(now())
   updatedAt   DateTime                         @updatedAt
   tables      PostgresqlDatasourceTable[]
   constraints PostgresqlDatasourceConstraint[]
+}
+
+enum PostgresqlDatasourceState {
+  PREPARING
+  READY
 }
 
 model PostgresqlDatasourceConstraint {
@@ -481,8 +487,8 @@ model PostgresqlDatasourceTable {
 
 model PostgresqlDatasourceTableColumn {
   id              Int                       @id @default(autoincrement())
-  column          String // The column name.
-  columnType      String
+  name            String // The column name.
+  type            String
   ordinalPosition Int // The sort number of the column in the table.
   createdAt       DateTime                  @default(now())
   updatedAt       DateTime                  @updatedAt
@@ -490,18 +496,18 @@ model PostgresqlDatasourceTableColumn {
   tableId         Int
 }
 
-enum PostgresqlDatasourceTableColumnType {
-  STRING
-  NUMBER
-  JSON
+model ElasticsearchDatasource {
+  id        String                         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  node      String
+  state     ElasticsearchDatasourceState   @default(PREPARING)
+  createdAt DateTime                       @default(now())
+  updatedAt DateTime                       @updatedAt
+  indices   ElasticsearchDatasourceIndex[]
 }
 
-model ElasticsearchDatasource {
-  id                             String                         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  node                           String
-  createdAt                      DateTime                       @default(now())
-  updatedAt                      DateTime                       @updatedAt
-  elasticsearchDatasourceIndices ElasticsearchDatasourceIndex[]
+enum ElasticsearchDatasourceState {
+  PREPARING
+  READY
 }
 
 model ElasticsearchDatasourceIndex {
@@ -512,19 +518,19 @@ model ElasticsearchDatasourceIndex {
   datasource         ElasticsearchDatasource             @relation(fields: [datasourceId], references: [id], onDelete: Cascade)
   datasourceId       String                              @db.Uuid
   fields             ElasticsearchDatasourceIndexField[]
+  databoards         ElasticsearchDataboard[]
   datatransPipelines DatatransPipeline[]
 }
 
 model ElasticsearchDatasourceIndexField {
-  id          Int                          @id @default(autoincrement())
-  field       String // The field name. 
-  fieldBody   Json // The field's JSON format information from elasticsearch.
-  createdAt   DateTime                     @default(now())
-  updatedAt   DateTime                     @updatedAt
-  index       ElasticsearchDatasourceIndex @relation(fields: [indexId], references: [id], onDelete: Cascade)
-  indexId     Int
-  databoard   ElasticsearchDataboard?      @relation(fields: [databoardId], references: [id])
-  databoardId String?                      @db.Uuid
+  id               Int                            @id @default(autoincrement())
+  name             String // The field name. 
+  properties       Json // The field's JSON format information from elasticsearch.
+  createdAt        DateTime                       @default(now())
+  updatedAt        DateTime                       @updatedAt
+  index            ElasticsearchDatasourceIndex   @relation(fields: [indexId], references: [id], onDelete: Cascade)
+  indexId          Int
+  databoardColumns ElasticsearchDataboardColumn[]
 }
 
 model DatatransPipeline {
@@ -559,13 +565,46 @@ enum DatatransMissionState {
 }
 
 model ElasticsearchDataboard {
-  id                    String                              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                  String
-  description           String?
-  indexJson             Json?
-  layoutConfig          Json?
-  visualSettings        Json?
-  createdAt             DateTime                            @default(now())
-  updatedAt             DateTime                            @updatedAt
-  datasourceIndexFields ElasticsearchDatasourceIndexField[]
+  id                String                         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name              String
+  state             ElasticsearchDataboardState    @default(PREPARING)
+  description       String?
+  createdAt         DateTime                       @default(now())
+  updatedAt         DateTime                       @updatedAt
+  datasourceIndex   ElasticsearchDatasourceIndex   @relation(fields: [datasourceIndexId], references: [id])
+  datasourceIndexId Int
+  columns           ElasticsearchDataboardColumn[]
+}
+
+enum ElasticsearchDataboardState {
+  PREPARING
+  READY
+}
+
+model ElasticsearchDataboardColumn {
+  id                     Int                                   @id @default(autoincrement())
+  name                   String
+  ordinalPosition        Int? // The sort number of the column on the board. The first position is 1.
+  visible                Boolean                               @default(true)
+  width                  Int?
+  copyable               Boolean?
+  searchable             Boolean?
+  sortable               Boolean?
+  tooltip                String?
+  formatter              ElasticsearchDataboardColumnFormatter @default(NONE)
+  createdAt              DateTime                              @default(now())
+  updatedAt              DateTime                              @updatedAt
+  databoard              ElasticsearchDataboard                @relation(fields: [databoardId], references: [id], onDelete: Cascade)
+  databoardId            String                                @db.Uuid
+  datasourceIndexField   ElasticsearchDatasourceIndexField     @relation(fields: [datasourceIndexFieldId], references: [id])
+  datasourceIndexFieldId Int
+}
+
+enum ElasticsearchDataboardColumnFormatter {
+  NONE
+  OVER_DUE
+  PAST_DUE
+  DATE_TIME
+  HIGHLIGHT_INCOMPLETE
+  CURRENCY
 }

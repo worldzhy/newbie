@@ -12,6 +12,12 @@ export class ElasticsearchDataboardService {
     return await this.prisma.elasticsearchDataboard.findUnique(params);
   }
 
+  async findUniqueOrThrow(
+    params: Prisma.ElasticsearchDataboardFindUniqueOrThrowArgs
+  ): Promise<ElasticsearchDataboard> {
+    return await this.prisma.elasticsearchDataboard.findUniqueOrThrow(params);
+  }
+
   async findMany(
     params: Prisma.ElasticsearchDataboardFindManyArgs
   ): Promise<ElasticsearchDataboard[]> {
@@ -36,13 +42,6 @@ export class ElasticsearchDataboardService {
     return await this.prisma.elasticsearchDataboard.delete(params);
   }
 
-  /**
-   * Check if exist
-   *
-   * @param {string} id
-   * @returns
-   * @memberof ElasticsearchDataboardService
-   */
   async checkExistence(id: string) {
     const count = await this.prisma.elasticsearchDataboard.count({
       where: {id},

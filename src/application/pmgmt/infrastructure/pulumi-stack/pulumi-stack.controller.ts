@@ -21,16 +21,16 @@ import {
 
 @ApiTags('[Application] Project Management / Infrastructure / Pulumi Stack')
 @ApiBearerAuth()
-@Controller('project-management')
+@Controller('project-management-pulumi-stacks')
 export class PulumiStackController {
   private stackService = new PulumiStackService();
 
-  @Get('pulumi-stacks/types')
+  @Get('types')
   async listStackTypes() {
     return Object.values(PulumiStackType);
   }
 
-  @Get('pulumi-stacks/:type/params')
+  @Get(':type/params')
   @ApiParam({
     name: 'type',
     schema: {type: 'string'},
@@ -41,7 +41,7 @@ export class PulumiStackController {
   }
 
   //* Create
-  @Post('pulumi-stacks')
+  @Post('')
   @ApiBody({
     description: 'Create pulumi stack.',
     examples: {
@@ -78,13 +78,13 @@ export class PulumiStackController {
   }
 
   //* Get many
-  @Get('pulumi-stacks')
+  @Get('')
   async getStacks(): Promise<PulumiStack[]> {
     return await this.stackService.findMany({});
   }
 
   //* Get
-  @Get('pulumi-stacks/:stackId')
+  @Get(':stackId')
   @ApiParam({
     name: 'stackId',
     schema: {type: 'string'},
@@ -97,7 +97,7 @@ export class PulumiStackController {
   }
 
   //* Update
-  @Patch('pulumi-stacks/:stackId')
+  @Patch(':stackId')
   @ApiParam({
     name: 'stackId',
     schema: {type: 'string'},
@@ -138,7 +138,7 @@ export class PulumiStackController {
   }
 
   //* Delete
-  @Delete('pulumi-stacks/:stackId')
+  @Delete(':stackId')
   @ApiParam({
     name: 'stackId',
     schema: {type: 'string'},
@@ -168,7 +168,7 @@ export class PulumiStackController {
   }
 
   //* Create resources
-  @Patch('pulumi-stacks/:stackId/create-resources')
+  @Patch(':stackId/create-resources')
   @ApiParam({
     name: 'stackId',
     schema: {type: 'string'},
@@ -207,7 +207,7 @@ export class PulumiStackController {
   }
 
   //* Destroy resources
-  @Patch('pulumi-stacks/:stackId/destroy-resources')
+  @Patch(':stackId/destroy-resources')
   @ApiParam({
     name: 'stackId',
     schema: {type: 'string'},
@@ -240,7 +240,7 @@ export class PulumiStackController {
   }
 
   //* Force remove a stack from Pulumi.
-  @Post('pulumi-stacks/force-delete')
+  @Post('force-delete')
   @ApiBody({
     description: '',
     examples: {

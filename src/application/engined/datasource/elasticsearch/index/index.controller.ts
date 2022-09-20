@@ -6,27 +6,19 @@ import {
   Post,
   Body,
   Param,
-  NotFoundException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {
-  ElasticsearchDatasourceIndex,
-  ElasticsearchDatasourceIndexField,
-  Prisma,
-} from '@prisma/client';
+import {ElasticsearchDatasourceIndex, Prisma} from '@prisma/client';
 import {ElasticsearchDatasourceIndexService} from './index.service';
-import {ElasticsearchDatasourceIndexFieldService} from '../field/field.service';
 
 @ApiTags('[Application] EngineD / Datasource / Elasticsearch / Index')
 @ApiBearerAuth()
-@Controller('elasticsearch-datasources')
+@Controller('elasticsearch-datasource-indices')
 export class ElasticsearchDatasourceIndexController {
   private elasticsearchDatasourceIndexService =
     new ElasticsearchDatasourceIndexService();
-  private elasticsearchDatasourceIndexFieldService =
-    new ElasticsearchDatasourceIndexFieldService();
 
-  @Post('indices')
+  @Post('')
   @ApiBody({
     description: "The 'name' is required in request body.",
     examples: {
@@ -47,79 +39,71 @@ export class ElasticsearchDatasourceIndexController {
     });
   }
 
-  @Get('indices')
+  @Get('')
   async getElasticsearchDatasourceIndices(): Promise<
     ElasticsearchDatasourceIndex[]
   > {
     return await this.elasticsearchDatasourceIndexService.findMany({});
   }
 
-  @Get('indices/:indexId')
+  @Get(':indexId')
   @ApiParam({
     name: 'indexId',
-    schema: {type: 'number'},
+    schema: {type: 'string'},
     description: 'The uuid of the datasource.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
+    example: 1,
   })
   async getElasticsearchDatasourceIndex(
-    @Param('indexId') indexId: number
+    @Param('indexId') indexId: string
   ): Promise<ElasticsearchDatasourceIndex | null> {
     return await this.elasticsearchDatasourceIndexService.findUnique({
-      where: {id: indexId},
+      where: {id: parseInt(indexId)},
     });
   }
 
-  @Patch('indices/:indexId')
+  @Patch(':indexId')
   @ApiParam({
     name: 'indexId',
-    schema: {type: 'number'},
+    schema: {type: 'string'},
     example: 1,
   })
   async updateElasticsearchDatasourceIndex(
-    @Param('indexId') indexId: number,
+    @Param('indexId') indexId: string,
     @Body() body: Prisma.ElasticsearchDatasourceIndexUpdateInput
   ): Promise<ElasticsearchDatasourceIndex> {
     return await this.elasticsearchDatasourceIndexService.update({
-      where: {id: indexId},
+      where: {id: parseInt(indexId)},
       data: body,
     });
   }
 
-  @Delete('indices/:indexId')
+  @Delete(':indexId')
   @ApiParam({
     name: 'indexId',
-    schema: {type: 'number'},
-    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
+    schema: {type: 'string'},
+    example: 1,
   })
   async deleteElasticsearchDatasourceIndex(
-    @Param('indexId') indexId: number
+    @Param('indexId') indexId: string
   ): Promise<ElasticsearchDatasourceIndex> {
     return await this.elasticsearchDatasourceIndexService.delete({
-      where: {id: indexId},
+      where: {id: parseInt(indexId)},
     });
   }
 
-  @Get('indices/:indexId/fields')
+  @Get(':indexId/fields')
   @ApiParam({
     name: 'indexId',
-    schema: {type: 'number'},
+    schema: {type: 'string'},
     description: 'The uuid of the index.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
+    example: 1,
   })
   async getElasticsearchDatasourceIndexFields(
-    @Param('indexId') indexId: number
-  ): Promise<ElasticsearchDatasourceIndexField[]> {
-    // [step 1] Get index.
-    const index = await this.elasticsearchDatasourceIndexService.findUnique({
-      where: {id: indexId},
-    });
-    if (!index) {
-      throw new NotFoundException('Not found the index.');
-    }
-
-    // [step 2] Get fields group by index.
-    return await this.elasticsearchDatasourceIndexFieldService.findMany({
-      where: {indexId: indexId},
+    @Param('indexId') indexId: string
+  ): Promise<ElasticsearchDatasourceIndex> {
+    return await this.elasticsearchDatasourceIndexService.findUniqueOrThrow({
+      where: {id: parseInt(indexId)},
+      include: {fields: true},
     });
   }
 

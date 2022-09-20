@@ -8,24 +8,17 @@ import {
   Param,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {
-  PostgresqlDatasourceTable,
-  PostgresqlDatasourceTableColumn,
-  Prisma,
-} from '@prisma/client';
-import {PostgresqlDatasourceTableColumnService} from '../column/column.service';
+import {PostgresqlDatasourceTable, Prisma} from '@prisma/client';
 import {PostgresqlDatasourceTableService} from './table.service';
 
 @ApiTags('[Application] EngineD / Datasource / Postgresql / Table')
 @ApiBearerAuth()
-@Controller('postgresql-datasources')
+@Controller('postgresql-datasource-tables')
 export class PostgresqlDatasourceTableController {
   private postgresqlDatasourceTableService =
     new PostgresqlDatasourceTableService();
-  private postgresqlDatasourceTableColumnService =
-    new PostgresqlDatasourceTableColumnService();
 
-  @Post('tables')
+  @Post('')
   @ApiBody({
     description: "The 'name' is required in request body.",
     examples: {
@@ -46,69 +39,69 @@ export class PostgresqlDatasourceTableController {
     });
   }
 
-  @Get('tables')
+  @Get('')
   async getPostgresqlDatasourceTables(): Promise<PostgresqlDatasourceTable[]> {
     return await this.postgresqlDatasourceTableService.findMany({});
   }
 
-  @Get('tables/:tableId')
+  @Get(':tableId')
   @ApiParam({
     name: 'tableId',
-    schema: {type: 'number'},
+    schema: {type: 'string'},
     description: 'The uuid of the table.',
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
   async getPostgresqlDatasourceTable(
-    @Param('datasourceId') tableId: number
+    @Param('tableId') tableId: string
   ): Promise<PostgresqlDatasourceTable | null> {
     return await this.postgresqlDatasourceTableService.findUnique({
-      where: {id: tableId},
+      where: {id: parseInt(tableId)},
     });
   }
 
-  @Patch('tables/:tableId')
+  @Patch(':tableId')
   @ApiParam({
     name: 'tableId',
-    schema: {type: 'number'},
+    schema: {type: 'string'},
     example: 1,
   })
   async updateElasticsearchDatasourceIndex(
-    @Param('tableId') tableId: number,
+    @Param('tableId') tableId: string,
     @Body() body: Prisma.PostgresqlDatasourceTableUpdateInput
   ): Promise<PostgresqlDatasourceTable> {
     return await this.postgresqlDatasourceTableService.update({
-      where: {id: tableId},
+      where: {id: parseInt(tableId)},
       data: body,
     });
   }
 
-  @Delete('tables/:tableId')
+  @Delete(':tableId')
   @ApiParam({
     name: 'tableId',
-    schema: {type: 'number'},
+    schema: {type: 'string'},
     example: 1,
   })
   async deletePostgresqlDatasourceTable(
-    @Param('tableId') tableId: number
+    @Param('tableId') tableId: string
   ): Promise<PostgresqlDatasourceTable> {
     return await this.postgresqlDatasourceTableService.delete({
-      where: {id: tableId},
+      where: {id: parseInt(tableId)},
     });
   }
 
-  @Get('tables/:tableId/columns')
+  @Get(':tableId/columns')
   @ApiParam({
     name: 'tableId',
-    schema: {type: 'number'},
+    schema: {type: 'string'},
     description: 'The uuid of the table.',
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
   async getPostgresqlDatasourceColumns(
-    @Param('tableId') tableId: number
-  ): Promise<PostgresqlDatasourceTableColumn[]> {
-    return await this.postgresqlDatasourceTableColumnService.findMany({
-      where: {tableId: tableId},
-      orderBy: {ordinalPosition: 'asc'},
+    @Param('tableId') tableId: string
+  ): Promise<PostgresqlDatasourceTable> {
+    return await this.postgresqlDatasourceTableService.findUniqueOrThrow({
+      where: {id: parseInt(tableId)},
+      include: {columns: true},
     });
   }
 

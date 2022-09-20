@@ -14,6 +14,14 @@ export class ElasticsearchDatasourceIndexService {
     return await this.prisma.elasticsearchDatasourceIndex.findUnique(params);
   }
 
+  async findUniqueOrThrow(
+    params: Prisma.ElasticsearchDatasourceIndexFindUniqueOrThrowArgs
+  ): Promise<ElasticsearchDatasourceIndex> {
+    return await this.prisma.elasticsearchDatasourceIndex.findUniqueOrThrow(
+      params
+    );
+  }
+
   async findMany(
     params: Prisma.ElasticsearchDatasourceIndexFindManyArgs
   ): Promise<ElasticsearchDatasourceIndex[]> {

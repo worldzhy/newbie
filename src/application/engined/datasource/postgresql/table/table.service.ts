@@ -12,6 +12,14 @@ export class PostgresqlDatasourceTableService {
     return await this.prisma.postgresqlDatasourceTable.findUnique(params);
   }
 
+  async findUniqueOrThrow(
+    params: Prisma.PostgresqlDatasourceTableFindUniqueOrThrowArgs
+  ): Promise<PostgresqlDatasourceTable> {
+    return await this.prisma.postgresqlDatasourceTable.findUniqueOrThrow(
+      params
+    );
+  }
+
   async findMany(
     params: Prisma.PostgresqlDatasourceTableFindManyArgs
   ): Promise<PostgresqlDatasourceTable[]> {

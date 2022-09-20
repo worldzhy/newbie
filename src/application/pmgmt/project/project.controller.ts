@@ -26,14 +26,14 @@ import {
 
 @ApiTags('[Application] Project Management / Project')
 @ApiBearerAuth()
-@Controller('project-management')
+@Controller('project-management-projects')
 export class ProjectController {
   private projectService = new ProjectService();
   private checkpointService = new CheckpointService();
   private environmentService = new EnvironmentService();
 
   //* Create
-  @Post('projects')
+  @Post('')
   @ApiBody({
     description:
       "The 'projectName', 'clientName' and 'clientEmail' are required in request body.",
@@ -87,13 +87,13 @@ export class ProjectController {
   }
 
   //* Get many
-  @Get('projects')
+  @Get('')
   async getProjects(): Promise<Project[]> {
     return await this.projectService.findMany({});
   }
 
   //* Get
-  @Get('projects/:projectId')
+  @Get(':projectId')
   @ApiParam({
     name: 'projectId',
     schema: {type: 'string'},
@@ -109,7 +109,7 @@ export class ProjectController {
   }
 
   //* Update
-  @Patch('projects/:projectId')
+  @Patch(':projectId')
   @ApiParam({
     name: 'projectId',
     schema: {type: 'string'},
@@ -141,7 +141,7 @@ export class ProjectController {
   }
 
   //* Delete
-  @Delete('projects/:projectId')
+  @Delete(':projectId')
   @ApiParam({
     name: 'projectId',
     schema: {type: 'string'},
@@ -153,7 +153,7 @@ export class ProjectController {
   }
 
   //* Get checkpoints
-  @Get('projects/:projectId/checkpoints')
+  @Get(':projectId/checkpoints')
   @ApiParam({
     name: 'projectId',
     schema: {type: 'string'},
@@ -169,7 +169,7 @@ export class ProjectController {
   }
 
   //* Get environments
-  @Get('projects/:projectId/environments')
+  @Get(':projectId/environments')
   @ApiParam({
     name: 'projectId',
     schema: {type: 'string'},

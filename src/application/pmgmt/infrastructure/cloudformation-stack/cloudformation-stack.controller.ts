@@ -23,11 +23,11 @@ import {
   '[Application] Project Management / Infrastructure / CloudFormation Stack'
 )
 @ApiBearerAuth()
-@Controller('project-management')
+@Controller('project-management-cloudformation-stacks')
 export class CloudFormationStackController {
   private stackService = new CloudFormationStackService();
 
-  @Get('cloudformation-stacks/types')
+  @Get('types')
   async listStackTypes(): Promise<
     (
       | 'COMPUTING_FARGATE'
@@ -42,7 +42,7 @@ export class CloudFormationStackController {
     return Object.values(CloudFormationStackType);
   }
 
-  @Get('cloudformation-stacks/:type/params')
+  @Get(':type/params')
   @ApiParam({
     name: 'type',
     schema: {type: 'string'},
@@ -55,7 +55,7 @@ export class CloudFormationStackController {
   }
 
   //* Create
-  @Post('cloudformation-stacks')
+  @Post('')
   @ApiBody({
     description: 'Create cloudformation stack.',
     examples: {
@@ -92,13 +92,13 @@ export class CloudFormationStackController {
   }
 
   //* Get many
-  @Get('cloudformation-stacks')
+  @Get('')
   async getStacks(): Promise<CloudFormationStack[]> {
     return await this.stackService.findMany({});
   }
 
   //* Get
-  @Get('cloudformation-stacks/:stackId')
+  @Get(':stackId')
   @ApiParam({
     name: 'stackId',
     schema: {type: 'string'},
@@ -111,7 +111,7 @@ export class CloudFormationStackController {
   }
 
   //* Update
-  @Patch('cloudformation-stacks/:stackId')
+  @Patch(':stackId')
   @ApiParam({
     name: 'stackId',
     schema: {type: 'string'},
@@ -152,7 +152,7 @@ export class CloudFormationStackController {
   }
 
   //* Delete
-  @Delete('cloudformation-stacks/:stackId')
+  @Delete(':stackId')
   @ApiParam({
     name: 'stackId',
     schema: {type: 'string'},
@@ -180,7 +180,7 @@ export class CloudFormationStackController {
   }
 
   //* Create resources
-  @Post('cloudformation-stacks/:stackId/create-resources')
+  @Post(':stackId/create-resources')
   @ApiParam({
     name: 'stackId',
     schema: {type: 'string'},
@@ -212,7 +212,7 @@ export class CloudFormationStackController {
   }
 
   //* Destroy resources
-  @Post('cloudformation-stacks/:stackId/destroy-resources')
+  @Post(':stackId/destroy-resources')
   @ApiParam({
     name: 'stackId',
     schema: {type: 'string'},

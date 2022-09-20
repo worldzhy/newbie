@@ -9,21 +9,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {
-  ElasticsearchDatasource,
-  ElasticsearchDatasourceIndex,
-  Prisma,
-} from '@prisma/client';
+import {ElasticsearchDatasource, Prisma} from '@prisma/client';
 import {ElasticsearchDatasourceService} from './elasticsearch-datasource.service';
-import {ElasticsearchDatasourceIndexService} from './index/index.service';
 
 @ApiTags('[Application] EngineD / Datasource / Elasticsearch')
 @ApiBearerAuth()
 @Controller('elasticsearch-datasources')
 export class ElasticsearchDatasourceController {
   private elasticsearchDatasourceService = new ElasticsearchDatasourceService();
-  private elasticsearchDatasourceIndexService =
-    new ElasticsearchDatasourceIndexService();
 
   @Post('')
   @ApiBody({
@@ -105,16 +98,46 @@ export class ElasticsearchDatasourceController {
     });
   }
 
-  @Get(':datasourceId/indices')
+  /**
+   * Load an elasticsearch datasource.
+   */
+  @Patch(':datasourceId/load')
   @ApiParam({
     name: 'datasourceId',
     schema: {type: 'string'},
     description: 'The uuid of the datasource.',
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
-  async getElasticsearchDatasourceIndicesByDatasource(
+  async loadElasticsearchDatasource(
     @Param('datasourceId') datasourceId: string
-  ): Promise<ElasticsearchDatasourceIndex[]> {
+  ): Promise<ElasticsearchDatasource> {
+    // [step 1] Guard statement.
+
+    // [step 2] Get datasource.
+    const datasource = await this.elasticsearchDatasourceService.findUnique({
+      where: {id: datasourceId},
+    });
+    if (!datasource) {
+      throw new NotFoundException('Not found the datasource.');
+    }
+
+    // [step 3] Extract elasticsearch all index fields.
+    return await this.elasticsearchDatasourceService.load(datasource);
+  }
+
+  /**
+   * Unload an elasticsearch datasource.
+   */
+  @Patch(':datasourceId/unload')
+  @ApiParam({
+    name: 'datasourceId',
+    schema: {type: 'string'},
+    description: 'The uuid of the elasticsearch datasource.',
+    example: 'd8141ece-f242-4288-a60a-8675538549cd',
+  })
+  async unloadPostgresqlDatasource(
+    @Param('datasourceId') datasourceId: string
+  ): Promise<ElasticsearchDatasource> {
     // [step 1] Get datasource.
     const datasource = await this.elasticsearchDatasourceService.findUnique({
       where: {id: datasourceId},
@@ -123,10 +146,23 @@ export class ElasticsearchDatasourceController {
       throw new NotFoundException('Not found the datasource.');
     }
 
-    // [step 2] Get indices.
-    return await this.elasticsearchDatasourceIndexService.findMany({
-      where: {datasourceId: datasource.id},
-      orderBy: {name: 'asc'},
+    // [step 2] Clear elasticsearch datasource indices and fields.
+    return await this.elasticsearchDatasourceService.unload(datasource);
+  }
+
+  @Get(':datasourceId/indices')
+  @ApiParam({
+    name: 'datasourceId',
+    schema: {type: 'string'},
+    description: 'The uuid of the datasource.',
+    example: 'd8141ece-f242-4288-a60a-8675538549cd',
+  })
+  async getElasticsearchDatasourceIndices(
+    @Param('datasourceId') datasourceId: string
+  ): Promise<ElasticsearchDatasource> {
+    return await this.elasticsearchDatasourceService.findUniqueOrThrow({
+      where: {id: datasourceId},
+      include: {indices: true},
     });
   }
 
@@ -216,58 +252,6 @@ export class ElasticsearchDatasourceController {
 
     // [step 2] Search datasource.
     return await this.elasticsearchDatasourceService.searchAggregations(body);
-  }
-
-  /**
-   * Mount an elasticsearch datasource.
-   */
-  @Post(':datasourceId/mount')
-  @ApiParam({
-    name: 'datasourceId',
-    schema: {type: 'string'},
-    description: 'The uuid of the datasource.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
-  async mountElasticsearchDatasource(
-    @Param('datasourceId') datasourceId: string
-  ): Promise<boolean> {
-    // [step 1] Guard statement.
-
-    // [step 2] Get datasource.
-    const datasource = await this.elasticsearchDatasourceService.findUnique({
-      where: {id: datasourceId},
-    });
-    if (!datasource) {
-      throw new NotFoundException('Not found the datasource.');
-    }
-
-    // [step 3] Extract elasticsearch all index fields.
-    return this.elasticsearchDatasourceService.mount(datasource);
-  }
-
-  /**
-   * Unmount an elasticsearch datasource.
-   */
-  @Post(':datasourceId/unmount')
-  @ApiParam({
-    name: 'datasourceId',
-    schema: {type: 'string'},
-    description: 'The uuid of the elasticsearch datasource.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
-  async unmountPostgresqlDatasource(
-    @Param('datasourceId') datasourceId: string
-  ): Promise<boolean> {
-    // [step 1] Get datasource.
-    const datasource = await this.elasticsearchDatasourceService.findUnique({
-      where: {id: datasourceId},
-    });
-    if (!datasource) {
-      throw new NotFoundException('Not found the datasource.');
-    }
-
-    // [step 2] Clear elasticsearch datasource indices and fields.
-    return await this.elasticsearchDatasourceService.unmount(datasource);
   }
 
   /* End */

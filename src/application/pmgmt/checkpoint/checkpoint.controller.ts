@@ -10,16 +10,16 @@ import {
 
 @ApiTags('[Application] Project Management / Checkpoint')
 @ApiBearerAuth()
-@Controller('project-management')
+@Controller('project-management-checkpoints')
 export class CheckpointController {
   private checkpointService = new CheckpointService();
 
-  @Get('checkpoints/types')
+  @Get('types')
   async listCheckpointCheckpoints() {
     return Object.values(ProjectCheckpointType);
   }
 
-  @Patch('checkpoints/:checkpointId')
+  @Patch(':checkpointId')
   @ApiParam({
     name: 'checkpointId',
     schema: {type: 'number'},

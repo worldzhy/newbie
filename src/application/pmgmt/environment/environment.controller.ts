@@ -9,16 +9,16 @@ import {
 
 @ApiTags('[Application] Project Management / Environment')
 @ApiBearerAuth()
-@Controller('project-management')
+@Controller('project-management-environments')
 export class EnvironmentController {
   private environmentService = new EnvironmentService();
 
-  @Get('environments/types')
+  @Get('types')
   async listEnvironmentEnvironments() {
     return Object.values(ProjectEnvironmentType);
   }
 
-  @Patch('environments/:environmentId')
+  @Patch(':environmentId')
   @ApiParam({
     name: 'environmentId',
     schema: {type: 'number'},

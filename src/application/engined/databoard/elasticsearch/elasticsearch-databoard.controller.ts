@@ -8,16 +8,25 @@ import {
   Param,
   Query,
   BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {
+  ElasticsearchDataboard,
+  ElasticsearchDataboardState,
+  ElasticsearchDatasourceIndexField,
+  Prisma,
+} from '@prisma/client';
 import {ElasticsearchDataboardService} from './elasticsearch-databoard.service';
-import {ElasticsearchDataboard, Prisma} from '@prisma/client';
+import {ElasticsearchDataboardColumnService} from './column/column.service';
 
-@ApiTags('[Application] EngineD / Databoard')
+@ApiTags('[Application] EngineD / Databoard / Elasticsearch')
 @ApiBearerAuth()
 @Controller('elasticsearch-databoards')
 export class ElasticsearchDataboardController {
   private elasticsearchDataboardService = new ElasticsearchDataboardService();
+  private elasticsearchDataboardColumnService =
+    new ElasticsearchDataboardColumnService();
 
   @Post('')
   @ApiBody({
@@ -28,66 +37,21 @@ export class ElasticsearchDataboardController {
         summary: '1. Create',
         value: {
           name: 'databoard_01',
+          datasourceIndexId: 1,
         },
       },
     },
   })
   async createElasticsearchDataboard(
     @Body()
-    body: Prisma.ElasticsearchDataboardCreateInput
+    body: Prisma.ElasticsearchDataboardUncheckedCreateInput
   ) {
     return await this.elasticsearchDataboardService.create({data: body});
   }
 
   @Get('')
-  @ApiParam({
-    required: false,
-    name: 'name',
-    description: 'The string you want to search in the pool.',
-    example: 'databoard01',
-    schema: {type: 'string'},
-  })
-  @ApiParam({
-    required: false,
-    name: 'page',
-    schema: {type: 'number'},
-    description: 'The page of the list. It must be a number and LARGER THAN 0.',
-    example: 1,
-  })
-  async getElasticsearchDataboards(
-    @Query() query: {name?: string; page?: string}
-  ): Promise<ElasticsearchDataboard[]> {
-    // [step 1] Construct where argument.
-    let where: Prisma.ElasticsearchDataboardWhereInput | undefined;
-    if (query.name) {
-      const name = query.name.trim();
-      if (name.length > 0) {
-        where = {name: {search: name}};
-      }
-    }
-
-    // [step 2] Construct take and skip arguments.
-    let take: number, skip: number;
-    if (query.page) {
-      // Actually 'page' is string because it comes from URL param.
-      const page = parseInt(query.page);
-      if (page > 0) {
-        take = 10;
-        skip = 10 * (page - 1);
-      } else {
-        throw new BadRequestException('The page must be larger than 0.');
-      }
-    } else {
-      take = 10;
-      skip = 0;
-    }
-
-    // [step 3] Get databoards.
-    return await this.elasticsearchDataboardService.findMany({
-      where: where,
-      take: take,
-      skip: skip,
-    });
+  async getElasticsearchDataboards(): Promise<ElasticsearchDataboard[]> {
+    return await this.elasticsearchDataboardService.findMany({});
   }
 
   @Get(':databoardId')
@@ -143,6 +107,92 @@ export class ElasticsearchDataboardController {
   ): Promise<ElasticsearchDataboard> {
     return await this.elasticsearchDataboardService.delete({
       where: {id: databoardId},
+    });
+  }
+
+  @Patch(':databoardId/load')
+  @ApiParam({
+    name: 'databoardId',
+    schema: {type: 'string'},
+    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
+  })
+  async loadElasticsearchDataboard(
+    @Param('databoardId') databoardId: string
+  ): Promise<ElasticsearchDataboard> {
+    // [step 1] Get databoard
+    const databoard = await this.elasticsearchDataboardService.findUnique({
+      where: {id: databoardId},
+      include: {datasourceIndex: {include: {fields: true}}},
+    });
+
+    if (!databoard) {
+      throw new NotFoundException('Not found the databoard.');
+    }
+
+    // [step 2] Load columns
+    const datasourceIndexFields: ElasticsearchDatasourceIndexField[] =
+      databoard['datasourceIndex']['fields'];
+
+    await this.elasticsearchDataboardColumnService.createMany({
+      data: datasourceIndexFields.map(field => {
+        return {
+          name: field.name,
+          databoardId: databoardId,
+          datasourceIndexFieldId: field.id,
+        };
+      }),
+    });
+
+    // [step 3] Update databoard state
+    return await this.elasticsearchDataboardService.update({
+      where: {id: databoardId},
+      data: {state: ElasticsearchDataboardState.READY},
+    });
+  }
+
+  @Patch(':databoardId/unload')
+  @ApiParam({
+    name: 'databoardId',
+    schema: {type: 'string'},
+    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
+  })
+  async unloadElasticsearchDataboard(
+    @Param('databoardId') databoardId: string
+  ): Promise<ElasticsearchDataboard> {
+    // [step 1] Get databoard
+    const databoard = await this.elasticsearchDataboardService.findUnique({
+      where: {id: databoardId},
+    });
+
+    if (!databoard) {
+      throw new NotFoundException('Not found the databoard.');
+    }
+
+    // [step 2] Unload columns
+    await this.elasticsearchDataboardColumnService.deleteMany({
+      where: {databoardId: databoardId},
+    });
+
+    // [step 3] Update databoard state
+    return await this.elasticsearchDataboardService.update({
+      where: {id: databoardId},
+      data: {state: ElasticsearchDataboardState.PREPARING},
+    });
+  }
+
+  @Get(':databoardId/columns')
+  @ApiParam({
+    name: 'databoardId',
+    schema: {type: 'string'},
+    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
+  })
+  async getElasticsearchDataboardColumns(
+    @Param('databoardId') databoardId: string
+  ): Promise<ElasticsearchDataboard> {
+    // [step 1] Get databoard
+    return await this.elasticsearchDataboardService.findUniqueOrThrow({
+      where: {id: databoardId},
+      include: {columns: true},
     });
   }
 
