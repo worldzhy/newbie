@@ -156,7 +156,7 @@ export class PulumiStackController {
       throw new NotFoundException('Not found the stack.');
     }
     if (
-      stack.state === PulumiStackState.PREPARING ||
+      stack.state === PulumiStackState.PENDING ||
       stack.state === PulumiStackState.DESTROY_SUCCEEDED
     ) {
       return await this.stackService.delete({where: {id: stackId}});
@@ -197,7 +197,7 @@ export class PulumiStackController {
 
     // [step 3] Create stack resources.
     if (
-      stack.state === PulumiStackState.PREPARING ||
+      stack.state === PulumiStackState.PENDING ||
       stack.state === PulumiStackState.DESTROY_SUCCEEDED
     ) {
       return await this.stackService.createResources(stack);

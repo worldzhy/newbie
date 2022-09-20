@@ -105,7 +105,7 @@ export class ElasticsearchDatasourceService {
     // [step 3] Update datasource state.
     return await this.prisma.elasticsearchDatasource.update({
       where: {id: datasource.id},
-      data: {state: ElasticsearchDatasourceState.READY},
+      data: {state: ElasticsearchDatasourceState.LOADED},
     });
   }
 
@@ -123,7 +123,7 @@ export class ElasticsearchDatasourceService {
     // [step 2] Update datasource state.
     return await this.prisma.elasticsearchDatasource.update({
       where: {id: datasource.id},
-      data: {state: ElasticsearchDatasourceState.PREPARING},
+      data: {state: ElasticsearchDatasourceState.NOT_LOADED},
     });
   }
 

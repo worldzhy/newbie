@@ -354,7 +354,7 @@ model CloudFormationStack {
   name                String?                  @unique // Set default value via prisma middleware.
   type                CloudFormationStackType
   params              Json?
-  state               CloudFormationStackState @default(PREPARING)
+  state               CloudFormationStackState @default(PENDING)
   environment         ProjectEnvironmentType
   createStackOutput   Json?
   describeStackOutput Json?
@@ -376,7 +376,7 @@ enum CloudFormationStackType {
 }
 
 enum CloudFormationStackState {
-  PREPARING
+  PENDING
   BUILD
   DESTROYED
 }
@@ -386,7 +386,7 @@ model PulumiStack {
   name          String?                @unique // Set default value via prisma middleware.
   type          PulumiStackType
   params        Json?
-  state         PulumiStackState       @default(PREPARING)
+  state         PulumiStackState       @default(PENDING)
   environment   ProjectEnvironmentType
   upResult      Json?
   destroyResult Json?
@@ -413,7 +413,7 @@ enum PulumiStackType {
 }
 
 enum PulumiStackState {
-  PREPARING
+  PENDING
   BUILD_PROCESSING
   BUILD_SUCCEEDED
   BUILD_FAILED
@@ -444,7 +444,7 @@ model PostgresqlDatasource {
   port        Int
   database    String
   schema      String
-  state       PostgresqlDatasourceState        @default(PREPARING)
+  state       PostgresqlDatasourceState        @default(NOT_LOADED)
   createdAt   DateTime                         @default(now())
   updatedAt   DateTime                         @updatedAt
   tables      PostgresqlDatasourceTable[]
@@ -452,8 +452,8 @@ model PostgresqlDatasource {
 }
 
 enum PostgresqlDatasourceState {
-  PREPARING
-  READY
+  LOADED
+  NOT_LOADED
 }
 
 model PostgresqlDatasourceConstraint {
@@ -499,15 +499,15 @@ model PostgresqlDatasourceTableColumn {
 model ElasticsearchDatasource {
   id        String                         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   node      String
-  state     ElasticsearchDatasourceState   @default(PREPARING)
+  state     ElasticsearchDatasourceState   @default(NOT_LOADED)
   createdAt DateTime                       @default(now())
   updatedAt DateTime                       @updatedAt
   indices   ElasticsearchDatasourceIndex[]
 }
 
 enum ElasticsearchDatasourceState {
-  PREPARING
-  READY
+  LOADED
+  NOT_LOADED
 }
 
 model ElasticsearchDatasourceIndex {
@@ -549,7 +549,7 @@ model DatatransPipeline {
 
 model DatatransMission {
   id                  String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  state               DatatransMissionState @default(PREPARING)
+  state               DatatransMissionState @default(PENDING)
   numberOfRecords     Int // Number of records that will be sent from datasource table
   numberOfBatches     Int
   createdAt           DateTime              @default(now())
@@ -559,7 +559,7 @@ model DatatransMission {
 }
 
 enum DatatransMissionState {
-  PREPARING
+  PENDING
   STARTED
   STOPPED
 }
@@ -567,7 +567,7 @@ enum DatatransMissionState {
 model ElasticsearchDataboard {
   id                String                         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name              String
-  state             ElasticsearchDataboardState    @default(PREPARING)
+  state             ElasticsearchDataboardState    @default(NOT_LOADED)
   description       String?
   createdAt         DateTime                       @default(now())
   updatedAt         DateTime                       @updatedAt
@@ -577,8 +577,8 @@ model ElasticsearchDataboard {
 }
 
 enum ElasticsearchDataboardState {
-  PREPARING
-  READY
+  LOADED
+  NOT_LOADED
 }
 
 model ElasticsearchDataboardColumn {

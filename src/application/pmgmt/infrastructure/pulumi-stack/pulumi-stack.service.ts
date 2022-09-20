@@ -138,7 +138,7 @@ export class PulumiStackService {
     } else if (upResult.summary.result === 'failed') {
       state = PulumiStackState.BUILD_FAILED;
     } else {
-      state = PulumiStackState.PREPARING;
+      state = PulumiStackState.PENDING;
     }
 
     return await this.prisma.pulumiStack.update({
@@ -175,7 +175,7 @@ export class PulumiStackService {
     } else if (destroyResult.summary.result === 'failed') {
       state = PulumiStackState.DESTROY_FAILED;
     } else {
-      state = PulumiStackState.PREPARING;
+      state = PulumiStackState.PENDING;
     }
 
     return await this.prisma.pulumiStack.update({

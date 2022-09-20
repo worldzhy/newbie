@@ -179,7 +179,7 @@ export class PostgresqlDatasourceService {
     // [step 3] Update datasource state.
     return await this.prisma.postgresqlDatasource.update({
       where: {id: datasource.id},
-      data: {state: PostgresqlDatasourceState.READY},
+      data: {state: PostgresqlDatasourceState.LOADED},
     });
   }
 
@@ -202,7 +202,7 @@ export class PostgresqlDatasourceService {
     // [step 3] Update datasource state.
     return await this.prisma.postgresqlDatasource.update({
       where: {id: datasource.id},
-      data: {state: PostgresqlDatasourceState.PREPARING},
+      data: {state: PostgresqlDatasourceState.NOT_LOADED},
     });
   }
 

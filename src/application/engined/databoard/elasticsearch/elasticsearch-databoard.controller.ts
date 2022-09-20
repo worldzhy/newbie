@@ -146,7 +146,7 @@ export class ElasticsearchDataboardController {
     // [step 3] Update databoard state
     return await this.elasticsearchDataboardService.update({
       where: {id: databoardId},
-      data: {state: ElasticsearchDataboardState.READY},
+      data: {state: ElasticsearchDataboardState.LOADED},
     });
   }
 
@@ -176,7 +176,7 @@ export class ElasticsearchDataboardController {
     // [step 3] Update databoard state
     return await this.elasticsearchDataboardService.update({
       where: {id: databoardId},
-      data: {state: ElasticsearchDataboardState.PREPARING},
+      data: {state: ElasticsearchDataboardState.NOT_LOADED},
     });
   }
 
