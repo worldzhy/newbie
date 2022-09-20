@@ -1,4 +1,4 @@
-import {Controller, Get, Patch, Body, Param} from '@nestjs/common';
+import {Controller, Delete, Get, Patch, Body, Param} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {EnvironmentService} from './environment.service';
 import {
@@ -18,10 +18,32 @@ export class EnvironmentController {
     return Object.values(ProjectEnvironmentType);
   }
 
+  //* Get many
+  @Get('')
+  async getEnvironments(): Promise<ProjectEnvironment[]> {
+    return await this.environmentService.findMany({});
+  }
+
+  //* Get
+  @Get(':environmentId')
+  @ApiParam({
+    name: 'environmentId',
+    schema: {type: 'string'},
+    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
+  })
+  async getEnvironment(
+    @Param('environmentId') environmentId: string
+  ): Promise<ProjectEnvironment | null> {
+    return await this.environmentService.findUnique({
+      where: {id: parseInt(environmentId)},
+    });
+  }
+
+  //* Update
   @Patch(':environmentId')
   @ApiParam({
     name: 'environmentId',
-    schema: {type: 'number'},
+    schema: {type: 'string'},
     example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
   })
   @ApiBody({
@@ -47,14 +69,28 @@ export class EnvironmentController {
     },
   })
   async updateEnvironment(
-    @Param('environmentId') environmentId: number,
+    @Param('environmentId') environmentId: string,
     @Body() body: Prisma.ProjectEnvironmentUpdateInput
   ): Promise<ProjectEnvironment> {
     return await this.environmentService.update({
-      where: {id: environmentId},
+      where: {id: parseInt(environmentId)},
       data: body,
     });
   }
 
+  //* Delete
+  @Delete(':environmentId')
+  @ApiParam({
+    name: 'environmentId',
+    schema: {type: 'string'},
+    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
+  })
+  async deleteEnvironment(
+    @Param('environmentId') environmentId: string
+  ): Promise<ProjectEnvironment> {
+    return await this.environmentService.delete({
+      where: {id: parseInt(environmentId)},
+    });
+  }
   /* End */
 }

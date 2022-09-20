@@ -12,6 +12,12 @@ export class ProjectService {
     return await this.prisma.project.findUnique(params);
   }
 
+  async findUniqueOrThrow(
+    params: Prisma.ProjectFindUniqueOrThrowArgs
+  ): Promise<Project> {
+    return await this.prisma.project.findUniqueOrThrow(params);
+  }
+
   async findMany(params: Prisma.ProjectFindManyArgs): Promise<Project[]> {
     return await this.prisma.project.findMany(params);
   }

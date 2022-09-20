@@ -15,7 +15,7 @@ async function bootstrap() {
   // API document is only available in development environment.
   if (serverConfig.environment === 'development') {
     const config = new DocumentBuilder()
-      .setTitle("I'm a newbie")
+      .setTitle("Here's the Newbie")
       .setDescription("It's good to see you guys 🥤")
       .setVersion('1.0')
       .addBearerAuth()

@@ -157,14 +157,15 @@ export class ProjectController {
   @ApiParam({
     name: 'projectId',
     schema: {type: 'string'},
-    description: 'The uuid of the checkpoint.',
+    description: 'The uuid of the project.',
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
   async getProjectCheckpoints(
     @Param('projectId') projectId: string
-  ): Promise<ProjectCheckpoint[]> {
-    return await this.checkpointService.findMany({
-      where: {projectId: projectId},
+  ): Promise<Project> {
+    return await this.projectService.findUniqueOrThrow({
+      where: {id: projectId},
+      include: {checkpoints: true},
     });
   }
 
@@ -173,15 +174,51 @@ export class ProjectController {
   @ApiParam({
     name: 'projectId',
     schema: {type: 'string'},
-    description: 'The uuid of the environment.',
+    description: 'The uuid of the project.',
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
   async getProjectEnvironments(
     @Param('projectId') projectId: string
-  ): Promise<ProjectEnvironment[]> {
-    return await this.environmentService.findMany({
-      where: {projectId: projectId},
+  ): Promise<Project> {
+    return await this.projectService.findUniqueOrThrow({
+      where: {id: projectId},
+      include: {environments: true},
     });
   }
+
+  //* Get cloudformation stacks
+  @Get(':projectId/cloudformation-stacks')
+  @ApiParam({
+    name: 'projectId',
+    schema: {type: 'string'},
+    description: 'The uuid of the project.',
+    example: 'd8141ece-f242-4288-a60a-8675538549cd',
+  })
+  async getProjectCloudformationStacks(
+    @Param('projectId') projectId: string
+  ): Promise<Project> {
+    return await this.projectService.findUniqueOrThrow({
+      where: {id: projectId},
+      include: {cloudformationStacks: true},
+    });
+  }
+
+  //* Get pulumi stacks
+  @Get(':projectId/pulumi-stacks')
+  @ApiParam({
+    name: 'projectId',
+    schema: {type: 'string'},
+    description: 'The uuid of the project.',
+    example: 'd8141ece-f242-4288-a60a-8675538549cd',
+  })
+  async getProjectPulumiStacks(
+    @Param('projectId') projectId: string
+  ): Promise<Project> {
+    return await this.projectService.findUniqueOrThrow({
+      where: {id: projectId},
+      include: {pulumiStacks: true},
+    });
+  }
+
   /* End */
 }

@@ -30,5 +30,11 @@ export class EnvironmentService {
     return await this.prisma.projectEnvironment.update(params);
   }
 
+  async delete(
+    params: Prisma.ProjectEnvironmentDeleteArgs
+  ): Promise<ProjectEnvironment> {
+    return await this.prisma.projectEnvironment.delete(params);
+  }
+
   /* End */
 }
