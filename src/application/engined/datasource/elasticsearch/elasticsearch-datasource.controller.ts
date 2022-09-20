@@ -12,7 +12,7 @@ import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {ElasticsearchDatasource, Prisma} from '@prisma/client';
 import {ElasticsearchDatasourceService} from './elasticsearch-datasource.service';
 
-@ApiTags('[Application] EngineD / Datasource / Elasticsearch')
+@ApiTags('[Application] EngineD / Elasticsearch Datasource')
 @ApiBearerAuth()
 @Controller('elasticsearch-datasources')
 export class ElasticsearchDatasourceController {

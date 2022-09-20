@@ -19,7 +19,7 @@ import {
 import {DatatransMissionService} from './mission.service';
 import {TaskService} from '../../../../microservices/task/task.service';
 
-@ApiTags('[Application] EngineD / Datatrans / Mission')
+@ApiTags('[Application] EngineD / Datatrans Mission')
 @ApiBearerAuth()
 @Controller('datatrans-missions')
 export class DatatransMissionController {

@@ -11,7 +11,7 @@ import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {ElasticsearchDataboardColumnService} from './column.service';
 import {ElasticsearchDataboardColumn, Prisma} from '@prisma/client';
 
-@ApiTags('[Application] EngineD / Databoard / Elasticsearch / Column')
+@ApiTags('[Application] EngineD / Elasticsearch Databoard Column')
 @ApiBearerAuth()
 @Controller('elasticsearch-databoard-columns')
 export class ElasticsearchDataboardColumnController {

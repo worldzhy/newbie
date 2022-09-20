@@ -18,7 +18,7 @@ import {PostgresqlDatasourceConstraintService} from './constraint/constraint.ser
 import {PostgresqlDatasourceService} from './postgresql-datasource.service';
 import {PostgresqlDatasourceTableService} from './table/table.service';
 
-@ApiTags('[Application] EngineD / Datasource / Postgresql')
+@ApiTags('[Application] EngineD / Postgresql Datasource')
 @ApiBearerAuth()
 @Controller('postgresql-datasources')
 export class PostgresqlDatasourceController {

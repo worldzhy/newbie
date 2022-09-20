@@ -18,7 +18,7 @@ import {
 } from '@prisma/client';
 import {UserProfileService} from './profile.service';
 
-@ApiTags('[Application] Account / User / Profile')
+@ApiTags('[Application] Account / User Profile')
 @ApiBearerAuth()
 @Controller('user-profiles')
 export class UserProfileController {
