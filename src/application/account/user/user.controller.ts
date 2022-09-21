@@ -50,7 +50,7 @@ export class UserController {
   @ApiParam({
     required: false,
     name: 'page',
-    schema: {type: 'number'},
+    schema: {type: 'string'},
     description:
       'The page of the user list. It must be a number and LARGER THAN 0.',
     example: 1,

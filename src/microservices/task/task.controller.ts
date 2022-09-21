@@ -86,13 +86,13 @@ export class TaskController {
   @Get(':taskId')
   @ApiParam({
     name: 'taskId',
-    schema: {type: 'number'},
+    schema: {type: 'string'},
     description: 'The uuid of the task.',
     example: '81',
   })
-  async getTask(@Param('taskId') taskId: number): Promise<Task | null> {
+  async getTask(@Param('taskId') taskId: string): Promise<Task | null> {
     return await this.taskService.findUnique({
-      where: {id: taskId},
+      where: {id: parseInt(taskId)},
     });
   }
 
@@ -100,16 +100,16 @@ export class TaskController {
   @Patch(':taskId')
   @ApiParam({
     name: 'taskId',
-    schema: {type: 'number'},
+    schema: {type: 'string'},
     description: 'The id of the task.',
     example: '81',
   })
   async updateTask(
-    @Param('taskId') taskId: number,
+    @Param('taskId') taskId: string,
     @Body() body: Prisma.TaskUpdateInput
   ): Promise<Task> {
     return await this.taskService.update({
-      where: {id: taskId},
+      where: {id: parseInt(taskId)},
       data: body,
     });
   }
@@ -118,13 +118,13 @@ export class TaskController {
   @Delete(':taskId')
   @ApiParam({
     name: 'taskId',
-    schema: {type: 'number'},
+    schema: {type: 'string'},
     description: 'The id of the task.',
     example: '81',
   })
-  async deleteTask(@Param('taskId') taskId: number): Promise<Task> {
+  async deleteTask(@Param('taskId') taskId: string): Promise<Task> {
     return await this.taskService.delete({
-      where: {id: taskId},
+      where: {id: parseInt(taskId)},
     });
   }
 
