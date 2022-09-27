@@ -94,6 +94,8 @@ export class ElasticsearchDatasourceIndexService {
         'Bad Request to get elasticsearch index mappings.'
       );
     }
+
+    return result;
   }
 
   async putMapping(indexName: string, mapping: object) {
@@ -115,6 +117,8 @@ export class ElasticsearchDatasourceIndexService {
         'Bad Request to get elasticsearch index settings.'
       );
     }
+
+    return result;
   }
 
   async putSettings(indexName: string) {
@@ -127,20 +131,32 @@ export class ElasticsearchDatasourceIndexService {
   }
 
   async getIndices() {
-    const indices = await this.elastic.cat.indices({
+    const result = await this.elastic.cat.indices({
       v: true, //If true, the response includes column headings. Defaults to false.
       health: 'green',
       format: 'json',
     });
-    return indices;
+    if (result.statusCode !== 200) {
+      throw new BadRequestException(
+        'Bad Request to get elasticsearch indices.'
+      );
+    }
+
+    return result;
   }
 
   async getAliases() {
-    const aliases = await this.elastic.cat.aliases({
+    const result = await this.elastic.cat.aliases({
       v: true,
       format: 'json',
     });
-    return aliases;
+    if (result.statusCode !== 200) {
+      throw new BadRequestException(
+        'Bad Request to get elasticsearch aliases.'
+      );
+    }
+
+    return result;
   }
 
   /* End */

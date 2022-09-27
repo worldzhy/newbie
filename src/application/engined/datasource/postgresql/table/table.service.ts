@@ -15,9 +15,8 @@ export class PostgresqlDatasourceTableService {
   async findUniqueOrThrow(
     params: Prisma.PostgresqlDatasourceTableFindUniqueOrThrowArgs
   ): Promise<PostgresqlDatasourceTable> {
-    // [middleware] The tableId from HTTP request is string type. Convert it to number type.
+    // [middleware] The id from HTTP request is string type. Convert it to number type.
     this.prisma.$use(async (params, next) => {
-      console.log(params);
       if (params.model === 'PostgresqlDatasourceTable') {
         if (params.action === 'findUnique') {
           if (

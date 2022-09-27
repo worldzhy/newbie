@@ -1,9 +1,9 @@
 import {ElasticsearchDatasource, PostgresqlDatasource} from '@prisma/client';
 import {AccountController} from '../src/application/account/account.controller';
 import {ProjectController} from '../src/application/pmgmt/project/project.controller';
-import {PostgresqlDatasourceService} from '../src/application/engined/datasource/postgresql/postgresql-datasource.service';
-import {ElasticsearchDatasourceService} from '../src/application/engined/datasource/elasticsearch/elasticsearch-datasource.service';
 import {DatatransPipelineController} from '../src/application/engined/datatrans/pipeline/pipeline.controller';
+import {ElasticsearchDatasourceController} from '../src/application/engined/datasource/elasticsearch/elasticsearch-datasource.controller';
+import {PostgresqlDatasourceController} from '../src/application/engined/datasource/postgresql/postgresql-datasource.controller';
 
 // Auth
 const authController = new AccountController();
@@ -28,7 +28,7 @@ const projects = [
 ];
 
 // Postgresql datasource
-const postgresqlDatasourceService = new PostgresqlDatasourceService();
+const postgresqlDatasourceController = new PostgresqlDatasourceController();
 const postgresql = {
   host: '127.0.0.1',
   port: 5432,
@@ -37,7 +37,8 @@ const postgresql = {
 };
 
 // Elasticsearch datasource
-const elasticsearchDatasourceService = new ElasticsearchDatasourceService();
+const elasticsearchDatasourceController =
+  new ElasticsearchDatasourceController();
 const elasticsearch = {node: '127.0.0.1'};
 
 // Datatrans Pipeline
@@ -53,26 +54,33 @@ const pipeline = {
 async function main() {
   console.log('Start seeding ...');
 
-  console.log('- users');
+  console.log('* [account] user');
   for (const user of users) {
     await authController.signup(user);
   }
 
-  console.log('- projects');
+  console.log('* [project management] project');
   for (const project of projects) {
     await projectController.createProject(project);
   }
 
-  console.log('- datasources');
+  console.log('* [engined][datasource] postgresql');
   let datasource: PostgresqlDatasource | ElasticsearchDatasource;
-  datasource = await postgresqlDatasourceService.create({data: postgresql});
-  await postgresqlDatasourceService.load(datasource);
-  datasource = await elasticsearchDatasourceService.create({
-    data: elasticsearch,
-  });
-  await elasticsearchDatasourceService.load(datasource);
+  datasource = await postgresqlDatasourceController.createPostgresqlDatasource(
+    postgresql
+  );
+  await postgresqlDatasourceController.loadPostgresqlDatasource(datasource.id);
 
-  console.log('- pipelines');
+  console.log('* [engined][datasource] elasticsearch');
+  datasource =
+    await elasticsearchDatasourceController.createElasticsearchDatasource(
+      elasticsearch
+    );
+  await elasticsearchDatasourceController.loadElasticsearchDatasource(
+    datasource.id
+  );
+
+  console.log('* [engined][datatrans] pipeline');
   await pipelineController.createPipeline(pipeline);
 
   console.log('Seeding finished.');

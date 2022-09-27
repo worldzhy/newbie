@@ -9,14 +9,24 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {ElasticsearchDatasource, Prisma} from '@prisma/client';
+import {
+  ElasticsearchDatasource,
+  ElasticsearchDatasourceState,
+  Prisma,
+} from '@prisma/client';
 import {ElasticsearchDatasourceService} from './elasticsearch-datasource.service';
+import {ElasticsearchDatasourceIndexFieldService} from './field/field.service';
+import {ElasticsearchDatasourceIndexService} from './index/index.service';
 
 @ApiTags('[Application] EngineD / Elasticsearch Datasource')
 @ApiBearerAuth()
 @Controller('elasticsearch-datasources')
 export class ElasticsearchDatasourceController {
   private elasticsearchDatasourceService = new ElasticsearchDatasourceService();
+  private elasticsearchDatasourceIndexService =
+    new ElasticsearchDatasourceIndexService();
+  private elasticsearchDatasourceIndexFieldService =
+    new ElasticsearchDatasourceIndexFieldService();
 
   @Post('')
   @ApiBody({
@@ -111,9 +121,7 @@ export class ElasticsearchDatasourceController {
   async loadElasticsearchDatasource(
     @Param('datasourceId') datasourceId: string
   ): Promise<ElasticsearchDatasource> {
-    // [step 1] Guard statement.
-
-    // [step 2] Get datasource.
+    // [step 1] Get datasource.
     const datasource = await this.elasticsearchDatasourceService.findUnique({
       where: {id: datasourceId},
     });
@@ -121,8 +129,53 @@ export class ElasticsearchDatasourceController {
       throw new NotFoundException('Not found the datasource.');
     }
 
-    // [step 3] Extract elasticsearch all index fields.
-    return await this.elasticsearchDatasourceService.load(datasource);
+    // [step 2] Get mappings of all indices.
+    const result = await this.elasticsearchDatasourceService.getMapping(
+      datasource
+    );
+
+    // [step 3] Save fields of all indices.
+    const indexNames = Object.keys(result.body);
+    for (let i = 0; i < indexNames.length; i++) {
+      const indexName = indexNames[i];
+      if (indexName.startsWith('.')) {
+        // The index name starts with '.' is not the customized index name.
+        continue;
+      }
+
+      // Save the index.
+      const index = await this.elasticsearchDatasourceIndexService.create({
+        data: {
+          name: indexName,
+          datasource: {connect: {id: datasource.id}},
+        },
+      });
+
+      // Save fields of the index if they exist.
+      if ('properties' in result.body[indexName].mappings) {
+        const fieldNames = Object.keys(
+          result.body[indexName].mappings.properties
+        );
+        await this.elasticsearchDatasourceIndexFieldService.createMany({
+          data: fieldNames.map(fieldName => {
+            return {
+              name: fieldName,
+              type: result.body[indexName].mappings.properties[fieldName].type,
+              properties:
+                result.body[indexName].mappings.properties[fieldName]
+                  .properties,
+              indexId: index.id,
+            };
+          }),
+        });
+      }
+    }
+
+    // [step 4] Update datasource state.
+    return await this.elasticsearchDatasourceService.update({
+      where: {id: datasource.id},
+      data: {state: ElasticsearchDatasourceState.LOADED},
+    });
   }
 
   /**
@@ -146,8 +199,16 @@ export class ElasticsearchDatasourceController {
       throw new NotFoundException('Not found the datasource.');
     }
 
-    // [step 2] Clear elasticsearch datasource indices and fields.
-    return await this.elasticsearchDatasourceService.unload(datasource);
+    // [step 2] Delete indices, their fields will be cascade deleted.
+    await this.elasticsearchDatasourceIndexService.deleteMany({
+      where: {datasourceId: datasource.id},
+    });
+
+    // [step 3] Update datasource state.
+    return await this.elasticsearchDatasourceService.update({
+      where: {id: datasource.id},
+      data: {state: ElasticsearchDatasourceState.NOT_LOADED},
+    });
   }
 
   @Get(':datasourceId/indices')
