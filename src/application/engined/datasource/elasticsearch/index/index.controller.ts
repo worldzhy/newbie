@@ -4,11 +4,17 @@ import {
   Get,
   Patch,
   Post,
+  Put,
   Body,
   Param,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {ElasticsearchDatasourceIndex, Prisma} from '@prisma/client';
+import {
+  ElasticsearchDatasourceIndex,
+  ElasticsearchDatasourceIndexField,
+  ElasticsearchDatasourceIndexState,
+  Prisma,
+} from '@prisma/client';
 import {ElasticsearchDatasourceIndexService} from './index.service';
 
 @ApiTags('[Application] EngineD / Elasticsearch Datasource Index')
@@ -91,20 +97,65 @@ export class ElasticsearchDatasourceIndexController {
     });
   }
 
-  @Get(':indexId/fields')
+  @Put(':indexId/mapping')
   @ApiParam({
     name: 'indexId',
     schema: {type: 'string'},
     description: 'The uuid of the index.',
     example: 1,
   })
-  async getElasticsearchDatasourceIndexFields(
+  async putElasticsearchDatasourceIndexMapping(
     @Param('indexId') indexId: string
   ): Promise<ElasticsearchDatasourceIndex> {
-    return await this.elasticsearchDatasourceIndexService.findUniqueOrThrow({
+    // [step 1] Get index.
+    const index =
+      await this.elasticsearchDatasourceIndexService.findUniqueOrThrow({
+        where: {id: parseInt(indexId)},
+        include: {fields: true},
+      });
+
+    // [step 2] Construct and put mapping.
+    const mapping = {};
+    const fields: ElasticsearchDatasourceIndexField[] = index['fields'];
+    for (let i = 0; i < fields.length; i++) {
+      const field = fields[i];
+      mapping[field.name] = field;
+    }
+    await this.elasticsearchDatasourceIndexService.putMapping(
+      index.name,
+      mapping
+    );
+
+    // [step 3] Update index state.
+    return this.elasticsearchDatasourceIndexService.update({
       where: {id: parseInt(indexId)},
-      include: {fields: true},
+      data: {state: ElasticsearchDatasourceIndexState.HAS_MAPPING},
     });
+  }
+
+  @Get(':indexId/mapping')
+  @ApiParam({
+    name: 'indexId',
+    schema: {type: 'string'},
+    description: 'The uuid of the index.',
+    example: 1,
+  })
+  async getElasticsearchDatasourceIndexMapping(
+    @Param('indexId') indexId: string
+  ) {
+    // return await this.elasticsearchDatasourceIndexService.findUniqueOrThrow({
+    //   where: {id: parseInt(indexId)},
+    //   include: {fields: true},
+    // });
+
+    const index =
+      await this.elasticsearchDatasourceIndexService.findUniqueOrThrow({
+        where: {id: parseInt(indexId)},
+      });
+
+    return await this.elasticsearchDatasourceIndexService.getMapping(
+      index.name
+    );
   }
 
   /* End */

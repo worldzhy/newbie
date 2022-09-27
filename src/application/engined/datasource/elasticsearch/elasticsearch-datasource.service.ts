@@ -95,7 +95,9 @@ export class ElasticsearchDatasourceService {
         data: fieldNames.map(fieldName => {
           return {
             name: fieldName,
-            properties: result.body[indexName].mappings.properties[fieldName],
+            type: result.body[indexName].mappings.properties[fieldName].type,
+            properties:
+              result.body[indexName].mappings.properties[fieldName].properties,
             indexId: index.id,
           };
         }),

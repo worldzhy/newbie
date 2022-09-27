@@ -513,6 +513,7 @@ enum ElasticsearchDatasourceState {
 model ElasticsearchDatasourceIndex {
   id                 Int                                 @id @default(autoincrement())
   name               String
+  state              ElasticsearchDatasourceIndexState   @default(NO_MAPPING)
   createdAt          DateTime                            @default(now())
   updatedAt          DateTime                            @updatedAt
   datasource         ElasticsearchDatasource             @relation(fields: [datasourceId], references: [id], onDelete: Cascade)
@@ -522,10 +523,16 @@ model ElasticsearchDatasourceIndex {
   datatransPipelines DatatransPipeline[]
 }
 
+enum ElasticsearchDatasourceIndexState {
+  NO_MAPPING
+  HAS_MAPPING
+}
+
 model ElasticsearchDatasourceIndexField {
   id               Int                            @id @default(autoincrement())
   name             String // The field name. 
-  properties       Json // The field's JSON format information from elasticsearch.
+  type             String?
+  properties       Json?
   createdAt        DateTime                       @default(now())
   updatedAt        DateTime                       @updatedAt
   index            ElasticsearchDatasourceIndex   @relation(fields: [indexId], references: [id], onDelete: Cascade)

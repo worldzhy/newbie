@@ -21,11 +21,9 @@ export class ElasticsearchDatasourceIndexFieldService {
   }
 
   async create(
-    data: Prisma.ElasticsearchDatasourceIndexFieldCreateInput
+    params: Prisma.ElasticsearchDatasourceIndexFieldCreateArgs
   ): Promise<ElasticsearchDatasourceIndexField> {
-    return await this.prisma.elasticsearchDatasourceIndexField.create({
-      data,
-    });
+    return await this.prisma.elasticsearchDatasourceIndexField.create(params);
   }
 
   async createMany(

@@ -65,6 +65,31 @@ export class ElasticsearchDatasourceIndexService {
     return count > 0 ? true : false;
   }
 
+  // ! Elasticsearch indices operations    //
+  // ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
+  // * getMapping - Get document fields    //
+  // * putMapping - Create document fields //
+  // ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
+
+  async getMapping(indexName: string) {
+    const mappings = await this.elastic.indices.getMapping({
+      index: indexName,
+    });
+    return mappings;
+  }
+
+  async putMapping(indexName: string, mapping: object) {
+    await this.elastic.indices.putMapping({index: indexName, body: mapping});
+  }
+
+  async getSettings(indexName: string) {
+    await this.elastic.indices.getSettings();
+  }
+
+  async putSettings(indexName: string) {
+    await this.elastic.indices.putSettings();
+  }
+
   async getIndices() {
     const indices = await this.elastic.cat.indices({
       v: true, //If true, the response includes column headings. Defaults to false.
@@ -80,13 +105,6 @@ export class ElasticsearchDatasourceIndexService {
       format: 'json',
     });
     return aliases;
-  }
-
-  async getMappings(indexName: string) {
-    const mappings = await this.elastic.indices.getMapping({
-      index: indexName,
-    });
-    return mappings;
   }
 
   /* End */
