@@ -12,6 +12,14 @@ export class PostgresqlDatasourceTableColumnService {
     return await this.prisma.postgresqlDatasourceTableColumn.findUnique(params);
   }
 
+  async findUniqueOrThrow(
+    params: Prisma.PostgresqlDatasourceTableColumnFindUniqueOrThrowArgs
+  ): Promise<PostgresqlDatasourceTableColumn> {
+    return await this.prisma.postgresqlDatasourceTableColumn.findUniqueOrThrow(
+      params
+    );
+  }
+
   async findMany(
     params: Prisma.PostgresqlDatasourceTableColumnFindManyArgs
   ): Promise<PostgresqlDatasourceTableColumn[]> {
@@ -63,6 +71,32 @@ export class PostgresqlDatasourceTableColumnService {
     params: Prisma.PostgresqlDatasourceTableColumnDeleteManyArgs
   ): Promise<Prisma.BatchPayload> {
     return await this.prisma.postgresqlDatasourceTableColumn.deleteMany(params);
+  }
+
+  // ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
+  //    ! Postgresql table operations      //
+  // ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
+
+  async addColulmn(column: {
+    table: string;
+    name: string;
+    type: string;
+    constraint?: string | null;
+  }): Promise<void> {
+    const sql = column.constraint
+      ? `ALTER TABLE ${column.table}
+    ADD COLUMN ${column.name} ${column.type} ${column.constraint};`
+      : `ALTER TABLE ${column.table}
+    ADD COLUMN ${column.name} ${column.type};`;
+
+    await this.prisma.$executeRawUnsafe(sql);
+  }
+
+  async dropColulmn(column: PostgresqlDatasourceTableColumn): Promise<void> {
+    await this.prisma.$executeRawUnsafe(
+      `ALTER TABLE ${column['table'].name}
+      DROP COLUMN ${column.name};`
+    );
   }
 
   /* End */

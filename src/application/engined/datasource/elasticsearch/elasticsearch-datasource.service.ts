@@ -87,21 +87,24 @@ export class ElasticsearchDatasourceService {
         },
       });
 
-      // Save fields of the index.
-      const fieldNames = Object.keys(
-        result.body[indexName].mappings.properties
-      );
-      await this.elasticsearchDatasourceIndexFieldService.createMany({
-        data: fieldNames.map(fieldName => {
-          return {
-            name: fieldName,
-            type: result.body[indexName].mappings.properties[fieldName].type,
-            properties:
-              result.body[indexName].mappings.properties[fieldName].properties,
-            indexId: index.id,
-          };
-        }),
-      });
+      // Save fields of the index if they exist.
+      if ('properties' in result.body[indexName].mappings) {
+        const fieldNames = Object.keys(
+          result.body[indexName].mappings.properties
+        );
+        await this.elasticsearchDatasourceIndexFieldService.createMany({
+          data: fieldNames.map(fieldName => {
+            return {
+              name: fieldName,
+              type: result.body[indexName].mappings.properties[fieldName].type,
+              properties:
+                result.body[indexName].mappings.properties[fieldName]
+                  .properties,
+              indexId: index.id,
+            };
+          }),
+        });
+      }
     }
 
     // [step 3] Update datasource state.

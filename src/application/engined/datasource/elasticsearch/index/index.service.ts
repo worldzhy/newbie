@@ -65,10 +65,8 @@ export class ElasticsearchDatasourceIndexService {
     return count > 0 ? true : false;
   }
 
-  // ! Elasticsearch indices operations    //
   // ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
-  // * getMapping - Get document fields    //
-  // * putMapping - Create document fields //
+  //   ! Elasticsearch index operations    //
   // ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
 
   async createIndex(indexName: string) {

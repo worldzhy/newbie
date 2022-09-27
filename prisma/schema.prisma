@@ -489,7 +489,8 @@ model PostgresqlDatasourceTableColumn {
   id              Int                       @id @default(autoincrement())
   name            String // The column name.
   type            String
-  ordinalPosition Int // The sort number of the column in the table.
+  constraint      String?
+  ordinalPosition Int? // The sort number of the column in the table.
   createdAt       DateTime                  @default(now())
   updatedAt       DateTime                  @updatedAt
   table           PostgresqlDatasourceTable @relation(fields: [tableId], references: [id], onDelete: Cascade)

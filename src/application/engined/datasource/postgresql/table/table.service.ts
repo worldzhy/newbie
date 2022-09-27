@@ -15,6 +15,22 @@ export class PostgresqlDatasourceTableService {
   async findUniqueOrThrow(
     params: Prisma.PostgresqlDatasourceTableFindUniqueOrThrowArgs
   ): Promise<PostgresqlDatasourceTable> {
+    // [middleware] The tableId from HTTP request is string type. Convert it to number type.
+    this.prisma.$use(async (params, next) => {
+      console.log(params);
+      if (params.model === 'PostgresqlDatasourceTable') {
+        if (params.action === 'findUnique') {
+          if (
+            params.args['where']['id'] &&
+            typeof params.args['where']['id'] === 'string'
+          ) {
+            params.args['where']['id'] = parseInt(params.args['where']['id']);
+          }
+        }
+      }
+      return next(params);
+    });
+
     return await this.prisma.postgresqlDatasourceTable.findUniqueOrThrow(
       params
     );
@@ -67,6 +83,22 @@ export class PostgresqlDatasourceTableService {
       where: {id: id},
     });
     return count > 0 ? true : false;
+  }
+
+  // ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
+  //    ! Postgresql table operations      //
+  // ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
+
+  async createTable(tableName: string) {
+    await this.prisma.$executeRawUnsafe(
+      `CREATE TABLE IF NOT EXISTS ${tableName} ()`
+    );
+  }
+
+  async dropTable(tableName: string) {
+    await this.prisma.$executeRawUnsafe(
+      `DROP TABLE IF EXISTS ${tableName} CASCADE`
+    );
   }
 
   /* End */

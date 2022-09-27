@@ -23,10 +23,10 @@ export class PostgresqlDatasourceTableController {
     description: "The 'name' is required in request body.",
     examples: {
       a: {
-        summary: '1. Create index',
+        summary: '1. Create table',
         value: {
           datasourceId: 'd8141ece-f242-4288-a60a-8675538549cd',
-          name: 'example_index_name',
+          name: 'example_table_name',
         },
       },
     },
@@ -34,6 +34,10 @@ export class PostgresqlDatasourceTableController {
   async createPostgresqlDatasourceTable(
     @Body() body: Prisma.PostgresqlDatasourceTableUncheckedCreateInput
   ): Promise<PostgresqlDatasourceTable> {
+    // [step 1] Create table in Postgresql.
+    await this.postgresqlDatasourceTableService.createTable(body.name);
+
+    // [step 2] Save the table record in database.
     return await this.postgresqlDatasourceTableService.create({
       data: body,
     });
@@ -84,6 +88,15 @@ export class PostgresqlDatasourceTableController {
   async deletePostgresqlDatasourceTable(
     @Param('tableId') tableId: string
   ): Promise<PostgresqlDatasourceTable> {
+    // [step 1] Get the table.
+    const table = await this.postgresqlDatasourceTableService.findUniqueOrThrow(
+      {where: {id: parseInt(tableId)}}
+    );
+
+    // [step 2] Delete table in Postgresql.
+    await this.postgresqlDatasourceTableService.dropTable(table.name);
+
+    // [step 3] Delete the table record in database.
     return await this.postgresqlDatasourceTableService.delete({
       where: {id: parseInt(tableId)},
     });
