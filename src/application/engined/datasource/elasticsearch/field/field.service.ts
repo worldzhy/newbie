@@ -23,6 +23,23 @@ export class ElasticsearchDatasourceIndexFieldService {
   async create(
     params: Prisma.ElasticsearchDatasourceIndexFieldCreateArgs
   ): Promise<ElasticsearchDatasourceIndexField> {
+    // [middleware] The indexId from HTTP request is string type. Convert it to number type.
+    this.prisma.$use(async (params, next) => {
+      if (params.model === 'ElasticsearchDatasourceIndexField') {
+        if (params.action === 'create') {
+          if (
+            params.args['data']['indexId'] &&
+            typeof params.args['data']['indexId'] === 'string'
+          ) {
+            params.args['data']['indexId'] = parseInt(
+              params.args['data']['indexId']
+            );
+          }
+        }
+      }
+      return next(params);
+    });
+
     return await this.prisma.elasticsearchDatasourceIndexField.create(params);
   }
 

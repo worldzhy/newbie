@@ -532,6 +532,7 @@ model ElasticsearchDatasourceIndexField {
   id               Int                            @id @default(autoincrement())
   name             String // The field name. 
   type             String?
+  fields           Json?
   properties       Json?
   createdAt        DateTime                       @default(now())
   updatedAt        DateTime                       @updatedAt

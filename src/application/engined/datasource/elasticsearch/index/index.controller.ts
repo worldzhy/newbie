@@ -7,6 +7,7 @@ import {
   Put,
   Body,
   Param,
+  BadRequestException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {
@@ -40,6 +41,10 @@ export class ElasticsearchDatasourceIndexController {
   async createElasticsearchDatasourceIndex(
     @Body() body: Prisma.ElasticsearchDatasourceIndexUncheckedCreateInput
   ): Promise<ElasticsearchDatasourceIndex> {
+    // [step 1] Create an index in elasticsearch.
+    await this.elasticsearchDatasourceIndexService.createIndex(body.name);
+
+    // [step 2] Save the index record in database.
     return await this.elasticsearchDatasourceIndexService.create({
       data: body,
     });
@@ -56,7 +61,7 @@ export class ElasticsearchDatasourceIndexController {
   @ApiParam({
     name: 'indexId',
     schema: {type: 'string'},
-    description: 'The uuid of the datasource.',
+    description: 'The id of the datasource.',
     example: 1,
   })
   async getElasticsearchDatasourceIndex(
@@ -92,6 +97,16 @@ export class ElasticsearchDatasourceIndexController {
   async deleteElasticsearchDatasourceIndex(
     @Param('indexId') indexId: string
   ): Promise<ElasticsearchDatasourceIndex> {
+    // [step 1] Get the index.
+    const index =
+      await this.elasticsearchDatasourceIndexService.findUniqueOrThrow({
+        where: {id: parseInt(indexId)},
+      });
+
+    // [step 2] Delete an index in elasticsearch.
+    await this.elasticsearchDatasourceIndexService.createIndex(index.name);
+
+    // [step 3] Save the index record in database.
     return await this.elasticsearchDatasourceIndexService.delete({
       where: {id: parseInt(indexId)},
     });
@@ -101,7 +116,7 @@ export class ElasticsearchDatasourceIndexController {
   @ApiParam({
     name: 'indexId',
     schema: {type: 'string'},
-    description: 'The uuid of the index.',
+    description: 'The id of the index.',
     example: 1,
   })
   async putElasticsearchDatasourceIndexMapping(
@@ -115,11 +130,15 @@ export class ElasticsearchDatasourceIndexController {
       });
 
     // [step 2] Construct and put mapping.
-    const mapping = {};
+    const mapping = {properties: {}};
     const fields: ElasticsearchDatasourceIndexField[] = index['fields'];
     for (let i = 0; i < fields.length; i++) {
       const field = fields[i];
-      mapping[field.name] = field;
+      mapping.properties[field.name] = {
+        type: field.type,
+        fields: field.fields,
+        properties: field.properties,
+      };
     }
     await this.elasticsearchDatasourceIndexService.putMapping(
       index.name,
@@ -137,21 +156,21 @@ export class ElasticsearchDatasourceIndexController {
   @ApiParam({
     name: 'indexId',
     schema: {type: 'string'},
-    description: 'The uuid of the index.',
+    description: 'The id of the index.',
     example: 1,
   })
   async getElasticsearchDatasourceIndexMapping(
     @Param('indexId') indexId: string
   ) {
-    // return await this.elasticsearchDatasourceIndexService.findUniqueOrThrow({
-    //   where: {id: parseInt(indexId)},
-    //   include: {fields: true},
-    // });
-
     const index =
       await this.elasticsearchDatasourceIndexService.findUniqueOrThrow({
         where: {id: parseInt(indexId)},
       });
+    if (index.state === ElasticsearchDatasourceIndexState.NO_MAPPING) {
+      throw new BadRequestException(
+        "Bad Request to get a NO_MAPPING index's mapping"
+      );
+    }
 
     return await this.elasticsearchDatasourceIndexService.getMapping(
       index.name

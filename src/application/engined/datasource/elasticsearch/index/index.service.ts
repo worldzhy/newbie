@@ -1,4 +1,4 @@
-import {Injectable} from '@nestjs/common';
+import {BadRequestException, Injectable} from '@nestjs/common';
 import {ElasticsearchDatasourceIndex, Prisma} from '@prisma/client';
 import {ElasticService} from '../../../../../toolkits/elastic/elastic.service';
 import {PrismaService} from '../../../../../toolkits/prisma/prisma.service';
@@ -71,23 +71,61 @@ export class ElasticsearchDatasourceIndexService {
   // * putMapping - Create document fields //
   // ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
 
+  async createIndex(indexName: string) {
+    const result = await this.elastic.indices.create({index: indexName});
+    if (result.statusCode !== 200) {
+      throw new BadRequestException(
+        'Bad Request to create an elasticsearch index.'
+      );
+    }
+  }
+
+  async deleteIndex(indexName: string) {
+    const result = await this.elastic.indices.delete({index: indexName});
+    if (result.statusCode !== 200) {
+      throw new BadRequestException(
+        'Bad Request to delete an elasticsearch index.'
+      );
+    }
+  }
+
   async getMapping(indexName: string) {
-    const mappings = await this.elastic.indices.getMapping({
-      index: indexName,
-    });
-    return mappings;
+    const result = await this.elastic.indices.getMapping({index: indexName});
+    if (result.statusCode !== 200) {
+      throw new BadRequestException(
+        'Bad Request to get elasticsearch index mappings.'
+      );
+    }
   }
 
   async putMapping(indexName: string, mapping: object) {
-    await this.elastic.indices.putMapping({index: indexName, body: mapping});
+    const result = await this.elastic.indices.putMapping({
+      index: indexName,
+      body: mapping,
+    });
+    if (result.statusCode !== 200) {
+      throw new BadRequestException(
+        'Bad Request to put elasticsearch index mappings.'
+      );
+    }
   }
 
   async getSettings(indexName: string) {
-    await this.elastic.indices.getSettings();
+    const result = await this.elastic.indices.getSettings();
+    if (result.statusCode !== 200) {
+      throw new BadRequestException(
+        'Bad Request to get elasticsearch index settings.'
+      );
+    }
   }
 
   async putSettings(indexName: string) {
-    await this.elastic.indices.putSettings();
+    const result = await this.elastic.indices.putSettings();
+    if (result.statusCode !== 200) {
+      throw new BadRequestException(
+        'Bad Request to put elasticsearch index settings.'
+      );
+    }
   }
 
   async getIndices() {

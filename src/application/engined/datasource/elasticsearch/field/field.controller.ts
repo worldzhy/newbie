@@ -69,7 +69,7 @@ export class ElasticsearchDatasourceIndexFieldController {
   })
   async updateElasticsearchDatasourceIndexField(
     @Param('indexId') indexId: string,
-    @Body() body: Prisma.ElasticsearchDatasourceIndexUpdateInput
+    @Body() body: Prisma.ElasticsearchDatasourceIndexFieldUpdateInput
   ): Promise<ElasticsearchDatasourceIndexField> {
     return await this.elasticsearchDatasourceIndexFieldService.update({
       where: {id: parseInt(indexId)},
