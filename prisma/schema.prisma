@@ -38,11 +38,12 @@ datasource db {
 //   INACTIVE
 // }
 
-//       ! Notification         //
-// ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
-// * EmailNotification          //
-// * SmsNotification            //
-// ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
+// !! ------------------------------------------------------------ //
+// !!            [Microservice] Notification models                //
+// !! ------------------------------------------------------------ //
+// * EmailNotification                                             //
+// * SmsNotification                                               //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
 
 model EmailNotification {
   id                Int      @id @default(autoincrement())
@@ -66,10 +67,11 @@ model SmsNotification {
   updatedAt         DateTime @updatedAt
 }
 
-// ! Task Management   //
-// ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
-// * Task              //
-// ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
+// ! ------------------------------------------------------------ //
+// !           [Microservice] Task Management models              //
+// ! ------------------------------------------------------------ //
+// * Task                                                         //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
 model Task {
   id           Int       @id @default(autoincrement())
@@ -95,16 +97,17 @@ enum TaskState {
   CANCELED
 }
 
-//     ! Account       //
-// ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
-// * User              //
-// * UserJwt           //
-// * UserProfile       //
-// * VerificationCode  //
-// * Role              //
-// * Permission        //
-// * Organization      //
-// ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
+// ! ------------------------------------------------------------ //
+// !                [Application] Account models                  //
+// ! ------------------------------------------------------------ //
+// * User                                                         //
+// * UserJwt                                                      //
+// * UserProfile                                                  //
+// * VerificationCode                                             //
+// * Role                                                         //
+// * Permission                                                   //
+// * Organization                                                 //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
 model User {
   // [1] The 'User' and 'VerificationCode' models are both used for logging in.
@@ -263,13 +266,14 @@ model Organization {
   updatedAt DateTime @updatedAt
 }
 
-//  ! Project Management  //
-// ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
-// * Project              //
-// * ProjectCheckpoint    //
-// * ProjectEnvironment   //
-// * InfrastructureStack  //
-// ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
+// ! ------------------------------------------------------------ //
+// !          [Application] Project Management models             //
+// ! ------------------------------------------------------------ //
+// * Project                                                      //
+// * ProjectCheckpoint                                            //
+// * ProjectEnvironment                                           //
+// * InfrastructureStack                                          //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
 model Project {
   id                   String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -422,21 +426,24 @@ enum PulumiStackState {
   DESTROY_FAILED
 }
 
-//            ! Engine D               //
-// ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  //
-// * PostgresqlDatasource              //
-// * PostgresqlDatasourceConstraint    //
-// * PostgresqlDatasourceTable         //
-// * PostgresqlDatasourceTableColumn   //
-// ----------------------------------- //
-// * ElasticsearchDatasource           //
-// * ElasticsearchDatasourceIndex      //
-// * ElasticsearchDatasourceIndexField //
-// ----------------------------------- //
-// * DatatransPipeline                 //
-// ----------------------------------- //
-// * ElasticsearchDataboard            //
-// ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  //
+// ! ------------------------------------------------------------ //
+// !               [Application] Engine D models                  //
+// ! ------------------------------------------------------------ //
+// * PostgresqlDatasource                                         //
+// * PostgresqlDatasourceConstraint                               //
+// * PostgresqlDatasourceTable                                    //
+// * PostgresqlDatasourceTableColumn                              //
+// * ------------------------------------------------------------ //
+// * ElasticsearchDatasource                                      //
+// * ElasticsearchDatasourceIndex                                 //
+// * ElasticsearchDatasourceIndexField                            //
+// * ------------------------------------------------------------ //
+// * DatatransPipeline                                            //
+// * DatatransMission                                             //
+// * ------------------------------------------------------------ //
+// * ElasticsearchDataboard                                       //
+// * ElasticsearchDataboardColumn                                 //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
 model PostgresqlDatasource {
   id          String                           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
