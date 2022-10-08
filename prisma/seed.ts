@@ -33,7 +33,7 @@ const postgresql = {
   host: '127.0.0.1',
   port: 5432,
   database: 'postgres',
-  schema: 'public',
+  schema: 'application/account',
 };
 
 // Elasticsearch datasource
@@ -47,7 +47,7 @@ const pipeline = {
   name: 'pg2es_pipeline',
   hasManyTables: [],
   belongsToTables: [],
-  fromTableId: 16,
+  fromTableId: 1,
   toIndexId: 1,
 };
 

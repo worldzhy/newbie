@@ -5,7 +5,7 @@ generator client {
   provider = "prisma-client-js"
 
   // Enable Full-Text Search which is only available for PostgreSQL.
-  previewFeatures = ["fullTextSearch"]
+  previewFeatures = ["multiSchema", "fullTextSearch"]
 
   // For production deployment.
   // binaryTargets   = ["native", "rhel-openssl-1.0.x"]
@@ -15,6 +15,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  schemas  = ["microservice/notification", "microservice/task", "application/account", "application/engined", "application/pmgmt", "application/harley_davidson"]
 }
 
 // model AwsConfiguration {
@@ -53,8 +54,8 @@ model EmailNotification {
   pinpointResponse  Json?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
-  // configuration     NotificationConfiguration @relation(fields: [configurationId], references: [id])
-  // configurationId   String                    @db.Uuid
+
+  @@schema("microservice/notification")
 }
 
 model SmsNotification {
@@ -65,6 +66,8 @@ model SmsNotification {
   pinpointResponse  Json?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+
+  @@schema("microservice/notification")
 }
 
 // ! ------------------------------------------------------------ //
@@ -83,11 +86,15 @@ model Task {
   sqsResponse  Json?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+
+  @@schema("microservice/task")
 }
 
 enum TaskType {
   DATATRANS_BATCH_PROCESSING
   DATATRANS_STREAM_PROCESSING
+
+  @@schema("microservice/task")
 }
 
 enum TaskState {
@@ -95,6 +102,8 @@ enum TaskState {
   SUCCEEDED
   FAILED
   CANCELED
+
+  @@schema("microservice/task")
 }
 
 // ! ------------------------------------------------------------ //
@@ -114,21 +123,26 @@ model User {
   // [2] The 'User' is designed for long-term use and the 'VerificationCode' is designed for short-term use.
   // [3] Actually, the 'User' model should be named 'UserPassword' and the 'VerificationCode' should be named 'UserVerificationCode'.
 
-  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email       String?       @unique
-  phone       String?       @unique
-  username    String?       @unique
-  password    String? // automatic hashing
-  status      UserStatus    @default(ACTIVE)
-  lastLoginAt DateTime?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  profiles    UserProfile[]
+  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email            String?            @unique
+  phone            String?            @unique
+  username         String?            @unique
+  password         String? // automatic hashing
+  status           UserStatus         @default(ACTIVE)
+  lastLoginAt      DateTime?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  profiles         UserProfile[]
+  CandidateProfile CandidateProfile[]
+
+  @@schema("application/account")
 }
 
 enum UserStatus {
   ACTIVE
   INACTIVE
+
+  @@schema("application/account")
 }
 
 model UserJwt {
@@ -138,11 +152,15 @@ model UserJwt {
   status    UserJwtStatus
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
+
+  @@schema("application/account")
 }
 
 enum UserJwtStatus {
   ACTIVE
   INACTIVE
+
+  @@schema("application/account")
 }
 
 model UserProfile {
@@ -166,6 +184,10 @@ model UserProfile {
   updatedAt      DateTime                  @updatedAt
   user           User                      @relation(fields: [userId], references: [id])
   userId         String                    @db.Uuid
+  Candidate      Candidate?                @relation(fields: [candidateId], references: [id])
+  candidateId    String?                   @db.Uuid
+
+  @@schema("application/account")
 }
 
 enum UserProfileRaceType {
@@ -174,11 +196,15 @@ enum UserProfileRaceType {
   ASIAN
   MULTI
   OTHER
+
+  @@schema("application/account")
 }
 
 enum UserProfileEthnicityType {
   HISPANIC
   NOT_HISPANIC
+
+  @@schema("application/account")
 }
 
 model VerificationCode {
@@ -191,11 +217,15 @@ model VerificationCode {
   expiredAt DateTime
   createdAt DateTime               @default(now())
   updatedAt DateTime               @updatedAt
+
+  @@schema("application/account")
 }
 
 enum VerificationCodeStatus {
   ACTIVE
   INACTIVE
+
+  @@schema("application/account")
 }
 
 enum VerificationCodeUse {
@@ -213,6 +243,8 @@ enum VerificationCodeUse {
   BIND_PHONE
   CHANGE_PASSWORD
   RESET_PASSWORD
+
+  @@schema("application/account")
 }
 
 model Role {
@@ -220,6 +252,8 @@ model Role {
   name      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@schema("application/account")
 }
 
 model Permission {
@@ -229,6 +263,8 @@ model Permission {
   attributes    String
   createdAt     DateTime                @default(now())
   updatedAt     DateTime                @updatedAt
+
+  @@schema("application/account")
 }
 
 enum PermissionAllowedAction {
@@ -236,6 +272,8 @@ enum PermissionAllowedAction {
   UPDATE
   RETRIEVE
   DELETE
+
+  @@schema("application/account")
 }
 
 model User_Role {
@@ -243,6 +281,7 @@ model User_Role {
   roleId String @db.Uuid
 
   @@id([userId, roleId])
+  @@schema("application/account")
 }
 
 model User_Permission {
@@ -250,6 +289,7 @@ model User_Permission {
   permissionId String @db.Uuid
 
   @@id([userId, permissionId])
+  @@schema("application/account")
 }
 
 model Role_Permission {
@@ -257,6 +297,7 @@ model Role_Permission {
   permissionId String @db.Uuid
 
   @@id([roleId, permissionId])
+  @@schema("application/account")
 }
 
 model Organization {
@@ -264,6 +305,8 @@ model Organization {
   name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@schema("application/account")
 }
 
 // ! ------------------------------------------------------------ //
@@ -287,6 +330,8 @@ model Project {
   environments         ProjectEnvironment[]
   cloudformationStacks CloudFormationStack[]
   pulumiStacks         PulumiStack[]
+
+  @@schema("application/pmgmt")
 }
 
 enum ProjectState {
@@ -294,6 +339,8 @@ enum ProjectState {
   DESIGNING
   DEVELOPING
   DONE
+
+  @@schema("application/pmgmt")
 }
 
 model ProjectCheckpoint {
@@ -306,6 +353,7 @@ model ProjectCheckpoint {
   projectId String                 @db.Uuid
 
   @@unique([type, projectId])
+  @@schema("application/pmgmt")
 }
 
 enum ProjectCheckpointType {
@@ -322,12 +370,16 @@ enum ProjectCheckpointType {
   DEVELOPER_FRONTEND_REPO
   DEVELOPER_FRONTEND_FRAMEWORK
   DEVELOPER_INFRASTRUCTURE
+
+  @@schema("application/pmgmt")
 }
 
 enum ProjectCheckpointState {
   TODO
   PROCESSING
   DONE
+
+  @@schema("application/pmgmt")
 }
 
 model ProjectEnvironment {
@@ -345,12 +397,15 @@ model ProjectEnvironment {
   projectId           String                 @db.Uuid
 
   @@unique([type, projectId])
+  @@schema("application/pmgmt")
 }
 
 enum ProjectEnvironmentType {
   DEVELOPMENT
   STAGING
   PRODUCTION
+
+  @@schema("application/pmgmt")
 }
 
 model CloudFormationStack {
@@ -367,6 +422,8 @@ model CloudFormationStack {
   updatedAt           DateTime                 @updatedAt
   project             Project                  @relation(fields: [projectId], references: [id])
   projectId           String                   @db.Uuid
+
+  @@schema("application/pmgmt")
 }
 
 enum CloudFormationStackType {
@@ -377,12 +434,16 @@ enum CloudFormationStackType {
   NETWORK_HIPAA
   PRODUCT_DATA_ENGINE
   PRODUCT_MESSAGE_TRACKER
+
+  @@schema("application/pmgmt")
 }
 
 enum CloudFormationStackState {
   PENDING
   BUILD
   DESTROYED
+
+  @@schema("application/pmgmt")
 }
 
 model PulumiStack {
@@ -398,6 +459,8 @@ model PulumiStack {
   updatedAt     DateTime               @updatedAt
   project       Project                @relation(fields: [projectId], references: [id])
   projectId     String                 @db.Uuid
+
+  @@schema("application/pmgmt")
 }
 
 enum PulumiStackType {
@@ -414,6 +477,8 @@ enum PulumiStackType {
   AWS_WAF
   COMPUTING_FARGATE
   NETWORK_HIPAA
+
+  @@schema("application/pmgmt")
 }
 
 enum PulumiStackState {
@@ -424,6 +489,8 @@ enum PulumiStackState {
   DESTROY_PROCESSING
   DESTROY_SUCCEEDED
   DESTROY_FAILED
+
+  @@schema("application/pmgmt")
 }
 
 // ! ------------------------------------------------------------ //
@@ -456,11 +523,15 @@ model PostgresqlDatasource {
   updatedAt   DateTime                         @updatedAt
   tables      PostgresqlDatasourceTable[]
   constraints PostgresqlDatasourceConstraint[]
+
+  @@schema("application/engined")
 }
 
 enum PostgresqlDatasourceState {
   LOADED
   NOT_LOADED
+
+  @@schema("application/engined")
 }
 
 model PostgresqlDatasourceConstraint {
@@ -474,22 +545,29 @@ model PostgresqlDatasourceConstraint {
   updatedAt    DateTime                              @updatedAt
   datasource   PostgresqlDatasource                  @relation(fields: [datasourceId], references: [id], onDelete: Cascade)
   datasourceId String                                @db.Uuid
+
+  @@schema("application/engined")
 }
 
 enum PostgresqlDatasourceConstraintKeyType {
   PRIMARY_KEY
   FOREIGN_KEY
+
+  @@schema("application/engined")
 }
 
 model PostgresqlDatasourceTable {
   id                 Int                               @id @default(autoincrement())
   name               String
+  schema             String
   createdAt          DateTime                          @default(now())
   updatedAt          DateTime                          @updatedAt
   datasource         PostgresqlDatasource              @relation(fields: [datasourceId], references: [id], onDelete: Cascade)
   datasourceId       String                            @db.Uuid
   columns            PostgresqlDatasourceTableColumn[]
   datatransPipelines DatatransPipeline[]
+
+  @@schema("application/engined")
 }
 
 model PostgresqlDatasourceTableColumn {
@@ -502,6 +580,8 @@ model PostgresqlDatasourceTableColumn {
   updatedAt       DateTime                  @updatedAt
   table           PostgresqlDatasourceTable @relation(fields: [tableId], references: [id], onDelete: Cascade)
   tableId         Int
+
+  @@schema("application/engined")
 }
 
 model ElasticsearchDatasource {
@@ -511,11 +591,15 @@ model ElasticsearchDatasource {
   createdAt DateTime                       @default(now())
   updatedAt DateTime                       @updatedAt
   indices   ElasticsearchDatasourceIndex[]
+
+  @@schema("application/engined")
 }
 
 enum ElasticsearchDatasourceState {
   LOADED
   NOT_LOADED
+
+  @@schema("application/engined")
 }
 
 model ElasticsearchDatasourceIndex {
@@ -529,11 +613,15 @@ model ElasticsearchDatasourceIndex {
   fields             ElasticsearchDatasourceIndexField[]
   databoards         ElasticsearchDataboard[]
   datatransPipelines DatatransPipeline[]
+
+  @@schema("application/engined")
 }
 
 enum ElasticsearchDatasourceIndexState {
   NO_MAPPING
   HAS_MAPPING
+
+  @@schema("application/engined")
 }
 
 model ElasticsearchDatasourceIndexField {
@@ -547,6 +635,8 @@ model ElasticsearchDatasourceIndexField {
   index            ElasticsearchDatasourceIndex   @relation(fields: [indexId], references: [id], onDelete: Cascade)
   indexId          Int
   databoardColumns ElasticsearchDataboardColumn[]
+
+  @@schema("application/engined")
 }
 
 model DatatransPipeline {
@@ -561,6 +651,8 @@ model DatatransPipeline {
   toIndex           ElasticsearchDatasourceIndex @relation(fields: [toIndexId], references: [id])
   toIndexId         Int
   datatransMissions DatatransMission[]
+
+  @@schema("application/engined")
 }
 
 model DatatransMission {
@@ -572,12 +664,16 @@ model DatatransMission {
   updatedAt           DateTime              @updatedAt
   datatransPipeline   DatatransPipeline     @relation(fields: [datatransPipelineId], references: [id])
   datatransPipelineId String                @db.Uuid
+
+  @@schema("application/engined")
 }
 
 enum DatatransMissionState {
   PENDING
   STARTED
   STOPPED
+
+  @@schema("application/engined")
 }
 
 model ElasticsearchDataboard {
@@ -590,11 +686,15 @@ model ElasticsearchDataboard {
   datasourceIndex   ElasticsearchDatasourceIndex   @relation(fields: [datasourceIndexId], references: [id])
   datasourceIndexId Int
   columns           ElasticsearchDataboardColumn[]
+
+  @@schema("application/engined")
 }
 
 enum ElasticsearchDataboardState {
   LOADED
   NOT_LOADED
+
+  @@schema("application/engined")
 }
 
 model ElasticsearchDataboardColumn {
@@ -614,6 +714,8 @@ model ElasticsearchDataboardColumn {
   databoardId            String                                @db.Uuid
   datasourceIndexField   ElasticsearchDatasourceIndexField     @relation(fields: [datasourceIndexFieldId], references: [id])
   datasourceIndexFieldId Int
+
+  @@schema("application/engined")
 }
 
 enum ElasticsearchDataboardColumnFormatter {
@@ -623,4 +725,62 @@ enum ElasticsearchDataboardColumnFormatter {
   DATE_TIME
   HIGHLIGHT_INCOMPLETE
   CURRENCY
+
+  @@schema("application/engined")
+}
+
+// ! ------------------------------------------------------------ //
+// !             [Application] Harley-Davidson models             //
+// ! ------------------------------------------------------------ //
+// * Request                                                      //
+// * RequestTask                                                  //
+// * RequestNote                                                  //
+// * Member                                                       //
+// * Role                                                         //
+// * Candidate                                                    //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
+
+model Candidate {
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email       String?       @unique
+  phone       String?       @unique
+  username    String?       @unique
+  password    String? // automatic hashing
+  status      UserStatus    @default(ACTIVE)
+  lastLoginAt DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  profiles    UserProfile[]
+
+  @@schema("application/harley_davidson")
+}
+
+enum CandidateStatus {
+  ACTIVE
+  INACTIVE
+
+  @@schema("application/harley_davidson")
+}
+
+model CandidateProfile {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  givenName      String?
+  middleName     String?
+  familyName     String?
+  suffix         String?
+  birthday       DateTime?
+  gender         String?
+  hasPCP         Boolean? // Primary Care Physician  
+  address        String?
+  zipcode        String?
+  geoJSON        Json? // https://datatracker.ietf.org/doc/html/rfc7946
+  websites       Json? // {'facebook': 'https://www.facebook.com/grace', 'twitter': 'https://twitter.com/elonmusk'}
+  picture        String?
+  organizationId String?   @db.Uuid
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  user           User      @relation(fields: [userId], references: [id])
+  userId         String    @db.Uuid
+
+  @@schema("application/harley_davidson")
 }

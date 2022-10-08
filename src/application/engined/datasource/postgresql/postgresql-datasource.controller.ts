@@ -177,7 +177,8 @@ export class PostgresqlDatasourceController {
       // Save a table.
       const table = await this.postgresqlDatasourceTableService.create({
         data: {
-          name: tables[i],
+          name: tables[i].name,
+          schema: tables[i].schema,
           datasource: {connect: {id: datasource.id}},
         },
         include: {datasource: true},

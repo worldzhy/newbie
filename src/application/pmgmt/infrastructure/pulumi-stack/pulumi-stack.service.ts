@@ -9,16 +9,12 @@ import {
 } from '@prisma/client';
 import {AwsCloudfront_Stack} from './stack/aws-cloudfront.stack';
 import {AwsCodecommit_Stack} from './stack/aws-codecommit.stack';
-import {AwsEcr_Stack} from './stack/aws-ecr.stack';
-import {AwsEcs_Stack} from './stack/aws-ecs.stack';
 import {AwsIamUser_Stack} from './stack/aws-iam-user.stack';
 import {AwsRds_Stack} from './stack/aws-rds.stack';
 import {AwsS3_Stack} from './stack/aws-s3.stack';
 import {AwsSqs_Stack} from './stack/aws-sqs.stack';
 import {AwsVpc_Stack} from './stack/aws-vpc.stack';
 import {AwsWaf_Stack} from './stack/aws-waf.stack';
-import {ComputingFargate_Stack} from './stack/computing-fargate.stack';
-import {NetworkHipaa_Stack} from './stack/network-hipaa.stack';
 import {Null_Stack} from './stack/null.stack';
 import {getAwsConfig} from '../../../../_config/_aws.config';
 import {getPulumiConfig} from '../../../../_config/_pulumi.config';
@@ -281,11 +277,11 @@ export class PulumiStackService {
       case PulumiStackType.AWS_CODE_COMMIT:
         return AwsCodecommit_Stack;
       case PulumiStackType.AWS_ECR:
-        return AwsEcr_Stack;
+        return Null_Stack;
       case PulumiStackType.AWS_ECS:
-        return AwsEcs_Stack;
+        return Null_Stack;
       case PulumiStackType.AWS_EKS:
-        return AwsEcs_Stack;
+        return Null_Stack;
       case PulumiStackType.AWS_IAM_USER:
         return AwsIamUser_Stack;
       case PulumiStackType.AWS_RDS:
@@ -299,9 +295,9 @@ export class PulumiStackService {
       case PulumiStackType.AWS_WAF:
         return AwsWaf_Stack;
       case PulumiStackType.COMPUTING_FARGATE:
-        return ComputingFargate_Stack;
+        return Null_Stack;
       case PulumiStackType.NETWORK_HIPAA:
-        return NetworkHipaa_Stack;
+        return Null_Stack;
       default:
         return Null_Stack;
     }

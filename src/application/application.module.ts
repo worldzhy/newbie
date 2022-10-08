@@ -22,8 +22,6 @@ import {ApplicationController} from './application.controller';
 
     // Application
     AccountModule,
-    EnginedModule,
-    ProjectManagementModule,
   ],
   providers: [
     // {provide: APP_GUARD, useClass: GlobalAuthGuard},

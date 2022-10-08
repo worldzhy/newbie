@@ -50,13 +50,17 @@ export class PostgresqlDatasourceService {
   //    ! Postgresql table operations      //
   // ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
 
-  async selectTables(datasource: PostgresqlDatasource): Promise<string[]> {
+  async selectTables(
+    datasource: PostgresqlDatasource
+  ): Promise<{name: string; schema: string}[]> {
     const tables = await this.prisma.$queryRaw<
-      {table_name: string}[]
-    >`SELECT table_name FROM information_schema.tables WHERE (table_schema = ${datasource.schema})`;
+      {table_name: string; table_schema: string}[]
+    >`SELECT table_name, table_schema FROM information_schema.tables WHERE (table_schema = ${datasource.schema})`;
 
     return tables.flatMap(item =>
-      item.table_name === '_prisma_migrations' ? [] : item.table_name
+      item.table_name === '_prisma_migrations'
+        ? []
+        : {name: item.table_name, schema: item.table_schema}
     );
   }
 
