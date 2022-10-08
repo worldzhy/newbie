@@ -39,7 +39,7 @@ export class PrismaExceptionFilter implements ExceptionFilter {
       } else {
         statusCode = HttpStatus.OK;
       }
-      console.log(host);
+
       // HTTP response
       response.status(statusCode).json({
         StatusCode: statusCode,

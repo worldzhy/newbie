@@ -1,9 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {
   PostgresqlDatasource,
-  PostgresqlDatasourceConstraint,
-  PostgresqlDatasourceConstraintKeyType,
-  PostgresqlDatasourceState,
   PostgresqlDatasourceTable,
   Prisma,
 } from '@prisma/client';
