@@ -15,7 +15,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["microservice/notification", "microservice/task", "application/account", "application/engined", "application/pmgmt", "application/harley_davidson"]
+  schemas  = ["microservice/notification", "microservice/task", "application/account", "application/engined", "application/pmgmt", "application/recruitment"]
 }
 
 // model AwsConfiguration {
@@ -123,17 +123,16 @@ model User {
   // [2] The 'User' is designed for long-term use and the 'VerificationCode' is designed for short-term use.
   // [3] Actually, the 'User' model should be named 'UserPassword' and the 'VerificationCode' should be named 'UserVerificationCode'.
 
-  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email            String?            @unique
-  phone            String?            @unique
-  username         String?            @unique
-  password         String? // automatic hashing
-  status           UserStatus         @default(ACTIVE)
-  lastLoginAt      DateTime?
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  profiles         UserProfile[]
-  CandidateProfile CandidateProfile[]
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email       String?       @unique
+  phone       String?       @unique
+  username    String?       @unique
+  password    String? // automatic hashing
+  status      UserStatus    @default(ACTIVE)
+  lastLoginAt DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  profiles    UserProfile[]
 
   @@schema("application/account")
 }
@@ -184,8 +183,6 @@ model UserProfile {
   updatedAt      DateTime                  @updatedAt
   user           User                      @relation(fields: [userId], references: [id])
   userId         String                    @db.Uuid
-  Candidate      Candidate?                @relation(fields: [candidateId], references: [id])
-  candidateId    String?                   @db.Uuid
 
   @@schema("application/account")
 }
@@ -732,55 +729,200 @@ enum ElasticsearchDataboardColumnFormatter {
 // ! ------------------------------------------------------------ //
 // !             [Application] Harley-Davidson models             //
 // ! ------------------------------------------------------------ //
-// * Request                                                      //
-// * RequestTask                                                  //
-// * RequestNote                                                  //
-// * Member                                                       //
-// * Role                                                         //
 // * Candidate                                                    //
+// * CandidateCertification                                       //
+// * CandidateTraining                                            //
+// * CandidateTestinging                                             //
+// * Job                                                          //
+// * JobApplication                                               //
+// * JobApplicationNote                                           //
+// * JobApplicationTask                                           //
+// * JobApplicationTest                                           //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
 model Candidate {
-  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email       String?       @unique
-  phone       String?       @unique
-  username    String?       @unique
-  password    String? // automatic hashing
-  status      UserStatus    @default(ACTIVE)
-  lastLoginAt DateTime?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  profiles    UserProfile[]
+  id              String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  status          CandidateStatus          @default(ACTIVE)
+  email           String?                  @unique
+  phone           String?                  @unique
+  givenName       String?
+  middleName      String?
+  familyName      String?
+  suffix          String?
+  birthday        DateTime?
+  gender          String?
+  address         String?
+  zipcode         String?
+  geoJSON         Json? // https://datatracker.ietf.org/doc/html/rfc7946
+  websites        Json? // {'facebook': 'https://www.facebook.com/grace', 'twitter': 'https://twitter.com/elonmusk'}
+  picture         String?
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+  certifications  CandidateCertification[]
+  trainings       CandidateTraining[]
+  testings        CandidateTesting[]
+  jobApplications JobApplication[]
 
-  @@schema("application/harley_davidson")
+  @@schema("application/recruitment")
 }
 
 enum CandidateStatus {
   ACTIVE
   INACTIVE
 
-  @@schema("application/harley_davidson")
+  @@schema("application/recruitment")
 }
 
-model CandidateProfile {
-  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  givenName      String?
-  middleName     String?
-  familyName     String?
-  suffix         String?
-  birthday       DateTime?
-  gender         String?
-  hasPCP         Boolean? // Primary Care Physician  
-  address        String?
-  zipcode        String?
-  geoJSON        Json? // https://datatracker.ietf.org/doc/html/rfc7946
-  websites       Json? // {'facebook': 'https://www.facebook.com/grace', 'twitter': 'https://twitter.com/elonmusk'}
-  picture        String?
-  organizationId String?   @db.Uuid
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  user           User      @relation(fields: [userId], references: [id])
-  userId         String    @db.Uuid
+model CandidateCertification {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  candidate   Candidate @relation(fields: [candidateId], references: [id])
+  candidateId String    @db.Uuid
 
-  @@schema("application/harley_davidson")
+  @@schema("application/recruitment")
+}
+
+model CandidateTraining {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  candidate   Candidate @relation(fields: [candidateId], references: [id])
+  candidateId String    @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+model CandidateTesting {
+  id                  Int                   @id @default(autoincrement())
+  type                CandidateTestingType
+  state               CandidateTestingState @default(PENDING)
+  appointmentStartsAt DateTime?
+  appointmentEndsAt   DateTime?
+  appointmentLocation String?
+  report              String?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  candidate           Candidate             @relation(fields: [candidateId], references: [id])
+  candidateId         String                @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+enum CandidateTestingType {
+  POET
+  ME_DS
+
+  @@schema("application/recruitment")
+}
+
+enum CandidateTestingState {
+  PENDING
+  PASSED
+  REJECTED
+  SEND_TO_REVIEW
+
+  @@schema("application/recruitment")
+}
+
+model Job {
+  id              String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  position        String
+  description     String
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  jobApplications JobApplication[]
+
+  @@schema("application/recruitment")
+}
+
+model JobApplication {
+  id              String                         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  reviewCode      JobApplicationReviewCode?
+  createdAt       DateTime                       @default(now())
+  updatedAt       DateTime                       @updatedAt
+  candidate       Candidate                      @relation(fields: [candidateId], references: [id])
+  candidateId     String                         @db.Uuid
+  job             Job                            @relation(fields: [jobId], references: [id])
+  jobId           String                         @db.Uuid
+  processingSteps JobApplicationProcessingStep[]
+  tasks           JobApplicationTask[]
+  notes           JobApplicationNote[]
+
+  @@schema("application/recruitment")
+}
+
+enum JobApplicationReviewCode {
+  MED_DS
+  MED_CLR
+
+  @@schema("application/recruitment")
+}
+
+model JobApplicationProcessingStep {
+  id               Int                                @id @default(autoincrement())
+  action           JobApplicationProcessingStepAction
+  state            JobApplicationProcessingStepState  @default(PENDING)
+  handlerUserId    String?                            @db.Uuid
+  handlerComment   String?
+  createdAt        DateTime                           @default(now())
+  updatedAt        DateTime                           @updatedAt
+  jobApplication   JobApplication                     @relation(fields: [jobApplicationId], references: [id])
+  jobApplicationId String                             @db.Uuid
+
+  @@unique([action, jobApplicationId])
+  @@schema("application/recruitment")
+}
+
+enum JobApplicationProcessingStepAction {
+  STEP1_DISPATCH
+  STEP2_TESTING
+  STEP3_REVIEW
+
+  @@schema("application/recruitment")
+}
+
+enum JobApplicationProcessingStepState {
+  PENDING
+  PROCESSING
+  DONE
+
+  @@schema("application/recruitment")
+}
+
+model JobApplicationNote {
+  id               Int            @id @default(autoincrement())
+  reporterUserId   String         @db.Uuid
+  reporterComment  String
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  jobApplication   JobApplication @relation(fields: [jobApplicationId], references: [id])
+  jobApplicationId String         @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+model JobApplicationTask {
+  id               Int                     @id @default(autoincrement())
+  reporterUserId   String                  @db.Uuid
+  reporterComment  String
+  assigneeUserId   String                  @db.Uuid
+  state            JobApplicationTaskState @default(PENDING)
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+  jobApplication   JobApplication          @relation(fields: [jobApplicationId], references: [id])
+  jobApplicationId String                  @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+enum JobApplicationTaskState {
+  PENDING
+  DONE
+
+  @@schema("application/recruitment")
 }

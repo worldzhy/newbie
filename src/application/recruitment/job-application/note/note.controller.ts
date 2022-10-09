@@ -1,0 +1,124 @@
+import {
+  Controller,
+  Delete,
+  Get,
+  Patch,
+  Post,
+  Body,
+  Param,
+  BadRequestException,
+} from '@nestjs/common';
+import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {JobApplicationNoteService} from './note.service';
+
+import {JobApplicationNote, Prisma} from '@prisma/client';
+import {JobApplicationService} from '../job-application.service';
+
+@ApiTags('[Application] Recruitment / Job Application / Note')
+@ApiBearerAuth()
+@Controller('recruitment-job-application-notes')
+export class JobApplicationNoteController {
+  private jobApplicationNoteService = new JobApplicationNoteService();
+  private jobApplicationService = new JobApplicationService();
+
+  //* Create
+  @Post('')
+  @ApiBody({
+    description: '',
+    examples: {
+      a: {
+        summary: '1. Create',
+        value: {
+          reporterUserId: 'ababdab1-5d91-4af7-ab2b-e2c9744a88d4',
+          reporterComment: 'This an example task.',
+          jobApplicationId: 'ababdab1-5d91-4af7-ab2b-e2c9744a88d4',
+        },
+      },
+    },
+  })
+  async createJobApplicationNote(
+    @Body()
+    body: Prisma.JobApplicationNoteUncheckedCreateInput
+  ): Promise<JobApplicationNote> {
+    // [step 1] Guard statement.
+    if (
+      !(await this.jobApplicationService.checkExistence(body.jobApplicationId))
+    ) {
+      throw new BadRequestException(
+        'Invalid jobApplicationId in the request body.'
+      );
+    }
+
+    // [step 2] Create jobApplicationNote.
+    return await this.jobApplicationNoteService.create({data: body});
+  }
+
+  //* Get many
+  @Get('')
+  async getJobApplicationNotes(): Promise<JobApplicationNote[]> {
+    return await this.jobApplicationNoteService.findMany({});
+  }
+
+  //* Get
+  @Get(':jobApplicationNoteId')
+  @ApiParam({
+    name: 'jobApplicationNoteId',
+    schema: {type: 'string'},
+    description: 'The uuid of the jobApplicationNote.',
+    example: 'd8141ece-f242-4288-a60a-8675538549cd',
+  })
+  async getJobApplicationNote(
+    @Param('jobApplicationNoteId') jobApplicationNoteId: string
+  ): Promise<JobApplicationNote | null> {
+    return await this.jobApplicationNoteService.findUnique({
+      where: {id: parseInt(jobApplicationNoteId)},
+    });
+  }
+
+  //* Update
+  @Patch(':jobApplicationNoteId')
+  @ApiParam({
+    name: 'jobApplicationNoteId',
+    schema: {type: 'string'},
+    description: 'The uuid of the jobApplicationNote.',
+    example: 'd8141ece-f242-4288-a60a-8675538549cd',
+  })
+  @ApiBody({
+    description: '',
+    examples: {
+      a: {
+        summary: '1. Update',
+        value: {
+          reporterComment: 'This is an updated comment.',
+        },
+      },
+    },
+  })
+  async updateJobApplicationNote(
+    @Param('jobApplicationNoteId') jobApplicationNoteId: string,
+    @Body() body: Prisma.JobApplicationNoteUpdateInput
+  ): Promise<JobApplicationNote> {
+    return await this.jobApplicationNoteService.update({
+      where: {id: parseInt(jobApplicationNoteId)},
+      data: body,
+    });
+  }
+
+  //* Delete
+  @Delete(':jobApplicationNoteId')
+  @ApiParam({
+    name: 'jobApplicationNoteId',
+    schema: {type: 'string'},
+    description: 'The uuid of the jobApplicationNote.',
+    example: 'd8141ece-f242-4288-a60a-8675538549cd',
+  })
+  async deleteJobApplicationNote(
+    @Param('jobApplicationNoteId') jobApplicationNoteId: string
+  ): Promise<JobApplicationNote> {
+    return await this.jobApplicationNoteService.delete({
+      where: {id: parseInt(jobApplicationNoteId)},
+    });
+  }
+
+  /* End */
+}

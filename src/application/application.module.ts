@@ -6,6 +6,7 @@ import {PrismaModule} from '../toolkits/prisma/prisma.module';
 import {AccountModule} from './account/account.module';
 import {EnginedModule} from './engined/engined.module';
 import {ProjectManagementModule} from './pmgmt/pmgmt.module';
+import {RecruitmentModule} from './recruitment/recruitment.module';
 import {GlobalAuthGuard} from './account/auth/auth.guard';
 import {AllExceptionsFilter} from '../_filter/_all-exceptions.filter';
 import {HttpExceptionFilter} from '../_filter/_http-exception.filter';
@@ -22,6 +23,9 @@ import {ApplicationController} from './application.controller';
 
     // Application
     AccountModule,
+    // EnginedModule,
+    // ProjectManagementModule,
+    RecruitmentModule,
   ],
   providers: [
     // {provide: APP_GUARD, useClass: GlobalAuthGuard},

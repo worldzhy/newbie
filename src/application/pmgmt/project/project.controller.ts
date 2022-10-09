@@ -17,9 +17,7 @@ import {verifyProjectName} from '../../../toolkits/validators/project.validator'
 import {
   Prisma,
   Project,
-  ProjectCheckpoint,
   ProjectCheckpointType,
-  ProjectEnvironment,
   ProjectEnvironmentType,
   ProjectState,
 } from '@prisma/client';
@@ -55,7 +53,7 @@ export class ProjectController {
     // [step 1] Guard statement.
     if (!body.name || !verifyProjectName(body.name)) {
       throw new BadRequestException(
-        'Please provide valid project name in the request body.'
+        'Invalid project name in the request body.'
       );
     }
 
