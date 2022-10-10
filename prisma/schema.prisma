@@ -18,27 +18,6 @@ datasource db {
   schemas  = ["microservice/notification", "microservice/task", "application/account", "application/engined", "application/pmgmt", "application/recruitment"]
 }
 
-// model AwsConfiguration {
-//   id                    String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-//   project               String                 @unique
-//   status                AwsConfigurationStatus // Only one active configuration
-//   region                String
-//   accessKeyId           String
-//   secretAccessKey       String
-//   sqsLogQueueUrl        String? // For logger
-//   sqsTaskQueueUrl       String? // For task management microservice
-//   pinpointApplicationId String?
-//   pinpointFromAddress   String? // For email message
-//   pinpointSenderId      String? // For text message
-//   createdAt             DateTime               @default(now())
-//   updatedAt             DateTime               @updatedAt
-// }
-
-// enum AwsConfigurationStatus {
-//   ACTIVE
-//   INACTIVE
-// }
-
 // !! ------------------------------------------------------------ //
 // !!            [Microservice] Notification models                //
 // !! ------------------------------------------------------------ //
@@ -48,9 +27,9 @@ datasource db {
 
 model EmailNotification {
   id                Int      @id @default(autoincrement())
-  payload           Json //  The notification content for one phone.
-  pinpointRequestId String? // RequestId is the Pinpoint request id. One request can contain many text messages.
-  pinpointMessageId String? // MessageId is the text message id.
+  payload           Json //  The notification content for one email address.
+  pinpointRequestId String? // RequestId is the Pinpoint request id. One request can contain multiple text messages.
+  pinpointMessageId String? // MessageId is the email message id.
   pinpointResponse  Json?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -61,7 +40,7 @@ model EmailNotification {
 model SmsNotification {
   id                Int      @id @default(autoincrement())
   payload           Json //  The notification content for one phone.
-  pinpointRequestId String? // RequestId is the Pinpoint request id. One request can contain many text messages.
+  pinpointRequestId String? // RequestId is the Pinpoint request id. One request can contain multiple text messages.
   pinpointMessageId String? // MessageId is the text message id.
   pinpointResponse  Json?
   createdAt         DateTime @default(now())

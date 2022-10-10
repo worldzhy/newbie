@@ -65,25 +65,25 @@ export class JobApplicationTaskController {
   }
 
   //* Get
-  @Get(':jobApplicationTaskId')
+  @Get(':taskId')
   @ApiParam({
-    name: 'jobApplicationTaskId',
+    name: 'taskId',
     schema: {type: 'string'},
     description: 'The uuid of the jobApplicationTest.',
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
   async getJobApplicationTask(
-    @Param('jobApplicationTaskId') jobApplicationTaskId: string
+    @Param('taskId') taskId: string
   ): Promise<JobApplicationTask | null> {
     return await this.jobApplicationTestService.findUnique({
-      where: {id: parseInt(jobApplicationTaskId)},
+      where: {id: parseInt(taskId)},
     });
   }
 
   //* Update
-  @Patch(':jobApplicationTaskId')
+  @Patch(':taskId')
   @ApiParam({
-    name: 'jobApplicationTaskId',
+    name: 'taskId',
     schema: {type: 'string'},
     description: 'The uuid of the jobApplicationTest.',
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
@@ -100,28 +100,28 @@ export class JobApplicationTaskController {
     },
   })
   async updateJobApplicationTask(
-    @Param('jobApplicationTaskId') jobApplicationTaskId: string,
+    @Param('taskId') taskId: string,
     @Body() body: Prisma.JobApplicationTaskUpdateInput
   ): Promise<JobApplicationTask> {
     return await this.jobApplicationTestService.update({
-      where: {id: parseInt(jobApplicationTaskId)},
+      where: {id: parseInt(taskId)},
       data: body,
     });
   }
 
   //* Delete
-  @Delete(':jobApplicationTaskId')
+  @Delete(':taskId')
   @ApiParam({
-    name: 'jobApplicationTaskId',
+    name: 'taskId',
     schema: {type: 'string'},
     description: 'The uuid of the jobApplicationTest.',
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
   async deleteJobApplicationTask(
-    @Param('jobApplicationTaskId') jobApplicationTaskId: string
+    @Param('taskId') taskId: string
   ): Promise<JobApplicationTask> {
     return await this.jobApplicationTestService.delete({
-      where: {id: parseInt(jobApplicationTaskId)},
+      where: {id: parseInt(taskId)},
     });
   }
 

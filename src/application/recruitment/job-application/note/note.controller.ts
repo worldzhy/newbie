@@ -60,25 +60,25 @@ export class JobApplicationNoteController {
   }
 
   //* Get
-  @Get(':jobApplicationNoteId')
+  @Get(':noteId')
   @ApiParam({
-    name: 'jobApplicationNoteId',
+    name: 'noteId',
     schema: {type: 'string'},
     description: 'The uuid of the jobApplicationNote.',
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
   async getJobApplicationNote(
-    @Param('jobApplicationNoteId') jobApplicationNoteId: string
+    @Param('noteId') noteId: string
   ): Promise<JobApplicationNote | null> {
     return await this.jobApplicationNoteService.findUnique({
-      where: {id: parseInt(jobApplicationNoteId)},
+      where: {id: parseInt(noteId)},
     });
   }
 
   //* Update
-  @Patch(':jobApplicationNoteId')
+  @Patch(':noteId')
   @ApiParam({
-    name: 'jobApplicationNoteId',
+    name: 'noteId',
     schema: {type: 'string'},
     description: 'The uuid of the jobApplicationNote.',
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
@@ -95,28 +95,28 @@ export class JobApplicationNoteController {
     },
   })
   async updateJobApplicationNote(
-    @Param('jobApplicationNoteId') jobApplicationNoteId: string,
+    @Param('noteId') noteId: string,
     @Body() body: Prisma.JobApplicationNoteUpdateInput
   ): Promise<JobApplicationNote> {
     return await this.jobApplicationNoteService.update({
-      where: {id: parseInt(jobApplicationNoteId)},
+      where: {id: parseInt(noteId)},
       data: body,
     });
   }
 
   //* Delete
-  @Delete(':jobApplicationNoteId')
+  @Delete(':noteId')
   @ApiParam({
-    name: 'jobApplicationNoteId',
+    name: 'noteId',
     schema: {type: 'string'},
     description: 'The uuid of the jobApplicationNote.',
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
   async deleteJobApplicationNote(
-    @Param('jobApplicationNoteId') jobApplicationNoteId: string
+    @Param('noteId') noteId: string
   ): Promise<JobApplicationNote> {
     return await this.jobApplicationNoteService.delete({
-      where: {id: parseInt(jobApplicationNoteId)},
+      where: {id: parseInt(noteId)},
     });
   }
 
