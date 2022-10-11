@@ -14,4 +14,4 @@ import {AuthJwtModule} from './jwt/jwt.module';
     AuthVerificationCodeModule,
   ],
 })
-export class AuthModule {}
+export class AuthenticationModule {}

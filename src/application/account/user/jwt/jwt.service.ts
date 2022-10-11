@@ -45,5 +45,14 @@ export class UserJwtService {
     });
   }
 
+  parseJWT(token: string): string | {[key: string]: any} | null {
+    try {
+      const arr = token.split(' ');
+      return this.jwtService.decode(arr[1]);
+    } catch (error) {
+      throw error;
+    }
+  }
+
   /* End */
 }

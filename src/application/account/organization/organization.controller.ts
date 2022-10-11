@@ -98,24 +98,24 @@ export class OrganizationController {
     });
   }
 
-  @Get(':organizationId')
+  @Get(':groupId')
   @ApiParam({
-    name: 'organizationId',
+    name: 'groupId',
     schema: {type: 'string'},
     description: 'The uuid of the organization.',
     example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
   })
   async getOrganization(
-    @Param('organizationId') organizationId: string
+    @Param('groupId') groupId: string
   ): Promise<Organization | null> {
     return await this.organizationService.findUnique({
-      where: {id: organizationId},
+      where: {id: groupId},
     });
   }
 
-  @Patch(':organizationId')
+  @Patch(':groupId')
   @ApiParam({
-    name: 'organizationId',
+    name: 'groupId',
     schema: {type: 'string'},
     description: 'The uuid of the organization.',
     example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
@@ -132,27 +132,27 @@ export class OrganizationController {
     },
   })
   async updateOrganization(
-    @Param('organizationId') organizationId: string,
+    @Param('groupId') groupId: string,
     @Body()
     body: Prisma.OrganizationUpdateInput
   ): Promise<Organization> {
     return await this.organizationService.update({
-      where: {id: organizationId},
+      where: {id: groupId},
       data: body,
     });
   }
 
-  @Delete(':organizationId')
+  @Delete(':groupId')
   @ApiParam({
-    name: 'organizationId',
+    name: 'groupId',
     schema: {type: 'string'},
     example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
   })
   async deleteOrganization(
-    @Param('organizationId') organizationId: string
+    @Param('groupId') groupId: string
   ): Promise<Organization> {
     return await this.organizationService.delete({
-      where: {id: organizationId},
+      where: {id: groupId},
     });
   }
 

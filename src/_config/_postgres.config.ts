@@ -1,4 +1,4 @@
-export function postgresConfig(): {
+export function getPostgresConfig(): {
   host: string | undefined;
   port: string | undefined;
   username: string | undefined;

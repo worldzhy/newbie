@@ -13,7 +13,7 @@ import {IS_LOGGING_IN_UUID_KEY} from './uuid/uuid.decorator';
 import {IS_LOGGING_IN_VERIFICATION_CODE_KEY} from './verification-code/verification-code.decorator';
 
 @Injectable()
-export class GlobalAuthGuard extends AuthGuard('global-guard') {
+export class AuthenticationGuard extends AuthGuard('global-guard') {
   constructor(private reflector: Reflector) {
     super();
   }

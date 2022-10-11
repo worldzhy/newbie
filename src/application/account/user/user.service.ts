@@ -12,6 +12,12 @@ export class UserService {
     return await this.prisma.user.findUnique(params);
   }
 
+  async findUniqueOrThrow(
+    params: Prisma.UserFindUniqueOrThrowArgs
+  ): Promise<User> {
+    return await this.prisma.user.findUniqueOrThrow(params);
+  }
+
   async findMany(params: Prisma.UserFindManyArgs): Promise<User[]> {
     return await this.prisma.user.findMany(params);
   }

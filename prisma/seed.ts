@@ -1,5 +1,6 @@
 import {ElasticsearchDatasource, PostgresqlDatasource} from '@prisma/client';
 import {AccountController} from '../src/application/account/account.controller';
+import {RoleController} from '../src/application/account/role/role.controller';
 import {ProjectController} from '../src/application/pmgmt/project/project.controller';
 import {DatatransPipelineController} from '../src/application/engined/datatrans/pipeline/pipeline.controller';
 import {ElasticsearchDatasourceController} from '../src/application/engined/datasource/elasticsearch/elasticsearch-datasource.controller';
@@ -11,8 +12,12 @@ const users = [
   {
     username: 'henry',
     password: 'Abc1234!',
+    roles: {create: [{role: {create: {name: 'SUPER'}}}]},
   },
 ];
+
+const roleController = new RoleController();
+const roles = [{name: 'SUPER'}, {name: 'SUPER_ADMINISTRATOR'}];
 
 // Project
 const projectController = new ProjectController();
@@ -58,6 +63,11 @@ async function main() {
   for (const user of users) {
     await authController.signup(user);
   }
+
+  // console.log('* [account] role');
+  // for (const role of roles) {
+  //   await roleController.createRole(role);
+  // }
 
   console.log('* [project management] project');
   for (const project of projects) {

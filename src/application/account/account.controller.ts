@@ -24,11 +24,11 @@ import {VerificationCodeService} from './verification-code/verification-code.ser
 import {EmailNotificationService} from '../../microservices/notification/email/email.service';
 import {SmsNotificationService} from '../../microservices/notification/sms/sms.service';
 import * as validator from '../../toolkits/validators/account.validator';
-import {Public} from './auth/public/public.decorator';
-import {LoggingInByPassword} from './auth/password/password.decorator';
-import {LoggingInByProfile} from './auth/profile/profile.decorator';
-import {LoggingInByUuid} from './auth/uuid/uuid.decorator';
-import {LoggingInByVerificationCode} from './auth/verification-code/verification-code.decorator';
+import {Public} from './authentication/public/public.decorator';
+import {LoggingInByPassword} from './authentication/password/password.decorator';
+import {LoggingInByProfile} from './authentication/profile/profile.decorator';
+import {LoggingInByUuid} from './authentication/uuid/uuid.decorator';
+import {LoggingInByVerificationCode} from './authentication/verification-code/verification-code.decorator';
 
 @ApiTags('[Application] Account')
 @Controller('account')

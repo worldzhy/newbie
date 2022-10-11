@@ -92,9 +92,15 @@ enum TaskState {
 // * UserJwt                                                      //
 // * UserProfile                                                  //
 // * VerificationCode                                             //
-// * Role                                                         //
-// * Permission                                                   //
 // * Organization                                                 //
+// * Role                                                         //
+// * RoutePermission(unused)                                      //
+// * ComponentPermission(unused)                                  //
+// * EndpointPermission(unused)                                   //
+// * Permission                                                   //
+// * UserToRole                                                   //
+// * UserToPermission                                             //
+// * RoleToPermission                                             //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
 model User {
@@ -102,16 +108,18 @@ model User {
   // [2] The 'User' is designed for long-term use and the 'VerificationCode' is designed for short-term use.
   // [3] Actually, the 'User' model should be named 'UserPassword' and the 'VerificationCode' should be named 'UserVerificationCode'.
 
-  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email       String?       @unique
-  phone       String?       @unique
-  username    String?       @unique
+  id          String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email       String?            @unique
+  phone       String?            @unique
+  username    String?            @unique
   password    String? // automatic hashing
-  status      UserStatus    @default(ACTIVE)
+  status      UserStatus         @default(ACTIVE)
   lastLoginAt DateTime?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
   profiles    UserProfile[]
+  permissions UserToPermission[]
+  roles       UserToRole[]
 
   @@schema("application/account")
 }
@@ -125,7 +133,7 @@ enum UserStatus {
 
 model UserJwt {
   id        Int           @id @default(autoincrement())
-  userId    String
+  userId    String        @db.Uuid
   token     String
   status    UserJwtStatus
   createdAt DateTime      @default(now())
@@ -223,65 +231,137 @@ enum VerificationCodeUse {
   @@schema("application/account")
 }
 
-model Role {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@schema("application/account")
-}
-
-model Permission {
-  id            String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  resource      String
-  allowedAction PermissionAllowedAction
-  attributes    String
-  createdAt     DateTime                @default(now())
-  updatedAt     DateTime                @updatedAt
-
-  @@schema("application/account")
-}
-
-enum PermissionAllowedAction {
-  CREATE
-  UPDATE
-  RETRIEVE
-  DELETE
-
-  @@schema("application/account")
-}
-
-model User_Role {
-  userId String @db.Uuid
-  roleId String @db.Uuid
-
-  @@id([userId, roleId])
-  @@schema("application/account")
-}
-
-model User_Permission {
-  userId       String @db.Uuid
-  permissionId String @db.Uuid
-
-  @@id([userId, permissionId])
-  @@schema("application/account")
-}
-
-model Role_Permission {
-  roleId       String @db.Uuid
-  permissionId String @db.Uuid
-
-  @@id([roleId, permissionId])
-  @@schema("application/account")
-}
-
 model Organization {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  roles     Role[]
 
+  @@schema("application/account")
+}
+
+model Role {
+  // A role is a subgroup of a user group with some specified permissions.
+
+  id             String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  organization   Organization?      @relation(fields: [organizationId], references: [id])
+  organizationId String?            @db.Uuid
+  permissions    RoleToPermission[]
+  users          UserToRole[]
+
+  @@unique([name, organizationId])
+  @@schema("application/account")
+}
+
+enum ReservedRole {
+  SUPER
+  SUPER_ADMINISTRATOR
+
+  @@schema("application/account")
+}
+
+enum TrustedEntityType {
+  USER_GROUP
+  ROLE
+  USER
+
+  @@schema("application/account")
+}
+
+model RoutePermission {
+  id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  route             String
+  trustedEntityType TrustedEntityType
+  trustedEntityId   String            @db.Uuid
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@schema("application/account")
+}
+
+model ComponentPermission {
+  id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  component         String
+  trustedEntityType TrustedEntityType
+  trustedEntityId   String            @db.Uuid
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@schema("application/account")
+}
+
+model EndpointPermission {
+  id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  endpoint          String
+  trustedEntityType TrustedEntityType
+  trustedEntityId   String            @db.Uuid
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@schema("application/account")
+}
+
+model Permission {
+  // Permission of Resource
+
+  id        String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  resource  String // Set this field with a database table name
+  action    PermissionAction
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  roles     RoleToPermission[]
+  users     UserToPermission[]
+
+  @@schema("application/account")
+}
+
+enum PermissionAction {
+  ANY
+  CREATE
+  DELETE
+  SELECT
+  UPDATE
+
+  @@schema("application/account")
+}
+
+model UserToRole {
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @db.Uuid
+  role      Role     @relation(fields: [roleId], references: [id])
+  roleId    String   @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([userId, roleId])
+  @@schema("application/account")
+}
+
+model UserToPermission {
+  user         User       @relation(fields: [userId], references: [id])
+  userId       String     @db.Uuid
+  permission   Permission @relation(fields: [permissionId], references: [id])
+  permissionId String     @db.Uuid
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@id([userId, permissionId])
+  @@schema("application/account")
+}
+
+model RoleToPermission {
+  role         Role       @relation(fields: [roleId], references: [id])
+  roleId       String     @db.Uuid
+  permission   Permission @relation(fields: [permissionId], references: [id])
+  permissionId String     @db.Uuid
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@id([roleId, permissionId])
   @@schema("application/account")
 }
 
