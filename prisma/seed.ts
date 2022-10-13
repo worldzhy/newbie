@@ -1,10 +1,9 @@
 import {ElasticsearchDatasource, PostgresqlDatasource} from '@prisma/client';
-import {AccountController} from '../src/application/account/account.controller';
-import {RoleController} from '../src/application/account/role/role.controller';
-import {ProjectController} from '../src/application/pmgmt/project/project.controller';
-import {DatatransPipelineController} from '../src/application/engined/datatrans/pipeline/pipeline.controller';
-import {ElasticsearchDatasourceController} from '../src/application/engined/datasource/elasticsearch/elasticsearch-datasource.controller';
-import {PostgresqlDatasourceController} from '../src/application/engined/datasource/postgresql/postgresql-datasource.controller';
+import {AccountController} from '../src/applications/account/account.controller';
+import {ProjectController} from '../src/applications/pmgmt/project/project.controller';
+import {DatatransPipelineController} from '../src/applications/engined/datatrans/pipeline/pipeline.controller';
+import {ElasticsearchDatasourceController} from '../src/applications/engined/datasource/elasticsearch/elasticsearch-datasource.controller';
+import {PostgresqlDatasourceController} from '../src/applications/engined/datasource/postgresql/postgresql-datasource.controller';
 
 // Auth
 const authController = new AccountController();
@@ -15,9 +14,6 @@ const users = [
     roles: {create: [{role: {create: {name: 'SUPER'}}}]},
   },
 ];
-
-const roleController = new RoleController();
-const roles = [{name: 'SUPER'}, {name: 'SUPER_ADMINISTRATOR'}];
 
 // Project
 const projectController = new ProjectController();

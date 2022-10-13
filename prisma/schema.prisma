@@ -86,14 +86,59 @@ enum TaskState {
 }
 
 // ! ------------------------------------------------------------ //
+// !           [Microservice] Verification Code models            //
+// ! ------------------------------------------------------------ //
+// * VerificationCode                                             //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
+
+model VerificationCode {
+  id        Int                    @id @default(autoincrement())
+  email     String?
+  phone     String?
+  code      String
+  status    VerificationCodeStatus
+  use       VerificationCodeUse
+  expiredAt DateTime
+  createdAt DateTime               @default(now())
+  updatedAt DateTime               @updatedAt
+
+  @@schema("application/account")
+}
+
+enum VerificationCodeStatus {
+  ACTIVE
+  INACTIVE
+
+  @@schema("application/account")
+}
+
+enum VerificationCodeUse {
+  UNKNOWN
+  // For generating JWT.
+  LOGIN_BY_EMAIL
+  LOGIN_BY_PHONE
+  // For closing and recovering account.
+  CLOSE_ACCOUNT_BY_EMAIL
+  CLOSE_ACCOUNT_BY_PHONE
+  RECOVER_ACCOUNT_BY_EMAIL
+  RECOVER_ACCOUNT_BY_PHONE
+  // For other operations
+  BIND_EMAIL
+  BIND_PHONE
+  CHANGE_PASSWORD
+  RESET_PASSWORD
+
+  @@schema("application/account")
+}
+
+// ! ------------------------------------------------------------ //
 // !                [Application] Account models                  //
 // ! ------------------------------------------------------------ //
+// * Organization                                                 //
+// * Role                                                         //
 // * User                                                         //
 // * UserJwt                                                      //
 // * UserProfile                                                  //
-// * VerificationCode                                             //
-// * Organization                                                 //
-// * Role                                                         //
 // * RoutePermission(unused)                                      //
 // * ComponentPermission(unused)                                  //
 // * EndpointPermission(unused)                                   //
@@ -103,23 +148,69 @@ enum TaskState {
 // * RoleToPermission                                             //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
+model Organization {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  roles     Role[]
+  users     User[]
+
+  @@schema("application/account")
+}
+
+model UserToRole {
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @db.Uuid
+  role      Role     @relation(fields: [roleId], references: [id])
+  roleId    String   @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([userId, roleId])
+  @@schema("application/account")
+}
+
+model Role {
+  // A role is a subgroup of a user group with some specified permissions.
+
+  id             String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String       @db.Uuid
+  roleToUsers    UserToRole[]
+
+  @@unique([name, organizationId])
+  @@schema("application/account")
+}
+
+enum ReservedRole {
+  SUPER
+  SUPER_ADMINISTRATOR
+
+  @@schema("application/account")
+}
+
 model User {
   // [1] The 'User' and 'VerificationCode' models are both used for logging in.
   // [2] The 'User' is designed for long-term use and the 'VerificationCode' is designed for short-term use.
   // [3] Actually, the 'User' model should be named 'UserPassword' and the 'VerificationCode' should be named 'UserVerificationCode'.
 
-  id          String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email       String?            @unique
-  phone       String?            @unique
-  username    String?            @unique
-  password    String? // automatic hashing
-  status      UserStatus         @default(ACTIVE)
-  lastLoginAt DateTime?
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-  profiles    UserProfile[]
-  permissions UserToPermission[]
-  roles       UserToRole[]
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email          String?       @unique
+  phone          String?       @unique
+  username       String?       @unique
+  password       String? // automatic hashing
+  status         UserStatus    @default(ACTIVE)
+  lastLoginAt    DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String?       @db.Uuid
+  profiles       UserProfile[]
+  userToRoles    UserToRole[]
 
   @@schema("application/account")
 }
@@ -191,87 +282,6 @@ enum UserProfileEthnicityType {
   @@schema("application/account")
 }
 
-model VerificationCode {
-  id        Int                    @id @default(autoincrement())
-  email     String?
-  phone     String?
-  code      String
-  status    VerificationCodeStatus
-  use       VerificationCodeUse
-  expiredAt DateTime
-  createdAt DateTime               @default(now())
-  updatedAt DateTime               @updatedAt
-
-  @@schema("application/account")
-}
-
-enum VerificationCodeStatus {
-  ACTIVE
-  INACTIVE
-
-  @@schema("application/account")
-}
-
-enum VerificationCodeUse {
-  UNKNOWN
-  // For generating JWT.
-  LOGIN_BY_EMAIL
-  LOGIN_BY_PHONE
-  // For closing and recovering account.
-  CLOSE_ACCOUNT_BY_EMAIL
-  CLOSE_ACCOUNT_BY_PHONE
-  RECOVER_ACCOUNT_BY_EMAIL
-  RECOVER_ACCOUNT_BY_PHONE
-  // For other operations
-  BIND_EMAIL
-  BIND_PHONE
-  CHANGE_PASSWORD
-  RESET_PASSWORD
-
-  @@schema("application/account")
-}
-
-model Organization {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  roles     Role[]
-
-  @@schema("application/account")
-}
-
-model Role {
-  // A role is a subgroup of a user group with some specified permissions.
-
-  id             String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name           String
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
-  organization   Organization?      @relation(fields: [organizationId], references: [id])
-  organizationId String?            @db.Uuid
-  permissions    RoleToPermission[]
-  users          UserToRole[]
-
-  @@unique([name, organizationId])
-  @@schema("application/account")
-}
-
-enum ReservedRole {
-  SUPER
-  SUPER_ADMINISTRATOR
-
-  @@schema("application/account")
-}
-
-enum TrustedEntityType {
-  USER_GROUP
-  ROLE
-  USER
-
-  @@schema("application/account")
-}
-
 model RoutePermission {
   id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   route             String
@@ -308,19 +318,59 @@ model EndpointPermission {
 model Permission {
   // Permission of Resource
 
-  id        String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  resource  String // Set this field with a database table name
-  action    PermissionAction
-  createdAt DateTime           @default(now())
-  updatedAt DateTime           @updatedAt
-  roles     RoleToPermission[]
-  users     UserToPermission[]
+  id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  resource          PermissionResource
+  action            PermissionAction
+  trustedEntityType TrustedEntityType
+  trustedEntityId   String             @db.Uuid
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  @@unique([resource, action])
+  @@schema("application/account")
+}
+
+enum PermissionResource {
+  // Account resources
+  User
+  UserJwt
+  UserProfile
+  VerificationCode
+  Organization
+  Role
+  Permission
+  // Project management resources
+  Project
+  ProjectCheckpoint
+  ProjectEnvironment
+  InfrastructureStack
+  // EngineD resources
+  PostgresqlDatasource
+  PostgresqlDatasourceConstraint
+  PostgresqlDatasourceTable
+  PostgresqlDatasourceTableColumn
+  ElasticsearchDatasource
+  ElasticsearchDatasourceIndex
+  ElasticsearchDatasourceIndexField
+  DatatransPipeline
+  DatatransMission
+  ElasticsearchDataboard
+  ElasticsearchDataboardColumn
+  // Recruitment resources
+  Candidate
+  CandidateCertification
+  CandidateTraining
+  CandidateTestinging
+  Job
+  JobApplication
+  JobApplicationNote
+  JobApplicationTask
+  JobApplicationTest
 
   @@schema("application/account")
 }
 
 enum PermissionAction {
-  ANY
   CREATE
   DELETE
   SELECT
@@ -329,39 +379,11 @@ enum PermissionAction {
   @@schema("application/account")
 }
 
-model UserToRole {
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String   @db.Uuid
-  role      Role     @relation(fields: [roleId], references: [id])
-  roleId    String   @db.Uuid
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+enum TrustedEntityType {
+  ORGANIZATION
+  ROLE
+  USER
 
-  @@id([userId, roleId])
-  @@schema("application/account")
-}
-
-model UserToPermission {
-  user         User       @relation(fields: [userId], references: [id])
-  userId       String     @db.Uuid
-  permission   Permission @relation(fields: [permissionId], references: [id])
-  permissionId String     @db.Uuid
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-
-  @@id([userId, permissionId])
-  @@schema("application/account")
-}
-
-model RoleToPermission {
-  role         Role       @relation(fields: [roleId], references: [id])
-  roleId       String     @db.Uuid
-  permission   Permission @relation(fields: [permissionId], references: [id])
-  permissionId String     @db.Uuid
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-
-  @@id([roleId, permissionId])
   @@schema("application/account")
 }
 
@@ -786,12 +808,12 @@ enum ElasticsearchDataboardColumnFormatter {
 }
 
 // ! ------------------------------------------------------------ //
-// !             [Application] Harley-Davidson models             //
+// !             [Application] Recruitment models             //
 // ! ------------------------------------------------------------ //
 // * Candidate                                                    //
 // * CandidateCertification                                       //
 // * CandidateTraining                                            //
-// * CandidateTestinging                                             //
+// * CandidateTestinging                                          //
 // * Job                                                          //
 // * JobApplication                                               //
 // * JobApplicationNote                                           //
