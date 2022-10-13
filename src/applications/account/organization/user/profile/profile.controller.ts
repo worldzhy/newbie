@@ -11,20 +11,24 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {
+  PermissionAction,
+  PermissionResource,
   Prisma,
   UserProfile,
   UserProfileEthnicityType,
   UserProfileRaceType,
 } from '@prisma/client';
+import {RequirePermission} from 'src/applications/account/authorization/authorization.decorator';
 import {UserProfileService} from './profile.service';
 
-@ApiTags('[Application] Account / User / Profile')
+@ApiTags('[Application] Account / Organization / User / Profile')
 @ApiBearerAuth()
 @Controller('user-profiles')
 export class UserProfileController {
   constructor(private userProfileService: UserProfileService) {}
 
   @Post('')
+  @RequirePermission(PermissionResource.UserProfile, PermissionAction.CREATE)
   @ApiBody({
     description: 'Create a user profile.',
     examples: {
@@ -67,6 +71,7 @@ export class UserProfileController {
   }
 
   @Get('')
+  @RequirePermission(PermissionResource.UserProfile, PermissionAction.SELECT)
   async getUserProfiles(
     @Query() query: {name?: string; page?: string}
   ): Promise<UserProfile[]> {
@@ -110,6 +115,7 @@ export class UserProfileController {
   }
 
   @Get(':profileId')
+  @RequirePermission(PermissionResource.UserProfile, PermissionAction.SELECT)
   @ApiParam({
     name: 'profileId',
     schema: {type: 'string'},
@@ -123,6 +129,7 @@ export class UserProfileController {
   }
 
   @Patch(':profileId')
+  @RequirePermission(PermissionResource.UserProfile, PermissionAction.UPDATE)
   @ApiParam({
     name: 'profileId',
     schema: {type: 'string'},
@@ -174,6 +181,7 @@ export class UserProfileController {
   }
 
   @Delete(':profileId')
+  @RequirePermission(PermissionResource.UserProfile, PermissionAction.DELETE)
   @ApiParam({
     name: 'profileId',
     schema: {type: 'string'},

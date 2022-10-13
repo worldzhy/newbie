@@ -135,6 +135,7 @@ enum VerificationCodeUse {
 // !                [Application] Account models                  //
 // ! ------------------------------------------------------------ //
 // * Organization                                                 //
+// * UserToRole                                                   //
 // * Role                                                         //
 // * User                                                         //
 // * UserJwt                                                      //
@@ -318,7 +319,7 @@ model EndpointPermission {
 model Permission {
   // Permission of Resource
 
-  id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id                Int                @id @default(autoincrement())
   resource          PermissionResource
   action            PermissionAction
   trustedEntityType TrustedEntityType
@@ -326,18 +327,16 @@ model Permission {
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
 
-  @@unique([resource, action])
   @@schema("application/account")
 }
 
 enum PermissionResource {
   // Account resources
+  Organization
+  Role
   User
   UserJwt
   UserProfile
-  VerificationCode
-  Organization
-  Role
   Permission
   // Project management resources
   Project
@@ -360,9 +359,10 @@ enum PermissionResource {
   Candidate
   CandidateCertification
   CandidateTraining
-  CandidateTestinging
+  CandidateTesting
   Job
   JobApplication
+  JobApplicationProcessingStep
   JobApplicationNote
   JobApplicationTask
   JobApplicationTest
@@ -816,6 +816,7 @@ enum ElasticsearchDataboardColumnFormatter {
 // * CandidateTestinging                                          //
 // * Job                                                          //
 // * JobApplication                                               //
+// * JobApplicationProcessingStep                                 //
 // * JobApplicationNote                                           //
 // * JobApplicationTask                                           //
 // * JobApplicationTest                                           //

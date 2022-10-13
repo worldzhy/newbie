@@ -6,11 +6,14 @@ import {
   Post,
   Body,
   Param,
-  Query,
-  BadRequestException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {Role, Prisma, PermissionAction} from '@prisma/client';
+import {
+  Role,
+  Prisma,
+  PermissionAction,
+  PermissionResource,
+} from '@prisma/client';
 import {RequirePermission} from '../../authorization/authorization.decorator';
 import {RoleService} from './role.service';
 
@@ -21,7 +24,7 @@ export class RoleController {
   private roleService = new RoleService();
 
   @Post('')
-  @RequirePermission('Role', PermissionAction.CREATE)
+  @RequirePermission(PermissionResource.Role, PermissionAction.CREATE)
   @ApiBody({
     description: "The 'name' is required in request body.",
     examples: {
@@ -33,74 +36,22 @@ export class RoleController {
       },
     },
   })
-  async createRole(@Body() body: Prisma.RoleCreateInput): Promise<Role> {
+  async createRole(
+    @Body() body: Prisma.RoleUncheckedCreateInput
+  ): Promise<Role> {
     return await this.roleService.create({
       data: body,
     });
   }
 
   @Get('')
-  @RequirePermission('Role', PermissionAction.SELECT)
-  @ApiParam({
-    required: false,
-    name: 'name',
-    description: 'The string you want to search in the role pool.',
-    example: 'jack',
-    schema: {type: 'string'},
-  })
-  @ApiParam({
-    required: false,
-    name: 'page',
-    schema: {type: 'number'},
-    description:
-      'The page of the role list. It must be a number and LARGER THAN 0.',
-    example: 1,
-  })
-  async getRoles(
-    @Query() query: {name?: string; page?: string}
-  ): Promise<Role[]> {
-    // [step 1] Construct where argument.
-    let where: Prisma.RoleWhereInput | undefined;
-    if (query.name) {
-      const name = query.name.trim();
-      if (name.length > 0) {
-        where = {name: {search: name}};
-      }
-    }
-
-    // [step 2] Construct take and skip arguments.
-    let take: number, skip: number;
-    if (query.page) {
-      // Actually 'page' is string because it comes from URL param.
-      const page = parseInt(query.page);
-      if (page > 0) {
-        take = 10;
-        skip = 10 * (page - 1);
-      } else {
-        throw new BadRequestException('The page must be larger than 0.');
-      }
-    } else {
-      take = 10;
-      skip = 0;
-    }
-
-    // [step 3] Get roles.
-    return await this.roleService.findMany({
-      orderBy: {
-        _relevance: {
-          fields: ['name'],
-          search: 'database',
-          sort: 'asc',
-        },
-      },
-      where: where,
-      take: take,
-      skip: skip,
-    });
+  @RequirePermission(PermissionResource.Role, PermissionAction.SELECT)
+  async getRoles(): Promise<Role[]> {
+    return await this.roleService.findMany({});
   }
 
   @Get(':roleId')
-  @RequirePermission('Role', PermissionAction.SELECT)
+  @RequirePermission(PermissionResource.Role, PermissionAction.SELECT)
   @ApiParam({
     name: 'roleId',
     schema: {type: 'string'},
@@ -114,7 +65,7 @@ export class RoleController {
   }
 
   @Patch(':roleId')
-  @RequirePermission('Role', PermissionAction.UPDATE)
+  @RequirePermission(PermissionResource.Role, PermissionAction.UPDATE)
   @ApiParam({
     name: 'roleId',
     schema: {type: 'string'},
@@ -144,7 +95,7 @@ export class RoleController {
   }
 
   @Delete(':roleId')
-  @RequirePermission('Role', PermissionAction.DELETE)
+  @RequirePermission(PermissionResource.Role, PermissionAction.DELETE)
   @ApiParam({
     name: 'roleId',
     schema: {type: 'string'},

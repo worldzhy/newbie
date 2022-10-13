@@ -11,8 +11,14 @@ import {
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {CandidateCertificationService} from './certification.service';
 
-import {CandidateCertification, Prisma} from '@prisma/client';
+import {
+  CandidateCertification,
+  PermissionAction,
+  PermissionResource,
+  Prisma,
+} from '@prisma/client';
 import {CandidateService} from '../candidate.service';
+import {RequirePermission} from '../../../account/authorization/authorization.decorator';
 
 @ApiTags('[Application] Recruitment / Candidate / Certification')
 @ApiBearerAuth()
@@ -23,6 +29,10 @@ export class CandidateCertificationController {
 
   //* Create
   @Post('')
+  @RequirePermission(
+    PermissionResource.CandidateCertification,
+    PermissionAction.CREATE
+  )
   @ApiBody({
     description: '',
     examples: {
@@ -50,12 +60,20 @@ export class CandidateCertificationController {
 
   //* Get many
   @Get('')
+  @RequirePermission(
+    PermissionResource.CandidateCertification,
+    PermissionAction.SELECT
+  )
   async getCandidateCertifications(): Promise<CandidateCertification[]> {
     return await this.candidateCertificationService.findMany({});
   }
 
   //* Get
   @Get(':certificationId')
+  @RequirePermission(
+    PermissionResource.CandidateCertification,
+    PermissionAction.SELECT
+  )
   @ApiParam({
     name: 'certificationId',
     schema: {type: 'string'},
@@ -72,6 +90,10 @@ export class CandidateCertificationController {
 
   //* Update
   @Patch(':certificationId')
+  @RequirePermission(
+    PermissionResource.CandidateCertification,
+    PermissionAction.UPDATE
+  )
   @ApiParam({
     name: 'certificationId',
     schema: {type: 'string'},
@@ -101,6 +123,10 @@ export class CandidateCertificationController {
 
   //* Delete
   @Delete(':certificationId')
+  @RequirePermission(
+    PermissionResource.CandidateCertification,
+    PermissionAction.DELETE
+  )
   @ApiParam({
     name: 'certificationId',
     schema: {type: 'string'},

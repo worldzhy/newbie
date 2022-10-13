@@ -17,19 +17,19 @@ import {
 } from '@prisma/client';
 import {PermissionService} from './permission.service';
 
-@ApiTags('[Application] Account / Permission')
+@ApiTags('[Application] Account / Authorization / Permission')
 @ApiBearerAuth()
 @Controller('permissions')
 export class PermissionController {
-  constructor(private permissionService: PermissionService) {}
+  private permissionService = new PermissionService();
 
   @Get('resources')
-  async listPermissionResources() {
+  listPermissionResources() {
     return Object.values(PermissionResource);
   }
 
   @Get('acctions')
-  async listEnvironmentEnvironments() {
+  listPermissionActions() {
     return Object.values(PermissionAction);
   }
 
@@ -72,7 +72,7 @@ export class PermissionController {
     @Param('permissionId') permissionId: string
   ): Promise<Permission | null> {
     return await this.permissionService.findUnique({
-      where: {id: permissionId},
+      where: {id: parseInt(permissionId)},
     });
   }
 
@@ -103,7 +103,7 @@ export class PermissionController {
     body: Prisma.PermissionUpdateInput
   ): Promise<Permission> {
     return await this.permissionService.update({
-      where: {id: permissionId},
+      where: {id: parseInt(permissionId)},
       data: body,
     });
   }
@@ -118,7 +118,7 @@ export class PermissionController {
     @Param('permissionId') permissionId: string
   ): Promise<Permission> {
     return await this.permissionService.delete({
-      where: {id: permissionId},
+      where: {id: parseInt(permissionId)},
     });
   }
 

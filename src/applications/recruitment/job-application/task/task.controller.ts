@@ -14,9 +14,12 @@ import {JobApplicationTaskService} from './task.service';
 import {
   JobApplicationTask,
   JobApplicationTaskState,
+  PermissionAction,
+  PermissionResource,
   Prisma,
 } from '@prisma/client';
 import {JobApplicationService} from '../job-application.service';
+import {RequirePermission} from '../../../account/authorization/authorization.decorator';
 
 @ApiTags('[Application] Recruitment / Job Application / Task')
 @ApiBearerAuth()
@@ -27,6 +30,10 @@ export class JobApplicationTaskController {
 
   //* Create
   @Post('')
+  @RequirePermission(
+    PermissionResource.JobApplicationTask,
+    PermissionAction.CREATE
+  )
   @ApiBody({
     description: '',
     examples: {
@@ -60,12 +67,20 @@ export class JobApplicationTaskController {
 
   //* Get many
   @Get('')
+  @RequirePermission(
+    PermissionResource.JobApplicationTask,
+    PermissionAction.SELECT
+  )
   async getJobApplicationTasks(): Promise<JobApplicationTask[]> {
     return await this.jobApplicationTestService.findMany({});
   }
 
   //* Get
   @Get(':taskId')
+  @RequirePermission(
+    PermissionResource.JobApplicationTask,
+    PermissionAction.SELECT
+  )
   @ApiParam({
     name: 'taskId',
     schema: {type: 'string'},
@@ -82,6 +97,10 @@ export class JobApplicationTaskController {
 
   //* Update
   @Patch(':taskId')
+  @RequirePermission(
+    PermissionResource.JobApplicationTask,
+    PermissionAction.UPDATE
+  )
   @ApiParam({
     name: 'taskId',
     schema: {type: 'string'},
@@ -111,6 +130,10 @@ export class JobApplicationTaskController {
 
   //* Delete
   @Delete(':taskId')
+  @RequirePermission(
+    PermissionResource.JobApplicationTask,
+    PermissionAction.DELETE
+  )
   @ApiParam({
     name: 'taskId',
     schema: {type: 'string'},

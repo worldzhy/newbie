@@ -10,16 +10,23 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {Organization, Prisma} from '@prisma/client';
+import {
+  Organization,
+  PermissionAction,
+  PermissionResource,
+  Prisma,
+} from '@prisma/client';
+import {RequirePermission} from '../authorization/authorization.decorator';
 import {OrganizationService} from './organization.service';
 
 @ApiTags('[Application] Account / Organization')
 @ApiBearerAuth()
 @Controller('organizations')
 export class OrganizationController {
-  constructor(private organizationService: OrganizationService) {}
+  private organizationService = new OrganizationService();
 
   @Post('')
+  @RequirePermission(PermissionResource.Organization, PermissionAction.CREATE)
   @ApiBody({
     description: "The 'name' is required in request body.",
     examples: {
@@ -40,6 +47,7 @@ export class OrganizationController {
   }
 
   @Get('')
+  @RequirePermission(PermissionResource.Organization, PermissionAction.SELECT)
   @ApiParam({
     required: false,
     name: 'name',
@@ -99,6 +107,7 @@ export class OrganizationController {
   }
 
   @Get(':organizationId')
+  @RequirePermission(PermissionResource.Organization, PermissionAction.SELECT)
   @ApiParam({
     name: 'organizationId',
     schema: {type: 'string'},
@@ -114,6 +123,7 @@ export class OrganizationController {
   }
 
   @Patch(':organizationId')
+  @RequirePermission(PermissionResource.Organization, PermissionAction.UPDATE)
   @ApiParam({
     name: 'organizationId',
     schema: {type: 'string'},
@@ -143,6 +153,7 @@ export class OrganizationController {
   }
 
   @Delete(':organizationId')
+  @RequirePermission(PermissionResource.Organization, PermissionAction.DELETE)
   @ApiParam({
     name: 'organizationId',
     schema: {type: 'string'},

@@ -8,7 +8,13 @@ import {
   Param,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {Prisma, Job} from '@prisma/client';
+import {
+  Prisma,
+  Job,
+  PermissionResource,
+  PermissionAction,
+} from '@prisma/client';
+import {RequirePermission} from '../../account/authorization/authorization.decorator';
 import {JobService} from './job.service';
 
 @ApiTags('[Application] Recruitment / Job')
@@ -18,6 +24,7 @@ export class JobController {
   constructor(private jobService: JobService) {}
 
   @Post('')
+  @RequirePermission(PermissionResource.Job, PermissionAction.CREATE)
   @ApiBody({
     description: 'Create a user job.',
     examples: {
@@ -56,11 +63,13 @@ export class JobController {
   }
 
   @Get('')
+  @RequirePermission(PermissionResource.Job, PermissionAction.SELECT)
   async getJobs(): Promise<Job[]> {
     return await this.jobService.findMany({});
   }
 
   @Get(':jobId')
+  @RequirePermission(PermissionResource.Job, PermissionAction.SELECT)
   @ApiParam({
     name: 'jobId',
     schema: {type: 'string'},
@@ -72,6 +81,7 @@ export class JobController {
   }
 
   @Patch(':jobId')
+  @RequirePermission(PermissionResource.Job, PermissionAction.UPDATE)
   @ApiParam({
     name: 'jobId',
     schema: {type: 'string'},
@@ -104,6 +114,7 @@ export class JobController {
   }
 
   @Delete(':jobId')
+  @RequirePermission(PermissionResource.Job, PermissionAction.DELETE)
   @ApiParam({
     name: 'jobId',
     schema: {type: 'string'},
@@ -116,6 +127,7 @@ export class JobController {
   }
 
   @Get(':jobId/job-applications')
+  @RequirePermission(PermissionResource.Job, PermissionAction.SELECT)
   @ApiParam({
     name: 'jobId',
     schema: {type: 'string'},

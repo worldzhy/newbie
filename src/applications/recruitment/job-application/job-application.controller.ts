@@ -15,9 +15,12 @@ import {
   JobApplication,
   JobApplicationProcessingStepAction,
   JobApplicationReviewCode,
+  PermissionAction,
+  PermissionResource,
   Prisma,
 } from '@prisma/client';
 import {CandidateService} from '../candidate/candidate.service';
+import {RequirePermission} from '../../account/authorization/authorization.decorator';
 
 @ApiTags('[Application] Recruitment / Job Application')
 @ApiBearerAuth()
@@ -28,6 +31,7 @@ export class JobApplicationController {
 
   //* Create
   @Post('')
+  @RequirePermission(PermissionResource.JobApplication, PermissionAction.CREATE)
   @ApiBody({
     description: '',
     examples: {
@@ -71,12 +75,14 @@ export class JobApplicationController {
 
   //* Get many
   @Get('')
+  @RequirePermission(PermissionResource.JobApplication, PermissionAction.SELECT)
   async getJobApplications(): Promise<JobApplication[]> {
     return await this.jobApplicationService.findMany({});
   }
 
   //* Get
   @Get(':jobApplicationId')
+  @RequirePermission(PermissionResource.JobApplication, PermissionAction.SELECT)
   @ApiParam({
     name: 'jobApplicationId',
     schema: {type: 'string'},
@@ -93,6 +99,7 @@ export class JobApplicationController {
 
   //* Update
   @Patch(':jobApplicationId')
+  @RequirePermission(PermissionResource.JobApplication, PermissionAction.UPDATE)
   @ApiParam({
     name: 'jobApplicationId',
     schema: {type: 'string'},
@@ -122,6 +129,7 @@ export class JobApplicationController {
 
   //* Delete
   @Delete(':jobApplicationId')
+  @RequirePermission(PermissionResource.JobApplication, PermissionAction.DELETE)
   @ApiParam({
     name: 'jobApplicationId',
     schema: {type: 'string'},
@@ -136,8 +144,9 @@ export class JobApplicationController {
     });
   }
 
-  //* Get notes
+  //* Get job application notes
   @Get(':jobApplicationId/notes')
+  @RequirePermission(PermissionResource.JobApplication, PermissionAction.SELECT)
   @ApiParam({
     name: 'jobApplicationId',
     schema: {type: 'string'},
@@ -153,8 +162,9 @@ export class JobApplicationController {
     });
   }
 
-  //* Get processingSteps
+  //* Get job application processing steps
   @Get(':jobApplicationId/processingSteps')
+  @RequirePermission(PermissionResource.JobApplication, PermissionAction.SELECT)
   @ApiParam({
     name: 'jobApplicationId',
     schema: {type: 'string'},
@@ -170,8 +180,9 @@ export class JobApplicationController {
     });
   }
 
-  //* Get tasks
+  //* Get job application tasks
   @Get(':jobApplicationId/tasks')
+  @RequirePermission(PermissionResource.JobApplication, PermissionAction.SELECT)
   @ApiParam({
     name: 'jobApplicationId',
     schema: {type: 'string'},

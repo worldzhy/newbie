@@ -11,8 +11,14 @@ import {
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {JobApplicationNoteService} from './note.service';
 
-import {JobApplicationNote, Prisma} from '@prisma/client';
+import {
+  JobApplicationNote,
+  PermissionAction,
+  PermissionResource,
+  Prisma,
+} from '@prisma/client';
 import {JobApplicationService} from '../job-application.service';
+import {RequirePermission} from '../../../account/authorization/authorization.decorator';
 
 @ApiTags('[Application] Recruitment / Job Application / Note')
 @ApiBearerAuth()
@@ -23,6 +29,10 @@ export class JobApplicationNoteController {
 
   //* Create
   @Post('')
+  @RequirePermission(
+    PermissionResource.JobApplicationNote,
+    PermissionAction.CREATE
+  )
   @ApiBody({
     description: '',
     examples: {
@@ -55,12 +65,20 @@ export class JobApplicationNoteController {
 
   //* Get many
   @Get('')
+  @RequirePermission(
+    PermissionResource.JobApplicationNote,
+    PermissionAction.SELECT
+  )
   async getJobApplicationNotes(): Promise<JobApplicationNote[]> {
     return await this.jobApplicationNoteService.findMany({});
   }
 
   //* Get
   @Get(':noteId')
+  @RequirePermission(
+    PermissionResource.JobApplicationNote,
+    PermissionAction.SELECT
+  )
   @ApiParam({
     name: 'noteId',
     schema: {type: 'string'},
@@ -77,6 +95,10 @@ export class JobApplicationNoteController {
 
   //* Update
   @Patch(':noteId')
+  @RequirePermission(
+    PermissionResource.JobApplicationNote,
+    PermissionAction.UPDATE
+  )
   @ApiParam({
     name: 'noteId',
     schema: {type: 'string'},
@@ -106,6 +128,10 @@ export class JobApplicationNoteController {
 
   //* Delete
   @Delete(':noteId')
+  @RequirePermission(
+    PermissionResource.JobApplicationNote,
+    PermissionAction.DELETE
+  )
   @ApiParam({
     name: 'noteId',
     schema: {type: 'string'},

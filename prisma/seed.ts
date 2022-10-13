@@ -1,9 +1,16 @@
-import {ElasticsearchDatasource, PostgresqlDatasource} from '@prisma/client';
+import {
+  ElasticsearchDatasource,
+  PostgresqlDatasource,
+  TrustedEntityType,
+} from '@prisma/client';
 import {AccountController} from '../src/applications/account/account.controller';
 import {ProjectController} from '../src/applications/pmgmt/project/project.controller';
 import {DatatransPipelineController} from '../src/applications/engined/datatrans/pipeline/pipeline.controller';
 import {ElasticsearchDatasourceController} from '../src/applications/engined/datasource/elasticsearch/elasticsearch-datasource.controller';
 import {PostgresqlDatasourceController} from '../src/applications/engined/datasource/postgresql/postgresql-datasource.controller';
+import {PermissionController} from '../src/applications/account/authorization/permission/permission.controller';
+import {OrganizationController} from '../src/applications/account/organization/organization.controller';
+import {RoleController} from '../src/applications/account/organization/role/role.controller';
 
 // Auth
 const authController = new AccountController();
@@ -11,9 +18,12 @@ const users = [
   {
     username: 'henry',
     password: 'Abc1234!',
-    roles: {create: [{role: {create: {name: 'SUPER'}}}]},
+    userToRoles: {create: [{role: {create: {name: 'SUPER'}}}]},
   },
 ];
+
+// Permission
+const permissionController = new PermissionController();
 
 // Project
 const projectController = new ProjectController();
@@ -55,15 +65,39 @@ const pipeline = {
 async function main() {
   console.log('Start seeding ...');
 
-  console.log('* [account] user');
-  for (const user of users) {
-    await authController.signup(user);
+  console.log('* [account] organization');
+  const organizationController = new OrganizationController();
+  const organization = await organizationController.createOrganization({
+    name: 'InceptionPad',
+  });
+
+  console.log('* [account] organization role');
+  const roleController = new RoleController();
+  const role = await roleController.createRole({
+    name: 'SUPER',
+    organizationId: organization.id,
+  });
+
+  console.log('* [account] role permissions');
+  const resources = permissionController.listPermissionResources();
+  const actions = permissionController.listPermissionActions();
+  for (const resource of resources) {
+    for (const action of actions) {
+      await permissionController.createPermission({
+        resource,
+        action,
+        trustedEntityType: TrustedEntityType.ROLE,
+        trustedEntityId: role.id,
+      });
+    }
   }
 
-  // console.log('* [account] role');
-  // for (const role of roles) {
-  //   await roleController.createRole(role);
-  // }
+  console.log('* [account] organization user');
+  await authController.signup({
+    username: 'henry',
+    password: 'Abc1234!',
+    userToRoles: {create: [{roleId: role.id}]},
+  });
 
   console.log('* [project management] project');
   for (const project of projects) {

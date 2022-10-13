@@ -1,7 +1,13 @@
 import {Controller, Delete, Get, Patch, Body, Param} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {ProcessingStepService} from './processing-step.service';
-import {Prisma, JobApplicationProcessingStep} from '@prisma/client';
+import {
+  Prisma,
+  JobApplicationProcessingStep,
+  PermissionResource,
+  PermissionAction,
+} from '@prisma/client';
+import {RequirePermission} from '../../../account/authorization/authorization.decorator';
 
 @ApiTags('[Application] Recruitment / Job Application / Processing Step')
 @ApiBearerAuth()
@@ -11,12 +17,20 @@ export class ProcessingStepController {
 
   //* Get many
   @Get('')
+  @RequirePermission(
+    PermissionResource.JobApplicationProcessingStep,
+    PermissionAction.SELECT
+  )
   async getProcessingSteps(): Promise<JobApplicationProcessingStep[]> {
     return await this.environmentService.findMany({});
   }
 
   //* Get
   @Get(':processingStepId')
+  @RequirePermission(
+    PermissionResource.JobApplicationProcessingStep,
+    PermissionAction.SELECT
+  )
   @ApiParam({
     name: 'processingStepId',
     schema: {type: 'string'},
@@ -32,6 +46,10 @@ export class ProcessingStepController {
 
   //* Update
   @Patch(':processingStepId')
+  @RequirePermission(
+    PermissionResource.JobApplicationProcessingStep,
+    PermissionAction.UPDATE
+  )
   @ApiParam({
     name: 'processingStepId',
     schema: {type: 'string'},
@@ -71,6 +89,10 @@ export class ProcessingStepController {
 
   //* Delete
   @Delete(':processingStepId')
+  @RequirePermission(
+    PermissionResource.JobApplicationProcessingStep,
+    PermissionAction.DELETE
+  )
   @ApiParam({
     name: 'processingStepId',
     schema: {type: 'string'},

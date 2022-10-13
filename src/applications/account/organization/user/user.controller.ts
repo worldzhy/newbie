@@ -21,7 +21,7 @@ import * as validator from '../../../../toolkits/validators/account.validator';
 import {RequirePermission} from '../../authorization/authorization.decorator';
 const bcrypt = require('bcryptjs');
 
-@ApiTags('[Application] Account / User')
+@ApiTags('[Application] Account / Organization / User')
 @ApiBearerAuth()
 @Controller('users')
 export class UserController {
@@ -47,6 +47,7 @@ export class UserController {
   }
 
   @Get('')
+  @RequirePermission(PermissionResource.User, PermissionAction.SELECT)
   @ApiParam({
     required: false,
     name: 'name',
@@ -128,6 +129,7 @@ export class UserController {
   }
 
   @Get(':userId')
+  @RequirePermission(PermissionResource.User, PermissionAction.SELECT)
   @ApiParam({
     name: 'userId',
     schema: {type: 'string'},
@@ -142,6 +144,7 @@ export class UserController {
   }
 
   @Delete(':userId')
+  @RequirePermission(PermissionResource.User, PermissionAction.DELETE)
   @ApiParam({
     name: 'userId',
     schema: {type: 'string'},
@@ -153,8 +156,8 @@ export class UserController {
     });
   }
 
-  @ApiBearerAuth()
   @Patch(':userId/change-password')
+  @RequirePermission(PermissionResource.User, PermissionAction.UPDATE)
   @ApiParam({
     name: 'userId',
     schema: {type: 'string'},
@@ -226,8 +229,8 @@ export class UserController {
     });
   }
 
-  @ApiBearerAuth()
   @Patch(':userId/reset-password')
+  @RequirePermission(PermissionResource.User, PermissionAction.UPDATE)
   @ApiParam({
     name: 'userId',
     schema: {type: 'string'},

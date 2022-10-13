@@ -6,12 +6,7 @@ import {OrganizationModule} from './organization/organization.module';
 import {VerificationCodeModule} from '../../microservices/verification-code/verification-code.module';
 
 @Module({
-  imports: [
-    AuthenticationModule,
-    AuthorizationModule,
-    OrganizationModule,
-    VerificationCodeModule,
-  ],
+  imports: [AuthenticationModule, AuthorizationModule, OrganizationModule],
   controllers: [AccountController],
 })
 export class AccountModule {}
