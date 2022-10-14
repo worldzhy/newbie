@@ -283,7 +283,7 @@ export class AccountController {
       a: {
         summary: '1. Log in with username',
         value: {
-          account: 'henry',
+          account: 'admin',
           password: 'Abc1234!',
         },
       },

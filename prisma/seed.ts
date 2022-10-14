@@ -12,117 +12,116 @@ import {PermissionController} from '../src/applications/account/authorization/pe
 import {OrganizationController} from '../src/applications/account/organization/organization.controller';
 import {RoleController} from '../src/applications/account/organization/role/role.controller';
 
-// Auth
-const authController = new AccountController();
-const users = [
-  {
-    username: 'henry',
-    password: 'Abc1234!',
-    userToRoles: {create: [{role: {create: {name: 'SUPER'}}}]},
-  },
-];
-
-// Permission
-const permissionController = new PermissionController();
-
-// Project
-const projectController = new ProjectController();
-const projects = [
-  {
-    name: 'Galaxy',
-    clientName: 'Jim Green',
-    clientEmail: 'jim@galaxy.com',
-  },
-  {
-    name: 'InceptionPad',
-  },
-];
-
-// Postgresql datasource
-const postgresqlDatasourceController = new PostgresqlDatasourceController();
-const postgresql = {
-  host: '127.0.0.1',
-  port: 5432,
-  database: 'postgres',
-  schema: 'application/account',
-};
-
-// Elasticsearch datasource
-const elasticsearchDatasourceController =
-  new ElasticsearchDatasourceController();
-const elasticsearch = {node: '127.0.0.1'};
-
-// Datatrans Pipeline
-const pipelineController = new DatatransPipelineController();
-const pipeline = {
-  name: 'pg2es_pipeline',
-  hasManyTables: [],
-  belongsToTables: [],
-  fromTableId: 1,
-  toIndexId: 1,
-};
-
 async function main() {
   console.log('Start seeding ...');
 
-  console.log('* [account] organization');
+  // Seed account module.
+  console.log('* Create organization, roles, admin user and permissions');
   const organizationController = new OrganizationController();
+  const roleController = new RoleController();
+  const authController = new AccountController();
+  const permissionController = new PermissionController();
+  const permissionResources = permissionController.listPermissionResources();
+  const permissionActions = permissionController.listPermissionActions();
+
   const organization = await organizationController.createOrganization({
     name: 'InceptionPad',
   });
 
-  console.log('* [account] organization role');
-  const roleController = new RoleController();
-  const role = await roleController.createRole({
-    name: 'SUPER',
-    organizationId: organization.id,
-  });
-
-  console.log('* [account] role permissions');
-  const resources = permissionController.listPermissionResources();
-  const actions = permissionController.listPermissionActions();
-  for (const resource of resources) {
-    for (const action of actions) {
-      await permissionController.createPermission({
-        resource,
-        action,
-        trustedEntityType: TrustedEntityType.ROLE,
-        trustedEntityId: role.id,
+  const roles = [
+    {
+      name: 'Admin',
+      organizationId: organization.id,
+    },
+    {
+      name: 'Recruiter',
+      organizationId: organization.id,
+    },
+    {
+      name: 'Dispatcher',
+      organizationId: organization.id,
+    },
+    {
+      name: 'Tester',
+      organizationId: organization.id,
+    },
+    {
+      name: 'Reviewer',
+      organizationId: organization.id,
+    },
+  ];
+  for (let i = 0; i < roles.length; i++) {
+    const role = await roleController.createRole(roles[i]);
+    if (role.name === 'Admin') {
+      // Add all permissions to Admin role.
+      for (const resource of permissionResources) {
+        for (const action of permissionActions) {
+          await permissionController.createPermission({
+            resource,
+            action,
+            trustedEntityType: TrustedEntityType.ROLE,
+            trustedEntityId: role.id,
+          });
+        }
+      }
+      // Create an user with Admin role.
+      await authController.signup({
+        username: 'admin',
+        password: 'Abc1234!',
+        userToRoles: {create: [{roleId: role.id}]},
       });
     }
   }
 
-  console.log('* [account] organization user');
-  await authController.signup({
-    username: 'henry',
-    password: 'Abc1234!',
-    userToRoles: {create: [{roleId: role.id}]},
-  });
-
-  console.log('* [project management] project');
+  // Seed project management module.
+  console.log('* Create projects');
+  const projectController = new ProjectController();
+  const projects = [
+    {
+      name: 'Galaxy',
+      clientName: 'Jim Green',
+      clientEmail: 'jim@galaxy.com',
+    },
+    {name: 'InceptionPad'},
+  ];
   for (const project of projects) {
     await projectController.createProject(project);
   }
 
-  console.log('* [engined][datasource] postgresql');
+  // Seed datasource module.
+  console.log('* Create postgresql and elasticsearch datasources');
+  const postgresqlDatasourceController = new PostgresqlDatasourceController();
+  const elasticsearchDatasourceController =
+    new ElasticsearchDatasourceController();
   let datasource: PostgresqlDatasource | ElasticsearchDatasource;
-  datasource = await postgresqlDatasourceController.createPostgresqlDatasource(
-    postgresql
-  );
+  datasource = await postgresqlDatasourceController.createPostgresqlDatasource({
+    host: '127.0.0.1',
+    port: 5432,
+    database: 'postgres',
+    schema: 'application/account',
+  });
   await postgresqlDatasourceController.loadPostgresqlDatasource(datasource.id);
 
-  console.log('* [engined][datasource] elasticsearch');
   datasource =
-    await elasticsearchDatasourceController.createElasticsearchDatasource(
-      elasticsearch
-    );
+    await elasticsearchDatasourceController.createElasticsearchDatasource({
+      node: '127.0.0.1',
+    });
   await elasticsearchDatasourceController.loadElasticsearchDatasource(
     datasource.id
   );
 
-  console.log('* [engined][datatrans] pipeline');
-  await pipelineController.createPipeline(pipeline);
+  // Seed datatrans module.
+  console.log('* Create datatrans pipeline');
+  const pipelineController = new DatatransPipelineController();
+  await pipelineController.createPipeline({
+    name: 'pg2es_pipeline',
+    hasManyTables: [],
+    belongsToTables: [],
+    fromTableId: 1,
+    toIndexId: 1,
+  });
 
+  // Seeding Finished.
   console.log('Seeding finished.');
 }
 
