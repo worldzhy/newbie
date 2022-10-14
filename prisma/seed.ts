@@ -1,8 +1,8 @@
 import {
   ElasticsearchDatasource,
   PermissionAction,
-  PermissionResource,
   PostgresqlDatasource,
+  Prisma,
   TrustedEntityType,
 } from '@prisma/client';
 import {AccountController} from '../src/applications/account/account.controller';
@@ -80,35 +80,35 @@ async function main() {
       });
     } else if (role.name === RoleName.Recruiter) {
       await permissionController.createPermission({
-        resource: PermissionResource.JobApplication,
-        action: PermissionAction.CREATE,
+        action: PermissionAction.create,
+        resource: Prisma.ModelName.JobApplication,
         trustedEntityType: TrustedEntityType.ROLE,
         trustedEntityId: role.id,
       });
       await permissionController.createPermission({
-        resource: PermissionResource.JobApplicationProcessingStep,
-        action: PermissionAction.CREATE,
+        action: PermissionAction.create,
+        resource: Prisma.ModelName.JobApplicationProcessingStep,
         trustedEntityType: TrustedEntityType.ROLE,
         trustedEntityId: role.id,
       });
     } else if (role.name === RoleName.Dispatcher) {
       await permissionController.createPermission({
-        resource: PermissionResource.JobApplicationProcessingStep,
-        action: PermissionAction.UPDATE,
+        action: PermissionAction.update,
+        resource: Prisma.ModelName.JobApplicationProcessingStep,
         trustedEntityType: TrustedEntityType.ROLE,
         trustedEntityId: role.id,
       });
     } else if (role.name === RoleName.Tester) {
       await permissionController.createPermission({
-        resource: PermissionResource.JobApplicationProcessingStep,
-        action: PermissionAction.UPDATE,
+        action: PermissionAction.update,
+        resource: Prisma.ModelName.JobApplicationProcessingStep,
         trustedEntityType: TrustedEntityType.ROLE,
         trustedEntityId: role.id,
       });
     } else if (role.name === RoleName.Reviewer) {
       await permissionController.createPermission({
-        resource: PermissionResource.JobApplicationProcessingStep,
-        action: PermissionAction.UPDATE,
+        action: PermissionAction.update,
+        resource: Prisma.ModelName.JobApplicationProcessingStep,
         trustedEntityType: TrustedEntityType.ROLE,
         trustedEntityId: role.id,
       });

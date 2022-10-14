@@ -15,7 +15,6 @@ import {
   JobApplicationTask,
   JobApplicationTaskState,
   PermissionAction,
-  PermissionResource,
   Prisma,
 } from '@prisma/client';
 import {JobApplicationService} from '../job-application.service';
@@ -31,8 +30,8 @@ export class JobApplicationTaskController {
   //* Create
   @Post('')
   @RequirePermission(
-    PermissionResource.JobApplicationTask,
-    PermissionAction.CREATE
+    PermissionAction.create,
+    Prisma.ModelName.JobApplicationTask
   )
   @ApiBody({
     description: '',
@@ -67,20 +66,14 @@ export class JobApplicationTaskController {
 
   //* Get many
   @Get('')
-  @RequirePermission(
-    PermissionResource.JobApplicationTask,
-    PermissionAction.SELECT
-  )
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.JobApplicationTask)
   async getJobApplicationTasks(): Promise<JobApplicationTask[]> {
     return await this.jobApplicationTestService.findMany({});
   }
 
   //* Get
   @Get(':taskId')
-  @RequirePermission(
-    PermissionResource.JobApplicationTask,
-    PermissionAction.SELECT
-  )
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.JobApplicationTask)
   @ApiParam({
     name: 'taskId',
     schema: {type: 'string'},
@@ -98,8 +91,8 @@ export class JobApplicationTaskController {
   //* Update
   @Patch(':taskId')
   @RequirePermission(
-    PermissionResource.JobApplicationTask,
-    PermissionAction.UPDATE
+    PermissionAction.update,
+    Prisma.ModelName.JobApplicationTask
   )
   @ApiParam({
     name: 'taskId',
@@ -131,8 +124,8 @@ export class JobApplicationTaskController {
   //* Delete
   @Delete(':taskId')
   @RequirePermission(
-    PermissionResource.JobApplicationTask,
-    PermissionAction.DELETE
+    PermissionAction.delete,
+    Prisma.ModelName.JobApplicationTask
   )
   @ApiParam({
     name: 'taskId',

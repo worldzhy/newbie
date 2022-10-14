@@ -16,7 +16,6 @@ import {
   CandidateTestingState,
   CandidateTestingType,
   PermissionAction,
-  PermissionResource,
   Prisma,
 } from '@prisma/client';
 import {CandidateService} from '../candidate.service';
@@ -31,10 +30,7 @@ export class CandidateTestingController {
 
   //* Create
   @Post('')
-  @RequirePermission(
-    PermissionResource.CandidateTesting,
-    PermissionAction.CREATE
-  )
+  @RequirePermission(PermissionAction.create, Prisma.ModelName.CandidateTesting)
   @ApiBody({
     description: '',
     examples: {
@@ -62,20 +58,14 @@ export class CandidateTestingController {
 
   //* Get many
   @Get('')
-  @RequirePermission(
-    PermissionResource.CandidateTesting,
-    PermissionAction.SELECT
-  )
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.CandidateTesting)
   async getCandidateTestings(): Promise<CandidateTesting[]> {
     return await this.candidateTestingService.findMany({});
   }
 
   //* Get
   @Get(':testingId')
-  @RequirePermission(
-    PermissionResource.CandidateTesting,
-    PermissionAction.SELECT
-  )
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.CandidateTesting)
   @ApiParam({
     name: 'testingId',
     schema: {type: 'string'},
@@ -92,10 +82,7 @@ export class CandidateTestingController {
 
   //* Update
   @Patch(':testingId')
-  @RequirePermission(
-    PermissionResource.CandidateTesting,
-    PermissionAction.UPDATE
-  )
+  @RequirePermission(PermissionAction.update, Prisma.ModelName.CandidateTesting)
   @ApiParam({
     name: 'testingId',
     schema: {type: 'string'},
@@ -125,10 +112,7 @@ export class CandidateTestingController {
 
   //* Delete
   @Delete(':testingId')
-  @RequirePermission(
-    PermissionResource.CandidateTesting,
-    PermissionAction.DELETE
-  )
+  @RequirePermission(PermissionAction.delete, Prisma.ModelName.CandidateTesting)
   @ApiParam({
     name: 'testingId',
     schema: {type: 'string'},

@@ -10,12 +10,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {
-  Organization,
-  PermissionAction,
-  PermissionResource,
-  Prisma,
-} from '@prisma/client';
+import {Organization, PermissionAction, Prisma} from '@prisma/client';
 import {RequirePermission} from '../authorization/authorization.decorator';
 import {OrganizationService} from './organization.service';
 
@@ -26,7 +21,7 @@ export class OrganizationController {
   private organizationService = new OrganizationService();
 
   @Post('')
-  @RequirePermission(PermissionResource.Organization, PermissionAction.CREATE)
+  @RequirePermission(PermissionAction.create, Prisma.ModelName.Organization)
   @ApiBody({
     description: "The 'name' is required in request body.",
     examples: {
@@ -47,7 +42,7 @@ export class OrganizationController {
   }
 
   @Get('')
-  @RequirePermission(PermissionResource.Organization, PermissionAction.SELECT)
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.Organization)
   @ApiParam({
     required: false,
     name: 'name',
@@ -107,7 +102,7 @@ export class OrganizationController {
   }
 
   @Get(':organizationId')
-  @RequirePermission(PermissionResource.Organization, PermissionAction.SELECT)
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.Organization)
   @ApiParam({
     name: 'organizationId',
     schema: {type: 'string'},
@@ -123,7 +118,7 @@ export class OrganizationController {
   }
 
   @Patch(':organizationId')
-  @RequirePermission(PermissionResource.Organization, PermissionAction.UPDATE)
+  @RequirePermission(PermissionAction.update, Prisma.ModelName.Organization)
   @ApiParam({
     name: 'organizationId',
     schema: {type: 'string'},
@@ -153,7 +148,7 @@ export class OrganizationController {
   }
 
   @Delete(':organizationId')
-  @RequirePermission(PermissionResource.Organization, PermissionAction.DELETE)
+  @RequirePermission(PermissionAction.delete, Prisma.ModelName.Organization)
   @ApiParam({
     name: 'organizationId',
     schema: {type: 'string'},

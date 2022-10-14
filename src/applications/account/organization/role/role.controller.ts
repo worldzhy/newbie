@@ -8,12 +8,7 @@ import {
   Param,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {
-  Role,
-  Prisma,
-  PermissionAction,
-  PermissionResource,
-} from '@prisma/client';
+import {Role, Prisma, PermissionAction} from '@prisma/client';
 import {RequirePermission} from '../../authorization/authorization.decorator';
 import {RoleService} from './role.service';
 
@@ -24,7 +19,7 @@ export class RoleController {
   private roleService = new RoleService();
 
   @Post('')
-  @RequirePermission(PermissionResource.Role, PermissionAction.CREATE)
+  @RequirePermission(PermissionAction.create, Prisma.ModelName.Role)
   @ApiBody({
     description: "The 'name' is required in request body.",
     examples: {
@@ -45,13 +40,13 @@ export class RoleController {
   }
 
   @Get('')
-  @RequirePermission(PermissionResource.Role, PermissionAction.SELECT)
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.Role)
   async getRoles(): Promise<Role[]> {
     return await this.roleService.findMany({});
   }
 
   @Get(':roleId')
-  @RequirePermission(PermissionResource.Role, PermissionAction.SELECT)
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.Role)
   @ApiParam({
     name: 'roleId',
     schema: {type: 'string'},
@@ -65,7 +60,7 @@ export class RoleController {
   }
 
   @Patch(':roleId')
-  @RequirePermission(PermissionResource.Role, PermissionAction.UPDATE)
+  @RequirePermission(PermissionAction.update, Prisma.ModelName.Role)
   @ApiParam({
     name: 'roleId',
     schema: {type: 'string'},
@@ -95,7 +90,7 @@ export class RoleController {
   }
 
   @Delete(':roleId')
-  @RequirePermission(PermissionResource.Role, PermissionAction.DELETE)
+  @RequirePermission(PermissionAction.delete, Prisma.ModelName.Role)
   @ApiParam({
     name: 'roleId',
     schema: {type: 'string'},

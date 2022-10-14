@@ -11,7 +11,6 @@ import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {
   Permission,
   PermissionAction,
-  PermissionResource,
   Prisma,
   TrustedEntityType,
 } from '@prisma/client';
@@ -25,7 +24,7 @@ export class PermissionController {
 
   @Get('resources')
   listPermissionResources() {
-    return Object.values(PermissionResource);
+    return Object.values(Prisma.ModelName);
   }
 
   @Get('acctions')
@@ -40,8 +39,8 @@ export class PermissionController {
       a: {
         summary: '1. Create',
         value: {
-          resource: PermissionResource.Role,
-          action: PermissionAction.CREATE,
+          resource: Prisma.ModelName.Role,
+          action: PermissionAction.create,
           trustedEntityType: TrustedEntityType.USER,
           trustedEntityId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
         },
@@ -89,8 +88,8 @@ export class PermissionController {
       a: {
         summary: '1. Update name',
         value: {
-          resource: PermissionResource.Role,
-          action: PermissionAction.UPDATE,
+          resource: Prisma.ModelName.Role,
+          action: PermissionAction.update,
           trustedEntityType: TrustedEntityType.USER,
           trustedEntityId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
         },

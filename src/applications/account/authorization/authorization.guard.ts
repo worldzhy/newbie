@@ -2,8 +2,7 @@ import {Injectable, CanActivate, ExecutionContext} from '@nestjs/common';
 import {Reflector} from '@nestjs/core';
 import {
   PermissionAction,
-  PermissionResource,
-  Role,
+  Prisma,
   TrustedEntityType,
   UserToRole,
 } from '@prisma/client';
@@ -23,7 +22,7 @@ export class AuthorizationGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     // [step 1] Get required permission.
     const requiredPermission = this.reflector.getAllAndOverride<{
-      resource: PermissionResource;
+      resource: Prisma.ModelName;
       action: PermissionAction;
     }>(PERMISSION_KEY, [context.getHandler(), context.getClass()]);
 

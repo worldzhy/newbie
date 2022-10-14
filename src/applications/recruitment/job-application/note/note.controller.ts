@@ -11,12 +11,7 @@ import {
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {JobApplicationNoteService} from './note.service';
 
-import {
-  JobApplicationNote,
-  PermissionAction,
-  PermissionResource,
-  Prisma,
-} from '@prisma/client';
+import {JobApplicationNote, PermissionAction, Prisma} from '@prisma/client';
 import {JobApplicationService} from '../job-application.service';
 import {RequirePermission} from '../../../account/authorization/authorization.decorator';
 
@@ -30,8 +25,8 @@ export class JobApplicationNoteController {
   //* Create
   @Post('')
   @RequirePermission(
-    PermissionResource.JobApplicationNote,
-    PermissionAction.CREATE
+    PermissionAction.create,
+    Prisma.ModelName.JobApplicationNote
   )
   @ApiBody({
     description: '',
@@ -65,20 +60,14 @@ export class JobApplicationNoteController {
 
   //* Get many
   @Get('')
-  @RequirePermission(
-    PermissionResource.JobApplicationNote,
-    PermissionAction.SELECT
-  )
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.JobApplicationNote)
   async getJobApplicationNotes(): Promise<JobApplicationNote[]> {
     return await this.jobApplicationNoteService.findMany({});
   }
 
   //* Get
   @Get(':noteId')
-  @RequirePermission(
-    PermissionResource.JobApplicationNote,
-    PermissionAction.SELECT
-  )
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.JobApplicationNote)
   @ApiParam({
     name: 'noteId',
     schema: {type: 'string'},
@@ -96,8 +85,8 @@ export class JobApplicationNoteController {
   //* Update
   @Patch(':noteId')
   @RequirePermission(
-    PermissionResource.JobApplicationNote,
-    PermissionAction.UPDATE
+    PermissionAction.update,
+    Prisma.ModelName.JobApplicationNote
   )
   @ApiParam({
     name: 'noteId',
@@ -129,8 +118,8 @@ export class JobApplicationNoteController {
   //* Delete
   @Delete(':noteId')
   @RequirePermission(
-    PermissionResource.JobApplicationNote,
-    PermissionAction.DELETE
+    PermissionAction.delete,
+    Prisma.ModelName.JobApplicationNote
   )
   @ApiParam({
     name: 'noteId',

@@ -4,7 +4,6 @@ import {ProcessingStepService} from './processing-step.service';
 import {
   Prisma,
   JobApplicationProcessingStep,
-  PermissionResource,
   PermissionAction,
 } from '@prisma/client';
 import {RequirePermission} from '../../../account/authorization/authorization.decorator';
@@ -18,8 +17,8 @@ export class ProcessingStepController {
   //* Get many
   @Get('')
   @RequirePermission(
-    PermissionResource.JobApplicationProcessingStep,
-    PermissionAction.SELECT
+    PermissionAction.read,
+    Prisma.ModelName.JobApplicationProcessingStep
   )
   async getProcessingSteps(): Promise<JobApplicationProcessingStep[]> {
     return await this.environmentService.findMany({});
@@ -28,8 +27,8 @@ export class ProcessingStepController {
   //* Get
   @Get(':processingStepId')
   @RequirePermission(
-    PermissionResource.JobApplicationProcessingStep,
-    PermissionAction.SELECT
+    PermissionAction.read,
+    Prisma.ModelName.JobApplicationProcessingStep
   )
   @ApiParam({
     name: 'processingStepId',
@@ -47,8 +46,8 @@ export class ProcessingStepController {
   //* Update
   @Patch(':processingStepId')
   @RequirePermission(
-    PermissionResource.JobApplicationProcessingStep,
-    PermissionAction.UPDATE
+    PermissionAction.update,
+    Prisma.ModelName.JobApplicationProcessingStep
   )
   @ApiParam({
     name: 'processingStepId',
@@ -90,8 +89,8 @@ export class ProcessingStepController {
   //* Delete
   @Delete(':processingStepId')
   @RequirePermission(
-    PermissionResource.JobApplicationProcessingStep,
-    PermissionAction.DELETE
+    PermissionAction.delete,
+    Prisma.ModelName.JobApplicationProcessingStep
   )
   @ApiParam({
     name: 'processingStepId',

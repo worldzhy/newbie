@@ -1,34 +1,28 @@
-import {AbilityBuilder, createMongoAbility, defineAbility} from '@casl/ability';
-import {createPrismaAbility, Subjects} from '@casl/prisma';
-import {createAbilityFactory} from '@casl/prisma/dist/types/createAbilityFactory';
+import {AbilityBuilder, PureAbility} from '@casl/ability';
+import {PrismaQuery, createPrismaAbility} from '@casl/prisma';
 import {Injectable} from '@nestjs/common';
-import {User, UserProfile} from '@prisma/client';
+import {PermissionAction, Prisma, User, UserToRole} from '@prisma/client';
 
-enum Action {
-  Manage = 'manage',
-  Create = 'create',
-  Read = 'read',
-  Update = 'update',
-  Delete = 'delete',
-}
-
-// type AppSubjects = Subjects<{
-//   User: User;
-//   UserProfile: UserProfile;
-// }>;
+export type AppAbility = PureAbility<
+  [PermissionAction, Prisma.ModelName | 'all'],
+  PrismaQuery
+>;
 
 @Injectable()
 export class CaslAbilityFactory {
-  createForUser(user: User) {
-    const {can, cannot, build} = new AbilityBuilder(createMongoAbility);
+  async createAbility(user: User) {
+    const {can, cannot, build} = new AbilityBuilder<AppAbility>(
+      createPrismaAbility
+    );
 
-    if (user) {
-      can('manage', 'all'); // read-write access to everything
-    } else {
-      can('read', 'all'); // read-only access to everything
-    }
+    user['userToRoles'].map((userToRole: UserToRole) => {
+      if (userToRole['role'].name === 'Admin') {
+        // 'manage' and 'all' are special keywords in CASL. manage represents any action and all represents any subject.
+        can('manage', 'all');
+      }
+    });
 
-    can(Action.Update, 'User', {name: 'henry'});
+    // Customize user permissions here
 
     return build();
   }

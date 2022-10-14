@@ -11,12 +11,7 @@ import {
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {CandidateCertificationService} from './certification.service';
 
-import {
-  CandidateCertification,
-  PermissionAction,
-  PermissionResource,
-  Prisma,
-} from '@prisma/client';
+import {CandidateCertification, PermissionAction, Prisma} from '@prisma/client';
 import {CandidateService} from '../candidate.service';
 import {RequirePermission} from '../../../account/authorization/authorization.decorator';
 
@@ -30,8 +25,8 @@ export class CandidateCertificationController {
   //* Create
   @Post('')
   @RequirePermission(
-    PermissionResource.CandidateCertification,
-    PermissionAction.CREATE
+    PermissionAction.create,
+    Prisma.ModelName.CandidateCertification
   )
   @ApiBody({
     description: '',
@@ -61,8 +56,8 @@ export class CandidateCertificationController {
   //* Get many
   @Get('')
   @RequirePermission(
-    PermissionResource.CandidateCertification,
-    PermissionAction.SELECT
+    PermissionAction.read,
+    Prisma.ModelName.CandidateCertification
   )
   async getCandidateCertifications(): Promise<CandidateCertification[]> {
     return await this.candidateCertificationService.findMany({});
@@ -71,8 +66,8 @@ export class CandidateCertificationController {
   //* Get
   @Get(':certificationId')
   @RequirePermission(
-    PermissionResource.CandidateCertification,
-    PermissionAction.SELECT
+    PermissionAction.read,
+    Prisma.ModelName.CandidateCertification
   )
   @ApiParam({
     name: 'certificationId',
@@ -91,8 +86,8 @@ export class CandidateCertificationController {
   //* Update
   @Patch(':certificationId')
   @RequirePermission(
-    PermissionResource.CandidateCertification,
-    PermissionAction.UPDATE
+    PermissionAction.update,
+    Prisma.ModelName.CandidateCertification
   )
   @ApiParam({
     name: 'certificationId',
@@ -124,8 +119,8 @@ export class CandidateCertificationController {
   //* Delete
   @Delete(':certificationId')
   @RequirePermission(
-    PermissionResource.CandidateCertification,
-    PermissionAction.DELETE
+    PermissionAction.delete,
+    Prisma.ModelName.CandidateCertification
   )
   @ApiParam({
     name: 'certificationId',

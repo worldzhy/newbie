@@ -10,12 +10,7 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {CandidateTrainingService} from './training.service';
-import {
-  CandidateTraining,
-  PermissionAction,
-  PermissionResource,
-  Prisma,
-} from '@prisma/client';
+import {CandidateTraining, PermissionAction, Prisma} from '@prisma/client';
 import {CandidateService} from '../candidate.service';
 import {RequirePermission} from 'src/applications/account/authorization/authorization.decorator';
 
@@ -29,8 +24,8 @@ export class CandidateTrainingController {
   //* Create
   @Post('')
   @RequirePermission(
-    PermissionResource.CandidateTraining,
-    PermissionAction.CREATE
+    PermissionAction.create,
+    Prisma.ModelName.CandidateTraining
   )
   @ApiBody({
     description: '',
@@ -59,20 +54,14 @@ export class CandidateTrainingController {
 
   //* Get many
   @Get('')
-  @RequirePermission(
-    PermissionResource.CandidateTraining,
-    PermissionAction.SELECT
-  )
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.CandidateTraining)
   async getCandidateTrainings(): Promise<CandidateTraining[]> {
     return await this.candidateTrainingService.findMany({});
   }
 
   //* Get
   @Get(':trainingId')
-  @RequirePermission(
-    PermissionResource.CandidateTraining,
-    PermissionAction.SELECT
-  )
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.CandidateTraining)
   @ApiParam({
     name: 'trainingId',
     schema: {type: 'string'},
@@ -90,8 +79,8 @@ export class CandidateTrainingController {
   //* Update
   @Patch(':trainingId')
   @RequirePermission(
-    PermissionResource.CandidateTraining,
-    PermissionAction.UPDATE
+    PermissionAction.update,
+    Prisma.ModelName.CandidateTraining
   )
   @ApiParam({
     name: 'trainingId',
@@ -123,8 +112,8 @@ export class CandidateTrainingController {
   //* Delete
   @Delete(':trainingId')
   @RequirePermission(
-    PermissionResource.CandidateTraining,
-    PermissionAction.DELETE
+    PermissionAction.delete,
+    Prisma.ModelName.CandidateTraining
   )
   @ApiParam({
     name: 'trainingId',

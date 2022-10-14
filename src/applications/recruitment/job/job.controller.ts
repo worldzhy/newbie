@@ -8,12 +8,7 @@ import {
   Param,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {
-  Prisma,
-  Job,
-  PermissionResource,
-  PermissionAction,
-} from '@prisma/client';
+import {Prisma, Job, PermissionAction} from '@prisma/client';
 import {RequirePermission} from '../../account/authorization/authorization.decorator';
 import {JobService} from './job.service';
 
@@ -24,7 +19,7 @@ export class JobController {
   constructor(private jobService: JobService) {}
 
   @Post('')
-  @RequirePermission(PermissionResource.Job, PermissionAction.CREATE)
+  @RequirePermission(PermissionAction.create, Prisma.ModelName.Job)
   @ApiBody({
     description: 'Create a user job.',
     examples: {
@@ -63,13 +58,13 @@ export class JobController {
   }
 
   @Get('')
-  @RequirePermission(PermissionResource.Job, PermissionAction.SELECT)
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.Job)
   async getJobs(): Promise<Job[]> {
     return await this.jobService.findMany({});
   }
 
   @Get(':jobId')
-  @RequirePermission(PermissionResource.Job, PermissionAction.SELECT)
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.Job)
   @ApiParam({
     name: 'jobId',
     schema: {type: 'string'},
@@ -81,7 +76,7 @@ export class JobController {
   }
 
   @Patch(':jobId')
-  @RequirePermission(PermissionResource.Job, PermissionAction.UPDATE)
+  @RequirePermission(PermissionAction.update, Prisma.ModelName.Job)
   @ApiParam({
     name: 'jobId',
     schema: {type: 'string'},
@@ -114,7 +109,7 @@ export class JobController {
   }
 
   @Delete(':jobId')
-  @RequirePermission(PermissionResource.Job, PermissionAction.DELETE)
+  @RequirePermission(PermissionAction.delete, Prisma.ModelName.Job)
   @ApiParam({
     name: 'jobId',
     schema: {type: 'string'},
@@ -127,7 +122,7 @@ export class JobController {
   }
 
   @Get(':jobId/job-applications')
-  @RequirePermission(PermissionResource.Job, PermissionAction.SELECT)
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.Job)
   @ApiParam({
     name: 'jobId',
     schema: {type: 'string'},

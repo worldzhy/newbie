@@ -10,12 +10,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {
-  Prisma,
-  Candidate,
-  PermissionResource,
-  PermissionAction,
-} from '@prisma/client';
+import {Prisma, Candidate, PermissionAction} from '@prisma/client';
 import {RequirePermission} from '../../account/authorization/authorization.decorator';
 import {CandidateService} from './candidate.service';
 
@@ -26,7 +21,7 @@ export class CandidateController {
   constructor(private candidateService: CandidateService) {}
 
   @Post('')
-  @RequirePermission(PermissionResource.Candidate, PermissionAction.CREATE)
+  @RequirePermission(PermissionAction.create, Prisma.ModelName.Candidate)
   @ApiBody({
     description: 'Create a user candidate.',
     examples: {
@@ -67,7 +62,7 @@ export class CandidateController {
   }
 
   @Get('')
-  @RequirePermission(PermissionResource.Candidate, PermissionAction.SELECT)
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.Candidate)
   async getCandidates(
     @Query() query: {name?: string; page?: string}
   ): Promise<Candidate[]> {
@@ -111,7 +106,7 @@ export class CandidateController {
   }
 
   @Get(':candidateId')
-  @RequirePermission(PermissionResource.Candidate, PermissionAction.SELECT)
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.Candidate)
   @ApiParam({
     name: 'candidateId',
     schema: {type: 'string'},
@@ -125,7 +120,7 @@ export class CandidateController {
   }
 
   @Patch(':candidateId')
-  @RequirePermission(PermissionResource.Candidate, PermissionAction.UPDATE)
+  @RequirePermission(PermissionAction.update, Prisma.ModelName.Candidate)
   @ApiParam({
     name: 'candidateId',
     schema: {type: 'string'},
@@ -158,7 +153,7 @@ export class CandidateController {
   }
 
   @Delete(':candidateId')
-  @RequirePermission(PermissionResource.Candidate, PermissionAction.DELETE)
+  @RequirePermission(PermissionAction.delete, Prisma.ModelName.Candidate)
   @ApiParam({
     name: 'candidateId',
     schema: {type: 'string'},
@@ -173,7 +168,7 @@ export class CandidateController {
   }
 
   @Get(':candidateId/job-applications')
-  @RequirePermission(PermissionResource.Candidate, PermissionAction.SELECT)
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.Candidate)
   @ApiParam({
     name: 'candidateId',
     schema: {type: 'string'},

@@ -319,62 +319,27 @@ model EndpointPermission {
 model Permission {
   // Permission of Resource
 
-  id                Int                @id @default(autoincrement())
-  resource          PermissionResource
+  id                Int               @id @default(autoincrement())
   action            PermissionAction
+  resource          String
+  fields            String[] // an array of fields to which user has (or not) access
+  conditions        Json? // an object of conditions which restricts the rule scope
+  inverted          Boolean? // indicates whether rule allows or forbids something
+  reason            String? // message which explains why rule is forbidden
   trustedEntityType TrustedEntityType
-  trustedEntityId   String             @db.Uuid
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-
-  @@schema("application/account")
-}
-
-enum PermissionResource {
-  // Account resources
-  Organization
-  Role
-  User
-  UserJwt
-  UserProfile
-  Permission
-  // Project management resources
-  Project
-  ProjectCheckpoint
-  ProjectEnvironment
-  InfrastructureStack
-  // EngineD resources
-  PostgresqlDatasource
-  PostgresqlDatasourceConstraint
-  PostgresqlDatasourceTable
-  PostgresqlDatasourceTableColumn
-  ElasticsearchDatasource
-  ElasticsearchDatasourceIndex
-  ElasticsearchDatasourceIndexField
-  DatatransPipeline
-  DatatransMission
-  ElasticsearchDataboard
-  ElasticsearchDataboardColumn
-  // Recruitment resources
-  Candidate
-  CandidateCertification
-  CandidateTraining
-  CandidateTesting
-  Job
-  JobApplication
-  JobApplicationProcessingStep
-  JobApplicationNote
-  JobApplicationTask
-  JobApplicationTest
+  trustedEntityId   String            @db.Uuid
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
 
   @@schema("application/account")
 }
 
 enum PermissionAction {
-  CREATE
-  DELETE
-  SELECT
-  UPDATE
+  manage // it represents any action
+  create
+  delete
+  read
+  update
 
   @@schema("application/account")
 }
@@ -393,7 +358,8 @@ enum TrustedEntityType {
 // * Project                                                      //
 // * ProjectCheckpoint                                            //
 // * ProjectEnvironment                                           //
-// * InfrastructureStack                                          //
+// * CloudFormationStack                                          //
+// * PulumiStack                                                  //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
 model Project {
@@ -819,7 +785,6 @@ enum ElasticsearchDataboardColumnFormatter {
 // * JobApplicationProcessingStep                                 //
 // * JobApplicationNote                                           //
 // * JobApplicationTask                                           //
-// * JobApplicationTest                                           //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
 model Candidate {

@@ -10,12 +10,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {
-  PermissionAction,
-  PermissionResource,
-  Prisma,
-  User,
-} from '@prisma/client';
+import {PermissionAction, Prisma, User} from '@prisma/client';
 import {UserService} from './user.service';
 import * as validator from '../../../../toolkits/validators/account.validator';
 import {RequirePermission} from '../../authorization/authorization.decorator';
@@ -28,7 +23,7 @@ export class UserController {
   private userService = new UserService();
 
   @Post('')
-  @RequirePermission(PermissionResource.User, PermissionAction.SELECT)
+  @RequirePermission(PermissionAction.create, Prisma.ModelName.User)
   @ApiBody({
     description: '',
     examples: {
@@ -47,7 +42,7 @@ export class UserController {
   }
 
   @Get('')
-  @RequirePermission(PermissionResource.User, PermissionAction.SELECT)
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.User)
   @ApiParam({
     required: false,
     name: 'name',
@@ -129,7 +124,7 @@ export class UserController {
   }
 
   @Get(':userId')
-  @RequirePermission(PermissionResource.User, PermissionAction.SELECT)
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.User)
   @ApiParam({
     name: 'userId',
     schema: {type: 'string'},
@@ -144,7 +139,7 @@ export class UserController {
   }
 
   @Delete(':userId')
-  @RequirePermission(PermissionResource.User, PermissionAction.DELETE)
+  @RequirePermission(PermissionAction.delete, Prisma.ModelName.User)
   @ApiParam({
     name: 'userId',
     schema: {type: 'string'},
@@ -157,7 +152,7 @@ export class UserController {
   }
 
   @Patch(':userId/change-password')
-  @RequirePermission(PermissionResource.User, PermissionAction.UPDATE)
+  @RequirePermission(PermissionAction.update, Prisma.ModelName.User)
   @ApiParam({
     name: 'userId',
     schema: {type: 'string'},
@@ -230,7 +225,7 @@ export class UserController {
   }
 
   @Patch(':userId/reset-password')
-  @RequirePermission(PermissionResource.User, PermissionAction.UPDATE)
+  @RequirePermission(PermissionAction.update, Prisma.ModelName.User)
   @ApiParam({
     name: 'userId',
     schema: {type: 'string'},
