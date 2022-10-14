@@ -1,16 +1,18 @@
 import {
   ElasticsearchDatasource,
+  PermissionAction,
+  PermissionResource,
   PostgresqlDatasource,
   TrustedEntityType,
 } from '@prisma/client';
 import {AccountController} from '../src/applications/account/account.controller';
-import {ProjectController} from '../src/applications/pmgmt/project/project.controller';
-import {DatatransPipelineController} from '../src/applications/engined/datatrans/pipeline/pipeline.controller';
-import {ElasticsearchDatasourceController} from '../src/applications/engined/datasource/elasticsearch/elasticsearch-datasource.controller';
-import {PostgresqlDatasourceController} from '../src/applications/engined/datasource/postgresql/postgresql-datasource.controller';
-import {PermissionController} from '../src/applications/account/authorization/permission/permission.controller';
 import {OrganizationController} from '../src/applications/account/organization/organization.controller';
 import {RoleController} from '../src/applications/account/organization/role/role.controller';
+import {PermissionController} from '../src/applications/account/authorization/permission/permission.controller';
+import {ProjectController} from '../src/applications/pmgmt/project/project.controller';
+import {ElasticsearchDatasourceController} from '../src/applications/engined/datasource/elasticsearch/elasticsearch-datasource.controller';
+import {PostgresqlDatasourceController} from '../src/applications/engined/datasource/postgresql/postgresql-datasource.controller';
+import {DatatransPipelineController} from '../src/applications/engined/datatrans/pipeline/pipeline.controller';
 
 async function main() {
   console.log('Start seeding ...');
@@ -23,36 +25,42 @@ async function main() {
   const permissionController = new PermissionController();
   const permissionResources = permissionController.listPermissionResources();
   const permissionActions = permissionController.listPermissionActions();
+  const RoleName = {
+    Admin: 'Admin',
+    Recruiter: 'Recruiter',
+    Dispatcher: 'Dispatcher',
+    Tester: 'Tester',
+    Reviewer: 'Reviewer',
+  };
 
   const organization = await organizationController.createOrganization({
     name: 'InceptionPad',
   });
-
   const roles = [
     {
-      name: 'Admin',
+      name: RoleName.Admin,
       organizationId: organization.id,
     },
     {
-      name: 'Recruiter',
+      name: RoleName.Recruiter,
       organizationId: organization.id,
     },
     {
-      name: 'Dispatcher',
+      name: RoleName.Dispatcher,
       organizationId: organization.id,
     },
     {
-      name: 'Tester',
+      name: RoleName.Tester,
       organizationId: organization.id,
     },
     {
-      name: 'Reviewer',
+      name: RoleName.Reviewer,
       organizationId: organization.id,
     },
   ];
   for (let i = 0; i < roles.length; i++) {
     const role = await roleController.createRole(roles[i]);
-    if (role.name === 'Admin') {
+    if (role.name === RoleName.Admin) {
       // Add all permissions to Admin role.
       for (const resource of permissionResources) {
         for (const action of permissionActions) {
@@ -69,6 +77,40 @@ async function main() {
         username: 'admin',
         password: 'Abc1234!',
         userToRoles: {create: [{roleId: role.id}]},
+      });
+    } else if (role.name === RoleName.Recruiter) {
+      await permissionController.createPermission({
+        resource: PermissionResource.JobApplication,
+        action: PermissionAction.CREATE,
+        trustedEntityType: TrustedEntityType.ROLE,
+        trustedEntityId: role.id,
+      });
+      await permissionController.createPermission({
+        resource: PermissionResource.JobApplicationProcessingStep,
+        action: PermissionAction.CREATE,
+        trustedEntityType: TrustedEntityType.ROLE,
+        trustedEntityId: role.id,
+      });
+    } else if (role.name === RoleName.Dispatcher) {
+      await permissionController.createPermission({
+        resource: PermissionResource.JobApplicationProcessingStep,
+        action: PermissionAction.UPDATE,
+        trustedEntityType: TrustedEntityType.ROLE,
+        trustedEntityId: role.id,
+      });
+    } else if (role.name === RoleName.Tester) {
+      await permissionController.createPermission({
+        resource: PermissionResource.JobApplicationProcessingStep,
+        action: PermissionAction.UPDATE,
+        trustedEntityType: TrustedEntityType.ROLE,
+        trustedEntityId: role.id,
+      });
+    } else if (role.name === RoleName.Reviewer) {
+      await permissionController.createPermission({
+        resource: PermissionResource.JobApplicationProcessingStep,
+        action: PermissionAction.UPDATE,
+        trustedEntityType: TrustedEntityType.ROLE,
+        trustedEntityId: role.id,
       });
     }
   }
