@@ -5,6 +5,7 @@ import {ElasticModule} from '../toolkits/elastic/elastic.module';
 import {PrismaModule} from '../toolkits/prisma/prisma.module';
 import {AccountModule} from './account/account.module';
 import {EnginedModule} from './engined/engined.module';
+import {FileManagementModule} from './fmgmt/fmgmt.module';
 import {ProjectManagementModule} from './pmgmt/pmgmt.module';
 import {RecruitmentModule} from './recruitment/recruitment.module';
 import {AuthenticationGuard} from './account/authentication/authentication.guard';
@@ -24,8 +25,9 @@ import {ApplicationController} from './application.controller';
 
     // Application
     AccountModule,
-    // EnginedModule,
-    // ProjectManagementModule,
+    EnginedModule,
+    ProjectManagementModule,
+    FileManagementModule,
     RecruitmentModule,
   ],
   providers: [
