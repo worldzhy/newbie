@@ -592,14 +592,15 @@ enum ElasticsearchDataboardColumnFormatter {
 // !!            [Application] File Management models             //
 // !! ------------------------------------------------------------ //
 // * File                                                          //
+// * Folder                                                        //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
 
 model File {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name      String
-  mimeType  String
-  s3Bucket  String
-  s3Path    String
+  mimeType  String?
+  s3Bucket  String?
+  s3Path    String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   folder    Folder?  @relation(fields: [folderId], references: [id])

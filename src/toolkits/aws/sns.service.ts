@@ -11,13 +11,7 @@ export class SnsService {
       region: getAwsConfig().region,
     });
   }
-  /**
-   * Publish notification
-   *
-   * @param {{PhoneNumber: string; Message: string}} params
-   * @returns
-   * @memberof SnsService
-   */
+
   async publish(params: {PhoneNumber: string; Message: string}) {
     const {PhoneNumber, Message} = params;
     return await this.client.send(

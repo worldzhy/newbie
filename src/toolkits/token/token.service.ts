@@ -14,11 +14,7 @@ export class TokenService extends JwtService {
   }
 
   parse(token: string): string | {[key: string]: any} | null {
-    try {
-      const arr = token.split(' ');
-      return this.decode(arr[1]);
-    } catch (error) {
-      throw error;
-    }
+    const arr = token.split(' ');
+    return this.decode(arr[1]);
   }
 }
