@@ -9,7 +9,13 @@ import {
   Query,
   BadRequestException,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiParam,
+  ApiBody,
+  ApiQuery,
+} from '@nestjs/swagger';
 import {PermissionAction, Prisma, User, UserToRole} from '@prisma/client';
 import {UserService} from './user.service';
 import * as validator from '../../../../toolkits/validators/account.validator';
@@ -24,39 +30,34 @@ export class UserController {
 
   @Get('count')
   @RequirePermission(PermissionAction.read, Prisma.ModelName.User)
-  @ApiParam({
-    required: false,
-    name: 'name',
-    description: 'The string you want to search in the user pool.',
-    example: 'jack',
-    schema: {type: 'string'},
-  })
+  @ApiQuery({name: 'name', type: 'string'})
   async countUsers(@Query() query: {name?: string}): Promise<number> {
     // [step 1] Construct where argument.
     let where: Prisma.UserWhereInput | undefined;
+    const conditions: object[] = [];
     if (query.name) {
       const name = query.name.trim();
       if (name.length > 0) {
-        where = {
-          OR: [
-            {username: {search: name}},
-            {
-              profiles: {
-                some: {
-                  OR: [
-                    {givenName: {search: name}},
-                    {familyName: {search: name}},
-                    {middleName: {search: name}},
-                  ],
-                },
-              },
+        conditions.push({username: {search: name}});
+        conditions.push({
+          profiles: {
+            some: {
+              OR: [
+                {givenName: {search: name}},
+                {familyName: {search: name}},
+                {middleName: {search: name}},
+              ],
             },
-          ],
-        };
+          },
+        });
       }
     }
 
-    // [step 2] Count users.
+    if (conditions.length > 0) {
+      where = {OR: conditions};
+    }
+
+    // [step 2] Count.
     return await this.userService.count({
       where: where,
     });
@@ -103,26 +104,27 @@ export class UserController {
   ): Promise<User[]> {
     // [step 1] Construct where argument.
     let where: Prisma.UserWhereInput | undefined;
+    const whereConditions: object[] = [];
     if (query.name) {
       const name = query.name.trim();
       if (name.length > 0) {
-        where = {
-          OR: [
-            {username: {search: name}},
-            {
-              profiles: {
-                some: {
-                  OR: [
-                    {givenName: {search: name}},
-                    {familyName: {search: name}},
-                    {middleName: {search: name}},
-                  ],
-                },
-              },
+        whereConditions.push({username: {search: name}});
+        whereConditions.push({
+          profiles: {
+            some: {
+              OR: [
+                {givenName: {search: name}},
+                {familyName: {search: name}},
+                {middleName: {search: name}},
+              ],
             },
-          ],
-        };
+          },
+        });
       }
+    }
+
+    if (whereConditions.length > 0) {
+      where = {OR: whereConditions};
     }
 
     // [step 2] Construct take and skip arguments.

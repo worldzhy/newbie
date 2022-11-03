@@ -42,6 +42,10 @@ export class JobApplicationService {
     return await this.prisma.jobApplication.delete(params);
   }
 
+  async count(params: Prisma.JobApplicationCountArgs): Promise<number> {
+    return await this.prisma.jobApplication.count(params);
+  }
+
   async checkExistence(id: string) {
     const count = await this.prisma.jobApplication.count({
       where: {id},

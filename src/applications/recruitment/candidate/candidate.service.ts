@@ -34,6 +34,10 @@ export class CandidateService {
     return await this.prisma.candidate.delete(params);
   }
 
+  async count(params: Prisma.CandidateCountArgs): Promise<number> {
+    return await this.prisma.candidate.count(params);
+  }
+
   async checkExistence(id: string) {
     const count = await this.prisma.candidate.count({
       where: {id},

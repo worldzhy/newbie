@@ -7,8 +7,15 @@ import {
   Body,
   Param,
   BadRequestException,
+  Query,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiParam,
+  ApiBody,
+  ApiQuery,
+} from '@nestjs/swagger';
 import {JobApplicationService} from './job-application.service';
 
 import {
@@ -28,7 +35,49 @@ export class JobApplicationController {
   private jobApplicationService = new JobApplicationService();
   private candidateService = new CandidateService();
 
-  //* Create
+  @Get('count')
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.JobApplication)
+  @ApiQuery({name: 'name', type: 'string'})
+  @ApiQuery({name: 'position', type: 'string'})
+  async countJobApplications(
+    @Query() query: {name?: string; position: string}
+  ): Promise<number> {
+    // [step 1] Construct where argument.
+    let where: Prisma.JobApplicationWhereInput | undefined;
+    const whereConditions: object[] = [];
+    if (query.name) {
+      const name = query.name.trim();
+      if (name.length > 0) {
+        whereConditions.push({
+          candidate: {
+            is: {
+              OR: [
+                {givenName: {search: name}},
+                {familyName: {search: name}},
+                {middleName: {search: name}},
+              ],
+            },
+          },
+        });
+      }
+    }
+    if (query.position) {
+      const position = query.position.trim();
+      if (position.length > 0) {
+        whereConditions.push({job: {is: {position: {search: position}}}});
+      }
+    }
+
+    if (whereConditions.length > 0) {
+      where = {OR: whereConditions};
+    }
+
+    // [step 2] Count.
+    return await this.jobApplicationService.count({
+      where: where,
+    });
+  }
+
   @Post('')
   @RequirePermission(PermissionAction.create, Prisma.ModelName.JobApplication)
   @ApiBody({
@@ -72,14 +121,68 @@ export class JobApplicationController {
     });
   }
 
-  //* Get many
   @Get('')
   @RequirePermission(PermissionAction.read, Prisma.ModelName.JobApplication)
-  async getJobApplications(): Promise<JobApplication[]> {
-    return await this.jobApplicationService.findMany({});
+  @ApiQuery({name: 'name', type: 'string'})
+  @ApiQuery({name: 'position', type: 'string'})
+  @ApiQuery({name: 'page', type: 'string'})
+  async getJobApplications(
+    @Query() query: {name?: string; position?: string; page?: string}
+  ): Promise<JobApplication[]> {
+    // [step 1] Construct where argument.
+    let where: Prisma.JobApplicationWhereInput | undefined;
+    const whereConditions: object[] = [];
+    if (query.name) {
+      const name = query.name.trim();
+      if (name.length > 0) {
+        whereConditions.push({
+          candidate: {
+            is: {
+              OR: [
+                {givenName: {search: name}},
+                {familyName: {search: name}},
+                {middleName: {search: name}},
+              ],
+            },
+          },
+        });
+      }
+    }
+    if (query.position) {
+      const position = query.position.trim();
+      if (position.length > 0) {
+        whereConditions.push({job: {is: {position: {search: position}}}});
+      }
+    }
+
+    if (whereConditions.length > 0) {
+      where = {OR: whereConditions};
+    }
+
+    // [step 2] Construct take and skip arguments.
+    let take: number, skip: number;
+    if (query.page) {
+      // Actually 'page' is string because it comes from URL param.
+      const page = parseInt(query.page);
+      if (page > 0) {
+        take = 10;
+        skip = 10 * (page - 1);
+      } else {
+        throw new BadRequestException('The page must be larger than 0.');
+      }
+    } else {
+      take = 10;
+      skip = 0;
+    }
+
+    // [step 3] Get job applications.
+    return await this.jobApplicationService.findMany({
+      where: where,
+      take: take,
+      skip: skip,
+    });
   }
 
-  //* Get
   @Get(':jobApplicationId')
   @RequirePermission(PermissionAction.read, Prisma.ModelName.JobApplication)
   @ApiParam({
@@ -96,7 +199,6 @@ export class JobApplicationController {
     });
   }
 
-  //* Update
   @Patch(':jobApplicationId')
   @RequirePermission(PermissionAction.update, Prisma.ModelName.JobApplication)
   @ApiParam({
@@ -126,7 +228,6 @@ export class JobApplicationController {
     });
   }
 
-  //* Delete
   @Delete(':jobApplicationId')
   @RequirePermission(PermissionAction.delete, Prisma.ModelName.JobApplication)
   @ApiParam({

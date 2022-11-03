@@ -9,7 +9,13 @@ import {
   Query,
   BadRequestException,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiParam,
+  ApiBody,
+  ApiQuery,
+} from '@nestjs/swagger';
 import {Prisma, Candidate, PermissionAction} from '@prisma/client';
 import {RequirePermission} from '../../account/authorization/authorization.decorator';
 import {CandidateService} from './candidate.service';
@@ -19,6 +25,32 @@ import {CandidateService} from './candidate.service';
 @Controller('recruitment-candidates')
 export class CandidateController {
   constructor(private candidateService: CandidateService) {}
+
+  @Get('count')
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.Candidate)
+  @ApiQuery({name: 'name', type: 'string'})
+  async countCandidates(@Query() query: {name?: string}): Promise<number> {
+    // [step 1] Construct where argument.
+    let where: Prisma.CandidateWhereInput | undefined;
+    const whereConditions: object[] = [];
+    if (query.name) {
+      const name = query.name.trim();
+      if (name.length > 0) {
+        whereConditions.push({givenName: {search: name}});
+        whereConditions.push({familyName: {search: name}});
+        whereConditions.push({middleName: {search: name}});
+      }
+    }
+
+    if (whereConditions.length > 0) {
+      where = {OR: whereConditions};
+    }
+
+    // [step 2] Count.
+    return await this.candidateService.count({
+      where: where,
+    });
+  }
 
   @Post('')
   @RequirePermission(PermissionAction.create, Prisma.ModelName.Candidate)
@@ -63,22 +95,25 @@ export class CandidateController {
 
   @Get('')
   @RequirePermission(PermissionAction.read, Prisma.ModelName.Candidate)
+  @ApiQuery({name: 'name', type: 'string'})
+  @ApiQuery({name: 'page', type: 'string'})
   async getCandidates(
     @Query() query: {name?: string; page?: string}
   ): Promise<Candidate[]> {
     // [step 1] Construct where argument.
     let where: Prisma.CandidateWhereInput | undefined;
+    const whereConditions: object[] = [];
     if (query.name) {
       const name = query.name.trim();
       if (name.length > 0) {
-        where = {
-          OR: [
-            {givenName: {search: name}},
-            {familyName: {search: name}},
-            {middleName: {search: name}},
-          ],
-        };
+        whereConditions.push({givenName: {search: name}});
+        whereConditions.push({familyName: {search: name}});
+        whereConditions.push({middleName: {search: name}});
       }
+    }
+
+    if (whereConditions.length > 0) {
+      where = {OR: whereConditions};
     }
 
     // [step 2] Construct take and skip arguments.
@@ -97,7 +132,7 @@ export class CandidateController {
       skip = 0;
     }
 
-    // [step 3] Get user candidates.
+    // [step 3] Get users.
     return await this.candidateService.findMany({
       where: where,
       take: take,
