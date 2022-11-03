@@ -13,17 +13,19 @@ import {ApiTags, ApiBearerAuth, ApiBody, ApiParam} from '@nestjs/swagger';
 import {
   Prisma,
   User,
-  UserJwt,
+  UserToken,
+  UserTokenStatus,
   UserStatus,
   VerificationCodeUse,
 } from '@prisma/client';
 import {UserService} from './organization/user/user.service';
-import {UserJwtService} from './organization/user/jwt/jwt.service';
+import {UserTokenService} from './organization/user/token/token.service';
 import {UserProfileService} from './organization/user/profile/profile.service';
 import {VerificationCodeService} from '../../microservices/verification-code/verification-code.service';
 import {EmailNotificationService} from '../../microservices/notification/email/email.service';
 import {SmsNotificationService} from '../../microservices/notification/sms/sms.service';
 import * as validator from '../../toolkits/validators/account.validator';
+import {TokenService} from '../../toolkits/token/token.service';
 import {Public} from './authentication/public/public.decorator';
 import {LoggingInByPassword} from './authentication/password/password.decorator';
 import {LoggingInByProfile} from './authentication/profile/profile.decorator';
@@ -34,7 +36,7 @@ import {LoggingInByVerificationCode} from './authentication/verification-code/ve
 @Controller('account')
 export class AccountController {
   private userService = new UserService();
-  private userJwtService = new UserJwtService();
+  private userTokenService = new UserTokenService();
   private profileService = new UserProfileService();
   private verificationCodeService = new VerificationCodeService();
   private emailNotificationService = new EmailNotificationService();
@@ -309,7 +311,7 @@ export class AccountController {
       account: string;
       password: string;
     }
-  ): Promise<UserJwt> {
+  ): Promise<UserToken> {
     return await this.login(body.account);
   }
 
@@ -350,7 +352,7 @@ export class AccountController {
       suffix?: string;
       birthday: Date;
     }
-  ): Promise<UserJwt> {
+  ): Promise<UserToken> {
     const profileService = new UserProfileService();
 
     // [step 1] It has been confirmed there is only one profile.
@@ -382,7 +384,7 @@ export class AccountController {
     body: {
       uuid: string;
     }
-  ): Promise<UserJwt> {
+  ): Promise<UserToken> {
     return await this.login(body.uuid);
   }
 
@@ -420,7 +422,7 @@ export class AccountController {
       account: string;
       verificationCode: string;
     }
-  ): Promise<UserJwt> {
+  ): Promise<UserToken> {
     return await this.login(body.account);
   }
 
@@ -442,7 +444,11 @@ export class AccountController {
     @Body() body: {userId: string}
   ): Promise<{data: {message: string}}> {
     const accessToken = request.headers['authorization'].split(' ')[1];
-    await this.userJwtService.inactivateJWT(body.userId, accessToken);
+
+    await this.userTokenService.updateMany({
+      where: {AND: [{userId: body.userId}, {token: accessToken}]},
+      data: {status: UserTokenStatus.INACTIVE},
+    });
 
     // Always return success no matter if the user exists.
     return {
@@ -625,7 +631,10 @@ export class AccountController {
     }
 
     // [step 3] Disable active JSON web token if existed.
-    await this.userJwtService.inactivateJWTs(user.id);
+    await this.userTokenService.updateMany({
+      where: {userId: user.id},
+      data: {status: UserTokenStatus.INACTIVE},
+    });
 
     // [step 4] Update last login time.
     await this.userService.update({
@@ -634,9 +643,10 @@ export class AccountController {
     });
 
     // [step 5] Generate a new JSON web token.
-    return await this.userJwtService.createJWT({
-      userId: user.id,
-      sub: account,
+    const tokenService = new TokenService();
+    const token = tokenService.sign({userId: user.id, sub: account});
+    return await this.userTokenService.create({
+      data: {userId: user.id, token: token},
     });
   }
   /* End */

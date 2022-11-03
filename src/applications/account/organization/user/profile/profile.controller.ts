@@ -186,12 +186,13 @@ export class UserProfileController {
     schema: {type: 'string'},
     example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
   })
-  async deleteUser(
+  async deleteUserProfile(
     @Param('profileId') profileId: string
   ): Promise<UserProfile> {
     return await this.userProfileService.delete({
       where: {id: profileId},
     });
   }
+
   /* End */
 }

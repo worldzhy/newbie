@@ -223,18 +223,18 @@ enum UserStatus {
   @@schema("application/account")
 }
 
-model UserJwt {
-  id        Int           @id @default(autoincrement())
-  userId    String        @db.Uuid
+model UserToken {
+  id        Int             @id @default(autoincrement())
+  userId    String          @db.Uuid
   token     String
-  status    UserJwtStatus
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  status    UserTokenStatus @default(ACTIVE)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
 
   @@schema("application/account")
 }
 
-enum UserJwtStatus {
+enum UserTokenStatus {
   ACTIVE
   INACTIVE
 

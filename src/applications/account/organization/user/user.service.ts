@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {PrismaService} from '../../../../toolkits/prisma/prisma.service';
-import {Prisma, User} from '@prisma/client';
+import {Prisma, User, UserToRole} from '@prisma/client';
 import {generateHash} from '../../../../toolkits/utilities/common.util';
 import {verifyUuid} from '../../../../toolkits/validators/account.validator';
 
@@ -62,6 +62,10 @@ export class UserService {
     return await this.prisma.user.delete(params);
   }
 
+  async count(params: Prisma.UserCountArgs): Promise<number> {
+    return await this.prisma.user.count(params);
+  }
+
   /**
    * The account supports username / email / phone.
    */
@@ -76,6 +80,22 @@ export class UserService {
       });
       return users.length > 0 ? (users[0] as User) : null;
     }
+  }
+
+  async findUniqueOrThrowWithRoles(
+    params: Prisma.UserFindUniqueArgs
+  ): Promise<User> {
+    const user = await this.prisma.user.findUniqueOrThrow({
+      where: params.where,
+      include: {userToRoles: {select: {role: true}}},
+    });
+
+    user['roles'] = user.userToRoles.map(userToRole => {
+      return userToRole['role'];
+    });
+
+    const {userToRoles, ...result} = user;
+    return result;
   }
 
   /* End */

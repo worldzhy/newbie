@@ -29,7 +29,7 @@ import {
   PulumiStack,
   Role,
   User,
-  UserJwt,
+  UserToken,
   UserProfile,
 } from '@prisma/client';
 
@@ -38,7 +38,7 @@ export type PrismaSubjects = Subjects<{
   Organization: Organization;
   Role: Role;
   User: User;
-  UserJwt: UserJwt;
+  UserToken: UserToken;
   UserProfile: UserProfile;
   Permission: Permission;
   // Project management resources

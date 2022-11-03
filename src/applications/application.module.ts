@@ -3,6 +3,7 @@ import {Module, MiddlewareConsumer} from '@nestjs/common';
 import {AwsModule} from '../toolkits/aws/aws.module';
 import {ElasticModule} from '../toolkits/elastic/elastic.module';
 import {PrismaModule} from '../toolkits/prisma/prisma.module';
+import {TokenModule} from 'src/toolkits/token/token.module';
 import {AccountModule} from './account/account.module';
 import {EnginedModule} from './engined/engined.module';
 import {FileManagementModule} from './fmgmt/fmgmt.module';
@@ -22,6 +23,7 @@ import {ApplicationController} from './application.controller';
     AwsModule,
     ElasticModule,
     PrismaModule,
+    TokenModule,
 
     // Application
     AccountModule,

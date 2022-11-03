@@ -10,7 +10,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {PermissionAction, Prisma, User} from '@prisma/client';
+import {PermissionAction, Prisma, User, UserToRole} from '@prisma/client';
 import {UserService} from './user.service';
 import * as validator from '../../../../toolkits/validators/account.validator';
 import {RequirePermission} from '../../authorization/authorization.decorator';
@@ -21,6 +21,46 @@ const bcrypt = require('bcryptjs');
 @Controller('users')
 export class UserController {
   private userService = new UserService();
+
+  @Get('count')
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.User)
+  @ApiParam({
+    required: false,
+    name: 'name',
+    description: 'The string you want to search in the user pool.',
+    example: 'jack',
+    schema: {type: 'string'},
+  })
+  async countUsers(@Query() query: {name?: string}): Promise<number> {
+    // [step 1] Construct where argument.
+    let where: Prisma.UserWhereInput | undefined;
+    if (query.name) {
+      const name = query.name.trim();
+      if (name.length > 0) {
+        where = {
+          OR: [
+            {username: {search: name}},
+            {
+              profiles: {
+                some: {
+                  OR: [
+                    {givenName: {search: name}},
+                    {familyName: {search: name}},
+                    {middleName: {search: name}},
+                  ],
+                },
+              },
+            },
+          ],
+        };
+      }
+    }
+
+    // [step 2] Count users.
+    return await this.userService.count({
+      where: where,
+    });
+  }
 
   @Post('')
   @RequirePermission(PermissionAction.create, Prisma.ModelName.User)
@@ -110,13 +150,13 @@ export class UserController {
         phone: true,
         profiles: true,
       },
-      orderBy: {
-        _relevance: {
-          fields: ['username'],
-          search: 'database',
-          sort: 'asc',
-        },
-      },
+      // orderBy: {
+      //   _relevance: {
+      //     fields: ['username'],
+      //     search: 'database',
+      //     sort: 'asc',
+      //   },
+      // },
       where: where,
       take: take,
       skip: skip,
@@ -134,7 +174,25 @@ export class UserController {
   async getUser(@Param('userId') userId: string): Promise<User | null> {
     return await this.userService.findUnique({
       where: {id: userId},
-      include: {profiles: true},
+    });
+  }
+
+  @Patch(':userId')
+  @RequirePermission(PermissionAction.update, Prisma.ModelName.User)
+  @ApiParam({
+    name: 'userId',
+    schema: {type: 'string'},
+    description: 'The uuid of the user.',
+    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
+  })
+  async updateUser(
+    @Param('userId') userId: string,
+    @Body()
+    body: Prisma.UserUpdateInput
+  ): Promise<User> {
+    return await this.userService.update({
+      where: {id: userId},
+      data: body,
     });
   }
 
@@ -147,6 +205,35 @@ export class UserController {
   })
   async deleteUser(@Param('userId') userId: string): Promise<User> {
     return await this.userService.delete({
+      where: {id: userId},
+    });
+  }
+
+  @Get(':userId/profiles')
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.User)
+  @ApiParam({
+    name: 'userId',
+    schema: {type: 'string'},
+    description: 'The uuid of the user.',
+    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
+  })
+  async getUserProfiles(@Param('userId') userId: string): Promise<User> {
+    return await this.userService.findUniqueOrThrow({
+      where: {id: userId},
+      include: {profiles: true},
+    });
+  }
+
+  @Get(':userId/roles')
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.User)
+  @ApiParam({
+    name: 'userId',
+    schema: {type: 'string'},
+    description: 'The uuid of the user.',
+    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
+  })
+  async getUserRoles(@Param('userId') userId: string): Promise<User> {
+    return await this.userService.findUniqueOrThrowWithRoles({
       where: {id: userId},
     });
   }

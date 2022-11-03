@@ -6,15 +6,15 @@ import {
   TrustedEntityType,
   UserToRole,
 } from '@prisma/client';
-import {UserJwtService} from '../organization/user/jwt/jwt.service';
 import {UserService} from '../organization/user/user.service';
 import {PermissionService} from './permission/permission.service';
 import {PERMISSION_KEY} from './authorization.decorator';
+import {TokenService} from 'src/toolkits/token/token.service';
 
 @Injectable()
 export class AuthorizationGuard implements CanActivate {
   private userService = new UserService();
-  private jwtService = new UserJwtService();
+  private tokenService = new TokenService();
   private permissionService = new PermissionService();
 
   constructor(private reflector: Reflector) {}
@@ -32,7 +32,7 @@ export class AuthorizationGuard implements CanActivate {
 
     // [step 2] Parse JWT.
     const req = context.switchToHttp().getRequest();
-    const payload = this.jwtService.parseJWT(req.headers.authorization) as {
+    const payload = this.tokenService.parse(req.headers.authorization) as {
       userId: string;
       sub: string;
     };
