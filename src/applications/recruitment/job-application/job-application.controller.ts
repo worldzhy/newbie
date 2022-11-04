@@ -125,9 +125,16 @@ export class JobApplicationController {
   @RequirePermission(PermissionAction.read, Prisma.ModelName.JobApplication)
   @ApiQuery({name: 'name', type: 'string'})
   @ApiQuery({name: 'position', type: 'string'})
-  @ApiQuery({name: 'page', type: 'string'})
+  @ApiQuery({name: 'page', type: 'number'})
+  @ApiQuery({name: 'pageSize', type: 'number'})
   async getJobApplications(
-    @Query() query: {name?: string; position?: string; page?: string}
+    @Query()
+    query: {
+      name?: string;
+      position?: string;
+      page?: string;
+      pageSize?: string;
+    }
   ): Promise<JobApplication[]> {
     // [step 1] Construct where argument.
     let where: Prisma.JobApplicationWhereInput | undefined;
@@ -161,14 +168,17 @@ export class JobApplicationController {
 
     // [step 2] Construct take and skip arguments.
     let take: number, skip: number;
-    if (query.page) {
+    if (query.page && query.pageSize) {
       // Actually 'page' is string because it comes from URL param.
       const page = parseInt(query.page);
-      if (page > 0) {
-        take = 10;
-        skip = 10 * (page - 1);
+      const pageSize = parseInt(query.pageSize);
+      if (page > 0 && pageSize > 0) {
+        take = pageSize;
+        skip = pageSize * (page - 1);
       } else {
-        throw new BadRequestException('The page must be larger than 0.');
+        throw new BadRequestException(
+          'The page and pageSize must be larger than 0.'
+        );
       }
     } else {
       take = 10;
