@@ -8,6 +8,7 @@ import {
   Param,
   BadRequestException,
   Query,
+  Request,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -24,14 +25,25 @@ import {
   JobApplicationReviewCode,
   PermissionAction,
   Prisma,
+  Role,
+  TrustedEntityType,
+  UserTokenStatus,
 } from '@prisma/client';
 import {CandidateService} from '../candidate/candidate.service';
 import {RequirePermission} from '../../account/authorization/authorization.decorator';
+import {TokenService} from '../../../toolkits/token/token.service';
+import {UserTokenService} from '../../../applications/account/organization/user/token/token.service';
+import {UserService} from '../../../applications/account/organization/user/user.service';
+import {PermissionService} from '../../../applications/account/authorization/permission/permission.service';
 
 @ApiTags('[Application] Recruitment / Job Application')
 @ApiBearerAuth()
 @Controller('recruitment-job-applications')
 export class JobApplicationController {
+  private userService = new UserService();
+  private tokenService = new TokenService();
+  private userTokenService = new UserTokenService();
+  private permissionService = new PermissionService();
   private jobApplicationService = new JobApplicationService();
   private candidateService = new CandidateService();
 
@@ -40,11 +52,37 @@ export class JobApplicationController {
   @ApiQuery({name: 'name', type: 'string'})
   @ApiQuery({name: 'position', type: 'string'})
   async countJobApplications(
-    @Query() query: {name?: string; position: string}
+    @Request() request: Request,
+    @Query() query: {name?: string; position?: string}
   ): Promise<number> {
-    // [step 1] Construct where argument.
+    // [step 1] Get role permission to filter data.
+    const token = this.tokenService.getTokenFromHttpRequest(request);
+    const userToken = await this.userTokenService.findFirstOrThrow({
+      where: {AND: [{token: token}, {status: UserTokenStatus.ACTIVE}]},
+    });
+    const user = await this.userService.findUniqueOrThrowWithRoles({
+      where: {id: userToken.userId},
+    });
+    const roleIds = user['roles'].map((role: Role) => {
+      return role.id;
+    });
+    const permissions = await this.permissionService.findMany({
+      where: {
+        resource: Prisma.ModelName.JobApplication,
+        action: PermissionAction.read,
+        trustedEntityId: {in: roleIds},
+        trustedEntityType: TrustedEntityType.ROLE,
+      },
+    });
+
+    // [step 2] Construct where argument.
     let where: Prisma.JobApplicationWhereInput | undefined;
     const whereConditions: object[] = [];
+    permissions.map(permission => {
+      if (permission.conditions) {
+        whereConditions.push(permission.conditions as object);
+      }
+    });
     if (query.name) {
       const name = query.name.trim();
       if (name.length > 0) {
@@ -72,7 +110,7 @@ export class JobApplicationController {
       where = {OR: whereConditions};
     }
 
-    // [step 2] Count.
+    // [step 3] Count.
     return await this.jobApplicationService.count({
       where: where,
     });
@@ -86,9 +124,8 @@ export class JobApplicationController {
       a: {
         summary: '1. Create',
         value: {
-          jobCode: 'J1001',
-          jobSite: 'Center Hospital',
-          candidateId: 'ababdab1-5d91-4af7-ab2b-e2c9744a88d4',
+          jobId: 'e60e052b-ff37-4bbf-a0e3-bda8b0b371a2',
+          candidateId: '3302844d-9a92-4e4c-a4b4-6043e4a98ff4',
         },
       },
     },
@@ -128,6 +165,7 @@ export class JobApplicationController {
   @ApiQuery({name: 'page', type: 'number'})
   @ApiQuery({name: 'pageSize', type: 'number'})
   async getJobApplications(
+    @Request() request: Request,
     @Query()
     query: {
       name?: string;
@@ -136,9 +174,34 @@ export class JobApplicationController {
       pageSize?: string;
     }
   ): Promise<JobApplication[]> {
-    // [step 1] Construct where argument.
+    // [step 1] Get role permission to filter data.
+    const token = this.tokenService.getTokenFromHttpRequest(request);
+    const userToken = await this.userTokenService.findFirstOrThrow({
+      where: {AND: [{token: token}, {status: UserTokenStatus.ACTIVE}]},
+    });
+    const user = await this.userService.findUniqueOrThrowWithRoles({
+      where: {id: userToken.userId},
+    });
+    const roleIds = user['roles'].map((role: Role) => {
+      return role.id;
+    });
+    const permissions = await this.permissionService.findMany({
+      where: {
+        resource: Prisma.ModelName.JobApplication,
+        action: PermissionAction.read,
+        trustedEntityId: {in: roleIds},
+        trustedEntityType: TrustedEntityType.ROLE,
+      },
+    });
+
+    // [step 2] Construct where argument.
     let where: Prisma.JobApplicationWhereInput | undefined;
     const whereConditions: object[] = [];
+    permissions.map(permission => {
+      if (permission.conditions) {
+        whereConditions.push(permission.conditions as object);
+      }
+    });
     if (query.name) {
       const name = query.name.trim();
       if (name.length > 0) {

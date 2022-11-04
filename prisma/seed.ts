@@ -1,5 +1,7 @@
 import {
   ElasticsearchDatasource,
+  JobApplicationProcessingStepAction,
+  JobApplicationProcessingStepState,
   PermissionAction,
   PostgresqlDatasource,
   Prisma,
@@ -93,6 +95,21 @@ async function main() {
       });
     } else if (role.name === RoleName.Dispatcher) {
       await permissionController.createPermission({
+        action: PermissionAction.read,
+        resource: Prisma.ModelName.JobApplication,
+        conditions: {
+          processingSteps: {
+            some: {
+              action: JobApplicationProcessingStepAction.STEP1_DISPATCH,
+              state: JobApplicationProcessingStepState.PENDING,
+            },
+          },
+        },
+        trustedEntityType: TrustedEntityType.ROLE,
+        trustedEntityId: role.id,
+      });
+
+      await permissionController.createPermission({
         action: PermissionAction.update,
         resource: Prisma.ModelName.JobApplicationProcessingStep,
         trustedEntityType: TrustedEntityType.ROLE,
@@ -100,12 +117,42 @@ async function main() {
       });
     } else if (role.name === RoleName.Tester) {
       await permissionController.createPermission({
+        action: PermissionAction.read,
+        resource: Prisma.ModelName.JobApplication,
+        conditions: {
+          processingSteps: {
+            some: {
+              action: JobApplicationProcessingStepAction.STEP2_TESTING,
+              state: JobApplicationProcessingStepState.PENDING,
+            },
+          },
+        },
+        trustedEntityType: TrustedEntityType.ROLE,
+        trustedEntityId: role.id,
+      });
+
+      await permissionController.createPermission({
         action: PermissionAction.update,
         resource: Prisma.ModelName.JobApplicationProcessingStep,
         trustedEntityType: TrustedEntityType.ROLE,
         trustedEntityId: role.id,
       });
     } else if (role.name === RoleName.Reviewer) {
+      await permissionController.createPermission({
+        action: PermissionAction.read,
+        resource: Prisma.ModelName.JobApplication,
+        conditions: {
+          processingSteps: {
+            some: {
+              action: JobApplicationProcessingStepAction.STEP3_REVIEW,
+              state: JobApplicationProcessingStepState.PENDING,
+            },
+          },
+        },
+        trustedEntityType: TrustedEntityType.ROLE,
+        trustedEntityId: role.id,
+      });
+
       await permissionController.createPermission({
         action: PermissionAction.update,
         resource: Prisma.ModelName.JobApplicationProcessingStep,

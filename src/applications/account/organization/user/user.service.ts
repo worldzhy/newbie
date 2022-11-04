@@ -33,15 +33,6 @@ export class UserService {
   }
 
   async findMany(params: Prisma.UserFindManyArgs): Promise<User[]> {
-    // [middleware] do not return password.
-    this.prisma.$use(async (params, next) => {
-      const result = await next(params);
-      return result.map((user: User) => {
-        const {password, ...newUser} = user;
-        return newUser;
-      });
-    });
-
     return await this.prisma.user.findMany(params);
   }
 
@@ -117,9 +108,9 @@ export class UserService {
    */
   async findByAccount(account: string): Promise<User | null> {
     if (verifyUuid(account)) {
-      return await this.findUnique({where: {id: account}});
+      return await this.prisma.user.findUnique({where: {id: account}});
     } else {
-      const users = await this.findMany({
+      const users = await this.prisma.user.findMany({
         where: {
           OR: [{username: account}, {email: account}, {phone: account}],
         },

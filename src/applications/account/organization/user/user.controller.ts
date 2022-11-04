@@ -71,7 +71,15 @@ export class UserController {
       a: {
         summary: '1. Create',
         value: {
-          phone: '13260000999',
+          username: 'dispatcher',
+          password: 'Abc1234!',
+          userToRoles: {
+            create: [
+              {
+                roleId: '013f92b0-4a53-45cb-8eca-e66089a3919f',
+              },
+            ],
+          },
         },
       },
     },

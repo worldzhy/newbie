@@ -26,29 +26,8 @@ export class JobController {
       a: {
         summary: '1. Create',
         value: {
-          email: 'mary@hd.com',
-          phone: '121289182',
-          givenName: 'Mary',
-          middleName: 'Rose',
-          familyName: 'Johnson',
-          suffix: 'PhD',
-          birthday: new Date(),
-          gender: 'male',
-          address: '456 White Finch St. North Augusta, SC 29860',
-          zipcode: '21000',
-          geoJSON: {
-            type: 'Feature',
-            geometry: {
-              type: 'Point',
-              coordinates: [125.6, 10.1],
-            },
-            properties: {
-              name: 'Dinagat Islands',
-            },
-          },
-          websites: {facebook: 'https://www.facebook.com/grace'},
-          picture:
-            'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Steve_Jobs_Headshot_2010-CROP_%28cropped_2%29.jpg/800px-Steve_Jobs_Headshot_2010-CROP_%28cropped_2%29.jpg',
+          position: 'Designer',
+          description: 'Designing the UX of mobile applications',
         },
       },
     },
