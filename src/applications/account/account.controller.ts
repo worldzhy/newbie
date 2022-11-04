@@ -36,6 +36,7 @@ import {LoggingInByVerificationCode} from './authentication/verification-code/ve
 @Controller('account')
 export class AccountController {
   private userService = new UserService();
+  private tokenService = new TokenService();
   private userTokenService = new UserTokenService();
   private profileService = new UserProfileService();
   private verificationCodeService = new VerificationCodeService();
@@ -426,6 +427,23 @@ export class AccountController {
     return await this.login(body.account);
   }
 
+  @Get('current-user')
+  @ApiBearerAuth()
+  async getCurrentUser(@Request() request: Request): Promise<User> {
+    // [step 1] Parse token from http request header.
+    const accessToken = this.tokenService.getTokenFromHttpRequest(request);
+
+    // [step 2] Get UserToken record.
+    const userToken = await this.userTokenService.findFirstOrThrow({
+      where: {AND: [{token: accessToken}, {status: UserTokenStatus.ACTIVE}]},
+    });
+
+    // [step 3] Get user.
+    return await this.userService.findUniqueOrThrowWithRoles({
+      where: {id: userToken.userId},
+    });
+  }
+
   @Post('logout')
   @ApiBearerAuth()
   @ApiBody({
@@ -443,7 +461,7 @@ export class AccountController {
     @Request() request: Request,
     @Body() body: {userId: string}
   ): Promise<{data: {message: string}}> {
-    const accessToken = request.headers['authorization'].split(' ')[1];
+    const accessToken = this.tokenService.getTokenFromHttpRequest(request);
 
     await this.userTokenService.updateMany({
       where: {AND: [{userId: body.userId}, {token: accessToken}]},
@@ -643,8 +661,7 @@ export class AccountController {
     });
 
     // [step 5] Generate a new JSON web token.
-    const tokenService = new TokenService();
-    const token = tokenService.sign({userId: user.id, sub: account});
+    const token = this.tokenService.sign({userId: user.id, sub: account});
     return await this.userTokenService.create({
       data: {userId: user.id, token: token},
     });

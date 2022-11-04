@@ -145,13 +145,6 @@ export class UserController {
 
     // [step 3] Get users.
     return await this.userService.findMany({
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        phone: true,
-        profiles: true,
-      },
       // orderBy: {
       //   _relevance: {
       //     fields: ['username'],

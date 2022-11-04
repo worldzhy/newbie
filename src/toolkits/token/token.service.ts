@@ -13,8 +13,11 @@ export class TokenService extends JwtService {
     super(config);
   }
 
-  parse(token: string): string | {[key: string]: any} | null {
-    const arr = token.split(' ');
-    return this.decode(arr[1]);
+  getTokenFromHttpRequest(request: Request): string {
+    return request.headers['authorization'].split(' ')[1];
+  }
+
+  decodeToken(token: string): string | {[key: string]: any} | null {
+    return this.decode(token);
   }
 }

@@ -9,16 +9,39 @@ export class UserService {
   private prisma: PrismaService = new PrismaService();
 
   async findUnique(params: Prisma.UserFindUniqueArgs): Promise<User | null> {
+    // [middleware] do not return password.
+    this.prisma.$use(async (params, next) => {
+      const result = await next(params);
+      const {password, ...newUser} = result;
+      return newUser;
+    });
+
     return await this.prisma.user.findUnique(params);
   }
 
   async findUniqueOrThrow(
     params: Prisma.UserFindUniqueOrThrowArgs
   ): Promise<User> {
+    // [middleware] do not return password.
+    this.prisma.$use(async (params, next) => {
+      const result = await next(params);
+      const {password, ...newUser} = result;
+      return newUser;
+    });
+
     return await this.prisma.user.findUniqueOrThrow(params);
   }
 
   async findMany(params: Prisma.UserFindManyArgs): Promise<User[]> {
+    // [middleware] do not return password.
+    this.prisma.$use(async (params, next) => {
+      const result = await next(params);
+      return result.map((user: User) => {
+        const {password, ...newUser} = user;
+        return newUser;
+      });
+    });
+
     return await this.prisma.user.findMany(params);
   }
 
@@ -66,6 +89,29 @@ export class UserService {
     return await this.prisma.user.count(params);
   }
 
+  async findUniqueOrThrowWithRoles(
+    params: Prisma.UserFindUniqueArgs
+  ): Promise<User> {
+    // [middleware] do not return password.
+    this.prisma.$use(async (params, next) => {
+      const result = await next(params);
+      const {password, ...newUser} = result;
+      return newUser;
+    });
+
+    const user = await this.prisma.user.findUniqueOrThrow({
+      where: params.where,
+      include: {userToRoles: {select: {role: true}}},
+    });
+
+    user['roles'] = user.userToRoles.map(userToRole => {
+      return userToRole['role'];
+    });
+
+    const {userToRoles, ...result} = user;
+    return result;
+  }
+
   /**
    * The account supports username / email / phone.
    */
@@ -80,22 +126,6 @@ export class UserService {
       });
       return users.length > 0 ? (users[0] as User) : null;
     }
-  }
-
-  async findUniqueOrThrowWithRoles(
-    params: Prisma.UserFindUniqueArgs
-  ): Promise<User> {
-    const user = await this.prisma.user.findUniqueOrThrow({
-      where: params.where,
-      include: {userToRoles: {select: {role: true}}},
-    });
-
-    user['roles'] = user.userToRoles.map(userToRole => {
-      return userToRole['role'];
-    });
-
-    const {userToRoles, ...result} = user;
-    return result;
   }
 
   /* End */
