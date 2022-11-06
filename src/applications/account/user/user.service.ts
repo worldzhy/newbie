@@ -1,8 +1,8 @@
 import {Injectable} from '@nestjs/common';
-import {PrismaService} from '../../../../toolkits/prisma/prisma.service';
+import {PrismaService} from '../../../toolkits/prisma/prisma.service';
 import {Prisma, User, UserToRole} from '@prisma/client';
-import {generateHash} from '../../../../toolkits/utilities/common.util';
-import {verifyUuid} from '../../../../toolkits/validators/account.validator';
+import {generateHash} from '../../../toolkits/utilities/common.util';
+import {verifyUuid} from '../../../toolkits/validators/account.validator';
 
 @Injectable()
 export class UserService {

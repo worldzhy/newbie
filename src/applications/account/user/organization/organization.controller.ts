@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {Organization, PermissionAction, Prisma} from '@prisma/client';
-import {RequirePermission} from '../authorization/authorization.decorator';
+import {RequirePermission} from '../../authorization/authorization.decorator';
 import {OrganizationService} from './organization.service';
 
 @ApiTags('[Application] Account / Organization')

@@ -18,8 +18,8 @@ import {
 } from '@nestjs/swagger';
 import {PermissionAction, Prisma, User, UserStatus} from '@prisma/client';
 import {UserService} from './user.service';
-import * as validator from '../../../../toolkits/validators/account.validator';
-import {RequirePermission} from '../../authorization/authorization.decorator';
+import * as validator from '../../../toolkits/validators/account.validator';
+import {RequirePermission} from '../authorization/authorization.decorator';
 const bcrypt = require('bcryptjs');
 
 @ApiTags('[Application] Account / Organization / User')

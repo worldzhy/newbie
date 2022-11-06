@@ -2,7 +2,7 @@ import {Injectable, UnauthorizedException} from '@nestjs/common';
 import {PassportStrategy} from '@nestjs/passport';
 import {Strategy} from 'passport-custom';
 import {Request} from 'express';
-import {UserProfileService} from '../../organization/user/profile/profile.service';
+import {UserProfileService} from '../../user/profile/profile.service';
 
 @Injectable()
 export class AuthProfileStrategy extends PassportStrategy(

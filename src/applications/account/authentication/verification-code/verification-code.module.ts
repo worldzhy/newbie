@@ -1,5 +1,5 @@
 import {Module} from '@nestjs/common';
-import {UserModule} from '../../organization/user/user.module';
+import {UserModule} from '../../user/user.module';
 import {AuthVerificationCodeStrategy} from './verification-code.strategy';
 
 @Module({

@@ -1,5 +1,5 @@
 import {Module} from '@nestjs/common';
-import {UserModule} from '../../organization/user/user.module';
+import {UserModule} from '../../user/user.module';
 import {AuthUuidStrategy} from './uuid.strategy';
 
 @Module({

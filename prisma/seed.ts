@@ -8,8 +8,8 @@ import {
   TrustedEntityType,
 } from '@prisma/client';
 import {AccountController} from '../src/applications/account/account.controller';
-import {OrganizationController} from '../src/applications/account/organization/organization.controller';
-import {RoleController} from '../src/applications/account/organization/role/role.controller';
+import {OrganizationController} from '../src/applications/account/user/organization/organization.controller';
+import {RoleController} from '../src/applications/account/user/role/role.controller';
 import {PermissionController} from '../src/applications/account/authorization/permission/permission.controller';
 import {ProjectController} from '../src/applications/pmgmt/project/project.controller';
 import {ElasticsearchDatasourceController} from '../src/applications/engined/datasource/elasticsearch/elasticsearch-datasource.controller';

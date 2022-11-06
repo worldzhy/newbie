@@ -32,8 +32,8 @@ import {
 import {CandidateService} from '../candidate/candidate.service';
 import {RequirePermission} from '../../account/authorization/authorization.decorator';
 import {TokenService} from '../../../toolkits/token/token.service';
-import {UserTokenService} from '../../../applications/account/organization/user/token/token.service';
-import {UserService} from '../../../applications/account/organization/user/user.service';
+import {UserTokenService} from '../../account/user/token/token.service';
+import {UserService} from '../../account/user/user.service';
 import {PermissionService} from '../../../applications/account/authorization/permission/permission.service';
 
 @ApiTags('[Application] Recruitment / Job Application')

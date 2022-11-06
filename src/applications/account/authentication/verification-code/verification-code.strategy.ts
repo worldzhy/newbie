@@ -2,7 +2,7 @@ import {Strategy} from 'passport-local';
 import {PassportStrategy} from '@nestjs/passport';
 import {Injectable, UnauthorizedException} from '@nestjs/common';
 import {VerificationCodeService} from '../../../../microservices/verification-code/verification-code.service';
-import {UserService} from '../../organization/user/user.service';
+import {UserService} from '../../user/user.service';
 import {
   verifyEmail,
   verifyPhone,

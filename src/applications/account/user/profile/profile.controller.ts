@@ -14,8 +14,7 @@ import {
   PermissionAction,
   Prisma,
   UserProfile,
-  UserProfileEthnicityType,
-  UserProfileRaceType,
+  UserProfileGender,
 } from '@prisma/client';
 import {RequirePermission} from 'src/applications/account/authorization/authorization.decorator';
 import {UserProfileService} from './profile.service';
@@ -40,9 +39,7 @@ export class UserProfileController {
           familyName: 'Johnson',
           suffix: 'PhD',
           birthday: new Date(),
-          gender: 'male',
-          race: UserProfileRaceType.OTHER,
-          ethnicity: UserProfileEthnicityType.HISPANIC,
+          gender: UserProfileGender.MALE,
           hasPCP: true,
           address: '456 White Finch St. North Augusta, SC 29860',
           zipcode: '21000',
@@ -146,9 +143,7 @@ export class UserProfileController {
           familyName: 'Smith',
           suffix: 'PhD',
           birthday: '2019-05-27T11:53:32.118Z',
-          gender: 'male',
-          race: UserProfileRaceType.OTHER,
-          ethnicity: UserProfileEthnicityType.HISPANIC,
+          gender: UserProfileGender.MALE,
           hasPCP: true,
           address: '456 White Finch St. North Augusta, SC 29860',
           zipcode: '21000',

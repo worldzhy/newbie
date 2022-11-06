@@ -18,9 +18,9 @@ import {
   UserStatus,
   VerificationCodeUse,
 } from '@prisma/client';
-import {UserService} from './organization/user/user.service';
-import {UserTokenService} from './organization/user/token/token.service';
-import {UserProfileService} from './organization/user/profile/profile.service';
+import {UserService} from './user/user.service';
+import {UserTokenService} from './user/token/token.service';
+import {UserProfileService} from './user/profile/profile.service';
 import {VerificationCodeService} from '../../microservices/verification-code/verification-code.service';
 import {EmailNotificationService} from '../../microservices/notification/email/email.service';
 import {SmsNotificationService} from '../../microservices/notification/sms/sms.service';

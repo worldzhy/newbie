@@ -2,7 +2,7 @@ import {Injectable, UnauthorizedException} from '@nestjs/common';
 import {PassportStrategy} from '@nestjs/passport';
 import {Strategy} from 'passport-custom';
 import {Request} from 'express';
-import {UserService} from '../../organization/user/user.service';
+import {UserService} from '../../user/user.service';
 import {verifyUuid} from '../../../../toolkits/validators/account.validator';
 
 @Injectable()

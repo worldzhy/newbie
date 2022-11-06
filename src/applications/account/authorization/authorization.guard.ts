@@ -6,7 +6,7 @@ import {
   TrustedEntityType,
   UserToRole,
 } from '@prisma/client';
-import {UserService} from '../organization/user/user.service';
+import {UserService} from '../user/user.service';
 import {PermissionService} from './permission/permission.service';
 import {PERMISSION_KEY} from './authorization.decorator';
 import {TokenService} from 'src/toolkits/token/token.service';
