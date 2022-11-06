@@ -16,7 +16,7 @@ import {
   ApiBody,
   ApiQuery,
 } from '@nestjs/swagger';
-import {PermissionAction, Prisma, User, UserToRole} from '@prisma/client';
+import {PermissionAction, Prisma, User, UserStatus} from '@prisma/client';
 import {UserService} from './user.service';
 import * as validator from '../../../../toolkits/validators/account.validator';
 import {RequirePermission} from '../../authorization/authorization.decorator';
@@ -71,20 +71,30 @@ export class UserController {
       a: {
         summary: '1. Create',
         value: {
+          email: '',
+          phone: '',
           username: 'dispatcher',
           password: 'Abc1234!',
-          userToRoles: {
-            create: [
-              {
-                roleId: '013f92b0-4a53-45cb-8eca-e66089a3919f',
-              },
-            ],
-          },
+          status: UserStatus.ACTIVE,
+          roleIds: ['013f92b0-4a53-45cb-8eca-e66089a3919f'],
         },
       },
     },
   })
-  async createUser(@Body() body: Prisma.UserCreateInput): Promise<User> {
+  async createUser(
+    @Body() body: Prisma.UserCreateInput & {roleIds?: string[]}
+  ): Promise<User> {
+    // Construct userToRoles.
+    if (body.roleIds && body.roleIds.length > 0) {
+      body.userToRoles = {
+        create: body.roleIds.map(roleId => {
+          return {roleId: roleId};
+        }),
+      };
+      // Remove roleIds since it is not a field of User model.
+      delete body.roleIds;
+    }
+
     return await this.userService.create({
       data: body,
     });
@@ -179,11 +189,39 @@ export class UserController {
     description: 'The uuid of the user.',
     example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
   })
+  @ApiBody({
+    description: '',
+    examples: {
+      a: {
+        summary: '1. Update',
+        value: {
+          email: '',
+          phone: '',
+          username: 'dispatcher',
+          password: 'Abc1234!',
+          status: UserStatus.INACTIVE,
+          roleIds: ['013f92b0-4a53-45cb-8eca-e66089a3919f'],
+        },
+      },
+    },
+  })
   async updateUser(
     @Param('userId') userId: string,
     @Body()
-    body: Prisma.UserUpdateInput
+    body: Prisma.UserUpdateInput & {roleIds?: string[]}
   ): Promise<User> {
+    // Construct userToRoles.
+    if (body.roleIds && body.roleIds.length > 0) {
+      body.userToRoles = {
+        deleteMany: {}, // Delete all old relation records.
+        create: body.roleIds.map((roleId: string) => {
+          return {roleId: roleId};
+        }), // Create new relation records.
+      };
+      // Remove roleIds since it is not a field of User model.
+      delete body.roleIds;
+    }
+
     return await this.userService.update({
       where: {id: userId},
       data: body,

@@ -161,9 +161,9 @@ model Organization {
 }
 
 model UserToRole {
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String   @db.Uuid
-  role      Role     @relation(fields: [roleId], references: [id])
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
   roleId    String   @db.Uuid
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -184,13 +184,6 @@ model Role {
   roleToUsers    UserToRole[]
 
   @@unique([name, organizationId])
-  @@schema("application/account")
-}
-
-enum ReservedRole {
-  SUPER
-  SUPER_ADMINISTRATOR
-
   @@schema("application/account")
 }
 
@@ -858,7 +851,7 @@ model CandidateCertification {
   description String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  candidate   Candidate @relation(fields: [candidateId], references: [id])
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
   candidateId String    @db.Uuid
 
   @@schema("application/recruitment")
@@ -870,7 +863,7 @@ model CandidateTraining {
   description String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  candidate   Candidate @relation(fields: [candidateId], references: [id])
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
   candidateId String    @db.Uuid
 
   @@schema("application/recruitment")
@@ -886,7 +879,7 @@ model CandidateTesting {
   report              String?
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
-  candidate           Candidate             @relation(fields: [candidateId], references: [id])
+  candidate           Candidate             @relation(fields: [candidateId], references: [id], onDelete: Cascade)
   candidateId         String                @db.Uuid
 
   @@schema("application/recruitment")
@@ -924,9 +917,9 @@ model JobApplication {
   reviewCode      JobApplicationReviewCode?
   createdAt       DateTime                       @default(now())
   updatedAt       DateTime                       @updatedAt
-  candidate       Candidate                      @relation(fields: [candidateId], references: [id])
+  candidate       Candidate                      @relation(fields: [candidateId], references: [id], onDelete: Cascade)
   candidateId     String                         @db.Uuid
-  job             Job                            @relation(fields: [jobId], references: [id])
+  job             Job                            @relation(fields: [jobId], references: [id], onDelete: Cascade)
   jobId           String                         @db.Uuid
   processingSteps JobApplicationProcessingStep[]
   tasks           JobApplicationTask[]
@@ -950,7 +943,7 @@ model JobApplicationProcessingStep {
   handlerComment   String?
   createdAt        DateTime                           @default(now())
   updatedAt        DateTime                           @updatedAt
-  jobApplication   JobApplication                     @relation(fields: [jobApplicationId], references: [id])
+  jobApplication   JobApplication                     @relation(fields: [jobApplicationId], references: [id], onDelete: Cascade)
   jobApplicationId String                             @db.Uuid
 
   @@unique([action, jobApplicationId])
@@ -979,7 +972,7 @@ model JobApplicationNote {
   reporterComment  String
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
-  jobApplication   JobApplication @relation(fields: [jobApplicationId], references: [id])
+  jobApplication   JobApplication @relation(fields: [jobApplicationId], references: [id], onDelete: Cascade)
   jobApplicationId String         @db.Uuid
 
   @@schema("application/recruitment")
@@ -993,7 +986,7 @@ model JobApplicationTask {
   state            JobApplicationTaskState @default(PENDING)
   createdAt        DateTime                @default(now())
   updatedAt        DateTime                @updatedAt
-  jobApplication   JobApplication          @relation(fields: [jobApplicationId], references: [id])
+  jobApplication   JobApplication          @relation(fields: [jobApplicationId], references: [id], onDelete: Cascade)
   jobApplicationId String                  @db.Uuid
 
   @@schema("application/recruitment")

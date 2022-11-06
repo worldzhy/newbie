@@ -12,8 +12,10 @@ export class UserService {
     // [middleware] do not return password.
     this.prisma.$use(async (params, next) => {
       const result = await next(params);
-      const {password, ...newUser} = result;
-      return newUser;
+      if (result) {
+        const {password, ...newUser} = result;
+        return newUser;
+      }
     });
 
     return await this.prisma.user.findUnique(params);
@@ -25,8 +27,10 @@ export class UserService {
     // [middleware] do not return password.
     this.prisma.$use(async (params, next) => {
       const result = await next(params);
-      const {password, ...newUser} = result;
-      return newUser;
+      if (result) {
+        const {password, ...newUser} = result;
+        return newUser;
+      }
     });
 
     return await this.prisma.user.findUniqueOrThrow(params);
@@ -86,8 +90,10 @@ export class UserService {
     // [middleware] do not return password.
     this.prisma.$use(async (params, next) => {
       const result = await next(params);
-      const {password, ...newUser} = result;
-      return newUser;
+      if (result) {
+        const {password, ...newUser} = result;
+        return newUser;
+      }
     });
 
     const user = await this.prisma.user.findUniqueOrThrow({
