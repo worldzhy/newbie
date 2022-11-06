@@ -190,7 +190,8 @@ export class UserController {
     example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
   })
   @ApiBody({
-    description: '',
+    description:
+      'Set roleIds with an empty array to remove all the roles of the user.',
     examples: {
       a: {
         summary: '1. Update',
@@ -211,12 +212,12 @@ export class UserController {
     body: Prisma.UserUpdateInput & {roleIds?: string[]}
   ): Promise<User> {
     // Construct userToRoles.
-    if (body.roleIds && body.roleIds.length > 0) {
+    if (body.roleIds && Array.isArray(body.roleIds)) {
       body.userToRoles = {
-        deleteMany: {}, // Delete all old relation records.
+        deleteMany: {}, // First, delete all existing UserToRole records.
         create: body.roleIds.map((roleId: string) => {
           return {roleId: roleId};
-        }), // Create new relation records.
+        }), // Then, create new UserToRole records.
       };
       // Remove roleIds since it is not a field of User model.
       delete body.roleIds;
