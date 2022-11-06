@@ -16,7 +16,12 @@ import {
   ApiBody,
   ApiQuery,
 } from '@nestjs/swagger';
-import {Prisma, Candidate, PermissionAction} from '@prisma/client';
+import {
+  Prisma,
+  Candidate,
+  PermissionAction,
+  CandidateProfileGender,
+} from '@prisma/client';
 import {RequirePermission} from '../../account/authorization/authorization.decorator';
 import {CandidateService} from './candidate.service';
 
@@ -60,37 +65,56 @@ export class CandidateController {
       a: {
         summary: '1. Create',
         value: {
-          email: 'mary@hd.com',
-          phone: '121289182',
+          uniqueNumber: '28973492',
           givenName: 'Mary',
           middleName: 'Rose',
           familyName: 'Johnson',
-          suffix: 'PhD',
           birthday: new Date(),
-          gender: 'male',
+          gender: CandidateProfileGender.FEMALE,
+          emails: [{email: 'mary@hd.com'}],
+          phones: [
+            {phone: '121289182', extention: '232'},
+            {phone: '7236782462', extention: '897'},
+          ],
           address: '456 White Finch St. North Augusta, SC 29860',
+          address2: '',
+          city: 'New York City',
+          state: 'NY',
           zipcode: '21000',
-          geoJSON: {
-            type: 'Feature',
-            geometry: {
-              type: 'Point',
-              coordinates: [125.6, 10.1],
-            },
-            properties: {
-              name: 'Dinagat Islands',
-            },
-          },
-          websites: {facebook: 'https://www.facebook.com/grace'},
-          picture:
-            'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Steve_Jobs_Headshot_2010-CROP_%28cropped_2%29.jpg/800px-Steve_Jobs_Headshot_2010-CROP_%28cropped_2%29.jpg',
         },
       },
     },
   })
   async createCandidate(
-    @Body() body: Prisma.CandidateUncheckedCreateInput
+    @Body()
+    body: Prisma.CandidateLocationCreateWithoutCandidateInput &
+      Prisma.CandidateProfileCreateWithoutCandidateInput
   ): Promise<Candidate> {
-    return await this.candidateService.create({data: body});
+    return await this.candidateService.create({
+      data: {
+        location: {
+          create: {
+            address: body.address,
+            address2: body.address2,
+            city: body.city,
+            state: body.state,
+            zipcode: body.zipcode,
+          },
+        },
+        profile: {
+          create: {
+            uniqueNumber: body.uniqueNumber,
+            givenName: body.givenName,
+            middleName: body.middleName,
+            familyName: body.familyName,
+            birthday: body.birthday,
+            gender: body.gender,
+            emails: body.emails,
+            phones: body.phones,
+          },
+        },
+      },
+    });
   }
 
   @Get('')
@@ -136,11 +160,24 @@ export class CandidateController {
       skip = 0;
     }
 
-    // [step 3] Get users.
-    return await this.candidateService.findMany({
+    // [step 3] Get candidates.
+    const candidates = await this.candidateService.findMany({
       where: where,
       take: take,
       skip: skip,
+      include: {location: true, profile: true, jobApplications: true},
+    });
+
+    return candidates.map(candidate => {
+      const location = candidate['location'];
+      const profile = candidate['profile'];
+      delete candidate['location'];
+      delete candidate['profile'];
+      return {
+        ...candidate,
+        ...location,
+        ...profile,
+      };
     });
   }
 
@@ -155,7 +192,20 @@ export class CandidateController {
   async getCandidate(
     @Param('candidateId') candidateId: string
   ): Promise<Candidate | null> {
-    return await this.candidateService.findUnique({where: {id: candidateId}});
+    const candidate = await this.candidateService.findUniqueOrThrow({
+      where: {id: candidateId},
+      include: {location: true, profile: true},
+    });
+    const location = candidate['location'];
+    const profile = candidate['profile'];
+    delete candidate['location'];
+    delete candidate['profile'];
+
+    return {
+      ...candidate,
+      ...location,
+      ...profile,
+    };
   }
 
   @Patch(':candidateId')
@@ -172,22 +222,57 @@ export class CandidateController {
       a: {
         summary: '1. Update',
         value: {
-          email: 'robert.smith@hd.com',
-          phone: '131280122',
+          uniqueNumber: '28973492',
           givenName: 'Robert',
           middleName: 'William',
           familyName: 'Smith',
+          birthday: new Date(),
+          gender: CandidateProfileGender.FEMALE,
+          emails: [{email: 'mary@hd.com'}],
+          phones: [
+            {phone: '6786786786', extention: '222'},
+            {phone: '7897987111', extention: '111'},
+          ],
+          address: '456 White Finch St. North Augusta, SC 29860',
+          address2: '',
+          city: 'New York City',
+          state: 'NY',
+          zipcode: '21000',
         },
       },
     },
   })
   async updateCandidate(
     @Param('candidateId') candidateId: string,
-    @Body() body: Prisma.CandidateUpdateInput
+    @Body()
+    body: Prisma.CandidateLocationUpdateWithoutCandidateInput &
+      Prisma.CandidateProfileUpdateWithoutCandidateInput
   ): Promise<Candidate> {
     return await this.candidateService.update({
       where: {id: candidateId},
-      data: body,
+      data: {
+        location: {
+          update: {
+            address: body.address,
+            address2: body.address2,
+            city: body.city,
+            state: body.state,
+            zipcode: body.zipcode,
+          },
+        },
+        profile: {
+          update: {
+            uniqueNumber: body.uniqueNumber,
+            givenName: body.givenName,
+            middleName: body.middleName,
+            familyName: body.familyName,
+            birthday: body.birthday,
+            gender: body.gender,
+            emails: body.emails,
+            phones: body.phones,
+          },
+        },
+      },
     });
   }
 

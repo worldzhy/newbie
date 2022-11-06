@@ -13,33 +13,33 @@ import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {
   PermissionAction,
   Prisma,
-  UserProfile,
-  UserProfileGender,
+  CandidateProfile,
+  CandidateProfileGender,
 } from '@prisma/client';
 import {RequirePermission} from 'src/applications/account/authorization/authorization.decorator';
-import {UserProfileService} from './profile.service';
+import {CandidateProfileService} from './profile.service';
 
-@ApiTags('[Application] Account / User / Profile')
+@ApiTags('[Application] Recruitment / Candidate / Profile')
 @ApiBearerAuth()
-@Controller('user-profiles')
-export class UserProfileController {
-  constructor(private userProfileService: UserProfileService) {}
+@Controller('candidate-profiles')
+export class CandidateProfileController {
+  constructor(private candidateProfileService: CandidateProfileService) {}
 
   @Post('')
-  @RequirePermission(PermissionAction.create, Prisma.ModelName.UserProfile)
+  @RequirePermission(PermissionAction.create, Prisma.ModelName.CandidateProfile)
   @ApiBody({
-    description: 'Create a user profile.',
+    description: 'Create a candidate profile.',
     examples: {
       a: {
         summary: '1. Create',
         value: {
-          userId: '924da395-1921-45fe-b7f5-1198ed78ac24',
+          candidateId: '924da395-1921-45fe-b7f5-1198ed78ac24',
           givenName: 'Mary',
           middleName: 'Rose',
           familyName: 'Johnson',
           suffix: 'PhD',
           birthday: new Date(),
-          gender: UserProfileGender.MALE,
+          gender: CandidateProfileGender.MALE,
           hasPCP: true,
           address: '456 White Finch St. North Augusta, SC 29860',
           zipcode: '21000',
@@ -60,19 +60,19 @@ export class UserProfileController {
       },
     },
   })
-  async createUserProfile(
-    @Body() body: Prisma.UserProfileUncheckedCreateInput
-  ): Promise<UserProfile> {
-    return await this.userProfileService.create({data: body});
+  async createCandidateProfile(
+    @Body() body: Prisma.CandidateProfileUncheckedCreateInput
+  ): Promise<CandidateProfile> {
+    return await this.candidateProfileService.create({data: body});
   }
 
   @Get('')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.UserProfile)
-  async getUserProfiles(
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.CandidateProfile)
+  async getCandidateProfiles(
     @Query() query: {name?: string; page?: string}
-  ): Promise<UserProfile[]> {
+  ): Promise<CandidateProfile[]> {
     // [step 1] Construct where argument.
-    let where: Prisma.UserProfileWhereInput | undefined;
+    let where: Prisma.CandidateProfileWhereInput | undefined;
     if (query.name) {
       const name = query.name.trim();
       if (name.length > 0) {
@@ -102,8 +102,8 @@ export class UserProfileController {
       skip = 0;
     }
 
-    // [step 3] Get user profiles.
-    return await this.userProfileService.findMany({
+    // [step 3] Get candidate profiles.
+    return await this.candidateProfileService.findMany({
       where: where,
       take: take,
       skip: skip,
@@ -111,21 +111,23 @@ export class UserProfileController {
   }
 
   @Get(':profileId')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.UserProfile)
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.CandidateProfile)
   @ApiParam({
     name: 'profileId',
     schema: {type: 'string'},
     description: 'The uuid of the profile.',
     example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
   })
-  async getUserProfile(
+  async getCandidateProfile(
     @Param('profileId') profileId: string
-  ): Promise<UserProfile | null> {
-    return await this.userProfileService.findUnique({where: {id: profileId}});
+  ): Promise<CandidateProfile | null> {
+    return await this.candidateProfileService.findUnique({
+      where: {id: profileId},
+    });
   }
 
   @Patch(':profileId')
-  @RequirePermission(PermissionAction.update, Prisma.ModelName.UserProfile)
+  @RequirePermission(PermissionAction.update, Prisma.ModelName.CandidateProfile)
   @ApiParam({
     name: 'profileId',
     schema: {type: 'string'},
@@ -133,7 +135,7 @@ export class UserProfileController {
     example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
   })
   @ApiBody({
-    description: 'Update a specific user profile.',
+    description: 'Update a specific candidate profile.',
     examples: {
       a: {
         summary: '1. Update',
@@ -143,7 +145,7 @@ export class UserProfileController {
           familyName: 'Smith',
           suffix: 'PhD',
           birthday: '2019-05-27T11:53:32.118Z',
-          gender: UserProfileGender.MALE,
+          gender: CandidateProfileGender.MALE,
           hasPCP: true,
           address: '456 White Finch St. North Augusta, SC 29860',
           zipcode: '21000',
@@ -164,27 +166,27 @@ export class UserProfileController {
       },
     },
   })
-  async updateUserProfile(
+  async updateCandidateProfile(
     @Param('profileId') profileId: string,
-    @Body() body: Prisma.UserProfileUpdateInput
-  ): Promise<UserProfile> {
-    return await this.userProfileService.update({
+    @Body() body: Prisma.CandidateProfileUpdateInput
+  ): Promise<CandidateProfile> {
+    return await this.candidateProfileService.update({
       where: {id: profileId},
       data: body,
     });
   }
 
   @Delete(':profileId')
-  @RequirePermission(PermissionAction.delete, Prisma.ModelName.UserProfile)
+  @RequirePermission(PermissionAction.delete, Prisma.ModelName.CandidateProfile)
   @ApiParam({
     name: 'profileId',
     schema: {type: 'string'},
     example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
   })
-  async deleteUserProfile(
+  async deleteCandidateProfile(
     @Param('profileId') profileId: string
-  ): Promise<UserProfile> {
-    return await this.userProfileService.delete({
+  ): Promise<CandidateProfile> {
+    return await this.candidateProfileService.delete({
       where: {id: profileId},
     });
   }

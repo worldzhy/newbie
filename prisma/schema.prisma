@@ -806,6 +806,8 @@ enum PulumiStackState {
 // !             [Application] Recruitment models             //
 // ! ------------------------------------------------------------ //
 // * Candidate                                                    //
+// * CandidateLocation                                            //
+// * CandidateProfile                                             //
 // * CandidateCertification                                       //
 // * CandidateTraining                                            //
 // * CandidateTestinging                                          //
@@ -819,21 +821,10 @@ enum PulumiStackState {
 model Candidate {
   id              String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   status          CandidateStatus          @default(ACTIVE)
-  email           String?                  @unique
-  phone           String?                  @unique
-  givenName       String?
-  middleName      String?
-  familyName      String?
-  suffix          String?
-  birthday        DateTime?
-  gender          String?
-  address         String?
-  zipcode         String?
-  geoJSON         Json? // https://datatracker.ietf.org/doc/html/rfc7946
-  websites        Json? // {'facebook': 'https://www.facebook.com/grace', 'twitter': 'https://twitter.com/elonmusk'}
-  picture         String?
   createdAt       DateTime                 @default(now())
   updatedAt       DateTime                 @updatedAt
+  location        CandidateLocation?
+  profile         CandidateProfile?
   certifications  CandidateCertification[]
   trainings       CandidateTraining[]
   testings        CandidateTesting[]
@@ -845,6 +836,50 @@ model Candidate {
 enum CandidateStatus {
   ACTIVE
   INACTIVE
+
+  @@schema("application/recruitment")
+}
+
+model CandidateLocation {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  address     String
+  address2    String?
+  city        String
+  state       String
+  zipcode     String
+  geoJSON     Json? // https://datatracker.ietf.org/doc/html/rfc7946
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  candidateId String    @unique @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+model CandidateProfile {
+  id           String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  uniqueNumber String
+  givenName    String
+  middleName   String?
+  familyName   String
+  birthday     DateTime?
+  gender       CandidateProfileGender?
+  emails       Json[]
+  phones       Json[]
+  websites     Json? // {'facebook': 'https://www.facebook.com/grace', 'twitter': 'https://twitter.com/elonmusk'}
+  picture      String?
+  createdAt    DateTime                @default(now())
+  updatedAt    DateTime                @updatedAt
+  candidate    Candidate               @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  candidateId  String                  @unique @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+enum CandidateProfileGender {
+  MALE
+  FEMALE
+  INTERSEX
 
   @@schema("application/recruitment")
 }

@@ -10,25 +10,28 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {PermissionAction, Prisma, UserLocation} from '@prisma/client';
+import {PermissionAction, Prisma, CandidateLocation} from '@prisma/client';
 import {RequirePermission} from 'src/applications/account/authorization/authorization.decorator';
-import {UserLocationService} from './location.service';
+import {CandidateLocationService} from './location.service';
 
-@ApiTags('[Application] Account / User / Location')
+@ApiTags('[Application] Recruitment / Candidate / Location')
 @ApiBearerAuth()
-@Controller('user-locations')
-export class UserLocationController {
-  constructor(private userLocationService: UserLocationService) {}
+@Controller('candidate-locations')
+export class CandidateLocationController {
+  constructor(private candidateLocationService: CandidateLocationService) {}
 
   @Post('')
-  @RequirePermission(PermissionAction.create, Prisma.ModelName.UserLocation)
+  @RequirePermission(
+    PermissionAction.create,
+    Prisma.ModelName.CandidateLocation
+  )
   @ApiBody({
     description: 'Optional fields are address2 and geoJSON.',
     examples: {
       a: {
         summary: '1. Create',
         value: {
-          userId: '924da395-1921-45fe-b7f5-1198ed78ac24',
+          candidateId: '924da395-1921-45fe-b7f5-1198ed78ac24',
           address: '456 White Finch St. North Augusta, SC 29860',
           address2: '',
           city: 'Baltimore',
@@ -48,17 +51,17 @@ export class UserLocationController {
       },
     },
   })
-  async createUserLocation(
-    @Body() body: Prisma.UserLocationUncheckedCreateInput
-  ): Promise<UserLocation> {
-    return await this.userLocationService.create({data: body});
+  async createCandidateLocation(
+    @Body() body: Prisma.CandidateLocationUncheckedCreateInput
+  ): Promise<CandidateLocation> {
+    return await this.candidateLocationService.create({data: body});
   }
 
   @Get('')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.UserLocation)
-  async getUserLocations(
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.CandidateLocation)
+  async getCandidateLocations(
     @Query() query: {page?: string; pageSize?: string}
-  ): Promise<UserLocation[]> {
+  ): Promise<CandidateLocation[]> {
     // [step 1] Construct take and skip arguments.
     let take: number, skip: number;
     if (query.page) {
@@ -75,29 +78,34 @@ export class UserLocationController {
       skip = 0;
     }
 
-    // [step 2] Get user locations.
-    return await this.userLocationService.findMany({
+    // [step 2] Get candidate locations.
+    return await this.candidateLocationService.findMany({
       take: take,
       skip: skip,
     });
   }
 
   @Get(':locationId')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.UserLocation)
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.CandidateLocation)
   @ApiParam({
     name: 'locationId',
     schema: {type: 'string'},
     description: 'The uuid of the location.',
     example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
   })
-  async getUserLocation(
+  async getCandidateLocation(
     @Param('locationId') locationId: string
-  ): Promise<UserLocation | null> {
-    return await this.userLocationService.findUnique({where: {id: locationId}});
+  ): Promise<CandidateLocation | null> {
+    return await this.candidateLocationService.findUnique({
+      where: {id: locationId},
+    });
   }
 
   @Patch(':locationId')
-  @RequirePermission(PermissionAction.update, Prisma.ModelName.UserLocation)
+  @RequirePermission(
+    PermissionAction.update,
+    Prisma.ModelName.CandidateLocation
+  )
   @ApiParam({
     name: 'locationId',
     schema: {type: 'string'},
@@ -105,7 +113,7 @@ export class UserLocationController {
     example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
   })
   @ApiBody({
-    description: 'Update a specific user location.',
+    description: 'Update a specific candidate location.',
     examples: {
       a: {
         summary: '1. Update',
@@ -129,27 +137,30 @@ export class UserLocationController {
       },
     },
   })
-  async updateUserLocation(
+  async updateCandidateLocation(
     @Param('locationId') locationId: string,
-    @Body() body: Prisma.UserLocationUpdateInput
-  ): Promise<UserLocation> {
-    return await this.userLocationService.update({
+    @Body() body: Prisma.CandidateLocationUpdateInput
+  ): Promise<CandidateLocation> {
+    return await this.candidateLocationService.update({
       where: {id: locationId},
       data: body,
     });
   }
 
   @Delete(':locationId')
-  @RequirePermission(PermissionAction.delete, Prisma.ModelName.UserLocation)
+  @RequirePermission(
+    PermissionAction.delete,
+    Prisma.ModelName.CandidateLocation
+  )
   @ApiParam({
     name: 'locationId',
     schema: {type: 'string'},
     example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
   })
-  async deleteUserLocation(
+  async deleteCandidateLocation(
     @Param('locationId') locationId: string
-  ): Promise<UserLocation> {
-    return await this.userLocationService.delete({
+  ): Promise<CandidateLocation> {
+    return await this.candidateLocationService.delete({
       where: {id: locationId},
     });
   }

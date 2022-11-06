@@ -22,7 +22,7 @@ import * as validator from '../../../toolkits/validators/account.validator';
 import {RequirePermission} from '../authorization/authorization.decorator';
 const bcrypt = require('bcryptjs');
 
-@ApiTags('[Application] Account / Organization / User')
+@ApiTags('[Application] Account / User')
 @ApiBearerAuth()
 @Controller('users')
 export class UserController {

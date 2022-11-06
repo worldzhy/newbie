@@ -12,7 +12,7 @@ import {Role, Prisma, PermissionAction} from '@prisma/client';
 import {RequirePermission} from '../../authorization/authorization.decorator';
 import {RoleService} from './role.service';
 
-@ApiTags('[Application] Account / Organization / Role')
+@ApiTags('[Application] Account / Role')
 @ApiBearerAuth()
 @Controller('roles')
 export class RoleController {
