@@ -14,7 +14,6 @@ import {CandidateTestingService} from './testing.service';
 import {
   CandidateTesting,
   CandidateTestingState,
-  CandidateTestingType,
   PermissionAction,
   Prisma,
 } from '@prisma/client';
@@ -37,7 +36,7 @@ export class CandidateTestingController {
       a: {
         summary: '1. Create',
         value: {
-          type: CandidateTestingType.POET,
+          type: 'York Skilled Trade',
           candidateId: 'ababdab1-5d91-4af7-ab2b-e2c9744a88d4',
         },
       },
@@ -125,6 +124,67 @@ export class CandidateTestingController {
     return await this.candidateTestingService.delete({
       where: {id: parseInt(testingId)},
     });
+  }
+
+  @Get('types')
+  listCandidateTestingTypes(): string[] {
+    return [
+      'York-All Jobs',
+      'Tomahawk Production Technician',
+      'Harley-Davidson York Weld',
+      'PTO PT',
+      'York Skilled Trade',
+      'Harley-Davidson PTO Millwright',
+      'Harley-Davidson PDC',
+      'Harley-Davidson PTO Maintenance/Mechanic',
+      'Harley-Davidson PTO Tool Room',
+      'Harley-Davidson PTO Maintenance Electric',
+      'salary',
+      'Harley-Davidson THK PTK Maintenance',
+    ];
+  }
+
+  @Get('locations')
+  listCandidateTestingLocations(): string[] {
+    return [
+      'Harley Davidson Lifestyle Centers',
+      'Concentra Medical Centers',
+      'Wilmington Medical Center',
+      'Lakeway Urgent Care',
+      'Halifax Health ExpressCare',
+      'Brookwood Occupational Health',
+      'Frederick Health Employer Solutions',
+      'UnityPoint',
+      'Access Medical Center',
+      'DCH Regional',
+      'MedExpress',
+      'Asante Occupational Health',
+      'CoxHealth Occupational Medicine',
+      'Drug Screen Compliance',
+      'Mercyhealth Occupational Health & Wellness',
+      'Advance Medical of Naples, LLC',
+      'Labcorp',
+      'Nao Medical/Statcare Urgent & Walk',
+      'Cascade Occupational Health',
+      'Integra Discovery Services',
+      'Med Central Health Resource',
+      'Mercy Iowa City Occupational Health',
+      'Landmark Medical Center',
+      'Safeworks, IL',
+      'GulfMed Walk',
+      'Reliant Medical Group',
+      'Mayo Clinic',
+      'Cedars Health',
+      'KRMC Occupational and Employee Health',
+      'Next Level Urgent Care',
+      'Sycamore Avenue Medical Center',
+      'OSF Occupational Health',
+      'Northwell Great Neck, NY (Long Island)',
+      'White',
+      'Eastern Medical',
+      'Select Physical Therapy',
+      'KRMC Occ Health',
+    ];
   }
 
   /* End */

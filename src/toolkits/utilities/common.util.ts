@@ -10,12 +10,19 @@ export function randomCode(length = 6): string {
   return result;
 }
 
-export async function generateHash(password: string) {
+export async function generateHash(password: string): Promise<string> {
   // The type of env variable is string.
   const saltRounds = parseInt(
     process.env.BCRYPT_SALT_ROUNDS ? process.env.BCRYPT_SALT_ROUNDS : '10'
   );
   return await bcrypt.hash(password, saltRounds);
+}
+
+export async function compareHash(
+  password: string,
+  hash: string | null
+): Promise<boolean> {
+  return await bcrypt.compare(password, hash);
 }
 
 export function nowPlusMinutes(minutes: number): Date {

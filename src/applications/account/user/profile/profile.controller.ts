@@ -189,5 +189,10 @@ export class UserProfileController {
     });
   }
 
+  @Get('genders')
+  listUserProfileGenders(): string[] {
+    return Object.keys(UserProfileGender);
+  }
+
   /* End */
 }

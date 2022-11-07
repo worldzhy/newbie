@@ -6,7 +6,7 @@ import {UserService} from '../../user/user.service';
 import {
   verifyEmail,
   verifyPhone,
-} from '../../../../toolkits/validators/account.validator';
+} from '../../../../toolkits/validators/user.validator';
 
 @Injectable()
 export class AuthVerificationCodeStrategy extends PassportStrategy(

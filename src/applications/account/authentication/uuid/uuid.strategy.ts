@@ -3,7 +3,7 @@ import {PassportStrategy} from '@nestjs/passport';
 import {Strategy} from 'passport-custom';
 import {Request} from 'express';
 import {UserService} from '../../user/user.service';
-import {verifyUuid} from '../../../../toolkits/validators/account.validator';
+import {verifyUuid} from '../../../../toolkits/validators/user.validator';
 
 @Injectable()
 export class AuthUuidStrategy extends PassportStrategy(

@@ -1,38 +1,19 @@
 import {Injectable} from '@nestjs/common';
 import {PrismaService} from '../../../toolkits/prisma/prisma.service';
-import {Prisma, User, UserToRole} from '@prisma/client';
-import {generateHash} from '../../../toolkits/utilities/common.util';
-import {verifyUuid} from '../../../toolkits/validators/account.validator';
+import {Prisma, User} from '@prisma/client';
+import {verifyUuid} from '../../../toolkits/validators/user.validator';
 
 @Injectable()
 export class UserService {
   private prisma: PrismaService = new PrismaService();
 
   async findUnique(params: Prisma.UserFindUniqueArgs): Promise<User | null> {
-    // [middleware] do not return password.
-    this.prisma.$use(async (params, next) => {
-      const result = await next(params);
-      if (result) {
-        const {password, ...newUser} = result;
-        return newUser;
-      }
-    });
-
     return await this.prisma.user.findUnique(params);
   }
 
   async findUniqueOrThrow(
     params: Prisma.UserFindUniqueOrThrowArgs
   ): Promise<User> {
-    // [middleware] do not return password.
-    this.prisma.$use(async (params, next) => {
-      const result = await next(params);
-      if (result) {
-        const {password, ...newUser} = result;
-        return newUser;
-      }
-    });
-
     return await this.prisma.user.findUniqueOrThrow(params);
   }
 
@@ -41,38 +22,10 @@ export class UserService {
   }
 
   async create(params: Prisma.UserCreateArgs): Promise<User> {
-    // [middleware] Hash password.
-    this.prisma.$use(async (params, next) => {
-      if (params.model === 'User') {
-        if (params.action === 'create') {
-          if (params.args['data']['password']) {
-            // [step 3] Generate the new password hash.
-            const hash = await generateHash(params.args['data']['password']);
-            params.args['data']['password'] = hash;
-          }
-        }
-      }
-      return next(params);
-    });
-
     return await this.prisma.user.create(params);
   }
 
   async update(params: Prisma.UserUpdateArgs): Promise<User> {
-    // [middleware] Hash password.
-    this.prisma.$use(async (params, next) => {
-      if (params.model === 'User') {
-        if (params.action === 'update') {
-          if (params.args['data']['password']) {
-            // [step 3] Generate the new password hash.
-            const hash = await generateHash(params.args['data']['password']);
-            params.args['data']['password'] = hash;
-          }
-        }
-      }
-      return next(params);
-    });
-
     return await this.prisma.user.update(params);
   }
 
@@ -87,15 +40,6 @@ export class UserService {
   async findUniqueOrThrowWithRoles(
     params: Prisma.UserFindUniqueArgs
   ): Promise<User> {
-    // [middleware] do not return password.
-    this.prisma.$use(async (params, next) => {
-      const result = await next(params);
-      if (result) {
-        const {password, ...newUser} = result;
-        return newUser;
-      }
-    });
-
     const user = await this.prisma.user.findUniqueOrThrow({
       where: params.where,
       include: {userToRoles: {select: {role: true}}},

@@ -16,11 +16,16 @@ import {
   ApiBody,
   ApiQuery,
 } from '@nestjs/swagger';
-import {PermissionAction, Prisma, User, UserStatus} from '@prisma/client';
+import {
+  PermissionAction,
+  Prisma,
+  User,
+  UserStatus,
+  UserToRole,
+} from '@prisma/client';
 import {UserService} from './user.service';
-import * as validator from '../../../toolkits/validators/account.validator';
 import {RequirePermission} from '../authorization/authorization.decorator';
-const bcrypt = require('bcryptjs');
+import {compareHash} from '../../../toolkits/utilities/common.util';
 
 @ApiTags('[Application] Account / User')
 @ApiBearerAuth()
@@ -76,27 +81,36 @@ export class UserController {
           username: 'dispatcher',
           password: 'Abc1234!',
           status: UserStatus.ACTIVE,
-          roleIds: ['013f92b0-4a53-45cb-8eca-e66089a3919f'],
+          roles: [{id: '013f92b0-4a53-45cb-8eca-e66089a3919f'}],
         },
       },
     },
   })
   async createUser(
-    @Body() body: Prisma.UserCreateInput & {roleIds?: string[]}
+    @Body()
+    body: Prisma.UserCreateInput & {roles?: {id: string; name: string}[]}
   ): Promise<User> {
     // Construct userToRoles.
-    if (body.roleIds && body.roleIds.length > 0) {
+    if (body.roles && body.roles.length > 0) {
       body.userToRoles = {
-        create: body.roleIds.map(roleId => {
-          return {roleId: roleId};
+        create: body.roles.map(role => {
+          return {roleId: role.id};
         }),
       };
       // Remove roleIds since it is not a field of User model.
-      delete body.roleIds;
+      delete body.roles;
     }
 
     return await this.userService.create({
       data: body,
+      select: {
+        id: true,
+        email: true,
+        phone: true,
+        username: true,
+        status: true,
+        profiles: true,
+      },
     });
   }
 
@@ -153,7 +167,7 @@ export class UserController {
     }
 
     // [step 3] Get users.
-    return await this.userService.findMany({
+    const users = await this.userService.findMany({
       // orderBy: {
       //   _relevance: {
       //     fields: ['username'],
@@ -164,6 +178,18 @@ export class UserController {
       where: where,
       take: take,
       skip: skip,
+      include: {userToRoles: {include: {role: true}}},
+    });
+
+    // [step 4] Return users with roles.
+    return users.map(user => {
+      if (user['userToRoles']) {
+        user['roles'] = user['userToRoles'].map((userToRole: UserToRole) => {
+          return userToRole['role'];
+        });
+      }
+      delete user['userToRoles'];
+      return user;
     });
   }
 
@@ -176,9 +202,18 @@ export class UserController {
     example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
   })
   async getUser(@Param('userId') userId: string): Promise<User | null> {
-    return await this.userService.findUnique({
+    const user = await this.userService.findUniqueOrThrow({
       where: {id: userId},
+      include: {userToRoles: {include: {role: true}}},
     });
+
+    if (user['userToRoles']) {
+      user['roles'] = user['userToRoles'].map((userToRole: UserToRole) => {
+        return userToRole['role'];
+      });
+    }
+    delete user['userToRoles'];
+    return user;
   }
 
   @Patch(':userId')
@@ -201,7 +236,7 @@ export class UserController {
           username: 'dispatcher',
           password: 'Abc1234!',
           status: UserStatus.INACTIVE,
-          roleIds: ['013f92b0-4a53-45cb-8eca-e66089a3919f'],
+          roles: [{id: '013f92b0-4a53-45cb-8eca-e66089a3919f'}],
         },
       },
     },
@@ -209,18 +244,18 @@ export class UserController {
   async updateUser(
     @Param('userId') userId: string,
     @Body()
-    body: Prisma.UserUpdateInput & {roleIds?: string[]}
+    body: Prisma.UserUpdateInput & {roles?: {id: string; name: string}[]}
   ): Promise<User> {
     // Construct userToRoles.
-    if (body.roleIds && Array.isArray(body.roleIds)) {
+    if (body.roles && Array.isArray(body.roles)) {
       body.userToRoles = {
         deleteMany: {}, // First, delete all existing UserToRole records.
-        create: body.roleIds.map((roleId: string) => {
-          return {roleId: roleId};
+        create: body.roles.map(role => {
+          return {roleId: role.id};
         }), // Then, create new UserToRole records.
       };
       // Remove roleIds since it is not a field of User model.
-      delete body.roleIds;
+      delete body.roles;
     }
 
     return await this.userService.update({
@@ -321,22 +356,17 @@ export class UserController {
       );
     }
 
-    // [step 3] Validate the new password.
-    if (!validator.verifyPassword(body.newPassword)) {
-      throw new BadRequestException('The new password is invalid.');
-    }
-
-    // [step 4] Verify the current password.
+    // [step 3] Verify the current password.
     const user = await this.userService.findUnique({where: {id: userId}});
     if (!user) {
       throw new BadRequestException('The user is not existed.');
     }
-    const match = await bcrypt.compare(body.currentPassword, user.password);
+    const match = await compareHash(body.currentPassword, user.password);
     if (match === false) {
       throw new BadRequestException('The current password is incorrect.');
     }
 
-    // [step 5] Change password.
+    // [step 4] Change password.
     return await this.userService.update({
       where: {id: userId},
       data: {password: body.newPassword},
@@ -380,12 +410,7 @@ export class UserController {
       );
     }
 
-    // [step 2] Validate the new password
-    if (!validator.verifyPassword(body.newPassword)) {
-      throw new BadRequestException('The new password is invalid.');
-    }
-
-    // [step 3] Reset password
+    // [step 2] Reset password
     return await this.userService.update({
       where: {id: userId},
       data: {password: body.newPassword},

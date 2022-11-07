@@ -1,9 +1,8 @@
 import {Injectable, UnauthorizedException} from '@nestjs/common';
 import {PassportStrategy} from '@nestjs/passport';
 import {Strategy} from 'passport-local';
+import {compareHash} from 'src/toolkits/utilities/common.util';
 import {UserService} from '../../user/user.service';
-
-const bcrypt = require('bcryptjs');
 
 @Injectable()
 export class AuthPasswordStrategy extends PassportStrategy(
@@ -33,7 +32,7 @@ export class AuthPasswordStrategy extends PassportStrategy(
     }
 
     // [step 2] Validate password.
-    const match = await bcrypt.compare(password, user.password);
+    const match = await compareHash(password, user.password);
     if (match === true) {
       return true;
     } else {

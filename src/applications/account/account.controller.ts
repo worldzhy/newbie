@@ -24,7 +24,7 @@ import {UserProfileService} from './user/profile/profile.service';
 import {VerificationCodeService} from '../../microservices/verification-code/verification-code.service';
 import {EmailNotificationService} from '../../microservices/notification/email/email.service';
 import {SmsNotificationService} from '../../microservices/notification/sms/sms.service';
-import * as validator from '../../toolkits/validators/account.validator';
+import * as validator from '../../toolkits/validators/user.validator';
 import {TokenService} from '../../toolkits/token/token.service';
 import {Public} from './authentication/public/public.decorator';
 import {LoggingInByPassword} from './authentication/password/password.decorator';
@@ -250,13 +250,13 @@ export class AccountController {
       profileCount === 1
     ) {
       // Generate password hash if needed.
-      return this.userService.create({
+      return await this.userService.create({
         data: body,
         select: {
           id: true,
-          username: true,
           email: true,
           phone: true,
+          username: true,
           status: true,
           profiles: true,
         },

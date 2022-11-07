@@ -910,7 +910,7 @@ model CandidateTraining {
 
 model CandidateTesting {
   id                  Int                   @id @default(autoincrement())
-  type                CandidateTestingType
+  type                String
   state               CandidateTestingState @default(PENDING)
   appointmentStartsAt DateTime?
   appointmentEndsAt   DateTime?
@@ -920,13 +920,6 @@ model CandidateTesting {
   updatedAt           DateTime              @updatedAt
   candidate           Candidate             @relation(fields: [candidateId], references: [id], onDelete: Cascade)
   candidateId         String                @db.Uuid
-
-  @@schema("application/recruitment")
-}
-
-enum CandidateTestingType {
-  POET
-  ME_DS
 
   @@schema("application/recruitment")
 }
@@ -942,11 +935,37 @@ enum CandidateTestingState {
 
 model Job {
   id              String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  position        String
-  description     String
+  code            String
+  type            JobType
+  position        String?
+  description     String?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   jobApplications JobApplication[]
+  location        JobLocation?
+
+  @@schema("application/recruitment")
+}
+
+enum JobType {
+  Hourly
+  Salaried
+
+  @@schema("application/recruitment")
+}
+
+model JobLocation {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  address   String
+  address2  String?
+  city      String?
+  state     String?
+  zipcode   String?
+  geoJSON   Json? // https://datatracker.ietf.org/doc/html/rfc7946
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  job       Job      @relation(fields: [jobId], references: [id])
+  jobId     String   @unique @db.Uuid
 
   @@schema("application/recruitment")
 }

@@ -308,5 +308,10 @@ export class CandidateController {
     });
   }
 
+  @Get('genders')
+  listCandidateProfileGenders(): string[] {
+    return Object.keys(CandidateProfileGender);
+  }
+
   /* End */
 }
