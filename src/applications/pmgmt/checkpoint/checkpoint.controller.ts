@@ -15,7 +15,7 @@ export class CheckpointController {
   private checkpointService = new CheckpointService();
 
   @Get('types')
-  async listCheckpointCheckpoints() {
+  listCheckpointCheckpoints() {
     return Object.values(ProjectCheckpointType);
   }
 

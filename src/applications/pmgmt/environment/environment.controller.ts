@@ -14,7 +14,7 @@ export class EnvironmentController {
   private environmentService = new EnvironmentService();
 
   @Get('types')
-  async listEnvironmentEnvironments() {
+  listEnvironmentEnvironments() {
     return Object.values(ProjectEnvironmentType);
   }
 

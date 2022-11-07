@@ -28,17 +28,15 @@ export class CloudFormationStackController {
   private stackService = new CloudFormationStackService();
 
   @Get('types')
-  async listStackTypes(): Promise<
-    (
-      | 'COMPUTING_FARGATE'
-      | 'NETWORK_HIPAA'
-      | 'CICD_BUILD'
-      | 'CICD_PIPELINE'
-      | 'CICD_REPOSITORY'
-      | 'PRODUCT_DATA_ENGINE'
-      | 'PRODUCT_MESSAGE_TRACKER'
-    )[]
-  > {
+  listStackTypes(): (
+    | 'COMPUTING_FARGATE'
+    | 'NETWORK_HIPAA'
+    | 'CICD_BUILD'
+    | 'CICD_PIPELINE'
+    | 'CICD_REPOSITORY'
+    | 'PRODUCT_DATA_ENGINE'
+    | 'PRODUCT_MESSAGE_TRACKER'
+  )[] {
     return Object.values(CloudFormationStackType);
   }
 
