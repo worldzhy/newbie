@@ -6,7 +6,7 @@ import {
   queryEventHandler,
   warnEventHandler,
 } from './prisma.event-hander';
-import {userMiddleware} from './prisma.middleware';
+import {prismaMiddleware} from './prisma.middleware';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
@@ -40,7 +40,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     this.$on<any>('error', errorEventHandler);
 
     // Register middlewares.
-    this.$use(userMiddleware);
+    this.$use(prismaMiddleware);
   }
 
   async onModuleInit() {

@@ -934,15 +934,14 @@ enum CandidateTestingState {
 }
 
 model Job {
-  id              String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  code            String
-  type            JobType
-  position        String?
-  description     String?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  jobApplications JobApplication[]
-  location        JobLocation?
+  id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code        String
+  type        JobType
+  position    String?
+  description String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  location    JobLocation?
 
   @@schema("application/recruitment")
 }
@@ -972,13 +971,14 @@ model JobLocation {
 
 model JobApplication {
   id              String                         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  jobCode         String
+  jobType         JobType
+  jobSite         String
   reviewCode      JobApplicationReviewCode?
   createdAt       DateTime                       @default(now())
   updatedAt       DateTime                       @updatedAt
   candidate       Candidate                      @relation(fields: [candidateId], references: [id], onDelete: Cascade)
   candidateId     String                         @db.Uuid
-  job             Job                            @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  jobId           String                         @db.Uuid
   processingSteps JobApplicationProcessingStep[]
   tasks           JobApplicationTask[]
   notes           JobApplicationNote[]

@@ -3,7 +3,7 @@ import {Prisma} from '@prisma/client';
 import {generateHash} from '../utilities/common.util';
 import {verifyPassword} from '../validators/user.validator';
 
-export async function userMiddleware(
+export async function prismaMiddleware(
   params: Prisma.MiddlewareParams,
   next: (params: Prisma.MiddlewareParams) => Promise<any>
 ) {
@@ -31,5 +31,6 @@ export async function userMiddleware(
         return next(params);
     }
   }
+
   return next(params);
 }

@@ -22,6 +22,7 @@ import {
   PermissionAction,
   CandidateProfileGender,
 } from '@prisma/client';
+import {randomCode} from 'src/toolkits/utilities/common.util';
 import {RequirePermission} from '../../account/authorization/authorization.decorator';
 import {CandidateService} from './candidate.service';
 
@@ -65,7 +66,6 @@ export class CandidateController {
       a: {
         summary: '1. Create',
         value: {
-          uniqueNumber: '28973492',
           givenName: 'Mary',
           middleName: 'Rose',
           familyName: 'Johnson',
@@ -103,7 +103,7 @@ export class CandidateController {
         },
         profile: {
           create: {
-            uniqueNumber: body.uniqueNumber,
+            uniqueNumber: randomCode(9),
             givenName: body.givenName,
             middleName: body.middleName,
             familyName: body.familyName,
@@ -222,7 +222,6 @@ export class CandidateController {
       a: {
         summary: '1. Update',
         value: {
-          uniqueNumber: '28973492',
           givenName: 'Robert',
           middleName: 'William',
           familyName: 'Smith',
@@ -262,7 +261,6 @@ export class CandidateController {
         },
         profile: {
           update: {
-            uniqueNumber: body.uniqueNumber,
             givenName: body.givenName,
             middleName: body.middleName,
             familyName: body.familyName,

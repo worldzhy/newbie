@@ -18,6 +18,74 @@ import {JobService} from './job.service';
 export class JobController {
   constructor(private jobService: JobService) {}
 
+  @Get('types')
+  listJobTypes(): string[] {
+    return Object.keys(JobType);
+  }
+
+  @Get('sites')
+  listJobSites(): string[] {
+    return [
+      'Harley-Davidson Motor Co. - York-Hourly Only',
+      'Harley-Davidson Motor Co. - Tomahawk-Hourly Only',
+      'Harley-Davidson Motor Co. - Corporate',
+      'Harley-Davidson Motor Co. - PTO Pilgrim Rd-Hourly Only',
+      'Harley-Davidson Motor Co. - York-Salary Only',
+      'Harley-Davidson Motor Co. - HDFS Plano, TX',
+      'Harley-Davidson Motor Co. - PDC - AZ Salaried',
+      'Harley-Davidson Motor Co. - PTO Pilgrim Rd - Salary Only',
+      'Harley-Davidson Motor Co. - PDC - Salary',
+      'Harley-Davidson Motor Co. - Museum',
+      'Harley-Davidson Motor Co. - HDFS Chicago, IL',
+      'Harley-Davidson Motor Co. - HDFS Reno, NV',
+      'Harley-Davidson Motor Co. - AZ Proving Ground',
+      'Harley-Davidson Motor Co. - Tomahawk-Salary Only',
+      'Harley-Davidson Motor Co. - PDC - Hourly',
+      'Harley-Davidson Motor Co. - HDDS Valley View, OH',
+      'Harley-Davidson Motor Co. - Field',
+      'Harley-Davidson Motor Co. - Menomonee Falls - Non-contract',
+    ];
+  }
+
+  @Get('codes')
+  listJobCodes(): string[] {
+    return [
+      'MED/DS CLR',
+      'P',
+      'T1 - Dist',
+      'F3',
+      'T',
+      'LC MED/DS',
+      'F-DS',
+      'LC',
+      'DNC',
+      'RT-CV',
+      'F4',
+      'MED/DS CV',
+      'MED/DS-LE',
+      'NT',
+      'F4',
+      'T5-CXL RS',
+      'F1',
+      'T - Cand',
+      'R',
+      'MT',
+      'F1-CV',
+      'NMC',
+      'F2',
+      'F/DS- POET',
+      'T13 - F',
+      'P-DS',
+      'CXL - NE',
+      'T8-MC',
+      'C19',
+      'MED CLR',
+      'T4-CXL CL',
+      'T5-CXL RS',
+      'JOR',
+    ];
+  }
+
   @Post('')
   @RequirePermission(PermissionAction.create, Prisma.ModelName.Job)
   @ApiBody({
@@ -98,50 +166,6 @@ export class JobController {
     return await this.jobService.delete({
       where: {id: jobId},
     });
-  }
-
-  @Get(':jobId/job-applications')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.Job)
-  @ApiParam({
-    name: 'jobId',
-    schema: {type: 'string'},
-    description: 'The uuid of the job.',
-    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
-  })
-  async getJobJobApplications(@Param('jobId') jobId: string): Promise<Job> {
-    return await this.jobService.findUniqueOrThrow({
-      where: {id: jobId},
-      include: {jobApplications: true},
-    });
-  }
-
-  @Get('types')
-  listJobTypes(): string[] {
-    return Object.keys(JobType);
-  }
-
-  @Get('sites')
-  listJobSites(): string[] {
-    return [
-      'Harley-Davidson Motor Co. - York-Hourly Only',
-      'Harley-Davidson Motor Co. - Tomahawk-Hourly Only',
-      'Harley-Davidson Motor Co. - Corporate',
-      'Harley-Davidson Motor Co. - PTO Pilgrim Rd-Hourly Only',
-      'Harley-Davidson Motor Co. - York-Salary Only',
-      'Harley-Davidson Motor Co. - HDFS Plano, TX',
-      'Harley-Davidson Motor Co. - PDC - AZ Salaried',
-      'Harley-Davidson Motor Co. - PTO Pilgrim Rd - Salary Only',
-      'Harley-Davidson Motor Co. - PDC - Salary',
-      'Harley-Davidson Motor Co. - Museum',
-      'Harley-Davidson Motor Co. - HDFS Chicago, IL',
-      'Harley-Davidson Motor Co. - HDFS Reno, NV',
-      'Harley-Davidson Motor Co. - AZ Proving Ground',
-      'Harley-Davidson Motor Co. - Tomahawk-Salary Only',
-      'Harley-Davidson Motor Co. - PDC - Hourly',
-      'Harley-Davidson Motor Co. - HDDS Valley View, OH',
-      'Harley-Davidson Motor Co. - Field',
-      'Harley-Davidson Motor Co. - Menomonee Falls - Non-contract',
-    ];
   }
 
   /* End */

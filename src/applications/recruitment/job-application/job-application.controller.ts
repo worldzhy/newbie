@@ -124,8 +124,14 @@ export class JobApplicationController {
       a: {
         summary: '1. Create',
         value: {
-          jobId: 'e60e052b-ff37-4bbf-a0e3-bda8b0b371a2',
-          candidateId: '3302844d-9a92-4e4c-a4b4-6043e4a98ff4',
+          candidateId: 'd8141ece-f242-4288-a60a-8675538549cd',
+          jobSite: 'Harley-Davidson Motor Co. - York-Hourly Only',
+          jobType: 'Hourly',
+          jobCode: 'MED/DS CLR',
+          testings: [
+            'Harley-Davidson York Weld',
+            'Tomahawk Production Technician',
+          ],
         },
       },
     },
@@ -143,7 +149,9 @@ export class JobApplicationController {
     return await this.jobApplicationService.create({
       data: {
         candidateId: body.candidateId,
-        jobId: body.jobId,
+        jobSite: body.jobSite,
+        jobType: body.jobType,
+        jobCode: body.jobCode,
         processingSteps: {
           createMany: {
             skipDuplicates: true,
