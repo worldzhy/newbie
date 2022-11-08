@@ -294,7 +294,14 @@ export class JobApplicationController {
       a: {
         summary: '1. Update',
         value: {
+          jobSite: 'Harley-Davidson Motor Co. - York-Hourly Only',
+          jobType: 'Hourly',
+          jobCode: 'MED/DS CLR',
           reviewCode: JobApplicationReviewCode.MED_CLR,
+          testings: [
+            'Harley-Davidson York Weld',
+            'Tomahawk Production Technician',
+          ],
         },
       },
     },
