@@ -237,11 +237,12 @@ enum UserTokenStatus {
 
 model UserLocation {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  address   String
+  name      String?
+  address   String?
   address2  String?
-  city      String
-  state     String
-  zipcode   String
+  city      String?
+  state     String?
+  zipcode   String?
   geoJSON   Json? // https://datatracker.ietf.org/doc/html/rfc7946
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
