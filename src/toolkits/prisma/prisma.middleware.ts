@@ -1,6 +1,6 @@
 import {BadRequestException} from '@nestjs/common';
 import {Prisma} from '@prisma/client';
-import {generateHash} from '../utilities/common.util';
+import {generateHash, randomCode} from '../utilities/common.util';
 import {verifyPassword} from '../validators/user.validator';
 
 export async function prismaMiddleware(
@@ -27,6 +27,14 @@ export async function prismaMiddleware(
           return newUser;
         }
         return null;
+      default:
+        return next(params);
+    }
+  } else if (params.model === Prisma.ModelName.CandidateProfile) {
+    switch (params.action) {
+      case 'create':
+        params.args['data']['uniqueNumber'] = randomCode(9);
+        return next(params);
       default:
         return next(params);
     }

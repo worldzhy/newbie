@@ -28,7 +28,9 @@ export class AuthPasswordStrategy extends PassportStrategy(
     // [step 1] Get the user.
     const user = await this.userService.findByAccount(account);
     if (!user) {
-      throw new UnauthorizedException('The user is not existed.');
+      throw new UnauthorizedException(
+        'Invalid combination of username and password.'
+      );
     }
 
     // [step 2] Validate password.

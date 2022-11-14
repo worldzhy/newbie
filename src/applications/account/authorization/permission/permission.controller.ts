@@ -6,9 +6,18 @@ import {
   Post,
   Body,
   Param,
+  Query,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiParam,
+  ApiBody,
+  ApiQuery,
+} from '@nestjs/swagger';
+import {
+  JobApplicationProcessingStepAction,
+  JobApplicationProcessingStepState,
   Permission,
   PermissionAction,
   Prisma,
@@ -39,8 +48,16 @@ export class PermissionController {
       a: {
         summary: '1. Create',
         value: {
-          resource: Prisma.ModelName.Role,
-          action: PermissionAction.create,
+          resource: Prisma.ModelName.JobApplication,
+          action: PermissionAction.read,
+          conditions: {
+            processingSteps: {
+              some: {
+                action: JobApplicationProcessingStepAction.STEP1_CREATE,
+                state: JobApplicationProcessingStepState.DONE,
+              },
+            },
+          },
           trustedEntityType: TrustedEntityType.USER,
           trustedEntityId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
         },
@@ -56,8 +73,26 @@ export class PermissionController {
   }
 
   @Get('')
-  async getPermissions(): Promise<Permission[]> {
-    return await this.permissionService.findMany({});
+  @ApiQuery({name: 'resource', type: 'string'})
+  async getPermissions(
+    @Query() query: {resource?: string}
+  ): Promise<Permission[]> {
+    // [step 1] Construct where argument.
+    let where: Prisma.PermissionWhereInput | undefined;
+    const whereConditions: object[] = [];
+    if (query.resource) {
+      const resource = query.resource.trim();
+      if (resource.length > 0) {
+        whereConditions.push({resource: {search: resource}});
+      }
+    }
+
+    if (whereConditions.length > 0) {
+      where = {OR: whereConditions};
+    }
+
+    // [step 2] Get permissions.
+    return await this.permissionService.findMany({where: where});
   }
 
   @Get(':permissionId')

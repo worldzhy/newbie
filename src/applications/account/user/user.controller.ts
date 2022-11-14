@@ -93,7 +93,7 @@ export class UserController {
     // Construct userToRoles.
     if (body.roles && body.roles.length > 0) {
       body.userToRoles = {
-        create: body.roles.map(role => {
+        create: body.roles.map((role) => {
           return {roleId: role.id};
         }),
       };
@@ -182,7 +182,7 @@ export class UserController {
     });
 
     // [step 4] Return users with roles.
-    return users.map(user => {
+    return users.map((user) => {
       if (user['userToRoles']) {
         user['roles'] = user['userToRoles'].map((userToRole: UserToRole) => {
           return userToRole['role'];
@@ -250,7 +250,7 @@ export class UserController {
     if (body.roles && Array.isArray(body.roles)) {
       body.userToRoles = {
         deleteMany: {}, // First, delete all existing UserToRole records.
-        create: body.roles.map(role => {
+        create: body.roles.map((role) => {
           return {roleId: role.id};
         }), // Then, create new UserToRole records.
       };
@@ -359,7 +359,9 @@ export class UserController {
     // [step 3] Verify the current password.
     const user = await this.userService.findUnique({where: {id: userId}});
     if (!user) {
-      throw new BadRequestException('The user is not existed.');
+      throw new BadRequestException(
+        'Invalid combination of username and password.'
+      );
     }
     const match = await compareHash(body.currentPassword, user.password);
     if (match === false) {

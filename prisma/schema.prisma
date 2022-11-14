@@ -595,6 +595,7 @@ enum ElasticsearchDataboardColumnFormatter {
 model File {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name      String
+  url       String
   mimeType  String?
   s3Bucket  String?
   s3Path    String?
