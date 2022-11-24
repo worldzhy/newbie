@@ -15,7 +15,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["microservice/location", "microservice/notification", "microservice/task", "microservice/workflow", "application/account", "application/engined", "application/fmgmt", "application/pmgmt", "application/recruitment"]
+  schemas  = ["microservice/location", "microservice/notification", "microservice/task", "microservice/verification-code", "microservice/workflow", "application/account", "application/engined", "application/fmgmt", "application/pmgmt", "application/recruitment"]
 }
 
 // !! ------------------------------------------------------------ //
@@ -129,14 +129,14 @@ model VerificationCode {
   createdAt DateTime               @default(now())
   updatedAt DateTime               @updatedAt
 
-  @@schema("application/account")
+  @@schema("microservice/verification-code")
 }
 
 enum VerificationCodeStatus {
   ACTIVE
   INACTIVE
 
-  @@schema("application/account")
+  @@schema("microservice/verification-code")
 }
 
 enum VerificationCodeUse {
@@ -155,7 +155,7 @@ enum VerificationCodeUse {
   CHANGE_PASSWORD
   RESET_PASSWORD
 
-  @@schema("application/account")
+  @@schema("microservice/verification-code")
 }
 
 // ! ------------------------------------------------------------ //
