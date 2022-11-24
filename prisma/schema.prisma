@@ -15,7 +15,34 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["microservice/notification", "microservice/task", "application/account", "application/engined", "application/fmgmt", "application/location", "application/pmgmt", "application/recruitment", "application/workflow"]
+  schemas  = ["microservice/location", "microservice/notification", "microservice/task", "microservice/workflow", "application/account", "application/engined", "application/fmgmt", "application/pmgmt", "application/recruitment"]
+}
+
+// !! ------------------------------------------------------------ //
+// !!            [Microservice] Location models                    //
+// !! ------------------------------------------------------------ //
+// * Location                                                      //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
+
+model Location {
+  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  site        String?
+  address     String?
+  address2    String?
+  city        String?
+  state       String?
+  zipcode     String?
+  geoJSON     Json? // https://datatracker.ietf.org/doc/html/rfc7946
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  user        User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String?    @db.Uuid
+  candidate   Candidate? @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  candidateId String?    @unique @db.Uuid
+  job         Job?       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobId       String?    @unique @db.Uuid
+
+  @@schema("microservice/location")
 }
 
 // !! ------------------------------------------------------------ //
@@ -129,6 +156,47 @@ enum VerificationCodeUse {
   RESET_PASSWORD
 
   @@schema("application/account")
+}
+
+// ! ------------------------------------------------------------ //
+// !             [Microservice] Workflow models                   //
+// ! ------------------------------------------------------------ //
+// * Workflow                                                     //
+// * WorkflowStep                                                 //
+// * WorkflowState                                                //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
+
+model Workflow {
+  id         Int      @id @default(autoincrement())
+  startSign  Boolean? @unique
+  step       String
+  state      String
+  nextStep   String
+  nextRoleId String?  @db.Uuid // The next role to take over the next step.
+  nextUserId String?  @db.Uuid // The next user to take over the next step.
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([step, state])
+  @@schema("microservice/workflow")
+}
+
+model WorkflowStep {
+  id        Int      @id @default(autoincrement())
+  step      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@schema("microservice/workflow")
+}
+
+model WorkflowState {
+  id        Int      @id @default(autoincrement())
+  state     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@schema("microservice/workflow")
 }
 
 // ! ------------------------------------------------------------ //
@@ -601,27 +669,6 @@ model Folder {
   @@schema("application/fmgmt")
 }
 
-model Location {
-  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  site        String?
-  address     String?
-  address2    String?
-  city        String?
-  state       String?
-  zipcode     String?
-  geoJSON     Json? // https://datatracker.ietf.org/doc/html/rfc7946
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  user        User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      String?    @db.Uuid
-  candidate   Candidate? @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  candidateId String?    @unique @db.Uuid
-  job         Job?       @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  jobId       String?    @unique @db.Uuid
-
-  @@schema("application/location")
-}
-
 // ! ------------------------------------------------------------ //
 // !          [Application] Project Management models             //
 // ! ------------------------------------------------------------ //
@@ -1018,44 +1065,4 @@ model JobApplicationTestingWorkflow {
   testingId         String                @db.Uuid
 
   @@schema("application/recruitment")
-}
-
-// ! ------------------------------------------------------------ //
-// !             [Application] Workflow models                    //
-// ! ------------------------------------------------------------ //
-// * Workflow                                                     //
-// * WorkflowStep                                                 //
-// * WorkflowState                                                //
-// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
-
-model Workflow {
-  id         Int      @id @default(autoincrement())
-  step       String
-  state      String
-  nextStep   String
-  nextRoleId String?  @db.Uuid // The next role to take over the next step.
-  nextUserId String?  @db.Uuid // The next user to take over the next step.
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  @@unique([step, state])
-  @@schema("application/workflow")
-}
-
-model WorkflowStep {
-  id        Int      @id @default(autoincrement())
-  step      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@schema("application/workflow")
-}
-
-model WorkflowState {
-  id        Int      @id @default(autoincrement())
-  state     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@schema("application/workflow")
 }

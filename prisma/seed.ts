@@ -5,6 +5,9 @@ import {
   Prisma,
   TrustedEntityType,
 } from '@prisma/client';
+import {WorkflowController} from '../src/microservices/workflow/workflow.controller';
+import {WorkflowStepController} from '../src/microservices/workflow/step/step.controller';
+import {WorkflowStateController} from '../src/microservices/workflow/state/state.controller';
 import {AccountController} from '../src/applications/account/account.controller';
 import {OrganizationController} from '../src/applications/account/user/organization/organization.controller';
 import {RoleController} from '../src/applications/account/user/role/role.controller';
@@ -13,9 +16,6 @@ import {ProjectController} from '../src/applications/pmgmt/project/project.contr
 import {ElasticsearchDatasourceController} from '../src/applications/engined/datasource/elasticsearch/elasticsearch-datasource.controller';
 import {PostgresqlDatasourceController} from '../src/applications/engined/datasource/postgresql/postgresql-datasource.controller';
 import {DatatransPipelineController} from '../src/applications/engined/datatrans/pipeline/pipeline.controller';
-import {WorkflowController} from '../src/applications/workflow/workflow.controller';
-import {WorkflowStepController} from '../src/applications/workflow/step/step.controller';
-import {WorkflowStateController} from '../src/applications/workflow/state/state.controller';
 
 async function main() {
   console.log('Start seeding ...');
@@ -151,8 +151,9 @@ async function main() {
       // nothing to process.
     } else if (role.name === RoleName.Dispatcher) {
       // [step 1] Create workflows.
-      const workflows = [
+      const workflows: Prisma.WorkflowCreateInput[] = [
         {
+          startSign: true,
           step: 'START',
           state: 'Pending Dispatch',
           nextStep: 'STEP1_DISPATCH',
@@ -233,7 +234,7 @@ async function main() {
       });
     } else if (role.name === RoleName.Provider) {
       // [step 1] Create workflows.
-      const workflows = [
+      const workflows: Prisma.WorkflowCreateInput[] = [
         {
           step: 'STEP1_DISPATCH',
           state: 'Pending Test',
@@ -269,7 +270,7 @@ async function main() {
       });
     } else if (role.name === RoleName.Reviewer) {
       // [step 1] Create workflows.
-      const workflows = [
+      const workflows: Prisma.WorkflowCreateInput[] = [
         {
           step: 'STEP2_TEST',
           state: 'Medical Hold',

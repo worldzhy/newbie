@@ -17,10 +17,10 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import {PermissionAction, Prisma, Location} from '@prisma/client';
-import {RequirePermission} from '../account/authorization/authorization.decorator';
+import {RequirePermission} from '../../applications/account/authorization/authorization.decorator';
 import {LocationService} from './location.service';
 
-@ApiTags('[Application] Location')
+@ApiTags('[Microservice] Location')
 @ApiBearerAuth()
 @Controller('locations')
 export class LocationController {

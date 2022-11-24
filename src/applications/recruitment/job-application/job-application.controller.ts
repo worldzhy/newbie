@@ -33,9 +33,8 @@ import {CandidateService} from '../candidate/candidate.service';
 import {UserService} from '../../account/user/user.service';
 import {TokenService} from '../../../toolkits/token/token.service';
 import {PermissionService} from '../../../applications/account/authorization/permission/permission.service';
-import {WorkflowService} from '../../../applications/workflow/workflow.service';
+import {WorkflowService} from '../../../microservices/workflow/workflow.service';
 import {JobApplicationTestingService} from './testing/testing.service';
-import {JobApplicationTestingWorkflowService} from './testing/workflow/testing-workflow.service';
 
 @ApiTags('[Application] Recruitment / Job Application')
 @ApiBearerAuth()
@@ -48,8 +47,6 @@ export class JobApplicationController {
   private candidateService = new CandidateService();
   private jobApplicationService = new JobApplicationService();
   private jobApplicationTestingService = new JobApplicationTestingService();
-  private jobApplicationTestingWorkflowService =
-    new JobApplicationTestingWorkflowService();
 
   @Post('')
   @RequirePermission(PermissionAction.create, Prisma.ModelName.JobApplication)
@@ -102,7 +99,7 @@ export class JobApplicationController {
 
     // [step 3] Create job application testings.
     const workflow = await this.workflowService.findUniqueOrThrow({
-      where: {step_state: {step: 'START', state: 'Pending Dispatch'}},
+      where: {startSign: true}, // Get the starting point of the process.
     });
     for (let i = 0; i < body.tests.length; i++) {
       const test = body.tests[i];
@@ -140,7 +137,7 @@ export class JobApplicationController {
     // [step 2] Fetch preset where regtax(in seed.ts) for each role.
     let where: Prisma.JobApplicationWhereInput | undefined;
     const whereConditions: object[] = [];
-    permissions.map((permission) => {
+    permissions.map(permission => {
       if (permission.where) {
         whereConditions.push(permission.where as object);
       }
@@ -172,7 +169,7 @@ export class JobApplicationController {
     // [step 2] Fetch preset where regtax(in seed.ts) for each role.
     let where: Prisma.JobApplicationWhereInput | undefined;
     const whereConditions: object[] = [];
-    permissions.map((permission) => {
+    permissions.map(permission => {
       if (permission.where) {
         whereConditions.push(permission.where as object);
       }

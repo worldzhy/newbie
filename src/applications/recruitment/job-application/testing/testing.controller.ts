@@ -16,7 +16,7 @@ import {JobApplicationTestingService} from './testing.service';
 import {RequirePermission} from '../../../account/authorization/authorization.decorator';
 import {FileService} from '../../../fmgmt/file/file.service';
 import {TokenService} from '../../../../toolkits/token/token.service';
-import {WorkflowService} from '../../../workflow/workflow.service';
+import {WorkflowService} from '../../../../microservices/workflow/workflow.service';
 
 @ApiTags('[Application] Recruitment / Job Application / Testing')
 @ApiBearerAuth()

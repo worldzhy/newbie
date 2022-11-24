@@ -9,10 +9,10 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {WorkflowStep, Prisma, PermissionAction} from '@prisma/client';
-import {RequirePermission} from '../../account/authorization/authorization.decorator';
+import {RequirePermission} from '../../../applications/account/authorization/authorization.decorator';
 import {WorkflowStepService} from './step.service';
 
-@ApiTags('[Application] Workflow / Step')
+@ApiTags('[Microservice] Workflow / Step')
 @ApiBearerAuth()
 @Controller('workflow-steps')
 export class WorkflowStepController {
@@ -21,12 +21,12 @@ export class WorkflowStepController {
   @Post('')
   @RequirePermission(PermissionAction.create, Prisma.ModelName.WorkflowStep)
   @ApiBody({
-    description: "The 'name' is required in request body.",
+    description: '',
     examples: {
       a: {
         summary: '1. Create',
         value: {
-          name: 'Admin',
+          step: 'STEP1',
         },
       },
     },
@@ -73,9 +73,9 @@ export class WorkflowStepController {
     description: '',
     examples: {
       a: {
-        summary: '1. Update name',
+        summary: '1. Update',
         value: {
-          name: 'InceptionPad Inc',
+          step: 'STEP_1',
         },
       },
     },

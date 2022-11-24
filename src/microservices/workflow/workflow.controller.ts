@@ -16,10 +16,10 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import {Workflow, Prisma, PermissionAction} from '@prisma/client';
-import {RequirePermission} from '../account/authorization/authorization.decorator';
+import {RequirePermission} from '../../applications/account/authorization/authorization.decorator';
 import {WorkflowService} from './workflow.service';
 
-@ApiTags('[Application] Workflow')
+@ApiTags('[Microservice] Workflow')
 @ApiBearerAuth()
 @Controller('workflows')
 export class WorkflowController {
@@ -33,7 +33,10 @@ export class WorkflowController {
       a: {
         summary: '1. Create',
         value: {
-          name: 'Admin',
+          step: 'STEP1',
+          state: 'Pending',
+          nextStep: 'STEP2',
+          nextRoleId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
         },
       },
     },
@@ -88,9 +91,12 @@ export class WorkflowController {
     description: '',
     examples: {
       a: {
-        summary: '1. Update name',
+        summary: '1. Update',
         value: {
-          name: 'InceptionPad Inc',
+          step: 'STEP1',
+          state: 'Pending',
+          nextStep: 'STEP2',
+          nextUserId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
         },
       },
     },

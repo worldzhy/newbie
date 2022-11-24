@@ -9,7 +9,6 @@ import {EnginedModule} from './engined/engined.module';
 import {FileManagementModule} from './fmgmt/fmgmt.module';
 import {ProjectManagementModule} from './pmgmt/pmgmt.module';
 import {RecruitmentModule} from './recruitment/recruitment.module';
-import {WorkflowModule} from './workflow/workflow.module';
 import {AuthenticationGuard} from './account/authentication/authentication.guard';
 import {AuthorizationGuard} from './account/authorization/authorization.guard';
 import {AllExceptionsFilter} from '../_filter/_all-exceptions.filter';
@@ -32,7 +31,6 @@ import {ApplicationController} from './application.controller';
     FileManagementModule,
     ProjectManagementModule,
     RecruitmentModule,
-    WorkflowModule,
   ],
   providers: [
     //Guards
