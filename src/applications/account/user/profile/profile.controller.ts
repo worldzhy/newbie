@@ -16,7 +16,7 @@ import {
   UserProfile,
   UserProfileGender,
 } from '@prisma/client';
-import {RequirePermission} from 'src/applications/account/authorization/authorization.decorator';
+import {RequirePermission} from '../../authorization/authorization.decorator';
 import {UserProfileService} from './profile.service';
 
 @ApiTags('[Application] Account / User / Profile')

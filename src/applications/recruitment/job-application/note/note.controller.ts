@@ -6,6 +6,7 @@ import {
   Post,
   Body,
   Param,
+  Request,
   BadRequestException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
@@ -14,11 +15,15 @@ import {JobApplicationNoteService} from './note.service';
 import {JobApplicationNote, PermissionAction, Prisma} from '@prisma/client';
 import {JobApplicationService} from '../job-application.service';
 import {RequirePermission} from '../../../account/authorization/authorization.decorator';
+import {UserService} from '../../../../applications/account/user/user.service';
+import {TokenService} from '../../../../toolkits/token/token.service';
 
 @ApiTags('[Application] Recruitment / Job Application / Note')
 @ApiBearerAuth()
 @Controller('recruitment-job-application-notes')
 export class JobApplicationNoteController {
+  private userService = new UserService();
+  private tokenService = new TokenService();
   private jobApplicationNoteService = new JobApplicationNoteService();
   private jobApplicationService = new JobApplicationService();
 
@@ -34,7 +39,6 @@ export class JobApplicationNoteController {
       a: {
         summary: '1. Create',
         value: {
-          reporterUserId: 'ababdab1-5d91-4af7-ab2b-e2c9744a88d4',
           reporterComment: 'This an example task.',
           jobApplicationId: 'ababdab1-5d91-4af7-ab2b-e2c9744a88d4',
         },
@@ -42,6 +46,7 @@ export class JobApplicationNoteController {
     },
   })
   async createJobApplicationNote(
+    @Request() request: Request,
     @Body()
     body: Prisma.JobApplicationNoteUncheckedCreateInput
   ): Promise<JobApplicationNote> {
@@ -54,7 +59,17 @@ export class JobApplicationNoteController {
       );
     }
 
-    // [step 2] Create jobApplicationNote.
+    // [step 2] Get user.
+    const {userId} = this.tokenService.decodeToken(
+      this.tokenService.getTokenFromHttpRequest(request)
+    ) as {userId: string};
+    const user = await this.userService.findUniqueOrThrow({
+      where: {id: userId},
+    });
+    body.reporterUserId = userId;
+    body.reporter = user.username;
+
+    // [step 3] Create jobApplicationNote.
     return await this.jobApplicationNoteService.create({data: body});
   }
 

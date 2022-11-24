@@ -12,7 +12,7 @@ import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {CandidateTrainingService} from './training.service';
 import {CandidateTraining, PermissionAction, Prisma} from '@prisma/client';
 import {CandidateService} from '../candidate.service';
-import {RequirePermission} from 'src/applications/account/authorization/authorization.decorator';
+import {RequirePermission} from '../../../account/authorization/authorization.decorator';
 
 @ApiTags('[Application] Recruitment / Candidate / Training')
 @ApiBearerAuth()

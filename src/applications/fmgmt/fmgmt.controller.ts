@@ -9,7 +9,7 @@ import {FileInterceptor} from '@nestjs/platform-express';
 import {ApiBearerAuth, ApiTags} from '@nestjs/swagger';
 import {Express} from 'express';
 import {diskStorage} from 'multer';
-import {getFileManagementConfig} from 'src/_config/_fmgmt.config';
+import {getFileManagementConfig} from '../../_config/_fmgmt.config';
 
 @ApiTags('[Application] File Management')
 @ApiBearerAuth()

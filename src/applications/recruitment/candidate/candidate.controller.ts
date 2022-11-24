@@ -22,7 +22,7 @@ import {
   PermissionAction,
   CandidateProfileGender,
 } from '@prisma/client';
-import {randomCode} from 'src/toolkits/utilities/common.util';
+import {randomCode} from '../../../toolkits/utilities/common.util';
 import {RequirePermission} from '../../account/authorization/authorization.decorator';
 import {CandidateService} from './candidate.service';
 
@@ -42,9 +42,16 @@ export class CandidateController {
     if (query.name) {
       const name = query.name.trim();
       if (name.length > 0) {
-        whereConditions.push({givenName: {search: name}});
-        whereConditions.push({familyName: {search: name}});
-        whereConditions.push({middleName: {search: name}});
+        whereConditions.push({
+          profile: {
+            fullName: {
+              search: name
+                .split(' ')
+                .filter((word) => word !== '')
+                .join('|'),
+            },
+          },
+        });
       }
     }
 
@@ -87,32 +94,32 @@ export class CandidateController {
   })
   async createCandidate(
     @Body()
-    body: Prisma.CandidateLocationCreateWithoutCandidateInput &
+    body: Prisma.LocationCreateWithoutCandidateInput &
       Prisma.CandidateProfileCreateWithoutCandidateInput
   ): Promise<Candidate> {
+    const locationCreateInput: Prisma.LocationCreateWithoutCandidateInput = {
+      address: body.address,
+      address2: body.address2,
+      city: body.city,
+      state: body.state,
+      zipcode: body.zipcode,
+    };
+    const profileCreateInput: Prisma.CandidateProfileCreateWithoutCandidateInput =
+      {
+        uniqueNumber: randomCode(9),
+        givenName: body.givenName,
+        middleName: body.middleName,
+        familyName: body.familyName,
+        birthday: body.birthday,
+        gender: body.gender,
+        emails: body.emails,
+        phones: body.phones,
+      };
+
     return await this.candidateService.create({
       data: {
-        location: {
-          create: {
-            address: body.address,
-            address2: body.address2,
-            city: body.city,
-            state: body.state,
-            zipcode: body.zipcode,
-          },
-        },
-        profile: {
-          create: {
-            uniqueNumber: randomCode(9),
-            givenName: body.givenName,
-            middleName: body.middleName,
-            familyName: body.familyName,
-            birthday: body.birthday,
-            gender: body.gender,
-            emails: body.emails,
-            phones: body.phones,
-          },
-        },
+        location: {create: locationCreateInput},
+        profile: {create: profileCreateInput},
       },
     });
   }
@@ -131,9 +138,16 @@ export class CandidateController {
     if (query.name) {
       const name = query.name.trim();
       if (name.length > 0) {
-        whereConditions.push({givenName: {search: name}});
-        whereConditions.push({familyName: {search: name}});
-        whereConditions.push({middleName: {search: name}});
+        whereConditions.push({
+          profile: {
+            fullName: {
+              search: name
+                .split(' ')
+                .filter((word) => word !== '')
+                .join('|'),
+            },
+          },
+        });
       }
     }
 
@@ -168,11 +182,16 @@ export class CandidateController {
       include: {location: true, profile: true, jobApplications: true},
     });
 
-    return candidates.map(candidate => {
+    return candidates.map((candidate) => {
       const location = candidate['location'];
       const profile = candidate['profile'];
       delete candidate['location'];
       delete candidate['profile'];
+      delete location.id;
+      delete location.candidateId;
+      delete profile.id;
+      delete profile.candidateId;
+
       return {
         ...candidate,
         ...location,
@@ -200,6 +219,10 @@ export class CandidateController {
     const profile = candidate['profile'];
     delete candidate['location'];
     delete candidate['profile'];
+    delete location.id;
+    delete location.candidateId;
+    delete profile.id;
+    delete profile.candidateId;
 
     return {
       ...candidate,
@@ -244,7 +267,7 @@ export class CandidateController {
   async updateCandidate(
     @Param('candidateId') candidateId: string,
     @Body()
-    body: Prisma.CandidateLocationUpdateWithoutCandidateInput &
+    body: Prisma.LocationUpdateWithoutCandidateInput &
       Prisma.CandidateProfileUpdateWithoutCandidateInput
   ): Promise<Candidate> {
     return await this.candidateService.update({

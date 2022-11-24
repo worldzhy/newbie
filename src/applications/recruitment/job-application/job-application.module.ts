@@ -3,13 +3,13 @@ import {JobApplicationController} from './job-application.controller';
 import {JobApplicationService} from './job-application.service';
 import {JobApplicationNoteModule} from './note/note.module';
 import {JobApplicationTaskModule} from './task/task.module';
-import {ProcessingStepModule} from './processing-step/processing-step.module';
+import {JobApplicationTestingModule} from './testing/testing.module';
 
 @Module({
   imports: [
     JobApplicationNoteModule,
     JobApplicationTaskModule,
-    ProcessingStepModule,
+    JobApplicationTestingModule,
   ],
   controllers: [JobApplicationController],
   providers: [JobApplicationService],

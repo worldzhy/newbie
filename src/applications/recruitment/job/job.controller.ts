@@ -26,24 +26,20 @@ export class JobController {
   @Get('sites')
   listJobSites(): string[] {
     return [
-      'Harley-Davidson Motor Co. - York-Hourly Only',
-      'Harley-Davidson Motor Co. - Tomahawk-Hourly Only',
+      'Harley-Davidson Motor Co. - York',
+      'Harley-Davidson Motor Co. - Tomahawk',
       'Harley-Davidson Motor Co. - Corporate',
-      'Harley-Davidson Motor Co. - PTO Pilgrim Rd-Hourly Only',
-      'Harley-Davidson Motor Co. - York-Salary Only',
+      'Harley-Davidson Motor Co. - PTO Pilgrim Rd',
       'Harley-Davidson Motor Co. - HDFS Plano, TX',
-      'Harley-Davidson Motor Co. - PDC - AZ Salaried',
-      'Harley-Davidson Motor Co. - PTO Pilgrim Rd - Salary Only',
-      'Harley-Davidson Motor Co. - PDC - Salary',
+      'Harley-Davidson Motor Co. - PDC - AZ',
       'Harley-Davidson Motor Co. - Museum',
       'Harley-Davidson Motor Co. - HDFS Chicago, IL',
       'Harley-Davidson Motor Co. - HDFS Reno, NV',
       'Harley-Davidson Motor Co. - AZ Proving Ground',
-      'Harley-Davidson Motor Co. - Tomahawk-Salary Only',
-      'Harley-Davidson Motor Co. - PDC - Hourly',
       'Harley-Davidson Motor Co. - HDDS Valley View, OH',
       'Harley-Davidson Motor Co. - Field',
       'Harley-Davidson Motor Co. - Menomonee Falls - Non-contract',
+      'Harley-Davidson Motor Co. - Other',
     ];
   }
 

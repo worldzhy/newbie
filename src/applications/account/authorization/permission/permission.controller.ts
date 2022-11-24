@@ -16,8 +16,6 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import {
-  JobApplicationProcessingStepAction,
-  JobApplicationProcessingStepState,
   Permission,
   PermissionAction,
   Prisma,
@@ -50,14 +48,7 @@ export class PermissionController {
         value: {
           resource: Prisma.ModelName.JobApplication,
           action: PermissionAction.read,
-          conditions: {
-            processingSteps: {
-              some: {
-                action: JobApplicationProcessingStepAction.STEP1_CREATE,
-                state: JobApplicationProcessingStepState.DONE,
-              },
-            },
-          },
+          where: {state: {in: ['StateA', 'StateB']}},
           trustedEntityType: TrustedEntityType.USER,
           trustedEntityId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
         },

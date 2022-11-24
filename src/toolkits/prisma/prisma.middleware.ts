@@ -30,10 +30,25 @@ export async function prismaMiddleware(
       default:
         return next(params);
     }
-  } else if (params.model === Prisma.ModelName.CandidateProfile) {
+  } else if (params.model === Prisma.ModelName.Candidate) {
     switch (params.action) {
       case 'create':
-        params.args['data']['uniqueNumber'] = randomCode(9);
+        params.args['data']['profile']['create']['fullName'] =
+          params.args['data']['profile']['create']['givenName'] +
+          ' ' +
+          (params.args['data']['profile']['create']['middleName']
+            ? params.args['data']['profile']['create']['middleName'] + ' '
+            : '') +
+          params.args['data']['profile']['create']['familyName'];
+        return next(params);
+      case 'update':
+        params.args['data']['profile']['update']['fullName'] =
+          params.args['data']['profile']['update']['givenName'] +
+          ' ' +
+          (params.args['data']['profile']['update']['middleName']
+            ? params.args['data']['profile']['update']['middleName'] + ' '
+            : '') +
+          params.args['data']['profile']['update']['familyName'];
         return next(params);
       default:
         return next(params);

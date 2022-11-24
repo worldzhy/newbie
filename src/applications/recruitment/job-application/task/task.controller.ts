@@ -6,9 +6,17 @@ import {
   Post,
   Body,
   Param,
+  Request,
   BadRequestException,
+  Query,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiParam,
+  ApiBody,
+  ApiQuery,
+} from '@nestjs/swagger';
 import {JobApplicationTaskService} from './task.service';
 
 import {
@@ -19,15 +27,18 @@ import {
 } from '@prisma/client';
 import {JobApplicationService} from '../job-application.service';
 import {RequirePermission} from '../../../account/authorization/authorization.decorator';
+import {UserService} from '../../../account/user/user.service';
+import {TokenService} from '../../../../toolkits/token/token.service';
 
 @ApiTags('[Application] Recruitment / Job Application / Task')
 @ApiBearerAuth()
 @Controller('recruitment-job-application-tasks')
 export class JobApplicationTaskController {
+  private userService = new UserService();
+  private tokenService = new TokenService();
   private jobApplicationTestService = new JobApplicationTaskService();
   private jobApplicationService = new JobApplicationService();
 
-  //* Create
   @Post('')
   @RequirePermission(
     PermissionAction.create,
@@ -39,7 +50,6 @@ export class JobApplicationTaskController {
       a: {
         summary: '1. Create',
         value: {
-          reporterUserId: 'ababdab1-5d91-4af7-ab2b-e2c9744a88d4',
           reporterComment: 'This an example task.',
           assigneeUserId: 'ccabdab1-5d91-4af7-ab2b-e2c9744a88ss',
           jobApplicationId: 'ababdab1-5d91-4af7-ab2b-e2c9744a88d4',
@@ -48,6 +58,7 @@ export class JobApplicationTaskController {
     },
   })
   async createJobApplicationTask(
+    @Request() request: Request,
     @Body()
     body: Prisma.JobApplicationTaskUncheckedCreateInput
   ): Promise<JobApplicationTask> {
@@ -60,18 +71,70 @@ export class JobApplicationTaskController {
       );
     }
 
-    // [step 2] Create jobApplicationTest.
+    // [step 2] Get reporter user.
+    const {userId} = this.tokenService.decodeToken(
+      this.tokenService.getTokenFromHttpRequest(request)
+    ) as {userId: string};
+    const reporterUser = await this.userService.findUniqueOrThrow({
+      where: {id: userId},
+    });
+    body.reporter = reporterUser.username;
+    body.reporterUserId = userId;
+
+    // [step 3] Get assignee user.
+    const assigneeUser = await this.userService.findUniqueOrThrow({
+      where: {id: body.assigneeUserId},
+    });
+    body.assignee = assigneeUser.username;
+
+    // [step 3] Create jobApplicationTest.
     return await this.jobApplicationTestService.create({data: body});
   }
 
-  //* Get many
   @Get('')
   @RequirePermission(PermissionAction.read, Prisma.ModelName.JobApplicationTask)
-  async getJobApplicationTasks(): Promise<JobApplicationTask[]> {
-    return await this.jobApplicationTestService.findMany({});
+  @ApiQuery({name: 'page', type: 'number'})
+  @ApiQuery({name: 'pageSize', type: 'number'})
+  @ApiQuery({name: 'assignedToMe', type: 'string'})
+  async getJobApplicationTasks(
+    @Request() request: Request,
+    @Query() query: {page?: string; pageSize?: string; assignedToMe?: string}
+  ): Promise<JobApplicationTask[]> {
+    // [step 1] Construct where argument.
+    let where: Prisma.JobApplicationTaskWhereInput | undefined = undefined;
+    if (query.assignedToMe && query.assignedToMe.trim()) {
+      const {userId} = this.tokenService.decodeToken(
+        this.tokenService.getTokenFromHttpRequest(request)
+      ) as {userId: string};
+      where = {assigneeUserId: userId};
+    }
+
+    // [step 2] Construct take and skip arguments.
+    let take: number, skip: number;
+    if (query.page && query.pageSize) {
+      // Actually 'page' is string because it comes from URL param.
+      const page = parseInt(query.page);
+      const pageSize = parseInt(query.pageSize);
+      if (page > 0 && pageSize > 0) {
+        take = pageSize;
+        skip = pageSize * (page - 1);
+      } else {
+        throw new BadRequestException(
+          'The page and pageSize must be larger than 0.'
+        );
+      }
+    } else {
+      take = 10;
+      skip = 0;
+    }
+
+    return await this.jobApplicationTestService.findMany({
+      where: where,
+      take: take,
+      skip: skip,
+    });
   }
 
-  //* Get
   @Get(':taskId')
   @RequirePermission(PermissionAction.read, Prisma.ModelName.JobApplicationTask)
   @ApiParam({
@@ -88,7 +151,6 @@ export class JobApplicationTaskController {
     });
   }
 
-  //* Update
   @Patch(':taskId')
   @RequirePermission(
     PermissionAction.update,
@@ -121,7 +183,6 @@ export class JobApplicationTaskController {
     });
   }
 
-  //* Delete
   @Delete(':taskId')
   @RequirePermission(
     PermissionAction.delete,

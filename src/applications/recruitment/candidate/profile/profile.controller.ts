@@ -16,7 +16,7 @@ import {
   CandidateProfile,
   CandidateProfileGender,
 } from '@prisma/client';
-import {RequirePermission} from 'src/applications/account/authorization/authorization.decorator';
+import {RequirePermission} from '../../../account/authorization/authorization.decorator';
 import {CandidateProfileService} from './profile.service';
 
 @ApiTags('[Application] Recruitment / Candidate / Profile')
@@ -37,22 +37,13 @@ export class CandidateProfileController {
           givenName: 'Mary',
           middleName: 'Rose',
           familyName: 'Johnson',
-          suffix: 'PhD',
           birthday: new Date(),
           gender: CandidateProfileGender.MALE,
-          hasPCP: true,
-          address: '456 White Finch St. North Augusta, SC 29860',
-          zipcode: '21000',
-          geoJSON: {
-            type: 'Feature',
-            geometry: {
-              type: 'Point',
-              coordinates: [125.6, 10.1],
-            },
-            properties: {
-              name: 'Dinagat Islands',
-            },
-          },
+          emails: [{email: 'mary@hd.com'}],
+          phones: [
+            {phone: '121289182', extention: '232'},
+            {phone: '7236782462', extention: '897'},
+          ],
           websites: {facebook: 'https://www.facebook.com/grace'},
           picture:
             'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Steve_Jobs_Headshot_2010-CROP_%28cropped_2%29.jpg/800px-Steve_Jobs_Headshot_2010-CROP_%28cropped_2%29.jpg',
@@ -143,22 +134,13 @@ export class CandidateProfileController {
           givenName: 'Robert',
           middleName: 'William',
           familyName: 'Smith',
-          suffix: 'PhD',
           birthday: '2019-05-27T11:53:32.118Z',
           gender: CandidateProfileGender.MALE,
-          hasPCP: true,
-          address: '456 White Finch St. North Augusta, SC 29860',
-          zipcode: '21000',
-          geoJSON: {
-            type: 'Feature',
-            geometry: {
-              type: 'Point',
-              coordinates: [125.6, 10.1],
-            },
-            properties: {
-              name: 'Dinagat Islands',
-            },
-          },
+          emails: [{email: 'mary@hd.com'}],
+          phones: [
+            {phone: '121289182', extention: '232'},
+            {phone: '7236782462', extention: '897'},
+          ],
           websites: {facebook: 'https://www.facebook.com/grace'},
           picture:
             'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Steve_Jobs_Headshot_2010-CROP_%28cropped_2%29.jpg/800px-Steve_Jobs_Headshot_2010-CROP_%28cropped_2%29.jpg',

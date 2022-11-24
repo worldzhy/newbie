@@ -9,7 +9,7 @@ import {
 import {UserService} from '../user/user.service';
 import {PermissionService} from './permission/permission.service';
 import {PERMISSION_KEY} from './authorization.decorator';
-import {TokenService} from 'src/toolkits/token/token.service';
+import {TokenService} from '../../../toolkits/token/token.service';
 
 @Injectable()
 export class AuthorizationGuard implements CanActivate {

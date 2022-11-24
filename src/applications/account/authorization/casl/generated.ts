@@ -2,7 +2,6 @@ import {Subjects} from '@casl/prisma';
 import {
   Candidate,
   CandidateCertification,
-  CandidateTesting,
   CandidateTraining,
   CloudFormationStack,
   DatatransMission,
@@ -15,7 +14,6 @@ import {
   Job,
   JobApplication,
   JobApplicationNote,
-  JobApplicationProcessingStep,
   JobApplicationTask,
   Organization,
   Permission,
@@ -63,10 +61,8 @@ export type PrismaSubjects = Subjects<{
   Candidate: Candidate;
   CandidateCertification: CandidateCertification;
   CandidateTraining: CandidateTraining;
-  CandidateTesting: CandidateTesting;
   Job: Job;
   JobApplication: JobApplication;
-  JobApplicationProcessingStep: JobApplicationProcessingStep;
   JobApplicationNote: JobApplicationNote;
   JobApplicationTask: JobApplicationTask;
 }>;

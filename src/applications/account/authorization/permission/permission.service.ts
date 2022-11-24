@@ -12,7 +12,7 @@ export class PermissionService {
     return await this.prisma.permission.findUnique(params);
   }
 
-  async findMany(params: Prisma.PermissionFindManyArgs) {
+  async findMany(params: Prisma.PermissionFindManyArgs): Promise<Permission[]> {
     return await this.prisma.permission.findMany(params);
   }
 

@@ -15,7 +15,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["microservice/notification", "microservice/task", "application/account", "application/engined", "application/fmgmt", "application/pmgmt", "application/recruitment"]
+  schemas  = ["microservice/notification", "microservice/task", "application/account", "application/engined", "application/fmgmt", "application/location", "application/pmgmt", "application/recruitment", "application/workflow"]
 }
 
 // !! ------------------------------------------------------------ //
@@ -192,20 +192,21 @@ model User {
   // [2] The 'User' is designed for long-term use and the 'VerificationCode' is designed for short-term use.
   // [3] Actually, the 'User' model should be named 'UserPassword' and the 'VerificationCode' should be named 'UserVerificationCode'.
 
-  id             String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email          String?        @unique
-  phone          String?        @unique
-  username       String?        @unique
-  password       String? // automatic hashing
-  status         UserStatus     @default(ACTIVE)
-  lastLoginAt    DateTime?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  organization   Organization?  @relation(fields: [organizationId], references: [id])
-  organizationId String?        @db.Uuid
-  locations      UserLocation[]
-  profiles       UserProfile[]
-  userToRoles    UserToRole[]
+  id              String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email           String?                 @unique
+  phone           String?                 @unique
+  username        String?                 @unique
+  password        String? // automatic hashing
+  status          UserStatus              @default(ACTIVE)
+  lastLoginAt     DateTime?
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+  organization    Organization?           @relation(fields: [organizationId], references: [id])
+  organizationId  String?                 @db.Uuid
+  profiles        UserProfile[]
+  userToRoles     UserToRole[]
+  locations       Location[]
+  holdingTestings JobApplicationTesting[]
 
   @@schema("application/account")
 }
@@ -231,23 +232,6 @@ model UserToken {
 enum UserTokenStatus {
   ACTIVE
   INACTIVE
-
-  @@schema("application/account")
-}
-
-model UserLocation {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name      String?
-  address   String?
-  address2  String?
-  city      String?
-  state     String?
-  zipcode   String?
-  geoJSON   Json? // https://datatracker.ietf.org/doc/html/rfc7946
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String   @db.Uuid
 
   @@schema("application/account")
 }
@@ -316,12 +300,10 @@ model EndpointPermission {
 
 model Permission {
   // Permission of Resource
-
   id                Int               @id @default(autoincrement())
   action            PermissionAction
   resource          String
-  fields            String[] // an array of fields to which user has (or not) access
-  conditions        Json? // an object of conditions which restricts the rule scope
+  where             Json? // an object of where expression meets the Prisma syntax.
   inverted          Boolean? // indicates whether rule allows or forbids something
   reason            String? // message which explains why rule is forbidden
   trustedEntityType TrustedEntityType
@@ -619,6 +601,27 @@ model Folder {
   @@schema("application/fmgmt")
 }
 
+model Location {
+  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  site        String?
+  address     String?
+  address2    String?
+  city        String?
+  state       String?
+  zipcode     String?
+  geoJSON     Json? // https://datatracker.ietf.org/doc/html/rfc7946
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  user        User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String?    @db.Uuid
+  candidate   Candidate? @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  candidateId String?    @unique @db.Uuid
+  job         Job?       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobId       String?    @unique @db.Uuid
+
+  @@schema("application/location")
+}
+
 // ! ------------------------------------------------------------ //
 // !          [Application] Project Management models             //
 // ! ------------------------------------------------------------ //
@@ -805,19 +808,20 @@ enum PulumiStackState {
 }
 
 // ! ------------------------------------------------------------ //
-// !             [Application] Recruitment models             //
+// !             [Application] Recruitment models                 //
 // ! ------------------------------------------------------------ //
 // * Candidate                                                    //
 // * CandidateLocation                                            //
 // * CandidateProfile                                             //
 // * CandidateCertification                                       //
 // * CandidateTraining                                            //
-// * CandidateTestinging                                          //
 // * Job                                                          //
 // * JobApplication                                               //
-// * JobApplicationProcessingStep                                 //
 // * JobApplicationNote                                           //
 // * JobApplicationTask                                           //
+// * JobApplicationTesting                                        //
+// * JobApplicationTestingAttachment                              //
+// * JobApplicationTestingLog                                     //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
 model Candidate {
@@ -825,11 +829,10 @@ model Candidate {
   status          CandidateStatus          @default(ACTIVE)
   createdAt       DateTime                 @default(now())
   updatedAt       DateTime                 @updatedAt
-  location        CandidateLocation?
   profile         CandidateProfile?
+  location        Location?
   certifications  CandidateCertification[]
   trainings       CandidateTraining[]
-  testings        CandidateTesting[]
   jobApplications JobApplication[]
 
   @@schema("application/recruitment")
@@ -842,28 +845,13 @@ enum CandidateStatus {
   @@schema("application/recruitment")
 }
 
-model CandidateLocation {
-  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  address     String
-  address2    String?
-  city        String
-  state       String
-  zipcode     String
-  geoJSON     Json? // https://datatracker.ietf.org/doc/html/rfc7946
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  candidateId String    @unique @db.Uuid
-
-  @@schema("application/recruitment")
-}
-
 model CandidateProfile {
   id           String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   uniqueNumber String
   givenName    String
   middleName   String?
   familyName   String
+  fullName     String?
   birthday     DateTime?
   gender       CandidateProfileGender?
   emails       Json[]
@@ -910,40 +898,15 @@ model CandidateTraining {
   @@schema("application/recruitment")
 }
 
-model CandidateTesting {
-  id                  Int                   @id @default(autoincrement())
-  type                String
-  state               CandidateTestingState @default(PENDING)
-  appointmentStartsAt DateTime?
-  appointmentEndsAt   DateTime?
-  appointmentLocation String?
-  report              String?
-  createdAt           DateTime              @default(now())
-  updatedAt           DateTime              @updatedAt
-  candidate           Candidate             @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  candidateId         String                @db.Uuid
-
-  @@schema("application/recruitment")
-}
-
-enum CandidateTestingState {
-  PENDING
-  PASSED
-  REJECTED
-  SEND_TO_REVIEW
-
-  @@schema("application/recruitment")
-}
-
 model Job {
-  id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   code        String
   type        JobType
-  position    String?
-  description String?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  location    JobLocation?
+  position    String
+  description String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  location    Location?
 
   @@schema("application/recruitment")
 }
@@ -955,79 +918,27 @@ enum JobType {
   @@schema("application/recruitment")
 }
 
-model JobLocation {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  address   String
-  address2  String?
-  city      String?
-  state     String?
-  zipcode   String?
-  geoJSON   Json? // https://datatracker.ietf.org/doc/html/rfc7946
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  job       Job      @relation(fields: [jobId], references: [id])
-  jobId     String   @unique @db.Uuid
-
-  @@schema("application/recruitment")
-}
-
 model JobApplication {
-  id              String                         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  jobCode         String
-  jobType         JobType
-  jobSite         String
-  reviewCode      JobApplicationReviewCode?
-  createdAt       DateTime                       @default(now())
-  updatedAt       DateTime                       @updatedAt
-  candidate       Candidate                      @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  candidateId     String                         @db.Uuid
-  processingSteps JobApplicationProcessingStep[]
-  tasks           JobApplicationTask[]
-  notes           JobApplicationNote[]
-
-  @@schema("application/recruitment")
-}
-
-enum JobApplicationReviewCode {
-  MED_DS
-  MED_CLR
-
-  @@schema("application/recruitment")
-}
-
-model JobApplicationProcessingStep {
-  id               Int                                @id @default(autoincrement())
-  action           JobApplicationProcessingStepAction
-  state            JobApplicationProcessingStepState  @default(PENDING)
-  handlerUserId    String?                            @db.Uuid
-  handlerComment   String?
-  createdAt        DateTime                           @default(now())
-  updatedAt        DateTime                           @updatedAt
-  jobApplication   JobApplication                     @relation(fields: [jobApplicationId], references: [id], onDelete: Cascade)
-  jobApplicationId String                             @db.Uuid
-
-  @@unique([action, jobApplicationId])
-  @@schema("application/recruitment")
-}
-
-enum JobApplicationProcessingStepAction {
-  STEP1_DISPATCH
-  STEP2_TESTING
-  STEP3_REVIEW
-
-  @@schema("application/recruitment")
-}
-
-enum JobApplicationProcessingStepState {
-  PENDING
-  PROCESSING
-  DONE
+  id          String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  state       String?
+  jobType     JobType
+  jobCode     String? // Only available when jobType is Hourly.
+  jobSite     String
+  referredBy  String // This field should user.name or user.id
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
+  candidate   Candidate               @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  candidateId String                  @db.Uuid
+  notes       JobApplicationNote[]
+  tasks       JobApplicationTask[]
+  testings    JobApplicationTesting[]
 
   @@schema("application/recruitment")
 }
 
 model JobApplicationNote {
   id               Int            @id @default(autoincrement())
+  reporter         String?
   reporterUserId   String         @db.Uuid
   reporterComment  String
   createdAt        DateTime       @default(now())
@@ -1040,8 +951,10 @@ model JobApplicationNote {
 
 model JobApplicationTask {
   id               Int                     @id @default(autoincrement())
+  reporter         String?
   reporterUserId   String                  @db.Uuid
   reporterComment  String
+  assignee         String?
   assigneeUserId   String                  @db.Uuid
   state            JobApplicationTaskState @default(PENDING)
   createdAt        DateTime                @default(now())
@@ -1057,4 +970,92 @@ enum JobApplicationTaskState {
   DONE
 
   @@schema("application/recruitment")
+}
+
+model JobApplicationTesting {
+  id                  String                            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  state               String
+  type                String
+  site                String?
+  appointmentStartsAt DateTime?
+  appointmentEndsAt   DateTime?
+  processedByUserIds  String[] // Store id of users who have processed this testing.
+  createdAt           DateTime                          @default(now())
+  updatedAt           DateTime                          @updatedAt
+  jobApplication      JobApplication                    @relation(fields: [jobApplicationId], references: [id], onDelete: Cascade)
+  jobApplicationId    String                            @db.Uuid
+  beingHeldByUser     User?                             @relation(fields: [beingHeldByUserId], references: [id])
+  beingHeldByUserId   String?                           @db.Uuid
+  attachments         JobApplicationTestingAttachment[]
+  workflows           JobApplicationTestingWorkflow[]
+
+  @@schema("application/recruitment")
+}
+
+model JobApplicationTestingAttachment {
+  id        Int                   @id @default(autoincrement())
+  name      String
+  url       String
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+  testing   JobApplicationTesting @relation(fields: [testingId], references: [id], onDelete: Cascade)
+  testingId String                @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+model JobApplicationTestingWorkflow {
+  id                Int                   @id @default(autoincrement())
+  step              String
+  state             String
+  nextStep          String
+  nextRoleId        String?               @db.Uuid
+  processedByUserId String                @db.Uuid
+  comment           String?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  testing           JobApplicationTesting @relation(fields: [testingId], references: [id], onDelete: Cascade)
+  testingId         String                @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+// ! ------------------------------------------------------------ //
+// !             [Application] Workflow models                    //
+// ! ------------------------------------------------------------ //
+// * Workflow                                                     //
+// * WorkflowStep                                                 //
+// * WorkflowState                                                //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
+
+model Workflow {
+  id         Int      @id @default(autoincrement())
+  step       String
+  state      String
+  nextStep   String
+  nextRoleId String?  @db.Uuid // The next role to take over the next step.
+  nextUserId String?  @db.Uuid // The next user to take over the next step.
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([step, state])
+  @@schema("application/workflow")
+}
+
+model WorkflowStep {
+  id        Int      @id @default(autoincrement())
+  step      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@schema("application/workflow")
+}
+
+model WorkflowState {
+  id        Int      @id @default(autoincrement())
+  state     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@schema("application/workflow")
 }

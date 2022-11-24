@@ -1,7 +1,5 @@
 import {
   ElasticsearchDatasource,
-  JobApplicationProcessingStepAction,
-  JobApplicationProcessingStepState,
   PermissionAction,
   PostgresqlDatasource,
   Prisma,
@@ -15,12 +13,77 @@ import {ProjectController} from '../src/applications/pmgmt/project/project.contr
 import {ElasticsearchDatasourceController} from '../src/applications/engined/datasource/elasticsearch/elasticsearch-datasource.controller';
 import {PostgresqlDatasourceController} from '../src/applications/engined/datasource/postgresql/postgresql-datasource.controller';
 import {DatatransPipelineController} from '../src/applications/engined/datatrans/pipeline/pipeline.controller';
+import {WorkflowController} from '../src/applications/workflow/workflow.controller';
+import {WorkflowStepController} from '../src/applications/workflow/step/step.controller';
+import {WorkflowStateController} from '../src/applications/workflow/state/state.controller';
 
 async function main() {
   console.log('Start seeding ...');
 
-  // Seed account module.
-  console.log('* Create organization, roles, admin user and permissions');
+  // Seed workflow data.
+  console.log('* Creating workflows...');
+
+  const workflowController = new WorkflowController();
+  const workflowStepController = new WorkflowStepController();
+  const workflowStateController = new WorkflowStateController();
+
+  const steps = [
+    {step: 'START'},
+    {step: 'STEP1_DISPATCH'},
+    {step: 'STEP2_TEST'},
+    {step: 'STEP3_REVIEW'},
+    {step: 'END'},
+  ];
+  for (let i = 0; i < steps.length; i++) {
+    await workflowStepController.createWorkflowStep(steps[i]);
+  }
+
+  const states = [
+    {state: 'Pending Dispatch'}, // [Recruiter] assign to [Referral Coordinator] to work on STEP1_DISPATCH screen
+    {state: 'Pending Test'}, // [Referral Coordinator] assign to [Provider] to work on STEP2_TEST screen
+    {state: 'Medical Hold'}, // [Provider] assign to [Secondary Reviewer] to work on STEP3_REVIEW screen
+    {state: 'CV Hold'}, // [Provider] assign to [Referral Coordinator] to work on STEP2_TEST screen
+    {state: 'Lab Hold'}, // [Provider] assign to [Referral Coordinator] to work on STEP2_TEST screen
+    {state: 'Late'}, // [Provider] assign to [Referral Coordinator] to work on STEP1_DISPATCH screen
+    {state: 'Cancelled'}, // [Provider] assign to [Referral Coordinator] to work on STEP1_DISPATCH screen
+    {state: 'Cancelled - Medical Hold'}, // [Provider] assign to [Referral Coordinator] to work on STEP1_DISPATCH screen
+    {state: 'Cancelled - CV hold'}, // [Provider] assign to [Referral Coordinator] to work on STEP1_DISPATCH screen
+    {state: 'Cancelled - Lab Hold'}, // [Provider] assign to [Referral Coordinator] to work on STEP1_DISPATCH screen
+    {state: 'Reviewer Hold'}, // [Secondary Reviewer] assign to [Secondary Reviewer] to work on STEP3_REVIEW screen
+    {state: 'Resubmission'}, // [Secondary Reviewer] assign to [Provider] to work on STEP2_TEST screen
+    // Final states below.
+    {state: 'Pass'}, // [Provider] finish the process
+    {state: 'Discontinue'}, // [Provider] finish the process
+    {state: 'Terminated'}, // [Provider] finish the process
+    {state: 'MD-CLR'}, // [Secondary Reviewer] finish the process
+    {state: 'MD-CLR-P-CV'}, // [Secondary Reviewer] finish the process
+    {state: 'MD-CLR-WL'}, // [Secondary Reviewer] finish the process
+    {state: 'MD-NOT-CLR'}, // [Secondary Reviewer] finish the process
+    {state: 'MD-DISC'}, // [Secondary Reviewer] finish the process
+    {state: 'D-Failed'}, // [Secondary Reviewer] finish the process
+  ];
+  for (let i = 0; i < states.length; i++) {
+    await workflowStateController.createWorkflowState(states[i]);
+  }
+
+  const workflowForfinalStates = [
+    {step: 'STEP2_TEST', state: 'Pass', nextStep: 'END'},
+    {step: 'STEP2_TEST', state: 'Discontinue', nextStep: 'END'},
+    {step: 'STEP2_TEST', state: 'Terminated', nextStep: 'END'},
+    {step: 'STEP3_REVIEW', state: 'MD-CLR', nextStep: 'END'},
+    {step: 'STEP3_REVIEW', state: 'MD-CLR-P-CV', nextStep: 'END'},
+    {step: 'STEP3_REVIEW', state: 'MD-CLR-WL', nextStep: 'END'},
+    {step: 'STEP3_REVIEW', state: 'MD-NOT-CLR', nextStep: 'END'},
+    {step: 'STEP3_REVIEW', state: 'MD-DISC', nextStep: 'END'},
+    {step: 'STEP3_REVIEW', state: 'D-Failed', nextStep: 'END'},
+  ];
+  for (let i = 0; i < workflowForfinalStates.length; i++) {
+    await workflowController.createWorkflow(workflowForfinalStates[i]);
+  }
+
+  // Seed account data.
+  console.log('* Creating organization, roles, admin user and permissions...');
+
   const organizationController = new OrganizationController();
   const roleController = new RoleController();
   const authController = new AccountController();
@@ -30,9 +93,9 @@ async function main() {
   const RoleName = {
     Admin: 'Admin',
     Recruiter: 'Recruiter',
-    Dispatcher: 'Dispatcher',
-    Tester: 'Tester',
-    Reviewer: 'Reviewer',
+    Dispatcher: 'Referral Coordinator',
+    Provider: 'Provider and Reviewer',
+    Reviewer: 'Secondary Reviewer',
   };
 
   const organization = await organizationController.createOrganization({
@@ -52,7 +115,7 @@ async function main() {
       organizationId: organization.id,
     },
     {
-      name: RoleName.Tester,
+      name: RoleName.Provider,
       organizationId: organization.id,
     },
     {
@@ -62,100 +125,181 @@ async function main() {
   ];
   for (let i = 0; i < roles.length; i++) {
     const role = await roleController.createRole(roles[i]);
+    // Create an user with Admin role.
     if (role.name === RoleName.Admin) {
-      // Add all permissions to Admin role.
-      for (const resource of permissionResources) {
-        for (const action of permissionActions) {
-          await permissionController.createPermission({
-            resource,
-            action,
-            trustedEntityType: TrustedEntityType.ROLE,
-            trustedEntityId: role.id,
-          });
-        }
-      }
-      // Create an user with Admin role.
       await authController.signup({
         username: 'admin',
         password: 'Abc1234!',
         userToRoles: {create: [{roleId: role.id}]},
       });
-    } else if (role.name === RoleName.Recruiter) {
-      await permissionController.createPermission({
-        action: PermissionAction.create,
-        resource: Prisma.ModelName.JobApplication,
-        trustedEntityType: TrustedEntityType.ROLE,
-        trustedEntityId: role.id,
-      });
-      await permissionController.createPermission({
-        action: PermissionAction.create,
-        resource: Prisma.ModelName.JobApplicationProcessingStep,
-        trustedEntityType: TrustedEntityType.ROLE,
-        trustedEntityId: role.id,
-      });
+    }
+
+    // Add all resource permissions to roles.
+    for (const resource of permissionResources) {
+      for (const action of permissionActions) {
+        await permissionController.createPermission({
+          resource,
+          action,
+          trustedEntityType: TrustedEntityType.ROLE,
+          trustedEntityId: role.id,
+        });
+      }
+    }
+
+    // Add condition permissions to roles.
+    if (role.name === RoleName.Recruiter) {
+      // nothing to process.
     } else if (role.name === RoleName.Dispatcher) {
+      // [step 1] Create workflows.
+      const workflows = [
+        {
+          step: 'START',
+          state: 'Pending Dispatch',
+          nextStep: 'STEP1_DISPATCH',
+          nextRoleId: role.id, // [Referral Coordinator]
+        },
+
+        {
+          step: 'STEP2_TEST',
+          state: 'CV Hold',
+          nextStep: 'STEP2_TEST',
+          nextRoleId: role.id, // [Referral Coordinator]
+        },
+        {
+          step: 'STEP2_TEST',
+          state: 'Lab Hold',
+          nextStep: 'STEP2_TEST',
+          nextRoleId: role.id, // [Referral Coordinator]
+        },
+        {
+          step: 'STEP2_TEST',
+          state: 'Late',
+          nextStep: 'STEP1_DISPATCH',
+          nextRoleId: role.id, // [Referral Coordinator]
+        },
+        {
+          step: 'STEP2_TEST',
+          state: 'Cancelled',
+          nextStep: 'STEP1_DISPATCH',
+          nextRoleId: role.id, // [Referral Coordinator]
+        },
+        {
+          step: 'STEP2_TEST',
+          state: 'Cancelled - Medical Hold',
+          nextStep: 'STEP1_DISPATCH',
+          nextRoleId: role.id, // [Referral Coordinator]
+        },
+        {
+          step: 'STEP2_TEST',
+          state: 'Cancelled - CV hold',
+          nextStep: 'STEP1_DISPATCH',
+          nextRoleId: role.id, // [Referral Coordinator]
+        },
+        {
+          step: 'STEP2_TEST',
+          state: 'Cancelled - Lab Hold',
+          nextStep: 'STEP1_DISPATCH',
+          nextRoleId: role.id, // [Referral Coordinator]
+        },
+      ];
+      for (let i = 0; i < workflows.length; i++) {
+        await workflowController.createWorkflow(workflows[i]);
+      }
+
+      // [step 2] Create permissions.
       await permissionController.createPermission({
         action: PermissionAction.read,
         resource: Prisma.ModelName.JobApplication,
-        conditions: {
-          processingSteps: {
+        where: {
+          testings: {
             some: {
-              action: JobApplicationProcessingStepAction.STEP1_DISPATCH,
-              state: JobApplicationProcessingStepState.PENDING,
+              state: {
+                in: [
+                  'Pending Dispatch',
+                  'CV Hold',
+                  'Lab Hold',
+                  'Late',
+                  'Cancelled',
+                  'Cancelled - Medical Hold',
+                  'Cancelled - CV hold',
+                  'Cancelled - Lab Hold',
+                ],
+              },
             },
           },
         },
         trustedEntityType: TrustedEntityType.ROLE,
         trustedEntityId: role.id,
       });
+    } else if (role.name === RoleName.Provider) {
+      // [step 1] Create workflows.
+      const workflows = [
+        {
+          step: 'STEP1_DISPATCH',
+          state: 'Pending Test',
+          nextStep: 'STEP2_TEST',
+          nextRoleId: role.id, // [Provider]
+        },
+        {
+          step: 'STEP3_REVIEW',
+          state: 'Resubmission',
+          nextStep: 'STEP2_TEST',
+          nextRoleId: role.id, // [Provider]
+        },
+      ];
+      for (let i = 0; i < workflows.length; i++) {
+        await workflowController.createWorkflow(workflows[i]);
+      }
 
-      await permissionController.createPermission({
-        action: PermissionAction.update,
-        resource: Prisma.ModelName.JobApplicationProcessingStep,
-        trustedEntityType: TrustedEntityType.ROLE,
-        trustedEntityId: role.id,
-      });
-    } else if (role.name === RoleName.Tester) {
+      // [step 2] Create permissions.
       await permissionController.createPermission({
         action: PermissionAction.read,
         resource: Prisma.ModelName.JobApplication,
-        conditions: {
-          processingSteps: {
+        where: {
+          testings: {
             some: {
-              action: JobApplicationProcessingStepAction.STEP2_TESTING,
-              state: JobApplicationProcessingStepState.PENDING,
+              state: {
+                in: ['Pending Test', 'Resubmission'],
+              },
             },
           },
         },
-        trustedEntityType: TrustedEntityType.ROLE,
-        trustedEntityId: role.id,
-      });
-
-      await permissionController.createPermission({
-        action: PermissionAction.update,
-        resource: Prisma.ModelName.JobApplicationProcessingStep,
         trustedEntityType: TrustedEntityType.ROLE,
         trustedEntityId: role.id,
       });
     } else if (role.name === RoleName.Reviewer) {
+      // [step 1] Create workflows.
+      const workflows = [
+        {
+          step: 'STEP2_TEST',
+          state: 'Medical Hold',
+          nextStep: 'STEP3_REVIEW',
+          nextRoleId: role.id, // [Secondary Reviewer]
+        },
+        {
+          step: 'STEP3_REVIEW',
+          state: 'Reviewer Hold',
+          nextStep: 'STEP3_REVIEW',
+          nextRoleId: role.id, // [Secondary Reviewer]
+        },
+      ];
+      for (let i = 0; i < workflows.length; i++) {
+        await workflowController.createWorkflow(workflows[i]);
+      }
+
+      // [step 2] Create permissions.
       await permissionController.createPermission({
         action: PermissionAction.read,
         resource: Prisma.ModelName.JobApplication,
-        conditions: {
-          processingSteps: {
+        where: {
+          testings: {
             some: {
-              action: JobApplicationProcessingStepAction.STEP3_REVIEW,
-              state: JobApplicationProcessingStepState.PENDING,
+              state: {
+                in: ['Medical Hold', 'Reviewer Hold'],
+              },
             },
           },
         },
-        trustedEntityType: TrustedEntityType.ROLE,
-        trustedEntityId: role.id,
-      });
-
-      await permissionController.createPermission({
-        action: PermissionAction.update,
-        resource: Prisma.ModelName.JobApplicationProcessingStep,
         trustedEntityType: TrustedEntityType.ROLE,
         trustedEntityId: role.id,
       });
@@ -163,7 +307,7 @@ async function main() {
   }
 
   // Seed project management module.
-  console.log('* Create projects');
+  console.log('* Creating projects...');
   const projectController = new ProjectController();
   const projects = [
     {
@@ -178,7 +322,7 @@ async function main() {
   }
 
   // Seed datasource module.
-  console.log('* Create postgresql and elasticsearch datasources');
+  console.log('* Creating postgresql and elasticsearch datasources...');
   const postgresqlDatasourceController = new PostgresqlDatasourceController();
   const elasticsearchDatasourceController =
     new ElasticsearchDatasourceController();
@@ -200,7 +344,7 @@ async function main() {
   );
 
   // Seed datatrans module.
-  console.log('* Create datatrans pipeline');
+  console.log('* Creating datatrans pipeline...');
   const pipelineController = new DatatransPipelineController();
   await pipelineController.createPipeline({
     name: 'pg2es_pipeline',
