@@ -35,9 +35,6 @@ export class DatatransPipelineController {
           name: 'pipeline_01',
           hasManyTables: [],
           belongsToTables: [],
-          numberOfRecordsPerBatch: 100,
-          queueUrl:
-            'https://sqs.cn-northwest-1.amazonaws.com.cn/077767357755/dev-inceptionpad-message-service-email-level1',
           fromTableId: 1,
           toIndexId: 1,
         },
@@ -46,15 +43,7 @@ export class DatatransPipelineController {
   })
   async createPipeline(
     @Body()
-    body: {
-      name: string;
-      hasManyTables: string[];
-      belongsToTables: string[];
-      numberOfRecordsPerBatch?: number;
-      queueUrl?: string;
-      fromTableId: number;
-      toIndexId: number;
-    }
+    body: Prisma.DatatransPipelineUncheckedCreateInput
   ): Promise<DatatransPipeline> {
     // [step 1] Check if the fromTable and toIndex are existed.
     if (
@@ -117,7 +106,6 @@ export class DatatransPipelineController {
           name: 'pipeline-01',
           hasManyTables: [],
           belongsToTables: [],
-          numberOfRecordsPerBatch: 100,
         },
       },
     },

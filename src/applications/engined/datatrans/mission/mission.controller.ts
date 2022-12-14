@@ -26,7 +26,6 @@ export class DatatransMissionController {
   private datatransMissionService = new DatatransMissionService();
   private taskService = new TaskService();
 
-  //* Create
   @Post('')
   @ApiBody({
     description: '',
@@ -47,13 +46,11 @@ export class DatatransMissionController {
     return await this.datatransMissionService.create({data: body});
   }
 
-  //* Get many
   @Get('')
   async getDatatransMissions(): Promise<DatatransMission[]> {
     return await this.datatransMissionService.findMany({});
   }
 
-  //* Get
   @Get(':missionId')
   @ApiParam({
     name: 'missionId',
@@ -69,7 +66,6 @@ export class DatatransMissionController {
     });
   }
 
-  //* Update
   @Patch(':missionId')
   @ApiParam({
     name: 'missionId',
@@ -87,7 +83,6 @@ export class DatatransMissionController {
     });
   }
 
-  //* Delete
   @Delete(':missionId')
   @ApiParam({
     name: 'missionId',
