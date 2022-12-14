@@ -10,12 +10,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {
-  PermissionAction,
-  Prisma,
-  CandidateProfile,
-  CandidateProfileGender,
-} from '@prisma/client';
+import {PermissionAction, Prisma, CandidateProfile} from '@prisma/client';
 import {RequirePermission} from '../../../account/authorization/authorization.decorator';
 import {CandidateProfileService} from './profile.service';
 
@@ -24,6 +19,11 @@ import {CandidateProfileService} from './profile.service';
 @Controller('candidate-profiles')
 export class CandidateProfileController {
   constructor(private candidateProfileService: CandidateProfileService) {}
+
+  @Get('genders')
+  listCandidateProfileGenders(): string[] {
+    return ['Male', 'Female', 'Non-binary'];
+  }
 
   @Post('')
   @RequirePermission(PermissionAction.create, Prisma.ModelName.CandidateProfile)
@@ -38,12 +38,12 @@ export class CandidateProfileController {
           middleName: 'Rose',
           familyName: 'Johnson',
           birthday: new Date(),
-          gender: CandidateProfileGender.MALE,
-          emails: [{email: 'mary@hd.com'}],
-          phones: [
-            {phone: '121289182', extention: '232'},
-            {phone: '7236782462', extention: '897'},
-          ],
+          gender: 'Male',
+          email: 'mary@hd.com',
+          primaryPhone: '121289182',
+          primaryPhoneExt: '232',
+          alternatePhone: '7236782462',
+          alternatePhoneExt: '897',
           websites: {facebook: 'https://www.facebook.com/grace'},
           picture:
             'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Steve_Jobs_Headshot_2010-CROP_%28cropped_2%29.jpg/800px-Steve_Jobs_Headshot_2010-CROP_%28cropped_2%29.jpg',
@@ -64,17 +64,16 @@ export class CandidateProfileController {
   ): Promise<CandidateProfile[]> {
     // [step 1] Construct where argument.
     let where: Prisma.CandidateProfileWhereInput | undefined;
-    if (query.name) {
-      const name = query.name.trim();
-      if (name.length > 0) {
-        where = {
-          OR: [
-            {givenName: {search: name}},
-            {familyName: {search: name}},
-            {middleName: {search: name}},
-          ],
-        };
-      }
+    if (query.name && query.name.trim().length > 0) {
+      where = {
+        fullName: {
+          search: query.name
+            .trim()
+            .split(' ')
+            .filter((word) => word !== '')
+            .join('|'),
+        },
+      };
     }
 
     // [step 2] Construct take and skip arguments.
@@ -135,7 +134,7 @@ export class CandidateProfileController {
           middleName: 'William',
           familyName: 'Smith',
           birthday: '2019-05-27T11:53:32.118Z',
-          gender: CandidateProfileGender.MALE,
+          gender: 'Male',
           emails: [{email: 'mary@hd.com'}],
           phones: [
             {phone: '121289182', extention: '232'},

@@ -42,14 +42,18 @@ export class UserService {
   ): Promise<User> {
     const user = await this.prisma.user.findUniqueOrThrow({
       where: params.where,
-      include: {userToRoles: {select: {role: true}}},
+      include: {userToRoles: {select: {role: true}}, locations: true},
     });
 
-    user['roles'] = user.userToRoles.map(userToRole => {
+    user['roles'] = user.userToRoles.map((userToRole) => {
       return userToRole['role'];
     });
 
-    const {userToRoles, ...result} = user;
+    user['sites'] = user.locations.map((location) => {
+      return location.site;
+    });
+
+    const {userToRoles, locations, ...result} = user;
     return result;
   }
 
@@ -62,7 +66,11 @@ export class UserService {
     } else {
       const users = await this.prisma.user.findMany({
         where: {
-          OR: [{username: account}, {email: account}, {phone: account}],
+          OR: [
+            {username: account},
+            {email: {equals: account, mode: 'insensitive'}},
+            {phone: account},
+          ],
         },
       });
       return users.length > 0 ? (users[0] as User) : null;

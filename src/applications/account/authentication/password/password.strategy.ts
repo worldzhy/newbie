@@ -38,7 +38,7 @@ export class AuthPasswordStrategy extends PassportStrategy(
     if (match === true) {
       return true;
     } else {
-      throw new UnauthorizedException('The password is incorrect.');
+      throw new UnauthorizedException('Invalid combination of username and password.');
     }
   }
 }

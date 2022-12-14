@@ -10,6 +10,12 @@ export class RoleService {
     return await this.prisma.role.findUnique(params);
   }
 
+  async findUniqueOrThrow(
+    params: Prisma.RoleFindUniqueOrThrowArgs
+  ): Promise<Role> {
+    return await this.prisma.role.findUniqueOrThrow(params);
+  }
+
   async findMany(params: Prisma.RoleFindManyArgs) {
     return await this.prisma.role.findMany(params);
   }

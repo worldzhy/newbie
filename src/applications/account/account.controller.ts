@@ -389,6 +389,38 @@ export class AccountController {
     return await this.login(body.uuid);
   }
 
+  @Public()
+  @Get('login/verification-code/email/:email')
+  @ApiParam({
+    name: 'email',
+    schema: {type: 'string'},
+    example: 'email@example.com',
+  })
+  async getVerificationCodeByEmail(
+    @Param('email') email: string
+  ): Promise<boolean> {
+    return await this.getVerificationCode({
+      email: email,
+      use: VerificationCodeUse.LOGIN_BY_EMAIL,
+    });
+  }
+
+  @Public()
+  @Get('login/verification-code/phone/:phone')
+  @ApiParam({
+    name: 'phone',
+    schema: {type: 'string'},
+    example: '13260000999',
+  })
+  async getVerificationCodeByPhone(
+    @Param('phone') phone: string
+  ): Promise<boolean> {
+    return await this.getVerificationCode({
+      phone: phone,
+      use: VerificationCodeUse.LOGIN_BY_PHONE,
+    });
+  }
+
   /**
    * The 'account' parameter supports:
    * [1] email
@@ -560,78 +592,56 @@ export class AccountController {
     });
   }
 
-  // *
-  // * Won't send message if the same email apply again within 1 minute.
-  // *
   @Public()
-  @Get('verification-code/email/:email')
+  @Get('reset-password/verification-code/email/:email')
   @ApiParam({
     name: 'email',
     schema: {type: 'string'},
     example: 'email@example.com',
   })
-  async getVerificationCodeByEmail(@Param('email') email: string) {
-    // [step 1] Guard statement.
-    if (!validator.verifyEmail(email)) {
-      throw new BadRequestException('The email is invalid.');
-    }
-
-    // [step 2] Check if the account exists.
-    const user = await this.userService.findByAccount(email);
-    if (!user) {
-      throw new NotFoundException('Your account is not registered.');
-    }
-
-    // [step 3] Generate verification code.
-    const verificationCode =
-      await this.verificationCodeService.generateForEmail(
-        email,
-        VerificationCodeUse.LOGIN_BY_EMAIL
-      );
-
-    // [step 4] Send verification code.
-    await this.emailNotificationService.sendEmail({
+  async getResetPasswordVerificationCode(
+    @Param('email') email: string
+  ): Promise<boolean> {
+    return await this.getVerificationCode({
       email: email,
-      subject: 'Your Verification Code',
-      plainText: verificationCode.code,
-      html: verificationCode.code,
+      use: VerificationCodeUse.RESET_PASSWORD,
     });
   }
 
-  // *
-  // * Won't send message if the same phone apply again within 1 minute.
-  // *
   @Public()
-  @Get('verification-code/phone/:phone')
-  @ApiParam({
-    name: 'phone',
-    schema: {type: 'string'},
-    example: '13260000999',
+  @Patch('reset-password')
+  @ApiBody({
+    description: '',
+    examples: {
+      a: {
+        summary: 'Reset password',
+        value: {
+          email: 'henry@inceptionpad.com',
+          verificationCode: '283749',
+          newPassword: 'abc1234!',
+        },
+      },
+    },
   })
-  async getVerificationCodeByPhone(@Param('phone') phone: string) {
-    // [step 1] Guard statement.
-    if (!validator.verifyPhone(phone)) {
-      throw new BadRequestException('The phone is invalid.');
-    }
-
-    // [step 2] Check if the account exists.
-    const user = await this.userService.findByAccount(phone);
-    if (!user) {
-      throw new NotFoundException('Your account is not registered.');
-    }
-
-    // [step 3] Generate verification code.
-    const verificationCode =
-      await this.verificationCodeService.generateForPhone(
-        phone,
-        VerificationCodeUse.LOGIN_BY_PHONE
+  async resetPassword(
+    @Body() body: {email: string; verificationCode: string; newPassword: string}
+  ): Promise<User> {
+    if (
+      await this.verificationCodeService.validateForEmail(
+        body.verificationCode,
+        body.email
+      )
+    ) {
+      return await this.userService.update({
+        where: {email: body.email.toLowerCase()},
+        data: {password: body.newPassword},
+        select: {id: true, username: true, email: true, phone: true},
+      });
+    } else {
+      throw new BadRequestException(
+        'The email or verification code is incorrect.'
       );
-
-    // [step 4] Send verification code.
-    await this.smsNotificationService.sendTextMessage({
-      phone: phone,
-      text: verificationCode.code,
-    });
+    }
   }
 
   private async login(account: string) {
@@ -666,5 +676,65 @@ export class AccountController {
       data: {userId: user.id, token: token},
     });
   }
+
+  // *
+  // * Won't send message if the same email apply again within 1 minute.
+  // *
+  private async getVerificationCode(params: {
+    email?: string;
+    phone?: string;
+    use: VerificationCodeUse;
+  }): Promise<boolean> {
+    if (params.email && validator.verifyEmail(params.email)) {
+      // [step 1] Check if the account exists.
+      const user = await this.userService.findByAccount(params.email);
+      if (!user) {
+        throw new NotFoundException('Your account is not registered.');
+      }
+
+      // [step 2] Generate verification code.
+      const verificationCode =
+        await this.verificationCodeService.generateForEmail(
+          params.email,
+          params.use
+        );
+
+      // [step 3] Send verification code.
+      await this.emailNotificationService.sendEmail({
+        email: params.email,
+        subject: 'Your Employwell Verificaiton Code',
+        plainText:
+          verificationCode.code +
+          ' is your verification code valid for the next 10 minutes.',
+        html:
+          verificationCode.code +
+          ' is your verification code valid for the next 10 minutes.',
+      });
+    } else if (params.phone && validator.verifyPhone(params.phone)) {
+      // [step 1] Check if the account exists.
+      const user = await this.userService.findByAccount(params.phone);
+      if (!user) {
+        throw new NotFoundException('Your account is not registered.');
+      }
+
+      // [step 2] Generate verification code.
+      const verificationCode =
+        await this.verificationCodeService.generateForPhone(
+          params.phone,
+          params.use
+        );
+
+      // [step 3] Send verification code.
+      await this.smsNotificationService.sendTextMessage({
+        phone: params.phone,
+        text: verificationCode.code,
+      });
+    } else {
+      throw new BadRequestException('The email or phone is invalid.');
+    }
+
+    return true;
+  }
+
   /* End */
 }

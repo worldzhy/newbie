@@ -1,8 +1,5 @@
-import {Injectable, StreamableFile} from '@nestjs/common';
+import {Injectable} from '@nestjs/common';
 import {Prisma, File} from '@prisma/client';
-import {createReadStream} from 'fs';
-import {join} from 'path';
-import {getFileManagementConfig} from '../../../_config/_fmgmt.config';
 import {PrismaService} from '../../../toolkits/prisma/prisma.service';
 
 @Injectable()
@@ -40,13 +37,6 @@ export class FileService {
       where: {id},
     });
     return count > 0 ? true : false;
-  }
-
-  read(file: File): StreamableFile {
-    const stream = createReadStream(
-      join(getFileManagementConfig().server_path, file.name)
-    );
-    return new StreamableFile(stream);
   }
 
   /* End */

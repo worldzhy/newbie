@@ -33,8 +33,10 @@ import {CandidateService} from '../candidate/candidate.service';
 import {UserService} from '../../account/user/user.service';
 import {TokenService} from '../../../toolkits/token/token.service';
 import {PermissionService} from '../../../applications/account/authorization/permission/permission.service';
-import {WorkflowService} from '../../../microservices/workflow/workflow.service';
-import {JobApplicationTestingService} from './testing/testing.service';
+import {WorkflowRouteService} from '../../../microservices/workflow/route/route.service';
+import {JobApplicationWorkflowService} from './workflow/workflow.service';
+import {RoleService} from 'src/applications/account/user/role/role.service';
+import {JobApplicationWorkflowFileService} from './workflow/file/file.service';
 
 @ApiTags('[Application] Recruitment / Job Application')
 @ApiBearerAuth()
@@ -43,10 +45,13 @@ export class JobApplicationController {
   private userService = new UserService();
   private tokenService = new TokenService();
   private permissionService = new PermissionService();
-  private workflowService = new WorkflowService();
+  private workflowRouteService = new WorkflowRouteService();
   private candidateService = new CandidateService();
+  private roleService = new RoleService();
   private jobApplicationService = new JobApplicationService();
-  private jobApplicationTestingService = new JobApplicationTestingService();
+  private jobApplicationWorkflowService = new JobApplicationWorkflowService();
+  private jobApplicationWorkflowFileService =
+    new JobApplicationWorkflowFileService();
 
   @Post('')
   @RequirePermission(PermissionAction.create, Prisma.ModelName.JobApplication)
@@ -60,9 +65,9 @@ export class JobApplicationController {
           jobSite: 'Harley-Davidson Motor Co. - York-Hourly Only',
           jobType: 'Hourly',
           jobCode: 'MED/DS CLR',
-          tests: [
-            {type: 'Harley-Davidson York Weld'},
-            {type: 'Tomahawk Production Technician'},
+          testTypes: [
+            'Harley-Davidson York Weld',
+            'Tomahawk Production Technician',
           ],
         },
       },
@@ -71,9 +76,7 @@ export class JobApplicationController {
   async createJobApplication(
     @Request() request: Request,
     @Body()
-    body: Prisma.JobApplicationUncheckedCreateInput & {
-      tests: {type: string; site: string}[];
-    }
+    body: Prisma.JobApplicationUncheckedCreateInput
   ): Promise<JobApplication> {
     // [step 1] Guard statement.
     if (!(await this.candidateService.checkExistence(body.candidateId))) {
@@ -88,36 +91,35 @@ export class JobApplicationController {
       where: {id: userId},
     });
     const jobApplication = await this.jobApplicationService.create({
-      data: {
-        candidateId: body.candidateId,
-        jobSite: body.jobSite,
-        jobType: body.jobType,
-        jobCode: body.jobCode,
-        referredBy: user.username || user.id,
-      },
+      data: {...body, referredBy: user.username || user.id},
     });
 
     // [step 3] Create job application testings.
-    const workflow = await this.workflowService.findUniqueOrThrow({
+    if (!body.testTypes) {
+      throw new BadRequestException('Invalid testTypes in the request body.');
+    }
+    const route = await this.workflowRouteService.findUniqueOrThrow({
       where: {startSign: true}, // Get the starting point of the process.
     });
-    for (let i = 0; i < body.tests.length; i++) {
-      const test = body.tests[i];
-      await this.jobApplicationTestingService.create({
+    for (let i = 0; i < (body.testTypes as string[]).length; i++) {
+      const testType = body.testTypes[i];
+      await this.jobApplicationWorkflowService.create({
         data: {
           jobApplicationId: jobApplication.id,
-          state: workflow.state,
-          type: test.type,
-          processedByUserIds: [userId],
-          workflows: {
+          state: route.state,
+          nextStep: route.nextStep,
+          nextRoleId: route.nextRoleId,
+          payload: {create: {testType: testType}},
+          steps: {
             create: {
-              step: workflow.step,
-              state: workflow.state,
-              nextStep: workflow.nextStep,
-              nextRoleId: workflow.nextRoleId,
-              processedByUserId: user.id,
+              step: route.step,
+              state: route.state,
+              nextStep: route.nextStep,
+              nextRoleId: route.nextRoleId,
+              processedByUserId: userId,
             },
           },
+          processedByUserIds: [userId],
         },
       });
     }
@@ -137,7 +139,7 @@ export class JobApplicationController {
     // [step 2] Fetch preset where regtax(in seed.ts) for each role.
     let where: Prisma.JobApplicationWhereInput | undefined;
     const whereConditions: object[] = [];
-    permissions.map(permission => {
+    permissions.map((permission) => {
       if (permission.where) {
         whereConditions.push(permission.where as object);
       }
@@ -160,16 +162,16 @@ export class JobApplicationController {
     @Request() request: Request,
     @Query() query: {page?: string; pageSize?: string}
   ): Promise<JobApplication[]> {
-    // [step 1] Get role permission to filter data.
+    // [step 1] Construct where arguments.
+    let where: Prisma.JobApplicationWhereInput | undefined;
+    const whereConditions: object[] = [];
+
+    // Get role permission to filter data. Fetch preset where regtax(in seed.ts) for each role.
     const permissions = await this.getResourcePermissionsFromHttpRequest(
       request,
       Prisma.ModelName.JobApplication
     );
-
-    // [step 2] Fetch preset where regtax(in seed.ts) for each role.
-    let where: Prisma.JobApplicationWhereInput | undefined;
-    const whereConditions: object[] = [];
-    permissions.map(permission => {
+    permissions.map((permission) => {
       if (permission.where) {
         whereConditions.push(permission.where as object);
       }
@@ -178,7 +180,7 @@ export class JobApplicationController {
       where = {AND: whereConditions};
     }
 
-    // [step 3] Construct take and skip arguments.
+    // [step 2] Construct take and skip arguments.
     let take: number, skip: number;
     if (query.page && query.pageSize) {
       // Actually 'page' is string because it comes from URL param.
@@ -198,11 +200,19 @@ export class JobApplicationController {
     }
 
     // [step 4] Get job applications.
+    const roleIds = await this.getRoleIdsFromHttpRequest(request);
     return await this.jobApplicationService.findMany({
       where: where,
+      orderBy: {updatedAt: 'desc'},
       take: take,
       skip: skip,
-      include: {candidate: {include: {profile: true}}, testings: true},
+      include: {
+        candidate: {include: {profile: true}},
+        workflows: {
+          where: {nextRoleId: {in: roleIds}},
+          include: {payload: true},
+        },
+      },
     });
   }
 
@@ -219,7 +229,7 @@ export class JobApplicationController {
     // [step 2] Return count of job applications.
     return await this.jobApplicationService.count({
       where: {
-        testings: {some: {processedByUserIds: {has: userId}}},
+        workflows: {some: {processedByUserIds: {has: userId}}},
       },
     });
   }
@@ -259,15 +269,129 @@ export class JobApplicationController {
     // [step 4] Return job applications.
     return await this.jobApplicationService.findMany({
       where: {
-        testings: {some: {processedByUserIds: {has: userId}}},
+        workflows: {some: {processedByUserIds: {has: userId}}},
       },
+      orderBy: {updatedAt: 'desc'},
       take: take,
       skip: skip,
       include: {
         candidate: {include: {profile: true, location: true}},
-        testings: true,
+        workflows: {
+          where: {processedByUserIds: {has: userId}},
+          include: {payload: true},
+        },
       },
     });
+  }
+
+  @Get('all/count')
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.JobApplication)
+  @ApiQuery({name: 'page', type: 'number'})
+  @ApiQuery({name: 'pageSize', type: 'number'})
+  @ApiQuery({name: 'dateRange', type: 'string', isArray: true})
+  async getAllJobApplicationsCount(
+    @Query() query: {page?: string; pageSize?: string; dateRange: string[]}
+  ): Promise<number> {
+    // [step 1] Construct where arguments.
+    let where: Prisma.JobApplicationWhereInput | undefined;
+    if (Array.isArray(query.dateRange) && query.dateRange.length === 2) {
+      where = {
+        createdAt: {gte: query.dateRange[0], lte: query.dateRange[1]},
+      };
+    }
+
+    // [step 2] Return job applications.
+    return await this.jobApplicationService.count({
+      where: where,
+    });
+  }
+
+  @Get('all')
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.JobApplication)
+  @ApiQuery({name: 'page', type: 'number'})
+  @ApiQuery({name: 'pageSize', type: 'number'})
+  @ApiQuery({name: 'dateRange', type: 'string', isArray: true})
+  async getAllJobApplications(
+    @Query() query: {page?: string; pageSize?: string; dateRange: string[]}
+  ): Promise<JobApplication[]> {
+    // [step 1] Construct where arguments.
+    let where: Prisma.JobApplicationWhereInput | undefined;
+    if (Array.isArray(query.dateRange) && query.dateRange.length === 2) {
+      where = {
+        createdAt: {gte: query.dateRange[0], lte: query.dateRange[1]},
+      };
+    }
+    // [step 2] Construct take and skip arguments.
+    let take: number, skip: number;
+    if (query.page && query.pageSize) {
+      // Actually 'page' is string because it comes from URL param.
+      const page = parseInt(query.page);
+      const pageSize = parseInt(query.pageSize);
+      if (page > 0 && pageSize > 0) {
+        take = pageSize;
+        skip = pageSize * (page - 1);
+      } else {
+        throw new BadRequestException(
+          'The page and pageSize must be larger than 0.'
+        );
+      }
+    } else {
+      take = 10;
+      skip = 0;
+    }
+
+    // [step 2] Get job applications.
+    const jobApplications = await this.jobApplicationService.findMany({
+      where: where,
+      orderBy: {updatedAt: 'desc'},
+      take: take,
+      skip: skip,
+      include: {
+        candidate: {include: {profile: true, location: true}},
+        workflows: {
+          include: {
+            payload: true,
+            steps: {orderBy: {createdAt: 'desc'}},
+          },
+        },
+      },
+    });
+
+    // [step 3] Process before return.
+    for (let i = 0; i < jobApplications.length; i++) {
+      const jobApplication = jobApplications[i];
+      for (let j = 0; j < jobApplication['workflows'].length; j++) {
+        const workflow = jobApplication['workflows'][j];
+        for (let k = 0; k < workflow['steps'].length; k++) {
+          const step = workflow['steps'][k];
+
+          // Attach processedBy username.
+          const user = await this.userService.findUniqueOrThrow({
+            where: {id: step.processedByUserId},
+            select: {username: true},
+          });
+          step['processedByUser'] = user.username;
+
+          // Attach next role name.
+          if (step.nextRoleId) {
+            const role = await this.roleService.findUniqueOrThrow({
+              where: {id: step.nextRoleId},
+              select: {name: true},
+            });
+            step['nextRole'] = role.name;
+          }
+
+          // Attach files.
+          step.files = await this.jobApplicationWorkflowFileService.findMany({
+            where: {
+              workflowStepId: step.id,
+            },
+          });
+        }
+      }
+    }
+
+    return jobApplications;
   }
 
   @Get(':jobApplicationId')
@@ -285,9 +409,7 @@ export class JobApplicationController {
       where: {id: jobApplicationId},
       include: {
         candidate: {include: {profile: true, location: true}},
-        notes: true,
-        tasks: true,
-        testings: true,
+        workflows: true,
       },
     });
   }
@@ -304,12 +426,11 @@ export class JobApplicationController {
     description: '',
     examples: {
       a: {
-        summary: '1. Submit step 2',
+        summary: '1. Update',
         value: {
           jobType: JobType.Hourly,
           jobCode: 'MED/DS CLR', // Only available when jobType is Hourly.
           jobSite: 'Harley-Davidson Motor Co. - York',
-          testSite: 'Harley Davidson Lifestyle Centers',
         },
       },
     },
@@ -341,40 +462,6 @@ export class JobApplicationController {
     });
   }
 
-  @Get(':jobApplicationId/notes')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.JobApplication)
-  @ApiParam({
-    name: 'jobApplicationId',
-    schema: {type: 'string'},
-    description: 'The uuid of the jobApplication.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
-  async getJobApplicationNotes(
-    @Param('jobApplicationId') jobApplicationId: string
-  ): Promise<JobApplication> {
-    return await this.jobApplicationService.findUniqueOrThrow({
-      where: {id: jobApplicationId},
-      include: {notes: true},
-    });
-  }
-
-  @Get(':jobApplicationId/tasks')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.JobApplication)
-  @ApiParam({
-    name: 'jobApplicationId',
-    schema: {type: 'string'},
-    description: 'The uuid of the jobApplication.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
-  async getJobApplicationTasks(
-    @Param('jobApplicationId') jobApplicationId: string
-  ): Promise<JobApplication> {
-    return await this.jobApplicationService.findUniqueOrThrow({
-      where: {id: jobApplicationId},
-      include: {tasks: true},
-    });
-  }
-
   private async getResourcePermissionsFromHttpRequest(
     request: Request,
     resource: Prisma.ModelName
@@ -393,7 +480,7 @@ export class JobApplicationController {
         additionalPermission = {
           resource: Prisma.ModelName.JobApplication,
           action: PermissionAction.read,
-          where: {testSite: {in: user['sites']}},
+          //where: {workflows: {some: {steps:{payload {site: {in: user['sites']}}}},
           trustedEntityId: userId,
           trustedEntityType: TrustedEntityType.USER,
         };
@@ -416,6 +503,19 @@ export class JobApplicationController {
     }
 
     return permissions;
+  }
+
+  private async getRoleIdsFromHttpRequest(request: Request): Promise<string[]> {
+    const {userId} = this.tokenService.decodeToken(
+      this.tokenService.getTokenFromHttpRequest(request)
+    ) as {userId: string};
+    const user = await this.userService.findUniqueOrThrowWithRoles({
+      where: {id: userId},
+    });
+
+    return user['roles'].map((role: Role) => {
+      return role.id;
+    });
   }
 
   /* End */

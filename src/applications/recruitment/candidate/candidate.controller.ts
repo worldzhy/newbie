@@ -8,86 +8,48 @@ import {
   Param,
   Query,
   BadRequestException,
-} from '@nestjs/common';
+} from "@nestjs/common";
 import {
   ApiTags,
   ApiBearerAuth,
   ApiParam,
   ApiBody,
   ApiQuery,
-} from '@nestjs/swagger';
-import {
-  Prisma,
-  Candidate,
-  PermissionAction,
-  CandidateProfileGender,
-} from '@prisma/client';
-import {randomCode} from '../../../toolkits/utilities/common.util';
-import {RequirePermission} from '../../account/authorization/authorization.decorator';
-import {CandidateService} from './candidate.service';
+} from "@nestjs/swagger";
+import { Prisma, Candidate, PermissionAction } from "@prisma/client";
+import { randomNumbers } from "../../../toolkits/utilities/common.util";
+import { RequirePermission } from "../../account/authorization/authorization.decorator";
+import { CandidateService } from "./candidate.service";
 
-@ApiTags('[Application] Recruitment / Candidate')
+@ApiTags("[Application] Recruitment / Candidate")
 @ApiBearerAuth()
-@Controller('recruitment-candidates')
+@Controller("recruitment-candidates")
 export class CandidateController {
-  constructor(private candidateService: CandidateService) {}
+  constructor(private candidateService: CandidateService) { }
 
-  @Get('count')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.Candidate)
-  @ApiQuery({name: 'name', type: 'string'})
-  async countCandidates(@Query() query: {name?: string}): Promise<number> {
-    // [step 1] Construct where argument.
-    let where: Prisma.CandidateWhereInput | undefined;
-    const whereConditions: object[] = [];
-    if (query.name) {
-      const name = query.name.trim();
-      if (name.length > 0) {
-        whereConditions.push({
-          profile: {
-            fullName: {
-              search: name
-                .split(' ')
-                .filter((word) => word !== '')
-                .join('|'),
-            },
-          },
-        });
-      }
-    }
-
-    if (whereConditions.length > 0) {
-      where = {OR: whereConditions};
-    }
-
-    // [step 2] Count.
-    return await this.candidateService.count({
-      where: where,
-    });
-  }
-
-  @Post('')
+  @Post("")
   @RequirePermission(PermissionAction.create, Prisma.ModelName.Candidate)
   @ApiBody({
-    description: 'Create a user candidate.',
+    description: "Create a user candidate.",
     examples: {
       a: {
-        summary: '1. Create',
+        summary: "1. Create",
         value: {
-          givenName: 'Mary',
-          middleName: 'Rose',
-          familyName: 'Johnson',
+          givenName: "Mary",
+          middleName: "Rose",
+          familyName: "Johnson",
           birthday: new Date(),
-          gender: CandidateProfileGender.FEMALE,
-          emails: [{email: 'mary@hd.com'}],
-          phones: [
-            {phone: '121289182', extention: '232'},
-            {phone: '7236782462', extention: '897'},
-          ],
-          address: '456 White Finch St. North Augusta, SC 29860',
-          address2: '',
-          city: 'New York City',
-          state: 'NY',
-          zipcode: '21000',
+          gender: "Female",
+          email: "mary@hd.com",
+          primaryPhone: "121289182",
+          primaryPhoneExt: "232",
+          alternatePhone: "7236782462",
+          alternatePhoneExt: "897",
+          address: "456 White Finch St. North Augusta, SC 29860",
+          address2: "",
+          city: "New York City",
+          state: "NY",
+          zipcode: "21000",
         },
       },
     },
@@ -105,54 +67,125 @@ export class CandidateController {
       zipcode: body.zipcode,
     };
     const profileCreateInput: Prisma.CandidateProfileCreateWithoutCandidateInput =
-      {
-        uniqueNumber: randomCode(9),
-        givenName: body.givenName,
-        middleName: body.middleName,
-        familyName: body.familyName,
-        birthday: body.birthday,
-        gender: body.gender,
-        emails: body.emails,
-        phones: body.phones,
-      };
+    {
+      uniqueNumber: randomNumbers(9),
+      givenName: body.givenName,
+      middleName: body.middleName,
+      familyName: body.familyName,
+      birthday: body.birthday,
+      gender: body.gender,
+      email: body.email,
+      primaryPhone: body.primaryPhone,
+      primaryPhoneExt: body.primaryPhoneExt,
+      alternatePhone: body.alternatePhone,
+      alternatePhoneExt: body.alternatePhoneExt,
+    };
 
     return await this.candidateService.create({
       data: {
-        location: {create: locationCreateInput},
-        profile: {create: profileCreateInput},
+        location: { create: locationCreateInput },
+        profile: { create: profileCreateInput },
       },
     });
   }
 
-  @Get('')
+  @Get("count")
   @RequirePermission(PermissionAction.read, Prisma.ModelName.Candidate)
-  @ApiQuery({name: 'name', type: 'string'})
-  @ApiQuery({name: 'page', type: 'number'})
-  @ApiQuery({name: 'pageSize', type: 'number'})
+  @ApiQuery({ name: "name", type: "string" })
+  @ApiQuery({ name: "email", type: "string" })
+  @ApiQuery({ name: "phone", type: "string" })
+  async countCandidates(
+    @Query() query: { name?: string; email?: string; phone?: string }
+  ): Promise<number> {
+    // [step 1] Construct where argument.
+    let where: Prisma.CandidateWhereInput | undefined;
+    const whereConditions: object[] = [];
+    if (query.name && query.name.trim().length > 0) {
+      whereConditions.push({
+        profile: {
+          fullName: {
+            search: query.name
+              .trim()
+              .split(" ")
+              .filter((word) => word !== "")
+              .join("|"),
+          },
+        },
+      });
+    }
+    if (query.email && query.email.trim().length > 0) {
+      whereConditions.push({
+        profile: { email: { contains: query.email.trim() } },
+      });
+    }
+    if (query.phone && query.phone.trim().length > 0) {
+      whereConditions.push({
+        profile: { primaryPhone: { contains: query.phone.trim() } },
+      });
+      whereConditions.push({
+        profile: { alternatePhone: { contains: query.phone.trim() } },
+      });
+    }
+
+    if (whereConditions.length > 0) {
+      where = { OR: whereConditions };
+    }
+
+    // [step 2] Count.
+    return await this.candidateService.count({
+      where: where,
+    });
+  }
+
+  @Get("")
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.Candidate)
+  @ApiQuery({ name: "name", type: "string" })
+  @ApiQuery({ name: "email", type: "string" })
+  @ApiQuery({ name: "phone", type: "string" })
+  @ApiQuery({ name: "page", type: "number" })
+  @ApiQuery({ name: "pageSize", type: "number" })
   async getCandidates(
-    @Query() query: {name?: string; page?: string; pageSize?: string}
+    @Query()
+    query: {
+      name?: string;
+      email?: string;
+      phone?: string;
+      page?: string;
+      pageSize?: string;
+    }
   ): Promise<Candidate[]> {
     // [step 1] Construct where argument.
     let where: Prisma.CandidateWhereInput | undefined;
     const whereConditions: object[] = [];
-    if (query.name) {
-      const name = query.name.trim();
-      if (name.length > 0) {
-        whereConditions.push({
-          profile: {
-            fullName: {
-              search: name
-                .split(' ')
-                .filter((word) => word !== '')
-                .join('|'),
-            },
+    if (query.name && query.name.trim().length > 0) {
+      whereConditions.push({
+        profile: {
+          fullName: {
+            search: query.name
+              .trim()
+              .split(" ")
+              .filter((word) => word !== "")
+              .join("|"),
           },
-        });
-      }
+        },
+      });
+    }
+    if (query.email && query.email.trim().length > 0) {
+      whereConditions.push({
+        profile: { email: { contains: query.email.trim() } },
+      });
+    }
+    if (query.phone && query.phone.trim().length > 0) {
+      whereConditions.push({
+        profile: { primaryPhone: { contains: query.phone.trim() } },
+      });
+      whereConditions.push({
+        profile: { alternatePhone: { contains: query.phone.trim() } },
+      });
     }
 
     if (whereConditions.length > 0) {
-      where = {OR: whereConditions};
+      where = { OR: whereConditions };
     }
 
     // [step 2] Construct take and skip arguments.
@@ -166,7 +199,7 @@ export class CandidateController {
         skip = pageSize * (page - 1);
       } else {
         throw new BadRequestException(
-          'The page and pageSize must be larger than 0.'
+          "The page and pageSize must be larger than 0."
         );
       }
     } else {
@@ -177,16 +210,32 @@ export class CandidateController {
     // [step 3] Get candidates.
     const candidates = await this.candidateService.findMany({
       where: where,
+      orderBy: { updatedAt: "desc" },
       take: take,
       skip: skip,
-      include: {location: true, profile: true, jobApplications: true},
+      include: {
+        location: true,
+        profile: true,
+        jobApplications: {
+          take: 1,
+          skip: 0,
+          orderBy: { createdAt: 'desc' },
+          include: {
+            workflows: {
+              include: {
+                payload: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     return candidates.map((candidate) => {
-      const location = candidate['location'];
-      const profile = candidate['profile'];
-      delete candidate['location'];
-      delete candidate['profile'];
+      const location = candidate["location"];
+      const profile = candidate["profile"];
+      delete candidate["location"];
+      delete candidate["profile"];
       delete location.id;
       delete location.candidateId;
       delete profile.id;
@@ -200,25 +249,25 @@ export class CandidateController {
     });
   }
 
-  @Get(':candidateId')
+  @Get(":candidateId")
   @RequirePermission(PermissionAction.read, Prisma.ModelName.Candidate)
   @ApiParam({
-    name: 'candidateId',
-    schema: {type: 'string'},
-    description: 'The uuid of the candidate.',
-    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
+    name: "candidateId",
+    schema: { type: "string" },
+    description: "The uuid of the candidate.",
+    example: "fd5c948e-d15d-48d6-a458-7798e4d9921c",
   })
   async getCandidate(
-    @Param('candidateId') candidateId: string
+    @Param("candidateId") candidateId: string
   ): Promise<Candidate | null> {
     const candidate = await this.candidateService.findUniqueOrThrow({
-      where: {id: candidateId},
-      include: {location: true, profile: true},
+      where: { id: candidateId },
+      include: { location: true, profile: true },
     });
-    const location = candidate['location'];
-    const profile = candidate['profile'];
-    delete candidate['location'];
-    delete candidate['profile'];
+    const location = candidate["location"];
+    const profile = candidate["profile"];
+    delete candidate["location"];
+    delete candidate["profile"];
     delete location.id;
     delete location.candidateId;
     delete profile.id;
@@ -231,47 +280,47 @@ export class CandidateController {
     };
   }
 
-  @Patch(':candidateId')
+  @Patch(":candidateId")
   @RequirePermission(PermissionAction.update, Prisma.ModelName.Candidate)
   @ApiParam({
-    name: 'candidateId',
-    schema: {type: 'string'},
-    description: 'The uuid of the candidate.',
-    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
+    name: "candidateId",
+    schema: { type: "string" },
+    description: "The uuid of the candidate.",
+    example: "fd5c948e-d15d-48d6-a458-7798e4d9921c",
   })
   @ApiBody({
-    description: 'Update a specific user candidate.',
+    description: "Update a specific user candidate.",
     examples: {
       a: {
-        summary: '1. Update',
+        summary: "1. Update",
         value: {
-          givenName: 'Robert',
-          middleName: 'William',
-          familyName: 'Smith',
+          givenName: "Robert",
+          middleName: "William",
+          familyName: "Smith",
           birthday: new Date(),
-          gender: CandidateProfileGender.FEMALE,
-          emails: [{email: 'mary@hd.com'}],
-          phones: [
-            {phone: '6786786786', extention: '222'},
-            {phone: '7897987111', extention: '111'},
-          ],
-          address: '456 White Finch St. North Augusta, SC 29860',
-          address2: '',
-          city: 'New York City',
-          state: 'NY',
-          zipcode: '21000',
+          gender: "Female",
+          email: "mary@hd.com",
+          primaryPhone: "121289182",
+          primaryPhoneExt: "232",
+          alternatePhone: "7236782462",
+          alternatePhoneExt: "897",
+          address: "456 White Finch St. North Augusta, SC 29860",
+          address2: "",
+          city: "New York City",
+          state: "NY",
+          zipcode: "21000",
         },
       },
     },
   })
   async updateCandidate(
-    @Param('candidateId') candidateId: string,
+    @Param("candidateId") candidateId: string,
     @Body()
     body: Prisma.LocationUpdateWithoutCandidateInput &
       Prisma.CandidateProfileUpdateWithoutCandidateInput
   ): Promise<Candidate> {
     return await this.candidateService.update({
-      where: {id: candidateId},
+      where: { id: candidateId },
       data: {
         location: {
           update: {
@@ -289,49 +338,59 @@ export class CandidateController {
             familyName: body.familyName,
             birthday: body.birthday,
             gender: body.gender,
-            emails: body.emails,
-            phones: body.phones,
+            email: body.email,
+            primaryPhone: body.primaryPhone,
+            primaryPhoneExt: body.primaryPhoneExt,
+            alternatePhone: body.alternatePhone,
+            alternatePhoneExt: body.alternatePhoneExt,
           },
         },
       },
     });
   }
 
-  @Delete(':candidateId')
+  @Delete(":candidateId")
   @RequirePermission(PermissionAction.delete, Prisma.ModelName.Candidate)
   @ApiParam({
-    name: 'candidateId',
-    schema: {type: 'string'},
-    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
+    name: "candidateId",
+    schema: { type: "string" },
+    example: "b3a27e52-9633-41b8-80e9-ec3633ed8d0a",
   })
   async deleteUser(
-    @Param('candidateId') candidateId: string
+    @Param("candidateId") candidateId: string
   ): Promise<Candidate> {
     return await this.candidateService.delete({
-      where: {id: candidateId},
+      where: { id: candidateId },
     });
   }
 
-  @Get(':candidateId/job-applications')
+  @Get(":candidateId/job-applications")
   @RequirePermission(PermissionAction.read, Prisma.ModelName.Candidate)
   @ApiParam({
-    name: 'candidateId',
-    schema: {type: 'string'},
-    description: 'The uuid of the candidate.',
-    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
+    name: "candidateId",
+    schema: { type: "string" },
+    description: "The uuid of the candidate.",
+    example: "fd5c948e-d15d-48d6-a458-7798e4d9921c",
   })
   async getCandidateJobApplications(
-    @Param('candidateId') candidateId: string
+    @Param("candidateId") candidateId: string
   ): Promise<Candidate> {
     return await this.candidateService.findUniqueOrThrow({
-      where: {id: candidateId},
-      include: {jobApplications: true},
+      where: { id: candidateId },
+      include: {
+        jobApplications: {
+          include: {
+            workflows: {
+              orderBy: { createdAt: "desc" },
+              include: {
+                payload: true,
+                steps: { orderBy: { createdAt: "desc" } },
+              },
+            },
+          },
+        },
+      },
     });
-  }
-
-  @Get('genders')
-  listCandidateProfileGenders(): string[] {
-    return Object.keys(CandidateProfileGender);
   }
 
   /* End */

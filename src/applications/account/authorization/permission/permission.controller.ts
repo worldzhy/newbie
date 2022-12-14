@@ -89,9 +89,9 @@ export class PermissionController {
   @Get(':permissionId')
   @ApiParam({
     name: 'permissionId',
-    schema: {type: 'string'},
-    description: 'The uuid of the permission.',
-    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
+    schema: {type: 'number'},
+    description: 'The id of the permission.',
+    example: 1,
   })
   async getPermission(
     @Param('permissionId') permissionId: string
@@ -104,9 +104,9 @@ export class PermissionController {
   @Patch(':permissionId')
   @ApiParam({
     name: 'permissionId',
-    schema: {type: 'string'},
-    description: 'The uuid of the permission.',
-    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
+    schema: {type: 'number'},
+    description: 'The id of the permission.',
+    example: 1,
   })
   @ApiBody({
     description: '',
@@ -136,8 +136,8 @@ export class PermissionController {
   @Delete(':permissionId')
   @ApiParam({
     name: 'permissionId',
-    schema: {type: 'string'},
-    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
+    schema: {type: 'number'},
+    example: 1,
   })
   async deletePermission(
     @Param('permissionId') permissionId: string

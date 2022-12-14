@@ -22,6 +22,7 @@ import {
   User,
   UserStatus,
   UserToRole,
+  Location,
 } from '@prisma/client';
 import {UserService} from './user.service';
 import {RequirePermission} from '../authorization/authorization.decorator';
@@ -82,13 +83,16 @@ export class UserController {
           password: 'Abc1234!',
           status: UserStatus.ACTIVE,
           roles: [{id: '013f92b0-4a53-45cb-8eca-e66089a3919f'}],
+          sites: ['Concentra Medical Centers'],
         },
       },
     },
   })
   async createUser(
     @Body()
-    body: Prisma.UserCreateInput & {roles?: {id: string; name: string}[]}
+    body: Prisma.UserCreateInput & {roles?: {id: string; name: string}[]} & {
+      sites?: string[];
+    }
   ): Promise<User> {
     // Construct userToRoles.
     if (body.roles && body.roles.length > 0) {
@@ -99,6 +103,17 @@ export class UserController {
       };
       // Remove roleIds since it is not a field of User model.
       delete body.roles;
+    }
+
+    // Construct locations.
+    if (body.sites) {
+      body.locations = {
+        create: body.sites.map((site) => {
+          return {site: site};
+        }),
+      };
+      // Remove sites since it is not a field of User model.
+      delete body.sites;
     }
 
     return await this.userService.create({
@@ -128,18 +143,7 @@ export class UserController {
     if (query.name) {
       const name = query.name.trim();
       if (name.length > 0) {
-        whereConditions.push({username: {search: name}});
-        whereConditions.push({
-          profiles: {
-            some: {
-              OR: [
-                {givenName: {search: name}},
-                {familyName: {search: name}},
-                {middleName: {search: name}},
-              ],
-            },
-          },
-        });
+        whereConditions.push({username: {contains: name}});
       }
     }
 
@@ -178,7 +182,7 @@ export class UserController {
       where: where,
       take: take,
       skip: skip,
-      include: {userToRoles: {include: {role: true}}},
+      include: {userToRoles: {include: {role: true}}, locations: true},
     });
 
     // [step 4] Return users with roles.
@@ -189,6 +193,14 @@ export class UserController {
         });
       }
       delete user['userToRoles'];
+
+      if (user['locations']) {
+        user['sites'] = user['locations'].map((location: Location) => {
+          return location.site;
+        });
+      }
+      delete user['locations'];
+
       return user;
     });
   }
@@ -204,7 +216,7 @@ export class UserController {
   async getUser(@Param('userId') userId: string): Promise<User | null> {
     const user = await this.userService.findUniqueOrThrow({
       where: {id: userId},
-      include: {userToRoles: {include: {role: true}}},
+      include: {userToRoles: {include: {role: true}}, locations: true},
     });
 
     if (user['userToRoles']) {
@@ -213,6 +225,14 @@ export class UserController {
       });
     }
     delete user['userToRoles'];
+
+    if (user['locations']) {
+      user['sites'] = user['locations'].map((location: Location) => {
+        return location.site;
+      });
+    }
+    delete user['locations'];
+
     return user;
   }
 
@@ -237,6 +257,7 @@ export class UserController {
           password: 'Abc1234!',
           status: UserStatus.INACTIVE,
           roles: [{id: '013f92b0-4a53-45cb-8eca-e66089a3919f'}],
+          sites: ['Harley Davidson Lifestyle Centers'],
         },
       },
     },
@@ -244,7 +265,9 @@ export class UserController {
   async updateUser(
     @Param('userId') userId: string,
     @Body()
-    body: Prisma.UserUpdateInput & {roles?: {id: string; name: string}[]}
+    body: Prisma.UserUpdateInput & {roles?: {id: string; name: string}[]} & {
+      sites?: string[];
+    }
   ): Promise<User> {
     // Construct userToRoles.
     if (body.roles && Array.isArray(body.roles)) {
@@ -256,6 +279,18 @@ export class UserController {
       };
       // Remove roleIds since it is not a field of User model.
       delete body.roles;
+    }
+
+    // Construct locationss.
+    if (body.sites) {
+      body.locations = {
+        deleteMany: {},
+        create: body.sites.map((site) => {
+          return {site: site};
+        }),
+      };
+      // Remove sites since it is not a field of User model.
+      delete body.sites;
     }
 
     return await this.userService.update({
@@ -369,50 +404,6 @@ export class UserController {
     }
 
     // [step 4] Change password.
-    return await this.userService.update({
-      where: {id: userId},
-      data: {password: body.newPassword},
-      select: {id: true, username: true, email: true, phone: true},
-    });
-  }
-
-  @Patch(':userId/reset-password')
-  @RequirePermission(PermissionAction.update, Prisma.ModelName.User)
-  @ApiParam({
-    name: 'userId',
-    schema: {type: 'string'},
-    description: 'The uuid of the user.',
-    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
-  })
-  @ApiBody({
-    description: 'The new password.',
-    examples: {
-      a: {
-        summary: '1. Missing uppercase letter(s)',
-        value: {
-          newPassword: 'abc1234!',
-        },
-      },
-      b: {
-        summary: '2. Correct format',
-        value: {
-          newPassword: 'Abc1234!',
-        },
-      },
-    },
-  })
-  async resetPassword(
-    @Param('userId') userId: string,
-    @Body() body: {newPassword: string}
-  ): Promise<User> {
-    // [step 1] Guard statement
-    if (!('newPassword' in body)) {
-      throw new BadRequestException(
-        "Please carry 'newPassword' in the request body."
-      );
-    }
-
-    // [step 2] Reset password
     return await this.userService.update({
       where: {id: userId},
       data: {password: body.newPassword},

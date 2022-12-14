@@ -10,12 +10,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {
-  PermissionAction,
-  Prisma,
-  UserProfile,
-  UserProfileGender,
-} from '@prisma/client';
+import {PermissionAction, Prisma, UserProfile} from '@prisma/client';
 import {RequirePermission} from '../../authorization/authorization.decorator';
 import {UserProfileService} from './profile.service';
 
@@ -24,6 +19,11 @@ import {UserProfileService} from './profile.service';
 @Controller('user-profiles')
 export class UserProfileController {
   constructor(private userProfileService: UserProfileService) {}
+
+  @Get('genders')
+  listUserProfileGenders(): string[] {
+    return ['Male', 'Female', 'Non-binary'];
+  }
 
   @Post('')
   @RequirePermission(PermissionAction.create, Prisma.ModelName.UserProfile)
@@ -39,7 +39,7 @@ export class UserProfileController {
           familyName: 'Johnson',
           suffix: 'PhD',
           birthday: new Date(),
-          gender: UserProfileGender.MALE,
+          gender: 'Male',
           hasPCP: true,
           address: '456 White Finch St. North Augusta, SC 29860',
           zipcode: '21000',
@@ -143,7 +143,7 @@ export class UserProfileController {
           familyName: 'Smith',
           suffix: 'PhD',
           birthday: '2019-05-27T11:53:32.118Z',
-          gender: UserProfileGender.MALE,
+          gender: 'Female',
           hasPCP: true,
           address: '456 White Finch St. North Augusta, SC 29860',
           zipcode: '21000',
@@ -187,11 +187,6 @@ export class UserProfileController {
     return await this.userProfileService.delete({
       where: {id: profileId},
     });
-  }
-
-  @Get('genders')
-  listUserProfileGenders(): string[] {
-    return Object.keys(UserProfileGender);
   }
 
   /* End */
