@@ -16,7 +16,7 @@ import {ApiBearerAuth, ApiParam, ApiTags} from '@nestjs/swagger';
 import {Express} from 'express';
 import {diskStorage} from 'multer';
 import {createReadStream} from 'fs';
-import {getFileManagementConfig} from '../../_config/_fmgmt.config';
+import {getFileManagementConfig} from './fmgmt.config';
 import {FileService} from './file/file.service';
 import {S3Service} from '../../toolkits/aws/s3.service';
 import {randomLetters} from '../../toolkits/utilities/common.util';

@@ -1,5 +1,5 @@
 import {Global, Module} from '@nestjs/common';
-import {CustomLoggerModule} from '../../_logger/_logger.module';
+import {CustomLoggerModule} from '../../microservices/logger/logger.module';
 import {PrismaService} from './prisma.service';
 
 @Global()

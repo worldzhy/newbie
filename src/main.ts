@@ -7,7 +7,7 @@ import {
   SwaggerCustomOptions,
 } from '@nestjs/swagger';
 import {ApplicationModule} from './applications/application.module';
-import {getServerConfig} from './_config/_server.config';
+import {getServerConfig} from './config';
 
 async function bootstrap() {
   // Create a nestjs application.

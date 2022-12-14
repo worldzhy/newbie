@@ -1,5 +1,5 @@
 import {Prisma} from '@prisma/client';
-import {CustomLoggerService} from '../../_logger/_logger.service';
+import {CustomLoggerService} from '../../microservices/logger/logger.service';
 
 export async function queryEventHandler(e: Prisma.QueryEvent) {
   const logger = new CustomLoggerService('Prisma');

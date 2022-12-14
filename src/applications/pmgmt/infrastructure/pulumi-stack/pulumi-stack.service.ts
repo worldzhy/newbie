@@ -17,7 +17,7 @@ import {AwsVpc_Stack} from './stack/aws-vpc.stack';
 import {AwsWaf_Stack} from './stack/aws-waf.stack';
 import {Null_Stack} from './stack/null.stack';
 import {getAwsConfig} from '../../../../toolkits/aws/aws.config';
-import {getPulumiConfig} from '../../../../_config/_pulumi.config';
+import {getPulumiConfig} from './pulumi.config';
 import {PrismaService} from '../../../../toolkits/prisma/prisma.service';
 import {randomNumbers} from '../../../../toolkits/utilities/common.util';
 
