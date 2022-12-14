@@ -3,12 +3,15 @@ import {
   CreateBucketCommand,
   DeleteBucketCommand,
   DeleteObjectCommand,
+  DeleteObjectCommandInput,
   DeleteObjectsCommand,
   GetObjectCommand,
+  GetObjectCommandInput,
   PutObjectCommand,
+  PutObjectCommandInput,
   S3Client,
 } from '@aws-sdk/client-s3';
-import {getAwsConfig} from '../../_config/_aws.config';
+import {getAwsS3Config} from './s3.config';
 
 @Injectable()
 export class S3Service {
@@ -16,7 +19,11 @@ export class S3Service {
 
   constructor() {
     this.client = new S3Client({
-      region: getAwsConfig().region,
+      region: getAwsS3Config().region,
+      credentials: {
+        accessKeyId: getAwsS3Config().accessKeyId,
+        secretAccessKey: getAwsS3Config().secretAccessKey,
+      },
     });
   }
 
@@ -32,21 +39,17 @@ export class S3Service {
     );
   }
 
-  async putObject(params: {
-    Bucket: string; // The name of the bucket. For example, 'sample_bucket_101'.
-    Key: string; // The name of the object. For example, 'sample_upload.txt'.
-    Body?: 'BODY'; // The content of the object. For example, 'Hello world!".
-  }) {
+  async putObject(params: PutObjectCommandInput) {
     const {Bucket, Key, Body} = params;
     return await this.client.send(new PutObjectCommand({Bucket, Key, Body}));
   }
 
-  async getObject(params: {Bucket: string; Key: string}) {
+  async getObject(params: GetObjectCommandInput) {
     const {Bucket, Key} = params;
     return await this.client.send(new GetObjectCommand({Bucket, Key}));
   }
 
-  async deleteObject(params: {Bucket: string; Key: string}) {
+  async deleteObject(params: DeleteObjectCommandInput) {
     const {Bucket, Key} = params;
     return await this.client.send(new DeleteObjectCommand({Bucket, Key}));
   }

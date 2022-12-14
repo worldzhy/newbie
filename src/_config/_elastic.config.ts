@@ -4,7 +4,7 @@ export function getElasticConfig(): {
   password: string | undefined;
 } {
   return {
-    node: process.env.ELASTICSEARCH_NODE,
+    node: process.env.ELASTICSEARCH_NODE || 'http://127.0.0.1',
     username: process.env.ELASTICSEARCH_USERNAME,
     password: process.env.ELASTICSEARCH_PASSWORD,
   };

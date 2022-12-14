@@ -6,7 +6,7 @@ import {
 import {Injectable} from '@nestjs/common';
 import {Prisma, Task, TaskType} from '@prisma/client';
 import {PrismaService} from '../../toolkits/prisma/prisma.service';
-import {getAwsConfig} from '../../_config/_aws.config';
+import {getAwsSqsConfig} from '../../toolkits/aws/sqs.config';
 
 @Injectable()
 export class TaskService {
@@ -16,10 +16,10 @@ export class TaskService {
   constructor() {
     this.client = new SQSClient({
       credentials: {
-        accessKeyId: getAwsConfig().accessKeyId!,
-        secretAccessKey: getAwsConfig().secretAccessKey!,
+        accessKeyId: getAwsSqsConfig().accessKeyId,
+        secretAccessKey: getAwsSqsConfig().secretAccessKey,
       },
-      region: getAwsConfig().region,
+      region: getAwsSqsConfig().region,
     });
   }
 
@@ -62,7 +62,7 @@ export class TaskService {
   }): Promise<Task> {
     // [step 1] Send queue message.
     const commandInput = {
-      QueueUrl: getAwsConfig().sqsTaskQueueUrl,
+      QueueUrl: getAwsSqsConfig().sqsTaskQueueUrl,
       MessageBody: JSON.stringify(params.payload),
     };
 

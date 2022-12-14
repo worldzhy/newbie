@@ -1,7 +1,7 @@
 import {BadRequestException} from '@nestjs/common';
 import {Prisma} from '@prisma/client';
-import {generateHash, randomCode} from '../utilities/common.util';
-import {verifyPassword} from '../validators/user.validator';
+import {generateHash} from '../utilities/common.util';
+import * as validator from '../../toolkits/validators/user.validator';
 
 export async function prismaMiddleware(
   params: Prisma.MiddlewareParams,
@@ -11,8 +11,16 @@ export async function prismaMiddleware(
     switch (params.action) {
       case 'create':
       case 'update':
+        if (params.args['data']['email']) {
+          if (!validator.verifyEmail(params.args['data']['email'])) {
+            throw new BadRequestException('Your email is not valid.');
+          }
+          params.args['data']['email'] = (
+            params.args['data']['email'] as string
+          ).toLowerCase();
+        }
         if (params.args['data']['password']) {
-          if (!verifyPassword(params.args['data']['password'])) {
+          if (!validator.verifyPassword(params.args['data']['password'])) {
             throw new BadRequestException('The password is not strong enough.');
           }
           // Generate hash of the password.

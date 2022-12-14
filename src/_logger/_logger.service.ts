@@ -1,7 +1,7 @@
 import {ConsoleLogger} from '@nestjs/common';
 import {getServerConfig} from '../_config/_server.config';
-import {getAwsConfig} from '../_config/_aws.config';
 import {SqsService} from '../toolkits/aws/sqs.service';
+import {getAwsSqsConfig} from '../toolkits/aws/sqs.config';
 
 /**
  * [1] Logs in development environment will output to stdout.
@@ -13,7 +13,7 @@ import {SqsService} from '../toolkits/aws/sqs.service';
  */
 export class CustomLoggerService extends ConsoleLogger {
   private sqsService = new SqsService();
-  private awsConfig = getAwsConfig();
+  private awsConfig = getAwsSqsConfig();
 
   constructor(context: string) {
     super(context);

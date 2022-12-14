@@ -21,12 +21,12 @@ export class WorkflowStateController {
   @Post('')
   @RequirePermission(PermissionAction.create, Prisma.ModelName.WorkflowState)
   @ApiBody({
-    description: '',
+    description: "The 'name' is required in request body.",
     examples: {
       a: {
         summary: '1. Create',
         value: {
-          state: 'Pending',
+          name: 'Admin',
         },
       },
     },
@@ -73,9 +73,9 @@ export class WorkflowStateController {
     description: '',
     examples: {
       a: {
-        summary: '1. Update',
+        summary: '1. Update name',
         value: {
-          state: 'Pending Test',
+          name: 'InceptionPad Inc',
         },
       },
     },

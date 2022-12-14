@@ -21,12 +21,12 @@ export class WorkflowStepController {
   @Post('')
   @RequirePermission(PermissionAction.create, Prisma.ModelName.WorkflowStep)
   @ApiBody({
-    description: '',
+    description: "The 'name' is required in request body.",
     examples: {
       a: {
         summary: '1. Create',
         value: {
-          step: 'STEP1',
+          name: 'Admin',
         },
       },
     },
@@ -73,9 +73,9 @@ export class WorkflowStepController {
     description: '',
     examples: {
       a: {
-        summary: '1. Update',
+        summary: '1. Update name',
         value: {
-          step: 'STEP_1',
+          name: 'InceptionPad Inc',
         },
       },
     },

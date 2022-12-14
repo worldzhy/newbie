@@ -7,7 +7,8 @@ import {
 } from '@aws-sdk/client-pinpoint';
 import {SmsNotification, Prisma} from '@prisma/client';
 import {PrismaService} from '../../../toolkits/prisma/prisma.service';
-import {getAwsConfig} from '../../../_config/_aws.config';
+import {getAwsPinpointConfig} from '../../../toolkits/aws/pinpoint.config';
+
 @Injectable()
 export class SmsNotificationService {
   private prisma = new PrismaService();
@@ -17,8 +18,8 @@ export class SmsNotificationService {
 
   constructor() {
     this.client = new PinpointClient({});
-    this.pinpointAppId = getAwsConfig().pinpointApplicationId!;
-    this.pinpointSenderId = getAwsConfig().pinpointSenderId!;
+    this.pinpointAppId = getAwsPinpointConfig().pinpointApplicationId;
+    this.pinpointSenderId = getAwsPinpointConfig().pinpointSenderId;
   }
 
   async findUnique(
@@ -97,7 +98,7 @@ export class SmsNotificationService {
     messageType?: string; // 'TRANSACTIONAL' or 'PROMOTIONAL'
   }): SendMessagesCommandInput {
     const addresses: {[phone: string]: {ChannelType: string}} = {};
-    data.phones.map(phone => {
+    data.phones.map((phone) => {
       addresses[phone] = {
         ChannelType: 'SMS',
       };

@@ -7,7 +7,7 @@ import {
 } from '@aws-sdk/client-pinpoint';
 import {EmailNotification, Prisma} from '@prisma/client';
 import {PrismaService} from '../../../toolkits/prisma/prisma.service';
-import {getAwsConfig} from '../../../_config/_aws.config';
+import {getAwsPinpointConfig} from '../../../toolkits/aws/pinpoint.config';
 
 @Injectable()
 export class EmailNotificationService {
@@ -17,9 +17,15 @@ export class EmailNotificationService {
   private pinpointFromAddress?: string;
 
   constructor() {
-    this.client = new PinpointClient({});
-    this.pinpointAppId = getAwsConfig().pinpointApplicationId!;
-    this.pinpointFromAddress = getAwsConfig().pinpointFromAddress;
+    this.client = new PinpointClient({
+      region: getAwsPinpointConfig().region,
+      credentials: {
+        accessKeyId: getAwsPinpointConfig().accessKeyId,
+        secretAccessKey: getAwsPinpointConfig().secretAccessKey,
+      },
+    });
+    this.pinpointAppId = getAwsPinpointConfig().pinpointApplicationId;
+    this.pinpointFromAddress = getAwsPinpointConfig().pinpointFromAddress;
   }
 
   async findUnique(
@@ -105,7 +111,7 @@ export class EmailNotificationService {
     html?: string;
   }): SendMessagesCommandInput {
     const addresses: {[email: string]: {ChannelType: string}} = {};
-    data.emails.map(email => {
+    data.emails.map((email) => {
       addresses[email] = {
         ChannelType: 'EMAIL',
       };
@@ -143,7 +149,7 @@ export class EmailNotificationService {
     rawData: Uint8Array;
   }): SendMessagesCommandInput {
     const addresses: {[email: string]: {ChannelType: string}} = {};
-    data.emails.map(email => {
+    data.emails.map((email) => {
       addresses[email] = {
         ChannelType: 'EMAIL',
       };

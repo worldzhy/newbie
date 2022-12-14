@@ -5,7 +5,7 @@ import {
   GetQueueAttributesCommand,
   QueueAttributeName,
 } from '@aws-sdk/client-sqs';
-import {getAwsConfig} from '../../_config/_aws.config';
+import {getAwsSqsConfig} from './sqs.config';
 
 @Injectable()
 export class SqsService {
@@ -14,10 +14,10 @@ export class SqsService {
   constructor() {
     this.client = new SQSClient({
       credentials: {
-        accessKeyId: getAwsConfig().accessKeyId!,
-        secretAccessKey: getAwsConfig().secretAccessKey!,
+        accessKeyId: getAwsSqsConfig().accessKeyId,
+        secretAccessKey: getAwsSqsConfig().secretAccessKey,
       },
-      region: getAwsConfig().region,
+      region: getAwsSqsConfig().region,
     });
   }
 

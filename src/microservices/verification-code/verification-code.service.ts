@@ -13,6 +13,8 @@ import * as util from '../../toolkits/utilities/common.util';
 @Injectable()
 export class VerificationCodeService {
   private prisma = new PrismaService();
+  private timeoutAfter = 10; // The verification code will be invalid after 10 minutes.
+  private resendAfter = 1; // The verification code can be resend after 1 minute.
 
   async findUnique(
     params: Prisma.VerificationCodeFindUniqueArgs
@@ -51,9 +53,11 @@ export class VerificationCodeService {
     // [step 1] Return verification code generated within 1 minute.
     const validCode = await this.prisma.verificationCode.findFirst({
       where: {
-        email: email,
+        email: {equals: email, mode: 'insensitive'},
         status: VerificationCodeStatus.ACTIVE,
-        expiredAt: {gte: util.nowPlusMinutes(4)},
+        expiredAt: {
+          gte: util.nowPlusMinutes(this.timeoutAfter - this.resendAfter),
+        },
       },
     });
     if (validCode) {
@@ -62,19 +66,24 @@ export class VerificationCodeService {
 
     // [step 2] Inactive current valid verification codes.
     await this.prisma.verificationCode.updateMany({
-      where: {AND: {email: email, status: VerificationCodeStatus.ACTIVE}},
+      where: {
+        AND: {
+          email: {equals: email, mode: 'insensitive'},
+          status: VerificationCodeStatus.ACTIVE,
+        },
+      },
       data: {status: VerificationCodeStatus.INACTIVE},
     });
 
     // [step 3] Generate and send verification code.
-    const newCode = util.randomCode(6);
+    const newCode = util.randomNumbers(6);
     return await this.prisma.verificationCode.create({
       data: {
         email: email,
         code: newCode,
         use: use,
         status: VerificationCodeStatus.ACTIVE,
-        expiredAt: util.nowPlusMinutes(5), // 5 minutes validity
+        expiredAt: util.nowPlusMinutes(this.timeoutAfter),
       },
     });
   }
@@ -88,7 +97,9 @@ export class VerificationCodeService {
       where: {
         phone: phone,
         status: VerificationCodeStatus.ACTIVE,
-        expiredAt: {gte: util.nowPlusMinutes(4)},
+        expiredAt: {
+          gte: util.nowPlusMinutes(this.timeoutAfter - this.resendAfter),
+        },
       },
     });
     if (validCode) {
@@ -102,7 +113,7 @@ export class VerificationCodeService {
     });
 
     // [step 3] Generate and send verification code.
-    const newCode = util.randomCode(6);
+    const newCode = util.randomNumbers(6);
 
     // [step 4] Save the code in database.
     return await this.prisma.verificationCode.create({
@@ -111,7 +122,7 @@ export class VerificationCodeService {
         code: newCode,
         use: use,
         status: VerificationCodeStatus.ACTIVE,
-        expiredAt: util.nowPlusMinutes(5), // 5 minutes validity
+        expiredAt: util.nowPlusMinutes(this.timeoutAfter),
       },
     });
   }
@@ -119,7 +130,7 @@ export class VerificationCodeService {
   async validateForEmail(code: string, email: string): Promise<boolean> {
     const existedCode = await this.prisma.verificationCode.findFirst({
       where: {
-        email: email,
+        email: {equals: email, mode: 'insensitive'},
         code: code,
         status: VerificationCodeStatus.ACTIVE,
         expiredAt: {
