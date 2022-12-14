@@ -16,10 +16,10 @@ import {AwsSqs_Stack} from './stack/aws-sqs.stack';
 import {AwsVpc_Stack} from './stack/aws-vpc.stack';
 import {AwsWaf_Stack} from './stack/aws-waf.stack';
 import {Null_Stack} from './stack/null.stack';
-import {getAwsConfig} from '../../../../_config/_aws.config';
+import {getAwsConfig} from '../../../../toolkits/aws/aws.config';
 import {getPulumiConfig} from '../../../../_config/_pulumi.config';
 import {PrismaService} from '../../../../toolkits/prisma/prisma.service';
-import {randomCode} from '../../../../toolkits/utilities/common.util';
+import {randomNumbers} from '../../../../toolkits/utilities/common.util';
 
 @Injectable()
 export class PulumiStackService {
@@ -45,7 +45,7 @@ export class PulumiStackService {
         if (params.action === 'create') {
           if (!params.args['data']['name']) {
             params.args['data']['name'] =
-              params.args['data']['type'] + '-' + randomCode(8);
+              params.args['data']['type'] + '-' + randomNumbers(8);
           }
         }
       }

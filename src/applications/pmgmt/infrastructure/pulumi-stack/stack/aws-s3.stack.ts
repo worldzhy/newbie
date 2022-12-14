@@ -2,8 +2,8 @@ import {Injectable} from '@nestjs/common';
 import * as aws from '@pulumi/aws';
 import {verifyS3BucketName} from '../../../../../toolkits/validators/aws.validator';
 import {buildResourceOptions} from '../../../../../toolkits/utilities/pulumi.util';
-import {randomCode} from '../../../../../toolkits/utilities/common.util';
-import {getAwsConfig} from '../../../../../_config/_aws.config';
+import {randomNumbers} from '../../../../../toolkits/utilities/common.util';
+import {getAwsConfig} from '../../../../../toolkits/aws/aws.config';
 
 @Injectable()
 export class AwsS3_Stack {
@@ -16,7 +16,7 @@ export class AwsS3_Stack {
 
   static checkStackParams(params: {bucketName: string}) {
     if (params.bucketName) {
-      return verifyS3BucketName(params.bucketName + randomCode(4))
+      return verifyS3BucketName(params.bucketName + randomNumbers(4))
         ? true
         : false;
     } else {
@@ -31,7 +31,7 @@ export class AwsS3_Stack {
   static getStackProgram =
     (params: {bucketName: string; isPublic: boolean}) => async () => {
       const isPublic = params.isPublic;
-      const bucketName = params.bucketName + '-' + randomCode(4);
+      const bucketName = params.bucketName + '-' + randomNumbers(4);
 
       // [step 1] Create a bucket.
       let uniqueResourceName = 's3-bucket';

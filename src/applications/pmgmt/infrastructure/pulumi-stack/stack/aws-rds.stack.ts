@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import * as aws from '@pulumi/aws';
-import {getAwsConfig} from '../../../../../_config/_aws.config';
+import {getAwsConfig} from '../../../../../toolkits/aws/aws.config';
 import {buildResourceOptions} from '../../../../../toolkits/utilities/pulumi.util';
 
 @Injectable()

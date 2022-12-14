@@ -13,8 +13,8 @@ import {
   ElasticsearchDatasourceIndexField,
   Job,
   JobApplication,
-  JobApplicationNote,
-  JobApplicationTask,
+  JobApplicationWorkflowNote,
+  JobApplicationWorkflowTask,
   Organization,
   Permission,
   PostgresqlDatasource,
@@ -63,6 +63,6 @@ export type PrismaSubjects = Subjects<{
   CandidateTraining: CandidateTraining;
   Job: Job;
   JobApplication: JobApplication;
-  JobApplicationNote: JobApplicationNote;
-  JobApplicationTask: JobApplicationTask;
+  JobApplicationWorkflowNote: JobApplicationWorkflowNote;
+  JobApplicationWorkflowTask: JobApplicationWorkflowTask;
 }>;

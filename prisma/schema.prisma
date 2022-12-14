@@ -161,25 +161,10 @@ enum VerificationCodeUse {
 // ! ------------------------------------------------------------ //
 // !             [Microservice] Workflow models                   //
 // ! ------------------------------------------------------------ //
-// * Workflow                                                     //
 // * WorkflowStep                                                 //
 // * WorkflowState                                                //
+// * WorkflowRoute                                                //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
-
-model Workflow {
-  id         Int      @id @default(autoincrement())
-  startSign  Boolean? @unique
-  step       String
-  state      String
-  nextStep   String
-  nextRoleId String?  @db.Uuid // The next role to take over the next step.
-  nextUserId String?  @db.Uuid // The next user to take over the next step.
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  @@unique([step, state])
-  @@schema("microservice/workflow")
-}
 
 model WorkflowStep {
   id        Int      @id @default(autoincrement())
@@ -196,6 +181,21 @@ model WorkflowState {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@schema("microservice/workflow")
+}
+
+model WorkflowRoute {
+  id         Int      @id @default(autoincrement())
+  startSign  Boolean? @unique
+  step       String
+  state      String
+  nextStep   String
+  nextRoleId String?  @db.Uuid // The next role to take over the next step.
+  nextUserId String?  @db.Uuid // The next user to take over the next step.
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([step, state])
   @@schema("microservice/workflow")
 }
 
@@ -260,21 +260,21 @@ model User {
   // [2] The 'User' is designed for long-term use and the 'VerificationCode' is designed for short-term use.
   // [3] Actually, the 'User' model should be named 'UserPassword' and the 'VerificationCode' should be named 'UserVerificationCode'.
 
-  id              String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email           String?                 @unique
-  phone           String?                 @unique
-  username        String?                 @unique
-  password        String? // automatic hashing
-  status          UserStatus              @default(ACTIVE)
-  lastLoginAt     DateTime?
-  createdAt       DateTime                @default(now())
-  updatedAt       DateTime                @updatedAt
-  organization    Organization?           @relation(fields: [organizationId], references: [id])
-  organizationId  String?                 @db.Uuid
-  profiles        UserProfile[]
-  userToRoles     UserToRole[]
-  locations       Location[]
-  holdingTestings JobApplicationTesting[]
+  id               String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email            String?                  @unique
+  phone            String?                  @unique
+  username         String?                  @unique
+  password         String? // automatic hashing
+  status           UserStatus               @default(ACTIVE)
+  lastLoginAt      DateTime?
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
+  organization     Organization?            @relation(fields: [organizationId], references: [id])
+  organizationId   String?                  @db.Uuid
+  profiles         UserProfile[]
+  userToRoles      UserToRole[]
+  locations        Location[]
+  holdingWorkflows JobApplicationWorkflow[]
 
   @@schema("application/account")
 }
@@ -644,16 +644,19 @@ enum ElasticsearchDataboardColumnFormatter {
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
 
 model File {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name      String
-  url       String
-  mimeType  String?
-  s3Bucket  String?
-  s3Path    String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  folder    Folder?  @relation(fields: [folderId], references: [id])
-  folderId  String?  @db.Uuid
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  originalName String
+  mimeType     String
+  size         Int
+  localPath    String? // Contains path and filename.
+  localName    String?
+  s3Bucket     String
+  s3Key        String // File name in S3 bucket.
+  s3Response   Json
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  folder       Folder?  @relation(fields: [folderId], references: [id])
+  folderId     String?  @db.Uuid
 
   @@schema("application/fmgmt")
 }
@@ -893,30 +896,25 @@ enum CandidateStatus {
 }
 
 model CandidateProfile {
-  id           String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  uniqueNumber String
-  givenName    String
-  middleName   String?
-  familyName   String
-  fullName     String?
-  birthday     DateTime?
-  gender       CandidateProfileGender?
-  emails       Json[]
-  phones       Json[]
-  websites     Json? // {'facebook': 'https://www.facebook.com/grace', 'twitter': 'https://twitter.com/elonmusk'}
-  picture      String?
-  createdAt    DateTime                @default(now())
-  updatedAt    DateTime                @updatedAt
-  candidate    Candidate               @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  candidateId  String                  @unique @db.Uuid
-
-  @@schema("application/recruitment")
-}
-
-enum CandidateProfileGender {
-  MALE
-  FEMALE
-  INTERSEX
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  uniqueNumber      String
+  givenName         String
+  middleName        String?
+  familyName        String
+  fullName          String?
+  birthday          DateTime?
+  gender            String?
+  email             String?
+  primaryPhone      String
+  primaryPhoneExt   String?
+  alternatePhone    String?
+  alternatePhoneExt String?
+  websites          Json? // {'facebook': 'https://www.facebook.com/grace', 'twitter': 'https://twitter.com/elonmusk'}
+  picture           String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  candidate         Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  candidateId       String    @unique @db.Uuid
 
   @@schema("application/recruitment")
 }
@@ -966,103 +964,119 @@ enum JobType {
 }
 
 model JobApplication {
-  id          String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id          String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   state       String?
   jobType     JobType
   jobCode     String? // Only available when jobType is Hourly.
   jobSite     String
+  testTypes   String[]
   referredBy  String // This field should user.name or user.id
-  createdAt   DateTime                @default(now())
-  updatedAt   DateTime                @updatedAt
-  candidate   Candidate               @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  candidateId String                  @db.Uuid
-  notes       JobApplicationNote[]
-  tasks       JobApplicationTask[]
-  testings    JobApplicationTesting[]
+  createdAt   DateTime                 @default(now())
+  updatedAt   DateTime                 @updatedAt
+  candidate   Candidate                @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  candidateId String                   @db.Uuid
+  workflows   JobApplicationWorkflow[]
 
   @@schema("application/recruitment")
 }
 
-model JobApplicationNote {
-  id               Int            @id @default(autoincrement())
-  reporter         String?
-  reporterUserId   String         @db.Uuid
-  reporterComment  String
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-  jobApplication   JobApplication @relation(fields: [jobApplicationId], references: [id], onDelete: Cascade)
-  jobApplicationId String         @db.Uuid
+model JobApplicationWorkflow {
+  id                 String                         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt          DateTime                       @default(now())
+  updatedAt          DateTime                       @updatedAt
+  jobApplication     JobApplication                 @relation(fields: [jobApplicationId], references: [id], onDelete: Cascade)
+  jobApplicationId   String                         @db.Uuid
+  beingHeldByUser    User?                          @relation(fields: [beingHeldByUserId], references: [id])
+  beingHeldByUserId  String?                        @db.Uuid
+  steps              JobApplicationWorkflowStep[]
+  payload            JobApplicationWorkflowPayload? // workflow payload
+  files              JobApplicationWorkflowFile[] // work payload
+  notes              JobApplicationWorkflowNote[] // workflow payload
+  tasks              JobApplicationWorkflowTask[] // workflow payload
+  // Below fields copy from latest workflow step.
+  state              String
+  nextStep           String
+  nextRoleId         String?
+  processedByUserIds String[] // Store id of users who have processed this workflow.
 
   @@schema("application/recruitment")
 }
 
-model JobApplicationTask {
-  id               Int                     @id @default(autoincrement())
-  reporter         String?
-  reporterUserId   String                  @db.Uuid
-  reporterComment  String
-  assignee         String?
-  assigneeUserId   String                  @db.Uuid
-  state            JobApplicationTaskState @default(PENDING)
-  createdAt        DateTime                @default(now())
-  updatedAt        DateTime                @updatedAt
-  jobApplication   JobApplication          @relation(fields: [jobApplicationId], references: [id], onDelete: Cascade)
-  jobApplicationId String                  @db.Uuid
+model JobApplicationWorkflowStep {
+  id                Int                    @id @default(autoincrement())
+  step              String
+  state             String // The state that is selected in this step.
+  nextStep          String
+  nextRoleId        String?                @db.Uuid // The role who will process the next step.
+  processedByUserId String                 @db.Uuid // The user who processed this step.
+  comment           String?
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  workflow          JobApplicationWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId        String                 @db.Uuid
 
   @@schema("application/recruitment")
 }
 
-enum JobApplicationTaskState {
-  PENDING
-  DONE
-
-  @@schema("application/recruitment")
-}
-
-model JobApplicationTesting {
-  id                  String                            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  state               String
-  type                String
-  site                String?
+model JobApplicationWorkflowPayload {
+  id                  Int                    @id @default(autoincrement())
+  testType            String?
+  testSite            String?
   appointmentStartsAt DateTime?
   appointmentEndsAt   DateTime?
-  processedByUserIds  String[] // Store id of users who have processed this testing.
-  createdAt           DateTime                          @default(now())
-  updatedAt           DateTime                          @updatedAt
-  jobApplication      JobApplication                    @relation(fields: [jobApplicationId], references: [id], onDelete: Cascade)
-  jobApplicationId    String                            @db.Uuid
-  beingHeldByUser     User?                             @relation(fields: [beingHeldByUserId], references: [id])
-  beingHeldByUserId   String?                           @db.Uuid
-  attachments         JobApplicationTestingAttachment[]
-  workflows           JobApplicationTestingWorkflow[]
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+  workflow            JobApplicationWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId          String                 @unique @db.Uuid
 
   @@schema("application/recruitment")
 }
 
-model JobApplicationTestingAttachment {
-  id        Int                   @id @default(autoincrement())
-  name      String
-  url       String
-  createdAt DateTime              @default(now())
-  updatedAt DateTime              @updatedAt
-  testing   JobApplicationTesting @relation(fields: [testingId], references: [id], onDelete: Cascade)
-  testingId String                @db.Uuid
+model JobApplicationWorkflowFile {
+  id             Int                    @id @default(autoincrement())
+  fileId         String                 @db.Uuid
+  originalName   String
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+  workflow       JobApplicationWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId     String                 @db.Uuid
+  workflowStepId Int
 
   @@schema("application/recruitment")
 }
 
-model JobApplicationTestingWorkflow {
-  id                Int                   @id @default(autoincrement())
-  step              String
-  state             String
-  nextStep          String
-  nextRoleId        String?               @db.Uuid
-  processedByUserId String                @db.Uuid
-  comment           String?
-  createdAt         DateTime              @default(now())
-  updatedAt         DateTime              @updatedAt
-  testing           JobApplicationTesting @relation(fields: [testingId], references: [id], onDelete: Cascade)
-  testingId         String                @db.Uuid
+model JobApplicationWorkflowNote {
+  id              Int                    @id @default(autoincrement())
+  reporter        String?
+  reporterUserId  String                 @db.Uuid
+  reporterComment String
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+  workflow        JobApplicationWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId      String                 @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+model JobApplicationWorkflowTask {
+  id              Int                             @id @default(autoincrement())
+  reporter        String?
+  reporterUserId  String                          @db.Uuid
+  reporterComment String
+  assignee        String?
+  assigneeUserId  String                          @db.Uuid
+  state           JobApplicationWorkflowTaskState @default(PENDING)
+  createdAt       DateTime                        @default(now())
+  updatedAt       DateTime                        @updatedAt
+  workflow        JobApplicationWorkflow          @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId      String                          @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+enum JobApplicationWorkflowTaskState {
+  PENDING
+  DONE
 
   @@schema("application/recruitment")
 }
