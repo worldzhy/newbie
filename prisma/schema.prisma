@@ -79,15 +79,14 @@ model SmsNotification {
 // ! ------------------------------------------------------------ //
 // !           [Microservice] Task Management models              //
 // ! ------------------------------------------------------------ //
-// * Task                                                         //
+// * Task (This is an example model.)                             //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
 model Task {
   id           Int       @id @default(autoincrement())
-  type         TaskType
+  state        TaskState @default(PENDING)
   group        String? // Provided by task microservice's client.
   payload      Json // Task content
-  state        TaskState @default(PENDING)
   sqsMessageId String?
   sqsResponse  Json?
   createdAt    DateTime  @default(now())
@@ -96,18 +95,9 @@ model Task {
   @@schema("microservice/task")
 }
 
-enum TaskType {
-  DATATRANS_BATCH_PROCESSING
-  DATATRANS_STREAM_PROCESSING
-
-  @@schema("microservice/task")
-}
-
 enum TaskState {
   PENDING
-  SUCCEEDED
-  FAILED
-  CANCELED
+  DONE
 
   @@schema("microservice/task")
 }
@@ -571,14 +561,39 @@ model DatatransMission {
   updatedAt           DateTime              @updatedAt
   datatransPipeline   DatatransPipeline     @relation(fields: [datatransPipelineId], references: [id])
   datatransPipelineId String                @db.Uuid
+  tasks               DatatransTask[]
 
   @@schema("application/engined")
 }
 
 enum DatatransMissionState {
   PENDING
+  SPLIT
   STARTED
   STOPPED
+
+  @@schema("application/engined")
+}
+
+model DatatransTask {
+  id           Int                @id @default(autoincrement())
+  state        DatatransTaskState @default(PENDING)
+  take         Int
+  skip         Int
+  sqsMessageId String?
+  sqsResponse  Json?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  mission      DatatransMission   @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  missionId    String             @db.Uuid
+
+  @@schema("application/engined")
+}
+
+enum DatatransTaskState {
+  PENDING
+  IN_QUEUE
+  DONE
 
   @@schema("application/engined")
 }

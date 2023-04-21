@@ -9,22 +9,16 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {
-  Prisma,
-  DatatransMission,
-  DatatransMissionState,
-  TaskType,
-  TaskState,
-} from '@prisma/client';
+import {Prisma, DatatransMission, DatatransMissionState} from '@prisma/client';
 import {DatatransMissionService} from './mission.service';
-import {TaskService} from '../../../../microservices/task/task.service';
+import {DatatransTaskService} from './task/task.service';
 
 @ApiTags('[Application] EngineD / Datatrans Mission')
 @ApiBearerAuth()
 @Controller('datatrans-missions')
 export class DatatransMissionController {
   private datatransMissionService = new DatatransMissionService();
-  private taskService = new TaskService();
+  private datatransTaskService = new DatatransTaskService();
 
   @Post('')
   @ApiBody({
@@ -98,14 +92,13 @@ export class DatatransMissionController {
     });
   }
 
-  //* Start
-  @Patch(':missionId/start')
+  @Patch(':missionId/mission2tasks')
   @ApiParam({
     name: 'missionId',
     schema: {type: 'string'},
     example: '81a37534-915c-4114-96d0-01be815d821b',
   })
-  async startDatatransMission(
+  async splitDatatransMission2Tasks(
     @Param('missionId') missionId: string
   ): Promise<DatatransMission> {
     // [step 1] Get mission.
@@ -116,31 +109,33 @@ export class DatatransMissionController {
       throw new NotFoundException('Not found the mission.');
     }
 
-    // [step 2] Send tasks.
+    // [step 2] Split mission to tasks.
+    const tasks: Prisma.DatatransTaskCreateManyInput[] = [];
     const numberOfRecordsPerBatch = Math.floor(
       mission.numberOfRecords / mission.numberOfBatches
     );
     const numberOfRecordsForLastBatch =
       mission.numberOfRecords % mission.numberOfBatches;
+
     for (let i = 0; i < mission.numberOfBatches; i++) {
-      await this.taskService.sendTask({
-        type: TaskType.DATATRANS_BATCH_PROCESSING,
-        group: missionId,
-        payload: {
-          missionId: missionId,
-          take: numberOfRecordsPerBatch,
-          skip: numberOfRecordsPerBatch * i,
-        },
+      tasks.push({
+        take: numberOfRecordsPerBatch,
+        skip: numberOfRecordsPerBatch * i,
+        missionId: missionId,
+      });
+    }
+
+    if (tasks.length > 0) {
+      await this.datatransTaskService.createMany({
+        data: tasks,
       });
     }
     if (numberOfRecordsForLastBatch > 0) {
-      await this.taskService.sendTask({
-        type: TaskType.DATATRANS_BATCH_PROCESSING,
-        group: missionId,
-        payload: {
-          missionId: missionId,
+      await this.datatransTaskService.create({
+        data: {
           take: numberOfRecordsForLastBatch,
           skip: mission.numberOfRecords - numberOfRecordsForLastBatch,
+          missionId: missionId,
         },
       });
     }
@@ -148,30 +143,7 @@ export class DatatransMissionController {
     // [step 3] Update mission state.
     return await this.datatransMissionService.update({
       where: {id: missionId},
-      data: {state: DatatransMissionState.STARTED},
-    });
-  }
-
-  //* Stop
-  @Patch(':missionId/stop')
-  @ApiParam({
-    name: 'missionId',
-    schema: {type: 'string'},
-    example: '81a37534-915c-4114-96d0-01be815d821b',
-  })
-  async stopDatatransMission(
-    @Param('missionId') missionId: string
-  ): Promise<DatatransMission> {
-    // [step 1] Update task state.
-    await this.taskService.updateMany({
-      where: {group: missionId},
-      data: {state: TaskState.CANCELED},
-    });
-
-    // [step 2] Update mission state.
-    return await this.datatransMissionService.update({
-      where: {id: missionId},
-      data: {state: DatatransMissionState.STOPPED},
+      data: {state: DatatransMissionState.SPLIT},
     });
   }
 

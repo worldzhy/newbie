@@ -12,6 +12,12 @@ export class DatatransMissionService {
     return await this.prisma.datatransMission.findUnique(params);
   }
 
+  async findUniqueOrThrow(
+    params: Prisma.DatatransMissionFindUniqueOrThrowArgs
+  ): Promise<DatatransMission> {
+    return await this.prisma.datatransMission.findUniqueOrThrow(params);
+  }
+
   async findMany(
     params: Prisma.DatatransMissionFindManyArgs
   ): Promise<DatatransMission[]> {

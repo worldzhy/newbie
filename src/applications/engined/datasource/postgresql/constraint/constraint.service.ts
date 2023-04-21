@@ -6,7 +6,17 @@ import {PrismaService} from '../../../../../toolkits/prisma/prisma.service';
 export class PostgresqlDatasourceConstraintService {
   private prisma: PrismaService = new PrismaService();
 
-  async findMany(params: Prisma.PostgresqlDatasourceConstraintFindManyArgs) {
+  async findFirstOrThrow(
+    params: Prisma.PostgresqlDatasourceConstraintFindFirstOrThrowArgs
+  ): Promise<PostgresqlDatasourceConstraint> {
+    return await this.prisma.postgresqlDatasourceConstraint.findFirstOrThrow(
+      params
+    );
+  }
+
+  async findMany(
+    params: Prisma.PostgresqlDatasourceConstraintFindManyArgs
+  ): Promise<PostgresqlDatasourceConstraint[]> {
     return await this.prisma.postgresqlDatasourceConstraint.findMany(params);
   }
 

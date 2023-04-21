@@ -28,10 +28,13 @@ export class CustomLoggerService extends ConsoleLogger {
     if (getServerConfig().environment === 'development') {
       super.log(message, ...optionalParams);
     } else {
-      this.sqsService.sendMessage(this.awsConfig.sqsLogQueueUrl!, {
-        message: message,
-        context: this.context,
-        ...optionalParams,
+      this.sqsService.sendMessage({
+        queueUrl: this.awsConfig.sqsLogQueueUrl!,
+        body: {
+          message: message,
+          context: this.context,
+          ...optionalParams,
+        },
       });
     }
   }
@@ -40,10 +43,13 @@ export class CustomLoggerService extends ConsoleLogger {
     if (getServerConfig().environment === 'development') {
       super.warn(message, ...optionalParams);
     } else {
-      this.sqsService.sendMessage(this.awsConfig.sqsLogQueueUrl!, {
-        message: message,
-        context: this.context,
-        level: 'warn',
+      this.sqsService.sendMessage({
+        queueUrl: this.awsConfig.sqsLogQueueUrl!,
+        body: {
+          message: message,
+          context: this.context,
+          level: 'warn',
+        },
       });
     }
   }
@@ -52,10 +58,13 @@ export class CustomLoggerService extends ConsoleLogger {
     if (getServerConfig().environment === 'development') {
       super.error(message, ...optionalParams);
     } else {
-      this.sqsService.sendMessage(this.awsConfig.sqsLogQueueUrl!, {
-        message: message,
-        context: this.context,
-        level: 'error',
+      this.sqsService.sendMessage({
+        queueUrl: this.awsConfig.sqsLogQueueUrl!,
+        body: {
+          message: message,
+          context: this.context,
+          level: 'error',
+        },
       });
     }
   }

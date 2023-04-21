@@ -63,7 +63,7 @@ export class DatatransPipelineService {
 
     // [step 1] Get the total count of the table records.
     countResult = await this.prisma.$queryRawUnsafe(
-      `SELECT COUNT(*) FROM "${fromTable.name}"`
+      `SELECT COUNT(*) FROM "${fromTable.schema}"."${fromTable.name}"`
     );
 
     // The type of countResult[0].count is bigint and it need to be converted to number.
@@ -75,7 +75,7 @@ export class DatatransPipelineService {
       // https://www.becomebetterprogrammer.com/javascript-foreach-async-await/
       pipeline.hasManyTables.map(async tableName => {
         countResult = await this.prisma.$queryRawUnsafe(
-          `SELECT COUNT(*) FROM "${tableName}"`
+          `SELECT COUNT(*) FROM "${fromTable.schema}"."${tableName}"`
         );
 
         childTables.push({
@@ -91,7 +91,7 @@ export class DatatransPipelineService {
     await Promise.all(
       pipeline.belongsToTables.map(async tableName => {
         countResult = await this.prisma.$queryRawUnsafe(
-          `SELECT COUNT(*) FROM "${tableName}"`
+          `SELECT COUNT(*) FROM "${fromTable.schema}"."${tableName}"`
         );
 
         parentTables.push({

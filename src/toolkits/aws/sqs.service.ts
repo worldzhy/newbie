@@ -24,14 +24,14 @@ export class SqsService {
   /**
    * See the API doc for more details:
    * https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_SendMessage.html
-   * @param {object} body
+   * @param {object} params
    * @returns {(Promise<{data: SQS.SendMessageResult | void;err: AWSError | void;}>)}
    * @memberof SqsService
    */
-  async sendMessage(queueUrl: string, body: object) {
+  async sendMessage(params: {queueUrl: string; body: object}) {
     const sendMessageRequest = {
-      QueueUrl: queueUrl,
-      MessageBody: JSON.stringify(body),
+      QueueUrl: params.queueUrl,
+      MessageBody: JSON.stringify(params.body),
     };
 
     return await this.client.send(new SendMessageCommand(sendMessageRequest));

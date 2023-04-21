@@ -63,7 +63,10 @@ export class AwsController {
   @Post('sqs/message')
   async sendSqsMessage(@Body() body: {queueUrl: string; payload: object}) {
     const sqsService = new SqsService();
-    return await sqsService.sendMessage(body.queueUrl, body.payload);
+    return await sqsService.sendMessage({
+      queueUrl: body.queueUrl,
+      body: body.payload,
+    });
   }
 
   //* SNS publish.

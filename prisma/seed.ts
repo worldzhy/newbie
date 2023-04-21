@@ -331,7 +331,7 @@ async function main() {
 
   datasource =
     await elasticsearchDatasourceController.createElasticsearchDatasource({
-      node: '127.0.0.1',
+      node: 'http://127.0.0.1',
     });
   await elasticsearchDatasourceController.loadElasticsearchDatasource(
     datasource.id
