@@ -16,8 +16,7 @@ import {
   ApiBody,
   ApiQuery,
 } from '@nestjs/swagger';
-import {PermissionAction, Prisma, Location} from '@prisma/client';
-import {RequirePermission} from '../../applications/account/authorization/authorization.decorator';
+import {Prisma, Location} from '@prisma/client';
 import {LocationService} from './location.service';
 
 @ApiTags('[Microservice] Location')
@@ -27,7 +26,6 @@ export class LocationController {
   private locationService = new LocationService();
 
   @Post('')
-  @RequirePermission(PermissionAction.create, Prisma.ModelName.Location)
   @ApiBody({
     description: 'Optional fields are address2 and geoJSON.',
     examples: {
@@ -60,7 +58,6 @@ export class LocationController {
   }
 
   @Get('')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.Location)
   @ApiQuery({name: 'page', type: 'number'})
   @ApiQuery({name: 'pageSize', type: 'number'})
   async getLocations(
@@ -93,7 +90,6 @@ export class LocationController {
   }
 
   @Get(':locationId')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.Location)
   @ApiParam({
     name: 'locationId',
     schema: {type: 'string'},
@@ -107,7 +103,6 @@ export class LocationController {
   }
 
   @Patch(':locationId')
-  @RequirePermission(PermissionAction.update, Prisma.ModelName.Location)
   @ApiParam({
     name: 'locationId',
     schema: {type: 'string'},
@@ -150,7 +145,6 @@ export class LocationController {
   }
 
   @Delete(':locationId')
-  @RequirePermission(PermissionAction.delete, Prisma.ModelName.Location)
   @ApiParam({
     name: 'locationId',
     schema: {type: 'string'},

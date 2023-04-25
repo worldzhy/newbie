@@ -33,11 +33,11 @@ import {ApplicationController} from './application.controller';
     RecruitmentModule,
   ],
   providers: [
-    //Guards
+    // Guards
     {provide: APP_GUARD, useClass: AuthenticationGuard}, // 1st priority guard.
     {provide: APP_GUARD, useClass: AuthorizationGuard}, // 2nd priority guard.
 
-    //Filters
+    // Filters
     {provide: APP_FILTER, useClass: AllExceptionsFilter}, // 3rd priority for all exceptions.
     {provide: APP_FILTER, useClass: PrismaExceptionFilter}, // 2nd priority for exceptions thrown by services.
     {provide: APP_FILTER, useClass: HttpExceptionFilter}, // 1st priority for exceptions thrown by controllers.
