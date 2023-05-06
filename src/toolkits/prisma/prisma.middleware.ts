@@ -1,7 +1,7 @@
 import {BadRequestException} from '@nestjs/common';
 import {Prisma} from '@prisma/client';
 import {generateHash} from '../utilities/common.util';
-import * as validator from '../../toolkits/validators/user.validator';
+import {verifyEmail, verifyPassword} from '../validators/user.validator';
 
 export async function prismaMiddleware(
   params: Prisma.MiddlewareParams,
@@ -12,7 +12,7 @@ export async function prismaMiddleware(
       case 'create':
       case 'update':
         if (params.args['data']['email']) {
-          if (!validator.verifyEmail(params.args['data']['email'])) {
+          if (!verifyEmail(params.args['data']['email'])) {
             throw new BadRequestException('Your email is not valid.');
           }
           params.args['data']['email'] = (
@@ -20,22 +20,26 @@ export async function prismaMiddleware(
           ).toLowerCase();
         }
         if (params.args['data']['password']) {
-          if (!validator.verifyPassword(params.args['data']['password'])) {
-            throw new BadRequestException('The password is not strong enough.');
+          if (!verifyPassword(params.args['data']['password'])) {
+            throw new BadRequestException(
+              'The password is not strong enough. (length >= 8, lowercase >= 1, uppercase >= 1, numbers >= 1, symbols >= 1)'
+            );
           }
           // Generate hash of the password.
           const hash = await generateHash(params.args['data']['password']);
           params.args['data']['password'] = hash;
         }
         return next(params);
-      case 'findUnique':
-        const result = await next(params);
-        if (result) {
-          const {password, ...newUser} = result;
-          return newUser;
-        }
-        return null;
       default:
+        // Handle existed issue https://github.com/prisma/prisma/issues/17470
+        // if (params.action.toString() === 'findUniqueOrThrow') {
+        //   const result = await next(params);
+        //   if (result) {
+        //     const {password, ...newUser} = result;
+        //     return newUser;
+        //   }
+        //   return null;
+        // }
         return next(params);
     }
   } else if (params.model === Prisma.ModelName.Candidate) {

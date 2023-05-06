@@ -33,12 +33,21 @@ export class AuthPasswordStrategy extends PassportStrategy(
       );
     }
 
-    // [step 2] Validate password.
+    // [step 2] Handle no password situation.
+    if (!user.password) {
+      throw new UnauthorizedException(
+        'The password has not been set. Please login via verification code.'
+      );
+    }
+
+    // [step 3] Validate password.
     const match = await compareHash(password, user.password);
     if (match === true) {
       return true;
     } else {
-      throw new UnauthorizedException('Invalid combination of username and password.');
+      throw new UnauthorizedException(
+        'Invalid combination of username and password.'
+      );
     }
   }
 }

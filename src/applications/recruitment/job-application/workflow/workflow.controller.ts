@@ -13,12 +13,12 @@ import {JobApplicationWorkflow, PermissionAction, Prisma} from '@prisma/client';
 import {JobApplicationWorkflowService} from './workflow.service';
 import {JobApplicationWorkflowFileService} from './file/file.service';
 import {JobApplicationWorkflowStepService} from './step/step.service';
-import {FileService} from '../../../fmgmt/file/file.service';
-import {TokenService} from '../../../../toolkits/token/token.service';
 import {RequirePermission} from '../../../account/authorization/authorization.decorator';
 import {RoleService} from '../../../account/user/role/role.service';
 import {UserService} from '../../../account/user/user.service';
 import {WorkflowRouteService} from '../../../../microservices/workflow/route/route.service';
+import {FileService} from '../../../../microservices/fmgmt/file/file.service';
+import {TokenService} from '../../../../toolkits/token/token.service';
 
 @ApiTags('[Application] Recruitment / Job Application / Workflow')
 @ApiBearerAuth()
@@ -128,7 +128,7 @@ export class JobApplicationWorkflowController {
         where: {id: workflowId},
         include: {
           jobApplication: {
-            include: {candidate: {include: {profile: true, location: true}}},
+            include: {candidate: {include: {profile: true}}},
           },
           payload: true,
           steps: {orderBy: {createdAt: 'desc'}},
@@ -283,13 +283,13 @@ export class JobApplicationWorkflowController {
 
     if (body.fileIds) {
       // Filter null value in the fileIds array.
-      const fileIds = body.fileIds.filter((fileId) => fileId !== null);
+      const fileIds = body.fileIds.filter(fileId => fileId !== null);
       const files = await this.fileService.findMany({
         where: {id: {in: fileIds}},
       });
       updateInput.files = {
         createMany: {
-          data: files.map((file) => {
+          data: files.map(file => {
             return {
               fileId: file.id,
               originalName: file.originalName,

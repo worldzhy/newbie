@@ -28,9 +28,8 @@ export class PrismaExceptionFilter implements ExceptionFilter {
 
       // HTTP response
       response.status(statusCode).json({
-        StatusCode: statusCode,
-        PrismaCode: 'None',
-        Message: exception.message,
+        message: exception.message,
+        statusCode: statusCode,
       });
     } else if (exception instanceof Prisma.PrismaClientKnownRequestError) {
       // Set HTTP status code
@@ -40,6 +39,14 @@ export class PrismaExceptionFilter implements ExceptionFilter {
       } else if (exception.code.startsWith('P2')) {
         // Prisma Client (Query Engine) errors
         statusCode = HttpStatus.BAD_REQUEST;
+        if (exception.code === 'P2002') {
+          // HTTP response
+          return response.status(statusCode).json({
+            message: `The ${exception.meta!.target} is already existed.`,
+            statusCode: statusCode,
+            prismaCode: exception.code,
+          });
+        }
       } else if (exception.code.startsWith('P3')) {
         // Prisma Migrate (Migration Engine) errors
         statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
@@ -52,21 +59,22 @@ export class PrismaExceptionFilter implements ExceptionFilter {
 
       // HTTP response
       response.status(statusCode).json({
-        StatusCode: statusCode,
-        PrismaCode: exception.code,
-        Meta: exception.meta,
+        message: exception.meta,
+        statusCode: statusCode,
+        prismaCode: exception.code,
       });
     } else if (exception instanceof Prisma.PrismaClientUnknownRequestError) {
       // HTTP response
       response.status(400).json({
-        PrismaVersion: exception.clientVersion,
-        Message: exception.message,
+        message: exception.message,
+        statusCode: 400,
+        prismaVersion: exception.clientVersion,
       });
     } else if (exception instanceof Prisma.PrismaClientRustPanicError) {
       // HTTP response
       response.status(HttpStatus.BAD_REQUEST).json({
-        StatusCode: HttpStatus.BAD_REQUEST,
-        Message: exception.message,
+        message: exception.message,
+        statusCode: HttpStatus.BAD_REQUEST,
       });
     } else if (exception instanceof Prisma.PrismaClientInitializationError) {
       // Set HTTP status code
@@ -88,15 +96,15 @@ export class PrismaExceptionFilter implements ExceptionFilter {
 
       // HTTP response
       response.status(statusCode).json({
-        StatusCode: statusCode,
-        PrismaCode: exception.errorCode,
-        Message: exception.message,
+        message: exception.message,
+        statusCode: statusCode,
+        prismaCode: exception.errorCode,
       });
     } else if (exception instanceof Prisma.PrismaClientValidationError) {
       // HTTP response
       response.status(HttpStatus.BAD_REQUEST).json({
-        StatusCode: HttpStatus.BAD_REQUEST,
-        Message: exception.message,
+        message: exception.message,
+        statusCode: HttpStatus.BAD_REQUEST,
       });
     } else {
       // The PrismaExceptionFilter can not handle the exception.

@@ -24,13 +24,18 @@ import {UserProfileService} from './user/profile/profile.service';
 import {VerificationCodeService} from '../../microservices/verification-code/verification-code.service';
 import {EmailNotificationService} from '../../microservices/notification/email/email.service';
 import {SmsNotificationService} from '../../microservices/notification/sms/sms.service';
-import * as validator from '../../toolkits/validators/user.validator';
 import {TokenService} from '../../toolkits/token/token.service';
 import {Public} from './authentication/public/public.decorator';
 import {LoggingInByPassword} from './authentication/password/password.decorator';
 import {LoggingInByProfile} from './authentication/profile/profile.decorator';
 import {LoggingInByUuid} from './authentication/uuid/uuid.decorator';
 import {LoggingInByVerificationCode} from './authentication/verification-code/verification-code.decorator';
+import {
+  verifyEmail,
+  verifyPassword,
+  verifyPhone,
+  verifyUsername,
+} from '../../toolkits/validators/user.validator';
 
 @ApiTags('[Application] Account')
 @Controller('account')
@@ -189,8 +194,10 @@ export class AccountController {
 
     // [step 1] Validate parameters.
     if (body.password) {
-      if (!validator.verifyPassword(body.password)) {
-        throw new BadRequestException('Your password is not strong enough.');
+      if (!verifyPassword(body.password)) {
+        throw new BadRequestException(
+          'Your password is not strong enough. (length >= 8, lowercase >= 1, uppercase >= 1, numbers >= 1, symbols >= 1)'
+        );
       } else {
         // Go on validating...
         usernameCount += 1;
@@ -198,7 +205,7 @@ export class AccountController {
     }
 
     if (body.username) {
-      if (!validator.verifyUsername(body.username)) {
+      if (!verifyUsername(body.username)) {
         throw new BadRequestException('Your username is not valid.');
       } else {
         // Go on validating...
@@ -207,7 +214,7 @@ export class AccountController {
     }
 
     if (body.email) {
-      if (!validator.verifyEmail(body.email)) {
+      if (!verifyEmail(body.email)) {
         throw new BadRequestException('Your email is not valid.');
       } else {
         // Go on validating...
@@ -216,7 +223,7 @@ export class AccountController {
     }
 
     if (body.phone) {
-      if (!validator.verifyPhone(body.phone)) {
+      if (!verifyPhone(body.phone)) {
         throw new BadRequestException('Your phone is not valid.');
       } else {
         // End of validating.
@@ -461,7 +468,7 @@ export class AccountController {
 
   @Get('current-user')
   @ApiBearerAuth()
-  async getCurrentUser(@Request() request: Request): Promise<User> {
+  async getCurrentUser(@Request() request: Request) {
     // [step 1] Parse token from http request header.
     const accessToken = this.tokenService.getTokenFromHttpRequest(request);
 
@@ -471,9 +478,12 @@ export class AccountController {
     });
 
     // [step 3] Get user.
-    return await this.userService.findUniqueOrThrowWithRoles({
+    const user = await this.userService.findUniqueOrThrowWithRoles({
+      select: {password: false},
       where: {id: userToken.userId},
     });
+
+    return this.userService.withoutPassword(user);
   }
 
   @Post('logout')
@@ -544,6 +554,7 @@ export class AccountController {
 
     // [step 2] Inactivate user.
     return await this.userService.update({
+      select: {password: false},
       where: {id: user.id},
       data: {status: UserStatus.INACTIVE},
     });
@@ -587,6 +598,7 @@ export class AccountController {
 
     // [step 2] Activate user.
     return await this.userService.update({
+      select: {password: false},
       where: {id: user.id},
       data: {status: UserStatus.ACTIVE},
     });
@@ -685,7 +697,7 @@ export class AccountController {
     phone?: string;
     use: VerificationCodeUse;
   }): Promise<boolean> {
-    if (params.email && validator.verifyEmail(params.email)) {
+    if (params.email && verifyEmail(params.email)) {
       // [step 1] Check if the account exists.
       const user = await this.userService.findByAccount(params.email);
       if (!user) {
@@ -710,7 +722,7 @@ export class AccountController {
           verificationCode.code +
           ' is your verification code valid for the next 10 minutes.',
       });
-    } else if (params.phone && validator.verifyPhone(params.phone)) {
+    } else if (params.phone && verifyPhone(params.phone)) {
       // [step 1] Check if the account exists.
       const user = await this.userService.findByAccount(params.phone);
       if (!user) {

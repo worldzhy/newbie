@@ -21,6 +21,15 @@ export class UserService {
     return await this.prisma.user.findMany(params);
   }
 
+  async findManyWithTotal(
+    params: Prisma.UserFindManyArgs
+  ): Promise<[User[], number]> {
+    return await this.prisma.$transaction([
+      this.prisma.user.findMany(params),
+      this.prisma.user.count({where: params.where}),
+    ]);
+  }
+
   async create(params: Prisma.UserCreateArgs): Promise<User> {
     return await this.prisma.user.create(params);
   }
@@ -45,12 +54,8 @@ export class UserService {
       include: {userToRoles: {select: {role: true}}, locations: true},
     });
 
-    user['roles'] = user.userToRoles.map((userToRole) => {
+    user['roles'] = user.userToRoles.map(userToRole => {
       return userToRole['role'];
-    });
-
-    user['sites'] = user.locations.map((location) => {
-      return location.site;
     });
 
     const {userToRoles, locations, ...result} = user;
@@ -75,6 +80,11 @@ export class UserService {
       });
       return users.length > 0 ? (users[0] as User) : null;
     }
+  }
+
+  withoutPassword(user: User) {
+    const {password, ...others} = user;
+    return others;
   }
 
   /* End */

@@ -15,7 +15,8 @@ import {
   ApiBody,
   ApiQuery,
 } from '@nestjs/swagger';
-import {WorkflowRoute, Prisma} from '@prisma/client';
+import {WorkflowRoute, Prisma, PermissionAction} from '@prisma/client';
+import {RequirePermission} from '../../../applications/account/authorization/authorization.decorator';
 import {WorkflowRouteService} from './route.service';
 
 @ApiTags('[Microservice] Workflow / Route')
@@ -25,6 +26,7 @@ export class WorkflowRouteController {
   private workflowRouteService = new WorkflowRouteService();
 
   @Post('')
+  @RequirePermission(PermissionAction.create, Prisma.ModelName.WorkflowRoute)
   @ApiBody({
     description: "The 'name' is required in request body.",
     examples: {
@@ -45,6 +47,7 @@ export class WorkflowRouteController {
   }
 
   @Get('')
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.WorkflowRoute)
   @ApiQuery({name: 'step', type: 'string'})
   async getWorkflowRoutes(
     @Query() query: {step?: string}
@@ -60,6 +63,7 @@ export class WorkflowRouteController {
   }
 
   @Get(':workflowId')
+  @RequirePermission(PermissionAction.read, Prisma.ModelName.WorkflowRoute)
   @ApiParam({
     name: 'workflowId',
     schema: {type: 'number'},
@@ -75,6 +79,7 @@ export class WorkflowRouteController {
   }
 
   @Patch(':workflowId')
+  @RequirePermission(PermissionAction.update, Prisma.ModelName.WorkflowRoute)
   @ApiParam({
     name: 'workflowId',
     schema: {type: 'number'},
@@ -104,6 +109,7 @@ export class WorkflowRouteController {
   }
 
   @Delete(':workflowId')
+  @RequirePermission(PermissionAction.delete, Prisma.ModelName.WorkflowRoute)
   @ApiParam({
     name: 'workflowId',
     schema: {type: 'number'},

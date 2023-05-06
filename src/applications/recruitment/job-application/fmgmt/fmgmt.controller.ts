@@ -16,14 +16,14 @@ import {ApiBearerAuth, ApiParam, ApiTags} from '@nestjs/swagger';
 import {Express} from 'express';
 import {diskStorage} from 'multer';
 import {createReadStream} from 'fs';
-import {getFileManagementConfig} from './fmgmt.config';
-import {FileService} from './file/file.service';
-import {S3Service} from '../../toolkits/aws/s3.service';
-import {randomLetters} from '../../toolkits/utilities/common.util';
+import {FileService} from '../../../../microservices/fmgmt/file/file.service';
+import {getFileManagementConfig} from '../../../../microservices/fmgmt/fmgmt.config';
+import {S3Service} from '../../../../toolkits/aws/s3.service';
+import {randomLetters} from '../../../../toolkits/utilities/common.util';
 
-@ApiTags('[Application] File Management')
+@ApiTags('[Application] Recruitment / Job Application / File Management')
 @ApiBearerAuth()
-@Controller('file-management')
+@Controller('recruitment-fmgmt')
 export class FileManagementController {
   private fileService = new FileService();
   private s3Service = new S3Service();

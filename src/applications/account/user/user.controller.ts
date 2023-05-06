@@ -8,6 +8,7 @@ import {
   Param,
   Query,
   BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -22,11 +23,12 @@ import {
   User,
   UserStatus,
   UserToRole,
-  Location,
 } from '@prisma/client';
 import {UserService} from './user.service';
 import {RequirePermission} from '../authorization/authorization.decorator';
 import {compareHash} from '../../../toolkits/utilities/common.util';
+import {verifyUuid} from '../../../toolkits/validators/user.validator';
+import {formatPaginationResponse} from '../../../toolkits/format/pagination.format';
 
 @ApiTags('[Application] Account / User')
 @ApiBearerAuth()
@@ -83,7 +85,6 @@ export class UserController {
           password: 'Abc1234!',
           status: UserStatus.ACTIVE,
           roles: [{id: '013f92b0-4a53-45cb-8eca-e66089a3919f'}],
-          sites: ['Concentra Medical Centers'],
         },
       },
     },
@@ -97,23 +98,12 @@ export class UserController {
     // Construct userToRoles.
     if (body.roles && body.roles.length > 0) {
       body.userToRoles = {
-        create: body.roles.map((role) => {
+        create: body.roles.map(role => {
           return {roleId: role.id};
         }),
       };
       // Remove roleIds since it is not a field of User model.
       delete body.roles;
-    }
-
-    // Construct locations.
-    if (body.sites) {
-      body.locations = {
-        create: body.sites.map((site) => {
-          return {site: site};
-        }),
-      };
-      // Remove sites since it is not a field of User model.
-      delete body.sites;
     }
 
     return await this.userService.create({
@@ -132,11 +122,18 @@ export class UserController {
   @Get('')
   @RequirePermission(PermissionAction.read, Prisma.ModelName.User)
   @ApiQuery({name: 'name', type: 'string'})
+  @ApiQuery({name: 'roleId', type: 'string'})
   @ApiQuery({name: 'page', type: 'number'})
   @ApiQuery({name: 'pageSize', type: 'number'})
   async getUsers(
-    @Query() query: {name?: string; page?: string; pageSize?: string}
-  ): Promise<User[]> {
+    @Query()
+    query: {
+      name?: string;
+      roleId?: string;
+      page?: string;
+      pageSize?: string;
+    }
+  ) {
     // [step 1] Construct where argument.
     let where: Prisma.UserWhereInput | undefined;
     const whereConditions: object[] = [];
@@ -144,6 +141,13 @@ export class UserController {
       const name = query.name.trim();
       if (name.length > 0) {
         whereConditions.push({username: {contains: name}});
+      }
+    }
+
+    if (query.roleId) {
+      const roleId = query.roleId.trim();
+      if (verifyUuid(roleId)) {
+        whereConditions.push({userToRoles: {some: {roleId: roleId}}});
       }
     }
 
@@ -171,22 +175,19 @@ export class UserController {
     }
 
     // [step 3] Get users.
-    const users = await this.userService.findMany({
-      // orderBy: {
-      //   _relevance: {
-      //     fields: ['username'],
-      //     search: 'database',
-      //     sort: 'asc',
-      //   },
-      // },
+    const [users, total] = await this.userService.findManyWithTotal({
       where: where,
       take: take,
       skip: skip,
-      include: {userToRoles: {include: {role: true}}, locations: true},
+      include: {
+        userToRoles: {include: {role: true}},
+        profiles: true,
+        locations: true,
+      },
     });
 
     // [step 4] Return users with roles.
-    return users.map((user) => {
+    const records = users.map(user => {
       if (user['userToRoles']) {
         user['roles'] = user['userToRoles'].map((userToRole: UserToRole) => {
           return userToRole['role'];
@@ -194,15 +195,10 @@ export class UserController {
       }
       delete user['userToRoles'];
 
-      if (user['locations']) {
-        user['sites'] = user['locations'].map((location: Location) => {
-          return location.site;
-        });
-      }
-      delete user['locations'];
-
-      return user;
+      return this.userService.withoutPassword(user);
     });
+
+    return formatPaginationResponse({records, total, query});
   }
 
   @Get(':userId')
@@ -213,10 +209,14 @@ export class UserController {
     description: 'The uuid of the user.',
     example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
   })
-  async getUser(@Param('userId') userId: string): Promise<User | null> {
+  async getUser(@Param('userId') userId: string) {
     const user = await this.userService.findUniqueOrThrow({
       where: {id: userId},
-      include: {userToRoles: {include: {role: true}}, locations: true},
+      include: {
+        userToRoles: {include: {role: true}},
+        profiles: true,
+        locations: true,
+      },
     });
 
     if (user['userToRoles']) {
@@ -226,14 +226,7 @@ export class UserController {
     }
     delete user['userToRoles'];
 
-    if (user['locations']) {
-      user['sites'] = user['locations'].map((location: Location) => {
-        return location.site;
-      });
-    }
-    delete user['locations'];
-
-    return user;
+    return this.userService.withoutPassword(user);
   }
 
   @Patch(':userId')
@@ -273,7 +266,7 @@ export class UserController {
     if (body.roles && Array.isArray(body.roles)) {
       body.userToRoles = {
         deleteMany: {}, // First, delete all existing UserToRole records.
-        create: body.roles.map((role) => {
+        create: body.roles.map(role => {
           return {roleId: role.id};
         }), // Then, create new UserToRole records.
       };
@@ -285,7 +278,7 @@ export class UserController {
     if (body.sites) {
       body.locations = {
         deleteMany: {},
-        create: body.sites.map((site) => {
+        create: body.sites.map(site => {
           return {site: site};
         }),
       };
@@ -320,11 +313,13 @@ export class UserController {
     description: 'The uuid of the user.',
     example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
   })
-  async getUserProfiles(@Param('userId') userId: string): Promise<User> {
-    return await this.userService.findUniqueOrThrow({
+  async getUserProfiles(@Param('userId') userId: string) {
+    const user = await this.userService.findUniqueOrThrow({
       where: {id: userId},
       include: {profiles: true},
     });
+
+    return this.userService.withoutPassword(user);
   }
 
   @Get(':userId/roles')
@@ -335,10 +330,12 @@ export class UserController {
     description: 'The uuid of the user.',
     example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
   })
-  async getUserRoles(@Param('userId') userId: string): Promise<User> {
-    return await this.userService.findUniqueOrThrowWithRoles({
+  async getUserRoles(@Param('userId') userId: string) {
+    const user = await this.userService.findUniqueOrThrowWithRoles({
       where: {id: userId},
     });
+
+    return this.userService.withoutPassword(user);
   }
 
   @Patch(':userId/change-password')
@@ -374,13 +371,9 @@ export class UserController {
     @Body() body: {currentPassword: string; newPassword: string}
   ): Promise<User> {
     // [step 1] Guard statement.
-    if (
-      !('userId' in body) ||
-      !('currentPassword' in body) ||
-      !('newPassword' in body)
-    ) {
+    if (!('currentPassword' in body) || !('newPassword' in body)) {
       throw new BadRequestException(
-        "Please carry 'userId', 'currentPassword' and 'newPassword' in the request body."
+        "Please carry 'currentPassword' and 'newPassword' in the request body."
       );
     }
 
@@ -394,9 +387,7 @@ export class UserController {
     // [step 3] Verify the current password.
     const user = await this.userService.findUnique({where: {id: userId}});
     if (!user) {
-      throw new BadRequestException(
-        'Invalid combination of username and password.'
-      );
+      throw new NotFoundException('Not found the user.');
     }
     const match = await compareHash(body.currentPassword, user.password);
     if (match === false) {

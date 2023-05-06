@@ -46,7 +46,7 @@ export class PermissionController {
       a: {
         summary: '1. Create',
         value: {
-          resource: Prisma.ModelName.JobApplication,
+          resource: Prisma.ModelName.UserProfile,
           action: PermissionAction.read,
           where: {state: {in: ['StateA', 'StateB']}},
           trustedEntityType: TrustedEntityType.USER,

@@ -139,7 +139,7 @@ export class JobApplicationController {
     // [step 2] Fetch preset where regtax(in seed.ts) for each role.
     let where: Prisma.JobApplicationWhereInput | undefined;
     const whereConditions: object[] = [];
-    permissions.map((permission) => {
+    permissions.map(permission => {
       if (permission.where) {
         whereConditions.push(permission.where as object);
       }
@@ -171,7 +171,7 @@ export class JobApplicationController {
       request,
       Prisma.ModelName.JobApplication
     );
-    permissions.map((permission) => {
+    permissions.map(permission => {
       if (permission.where) {
         whereConditions.push(permission.where as object);
       }
@@ -275,7 +275,7 @@ export class JobApplicationController {
       take: take,
       skip: skip,
       include: {
-        candidate: {include: {profile: true, location: true}},
+        candidate: {include: {profile: true}},
         workflows: {
           where: {processedByUserIds: {has: userId}},
           include: {payload: true},
@@ -347,7 +347,7 @@ export class JobApplicationController {
       take: take,
       skip: skip,
       include: {
-        candidate: {include: {profile: true, location: true}},
+        candidate: {include: {profile: true}},
         workflows: {
           include: {
             payload: true,
@@ -408,7 +408,7 @@ export class JobApplicationController {
     return await this.jobApplicationService.findUnique({
       where: {id: jobApplicationId},
       include: {
-        candidate: {include: {profile: true, location: true}},
+        candidate: {include: {profile: true}},
         workflows: true,
       },
     });

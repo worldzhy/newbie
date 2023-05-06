@@ -27,32 +27,32 @@ export class JobApplicationWorkflowFileController {
     return await this.jobApplicationWorkflowFileService.findMany({});
   }
 
-  @Get(':FileId')
+  @Get(':fileId')
   @RequirePermission(
     PermissionAction.read,
     Prisma.ModelName.JobApplicationWorkflowFile
   )
   @ApiParam({
-    name: 'FileId',
+    name: 'fileId',
     schema: {type: 'number'},
     description: 'The id of the jobApplicationWorkflowFile.',
     example: 1,
   })
   async getJobApplicationWorkflowFile(
-    @Param('FileId') FileId: string
+    @Param('fileId') fileId: string
   ): Promise<JobApplicationWorkflowFile | null> {
     return await this.jobApplicationWorkflowFileService.findUnique({
-      where: {id: parseInt(FileId)},
+      where: {id: parseInt(fileId)},
     });
   }
 
-  @Patch(':FileId')
+  @Patch(':fileId')
   @RequirePermission(
     PermissionAction.update,
     Prisma.ModelName.JobApplicationWorkflowFile
   )
   @ApiParam({
-    name: 'FileId',
+    name: 'fileId',
     schema: {type: 'number'},
     description: 'The id of the jobApplicationWorkflowFile.',
     example: 1,
@@ -69,31 +69,31 @@ export class JobApplicationWorkflowFileController {
     },
   })
   async updateJobApplicationWorkflowFile(
-    @Param('FileId') FileId: string,
+    @Param('fileId') fileId: string,
     @Body() body: Prisma.JobApplicationWorkflowFileUpdateInput
   ): Promise<JobApplicationWorkflowFile> {
     return await this.jobApplicationWorkflowFileService.update({
-      where: {id: parseInt(FileId)},
+      where: {id: parseInt(fileId)},
       data: body,
     });
   }
 
-  @Delete(':FileId')
+  @Delete(':fileId')
   @RequirePermission(
     PermissionAction.delete,
     Prisma.ModelName.JobApplicationWorkflowFile
   )
   @ApiParam({
-    name: 'FileId',
+    name: 'fileId',
     schema: {type: 'number'},
     description: 'The id of the jobApplicationWorkflowFile.',
     example: 1,
   })
   async deleteJobApplicationWorkflowFile(
-    @Param('FileId') FileId: string
+    @Param('fileId') fileId: string
   ): Promise<JobApplicationWorkflowFile> {
     return await this.jobApplicationWorkflowFileService.delete({
-      where: {id: parseInt(FileId)},
+      where: {id: parseInt(fileId)},
     });
   }
 
