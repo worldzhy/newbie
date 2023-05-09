@@ -40,11 +40,14 @@ export class PrismaExceptionFilter implements ExceptionFilter {
         // Prisma Client (Query Engine) errors
         statusCode = HttpStatus.BAD_REQUEST;
         if (exception.code === 'P2002') {
-          // HTTP response
           return response.status(statusCode).json({
             message: `The ${exception.meta!.target} is already existed.`,
             statusCode: statusCode,
-            prismaCode: exception.code,
+          });
+        } else if (exception.code === 'P2025') {
+          return response.status(statusCode).json({
+            message: exception.meta!.cause,
+            statusCode: statusCode,
           });
         }
       } else if (exception.code.startsWith('P3')) {

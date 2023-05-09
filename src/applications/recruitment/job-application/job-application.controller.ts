@@ -107,14 +107,14 @@ export class JobApplicationController {
         data: {
           jobApplicationId: jobApplication.id,
           state: route.state,
-          nextStep: route.nextStep,
+          nextStep: route.nextView,
           nextRoleId: route.nextRoleId,
           payload: {create: {testType: testType}},
           steps: {
             create: {
-              step: route.step,
+              step: route.view,
               state: route.state,
-              nextStep: route.nextStep,
+              nextStep: route.nextView,
               nextRoleId: route.nextRoleId,
               processedByUserId: userId,
             },

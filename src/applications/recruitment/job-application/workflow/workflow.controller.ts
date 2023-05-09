@@ -245,7 +245,7 @@ export class JobApplicationWorkflowController {
     // [step 3] Get workflow route.
     const route = await this.workflowRouteService.findUniqueOrThrow({
       where: {
-        step_state: {step: body.step, state: body.state},
+        view_state: {view: body.step, state: body.state},
       },
     });
 
@@ -253,9 +253,9 @@ export class JobApplicationWorkflowController {
     const step = await this.jobApplicationWorkflowStepService.create({
       data: {
         workflowId: workflowId,
-        step: route.step,
+        step: route.view,
         state: route.state,
-        nextStep: route.nextStep,
+        nextStep: route.nextView,
         nextRoleId: route.nextRoleId,
         processedByUserId: userId,
         comment: body.comment,
@@ -269,7 +269,7 @@ export class JobApplicationWorkflowController {
         workflow.processedByUserIds.concat(userId);
     }
     updateInput.state = route.state;
-    updateInput.nextStep = route.nextStep;
+    updateInput.nextStep = route.nextView;
     updateInput.nextRoleId = route.nextRoleId;
     if (body.payload) {
       updateInput.payload = {

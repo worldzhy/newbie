@@ -48,40 +48,40 @@ export class WorkflowRouteController {
 
   @Get('')
   @RequirePermission(PermissionAction.read, Prisma.ModelName.WorkflowRoute)
-  @ApiQuery({name: 'step', type: 'string'})
+  @ApiQuery({name: 'view', type: 'string'})
   async getWorkflowRoutes(
-    @Query() query: {step?: string}
+    @Query() query: {view?: string}
   ): Promise<WorkflowRoute[]> {
     // [step 1] Construct where argument.
     let where: Prisma.WorkflowRouteWhereInput | undefined;
-    if (query.step) {
-      where = {step: query.step};
+    if (query.view) {
+      where = {view: query.view};
     }
 
-    // Get workflows.
+    // [step 2] Get workflows.
     return await this.workflowRouteService.findMany({where: where});
   }
 
-  @Get(':workflowId')
+  @Get(':routeId')
   @RequirePermission(PermissionAction.read, Prisma.ModelName.WorkflowRoute)
   @ApiParam({
-    name: 'workflowId',
+    name: 'routeId',
     schema: {type: 'number'},
     description: 'The id of the workflow.',
     example: 11,
   })
   async getWorkflowRoute(
-    @Param('workflowId') workflowId: string
+    @Param('routeId') routeId: string
   ): Promise<WorkflowRoute | null> {
     return await this.workflowRouteService.findUnique({
-      where: {id: parseInt(workflowId)},
+      where: {id: parseInt(routeId)},
     });
   }
 
-  @Patch(':workflowId')
+  @Patch(':routeId')
   @RequirePermission(PermissionAction.update, Prisma.ModelName.WorkflowRoute)
   @ApiParam({
-    name: 'workflowId',
+    name: 'routeId',
     schema: {type: 'number'},
     description: 'The id of the workflow.',
     example: 11,
@@ -98,28 +98,28 @@ export class WorkflowRouteController {
     },
   })
   async updateWorkflowRoute(
-    @Param('workflowId') workflowId: string,
+    @Param('routeId') routeId: string,
     @Body()
     body: Prisma.WorkflowRouteUpdateInput
   ): Promise<WorkflowRoute> {
     return await this.workflowRouteService.update({
-      where: {id: parseInt(workflowId)},
+      where: {id: parseInt(routeId)},
       data: body,
     });
   }
 
-  @Delete(':workflowId')
+  @Delete(':routeId')
   @RequirePermission(PermissionAction.delete, Prisma.ModelName.WorkflowRoute)
   @ApiParam({
-    name: 'workflowId',
+    name: 'routeId',
     schema: {type: 'number'},
     example: 11,
   })
   async deleteWorkflowRoute(
-    @Param('workflowId') workflowId: string
+    @Param('routeId') routeId: string
   ): Promise<WorkflowRoute> {
     return await this.workflowRouteService.delete({
-      where: {id: parseInt(workflowId)},
+      where: {id: parseInt(routeId)},
     });
   }
 

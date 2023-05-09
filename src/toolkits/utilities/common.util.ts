@@ -20,6 +20,16 @@ export function randomLetters(length = 6): string {
   return result;
 }
 
+export function generateRandomCode(length = 6): string {
+  let result = '';
+  const characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const charactersLength = characters.length;
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+}
+
 export async function generateHash(password: string): Promise<string> {
   // The type of env variable is string.
   const saltRounds = parseInt(

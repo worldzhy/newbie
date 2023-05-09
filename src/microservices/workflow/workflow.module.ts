@@ -1,9 +1,9 @@
 import {Module} from '@nestjs/common';
 import {WorkflowStateModule} from './state/state.module';
-import {WorkflowStepModule} from './step/step.module';
+import {WorkflowViewModule} from './view/view.module';
 import {WorkflowRouteModule} from './route/route.module';
 
 @Module({
-  imports: [WorkflowStateModule, WorkflowStepModule, WorkflowRouteModule],
+  imports: [WorkflowStateModule, WorkflowViewModule, WorkflowRouteModule],
 })
 export class WorkflowModule {}

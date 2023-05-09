@@ -1,20 +1,23 @@
 import {APP_FILTER, APP_GUARD} from '@nestjs/core';
 import {Module, MiddlewareConsumer} from '@nestjs/common';
-import {AwsModule} from '../toolkits/aws/aws.module';
-import {ElasticModule} from '../toolkits/elastic/elastic.module';
-import {PrismaModule} from '../toolkits/prisma/prisma.module';
-import {TokenModule} from '../toolkits/token/token.module';
-import {AccountModule} from './account/account.module';
-import {EnginedModule} from './engined/engined.module';
-import {ProjectManagementModule} from './pmgmt/pmgmt.module';
-import {RecruitmentModule} from './recruitment/recruitment.module';
 import {AuthenticationGuard} from './account/authentication/authentication.guard';
 import {AuthorizationGuard} from './account/authorization/authorization.guard';
 import {AllExceptionsFilter} from '../_filter/_all-exceptions.filter';
 import {HttpExceptionFilter} from '../_filter/_http-exception.filter';
 import {PrismaExceptionFilter} from '../_filter/_prisma-exception.filter';
 import {HttpMiddleware} from '../_middleware/_http.middleware';
+
 import {ApplicationController} from './application.controller';
+import {AwsModule} from '../toolkits/aws/aws.module';
+import {ElasticModule} from '../toolkits/elastic/elastic.module';
+import {PrismaModule} from '../toolkits/prisma/prisma.module';
+import {TokenModule} from '../toolkits/token/token.module';
+import {WorkflowModule} from '../microservices/workflow/workflow.module';
+import {AccountModule} from './account/account.module';
+import {EnginedModule} from './engined/engined.module';
+import {ProjectManagementModule} from './pmgmt/pmgmt.module';
+import {RecruitmentModule} from './recruitment/recruitment.module';
+import {TcRequestModule} from './tc-request/request.module';
 
 @Module({
   imports: [
@@ -24,11 +27,12 @@ import {ApplicationController} from './application.controller';
     PrismaModule,
     TokenModule,
 
+    // Microservices
+    WorkflowModule,
+
     // Application
     AccountModule,
-    EnginedModule,
-    ProjectManagementModule,
-    RecruitmentModule,
+    TcRequestModule,
   ],
   providers: [
     // Guards

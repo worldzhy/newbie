@@ -40,19 +40,6 @@ export class UserProfileController {
           suffix: 'PhD',
           birthday: new Date(),
           gender: 'Male',
-          hasPCP: true,
-          address: '456 White Finch St. North Augusta, SC 29860',
-          zipcode: '21000',
-          geoJSON: {
-            type: 'Feature',
-            geometry: {
-              type: 'Point',
-              coordinates: [125.6, 10.1],
-            },
-            properties: {
-              name: 'Dinagat Islands',
-            },
-          },
           websites: {facebook: 'https://www.facebook.com/grace'},
           picture:
             'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Steve_Jobs_Headshot_2010-CROP_%28cropped_2%29.jpg/800px-Steve_Jobs_Headshot_2010-CROP_%28cropped_2%29.jpg',
