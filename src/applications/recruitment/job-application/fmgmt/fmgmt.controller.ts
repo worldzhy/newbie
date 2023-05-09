@@ -19,7 +19,7 @@ import {createReadStream} from 'fs';
 import {FileService} from '../../../../microservices/fmgmt/file/file.service';
 import {getFileManagementConfig} from '../../../../microservices/fmgmt/fmgmt.config';
 import {S3Service} from '../../../../toolkits/aws/s3.service';
-import {randomLetters} from '../../../../toolkits/utilities/common.util';
+import {generateRandomLetters} from '../../../../toolkits/utilities/common.util';
 
 @ApiTags('[Application] Recruitment / Job Application / File Management')
 @ApiBearerAuth()
@@ -43,7 +43,7 @@ export class FileManagementController {
     const bucket = getFileManagementConfig().s3_bucket!;
 
     // [step 1] Generate file name.
-    const filename = Date.now() + randomLetters(4);
+    const filename = Date.now() + generateRandomLetters(4);
 
     // [step 2] Put file to AWS S3.
     const output = await this.s3Service.putObject({

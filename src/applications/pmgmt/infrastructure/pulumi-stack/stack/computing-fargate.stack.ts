@@ -6,7 +6,7 @@
 //   buildResourceOptions,
 //   generateSecurityGroup,
 // } from '../../../../../toolkits/utilities/pulumi.util';
-// import {randomNumbers} from '../../../../../toolkits/utilities/common.util';
+// import {generateRandomNumbers} from '../../../../../toolkits/utilities/common.util';
 // import {verifyRegion} from '../../../../../toolkits/validators/aws.validator';
 // import {getAwsConfig} from '../../../../../_config/_aws.config';
 
@@ -96,7 +96,7 @@
 //       // [step 2-2] Create an application loadbalancer.
 //       const securityGroup = generateSecurityGroup([ecsContainerPort], vpcId);
 //       uniqueResourceName = 'loadbalancer';
-//       const lbName = ecrName + '-lb-' + randomNumbers(4);
+//       const lbName = ecrName + '-lb-' + generateRandomNumbers(4);
 //       const lb = new awsx.lb.ApplicationLoadBalancer(
 //         uniqueResourceName,
 //         {
@@ -157,7 +157,7 @@
 
 //       // [step 3] Create a constainer service.
 //       uniqueResourceName = 'fargate-service';
-//       const fargateServiceName = ecrName + '-service-' + randomNumbers(4);
+//       const fargateServiceName = ecrName + '-service-' + generateRandomNumbers(4);
 //       const containerService = new awsx.ecs.FargateService(
 //         uniqueResourceName,
 //         {

@@ -19,7 +19,7 @@ import {Null_Stack} from './stack/null.stack';
 import {getAwsConfig} from '../../../../toolkits/aws/aws.config';
 import {getPulumiConfig} from './pulumi.config';
 import {PrismaService} from '../../../../toolkits/prisma/prisma.service';
-import {randomNumbers} from '../../../../toolkits/utilities/common.util';
+import {generateRandomNumbers} from '../../../../toolkits/utilities/common.util';
 
 @Injectable()
 export class PulumiStackService {
@@ -45,7 +45,7 @@ export class PulumiStackService {
         if (params.action === 'create') {
           if (!params.args['data']['name']) {
             params.args['data']['name'] =
-              params.args['data']['type'] + '-' + randomNumbers(8);
+              params.args['data']['type'] + '-' + generateRandomNumbers(8);
           }
         }
       }

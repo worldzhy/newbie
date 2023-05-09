@@ -17,7 +17,7 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import {Prisma, Candidate, PermissionAction} from '@prisma/client';
-import {randomNumbers} from '../../../toolkits/utilities/common.util';
+import {generateRandomNumbers} from '../../../toolkits/utilities/common.util';
 import {RequirePermission} from '../../account/authorization/authorization.decorator';
 import {CandidateService} from './candidate.service';
 
@@ -68,7 +68,7 @@ export class CandidateController {
     };
     const profileCreateInput: Prisma.CandidateProfileCreateWithoutCandidateInput =
       {
-        uniqueNumber: randomNumbers(9),
+        uniqueNumber: generateRandomNumbers(9),
         givenName: body.givenName,
         middleName: body.middleName,
         familyName: body.familyName,

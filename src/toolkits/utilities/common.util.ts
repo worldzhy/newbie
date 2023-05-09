@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 
-export function randomNumbers(length = 6): string {
+export function generateRandomNumbers(length = 6): string {
   let result = '';
   const characters = '0123456789';
   const charactersLength = characters.length;
@@ -10,7 +10,7 @@ export function randomNumbers(length = 6): string {
   return result;
 }
 
-export function randomLetters(length = 6): string {
+export function generateRandomLetters(length = 6): string {
   let result = '';
   const characters = 'abcdefghijklmnopqrstuvwxyz';
   const charactersLength = characters.length;

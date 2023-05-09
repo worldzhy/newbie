@@ -76,7 +76,7 @@ export class VerificationCodeService {
     });
 
     // [step 3] Generate and send verification code.
-    const newCode = util.randomNumbers(6);
+    const newCode = util.generateRandomNumbers(6);
     return await this.prisma.verificationCode.create({
       data: {
         email: email,
@@ -113,7 +113,7 @@ export class VerificationCodeService {
     });
 
     // [step 3] Generate and send verification code.
-    const newCode = util.randomNumbers(6);
+    const newCode = util.generateRandomNumbers(6);
 
     // [step 4] Save the code in database.
     return await this.prisma.verificationCode.create({

@@ -21,7 +21,7 @@ import {NetworkHipaa_Stack} from './stack/network-hipaa.stack';
 import {ProductMessageTracker_Stack} from './stack/product-message-tracker.stack';
 import {Null_Stack} from './stack/null.stack';
 import {PrismaService} from '../../../../toolkits/prisma/prisma.service';
-import {randomNumbers} from '../../../../toolkits/utilities/common.util';
+import {generateRandomNumbers} from '../../../../toolkits/utilities/common.util';
 import {getAwsConfig} from '../../../../toolkits/aws/aws.config';
 
 @Injectable()
@@ -51,7 +51,7 @@ export class CloudFormationStackService {
             params.args['data']['name'] = (
               params.args['data']['type'] +
               '-' +
-              randomNumbers(8)
+              generateRandomNumbers(8)
             ).replace(/_/g, '-');
           }
         }
