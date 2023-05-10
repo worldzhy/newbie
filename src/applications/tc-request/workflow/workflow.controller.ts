@@ -17,7 +17,6 @@ import {RoleService} from '../../account/user/role/role.service';
 import {UserService} from '../../account/user/user.service';
 import {WorkflowRouteService} from '../../../microservices/workflow/route/route.service';
 import {TokenService} from '../../../toolkits/token/token.service';
-import {generateRandomCode} from 'src/toolkits/utilities/common.util';
 
 @ApiTags('[Application] Tc Request / Workflow')
 @ApiBearerAuth()
@@ -29,38 +28,6 @@ export class TcWorkflowController {
   private workflowRouteService = new WorkflowRouteService();
   private tcWorkflowService = new TcWorkflowService();
   private tcWorkflowTrailService = new TcWorkflowTrailService();
-
-  @Get('titles')
-  listTitles(): string[] {
-    return ['Miss', 'Mr', 'Mrs', 'Ms', 'Other', 'Unknown'];
-  }
-
-  @Get('purposes')
-  listPurposes(): string[] {
-    return [
-      'Adoption',
-      'Airport ID',
-      'FreeLancer',
-      'Government or Statutory Employment',
-      'International or Regional Travel',
-      'International or Regional Applications',
-      'Naturalisation',
-      'Other',
-      'Private Sector Employment',
-      'Resident Permit Application',
-      'Work Permit Application',
-      'Emergency Travel',
-    ];
-  }
-
-  @Get('scope-of-convictions')
-  listScopeOfConvictions(): string[] {
-    return ['ENHANCED', 'STANDARD'];
-  }
-  @Get('marital-statuses')
-  listMaritalStatuses(): string[] {
-    return ['Divorced', 'Married', 'Separated', 'Single'];
-  }
 
   @Post('')
   @RequirePermission(PermissionAction.create, Prisma.ModelName.TcWorkflow)
