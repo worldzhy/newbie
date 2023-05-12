@@ -106,7 +106,9 @@ export class PrismaExceptionFilter implements ExceptionFilter {
     } else if (exception instanceof Prisma.PrismaClientValidationError) {
       // HTTP response
       response.status(HttpStatus.BAD_REQUEST).json({
-        message: exception.message,
+        // message: exception.message,
+        message:
+          'Validation failed due to missing, incorrect field types, etc.',
         statusCode: HttpStatus.BAD_REQUEST,
       });
     } else {

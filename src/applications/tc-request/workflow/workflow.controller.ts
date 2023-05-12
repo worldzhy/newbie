@@ -5,7 +5,6 @@ import {
   Patch,
   Body,
   Param,
-  Request,
   Post,
 } from '@nestjs/common';
 import {ApiTags, ApiParam, ApiBody} from '@nestjs/swagger';
@@ -15,14 +14,12 @@ import {TcWorkflowTrailService} from './trail/trail.service';
 import {RoleService} from '../../account/user/role/role.service';
 import {UserService} from '../../account/user/user.service';
 import {WorkflowRouteService} from '../../../microservices/workflow/route/route.service';
-import {TokenService} from '../../../toolkits/token/token.service';
 import {Public} from '../../../applications/account/authentication/public/public.decorator';
 
 @ApiTags('[Application] Tc Request / Workflow')
 @Public()
 @Controller('tc-workflows')
 export class TcWorkflowController {
-  private tokenService = new TokenService();
   private userService = new UserService();
   private roleService = new RoleService();
   private workflowRouteService = new WorkflowRouteService();
@@ -121,7 +118,7 @@ export class TcWorkflowController {
           firstName: 'String',
           middleName: 'String',
           lastName: 'String',
-          dateOfBirth: '2022-11-25T06:45:46.768Z',
+          dateOfBirth: '2022-11-25',
           gender: 'String',
           address: 'String',
           island: 'String',
@@ -274,6 +271,9 @@ export class TcWorkflowController {
     updateInput.view = route.view;
     updateInput.state = route.state;
     updateInput.nextView = route.nextView;
+    if (updateInput.dateOfBirth) {
+      updateInput.dateOfBirth = new Date(updateInput.dateOfBirth.toString());
+    }
 
     return await this.tcWorkflowService.update({
       where: {id: workflowId},

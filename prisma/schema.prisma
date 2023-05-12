@@ -1,6 +1,12 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+// !! ------------------------------------------------------------ //
+// !!                       [Prisma] Issues                        //
+// !! ------------------------------------------------------------ //
+// * https://github.com/prisma/prisma/issues/4355                  //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
+
 generator client {
   provider = "prisma-client-js"
 
@@ -345,7 +351,7 @@ model UserProfile {
   middleName     String?
   familyName     String?
   suffix         String?
-  birthday       DateTime?
+  birthday       DateTime?          @db.Date
   gender         UserProfileGender?
   emails         Json[]
   phones         Json[]
@@ -1109,9 +1115,7 @@ enum JobApplicationWorkflowTaskState {
 // !             [Application] TC Request models                  //
 // ! ------------------------------------------------------------ //
 // * TcWorkflow                                                   //
-// * TcWorkflowView                                               //
-// * TcWorkflowForm                                               //
-// * TcWorkflowFile                                               //
+// * TcWorkflowTrail                                              //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
 model TcWorkflow {
@@ -1122,7 +1126,7 @@ model TcWorkflow {
   firstName                  String?
   middleName                 String?
   lastName                   String?
-  dateOfBirth                DateTime?
+  dateOfBirth                DateTime?         @db.Date
   gender                     String?
   address                    String?
   island                     String?
@@ -1137,7 +1141,7 @@ model TcWorkflow {
   typeOfEmployment           String?
   countryOfTravel            String?
   otherPurpose               String?
-  intendedDateOfTravel       DateTime?
+  intendedDateOfTravel       DateTime?         @db.Date
   otherInfomation            String? // If there is no information type "No"
   // VIEW3_PAYMENT
   // VIEW4_TYPE
