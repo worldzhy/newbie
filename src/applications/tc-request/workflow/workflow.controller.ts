@@ -9,10 +9,9 @@ import {
   Post,
 } from '@nestjs/common';
 import {ApiTags, ApiParam, ApiBody} from '@nestjs/swagger';
-import {TcWorkflow, PermissionAction, Prisma} from '@prisma/client';
+import {TcWorkflow, Prisma} from '@prisma/client';
 import {TcWorkflowService} from './workflow.service';
 import {TcWorkflowTrailService} from './trail/trail.service';
-import {RequirePermission} from '../../account/authorization/authorization.decorator';
 import {RoleService} from '../../account/user/role/role.service';
 import {UserService} from '../../account/user/user.service';
 import {WorkflowRouteService} from '../../../microservices/workflow/route/route.service';
@@ -31,7 +30,6 @@ export class TcWorkflowController {
   private tcWorkflowTrailService = new TcWorkflowTrailService();
 
   @Post('')
-  @RequirePermission(PermissionAction.create, Prisma.ModelName.TcWorkflow)
   async createTcWorkflow(@Body() body: any): Promise<TcWorkflow> {
     // [step 1] Get initial route.
     const route = await this.workflowRouteService.findUniqueOrThrow({
@@ -57,13 +55,11 @@ export class TcWorkflowController {
   }
 
   @Get('')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.TcWorkflow)
   async getTcWorkflows(): Promise<TcWorkflow[]> {
     return await this.tcWorkflowService.findMany({});
   }
 
   @Get(':workflowId')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.TcWorkflow)
   @ApiParam({
     name: 'workflowId',
     schema: {type: 'string'},
@@ -106,7 +102,6 @@ export class TcWorkflowController {
   }
 
   @Patch(':workflowId')
-  @RequirePermission(PermissionAction.update, Prisma.ModelName.TcWorkflow)
   @ApiParam({
     name: 'workflowId',
     schema: {type: 'string'},
@@ -303,7 +298,6 @@ export class TcWorkflowController {
   }
 
   @Delete(':workflowId')
-  @RequirePermission(PermissionAction.delete, Prisma.ModelName.TcWorkflow)
   @ApiParam({
     name: 'workflowId',
     schema: {type: 'string'},
