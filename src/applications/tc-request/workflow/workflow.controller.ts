@@ -8,7 +8,7 @@ import {
   Request,
   Post,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {ApiTags, ApiParam, ApiBody} from '@nestjs/swagger';
 import {TcWorkflow, PermissionAction, Prisma} from '@prisma/client';
 import {TcWorkflowService} from './workflow.service';
 import {TcWorkflowTrailService} from './trail/trail.service';
@@ -17,9 +17,10 @@ import {RoleService} from '../../account/user/role/role.service';
 import {UserService} from '../../account/user/user.service';
 import {WorkflowRouteService} from '../../../microservices/workflow/route/route.service';
 import {TokenService} from '../../../toolkits/token/token.service';
+import {Public} from '../../../applications/account/authentication/public/public.decorator';
 
 @ApiTags('[Application] Tc Request / Workflow')
-@ApiBearerAuth()
+@Public()
 @Controller('tc-workflows')
 export class TcWorkflowController {
   private tokenService = new TokenService();

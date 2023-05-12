@@ -1,13 +1,28 @@
 import {Controller, Get} from '@nestjs/common';
-import {ApiTags, ApiBearerAuth} from '@nestjs/swagger';
+import {ApiTags} from '@nestjs/swagger';
+import {Public} from '../../../applications/account/authentication/public/public.decorator';
 
 @ApiTags('[Application] Tc Request / Constant')
-@ApiBearerAuth()
+@Public()
 @Controller('tc-constants')
 export class TcConstantController {
   @Get('titles')
   listTitles(): string[] {
     return ['Miss', 'Mr', 'Mrs', 'Ms', 'Other', 'Unknown'];
+  }
+
+  @Get('genders')
+  listGenders(): string[] {
+    return [
+      'Female',
+      'Gender Fluid',
+      'Male',
+      'Prefer not to say',
+      'Prefer to self-describe',
+      'Third Gender',
+      'Transgender',
+      'Unknown',
+    ];
   }
 
   @Get('purposes')
@@ -30,11 +45,32 @@ export class TcConstantController {
 
   @Get('scope-of-convictions')
   listScopeOfConvictions(): string[] {
-    return ['Enhanced', 'Standard'];
+    return [
+      'ENHANCED - Includes all convictions and cautions including those spent',
+      'STANDARD - Includes all current convictions and cautions',
+    ];
   }
+
   @Get('marital-statuses')
   listMaritalStatuses(): string[] {
     return ['Divorced', 'Married', 'Separated', 'Single'];
   }
+
+  @Get('islands')
+  listIslands(): string[] {
+    return [
+      'Ambergris Cay',
+      'Grand Turk',
+      'Middle Caicos',
+      'North Caicos',
+      'Parrot Cay',
+      'Pine Cay',
+      'Providenciales',
+      'Salt Cay',
+      'South Caicos',
+      'Not on Turks & Caicos Islands',
+    ];
+  }
+
   /* End */
 }

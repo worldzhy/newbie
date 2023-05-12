@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import type {Response} from 'express';
 import {FileInterceptor} from '@nestjs/platform-express';
-import {ApiBearerAuth, ApiParam, ApiTags} from '@nestjs/swagger';
+import {ApiParam, ApiTags} from '@nestjs/swagger';
 import {Express} from 'express';
 import {diskStorage} from 'multer';
 import {createReadStream} from 'fs';
@@ -20,9 +20,10 @@ import {FileService} from '../../../microservices/fmgmt/file/file.service';
 import {getFileManagementConfig} from '../../../microservices/fmgmt/fmgmt.config';
 import {S3Service} from '../../../toolkits/aws/s3.service';
 import {generateRandomLetters} from '../../../toolkits/utilities/common.util';
+import {Public} from '../../../applications/account/authentication/public/public.decorator';
 
 @ApiTags('[Application] Tc Request / File Management')
-@ApiBearerAuth()
+@Public()
 @Controller('tc-fmgmt')
 export class FileManagementController {
   private fileService = new FileService();

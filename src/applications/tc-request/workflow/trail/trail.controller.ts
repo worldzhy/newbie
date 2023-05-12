@@ -8,21 +8,16 @@ import {
   Query,
   BadRequestException,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiBearerAuth,
-  ApiParam,
-  ApiBody,
-  ApiQuery,
-} from '@nestjs/swagger';
+import {ApiTags, ApiParam, ApiBody, ApiQuery} from '@nestjs/swagger';
 import {TcWorkflowTrailService} from './trail.service';
 import {Prisma, TcWorkflowTrail, PermissionAction} from '@prisma/client';
 import {RequirePermission} from '../../../account/authorization/authorization.decorator';
 import {RoleService} from '../../../account/user/role/role.service';
 import {UserService} from '../../../account/user/user.service';
+import {Public} from '../../../../applications/account/authentication/public/public.decorator';
 
 @ApiTags('[Application] Tc Request / Workflow / Trail')
-@ApiBearerAuth()
+@Public()
 @Controller('tc-workflow-trails')
 export class TcWorkflowTrailController {
   private workflowTrailService = new TcWorkflowTrailService();
