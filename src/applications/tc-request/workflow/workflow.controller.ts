@@ -248,45 +248,29 @@ export class TcWorkflowController {
     },
   })
   async updateTcWorkflow(
-    @Request() request: Request,
     @Param('workflowId') workflowId: string,
     @Body()
     body: Prisma.TcWorkflowUpdateInput & {view: string; state: string}
   ): Promise<TcWorkflow> {
-    // [step 1] Get workflow.
-    const workflow = await this.tcWorkflowService.findUniqueOrThrow({
-      where: {id: workflowId},
-    });
-
-    // [step 2] Get current user's id.
-    const {userId} = this.tokenService.decodeToken(
-      this.tokenService.getTokenFromHttpRequest(request)
-    ) as {userId: string};
-
-    // [step 3] Get workflow route.
+    // [step 1] Get workflow route.
     const route = await this.workflowRouteService.findUniqueOrThrow({
       where: {
         view_state: {view: body.view, state: body.state},
       },
     });
 
-    // [step 4] Create workflow trail.
+    // [step 2] Create workflow trail.
     await this.tcWorkflowTrailService.create({
       data: {
         workflowId: workflowId,
         view: route.view,
         state: route.state,
         nextView: route.nextView,
-        processedByUserId: userId,
       },
     });
 
-    // [step 5] Construct workflow's UpdateInput.
+    // [step 3] Construct workflow's UpdateInput.
     const updateInput: Prisma.TcWorkflowUpdateInput = body;
-    if (!workflow.processedByUserIds.includes(userId)) {
-      updateInput.processedByUserIds =
-        workflow.processedByUserIds.concat(userId);
-    }
     updateInput.view = route.view;
     updateInput.state = route.state;
     updateInput.nextView = route.nextView;
