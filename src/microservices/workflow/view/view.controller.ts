@@ -11,9 +11,11 @@ import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {WorkflowView, Prisma, PermissionAction} from '@prisma/client';
 import {RequirePermission} from '../../../applications/account/authorization/authorization.decorator';
 import {WorkflowViewService} from './view.service';
+import {Public} from '../../../applications/account/authentication/public/public.decorator';
 
 @ApiTags('[Microservice] Workflow / View')
 @ApiBearerAuth()
+@Public()
 @Controller('workflow-views')
 export class WorkflowViewController {
   private workflowViewService = new WorkflowViewService();

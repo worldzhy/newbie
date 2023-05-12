@@ -18,9 +18,11 @@ import {
 import {WorkflowRoute, Prisma, PermissionAction} from '@prisma/client';
 import {RequirePermission} from '../../../applications/account/authorization/authorization.decorator';
 import {WorkflowRouteService} from './route.service';
+import {Public} from '../../../applications/account/authentication/public/public.decorator';
 
 @ApiTags('[Microservice] Workflow / Route')
 @ApiBearerAuth()
+@Public()
 @Controller('workflow-routes')
 export class WorkflowRouteController {
   private workflowRouteService = new WorkflowRouteService();
