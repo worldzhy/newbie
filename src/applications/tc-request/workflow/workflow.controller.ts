@@ -15,6 +15,7 @@ import {RoleService} from '../../account/user/role/role.service';
 import {UserService} from '../../account/user/user.service';
 import {WorkflowRouteService} from '../../../microservices/workflow/route/route.service';
 import {Public} from '../../../applications/account/authentication/public/public.decorator';
+import {generateRandomNumbers} from 'src/toolkits/utilities/common.util';
 
 @ApiTags('[Application] Tc Request / Workflow')
 @Public()
@@ -150,7 +151,7 @@ export class TcWorkflowController {
           countryOfTravel: 'String',
           fileIdForTravelProof: 'd8141ece-f242-4288-a60a-8675538549cd',
           otherPurpose: 'String',
-          intendedDateOfTravel: '2022-11-25T06:45:46.768Z',
+          intendedDateOfTravel: '2022-11-25',
           otherInformation: 'String', // If there is no information type "No",
         },
       },
@@ -160,7 +161,8 @@ export class TcWorkflowController {
           view: 'TYPE',
           state: 'SUBMIT',
           // TYPE
-          scopeOfConvictions: 'ENHANCED',
+          scopeOfConvictions:
+            'STANDARD - Includes all current convictions and cautions',
           hasOutsideConviction: true,
           outsideConviction: 'String',
         },
@@ -201,7 +203,7 @@ export class TcWorkflowController {
         },
       },
       g: {
-        summary: 'CITIZEN_TCUK',
+        summary: 'Submit CITIZEN_TCUK',
         value: {
           view: 'CITIZEN_TCUK',
           state: 'YES',
@@ -214,7 +216,7 @@ export class TcWorkflowController {
         },
       },
       h: {
-        summary: 'CITIZEN_TC',
+        summary: 'Submit CITIZEN_TC',
         value: {
           view: 'CITIZEN_TC',
           state: 'SUBMIT',
@@ -224,7 +226,7 @@ export class TcWorkflowController {
         },
       },
       i: {
-        summary: 'CITIZEN_UK',
+        summary: 'Submit CITIZEN_UK',
         value: {
           view: 'CITIZEN_UK',
           state: 'SUBMIT',
@@ -234,13 +236,21 @@ export class TcWorkflowController {
         },
       },
       j: {
-        summary: 'CITIZEN_OTHERS',
+        summary: 'Submit CITIZEN_OTHERS',
         value: {
           view: 'CITIZEN_OTHERS',
           state: 'SUBMIT',
           // CITIZEN_OTHERS
           fileIdOfForeignPassport: 'd8141ece-f242-4288-a60a-8675538549cd',
           fileIdOfForeignCertificate: 'd8141ece-f242-4288-a60a-8675538549cd',
+        },
+      },
+      k: {
+        summary: 'Submit PAYMENT',
+        value: {
+          view: 'PAYMENT',
+          state: 'SUBMIT',
+          // PAYMENT
         },
       },
     },
@@ -279,6 +289,13 @@ export class TcWorkflowController {
       updateInput.intendedDateOfTravel = new Date(
         updateInput.intendedDateOfTravel.toString()
       );
+    }
+
+    // [step 4] If payment is finished, generate registration number.
+    if (updateInput.view === 'PAYMENT' && updateInput.state === 'SUBMIT') {
+      const n1 = generateRandomNumbers(3);
+      const n2 = generateRandomNumbers(7);
+      updateInput.registrationNumber = n1 + '-' + n2;
     }
 
     return await this.tcWorkflowService.update({
