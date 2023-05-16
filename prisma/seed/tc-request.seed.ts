@@ -2,6 +2,7 @@ import {TrustedEntityType} from '@prisma/client';
 import {AccountController} from '../../src/applications/account/account.controller';
 import {RoleController} from '../../src/applications/account/user/role/role.controller';
 import {PermissionController} from '../../src/applications/account/authorization/permission/permission.controller';
+import {WorkflowController} from '../../src/microservices/workflow/workflow.controller';
 import {WorkflowRouteController} from '../../src/microservices/workflow/route/route.controller';
 import {WorkflowViewController} from '../../src/microservices/workflow/view/view.controller';
 import {WorkflowStateController} from '../../src/microservices/workflow/state/state.controller';
@@ -10,37 +11,42 @@ export async function seedForTcRequest() {
   // Seed workflow data.
   console.log('* Creating workflow routes...');
 
+  const workflowController = new WorkflowController();
   const workflowRouteController = new WorkflowRouteController();
   const workflowViewController = new WorkflowViewController();
   const workflowStateController = new WorkflowStateController();
 
+  const workflow = await workflowController.createWorkflow({
+    name: 'TC Workflow for Citizen',
+  });
+
   const views = [
-    {view: 'START'},
-    {view: 'VIEW1_DETAILS'},
-    {view: 'VIEW2_PURPOSE'},
-    {view: 'VIEW3_PAYMENT'},
-    {view: 'VIEW4_TYPE'},
-    {view: 'VIEW5_MARITAL'},
-    {view: 'VIEW6_EMPLOYMENT'},
-    {view: 'VIEW7_TCUK_?'},
-    {view: 'VIEW8_TCUK_YES'},
-    {view: 'VIEW9_TCUK_NO'},
-    {view: 'VIEW10_TCUK_YES_TC'},
-    {view: 'VIEW11_TCUK_YES_UK'},
-    {view: 'VIEW12_COMPLETED'},
-    {view: 'END'},
+    {workflowId: workflow.id, view: 'START', startSign: true},
+    {workflowId: workflow.id, view: 'DETAILS'},
+    {workflowId: workflow.id, view: 'PURPOSE'},
+    {workflowId: workflow.id, view: 'TYPE'},
+    {workflowId: workflow.id, view: 'MARITAL'},
+    {workflowId: workflow.id, view: 'EMPLOYMENT'},
+    {workflowId: workflow.id, view: 'CITIZEN_TCUK_OR_OTHERS'},
+    {workflowId: workflow.id, view: 'CITIZEN_TCUK'},
+    {workflowId: workflow.id, view: 'CITIZEN_OTHERS'},
+    {workflowId: workflow.id, view: 'CITIZEN_TC'},
+    {workflowId: workflow.id, view: 'CITIZEN_UK'},
+    {workflowId: workflow.id, view: 'PAYMENT'},
+    {workflowId: workflow.id, view: 'COMPLETED'},
+    {workflowId: workflow.id, view: 'END'},
   ];
   for (let i = 0; i < views.length; i++) {
     await workflowViewController.createWorkflowView(views[i]);
   }
 
   const states = [
-    {state: 'CONTINUE'},
-    {state: 'SUBMIT'},
-    {state: 'YES'},
-    {state: 'NO'},
-    {state: 'PASS'},
-    {state: 'FAIL'},
+    {workflowId: workflow.id, state: 'CONTINUE'},
+    {workflowId: workflow.id, state: 'SUBMIT'},
+    {workflowId: workflow.id, state: 'YES'},
+    {workflowId: workflow.id, state: 'NO'},
+    {workflowId: workflow.id, state: 'PASS'},
+    {workflowId: workflow.id, state: 'FAIL'},
   ];
   for (let i = 0; i < states.length; i++) {
     await workflowStateController.createWorkflowState(states[i]);
@@ -48,26 +54,102 @@ export async function seedForTcRequest() {
 
   const routes = [
     {
+      workflowId: workflow.id,
       startSign: true,
       view: 'START',
       state: 'CONTINUE',
-      nextView: 'VIEW1_DETAILS',
+      nextView: 'DETAILS',
     },
-    {view: 'VIEW1_DETAILS', state: 'SUBMIT', nextView: 'VIEW2_PURPOSE'},
-    {view: 'VIEW2_PURPOSE', state: 'SUBMIT', nextView: 'VIEW3_PAYMENT'},
-    {view: 'VIEW3_PAYMENT', state: 'SUBMIT', nextView: 'VIEW4_TYPE'},
-    {view: 'VIEW4_TYPE', state: 'SUBMIT', nextView: 'VIEW5_MARITAL'},
-    {view: 'VIEW5_MARITAL', state: 'SUBMIT', nextView: 'VIEW6_EMPLOYMENT'},
-    {view: 'VIEW6_EMPLOYMENT', state: 'SUBMIT', nextView: 'VIEW7_TCUK_'},
-    {view: 'VIEW7_TCUK_?', state: 'YES', nextView: 'VIEW8_TCUK_YES'},
-    {view: 'VIEW7_TCUK_?', state: 'NO', nextView: 'VIEW9_TCUK_NO'},
-    {view: 'VIEW8_TCUK_YES', state: 'YES', nextView: 'VIEW10_TCUK_YES_TC'},
-    {view: 'VIEW8_TCUK_YES', state: 'NO', nextView: 'VIEW11_TCUK_YES_UK'},
-    {view: 'VIEW10_TCUK_YES_TC', state: 'SUBMIT', nextView: 'VIEW12_COMPLETED'},
-    {view: 'VIEW11_TCUK_YES_UK', state: 'SUBMIT', nextView: 'VIEW12_COMPLETED'},
-    {view: 'VIEW9_TCUK_NO', state: 'SUBMIT', nextView: 'VIEW12_COMPLETED'},
-    {view: 'VIEW12_COMPLETED', state: 'PASS', nextView: 'END'},
-    {view: 'VIEW12_COMPLETED', state: 'FAIL', nextView: 'END'},
+    {
+      workflowId: workflow.id,
+      view: 'DETAILS',
+      state: 'SUBMIT',
+      nextView: 'PURPOSE',
+    },
+    {
+      workflowId: workflow.id,
+      view: 'PURPOSE',
+      state: 'SUBMIT',
+      nextView: 'TYPE',
+    },
+    {
+      workflowId: workflow.id,
+      view: 'TYPE',
+      state: 'SUBMIT',
+      nextView: 'MARITAL',
+    },
+    {
+      workflowId: workflow.id,
+      view: 'MARITAL',
+      state: 'SUBMIT',
+      nextView: 'EMPLOYMENT',
+    },
+    {
+      workflowId: workflow.id,
+      view: 'EMPLOYMENT',
+      state: 'SUBMIT',
+      nextView: 'CITIZEN_TCUK_OR_OTHERS',
+    },
+    {
+      workflowId: workflow.id,
+      view: 'CITIZEN_TCUK_OR_OTHERS',
+      state: 'YES',
+      nextView: 'CITIZEN_TCUK',
+    },
+    {
+      workflowId: workflow.id,
+      view: 'CITIZEN_TCUK_OR_OTHERS',
+      state: 'NO',
+      nextView: 'CITIZEN_OTHERS',
+    },
+    {
+      workflowId: workflow.id,
+      view: 'CITIZEN_TCUK',
+      state: 'YES',
+      nextView: 'CITIZEN_TC',
+    },
+    {
+      workflowId: workflow.id,
+      view: 'CITIZEN_TCUK',
+      state: 'NO',
+      nextView: 'CITIZEN_UK',
+    },
+    {
+      workflowId: workflow.id,
+      view: 'CITIZEN_TC',
+      state: 'SUBMIT',
+      nextView: 'PAYMENT',
+    },
+    {
+      workflowId: workflow.id,
+      view: 'CITIZEN_UK',
+      state: 'SUBMIT',
+      nextView: 'PAYMENT',
+    },
+    {
+      workflowId: workflow.id,
+      view: 'CITIZEN_OTHERS',
+      state: 'SUBMIT',
+      nextView: 'PAYMENT',
+    },
+    {
+      workflowId: workflow.id,
+      view: 'PAYMENT',
+      state: 'SUBMIT',
+      nextView: 'COMPLETED',
+    },
+    {
+      workflowId: workflow.id,
+      view: 'COMPLETED',
+      state: 'PASS',
+      nextView: 'END',
+    },
+    {
+      workflowId: workflow.id,
+      view: 'COMPLETED',
+      state: 'FAIL',
+      nextView: 'END',
+    },
   ];
   for (let i = 0; i < routes.length; i++) {
     await workflowRouteController.createWorkflowRoute(routes[i]);

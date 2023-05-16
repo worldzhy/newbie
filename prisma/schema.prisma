@@ -21,7 +21,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["microservice/fmgmt", "microservice/location", "microservice/notification", "microservice/task", "microservice/verification-code", "microservice/workflow", "application/account", "application/engined", "application/pmgmt", "application/recruitment", "application/tc-request"]
+  schemas  = ["microservice/fmgmt", "microservice/location", "microservice/notification", "microservice/order", "microservice/task", "microservice/verification-code", "microservice/workflow", "application/account", "application/engined", "application/pmgmt", "application/recruitment", "application/tc-request"]
 }
 
 // !! ------------------------------------------------------------ //
@@ -114,6 +114,82 @@ model SmsNotification {
   @@schema("microservice/notification")
 }
 
+// !! ------------------------------------------------------------ //
+// !!            [Microservice] Order models                       //
+// !! ------------------------------------------------------------ //
+// * Order                                                         //
+// * OrderItem                                                     //
+// * Customer                                                      //
+// * Address                                                       //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
+
+model Order {
+  id         String      @id @default(cuid())
+  status     OrderStatus
+  totalPrice Float
+  totalTax   Float
+  note       String?
+  items      OrderItem[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  customer   Customer?   @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customerId String?
+
+  @@schema("microservice/order")
+}
+
+enum OrderStatus {
+  WAITING_FOR_PAYMENT
+  PAID
+  DONE
+
+  @@schema("microservice/order")
+}
+
+model OrderItem {
+  id         String   @id @default(cuid())
+  name       String
+  totalPrice Float
+  totalTax   Float
+  pieces     Int?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId    String
+
+  @@schema("microservice/order")
+}
+
+model Customer {
+  id                      String    @id @default(cuid())
+  name                    String?
+  phone                   String?
+  email                   String?
+  identificationNumber    String?
+  taxIdentificationNumber String?
+  addresses               Address[]
+  orders                  Order[]
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  @@schema("microservice/order")
+}
+
+model Address {
+  id         String   @id @default(cuid())
+  address    String
+  city       String
+  state      String?
+  zipcode    String?
+  isPrimary  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customerId String
+
+  @@schema("microservice/order")
+}
+
 // ! ------------------------------------------------------------ //
 // !           [Microservice] Task Management models              //
 // ! ------------------------------------------------------------ //
@@ -189,17 +265,49 @@ enum VerificationCodeUse {
 // ! ------------------------------------------------------------ //
 // !             [Microservice] Workflow models                   //
 // ! ------------------------------------------------------------ //
+// * WorkflowNode                                                 //
 // * WorkflowView                                                 //
 // * WorkflowState                                                //
 // * WorkflowRoute                                                //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
+model Workflow {
+  id        String          @id @default(uuid())
+  name      String          @unique
+  views     WorkflowView[]
+  states    WorkflowState[]
+  routes    WorkflowRoute[]
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@schema("microservice/workflow")
+}
+
+model WorkflowNode {
+  id        Int              @id @default(autoincrement())
+  type      WorkflowNodeType
+  startSign Boolean?         @unique
+  endSign   Boolean?         @unique
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@schema("microservice/workflow")
+}
+
+enum WorkflowNodeType {
+  VIEW
+
+  @@schema("microservice/workflow")
+}
 
 model WorkflowView {
   id         Int                     @id @default(autoincrement())
-  view       String
+  view       String                  @unique
+  startSign  Boolean?                @unique
   components WorkflowViewComponent[]
   createdAt  DateTime                @default(now())
   updatedAt  DateTime                @updatedAt
+  workflow   Workflow                @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId String
 
   @@schema("microservice/workflow")
 }
@@ -217,10 +325,12 @@ model WorkflowViewComponent {
 }
 
 model WorkflowState {
-  id        Int      @id @default(autoincrement())
-  state     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         Int      @id @default(autoincrement())
+  state      String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  workflow   Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId String
 
   @@schema("microservice/workflow")
 }
@@ -235,6 +345,8 @@ model WorkflowRoute {
   nextUserId String?  @db.Uuid // The next user to take over the next step.
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+  workflow   Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId String
 
   @@unique([view, state])
   @@schema("microservice/workflow")
@@ -1116,6 +1228,7 @@ enum JobApplicationWorkflowTaskState {
 // ! ------------------------------------------------------------ //
 // * TcWorkflow                                                   //
 // * TcWorkflowTrail                                              //
+// * TcPayment                                                    //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
 model TcWorkflow {
@@ -1142,7 +1255,8 @@ model TcWorkflow {
   countryOfTravel            String?
   otherPurpose               String?
   intendedDateOfTravel       DateTime?         @db.Date
-  otherInfomation            String? // If there is no information type "No"
+  fileIdForTravelProof       String?
+  otherInformation           String? // If there is no information type "No"
   // VIEW3_PAYMENT
   // VIEW4_TYPE
   scopeOfConvictions         String?

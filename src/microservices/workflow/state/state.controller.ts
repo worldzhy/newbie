@@ -9,7 +9,6 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {WorkflowState, Prisma, PermissionAction} from '@prisma/client';
-import {RequirePermission} from '../../../applications/account/authorization/authorization.decorator';
 import {WorkflowStateService} from './state.service';
 
 @ApiTags('[Microservice] Workflow / State')
@@ -19,7 +18,6 @@ export class WorkflowStateController {
   private workflowStateService = new WorkflowStateService();
 
   @Post('')
-  @RequirePermission(PermissionAction.create, Prisma.ModelName.WorkflowState)
   @ApiBody({
     description: "The 'name' is required in request body.",
     examples: {
@@ -40,13 +38,11 @@ export class WorkflowStateController {
   }
 
   @Get('')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.WorkflowState)
   async getWorkflowStates(): Promise<WorkflowState[]> {
     return await this.workflowStateService.findMany({});
   }
 
   @Get(':stateId')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.WorkflowState)
   @ApiParam({
     name: 'stateId',
     schema: {type: 'number'},
@@ -62,7 +58,6 @@ export class WorkflowStateController {
   }
 
   @Patch(':stateId')
-  @RequirePermission(PermissionAction.update, Prisma.ModelName.WorkflowState)
   @ApiParam({
     name: 'stateId',
     schema: {type: 'number'},
@@ -92,7 +87,6 @@ export class WorkflowStateController {
   }
 
   @Delete(':stateId')
-  @RequirePermission(PermissionAction.delete, Prisma.ModelName.WorkflowState)
   @ApiParam({
     name: 'stateId',
     schema: {type: 'number'},

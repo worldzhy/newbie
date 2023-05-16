@@ -109,11 +109,11 @@ export class TcWorkflowController {
     description: '',
     examples: {
       a: {
-        summary: 'Submit VIEW1_DETAILS',
+        summary: 'Submit DETAILS',
         value: {
-          view: 'VIEW1_DETAILS',
+          view: 'DETAILS',
           state: 'SUBMIT',
-          // VIEW1_DETAILS
+          // DETAILS
           title: 'Miss',
           firstName: 'String',
           middleName: 'String',
@@ -140,36 +140,37 @@ export class TcWorkflowController {
         },
       },
       b: {
-        summary: 'Submit VIEW2_PURPOSE',
+        summary: 'Submit PURPOSE',
         value: {
-          view: 'VIEW2_PURPOSE',
+          view: 'PURPOSE',
           state: 'SUBMIT',
-          // VIEW2_PURPOSE
+          // PURPOSE
           purpose: 'String',
           typeOfEmployment: 'String',
           countryOfTravel: 'String',
+          fileIdForTravelProof: 'd8141ece-f242-4288-a60a-8675538549cd',
           otherPurpose: 'String',
           intendedDateOfTravel: '2022-11-25T06:45:46.768Z',
-          otherInfomation: 'String', // If there is no information type "No",
+          otherInformation: 'String', // If there is no information type "No",
         },
       },
       c: {
-        summary: 'Submit VIEW4_TYPE',
+        summary: 'Submit TYPE',
         value: {
-          view: 'VIEW4_TYPE',
+          view: 'TYPE',
           state: 'SUBMIT',
-          // VIEW4_TYPE
+          // TYPE
           scopeOfConvictions: 'ENHANCED',
           hasOutsideConviction: true,
           outsideConviction: 'String',
         },
       },
       d: {
-        summary: 'Submit VIEW5_MARITAL',
+        summary: 'Submit MARITAL',
         value: {
-          view: 'VIEW5_MARITAL',
+          view: 'MARITAL',
           state: 'SUBMIT',
-          // VIEW5_MARITAL
+          // MARITAL
           maritalStatus: 'Divorced',
           isNameChanged: true, // Name changed through Marriage or Deed Poll
           preFirstName: 'String',
@@ -178,11 +179,11 @@ export class TcWorkflowController {
         },
       },
       e: {
-        summary: 'Submit VIEW6_EMPLOYMENT',
+        summary: 'Submit EMPLOYMENT',
         value: {
-          view: 'VIEW6_EMPLOYMENT',
+          view: 'EMPLOYMENT',
           state: 'SUBMIT',
-          // VIEW6_EMPLOYMENT
+          // EMPLOYMENT
           occupation: 'String',
           nameOfEmployer: 'String',
           addressOfEmployer: 'String',
@@ -191,20 +192,20 @@ export class TcWorkflowController {
         },
       },
       f: {
-        summary: 'Submit VIEW7_TCUK_?',
+        summary: 'Submit CITIZEN_TCUK_OR_OTHERS',
         value: {
-          view: 'VIEW7_TCUK_?',
+          view: 'CITIZEN_TCUK_OR_OTHERS',
           state: 'YES',
-          // VIEW7_TCUK_?
+          // CITIZEN_TCUK_OR_OTHERS
           isTcUk: true,
         },
       },
       g: {
-        summary: 'VIEW8_TCUK_YES',
+        summary: 'CITIZEN_TCUK',
         value: {
-          view: 'VIEW8_TCUK_YES',
+          view: 'CITIZEN_TCUK',
           state: 'YES',
-          // VIEW8_TCUK_YES
+          // CITIZEN_TCUK
           isTc: true,
           fileIdOfTcPassport: 'd8141ece-f242-4288-a60a-8675538549cd',
           fileIdOfTcCertificate: 'd8141ece-f242-4288-a60a-8675538549cd',
@@ -213,31 +214,31 @@ export class TcWorkflowController {
         },
       },
       h: {
-        summary: 'VIEW10_TCUK_YES_TC',
+        summary: 'CITIZEN_TC',
         value: {
-          view: 'VIEW10_TCUK_YES_TC',
+          view: 'CITIZEN_TC',
           state: 'SUBMIT',
-          // VIEW10_TCUK_YES_TC
+          // CITIZEN_TC
           fileIdOfTcPassport: 'd8141ece-f242-4288-a60a-8675538549cd',
           fileIdOfTcCertificate: 'd8141ece-f242-4288-a60a-8675538549cd',
         },
       },
       i: {
-        summary: 'VIEW11_TCUK_YES_UK',
+        summary: 'CITIZEN_UK',
         value: {
-          view: 'VIEW11_TCUK_YES_UK',
+          view: 'CITIZEN_UK',
           state: 'SUBMIT',
-          // VIEW11_TCUK_YES_UK
+          // CITIZEN_UK
           fileIdOfUkPassport: 'd8141ece-f242-4288-a60a-8675538549cd',
           fileIdOfUkCertificate: 'd8141ece-f242-4288-a60a-8675538549cd',
         },
       },
       j: {
-        summary: 'VIEW9_TCUK_NO',
+        summary: 'CITIZEN_OTHERS',
         value: {
-          view: 'VIEW9_TCUK_NO',
+          view: 'CITIZEN_OTHERS',
           state: 'SUBMIT',
-          // VIEW9_TCUK_NO
+          // CITIZEN_OTHERS
           fileIdOfForeignPassport: 'd8141ece-f242-4288-a60a-8675538549cd',
           fileIdOfForeignCertificate: 'd8141ece-f242-4288-a60a-8675538549cd',
         },
@@ -273,6 +274,11 @@ export class TcWorkflowController {
     updateInput.nextView = route.nextView;
     if (updateInput.dateOfBirth) {
       updateInput.dateOfBirth = new Date(updateInput.dateOfBirth.toString());
+    }
+    if (updateInput.intendedDateOfTravel) {
+      updateInput.intendedDateOfTravel = new Date(
+        updateInput.intendedDateOfTravel.toString()
+      );
     }
 
     return await this.tcWorkflowService.update({
