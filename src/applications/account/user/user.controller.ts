@@ -151,8 +151,12 @@ export class UserController {
       }
     }
 
-    if (whereConditions.length > 0) {
+    if (whereConditions.length > 1) {
       where = {OR: whereConditions};
+    } else if (whereConditions.length === 1) {
+      where = whereConditions[0];
+    } else {
+      // where === undefined
     }
 
     // [step 2] Construct take and skip arguments.

@@ -1,11 +1,12 @@
 import {Module} from '@nestjs/common';
 import {TcWorkflowTrailModule} from './trail/trail.module';
-import {TcWorkflowController} from './workflow.controller';
 import {TcWorkflowService} from './workflow.service';
+import {CitizenWorkflowController} from './citizen/citizen.controller';
+import {OfficerWorkflowController} from './officer/officer.controller';
 
 @Module({
   imports: [TcWorkflowTrailModule],
-  controllers: [TcWorkflowController],
+  controllers: [CitizenWorkflowController, OfficerWorkflowController],
   providers: [TcWorkflowService],
   exports: [TcWorkflowService],
 })

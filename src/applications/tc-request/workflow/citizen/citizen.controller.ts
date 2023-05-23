@@ -1,31 +1,25 @@
-import {
-  Controller,
-  Delete,
-  Get,
-  Patch,
-  Body,
-  Param,
-  Post,
-} from '@nestjs/common';
+import {Controller, Get, Patch, Body, Param, Post} from '@nestjs/common';
 import {ApiTags, ApiParam, ApiBody} from '@nestjs/swagger';
 import {TcWorkflow, Prisma} from '@prisma/client';
-import {TcWorkflowService} from './workflow.service';
-import {TcWorkflowTrailService} from './trail/trail.service';
-import {RoleService} from '../../account/user/role/role.service';
-import {UserService} from '../../account/user/user.service';
-import {WorkflowRouteService} from '../../../microservices/workflow/route/route.service';
-import {Public} from '../../../applications/account/authentication/public/public.decorator';
-import {generateRandomNumbers} from 'src/toolkits/utilities/common.util';
+import {TcWorkflowService, WorkflowStatus} from '../workflow.service';
+import {TcWorkflowTrailService} from '../trail/trail.service';
+import {RoleService} from '../../../account/user/role/role.service';
+import {UserService} from '../../../account/user/user.service';
+import {WorkflowRouteService} from '../../../../microservices/workflow/route/route.service';
+import {Public} from '../../../account/authentication/public/public.decorator';
+import {generateRandomNumbers} from '../../../../toolkits/utilities/common.util';
+import {StripeService} from '../../../../microservices/payment/stripe/stripe.service';
 
-@ApiTags('[Application] Tc Request / Workflow')
+@ApiTags('[Application] Tc Request / Workflow / Citizen')
 @Public()
-@Controller('tc-workflows')
-export class TcWorkflowController {
+@Controller('citizen-workflows')
+export class CitizenWorkflowController {
   private userService = new UserService();
   private roleService = new RoleService();
   private workflowRouteService = new WorkflowRouteService();
   private tcWorkflowService = new TcWorkflowService();
   private tcWorkflowTrailService = new TcWorkflowTrailService();
+  private stripeService = new StripeService();
 
   @Post('')
   async createTcWorkflow(@Body() body: any): Promise<TcWorkflow> {
@@ -37,6 +31,7 @@ export class TcWorkflowController {
     // [step 2] Create workflow.
     return await this.tcWorkflowService.create({
       data: {
+        status: WorkflowStatus.PendingFill, // The initial status of the workflow.
         ...body,
         view: route.view,
         state: route.state,
@@ -50,11 +45,6 @@ export class TcWorkflowController {
         },
       },
     });
-  }
-
-  @Get('')
-  async getTcWorkflows(): Promise<TcWorkflow[]> {
-    return await this.tcWorkflowService.findMany({});
   }
 
   @Get(':workflowId')
@@ -251,6 +241,7 @@ export class TcWorkflowController {
           view: 'PAYMENT',
           state: 'SUBMIT',
           // PAYMENT
+          status: WorkflowStatus.PendingReview,
         },
       },
     },
@@ -304,18 +295,18 @@ export class TcWorkflowController {
     });
   }
 
-  @Delete(':workflowId')
+  @Get(':workflowId/payment-intent')
   @ApiParam({
     name: 'workflowId',
     schema: {type: 'string'},
     description: 'The id of the tcWorkflow.',
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
-  async deleteTcWorkflow(
-    @Param('workflowId') workflowId: string
-  ): Promise<TcWorkflow> {
-    return await this.tcWorkflowService.delete({
+  async getWorkflowPaymentIntent(@Param('workflowId') workflowId: string) {
+    const paymentIntent = await this.stripeService.createPaymentIntent(50); // $0.5 usd
+    this.tcWorkflowService.update({
       where: {id: workflowId},
+      data: {paymentClientSecret: paymentIntent.clientSecret},
     });
   }
 

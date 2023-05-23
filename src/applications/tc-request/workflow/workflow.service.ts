@@ -2,6 +2,14 @@ import {Injectable} from '@nestjs/common';
 import {Prisma, TcWorkflow} from '@prisma/client';
 import {PrismaService} from '../../../toolkits/prisma/prisma.service';
 
+export const WorkflowStatus = {
+  PendingFill: 'PendingFill',
+  PendingReview: 'PendingReview',
+  Accepted: 'Accepted',
+  Rejected: 'Rejected',
+  PickedUp: 'PickedUp',
+};
+
 @Injectable()
 export class TcWorkflowService {
   private prisma: PrismaService = new PrismaService();
@@ -20,6 +28,15 @@ export class TcWorkflowService {
 
   async findMany(params: Prisma.TcWorkflowFindManyArgs): Promise<TcWorkflow[]> {
     return await this.prisma.tcWorkflow.findMany(params);
+  }
+
+  async findManyWithTotal(
+    params: Prisma.TcWorkflowFindManyArgs
+  ): Promise<[TcWorkflow[], number]> {
+    return await this.prisma.$transaction([
+      this.prisma.tcWorkflow.findMany(params),
+      this.prisma.tcWorkflow.count({where: params.where}),
+    ]);
   }
 
   async create(params: Prisma.TcWorkflowCreateArgs): Promise<TcWorkflow> {
