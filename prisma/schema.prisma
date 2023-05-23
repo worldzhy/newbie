@@ -1235,6 +1235,7 @@ model TcWorkflow {
   id                         String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   registrationNumber         String?
   status                     String
+  reasonForRefusal           String?
   paymentClientSecret        String?
   // VIEW1_DETAILS
   title                      String?
