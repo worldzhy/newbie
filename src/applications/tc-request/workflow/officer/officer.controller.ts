@@ -155,6 +155,7 @@ export class OfficerWorkflowController {
         summary: 'Reject',
         value: {
           status: WorkflowStatus.Rejected,
+          reasonForRefusal: 'The reason why this request was rejected.',
         },
       },
       c: {
