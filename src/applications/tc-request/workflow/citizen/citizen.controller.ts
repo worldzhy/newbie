@@ -302,12 +302,16 @@ export class CitizenWorkflowController {
     description: 'The id of the tcWorkflow.',
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
-  async getWorkflowPaymentIntent(@Param('workflowId') workflowId: string) {
+  async getWorkflowPaymentIntent(
+    @Param('workflowId') workflowId: string
+  ): Promise<{clientSecret: any}> {
     const paymentIntent = await this.stripeService.createPaymentIntent(50); // $0.5 usd
     this.tcWorkflowService.update({
       where: {id: workflowId},
       data: {paymentClientSecret: paymentIntent.clientSecret},
     });
+
+    return paymentIntent;
   }
 
   /* End */
