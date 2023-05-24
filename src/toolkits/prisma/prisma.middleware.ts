@@ -65,6 +65,22 @@ export async function prismaMiddleware(
       default:
         return next(params);
     }
+  } else if (params.model === Prisma.ModelName.TcWorkflow) {
+    switch (params.action) {
+      case 'update':
+        if (params.args['data']['firstName']) {
+          params.args['data']['fullName'] =
+            params.args['data']['firstName'] +
+            ' ' +
+            (params.args['data']['middleName']
+              ? params.args['data']['middleName'] + ' '
+              : '') +
+            params.args['data']['lastName'];
+        }
+        return next(params);
+      default:
+        return next(params);
+    }
   }
 
   return next(params);

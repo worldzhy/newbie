@@ -1242,6 +1242,7 @@ model TcWorkflow {
   firstName                  String?
   middleName                 String?
   lastName                   String?
+  fullName                   String?
   dateOfBirth                DateTime?         @db.Date
   gender                     String?
   address                    String?
@@ -1297,6 +1298,7 @@ model TcWorkflow {
   // otherNationality           String?
   // statusCardNumber           String?
   // dateOfStatusCardIssue      DateTime?
+  dateOfRequest              DateTime?         @default(now()) @db.Date
   createdAt                  DateTime          @default(now())
   updatedAt                  DateTime          @updatedAt
   // Below fields copy from latest workflow trail.

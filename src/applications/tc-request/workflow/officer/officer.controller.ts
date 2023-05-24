@@ -36,12 +36,20 @@ export class OfficerWorkflowController {
 
   @Get('')
   @ApiQuery({name: 'status', type: 'string'})
+  @ApiQuery({name: 'name', type: 'string'})
+  @ApiQuery({name: 'dateOfRequest', type: 'string'})
+  @ApiQuery({name: 'email', type: 'string'})
+  @ApiQuery({name: 'registrationNumber', type: 'string'})
   @ApiQuery({name: 'page', type: 'number'})
   @ApiQuery({name: 'pageSize', type: 'number'})
   async getTcWorkflows(
     @Query()
     query: {
       status?: string;
+      name?: string;
+      dateOfRequest?: string;
+      email?: string;
+      registrationNumber?: string;
       page?: string;
       pageSize?: string;
     }
@@ -56,8 +64,38 @@ export class OfficerWorkflowController {
       }
     }
 
+    if (query.name) {
+      const name = query.name.trim();
+      if (name.length > 0) {
+        whereConditions.push({fullName: {contains: name}});
+      }
+    }
+
+    if (query.dateOfRequest) {
+      const dateOfRequest = query.dateOfRequest.trim();
+      if (dateOfRequest.length > 0) {
+        whereConditions.push({
+          dateOfRequest: new Date(dateOfRequest.toString()),
+        });
+      }
+    }
+
+    if (query.email) {
+      const email = query.email.trim();
+      if (email.length > 0) {
+        whereConditions.push({email: email});
+      }
+    }
+
+    if (query.registrationNumber) {
+      const registrationNumber = query.registrationNumber.trim();
+      if (registrationNumber.length > 0) {
+        whereConditions.push({registrationNumber: registrationNumber});
+      }
+    }
+
     if (whereConditions.length > 1) {
-      where = {OR: whereConditions};
+      where = {AND: whereConditions};
     } else if (whereConditions.length === 1) {
       where = whereConditions[0];
     } else {
