@@ -79,6 +79,25 @@ export async function prismaMiddleware(
         }
         return next(params);
       default:
+        // Handle existed issue https://github.com/prisma/prisma/issues/17470
+        if (params.action.toString() === 'findUniqueOrThrow') {
+          const result = await next(params);
+          if (result) {
+            if (result.dateOfBirth) {
+              result.dateOfBirth = result.dateOfBirth
+                .toISOString()
+                .split('T')[0];
+            }
+            if (result.intendedDateOfTravel) {
+              result.intendedDateOfTravel = result.intendedDateOfTravel
+                .toISOString()
+                .split('T')[0];
+            }
+            return result;
+          }
+          return null;
+        }
+
         return next(params);
     }
   }
