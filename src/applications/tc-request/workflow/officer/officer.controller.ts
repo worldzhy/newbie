@@ -208,19 +208,38 @@ export class OfficerWorkflowController {
     @Param('workflowId') workflowId: string,
     @Body() body: Prisma.TcWorkflowUpdateInput
   ): Promise<TcWorkflow> {
-    const existed = await this.tcWorkflowService.checkExistence({
-      where: {id: workflowId, status: WorkflowStatus.PendingReview},
+    let canUpdate = false;
+    let errMessage = '';
+    const workflow = await this.tcWorkflowService.findUniqueOrThrow({
+      where: {id: workflowId},
     });
 
-    if (existed) {
+    const newStatus = body.status;
+    if (
+      newStatus === WorkflowStatus.Accepted ||
+      newStatus === WorkflowStatus.Rejected
+    ) {
+      if (workflow.status === WorkflowStatus.PendingReview) {
+        canUpdate = true;
+      } else {
+        errMessage = 'It is not allowed to review since it is not completed.';
+      }
+    } else if (newStatus === WorkflowStatus.PickedUp) {
+      if (workflow.status === WorkflowStatus.Accepted) {
+        canUpdate = true;
+      } else {
+        errMessage =
+          'It is not allowed to pick up since it has not been reviewed.';
+      }
+    }
+
+    if (canUpdate) {
       return await this.tcWorkflowService.update({
         where: {id: workflowId},
         data: body,
       });
     } else {
-      throw new BadRequestException(
-        'This request is not allowed to review since it is not completed.'
-      );
+      throw new BadRequestException(errMessage);
     }
   }
 
