@@ -24,7 +24,7 @@ import {TokenService} from '../../../../toolkits/token/token.service';
 @ApiTags('[Application] Tc Request / Workflow / File')
 @ApiBearerAuth()
 @Controller('workflow-files')
-export class FileManagementController {
+export class TcWorkflowFileController {
   private tokenService = new TokenService();
   private fileService = new FileService();
   private s3Service = new S3Service();
