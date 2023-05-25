@@ -7,6 +7,7 @@ import {
   Param,
   BadRequestException,
   Query,
+  Request,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -19,7 +20,8 @@ import {TcWorkflow, Prisma} from '@prisma/client';
 import {TcWorkflowService, WorkflowStatus} from '../workflow.service';
 import {RoleService} from '../../../account/user/role/role.service';
 import {UserService} from '../../../account/user/user.service';
-import {formatPaginationResponse} from 'src/toolkits/format/pagination.format';
+import {formatPaginationResponse} from '../../../../toolkits/format/pagination.format';
+import {TokenService} from '../../../../toolkits/token/token.service';
 
 @ApiTags('[Application] Tc Request / Workflow / Officer')
 @ApiBearerAuth()
@@ -27,6 +29,7 @@ import {formatPaginationResponse} from 'src/toolkits/format/pagination.format';
 export class OfficerWorkflowController {
   private userService = new UserService();
   private roleService = new RoleService();
+  private tokenService = new TokenService();
   private tcWorkflowService = new TcWorkflowService();
 
   @Get('statuses')
@@ -121,14 +124,28 @@ export class OfficerWorkflowController {
       skip = 0;
     }
 
-    // [step 3] Get users.
-    const [users, total] = await this.tcWorkflowService.findManyWithTotal({
+    // [step 3] Get many.
+    const [workflows, total] = await this.tcWorkflowService.findManyWithTotal({
       where: where,
       take: take,
       skip: skip,
     });
 
-    return formatPaginationResponse({records: users, total, query});
+    for (let i = 0; i < workflows.length; i++) {
+      const workflow = workflows[i];
+      workflow['processedByUsers'] = [];
+      for (let j = 0; j < workflow.processedByUserIds.length; j++) {
+        const userId = workflow.processedByUserIds[j];
+        const user = await this.userService.findUnique({where: {id: userId}});
+        if (user) {
+          workflow['processedByUsers'] = workflow['processedByUsers'].concat(
+            user?.username
+          );
+        }
+      }
+    }
+
+    return formatPaginationResponse({records: workflows, total, query});
   }
 
   @Get(':workflowId')
@@ -205,6 +222,7 @@ export class OfficerWorkflowController {
     },
   })
   async updateTcWorkflow(
+    @Request() request: Request,
     @Param('workflowId') workflowId: string,
     @Body() body: Prisma.TcWorkflowUpdateInput
   ): Promise<TcWorkflow> {
@@ -214,6 +232,7 @@ export class OfficerWorkflowController {
       where: {id: workflowId},
     });
 
+    // [step 1] Guard statements.
     const newStatus = body.status;
     if (
       newStatus === WorkflowStatus.Accepted ||
@@ -221,6 +240,11 @@ export class OfficerWorkflowController {
     ) {
       if (workflow.status === WorkflowStatus.PendingReview) {
         canUpdate = true;
+      } else if (
+        workflow.status === WorkflowStatus.Accepted ||
+        workflow.status === WorkflowStatus.Rejected
+      ) {
+        errMessage = 'It is not allowed to review since it has been reviewed.';
       } else {
         errMessage = 'It is not allowed to review since it is not completed.';
       }
@@ -233,14 +257,26 @@ export class OfficerWorkflowController {
       }
     }
 
-    if (canUpdate) {
-      return await this.tcWorkflowService.update({
-        where: {id: workflowId},
-        data: body,
-      });
-    } else {
+    if (!canUpdate) {
       throw new BadRequestException(errMessage);
     }
+
+    // [step 2] Update workflow.
+    const {userId} = this.tokenService.decodeToken(
+      this.tokenService.getTokenFromHttpRequest(request)
+    ) as {userId: string};
+
+    const updateInput: Prisma.TcWorkflowUpdateInput = body;
+
+    if (!workflow.processedByUserIds.includes(userId)) {
+      updateInput.processedByUserIds =
+        workflow.processedByUserIds.concat(userId);
+    }
+
+    return await this.tcWorkflowService.update({
+      where: {id: workflowId},
+      data: updateInput,
+    });
   }
 
   @Delete(':workflowId')
