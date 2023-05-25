@@ -9,6 +9,7 @@ import {WorkflowRouteService} from '../../../../microservices/workflow/route/rou
 import {Public} from '../../../account/authentication/public/public.decorator';
 import {generateRandomNumbers} from '../../../../toolkits/utilities/common.util';
 import {StripeService} from '../../../../microservices/payment/stripe/stripe.service';
+import {FolderService} from '../../../../microservices/fmgmt/folder/folder.service';
 
 @ApiTags('[Application] Tc Request / Workflow / Citizen')
 @Public()
@@ -17,6 +18,7 @@ export class CitizenWorkflowController {
   private userService = new UserService();
   private roleService = new RoleService();
   private workflowRouteService = new WorkflowRouteService();
+  private folderService = new FolderService();
   private tcWorkflowService = new TcWorkflowService();
   private tcWorkflowTrailService = new TcWorkflowTrailService();
   private stripeService = new StripeService();
@@ -28,10 +30,31 @@ export class CitizenWorkflowController {
       where: {startSign: true}, // Get the starting point of the process.
     });
 
-    // [step 2] Create workflow.
+    // [step 2] Generate registration number.
+    let registrationNumber = '';
+    while (registrationNumber === '') {
+      registrationNumber =
+        generateRandomNumbers(3) + '-' + generateRandomNumbers(7);
+      const existed = await this.tcWorkflowService.checkExistence({
+        where: {registrationNumber: registrationNumber},
+      });
+
+      if (existed) {
+        registrationNumber = '';
+      }
+    }
+
+    // [step 3] Create folder for this citizen.
+    const folder = await this.folderService.create({
+      data: {name: registrationNumber},
+    });
+
+    // [step 4] Create workflow.
     return await this.tcWorkflowService.create({
       data: {
         status: WorkflowStatus.PendingFill, // The initial status of the workflow.
+        registrationNumber: registrationNumber,
+        folderId: folder.id,
         ...body,
         view: route.view,
         state: route.state,
@@ -280,13 +303,6 @@ export class CitizenWorkflowController {
       updateInput.intendedDateOfTravel = new Date(
         updateInput.intendedDateOfTravel.toString()
       );
-    }
-
-    // [step 4] If payment is finished, generate registration number.
-    if (updateInput.view === 'PAYMENT' && updateInput.state === 'SUBMIT') {
-      const n1 = generateRandomNumbers(3);
-      const n2 = generateRandomNumbers(7);
-      updateInput.registrationNumber = n1 + '-' + n2;
     }
 
     return await this.tcWorkflowService.update({

@@ -34,7 +34,7 @@ export class FolderService {
     return await this.prisma.folder.delete(params);
   }
 
-  async checkExistence(id: string) {
+  async checkExistence(id: number) {
     const count = await this.prisma.folder.count({
       where: {id},
     });
