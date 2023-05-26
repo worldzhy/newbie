@@ -38,7 +38,7 @@ export class OfficerWorkflowController {
   }
 
   @Get('')
-  @ApiQuery({name: 'status', type: 'string'})
+  @ApiQuery({name: 'statuses', type: 'string', isArray: true})
   @ApiQuery({name: 'name', type: 'string'})
   @ApiQuery({name: 'dateOfRequest', type: 'string'})
   @ApiQuery({name: 'email', type: 'string'})
@@ -48,7 +48,7 @@ export class OfficerWorkflowController {
   async getTcWorkflows(
     @Query()
     query: {
-      status?: string;
+      statuses?: string[];
       name?: string;
       dateOfRequest?: string;
       email?: string;
@@ -60,11 +60,8 @@ export class OfficerWorkflowController {
     // [step 1] Construct where argument.
     let where: Prisma.UserWhereInput | undefined;
     const whereConditions: object[] = [];
-    if (query.status) {
-      const status = query.status.trim();
-      if (status.length > 0) {
-        whereConditions.push({status: status});
-      }
+    if (query.statuses && query.statuses.length > 0) {
+      whereConditions.push({status: query.statuses});
     }
 
     if (query.name) {

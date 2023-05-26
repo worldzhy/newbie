@@ -67,9 +67,10 @@ export class TcWorkflowFileController {
     // [step 3] Generate file name and put file to AWS S3.
     const filename = Date.now() + generateRandomLetters(4);
     const bucket = getFileManagementConfig().s3_bucket!;
+    const s3Key = folder.name + '/' + filename;
     const output = await this.s3Service.putObject({
       Bucket: bucket,
-      Key: folder.name + '/' + filename,
+      Key: s3Key,
       Body: file.buffer,
     });
 
@@ -80,7 +81,7 @@ export class TcWorkflowFileController {
         mimeType: file.mimetype,
         size: file.size,
         s3Bucket: bucket,
-        s3Key: filename,
+        s3Key: folder.name + '/' + filename,
         s3Response: output as object,
         folderId: workflow.folderId,
       },
@@ -112,9 +113,7 @@ export class TcWorkflowFileController {
         'https://' +
         getFileManagementConfig().cloudfront_domain +
         '/' +
-        file['folder'].name +
-        '/' +
-        file.originalName,
+        file.s3Key,
       token: token,
     };
   }
