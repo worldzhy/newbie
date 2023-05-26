@@ -61,7 +61,7 @@ export class OfficerWorkflowController {
     let where: Prisma.UserWhereInput | undefined;
     const whereConditions: object[] = [];
     if (query.statuses && query.statuses.length > 0) {
-      whereConditions.push({status: query.statuses});
+      whereConditions.push({status: {in: query.statuses}});
     }
 
     if (query.name) {
