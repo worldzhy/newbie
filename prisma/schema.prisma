@@ -35,7 +35,7 @@ model File {
   id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   originalName String
   mimeType     String
-  size         Int
+  size         Int?
   localPath    String? // Contains path and filename.
   localName    String?
   s3Bucket     String
@@ -1239,6 +1239,7 @@ model TcWorkflow {
   reasonForRefusal           String?
   paymentClientSecret        String?
   folderId                   Int
+  fileIdForCertificate       String?
   // VIEW1_DETAILS
   title                      String?
   firstName                  String?
@@ -1291,15 +1292,15 @@ model TcWorkflow {
   // VIEW9_TCUK_NO
   fileIdOfForeignPassport    String?           @db.Uuid
   fileIdOfForeignCertificate String?           @db.Uuid
-  // passportNumber             String?
-  // dateOfIssue                DateTime?
-  // dateOfExpiry               DateTime?
-  // countryOfIssue             String?
-  // placeOfBirth               String?
+  passportNumber             String?
+  dateOfIssue                DateTime?         @db.Date
+  dateOfExpiry               DateTime?         @db.Date
+  countryOfIssue             String?
+  placeOfBirth               String?
   // nationality                String
   // otherNationality           String?
-  // statusCardNumber           String?
-  // dateOfStatusCardIssue      DateTime?
+  statusCardNumber           String?
+  dateOfStatusCardIssue      DateTime?         @db.Date
   dateOfRequest              DateTime?         @default(now()) @db.Date
   createdAt                  DateTime          @default(now())
   updatedAt                  DateTime          @updatedAt

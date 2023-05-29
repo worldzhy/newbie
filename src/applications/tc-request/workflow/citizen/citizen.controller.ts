@@ -142,15 +142,6 @@ export class CitizenWorkflowController {
           mobile: 'String',
           email: 'String', //  If you have made previous Certificate of Character applications, the email you enter here will replace any you have previously entered. This means that all email correspondence we send regarding previous applications will now be sent to this address.,
           fileIdForRecentPhoto: 'd8141ece-f242-4288-a60a-8675538549cd',
-          // passportNumber: 'String',
-          // dateOfIssue: '2022-11-25T06:45:46.768Z',
-          // dateOfExpiry: '2022-11-25T06:45:46.768Z',
-          // countryOfIssue: 'String',
-          // placeOfBirth: 'String',
-          // nationality: 'String',
-          // otherNationality: 'String',
-          // statusCardNumber: 'String',
-          // dateOfStatusCardIssue: '2022-11-25T06:45:46.768Z',
         },
       },
       b: {
@@ -236,6 +227,15 @@ export class CitizenWorkflowController {
           // CITIZEN_TC
           fileIdOfTcPassport: 'd8141ece-f242-4288-a60a-8675538549cd',
           fileIdOfTcCertificate: 'd8141ece-f242-4288-a60a-8675538549cd',
+          passportNumber: 'LSKJFLFJF232',
+          dateOfIssue: '2022-11-25',
+          dateOfExpiry: '2022-11-25',
+          countryOfIssue: 'String',
+          placeOfBirth: 'String',
+          // nationality: 'String',
+          // otherNationality: 'String',
+          statusCardNumber: 'String',
+          dateOfStatusCardIssue: '2022-11-25',
         },
       },
       i: {
@@ -302,6 +302,17 @@ export class CitizenWorkflowController {
     if (updateInput.intendedDateOfTravel) {
       updateInput.intendedDateOfTravel = new Date(
         updateInput.intendedDateOfTravel.toString()
+      );
+    }
+    if (updateInput.dateOfIssue) {
+      updateInput.dateOfIssue = new Date(updateInput.dateOfIssue.toString());
+    }
+    if (updateInput.dateOfExpiry) {
+      updateInput.dateOfExpiry = new Date(updateInput.dateOfExpiry.toString());
+    }
+    if (updateInput.dateOfStatusCardIssue) {
+      updateInput.dateOfStatusCardIssue = new Date(
+        updateInput.dateOfStatusCardIssue.toString()
       );
     }
 
