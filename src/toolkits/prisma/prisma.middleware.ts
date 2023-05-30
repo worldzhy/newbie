@@ -93,6 +93,26 @@ export async function prismaMiddleware(
                 .toISOString()
                 .split('T')[0];
             }
+            if (result.dateOfExpiry) {
+              result.dateOfExpiry = result.dateOfExpiry
+                .toISOString()
+                .split('T')[0];
+            }
+            if (result.dateOfIssue) {
+              result.dateOfIssue = result.dateOfIssue
+                .toISOString()
+                .split('T')[0];
+            }
+            if (result.dateOfStatusCardIssue) {
+              result.dateOfStatusCardIssue = result.dateOfStatusCardIssue
+                .toISOString()
+                .split('T')[0];
+            }
+            if (result.dateOfRequest) {
+              result.dateOfRequest = result.dateOfRequest
+                .toISOString()
+                .split('T')[0];
+            }
             return result;
           }
           return null;

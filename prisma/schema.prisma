@@ -1301,7 +1301,7 @@ model TcWorkflow {
   // otherNationality           String?
   statusCardNumber           String?
   dateOfStatusCardIssue      DateTime?         @db.Date
-  dateOfRequest              DateTime?         @default(now()) @db.Date
+  dateOfRequest              DateTime          @default(now()) @db.Date
   createdAt                  DateTime          @default(now())
   updatedAt                  DateTime          @updatedAt
   // Below fields copy from latest workflow trail.
