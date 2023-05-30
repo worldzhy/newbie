@@ -1,6 +1,14 @@
-import {Controller, Get, Patch, Body, Param, Post} from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Patch,
+  Body,
+  Param,
+  Post,
+  BadRequestException,
+} from '@nestjs/common';
 import {ApiTags, ApiParam, ApiBody} from '@nestjs/swagger';
-import {TcWorkflow, Prisma} from '@prisma/client';
+import {TcWorkflow, Prisma, Order} from '@prisma/client';
 import {TcWorkflowService, WorkflowStatus} from '../workflow.service';
 import {TcWorkflowTrailService} from '../trail/trail.service';
 import {RoleService} from '../../../account/user/role/role.service';
@@ -8,8 +16,11 @@ import {UserService} from '../../../account/user/user.service';
 import {WorkflowRouteService} from '../../../../microservices/workflow/route/route.service';
 import {Public} from '../../../account/authentication/public/public.decorator';
 import {generateRandomNumbers} from '../../../../toolkits/utilities/common.util';
-import {StripeService} from '../../../../microservices/payment/stripe/stripe.service';
 import {FolderService} from '../../../../microservices/fmgmt/folder/folder.service';
+import {OrderService} from '../../../../microservices/order/order.service';
+import {StripePaymentIntentService} from '../../../../microservices/order/payment/stripe/payment-intent.service';
+
+const APPLICATION_FEE = 2000;
 
 @ApiTags('[Application] Tc Request / Workflow / Citizen')
 @Public()
@@ -21,7 +32,8 @@ export class CitizenWorkflowController {
   private folderService = new FolderService();
   private tcWorkflowService = new TcWorkflowService();
   private tcWorkflowTrailService = new TcWorkflowTrailService();
-  private stripeService = new StripeService();
+  private orderService = new OrderService();
+  private stripePaymentIntentService = new StripePaymentIntentService();
 
   @Post('')
   async createTcWorkflow(@Body() body: any): Promise<TcWorkflow> {
@@ -262,7 +274,7 @@ export class CitizenWorkflowController {
         summary: 'Submit PAYMENT',
         value: {
           view: 'PAYMENT',
-          state: 'SUBMIT',
+          state: 'PAYMENT_SUCCEEDED',
           // PAYMENT
           status: WorkflowStatus.PendingReview,
         },
@@ -274,6 +286,40 @@ export class CitizenWorkflowController {
     @Body()
     body: Prisma.TcWorkflowUpdateInput & {view: string; state: string}
   ): Promise<TcWorkflow> {
+    // [step 0] Check payment.
+    if (body.view === 'PAYMENT' && body.state === 'PAYMENT_SUCCEEDED') {
+      const workflow = await this.tcWorkflowService.findUniqueOrThrow({
+        where: {id: workflowId},
+      });
+      if (!workflow.orderId) {
+        throw new BadRequestException('Payment has not been finished.');
+      }
+      const stripePaymentIntents =
+        await this.stripePaymentIntentService.findMany({
+          where: {orderId: workflow.orderId},
+        });
+
+      let paymentComplete = false;
+      for (let i = 0; i < stripePaymentIntents.length; i++) {
+        const paymentIntent = await this.stripePaymentIntentService.retrieve(
+          stripePaymentIntents[i].id
+        );
+        if (
+          paymentIntent.status === 'succeeded' &&
+          APPLICATION_FEE === paymentIntent.amount
+        ) {
+          paymentComplete = true;
+          break;
+        }
+      }
+
+      if (paymentComplete === false) {
+        throw new BadRequestException(
+          'Payment has not been finished correctly.'
+        );
+      }
+    }
+
     // [step 1] Get workflow route.
     const route = await this.workflowRouteService.findUniqueOrThrow({
       where: {
@@ -332,13 +378,36 @@ export class CitizenWorkflowController {
   async getWorkflowPaymentIntent(
     @Param('workflowId') workflowId: string
   ): Promise<{clientSecret: any}> {
-    const paymentIntent = await this.stripeService.createPaymentIntent(50); // $0.5 usd
-    this.tcWorkflowService.update({
+    // [step 1] Get workflow.
+    const workflow = await this.tcWorkflowService.findUniqueOrThrow({
       where: {id: workflowId},
-      data: {paymentClientSecret: paymentIntent.clientSecret},
     });
 
-    return paymentIntent;
+    // [step 2] Get order.
+    let order: Order;
+    if (workflow.orderId) {
+      order = await this.orderService.findUniqueOrThrow({
+        where: {id: workflow.orderId},
+      });
+    } else {
+      order = await this.orderService.create({
+        data: {
+          totalPrice: APPLICATION_FEE, // $20 usd
+          currency: 'usd',
+        },
+      });
+
+      await this.tcWorkflowService.update({
+        where: {id: workflowId},
+        data: {orderId: order.id},
+      });
+    }
+
+    // [step 3] Generate stripe payment intent.
+    return await this.stripePaymentIntentService.generate({
+      orderId: order.id,
+      orderAmount: order.totalPrice,
+    });
   }
 
   /* End */

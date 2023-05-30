@@ -10,6 +10,12 @@ export class OrderService {
     return await this.prisma.order.findUnique(params);
   }
 
+  async findUniqueOrThrow(
+    params: Prisma.OrderFindUniqueOrThrowArgs
+  ): Promise<Order> {
+    return await this.prisma.order.findUniqueOrThrow(params);
+  }
+
   async findMany(params: Prisma.OrderFindManyArgs): Promise<Order[]> {
     return await this.prisma.order.findMany(params);
   }
@@ -26,5 +32,6 @@ export class OrderService {
     return await this.prisma.order.delete(params);
   }
 
+  creat;
   /* End */
 }

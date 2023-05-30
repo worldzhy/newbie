@@ -45,6 +45,8 @@ export async function seedForTcRequest() {
     {workflowId: workflow.id, state: 'SUBMIT'},
     {workflowId: workflow.id, state: 'YES'},
     {workflowId: workflow.id, state: 'NO'},
+    {workflowId: workflow.id, state: 'PAYMENT_SUCCEEDED'},
+    {workflowId: workflow.id, state: 'PAYMENT_FAILED'},
     {workflowId: workflow.id, state: 'PASS'},
     {workflowId: workflow.id, state: 'FAIL'},
   ];
@@ -135,8 +137,14 @@ export async function seedForTcRequest() {
     {
       workflowId: workflow.id,
       view: 'PAYMENT',
-      state: 'SUBMIT',
+      state: 'PAYMENT_SUCCEEDED',
       nextView: 'COMPLETED',
+    },
+    {
+      workflowId: workflow.id,
+      view: 'PAYMENT',
+      state: 'PAYMENT_FAILED',
+      nextView: 'PAYMENT',
     },
     {
       workflowId: workflow.id,
