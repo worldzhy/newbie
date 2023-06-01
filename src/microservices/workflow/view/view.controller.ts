@@ -10,7 +10,7 @@ import {
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {WorkflowView, Prisma} from '@prisma/client';
 import {WorkflowViewService} from './view.service';
-import {Public} from '../../../applications/account/authentication/public/public.decorator';
+import {Public} from '../../../application/account/authentication/public/public.decorator';
 
 @ApiTags('[Microservice] Workflow / View')
 @ApiBearerAuth()

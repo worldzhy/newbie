@@ -1,8 +1,8 @@
 import {TrustedEntityType} from '@prisma/client';
-import {AccountController} from '../../src/applications/account/account.controller';
-import {RoleController} from '../../src/applications/account/user/role/role.controller';
-import {PermissionController} from '../../src/applications/account/authorization/permission/permission.controller';
-import {ProjectController} from '../../src/applications/pmgmt/project/project.controller';
+import {AccountController} from '../../src/application/account/account.controller';
+import {RoleController} from '../../src/application/account/user/role/role.controller';
+import {PermissionController} from '../../src/application/account/authorization/permission/permission.controller';
+import {ProjectController} from '../../src/application/pmgmt/project/project.controller';
 
 export async function seedForPmgmt() {
   // Seed account data.

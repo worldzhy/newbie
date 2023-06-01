@@ -1,8 +1,8 @@
 import {PermissionAction, Prisma, TrustedEntityType} from '@prisma/client';
-import {AccountController} from '../../src/applications/account/account.controller';
-import {OrganizationController} from '../../src/applications/account/user/organization/organization.controller';
-import {RoleController} from '../../src/applications/account/user/role/role.controller';
-import {PermissionController} from '../../src/applications/account/authorization/permission/permission.controller';
+import {AccountController} from '../../src/application/account/account.controller';
+import {OrganizationController} from '../../src/application/account/user/organization/organization.controller';
+import {RoleController} from '../../src/application/account/user/role/role.controller';
+import {PermissionController} from '../../src/application/account/authorization/permission/permission.controller';
 import {WorkflowController} from '../../src/microservices/workflow/workflow.controller';
 import {WorkflowRouteController} from '../../src/microservices/workflow/route/route.controller';
 import {WorkflowViewController} from '../../src/microservices/workflow/view/view.controller';

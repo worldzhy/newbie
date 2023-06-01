@@ -1,7 +1,7 @@
 import {ConsoleLogger} from '@nestjs/common';
 import {getServerConfig} from '../../config';
-import {SqsService} from '../../toolkits/aws/sqs.service';
-import {getAwsSqsConfig} from '../../toolkits/aws/sqs.config';
+import {SqsService} from '../../toolkit/aws/sqs/sqs.service';
+import {getAwsSqsConfig} from '../../toolkit/aws/sqs/sqs.config';
 
 /**
  * [1] Logs in development environment will output to stdout.

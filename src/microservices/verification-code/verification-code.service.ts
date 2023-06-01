@@ -1,12 +1,12 @@
 import {Injectable} from '@nestjs/common';
-import {PrismaService} from '../../toolkits/prisma/prisma.service';
+import {PrismaService} from '../../toolkit/prisma/prisma.service';
 import {
   Prisma,
   VerificationCode,
   VerificationCodeStatus,
   VerificationCodeUse,
 } from '@prisma/client';
-import * as util from '../../toolkits/utilities/common.util';
+import * as util from '../../toolkit/utilities/common.util';
 
 // Todo: We do not support inactivate verification code automatically now.
 

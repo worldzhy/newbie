@@ -17,7 +17,7 @@ import {
 } from '@nestjs/swagger';
 import {WorkflowRoute, Prisma} from '@prisma/client';
 import {WorkflowRouteService} from './route.service';
-import {Public} from '../../../applications/account/authentication/public/public.decorator';
+import {Public} from '../../../application/account/authentication/public/public.decorator';
 
 @ApiTags('[Microservice] Workflow / Route')
 @ApiBearerAuth()

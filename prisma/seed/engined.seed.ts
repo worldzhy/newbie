@@ -5,12 +5,12 @@ import {
   Prisma,
   TrustedEntityType,
 } from '@prisma/client';
-import {AccountController} from '../../src/applications/account/account.controller';
-import {RoleController} from '../../src/applications/account/user/role/role.controller';
-import {PermissionController} from '../../src/applications/account/authorization/permission/permission.controller';
-import {PostgresqlDatasourceController} from '../../src/applications/engined/datasource/postgresql/postgresql-datasource.controller';
-import {ElasticsearchDatasourceController} from '../../src/applications/engined/datasource/elasticsearch/elasticsearch-datasource.controller';
-import {DatatransPipelineController} from '../../src/applications/engined/datatrans/pipeline/pipeline.controller';
+import {AccountController} from '../../src/application/account/account.controller';
+import {RoleController} from '../../src/application/account/user/role/role.controller';
+import {PermissionController} from '../../src/application/account/authorization/permission/permission.controller';
+import {PostgresqlDatasourceController} from '../../src/application/engined/datasource/postgresql/postgresql-datasource.controller';
+import {ElasticsearchDatasourceController} from '../../src/application/engined/datasource/elasticsearch/elasticsearch-datasource.controller';
+import {DatatransPipelineController} from '../../src/application/engined/datatrans/pipeline/pipeline.controller';
 
 export async function seedForEngined() {
   // Seed account data.

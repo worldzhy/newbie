@@ -1,12 +1,31 @@
 import {Module} from '@nestjs/common';
-import {WorkflowStateModule} from './state/state.module';
-import {WorkflowViewModule} from './view/view.module';
-import {WorkflowRouteModule} from './route/route.module';
+import {WorkflowController} from './workflow.controller';
+import {WorkflowStateController} from './state/state.controller';
+import {WorkflowViewController} from './view/view.controller';
+import {WorkflowRouteController} from './route/route.controller';
 import {WorkflowService} from './workflow.service';
+import {WorkflowStateService} from './state/state.service';
+import {WorkflowViewService} from './view/view.service';
+import {WorkflowRouteService} from './route/route.service';
 
 @Module({
-  imports: [WorkflowStateModule, WorkflowViewModule, WorkflowRouteModule],
-  providers: [WorkflowService],
-  exports: [WorkflowService],
+  controllers: [
+    WorkflowController,
+    WorkflowStateController,
+    WorkflowViewController,
+    WorkflowRouteController,
+  ],
+  providers: [
+    WorkflowService,
+    WorkflowStateService,
+    WorkflowViewService,
+    WorkflowRouteService,
+  ],
+  exports: [
+    WorkflowService,
+    WorkflowStateService,
+    WorkflowViewService,
+    WorkflowRouteService,
+  ],
 })
 export class WorkflowModule {}

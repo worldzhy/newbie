@@ -17,7 +17,7 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import {PermissionAction, Prisma, Location} from '@prisma/client';
-import {RequirePermission} from '../../applications/account/authorization/authorization.decorator';
+import {RequirePermission} from '../../application/account/authorization/authorization.decorator';
 import {LocationService} from './location.service';
 
 @ApiTags('[Microservice] Location')

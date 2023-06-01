@@ -9,8 +9,8 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {Prisma, Task} from '@prisma/client';
-import {getAwsSqsConfig} from 'src/toolkits/aws/sqs.config';
-import {SqsService} from '../../toolkits/aws/sqs.service';
+import {getAwsSqsConfig} from 'src/toolkit/aws/sqs/sqs.config';
+import {SqsService} from '../../toolkit/aws/sqs/sqs.service';
 import {TaskService} from './task.service';
 
 @ApiTags('[Microservice] Task')

@@ -6,8 +6,8 @@ import {
   SendMessagesCommandOutput,
 } from '@aws-sdk/client-pinpoint';
 import {SmsNotification, Prisma} from '@prisma/client';
-import {PrismaService} from '../../../toolkits/prisma/prisma.service';
-import {getAwsPinpointConfig} from '../../../toolkits/aws/pinpoint.config';
+import {PrismaService} from '../../../toolkit/prisma/prisma.service';
+import {getAwsPinpointConfig} from '../../../toolkit/aws/pinpoint/pinpoint.config';
 
 @Injectable()
 export class SmsNotificationService {
@@ -98,7 +98,7 @@ export class SmsNotificationService {
     messageType?: string; // 'TRANSACTIONAL' or 'PROMOTIONAL'
   }): SendMessagesCommandInput {
     const addresses: {[phone: string]: {ChannelType: string}} = {};
-    data.phones.map((phone) => {
+    data.phones.map(phone => {
       addresses[phone] = {
         ChannelType: 'SMS',
       };

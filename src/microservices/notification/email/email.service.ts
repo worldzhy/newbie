@@ -6,8 +6,8 @@ import {
   SendMessagesCommandOutput,
 } from '@aws-sdk/client-pinpoint';
 import {EmailNotification, Prisma} from '@prisma/client';
-import {PrismaService} from '../../../toolkits/prisma/prisma.service';
-import {getAwsPinpointConfig} from '../../../toolkits/aws/pinpoint.config';
+import {PrismaService} from '../../../toolkit/prisma/prisma.service';
+import {getAwsPinpointConfig} from '../../../toolkit/aws/pinpoint/pinpoint.config';
 
 @Injectable()
 export class EmailNotificationService {
@@ -111,7 +111,7 @@ export class EmailNotificationService {
     html?: string;
   }): SendMessagesCommandInput {
     const addresses: {[email: string]: {ChannelType: string}} = {};
-    data.emails.map((email) => {
+    data.emails.map(email => {
       addresses[email] = {
         ChannelType: 'EMAIL',
       };
@@ -149,7 +149,7 @@ export class EmailNotificationService {
     rawData: Uint8Array;
   }): SendMessagesCommandInput {
     const addresses: {[email: string]: {ChannelType: string}} = {};
-    data.emails.map((email) => {
+    data.emails.map(email => {
       addresses[email] = {
         ChannelType: 'EMAIL',
       };

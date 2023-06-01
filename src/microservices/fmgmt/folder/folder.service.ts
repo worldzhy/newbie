@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {Prisma, Folder} from '@prisma/client';
-import {PrismaService} from '../../../toolkits/prisma/prisma.service';
+import {PrismaService} from '../../../toolkit/prisma/prisma.service';
 
 @Injectable()
 export class FolderService {
