@@ -374,8 +374,6 @@ model WorkflowRoute {
 // * EndpointPermission(unused)                                   //
 // * Permission                                                   //
 // * UserToRole                                                   //
-// * UserToPermission                                             //
-// * RoleToPermission                                             //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
 model Organization {
@@ -406,6 +404,7 @@ model Role {
 
   id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name           String
+  description    String?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
   organization   Organization? @relation(fields: [organizationId], references: [id])
@@ -544,11 +543,11 @@ model Permission {
 }
 
 enum PermissionAction {
-  manage // it represents any action
-  create
-  delete
-  read
-  update
+  List
+  Get
+  Create
+  Update
+  Delete
 
   @@schema("application/account")
 }
