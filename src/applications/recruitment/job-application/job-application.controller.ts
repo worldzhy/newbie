@@ -32,10 +32,10 @@ import {RequirePermission} from '../../account/authorization/authorization.decor
 import {CandidateService} from '../candidate/candidate.service';
 import {UserService} from '../../account/user/user.service';
 import {TokenService} from '../../../toolkits/token/token.service';
-import {PermissionService} from '../../../applications/account/authorization/permission/permission.service';
+import {PermissionService} from '../../account/permission/permission.service';
 import {WorkflowRouteService} from '../../../microservices/workflow/route/route.service';
 import {JobApplicationWorkflowService} from './workflow/workflow.service';
-import {RoleService} from 'src/applications/account/user/role/role.service';
+import {RoleService} from 'src/applications/account/role/role.service';
 import {JobApplicationWorkflowFileService} from './workflow/file/file.service';
 
 @ApiTags('[Application] Recruitment / Job Application')

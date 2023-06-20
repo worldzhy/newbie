@@ -23,7 +23,7 @@ import {
 } from '@prisma/client';
 import {PermissionService} from './permission.service';
 
-@ApiTags('[Application] Account / Authorization / Permission')
+@ApiTags('[Application] Account / Permission')
 @ApiBearerAuth()
 @Controller('permissions')
 export class PermissionController {

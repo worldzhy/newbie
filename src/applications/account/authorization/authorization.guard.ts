@@ -7,7 +7,7 @@ import {
   UserToRole,
 } from '@prisma/client';
 import {UserService} from '../user/user.service';
-import {PermissionService} from './permission/permission.service';
+import {PermissionService} from '../permission/permission.service';
 import {PERMISSION_KEY} from './authorization.decorator';
 import {TokenService} from '../../../toolkits/token/token.service';
 

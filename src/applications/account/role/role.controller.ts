@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {Role, Prisma, PermissionAction} from '@prisma/client';
-import {RequirePermission} from '../../authorization/authorization.decorator';
+import {RequirePermission} from '../authorization/authorization.decorator';
 import {RoleService} from './role.service';
 
 @ApiTags('[Application] Account / Role')

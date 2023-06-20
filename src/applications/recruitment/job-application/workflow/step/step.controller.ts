@@ -22,7 +22,7 @@ import {
   PermissionAction,
 } from '@prisma/client';
 import {RequirePermission} from '../../../../account/authorization/authorization.decorator';
-import {RoleService} from '../../../../account/user/role/role.service';
+import {RoleService} from '../../../../account/role/role.service';
 import {UserService} from '../../../../account/user/user.service';
 
 @ApiTags('[Application] Recruitment / Job Application / Workflow Step')

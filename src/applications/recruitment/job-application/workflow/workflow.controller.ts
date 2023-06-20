@@ -14,7 +14,7 @@ import {JobApplicationWorkflowService} from './workflow.service';
 import {JobApplicationWorkflowFileService} from './file/file.service';
 import {JobApplicationWorkflowStepService} from './step/step.service';
 import {RequirePermission} from '../../../account/authorization/authorization.decorator';
-import {RoleService} from '../../../account/user/role/role.service';
+import {RoleService} from '../../../account/role/role.service';
 import {UserService} from '../../../account/user/user.service';
 import {WorkflowRouteService} from '../../../../microservices/workflow/route/route.service';
 import {FileService} from '../../../../microservices/fmgmt/file/file.service';
