@@ -26,7 +26,7 @@ export class CandidateProfileController {
   }
 
   @Post('')
-  @RequirePermission(PermissionAction.create, Prisma.ModelName.CandidateProfile)
+  @RequirePermission(PermissionAction.Create, Prisma.ModelName.CandidateProfile)
   @ApiBody({
     description: 'Create a candidate profile.',
     examples: {
@@ -58,7 +58,7 @@ export class CandidateProfileController {
   }
 
   @Get('')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.CandidateProfile)
+  @RequirePermission(PermissionAction.List, Prisma.ModelName.CandidateProfile)
   async getCandidateProfiles(
     @Query() query: {name?: string; page?: string}
   ): Promise<CandidateProfile[]> {
@@ -101,7 +101,7 @@ export class CandidateProfileController {
   }
 
   @Get(':profileId')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.CandidateProfile)
+  @RequirePermission(PermissionAction.Get, Prisma.ModelName.CandidateProfile)
   @ApiParam({
     name: 'profileId',
     schema: {type: 'string'},
@@ -117,7 +117,7 @@ export class CandidateProfileController {
   }
 
   @Patch(':profileId')
-  @RequirePermission(PermissionAction.update, Prisma.ModelName.CandidateProfile)
+  @RequirePermission(PermissionAction.Update, Prisma.ModelName.CandidateProfile)
   @ApiParam({
     name: 'profileId',
     schema: {type: 'string'},
@@ -158,7 +158,7 @@ export class CandidateProfileController {
   }
 
   @Delete(':profileId')
-  @RequirePermission(PermissionAction.delete, Prisma.ModelName.CandidateProfile)
+  @RequirePermission(PermissionAction.Delete, Prisma.ModelName.CandidateProfile)
   @ApiParam({
     name: 'profileId',
     schema: {type: 'string'},

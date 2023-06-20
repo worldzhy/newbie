@@ -27,7 +27,7 @@ export class LocationController {
   private locationService = new LocationService();
 
   @Post('')
-  @RequirePermission(PermissionAction.create, Prisma.ModelName.Location)
+  @RequirePermission(PermissionAction.Create, Prisma.ModelName.Location)
   @ApiBody({
     description: 'Optional fields are address2 and geoJSON.',
     examples: {
@@ -60,7 +60,7 @@ export class LocationController {
   }
 
   @Get('')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.Location)
+  @RequirePermission(PermissionAction.List, Prisma.ModelName.Location)
   @ApiQuery({name: 'page', type: 'number'})
   @ApiQuery({name: 'pageSize', type: 'number'})
   async getLocations(
@@ -93,7 +93,7 @@ export class LocationController {
   }
 
   @Get(':locationId')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.Location)
+  @RequirePermission(PermissionAction.Get, Prisma.ModelName.Location)
   @ApiParam({
     name: 'locationId',
     schema: {type: 'string'},
@@ -107,7 +107,7 @@ export class LocationController {
   }
 
   @Patch(':locationId')
-  @RequirePermission(PermissionAction.update, Prisma.ModelName.Location)
+  @RequirePermission(PermissionAction.Update, Prisma.ModelName.Location)
   @ApiParam({
     name: 'locationId',
     schema: {type: 'string'},
@@ -150,7 +150,7 @@ export class LocationController {
   }
 
   @Delete(':locationId')
-  @RequirePermission(PermissionAction.delete, Prisma.ModelName.Location)
+  @RequirePermission(PermissionAction.Delete, Prisma.ModelName.Location)
   @ApiParam({
     name: 'locationId',
     schema: {type: 'string'},

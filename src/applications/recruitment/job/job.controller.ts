@@ -62,7 +62,7 @@ export class JobController {
   }
 
   @Post('')
-  @RequirePermission(PermissionAction.create, Prisma.ModelName.Job)
+  @RequirePermission(PermissionAction.Create, Prisma.ModelName.Job)
   @ApiBody({
     description: 'Create a user job.',
     examples: {
@@ -80,13 +80,13 @@ export class JobController {
   }
 
   @Get('')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.Job)
+  @RequirePermission(PermissionAction.List, Prisma.ModelName.Job)
   async getJobs(): Promise<Job[]> {
     return await this.jobService.findMany({});
   }
 
   @Get(':jobId')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.Job)
+  @RequirePermission(PermissionAction.Get, Prisma.ModelName.Job)
   @ApiParam({
     name: 'jobId',
     schema: {type: 'string'},
@@ -98,7 +98,7 @@ export class JobController {
   }
 
   @Patch(':jobId')
-  @RequirePermission(PermissionAction.update, Prisma.ModelName.Job)
+  @RequirePermission(PermissionAction.Update, Prisma.ModelName.Job)
   @ApiParam({
     name: 'jobId',
     schema: {type: 'string'},
@@ -131,7 +131,7 @@ export class JobController {
   }
 
   @Delete(':jobId')
-  @RequirePermission(PermissionAction.delete, Prisma.ModelName.Job)
+  @RequirePermission(PermissionAction.Delete, Prisma.ModelName.Job)
   @ApiParam({
     name: 'jobId',
     schema: {type: 'string'},

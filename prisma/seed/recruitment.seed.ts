@@ -194,7 +194,15 @@ export async function seedForRecruitment() {
     }
     // [Create permissions] In the pending request screen, each role(except Admin) can only see the requests with testings those are waiting to be processed by the role.
     await permissionController.createPermission({
-      action: PermissionAction.read,
+      action: PermissionAction.List,
+      resource: Prisma.ModelName.JobApplication,
+      where: {workflows: {some: {nextRoleId: role.id}}},
+      trustedEntityType: TrustedEntityType.ROLE,
+      trustedEntityId: role.id,
+    });
+
+    await permissionController.createPermission({
+      action: PermissionAction.Get,
       resource: Prisma.ModelName.JobApplication,
       where: {workflows: {some: {nextRoleId: role.id}}},
       trustedEntityType: TrustedEntityType.ROLE,

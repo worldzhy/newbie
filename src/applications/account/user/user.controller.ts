@@ -37,7 +37,7 @@ export class UserController {
   private userService = new UserService();
 
   @Get('count')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.User)
+  @RequirePermission(PermissionAction.List, Prisma.ModelName.User)
   @ApiQuery({name: 'name', type: 'string'})
   async countUsers(@Query() query: {name?: string}): Promise<number> {
     // [step 1] Construct where argument.
@@ -72,7 +72,7 @@ export class UserController {
   }
 
   @Post('')
-  @RequirePermission(PermissionAction.create, Prisma.ModelName.User)
+  @RequirePermission(PermissionAction.Create, Prisma.ModelName.User)
   @ApiBody({
     description: '',
     examples: {
@@ -120,7 +120,7 @@ export class UserController {
   }
 
   @Get('')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.User)
+  @RequirePermission(PermissionAction.List, Prisma.ModelName.User)
   @ApiQuery({name: 'name', type: 'string'})
   @ApiQuery({name: 'roleId', type: 'string'})
   @ApiQuery({name: 'page', type: 'number'})
@@ -206,7 +206,7 @@ export class UserController {
   }
 
   @Get(':userId')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.User)
+  @RequirePermission(PermissionAction.Get, Prisma.ModelName.User)
   @ApiParam({
     name: 'userId',
     schema: {type: 'string'},
@@ -234,7 +234,7 @@ export class UserController {
   }
 
   @Patch(':userId')
-  @RequirePermission(PermissionAction.update, Prisma.ModelName.User)
+  @RequirePermission(PermissionAction.Update, Prisma.ModelName.User)
   @ApiParam({
     name: 'userId',
     schema: {type: 'string'},
@@ -297,7 +297,7 @@ export class UserController {
   }
 
   @Delete(':userId')
-  @RequirePermission(PermissionAction.delete, Prisma.ModelName.User)
+  @RequirePermission(PermissionAction.Delete, Prisma.ModelName.User)
   @ApiParam({
     name: 'userId',
     schema: {type: 'string'},
@@ -310,7 +310,7 @@ export class UserController {
   }
 
   @Get(':userId/profiles')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.User)
+  @RequirePermission(PermissionAction.Get, Prisma.ModelName.User)
   @ApiParam({
     name: 'userId',
     schema: {type: 'string'},
@@ -327,7 +327,7 @@ export class UserController {
   }
 
   @Get(':userId/roles')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.User)
+  @RequirePermission(PermissionAction.Get, Prisma.ModelName.User)
   @ApiParam({
     name: 'userId',
     schema: {type: 'string'},
@@ -343,7 +343,7 @@ export class UserController {
   }
 
   @Patch(':userId/change-password')
-  @RequirePermission(PermissionAction.update, Prisma.ModelName.User)
+  @RequirePermission(PermissionAction.Update, Prisma.ModelName.User)
   @ApiParam({
     name: 'userId',
     schema: {type: 'string'},

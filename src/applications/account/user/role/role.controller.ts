@@ -19,7 +19,7 @@ export class RoleController {
   private roleService = new RoleService();
 
   @Post('')
-  @RequirePermission(PermissionAction.create, Prisma.ModelName.Role)
+  @RequirePermission(PermissionAction.Create, Prisma.ModelName.Role)
   @ApiBody({
     description: "The 'name' is required in request body.",
     examples: {
@@ -40,13 +40,13 @@ export class RoleController {
   }
 
   @Get('')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.Role)
+  @RequirePermission(PermissionAction.List, Prisma.ModelName.Role)
   async getRoles(): Promise<Role[]> {
     return await this.roleService.findMany({});
   }
 
   @Get(':roleId')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.Role)
+  @RequirePermission(PermissionAction.Get, Prisma.ModelName.Role)
   @ApiParam({
     name: 'roleId',
     schema: {type: 'string'},
@@ -60,7 +60,7 @@ export class RoleController {
   }
 
   @Patch(':roleId')
-  @RequirePermission(PermissionAction.update, Prisma.ModelName.Role)
+  @RequirePermission(PermissionAction.Update, Prisma.ModelName.Role)
   @ApiParam({
     name: 'roleId',
     schema: {type: 'string'},
@@ -90,7 +90,7 @@ export class RoleController {
   }
 
   @Delete(':roleId')
-  @RequirePermission(PermissionAction.delete, Prisma.ModelName.Role)
+  @RequirePermission(PermissionAction.Delete, Prisma.ModelName.Role)
   @ApiParam({
     name: 'roleId',
     schema: {type: 'string'},

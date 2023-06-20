@@ -102,7 +102,7 @@ export class JobApplicationWorkflowController {
 
   @Get('')
   @RequirePermission(
-    PermissionAction.read,
+    PermissionAction.List,
     Prisma.ModelName.JobApplicationWorkflow
   )
   async getJobApplicationWorkflows(): Promise<JobApplicationWorkflow[]> {
@@ -111,7 +111,7 @@ export class JobApplicationWorkflowController {
 
   @Get(':workflowId')
   @RequirePermission(
-    PermissionAction.read,
+    PermissionAction.Get,
     Prisma.ModelName.JobApplicationWorkflow
   )
   @ApiParam({
@@ -170,7 +170,7 @@ export class JobApplicationWorkflowController {
 
   @Patch(':workflowId')
   @RequirePermission(
-    PermissionAction.update,
+    PermissionAction.Update,
     Prisma.ModelName.JobApplicationWorkflow
   )
   @ApiParam({
@@ -308,7 +308,7 @@ export class JobApplicationWorkflowController {
 
   @Delete(':workflowId')
   @RequirePermission(
-    PermissionAction.delete,
+    PermissionAction.Delete,
     Prisma.ModelName.JobApplicationWorkflow
   )
   @ApiParam({
@@ -332,7 +332,7 @@ export class JobApplicationWorkflowController {
    */
   @Get(':workflowId/lock')
   @RequirePermission(
-    PermissionAction.read,
+    PermissionAction.Get,
     Prisma.ModelName.JobApplicationWorkflow
   )
   @ApiParam({
@@ -358,7 +358,7 @@ export class JobApplicationWorkflowController {
    */
   @Patch(':workflowId/lock')
   @RequirePermission(
-    PermissionAction.update,
+    PermissionAction.Update,
     Prisma.ModelName.JobApplicationWorkflow
   )
   @ApiParam({
@@ -389,7 +389,7 @@ export class JobApplicationWorkflowController {
    */
   @Patch(':workflowId/unlock')
   @RequirePermission(
-    PermissionAction.update,
+    PermissionAction.Update,
     Prisma.ModelName.JobApplicationWorkflow
   )
   @ApiParam({

@@ -25,7 +25,7 @@ export class TcWorkflowTrailController {
   private roleService = new RoleService();
 
   @Get('')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.TcWorkflowTrail)
+  @RequirePermission(PermissionAction.List, Prisma.ModelName.TcWorkflowTrail)
   @ApiQuery({name: 'workflowId', type: 'string'})
   @ApiQuery({name: 'page', type: 'number'})
   @ApiQuery({name: 'pageSize', type: 'number'})
@@ -96,7 +96,7 @@ export class TcWorkflowTrailController {
   }
 
   @Get(':trailId')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.TcWorkflowTrail)
+  @RequirePermission(PermissionAction.Get, Prisma.ModelName.TcWorkflowTrail)
   @ApiParam({
     name: 'trailId',
     schema: {type: 'number'},
@@ -111,7 +111,7 @@ export class TcWorkflowTrailController {
   }
 
   @Patch(':trailId')
-  @RequirePermission(PermissionAction.update, Prisma.ModelName.TcWorkflowTrail)
+  @RequirePermission(PermissionAction.Update, Prisma.ModelName.TcWorkflowTrail)
   @ApiParam({
     name: 'trailId',
     schema: {type: 'number'},
@@ -150,7 +150,7 @@ export class TcWorkflowTrailController {
   }
 
   @Delete(':trailId')
-  @RequirePermission(PermissionAction.delete, Prisma.ModelName.TcWorkflowTrail)
+  @RequirePermission(PermissionAction.Delete, Prisma.ModelName.TcWorkflowTrail)
   @ApiParam({
     name: 'trailId',
     schema: {type: 'number'},

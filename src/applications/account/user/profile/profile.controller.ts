@@ -26,7 +26,7 @@ export class UserProfileController {
   }
 
   @Post('')
-  @RequirePermission(PermissionAction.create, Prisma.ModelName.UserProfile)
+  @RequirePermission(PermissionAction.Create, Prisma.ModelName.UserProfile)
   @ApiBody({
     description: 'Create a user profile.',
     examples: {
@@ -54,7 +54,7 @@ export class UserProfileController {
   }
 
   @Get('')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.UserProfile)
+  @RequirePermission(PermissionAction.List, Prisma.ModelName.UserProfile)
   async getUserProfiles(
     @Query() query: {name?: string; page?: string}
   ): Promise<UserProfile[]> {
@@ -98,7 +98,7 @@ export class UserProfileController {
   }
 
   @Get(':profileId')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.UserProfile)
+  @RequirePermission(PermissionAction.Get, Prisma.ModelName.UserProfile)
   @ApiParam({
     name: 'profileId',
     schema: {type: 'string'},
@@ -112,7 +112,7 @@ export class UserProfileController {
   }
 
   @Patch(':profileId')
-  @RequirePermission(PermissionAction.update, Prisma.ModelName.UserProfile)
+  @RequirePermission(PermissionAction.Update, Prisma.ModelName.UserProfile)
   @ApiParam({
     name: 'profileId',
     schema: {type: 'string'},
@@ -162,7 +162,7 @@ export class UserProfileController {
   }
 
   @Delete(':profileId')
-  @RequirePermission(PermissionAction.delete, Prisma.ModelName.UserProfile)
+  @RequirePermission(PermissionAction.Delete, Prisma.ModelName.UserProfile)
   @ApiParam({
     name: 'profileId',
     schema: {type: 'string'},

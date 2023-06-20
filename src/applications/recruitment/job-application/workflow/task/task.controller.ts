@@ -42,7 +42,7 @@ export class JobApplicationWorkflowTaskController {
 
   @Post('')
   @RequirePermission(
-    PermissionAction.create,
+    PermissionAction.Create,
     Prisma.ModelName.JobApplicationWorkflowTask
   )
   @ApiBody({
@@ -94,7 +94,7 @@ export class JobApplicationWorkflowTaskController {
 
   @Get('')
   @RequirePermission(
-    PermissionAction.read,
+    PermissionAction.List,
     Prisma.ModelName.JobApplicationWorkflowTask
   )
   @ApiQuery({name: 'page', type: 'number'})
@@ -142,7 +142,7 @@ export class JobApplicationWorkflowTaskController {
 
   @Get(':taskId')
   @RequirePermission(
-    PermissionAction.read,
+    PermissionAction.Get,
     Prisma.ModelName.JobApplicationWorkflowTask
   )
   @ApiParam({
@@ -161,7 +161,7 @@ export class JobApplicationWorkflowTaskController {
 
   @Patch(':taskId')
   @RequirePermission(
-    PermissionAction.update,
+    PermissionAction.Update,
     Prisma.ModelName.JobApplicationWorkflowTask
   )
   @ApiParam({
@@ -193,7 +193,7 @@ export class JobApplicationWorkflowTaskController {
 
   @Delete(':taskId')
   @RequirePermission(
-    PermissionAction.delete,
+    PermissionAction.Delete,
     Prisma.ModelName.JobApplicationWorkflowTask
   )
   @ApiParam({

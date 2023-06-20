@@ -34,7 +34,7 @@ export class PermissionController {
     return Object.values(Prisma.ModelName);
   }
 
-  @Get('acctions')
+  @Get('actions')
   listPermissionActions() {
     return Object.values(PermissionAction);
   }
@@ -47,7 +47,7 @@ export class PermissionController {
         summary: '1. Create',
         value: {
           resource: Prisma.ModelName.UserProfile,
-          action: PermissionAction.read,
+          action: PermissionAction.Get,
           where: {state: {in: ['StateA', 'StateB']}},
           trustedEntityType: TrustedEntityType.USER,
           trustedEntityId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
@@ -115,7 +115,7 @@ export class PermissionController {
         summary: '1. Update name',
         value: {
           resource: Prisma.ModelName.Role,
-          action: PermissionAction.update,
+          action: PermissionAction.Update,
           trustedEntityType: TrustedEntityType.USER,
           trustedEntityId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
         },

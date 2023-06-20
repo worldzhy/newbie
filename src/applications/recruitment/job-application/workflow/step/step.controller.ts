@@ -35,7 +35,7 @@ export class JobApplicationWorkflowStepController {
 
   @Get('')
   @RequirePermission(
-    PermissionAction.read,
+    PermissionAction.List,
     Prisma.ModelName.JobApplicationWorkflowStep
   )
   @ApiQuery({name: 'workflowId', type: 'string'})
@@ -107,7 +107,7 @@ export class JobApplicationWorkflowStepController {
 
   @Get(':stepId')
   @RequirePermission(
-    PermissionAction.read,
+    PermissionAction.Get,
     Prisma.ModelName.JobApplicationWorkflowStep
   )
   @ApiParam({
@@ -125,7 +125,7 @@ export class JobApplicationWorkflowStepController {
 
   @Patch(':stepId')
   @RequirePermission(
-    PermissionAction.update,
+    PermissionAction.Update,
     Prisma.ModelName.JobApplicationWorkflowStep
   )
   @ApiParam({
@@ -167,7 +167,7 @@ export class JobApplicationWorkflowStepController {
 
   @Delete(':stepId')
   @RequirePermission(
-    PermissionAction.delete,
+    PermissionAction.Delete,
     Prisma.ModelName.JobApplicationWorkflowStep
   )
   @ApiParam({

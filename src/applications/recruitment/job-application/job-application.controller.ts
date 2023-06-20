@@ -54,7 +54,7 @@ export class JobApplicationController {
     new JobApplicationWorkflowFileService();
 
   @Post('')
-  @RequirePermission(PermissionAction.create, Prisma.ModelName.JobApplication)
+  @RequirePermission(PermissionAction.Create, Prisma.ModelName.JobApplication)
   @ApiBody({
     description: '',
     examples: {
@@ -128,7 +128,7 @@ export class JobApplicationController {
   }
 
   @Get('count')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.JobApplication)
+  @RequirePermission(PermissionAction.List, Prisma.ModelName.JobApplication)
   async countJobApplications(@Request() request: Request): Promise<number> {
     // [step 1] Get role permission to filter data.
     const permissions = await this.getResourcePermissionsFromHttpRequest(
@@ -155,7 +155,7 @@ export class JobApplicationController {
   }
 
   @Get('')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.JobApplication)
+  @RequirePermission(PermissionAction.List, Prisma.ModelName.JobApplication)
   @ApiQuery({name: 'page', type: 'number'})
   @ApiQuery({name: 'pageSize', type: 'number'})
   async getJobApplications(
@@ -217,7 +217,7 @@ export class JobApplicationController {
   }
 
   @Get('processed/count')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.JobApplication)
+  @RequirePermission(PermissionAction.List, Prisma.ModelName.JobApplication)
   async countProcessedJobApplications(
     @Request() request: Request
   ): Promise<number> {
@@ -235,7 +235,7 @@ export class JobApplicationController {
   }
 
   @Get('processed')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.JobApplication)
+  @RequirePermission(PermissionAction.List, Prisma.ModelName.JobApplication)
   @ApiQuery({name: 'page', type: 'number'})
   @ApiQuery({name: 'pageSize', type: 'number'})
   async getProcessedJobApplications(
@@ -285,7 +285,7 @@ export class JobApplicationController {
   }
 
   @Get('all/count')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.JobApplication)
+  @RequirePermission(PermissionAction.List, Prisma.ModelName.JobApplication)
   @ApiQuery({name: 'page', type: 'number'})
   @ApiQuery({name: 'pageSize', type: 'number'})
   @ApiQuery({name: 'dateRange', type: 'string', isArray: true})
@@ -307,7 +307,7 @@ export class JobApplicationController {
   }
 
   @Get('all')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.JobApplication)
+  @RequirePermission(PermissionAction.List, Prisma.ModelName.JobApplication)
   @ApiQuery({name: 'page', type: 'number'})
   @ApiQuery({name: 'pageSize', type: 'number'})
   @ApiQuery({name: 'dateRange', type: 'string', isArray: true})
@@ -395,7 +395,7 @@ export class JobApplicationController {
   }
 
   @Get(':jobApplicationId')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.JobApplication)
+  @RequirePermission(PermissionAction.Get, Prisma.ModelName.JobApplication)
   @ApiParam({
     name: 'jobApplicationId',
     schema: {type: 'string'},
@@ -415,7 +415,7 @@ export class JobApplicationController {
   }
 
   @Patch(':jobApplicationId')
-  @RequirePermission(PermissionAction.update, Prisma.ModelName.JobApplication)
+  @RequirePermission(PermissionAction.Update, Prisma.ModelName.JobApplication)
   @ApiParam({
     name: 'jobApplicationId',
     schema: {type: 'string'},
@@ -447,7 +447,7 @@ export class JobApplicationController {
   }
 
   @Delete(':jobApplicationId')
-  @RequirePermission(PermissionAction.delete, Prisma.ModelName.JobApplication)
+  @RequirePermission(PermissionAction.Delete, Prisma.ModelName.JobApplication)
   @ApiParam({
     name: 'jobApplicationId',
     schema: {type: 'string'},
@@ -478,8 +478,8 @@ export class JobApplicationController {
       // Provider role only
       if (role.name === 'Provider and Reviewer') {
         additionalPermission = {
-          resource: Prisma.ModelName.JobApplication,
-          action: PermissionAction.read,
+          resource: resource,
+          action: PermissionAction.List,
           //where: {workflows: {some: {steps:{payload {site: {in: user['sites']}}}},
           trustedEntityId: userId,
           trustedEntityType: TrustedEntityType.USER,
@@ -492,7 +492,7 @@ export class JobApplicationController {
     const permissions = await this.permissionService.findMany({
       where: {
         resource: resource,
-        action: PermissionAction.read,
+        action: PermissionAction.List,
         trustedEntityId: {in: roleIds},
         trustedEntityType: TrustedEntityType.ROLE,
       },
