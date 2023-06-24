@@ -34,9 +34,10 @@ export class UserProfileController {
         summary: '1. Create',
         value: {
           userId: '924da395-1921-45fe-b7f5-1198ed78ac24',
-          givenName: 'Mary',
+          prefix: 'Ms',
+          firstName: 'Mary',
           middleName: 'Rose',
-          familyName: 'Johnson',
+          lastName: 'Johnson',
           suffix: 'PhD',
           birthday: new Date(),
           gender: 'Male',
@@ -65,9 +66,9 @@ export class UserProfileController {
       if (name.length > 0) {
         where = {
           OR: [
-            {givenName: {search: name}},
-            {familyName: {search: name}},
+            {firstName: {search: name}},
             {middleName: {search: name}},
+            {lastName: {search: name}},
           ],
         };
       }
@@ -125,9 +126,10 @@ export class UserProfileController {
       a: {
         summary: '1. Update',
         value: {
-          givenName: 'Robert',
+          prefix: 'Mr',
+          firstName: 'Robert',
           middleName: 'William',
-          familyName: 'Smith',
+          lastName: 'Smith',
           suffix: 'PhD',
           birthday: '2019-05-27T11:53:32.118Z',
           gender: 'Female',

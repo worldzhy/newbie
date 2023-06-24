@@ -46,21 +46,21 @@ export async function prismaMiddleware(
     switch (params.action) {
       case 'create':
         params.args['data']['profile']['create']['fullName'] =
-          params.args['data']['profile']['create']['givenName'] +
+          params.args['data']['profile']['create']['firstName'] +
           ' ' +
           (params.args['data']['profile']['create']['middleName']
             ? params.args['data']['profile']['create']['middleName'] + ' '
             : '') +
-          params.args['data']['profile']['create']['familyName'];
+          params.args['data']['profile']['create']['lastName'];
         return next(params);
       case 'update':
         params.args['data']['profile']['update']['fullName'] =
-          params.args['data']['profile']['update']['givenName'] +
+          params.args['data']['profile']['update']['firstName'] +
           ' ' +
           (params.args['data']['profile']['update']['middleName']
             ? params.args['data']['profile']['update']['middleName'] + ' '
             : '') +
-          params.args['data']['profile']['update']['familyName'];
+          params.args['data']['profile']['update']['lastName'];
         return next(params);
       default:
         return next(params);

@@ -34,9 +34,9 @@ export class CandidateProfileController {
         summary: '1. Create',
         value: {
           candidateId: '924da395-1921-45fe-b7f5-1198ed78ac24',
-          givenName: 'Mary',
+          firstName: 'Mary',
           middleName: 'Rose',
-          familyName: 'Johnson',
+          lastName: 'Johnson',
           birthday: new Date(),
           gender: 'Male',
           email: 'mary@hd.com',
@@ -130,9 +130,9 @@ export class CandidateProfileController {
       a: {
         summary: '1. Update',
         value: {
-          givenName: 'Robert',
+          firstName: 'Robert',
           middleName: 'William',
-          familyName: 'Smith',
+          lastName: 'Smith',
           birthday: '2019-05-27T11:53:32.118Z',
           gender: 'Male',
           emails: [{email: 'mary@hd.com'}],

@@ -113,9 +113,9 @@ export class JobController {
         value: {
           email: 'robert.smith@hd.com',
           phone: '131280122',
-          givenName: 'Robert',
+          firstName: 'Robert',
           middleName: 'William',
-          familyName: 'Smith',
+          lastName: 'Smith',
         },
       },
     },

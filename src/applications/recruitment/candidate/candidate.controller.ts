@@ -35,9 +35,9 @@ export class CandidateController {
       a: {
         summary: '1. Create',
         value: {
-          givenName: 'Mary',
+          firstName: 'Mary',
           middleName: 'Rose',
-          familyName: 'Johnson',
+          lastName: 'Johnson',
           birthday: new Date(),
           gender: 'Female',
           email: 'mary@hd.com',
@@ -69,9 +69,9 @@ export class CandidateController {
     const profileCreateInput: Prisma.CandidateProfileCreateWithoutCandidateInput =
       {
         uniqueNumber: generateRandomNumbers(9),
-        givenName: body.givenName,
+        firstName: body.firstName,
         middleName: body.middleName,
-        familyName: body.familyName,
+        lastName: body.lastName,
         birthday: body.birthday,
         gender: body.gender,
         email: body.email,
@@ -292,9 +292,9 @@ export class CandidateController {
       a: {
         summary: '1. Update',
         value: {
-          givenName: 'Robert',
+          firstName: 'Robert',
           middleName: 'William',
-          familyName: 'Smith',
+          lastName: 'Smith',
           birthday: new Date(),
           gender: 'Female',
           email: 'mary@hd.com',
@@ -322,9 +322,9 @@ export class CandidateController {
       data: {
         profile: {
           update: {
-            givenName: body.givenName,
+            firstName: body.firstName,
             middleName: body.middleName,
-            familyName: body.familyName,
+            lastName: body.lastName,
             birthday: body.birthday,
             gender: body.gender,
             email: body.email,

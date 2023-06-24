@@ -76,9 +76,10 @@ export class AccountController {
         summary: '4. Check profile',
         value: {
           profile: {
-            givenName: 'Robert',
+            prefix: 'Mr',
+            firstName: 'Robert',
             middleName: 'William',
-            familyName: 'Smith',
+            lastName: 'Smith',
             suffix: 'PhD',
             birthday: '2019-05-27T11:53:32.118Z',
           },
@@ -173,9 +174,10 @@ export class AccountController {
         summary: '4. Sign up with profile',
         value: {
           profile: {
-            givenName: 'Robert',
+            prefix: 'Mr',
+            firstName: 'Robert',
             middleName: 'William',
-            familyName: 'Smith',
+            lastName: 'Smith',
             suffix: 'PhD',
             birthday: '2019-05-27T11:53:32.118Z',
           },
@@ -328,14 +330,14 @@ export class AccountController {
   @ApiBearerAuth()
   @ApiBody({
     description:
-      "The request body should contain 'giveName', 'middleName', 'familyName' and 'birthday' attributes. The 'suffix' is optional.",
+      "The request body should contain 'giveName', 'middleName', 'lastName' and 'birthday' attributes. The 'suffix' is optional.",
     examples: {
       a: {
         summary: '1. UserProfile with suffix',
         value: {
-          givenName: 'Robert',
+          firstName: 'Robert',
           middleName: 'William',
-          familyName: 'Smith',
+          lastName: 'Smith',
           suffix: 'PhD',
           birthday: '2019-05-27T11:53:32.118Z',
         },
@@ -343,9 +345,9 @@ export class AccountController {
       b: {
         summary: '2. UserProfile without suffix',
         value: {
-          givenName: 'Mary',
+          firstName: 'Mary',
           middleName: 'Rose',
-          familyName: 'Johnson',
+          lastName: 'Johnson',
           birthday: '2019-05-27T11:53:32.118Z',
         },
       },
@@ -354,9 +356,9 @@ export class AccountController {
   async loginByUserProfile(
     @Body()
     body: {
-      givenName: string;
+      firstName: string;
       middleName: string;
-      familyName: string;
+      lastName: string;
       suffix?: string;
       birthday: Date;
     }
@@ -364,9 +366,9 @@ export class AccountController {
     const profileService = new UserProfileService();
 
     // [step 1] It has been confirmed there is only one profile.
-    const {givenName, middleName, familyName, suffix, birthday} = body;
+    const {firstName, middleName, lastName, suffix, birthday} = body;
     const profiles = await profileService.findMany({
-      where: {givenName, middleName, familyName, suffix, birthday},
+      where: {firstName, middleName, lastName, suffix, birthday},
     });
 
     // [step 2] Login with userId.

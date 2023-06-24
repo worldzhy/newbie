@@ -21,16 +21,16 @@ export class AuthProfileStrategy extends PassportStrategy(
   async validate(req: Request): Promise<boolean> {
     // [step 1] Guard statement.
     const profile = req.body;
-    const {givenName, middleName, familyName, suffix, birthday} = profile;
-    if ((givenName && middleName && familyName && birthday) === undefined) {
+    const {firstName, middleName, lastName, suffix, birthday} = profile;
+    if ((firstName && middleName && lastName && birthday) === undefined) {
       throw new UnauthorizedException(
-        'The givenName, middleName, familyName and birthday are required.'
+        'The firstName, middleName, lastName and birthday are required.'
       );
     }
 
     // [step 2] Get profiles.
     const profiles = await this.userProfileService.findMany({
-      where: {givenName, middleName, familyName, suffix, birthday},
+      where: {firstName, middleName, lastName, suffix, birthday},
     });
 
     if (profiles.length === 1) {

@@ -69,7 +69,7 @@ model Folder {
 
 model Location {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  site      String?
+  name      String?
   address   String?
   address2  String?
   city      String?
@@ -466,9 +466,10 @@ enum UserTokenStatus {
 
 model UserProfile {
   id             String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  givenName      String?
+  prefix         String?
+  firstName      String?
   middleName     String?
-  familyName     String?
+  lastName       String?
   suffix         String?
   birthday       DateTime?          @db.Date
   gender         UserProfileGender?
@@ -1047,9 +1048,9 @@ enum CandidateStatus {
 model CandidateProfile {
   id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   uniqueNumber      String
-  givenName         String
+  firstName         String
   middleName        String?
-  familyName        String
+  lastName        String
   fullName          String?
   birthday          DateTime?
   gender            String?

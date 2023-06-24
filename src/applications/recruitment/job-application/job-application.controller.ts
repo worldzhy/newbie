@@ -480,7 +480,6 @@ export class JobApplicationController {
         additionalPermission = {
           resource: resource,
           action: PermissionAction.List,
-          //where: {workflows: {some: {steps:{payload {site: {in: user['sites']}}}},
           trustedEntityId: userId,
           trustedEntityType: TrustedEntityType.USER,
         };
