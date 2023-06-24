@@ -81,7 +81,7 @@ export class AccountController {
             middleName: 'William',
             lastName: 'Smith',
             suffix: 'PhD',
-            birthday: '2019-05-27T11:53:32.118Z',
+            dateOfBirth: '2019-05-27',
           },
         },
       },
@@ -179,7 +179,7 @@ export class AccountController {
             middleName: 'William',
             lastName: 'Smith',
             suffix: 'PhD',
-            birthday: '2019-05-27T11:53:32.118Z',
+            dateOfBirth: '2019-05-27',
           },
         },
       },
@@ -330,7 +330,7 @@ export class AccountController {
   @ApiBearerAuth()
   @ApiBody({
     description:
-      "The request body should contain 'giveName', 'middleName', 'lastName' and 'birthday' attributes. The 'suffix' is optional.",
+      "The request body should contain 'firstName', 'middleName', 'lastName' and 'dateOfBirth' attributes. The 'suffix' is optional.",
     examples: {
       a: {
         summary: '1. UserProfile with suffix',
@@ -339,7 +339,7 @@ export class AccountController {
           middleName: 'William',
           lastName: 'Smith',
           suffix: 'PhD',
-          birthday: '2019-05-27T11:53:32.118Z',
+          dateOfBirth: '2019-05-27',
         },
       },
       b: {
@@ -348,7 +348,7 @@ export class AccountController {
           firstName: 'Mary',
           middleName: 'Rose',
           lastName: 'Johnson',
-          birthday: '2019-05-27T11:53:32.118Z',
+          dateOfBirth: '2019-05-27',
         },
       },
     },
@@ -360,15 +360,15 @@ export class AccountController {
       middleName: string;
       lastName: string;
       suffix?: string;
-      birthday: Date;
+      dateOfBirth: Date;
     }
   ): Promise<UserToken> {
     const profileService = new UserProfileService();
 
     // [step 1] It has been confirmed there is only one profile.
-    const {firstName, middleName, lastName, suffix, birthday} = body;
+    const {firstName, middleName, lastName, suffix, dateOfBirth} = body;
     const profiles = await profileService.findMany({
-      where: {firstName, middleName, lastName, suffix, birthday},
+      where: {firstName, middleName, lastName, suffix, dateOfBirth},
     });
 
     // [step 2] Login with userId.

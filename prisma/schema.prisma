@@ -471,7 +471,7 @@ model UserProfile {
   middleName     String?
   lastName       String?
   suffix         String?
-  birthday       DateTime?          @db.Date
+  dateOfBirth    DateTime?          @db.Date
   gender         UserProfileGender?
   emails         Json[]
   phones         Json[]
@@ -1050,9 +1050,9 @@ model CandidateProfile {
   uniqueNumber      String
   firstName         String
   middleName        String?
-  lastName        String
+  lastName          String
   fullName          String?
-  birthday          DateTime?
+  dateOfBirth       DateTime? @db.Date
   gender            String?
   email             String?
   primaryPhone      String

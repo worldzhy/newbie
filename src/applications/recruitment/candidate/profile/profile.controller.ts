@@ -37,7 +37,7 @@ export class CandidateProfileController {
           firstName: 'Mary',
           middleName: 'Rose',
           lastName: 'Johnson',
-          birthday: new Date(),
+          dateOfBirth: new Date(),
           gender: 'Male',
           email: 'mary@hd.com',
           primaryPhone: '121289182',
@@ -133,7 +133,7 @@ export class CandidateProfileController {
           firstName: 'Robert',
           middleName: 'William',
           lastName: 'Smith',
-          birthday: '2019-05-27T11:53:32.118Z',
+          dateOfBirth: '2019-05-27',
           gender: 'Male',
           emails: [{email: 'mary@hd.com'}],
           phones: [

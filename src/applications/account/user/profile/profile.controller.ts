@@ -39,7 +39,7 @@ export class UserProfileController {
           middleName: 'Rose',
           lastName: 'Johnson',
           suffix: 'PhD',
-          birthday: new Date(),
+          dateOfBirth: new Date(),
           gender: 'Male',
           websites: {facebook: 'https://www.facebook.com/grace'},
           picture:
@@ -131,7 +131,7 @@ export class UserProfileController {
           middleName: 'William',
           lastName: 'Smith',
           suffix: 'PhD',
-          birthday: '2019-05-27T11:53:32.118Z',
+          dateOfBirth: '2019-05-27',
           gender: 'Female',
           hasPCP: true,
           address: '456 White Finch St. North Augusta, SC 29860',
