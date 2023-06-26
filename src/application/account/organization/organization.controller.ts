@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {Organization, PermissionAction, Prisma} from '@prisma/client';
-import {RequirePermission} from '../../authorization/authorization.decorator';
+import {RequirePermission} from '../authorization/authorization.decorator';
 import {OrganizationService} from './organization.service';
 
 @ApiTags('[Application] Account / Organization')
@@ -21,7 +21,7 @@ export class OrganizationController {
   private organizationService = new OrganizationService();
 
   @Post('')
-  @RequirePermission(PermissionAction.create, Prisma.ModelName.Organization)
+  @RequirePermission(PermissionAction.Create, Prisma.ModelName.Organization)
   @ApiBody({
     description: "The 'name' is required in request body.",
     examples: {
@@ -42,7 +42,7 @@ export class OrganizationController {
   }
 
   @Get('')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.Organization)
+  @RequirePermission(PermissionAction.List, Prisma.ModelName.Organization)
   @ApiParam({
     required: false,
     name: 'name',
@@ -102,7 +102,7 @@ export class OrganizationController {
   }
 
   @Get(':organizationId')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.Organization)
+  @RequirePermission(PermissionAction.Get, Prisma.ModelName.Organization)
   @ApiParam({
     name: 'organizationId',
     schema: {type: 'string'},
@@ -118,7 +118,7 @@ export class OrganizationController {
   }
 
   @Patch(':organizationId')
-  @RequirePermission(PermissionAction.update, Prisma.ModelName.Organization)
+  @RequirePermission(PermissionAction.Update, Prisma.ModelName.Organization)
   @ApiParam({
     name: 'organizationId',
     schema: {type: 'string'},
@@ -148,7 +148,7 @@ export class OrganizationController {
   }
 
   @Delete(':organizationId')
-  @RequirePermission(PermissionAction.delete, Prisma.ModelName.Organization)
+  @RequirePermission(PermissionAction.Delete, Prisma.ModelName.Organization)
   @ApiParam({
     name: 'organizationId',
     schema: {type: 'string'},

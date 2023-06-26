@@ -25,7 +25,6 @@ export class AwsIamUser_Stack {
 
   static getStackProgram = (params: {iamUserName: string}) => async () => {
     // [step 1] Guard statement.
-
     // [step 2] Get or create IAM user group.
     let uniqueResourceName: string;
 

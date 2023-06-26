@@ -1,8 +1,8 @@
 import {PermissionAction, Prisma, TrustedEntityType} from '@prisma/client';
 import {AccountController} from '../../src/application/account/account.controller';
-import {OrganizationController} from '../../src/application/account/user/organization/organization.controller';
-import {RoleController} from '../../src/application/account/user/role/role.controller';
-import {PermissionController} from '../../src/application/account/authorization/permission/permission.controller';
+import {OrganizationController} from '../../src/application/account/organization/organization.controller';
+import {RoleController} from '../../src/application/account/role/role.controller';
+import {PermissionController} from '../../src/application/account/permission/permission.controller';
 import {WorkflowController} from '../../src/microservices/workflow/workflow.controller';
 import {WorkflowRouteController} from '../../src/microservices/workflow/route/route.controller';
 import {WorkflowViewController} from '../../src/microservices/workflow/view/view.controller';
@@ -194,7 +194,15 @@ export async function seedForRecruitment() {
     }
     // [Create permissions] In the pending request screen, each role(except Admin) can only see the requests with testings those are waiting to be processed by the role.
     await permissionController.createPermission({
-      action: PermissionAction.read,
+      action: PermissionAction.List,
+      resource: Prisma.ModelName.JobApplication,
+      where: {workflows: {some: {nextRoleId: role.id}}},
+      trustedEntityType: TrustedEntityType.ROLE,
+      trustedEntityId: role.id,
+    });
+
+    await permissionController.createPermission({
+      action: PermissionAction.Get,
       resource: Prisma.ModelName.JobApplication,
       where: {workflows: {some: {nextRoleId: role.id}}},
       trustedEntityType: TrustedEntityType.ROLE,

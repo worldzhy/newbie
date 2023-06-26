@@ -24,7 +24,7 @@ export class CandidateTrainingController {
   //* Create
   @Post('')
   @RequirePermission(
-    PermissionAction.create,
+    PermissionAction.Create,
     Prisma.ModelName.CandidateTraining
   )
   @ApiBody({
@@ -54,14 +54,14 @@ export class CandidateTrainingController {
 
   //* Get many
   @Get('')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.CandidateTraining)
+  @RequirePermission(PermissionAction.List, Prisma.ModelName.CandidateTraining)
   async getCandidateTrainings(): Promise<CandidateTraining[]> {
     return await this.candidateTrainingService.findMany({});
   }
 
   //* Get
   @Get(':trainingId')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.CandidateTraining)
+  @RequirePermission(PermissionAction.Get, Prisma.ModelName.CandidateTraining)
   @ApiParam({
     name: 'trainingId',
     schema: {type: 'string'},
@@ -79,7 +79,7 @@ export class CandidateTrainingController {
   //* Update
   @Patch(':trainingId')
   @RequirePermission(
-    PermissionAction.update,
+    PermissionAction.Update,
     Prisma.ModelName.CandidateTraining
   )
   @ApiParam({
@@ -112,7 +112,7 @@ export class CandidateTrainingController {
   //* Delete
   @Delete(':trainingId')
   @RequirePermission(
-    PermissionAction.delete,
+    PermissionAction.Delete,
     Prisma.ModelName.CandidateTraining
   )
   @ApiParam({

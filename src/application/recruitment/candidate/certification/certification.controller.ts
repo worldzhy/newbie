@@ -25,7 +25,7 @@ export class CandidateCertificationController {
   //* Create
   @Post('')
   @RequirePermission(
-    PermissionAction.create,
+    PermissionAction.Create,
     Prisma.ModelName.CandidateCertification
   )
   @ApiBody({
@@ -56,7 +56,7 @@ export class CandidateCertificationController {
   //* Get many
   @Get('')
   @RequirePermission(
-    PermissionAction.read,
+    PermissionAction.List,
     Prisma.ModelName.CandidateCertification
   )
   async getCandidateCertifications(): Promise<CandidateCertification[]> {
@@ -66,7 +66,7 @@ export class CandidateCertificationController {
   //* Get
   @Get(':certificationId')
   @RequirePermission(
-    PermissionAction.read,
+    PermissionAction.Get,
     Prisma.ModelName.CandidateCertification
   )
   @ApiParam({
@@ -86,7 +86,7 @@ export class CandidateCertificationController {
   //* Update
   @Patch(':certificationId')
   @RequirePermission(
-    PermissionAction.update,
+    PermissionAction.Update,
     Prisma.ModelName.CandidateCertification
   )
   @ApiParam({
@@ -119,7 +119,7 @@ export class CandidateCertificationController {
   //* Delete
   @Delete(':certificationId')
   @RequirePermission(
-    PermissionAction.delete,
+    PermissionAction.Delete,
     Prisma.ModelName.CandidateCertification
   )
   @ApiParam({

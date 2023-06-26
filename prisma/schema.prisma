@@ -69,7 +69,7 @@ model Folder {
 
 model Location {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  site      String?
+  name      String?
   address   String?
   address2  String?
   city      String?
@@ -374,8 +374,6 @@ model WorkflowRoute {
 // * EndpointPermission(unused)                                   //
 // * Permission                                                   //
 // * UserToRole                                                   //
-// * UserToPermission                                             //
-// * RoleToPermission                                             //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
 model Organization {
@@ -406,6 +404,7 @@ model Role {
 
   id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name           String
+  description    String?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
   organization   Organization? @relation(fields: [organizationId], references: [id])
@@ -467,11 +466,12 @@ enum UserTokenStatus {
 
 model UserProfile {
   id             String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  givenName      String?
+  prefix         String?
+  firstName      String?
   middleName     String?
-  familyName     String?
+  lastName       String?
   suffix         String?
-  birthday       DateTime?          @db.Date
+  dateOfBirth    DateTime?          @db.Date
   gender         UserProfileGender?
   emails         Json[]
   phones         Json[]
@@ -544,11 +544,11 @@ model Permission {
 }
 
 enum PermissionAction {
-  manage // it represents any action
-  create
-  delete
-  read
-  update
+  List
+  Get
+  Create
+  Update
+  Delete
 
   @@schema("application/account")
 }
@@ -1048,11 +1048,11 @@ enum CandidateStatus {
 model CandidateProfile {
   id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   uniqueNumber      String
-  givenName         String
+  firstName         String
   middleName        String?
-  familyName        String
+  lastName          String
   fullName          String?
-  birthday          DateTime?
+  dateOfBirth       DateTime? @db.Date
   gender            String?
   email             String?
   primaryPhone      String

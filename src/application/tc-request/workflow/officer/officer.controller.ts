@@ -18,7 +18,7 @@ import {
 } from '@nestjs/swagger';
 import {TcWorkflow, Prisma} from '@prisma/client';
 import {TcWorkflowService, WorkflowStatus} from '../workflow.service';
-import {RoleService} from '../../../account/user/role/role.service';
+import {RoleService} from '../../../account/role/role.service';
 import {UserService} from '../../../account/user/user.service';
 import {formatPaginationResponse} from '../../../../toolkit/format/pagination.format';
 import {TokenService} from '../../../../toolkit/token/token.service';

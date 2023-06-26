@@ -11,7 +11,7 @@ import {ApiTags, ApiParam, ApiBody} from '@nestjs/swagger';
 import {TcWorkflow, Prisma, Order} from '@prisma/client';
 import {TcWorkflowService, WorkflowStatus} from '../workflow.service';
 import {TcWorkflowTrailService} from '../trail/trail.service';
-import {RoleService} from '../../../account/user/role/role.service';
+import {RoleService} from '../../../account/role/role.service';
 import {UserService} from '../../../account/user/user.service';
 import {WorkflowRouteService} from '../../../../microservices/workflow/route/route.service';
 import {Public} from '../../../account/authentication/public/public.decorator';

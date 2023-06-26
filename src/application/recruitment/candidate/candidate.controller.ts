@@ -28,17 +28,17 @@ export class CandidateController {
   constructor(private candidateService: CandidateService) {}
 
   @Post('')
-  @RequirePermission(PermissionAction.create, Prisma.ModelName.Candidate)
+  @RequirePermission(PermissionAction.Create, Prisma.ModelName.Candidate)
   @ApiBody({
     description: 'Create a user candidate.',
     examples: {
       a: {
         summary: '1. Create',
         value: {
-          givenName: 'Mary',
+          firstName: 'Mary',
           middleName: 'Rose',
-          familyName: 'Johnson',
-          birthday: new Date(),
+          lastName: 'Johnson',
+          dateOfBirth: new Date(),
           gender: 'Female',
           email: 'mary@hd.com',
           primaryPhone: '121289182',
@@ -69,10 +69,10 @@ export class CandidateController {
     const profileCreateInput: Prisma.CandidateProfileCreateWithoutCandidateInput =
       {
         uniqueNumber: generateRandomNumbers(9),
-        givenName: body.givenName,
+        firstName: body.firstName,
         middleName: body.middleName,
-        familyName: body.familyName,
-        birthday: body.birthday,
+        lastName: body.lastName,
+        dateOfBirth: body.dateOfBirth,
         gender: body.gender,
         email: body.email,
         primaryPhone: body.primaryPhone,
@@ -89,7 +89,7 @@ export class CandidateController {
   }
 
   @Get('count')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.Candidate)
+  @RequirePermission(PermissionAction.List, Prisma.ModelName.Candidate)
   @ApiQuery({name: 'name', type: 'string'})
   @ApiQuery({name: 'email', type: 'string'})
   @ApiQuery({name: 'phone', type: 'string'})
@@ -137,7 +137,7 @@ export class CandidateController {
   }
 
   @Get('')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.Candidate)
+  @RequirePermission(PermissionAction.List, Prisma.ModelName.Candidate)
   @ApiQuery({name: 'name', type: 'string'})
   @ApiQuery({name: 'email', type: 'string'})
   @ApiQuery({name: 'phone', type: 'string'})
@@ -248,7 +248,7 @@ export class CandidateController {
   }
 
   @Get(':candidateId')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.Candidate)
+  @RequirePermission(PermissionAction.Get, Prisma.ModelName.Candidate)
   @ApiParam({
     name: 'candidateId',
     schema: {type: 'string'},
@@ -279,7 +279,7 @@ export class CandidateController {
   }
 
   @Patch(':candidateId')
-  @RequirePermission(PermissionAction.update, Prisma.ModelName.Candidate)
+  @RequirePermission(PermissionAction.Update, Prisma.ModelName.Candidate)
   @ApiParam({
     name: 'candidateId',
     schema: {type: 'string'},
@@ -292,10 +292,10 @@ export class CandidateController {
       a: {
         summary: '1. Update',
         value: {
-          givenName: 'Robert',
+          firstName: 'Robert',
           middleName: 'William',
-          familyName: 'Smith',
-          birthday: new Date(),
+          lastName: 'Smith',
+          dateOfBirth: new Date(),
           gender: 'Female',
           email: 'mary@hd.com',
           primaryPhone: '121289182',
@@ -322,10 +322,10 @@ export class CandidateController {
       data: {
         profile: {
           update: {
-            givenName: body.givenName,
+            firstName: body.firstName,
             middleName: body.middleName,
-            familyName: body.familyName,
-            birthday: body.birthday,
+            lastName: body.lastName,
+            dateOfBirth: body.dateOfBirth,
             gender: body.gender,
             email: body.email,
             primaryPhone: body.primaryPhone,
@@ -339,7 +339,7 @@ export class CandidateController {
   }
 
   @Delete(':candidateId')
-  @RequirePermission(PermissionAction.delete, Prisma.ModelName.Candidate)
+  @RequirePermission(PermissionAction.Delete, Prisma.ModelName.Candidate)
   @ApiParam({
     name: 'candidateId',
     schema: {type: 'string'},
@@ -354,7 +354,7 @@ export class CandidateController {
   }
 
   @Get(':candidateId/job-applications')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.Candidate)
+  @RequirePermission(PermissionAction.Get, Prisma.ModelName.Candidate)
   @ApiParam({
     name: 'candidateId',
     schema: {type: 'string'},

@@ -12,7 +12,7 @@ import {ApiTags, ApiParam, ApiBody, ApiQuery} from '@nestjs/swagger';
 import {TcWorkflowTrailService} from './trail.service';
 import {Prisma, TcWorkflowTrail, PermissionAction} from '@prisma/client';
 import {RequirePermission} from '../../../account/authorization/authorization.decorator';
-import {RoleService} from '../../../account/user/role/role.service';
+import {RoleService} from '../../../account/role/role.service';
 import {UserService} from '../../../account/user/user.service';
 import {Public} from '../../../account/authentication/public/public.decorator';
 
@@ -25,7 +25,7 @@ export class TcWorkflowTrailController {
   private roleService = new RoleService();
 
   @Get('')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.TcWorkflowTrail)
+  @RequirePermission(PermissionAction.List, Prisma.ModelName.TcWorkflowTrail)
   @ApiQuery({name: 'workflowId', type: 'string'})
   @ApiQuery({name: 'page', type: 'number'})
   @ApiQuery({name: 'pageSize', type: 'number'})
@@ -96,7 +96,7 @@ export class TcWorkflowTrailController {
   }
 
   @Get(':trailId')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.TcWorkflowTrail)
+  @RequirePermission(PermissionAction.Get, Prisma.ModelName.TcWorkflowTrail)
   @ApiParam({
     name: 'trailId',
     schema: {type: 'number'},
@@ -111,7 +111,7 @@ export class TcWorkflowTrailController {
   }
 
   @Patch(':trailId')
-  @RequirePermission(PermissionAction.update, Prisma.ModelName.TcWorkflowTrail)
+  @RequirePermission(PermissionAction.Update, Prisma.ModelName.TcWorkflowTrail)
   @ApiParam({
     name: 'trailId',
     schema: {type: 'number'},
@@ -150,7 +150,7 @@ export class TcWorkflowTrailController {
   }
 
   @Delete(':trailId')
-  @RequirePermission(PermissionAction.delete, Prisma.ModelName.TcWorkflowTrail)
+  @RequirePermission(PermissionAction.Delete, Prisma.ModelName.TcWorkflowTrail)
   @ApiParam({
     name: 'trailId',
     schema: {type: 'number'},

@@ -26,7 +26,7 @@ export class UserProfileController {
   }
 
   @Post('')
-  @RequirePermission(PermissionAction.create, Prisma.ModelName.UserProfile)
+  @RequirePermission(PermissionAction.Create, Prisma.ModelName.UserProfile)
   @ApiBody({
     description: 'Create a user profile.',
     examples: {
@@ -34,11 +34,12 @@ export class UserProfileController {
         summary: '1. Create',
         value: {
           userId: '924da395-1921-45fe-b7f5-1198ed78ac24',
-          givenName: 'Mary',
+          prefix: 'Ms',
+          firstName: 'Mary',
           middleName: 'Rose',
-          familyName: 'Johnson',
+          lastName: 'Johnson',
           suffix: 'PhD',
-          birthday: new Date(),
+          dateOfBirth: new Date(),
           gender: 'Male',
           websites: {facebook: 'https://www.facebook.com/grace'},
           picture:
@@ -54,7 +55,7 @@ export class UserProfileController {
   }
 
   @Get('')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.UserProfile)
+  @RequirePermission(PermissionAction.List, Prisma.ModelName.UserProfile)
   async getUserProfiles(
     @Query() query: {name?: string; page?: string}
   ): Promise<UserProfile[]> {
@@ -65,9 +66,9 @@ export class UserProfileController {
       if (name.length > 0) {
         where = {
           OR: [
-            {givenName: {search: name}},
-            {familyName: {search: name}},
+            {firstName: {search: name}},
             {middleName: {search: name}},
+            {lastName: {search: name}},
           ],
         };
       }
@@ -98,7 +99,7 @@ export class UserProfileController {
   }
 
   @Get(':profileId')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.UserProfile)
+  @RequirePermission(PermissionAction.Get, Prisma.ModelName.UserProfile)
   @ApiParam({
     name: 'profileId',
     schema: {type: 'string'},
@@ -112,7 +113,7 @@ export class UserProfileController {
   }
 
   @Patch(':profileId')
-  @RequirePermission(PermissionAction.update, Prisma.ModelName.UserProfile)
+  @RequirePermission(PermissionAction.Update, Prisma.ModelName.UserProfile)
   @ApiParam({
     name: 'profileId',
     schema: {type: 'string'},
@@ -125,11 +126,12 @@ export class UserProfileController {
       a: {
         summary: '1. Update',
         value: {
-          givenName: 'Robert',
+          prefix: 'Mr',
+          firstName: 'Robert',
           middleName: 'William',
-          familyName: 'Smith',
+          lastName: 'Smith',
           suffix: 'PhD',
-          birthday: '2019-05-27T11:53:32.118Z',
+          dateOfBirth: '2019-05-27',
           gender: 'Female',
           hasPCP: true,
           address: '456 White Finch St. North Augusta, SC 29860',
@@ -162,7 +164,7 @@ export class UserProfileController {
   }
 
   @Delete(':profileId')
-  @RequirePermission(PermissionAction.delete, Prisma.ModelName.UserProfile)
+  @RequirePermission(PermissionAction.Delete, Prisma.ModelName.UserProfile)
   @ApiParam({
     name: 'profileId',
     schema: {type: 'string'},

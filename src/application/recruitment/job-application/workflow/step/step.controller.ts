@@ -22,7 +22,7 @@ import {
   PermissionAction,
 } from '@prisma/client';
 import {RequirePermission} from '../../../../account/authorization/authorization.decorator';
-import {RoleService} from '../../../../account/user/role/role.service';
+import {RoleService} from '../../../../account/role/role.service';
 import {UserService} from '../../../../account/user/user.service';
 
 @ApiTags('[Application] Recruitment / Job Application / Workflow Step')
@@ -35,7 +35,7 @@ export class JobApplicationWorkflowStepController {
 
   @Get('')
   @RequirePermission(
-    PermissionAction.read,
+    PermissionAction.List,
     Prisma.ModelName.JobApplicationWorkflowStep
   )
   @ApiQuery({name: 'workflowId', type: 'string'})
@@ -107,7 +107,7 @@ export class JobApplicationWorkflowStepController {
 
   @Get(':stepId')
   @RequirePermission(
-    PermissionAction.read,
+    PermissionAction.Get,
     Prisma.ModelName.JobApplicationWorkflowStep
   )
   @ApiParam({
@@ -125,7 +125,7 @@ export class JobApplicationWorkflowStepController {
 
   @Patch(':stepId')
   @RequirePermission(
-    PermissionAction.update,
+    PermissionAction.Update,
     Prisma.ModelName.JobApplicationWorkflowStep
   )
   @ApiParam({
@@ -167,7 +167,7 @@ export class JobApplicationWorkflowStepController {
 
   @Delete(':stepId')
   @RequirePermission(
-    PermissionAction.delete,
+    PermissionAction.Delete,
     Prisma.ModelName.JobApplicationWorkflowStep
   )
   @ApiParam({

@@ -34,7 +34,7 @@ export class JobApplicationWorkflowNoteController {
 
   @Post('')
   @RequirePermission(
-    PermissionAction.create,
+    PermissionAction.Create,
     Prisma.ModelName.JobApplicationWorkflowNote
   )
   @ApiBody({
@@ -79,7 +79,7 @@ export class JobApplicationWorkflowNoteController {
 
   @Get('')
   @RequirePermission(
-    PermissionAction.read,
+    PermissionAction.List,
     Prisma.ModelName.JobApplicationWorkflowNote
   )
   async getJobApplicationWorkflowNotes(): Promise<
@@ -90,7 +90,7 @@ export class JobApplicationWorkflowNoteController {
 
   @Get(':noteId')
   @RequirePermission(
-    PermissionAction.read,
+    PermissionAction.Get,
     Prisma.ModelName.JobApplicationWorkflowNote
   )
   @ApiParam({
@@ -109,7 +109,7 @@ export class JobApplicationWorkflowNoteController {
 
   @Patch(':noteId')
   @RequirePermission(
-    PermissionAction.update,
+    PermissionAction.Update,
     Prisma.ModelName.JobApplicationWorkflowNote
   )
   @ApiParam({
@@ -141,7 +141,7 @@ export class JobApplicationWorkflowNoteController {
 
   @Delete(':noteId')
   @RequirePermission(
-    PermissionAction.delete,
+    PermissionAction.Delete,
     Prisma.ModelName.JobApplicationWorkflowNote
   )
   @ApiParam({

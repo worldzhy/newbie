@@ -18,7 +18,7 @@ export class JobApplicationWorkflowFileController {
 
   @Get('')
   @RequirePermission(
-    PermissionAction.read,
+    PermissionAction.List,
     Prisma.ModelName.JobApplicationWorkflowFile
   )
   async getJobApplicationWorkflowFiles(): Promise<
@@ -29,7 +29,7 @@ export class JobApplicationWorkflowFileController {
 
   @Get(':fileId')
   @RequirePermission(
-    PermissionAction.read,
+    PermissionAction.Get,
     Prisma.ModelName.JobApplicationWorkflowFile
   )
   @ApiParam({
@@ -48,7 +48,7 @@ export class JobApplicationWorkflowFileController {
 
   @Patch(':fileId')
   @RequirePermission(
-    PermissionAction.update,
+    PermissionAction.Update,
     Prisma.ModelName.JobApplicationWorkflowFile
   )
   @ApiParam({
@@ -80,7 +80,7 @@ export class JobApplicationWorkflowFileController {
 
   @Delete(':fileId')
   @RequirePermission(
-    PermissionAction.delete,
+    PermissionAction.Delete,
     Prisma.ModelName.JobApplicationWorkflowFile
   )
   @ApiParam({

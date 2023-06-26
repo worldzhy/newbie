@@ -6,8 +6,8 @@ import {
   TrustedEntityType,
 } from '@prisma/client';
 import {AccountController} from '../../src/application/account/account.controller';
-import {RoleController} from '../../src/application/account/user/role/role.controller';
-import {PermissionController} from '../../src/application/account/authorization/permission/permission.controller';
+import {RoleController} from '../../src/application/account/role/role.controller';
+import {PermissionController} from '../../src/application/account/permission/permission.controller';
 import {PostgresqlDatasourceController} from '../../src/application/engined/datasource/postgresql/postgresql-datasource.controller';
 import {ElasticsearchDatasourceController} from '../../src/application/engined/datasource/elasticsearch/elasticsearch-datasource.controller';
 import {DatatransPipelineController} from '../../src/application/engined/datatrans/pipeline/pipeline.controller';
@@ -40,7 +40,15 @@ export async function seedForEngined() {
     }
     // [Create permissions] In the pending request screen, each role(except Admin) can only see the requests with testings those are waiting to be processed by the role.
     await permissionController.createPermission({
-      action: PermissionAction.read,
+      action: PermissionAction.List,
+      resource: Prisma.ModelName.JobApplication,
+      where: {workflows: {some: {nextRoleId: role.id}}},
+      trustedEntityType: TrustedEntityType.ROLE,
+      trustedEntityId: role.id,
+    });
+
+    await permissionController.createPermission({
+      action: PermissionAction.Get,
       resource: Prisma.ModelName.JobApplication,
       where: {workflows: {some: {nextRoleId: role.id}}},
       trustedEntityType: TrustedEntityType.ROLE,

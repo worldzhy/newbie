@@ -26,7 +26,7 @@ export class CandidateProfileController {
   }
 
   @Post('')
-  @RequirePermission(PermissionAction.create, Prisma.ModelName.CandidateProfile)
+  @RequirePermission(PermissionAction.Create, Prisma.ModelName.CandidateProfile)
   @ApiBody({
     description: 'Create a candidate profile.',
     examples: {
@@ -34,10 +34,10 @@ export class CandidateProfileController {
         summary: '1. Create',
         value: {
           candidateId: '924da395-1921-45fe-b7f5-1198ed78ac24',
-          givenName: 'Mary',
+          firstName: 'Mary',
           middleName: 'Rose',
-          familyName: 'Johnson',
-          birthday: new Date(),
+          lastName: 'Johnson',
+          dateOfBirth: new Date(),
           gender: 'Male',
           email: 'mary@hd.com',
           primaryPhone: '121289182',
@@ -58,7 +58,7 @@ export class CandidateProfileController {
   }
 
   @Get('')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.CandidateProfile)
+  @RequirePermission(PermissionAction.List, Prisma.ModelName.CandidateProfile)
   async getCandidateProfiles(
     @Query() query: {name?: string; page?: string}
   ): Promise<CandidateProfile[]> {
@@ -101,7 +101,7 @@ export class CandidateProfileController {
   }
 
   @Get(':profileId')
-  @RequirePermission(PermissionAction.read, Prisma.ModelName.CandidateProfile)
+  @RequirePermission(PermissionAction.Get, Prisma.ModelName.CandidateProfile)
   @ApiParam({
     name: 'profileId',
     schema: {type: 'string'},
@@ -117,7 +117,7 @@ export class CandidateProfileController {
   }
 
   @Patch(':profileId')
-  @RequirePermission(PermissionAction.update, Prisma.ModelName.CandidateProfile)
+  @RequirePermission(PermissionAction.Update, Prisma.ModelName.CandidateProfile)
   @ApiParam({
     name: 'profileId',
     schema: {type: 'string'},
@@ -130,10 +130,10 @@ export class CandidateProfileController {
       a: {
         summary: '1. Update',
         value: {
-          givenName: 'Robert',
+          firstName: 'Robert',
           middleName: 'William',
-          familyName: 'Smith',
-          birthday: '2019-05-27T11:53:32.118Z',
+          lastName: 'Smith',
+          dateOfBirth: '2019-05-27',
           gender: 'Male',
           emails: [{email: 'mary@hd.com'}],
           phones: [
@@ -158,7 +158,7 @@ export class CandidateProfileController {
   }
 
   @Delete(':profileId')
-  @RequirePermission(PermissionAction.delete, Prisma.ModelName.CandidateProfile)
+  @RequirePermission(PermissionAction.Delete, Prisma.ModelName.CandidateProfile)
   @ApiParam({
     name: 'profileId',
     schema: {type: 'string'},

@@ -25,7 +25,6 @@ export class AwsCodecommit_Stack {
 
   static getStackProgram = (params: {repositoryName: string}) => async () => {
     // [step 1] Guard statement.
-
     // [step 2] Create a repository.
     const uniqueResourceName = 'code-commit';
     const repository = new aws.codecommit.Repository(
