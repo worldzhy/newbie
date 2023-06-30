@@ -214,13 +214,13 @@ export async function seedForRecruitment() {
       await authController.signup({
         username: 'admin',
         password: 'Abc1234!',
-        userToRoles: {create: [{roleId: role.id}]},
+        roles: {connect: [{id: role.id}]},
       });
       await authController.signup({
         username: 'admin02',
         email: 'admin02@hd.com',
         password: 'HDpwd@2022',
-        userToRoles: {create: [{roleId: role.id}]},
+        roles: {connect: [{id: role.id}]},
       });
     } else if (role.name === RoleName.Recruiter) {
       // Create user with this role.
@@ -228,7 +228,7 @@ export async function seedForRecruitment() {
         username: 'recruiter02',
         email: 'recruiter02@hd.com',
         password: 'HDpwd@2022',
-        userToRoles: {create: [{roleId: role.id}]},
+        roles: {connect: [{id: role.id}]},
       });
     } else if (role.name === RoleName.Dispatcher) {
       // Create user with this role.
@@ -236,7 +236,7 @@ export async function seedForRecruitment() {
         username: 'dispatcher02',
         email: 'dispatcher02@hd.com',
         password: 'HDpwd@2022',
-        userToRoles: {create: [{roleId: role.id}]},
+        roles: {connect: [{id: role.id}]},
       });
 
       // Create workflow routes.
@@ -307,7 +307,7 @@ export async function seedForRecruitment() {
         username: 'provider02',
         email: 'provider02@hd.com',
         password: 'HDpwd@2022',
-        userToRoles: {create: [{roleId: role.id}]},
+        roles: {connect: [{id: role.id}]},
       });
 
       // Create routes.
@@ -336,7 +336,7 @@ export async function seedForRecruitment() {
         username: 's_reviewer02',
         email: 's_reviewer02@hd.com',
         password: 'HDpwd@2022',
-        userToRoles: {create: [{roleId: role.id}]},
+        roles: {connect: [{id: role.id}]},
       });
 
       // Create routes.

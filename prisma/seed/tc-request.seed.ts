@@ -197,7 +197,7 @@ export async function seedForTcRequest() {
       await authController.signup({
         username: 'admin',
         password: 'Abc1234!',
-        userToRoles: {create: [{roleId: role.id}]},
+        roles: {connect: [{id: role.id}]},
       });
     } else if (role.name === RoleName.Officer) {
       // Create user with this role.
@@ -205,7 +205,7 @@ export async function seedForTcRequest() {
         username: 'officer01',
         email: 'officer01@tc.com',
         password: 'TCpwd@2023',
-        userToRoles: {create: [{roleId: role.id}]},
+        roles: {connect: [{id: role.id}]},
       });
     }
   }

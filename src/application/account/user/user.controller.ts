@@ -17,13 +17,7 @@ import {
   ApiBody,
   ApiQuery,
 } from '@nestjs/swagger';
-import {
-  PermissionAction,
-  Prisma,
-  User,
-  UserStatus,
-  UserToRole,
-} from '@prisma/client';
+import {PermissionAction, Prisma, User, UserStatus} from '@prisma/client';
 import {UserService} from './user.service';
 import {RequirePermission} from '../authorization/authorization.decorator';
 import {compareHash} from '../../../toolkit/utilities/common.util';
@@ -84,26 +78,24 @@ export class UserController {
           username: 'dispatcher',
           password: 'Abc1234!',
           status: UserStatus.ACTIVE,
-          roles: [{id: '013f92b0-4a53-45cb-8eca-e66089a3919f'}],
+          roleIds: [{id: '013f92b0-4a53-45cb-8eca-e66089a3919f'}],
         },
       },
     },
   })
   async createUser(
     @Body()
-    body: Prisma.UserCreateInput & {roles?: {id: string; name: string}[]} & {
+    body: Prisma.UserCreateInput & {roleIds?: {id: string; name: string}[]} & {
       locationNames?: string[];
     }
   ): Promise<User> {
-    // Construct userToRoles.
-    if (body.roles && body.roles.length > 0) {
-      body.userToRoles = {
-        create: body.roles.map(role => {
-          return {roleId: role.id};
-        }),
+    // Construct roles.
+    if (body.roleIds && body.roleIds.length > 0) {
+      body.roles = {
+        connect: body.roleIds,
       };
       // Remove roleIds since it is not a field of User model.
-      delete body.roles;
+      delete body.roleIds;
     }
 
     return await this.userService.create({
@@ -184,21 +176,14 @@ export class UserController {
       take: take,
       skip: skip,
       include: {
-        userToRoles: {include: {role: true}},
+        roles: true,
         profiles: true,
         locations: true,
       },
     });
 
-    // [step 4] Return users with roles.
+    // [step 4] Return users without password.
     const records = users.map(user => {
-      if (user['userToRoles']) {
-        user['roles'] = user['userToRoles'].map((userToRole: UserToRole) => {
-          return userToRole['role'];
-        });
-      }
-      delete user['userToRoles'];
-
       return this.userService.withoutPassword(user);
     });
 
@@ -217,18 +202,11 @@ export class UserController {
     const user = await this.userService.findUniqueOrThrow({
       where: {id: userId},
       include: {
-        userToRoles: {include: {role: true}},
+        roles: true,
         profiles: true,
         locations: true,
       },
     });
-
-    if (user['userToRoles']) {
-      user['roles'] = user['userToRoles'].map((userToRole: UserToRole) => {
-        return userToRole['role'];
-      });
-    }
-    delete user['userToRoles'];
 
     return this.userService.withoutPassword(user);
   }
@@ -253,7 +231,7 @@ export class UserController {
           username: 'dispatcher',
           password: 'Abc1234!',
           status: UserStatus.INACTIVE,
-          roles: [{id: '013f92b0-4a53-45cb-8eca-e66089a3919f'}],
+          roleIds: [{id: '013f92b0-4a53-45cb-8eca-e66089a3919f'}],
           locationNames: ['Harley Davidson Lifestyle Centers'],
         },
       },
@@ -262,20 +240,17 @@ export class UserController {
   async updateUser(
     @Param('userId') userId: string,
     @Body()
-    body: Prisma.UserUpdateInput & {roles?: {id: string; name: string}[]} & {
+    body: Prisma.UserUpdateInput & {roleIds?: {id: string; name: string}[]} & {
       locationNames?: string[];
     }
   ): Promise<User> {
-    // Construct userToRoles.
-    if (body.roles && Array.isArray(body.roles)) {
-      body.userToRoles = {
-        deleteMany: {}, // First, delete all existing UserToRole records.
-        create: body.roles.map(role => {
-          return {roleId: role.id};
-        }), // Then, create new UserToRole records.
+    // Construct roles.
+    if (body.roleIds && Array.isArray(body.roleIds)) {
+      body.roles = {
+        set: body.roleIds, // Overwrite the connections with roles.
       };
       // Remove roleIds since it is not a field of User model.
-      delete body.roles;
+      delete body.roleIds;
     }
 
     // Construct locationss.
@@ -335,8 +310,9 @@ export class UserController {
     example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
   })
   async getUserRoles(@Param('userId') userId: string) {
-    const user = await this.userService.findUniqueOrThrowWithRoles({
+    const user = await this.userService.findUniqueOrThrow({
       where: {id: userId},
+      include: {roles: true},
     });
 
     return this.userService.withoutPassword(user);

@@ -3,8 +3,8 @@ import {Reflector} from '@nestjs/core';
 import {
   PermissionAction,
   Prisma,
+  Role,
   TrustedEntityType,
-  UserToRole,
 } from '@prisma/client';
 import {UserService} from '../user/user.service';
 import {PermissionService} from '../permission/permission.service';
@@ -42,7 +42,7 @@ export class AuthorizationGuard implements CanActivate {
     // [step 3] Get user with organization and roles.
     const user = await this.userService.findUniqueOrThrow({
       where: {id: payload.userId},
-      include: {userToRoles: true},
+      include: {roles: true},
     });
 
     // [step 4-1] Get organization permissions.
@@ -66,8 +66,8 @@ export class AuthorizationGuard implements CanActivate {
     }
 
     // [step 4-2] Get roles' permissions.
-    const roleIds = user['userToRoles'].map((userRole: UserToRole) => {
-      return userRole.roleId;
+    const roleIds = user['roles'].map((role: Role) => {
+      return role.id;
     });
     if (roleIds) {
       const rolePermissions = await this.permissionService.findMany({

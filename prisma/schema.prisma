@@ -390,17 +390,17 @@ model Organization {
   @@schema("application/account")
 }
 
-model UserToRole {
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String   @db.Uuid
-  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  roleId    String   @db.Uuid
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// model UserToRole {
+//   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+//   userId    String   @db.Uuid
+//   role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+//   roleId    String   @db.Uuid
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
 
-  @@id([userId, roleId])
-  @@schema("application/account")
-}
+//   @@id([userId, roleId])
+//   @@schema("application/account")
+// }
 
 model Role {
   // A role is a subgroup of a user group with some specified permissions.
@@ -412,7 +412,7 @@ model Role {
   updatedAt      DateTime      @updatedAt
   organization   Organization? @relation(fields: [organizationId], references: [id])
   organizationId String?       @db.Uuid
-  roleToUsers    UserToRole[]
+  users          User[]
 
   @@unique([name, organizationId])
   @@schema("application/account")
@@ -435,7 +435,7 @@ model User {
   organization     Organization?            @relation(fields: [organizationId], references: [id])
   organizationId   String?                  @db.Uuid
   profiles         UserProfile[]
-  userToRoles      UserToRole[]
+  roles            Role[]
   locations        Location[]
   holdingWorkflows JobApplicationWorkflow[]
 

@@ -36,7 +36,7 @@ export async function seedForPmgmt() {
       await authController.signup({
         username: 'admin',
         password: 'Abc1234!',
-        userToRoles: {create: [{roleId: role.id}]},
+        roles: {connect: [{id: role.id}]},
       });
     }
   }

@@ -480,9 +480,9 @@ export class AccountController {
     });
 
     // [step 3] Get user.
-    const user = await this.userService.findUniqueOrThrowWithRoles({
-      select: {password: false},
+    const user = await this.userService.findUniqueOrThrow({
       where: {id: userToken.userId},
+      include: {roles: true},
     });
 
     return this.userService.withoutPassword(user);

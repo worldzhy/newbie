@@ -46,22 +46,6 @@ export class UserService {
     return await this.prisma.user.count(params);
   }
 
-  async findUniqueOrThrowWithRoles(
-    params: Prisma.UserFindUniqueArgs
-  ): Promise<User> {
-    const user = await this.prisma.user.findUniqueOrThrow({
-      where: params.where,
-      include: {userToRoles: {select: {role: true}}, locations: true},
-    });
-
-    user['roles'] = user.userToRoles.map(userToRole => {
-      return userToRole['role'];
-    });
-
-    const {userToRoles, locations, ...result} = user;
-    return result;
-  }
-
   /**
    * The account supports username / email / phone.
    */

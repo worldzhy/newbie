@@ -471,8 +471,9 @@ export class JobApplicationController {
     const {userId} = this.tokenService.decodeToken(
       this.tokenService.getTokenFromHttpRequest(request)
     ) as {userId: string};
-    const user = await this.userService.findUniqueOrThrowWithRoles({
+    const user = await this.userService.findUniqueOrThrow({
       where: {id: userId},
+      include: {roles: true},
     });
     const roleIds = user['roles'].map((role: Role) => {
       // Provider role only
@@ -508,8 +509,9 @@ export class JobApplicationController {
     const {userId} = this.tokenService.decodeToken(
       this.tokenService.getTokenFromHttpRequest(request)
     ) as {userId: string};
-    const user = await this.userService.findUniqueOrThrowWithRoles({
+    const user = await this.userService.findUniqueOrThrow({
       where: {id: userId},
+      include: {roles: true},
     });
 
     return user['roles'].map((role: Role) => {
