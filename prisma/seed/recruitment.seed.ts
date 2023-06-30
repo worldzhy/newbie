@@ -22,43 +22,43 @@ export async function seedForRecruitment() {
   });
 
   const views = [
-    {workflowId: workflow.id, view: 'START', startSign: true},
-    {workflowId: workflow.id, view: 'STEP1_DISPATCH'},
-    {workflowId: workflow.id, view: 'STEP2_TEST'},
-    {workflowId: workflow.id, view: 'STEP3_REVIEW'},
-    {workflowId: workflow.id, view: 'END'},
+    {workflowId: workflow.id, name: 'START', startSign: true},
+    {workflowId: workflow.id, name: 'STEP1_DISPATCH'},
+    {workflowId: workflow.id, name: 'STEP2_TEST'},
+    {workflowId: workflow.id, name: 'STEP3_REVIEW'},
+    {workflowId: workflow.id, name: 'END'},
   ];
   for (let i = 0; i < views.length; i++) {
     await workflowViewController.createWorkflowView(views[i]);
   }
 
   const states = [
-    {workflowId: workflow.id, state: 'Pending Dispatch'}, // [Recruiter] assign to [Referral Coordinator] to work on STEP1_DISPATCH screen
+    {workflowId: workflow.id, name: 'Pending Dispatch'}, // [Recruiter] assign to [Referral Coordinator] to work on STEP1_DISPATCH screen
 
-    {workflowId: workflow.id, state: 'Pending Test'}, // [Referral Coordinator] assign to [Provider] to work on STEP2_TEST screen
+    {workflowId: workflow.id, name: 'Pending Test'}, // [Referral Coordinator] assign to [Provider] to work on STEP2_TEST screen
 
-    {workflowId: workflow.id, state: 'Pass'}, // [Provider] finish the process
-    {workflowId: workflow.id, state: 'Fail'}, // [Provider] finish the process
-    {workflowId: workflow.id, state: 'Discontinue'}, // [Provider] finish the process
-    {workflowId: workflow.id, state: 'Termed-Secondary Medical Hold'}, // [Provider] finish the process
-    {workflowId: workflow.id, state: 'Cancelled'}, // [Provider] assign to [Referral Coordinator] to work on STEP1_DISPATCH screen
-    {workflowId: workflow.id, state: 'Cancelled - CV hold'}, // [Provider] assign to [Referral Coordinator] to work on STEP1_DISPATCH screen
-    {workflowId: workflow.id, state: 'Cancelled - Medical Hold'}, // [Provider] assign to [Referral Coordinator] to work on STEP1_DISPATCH screen
-    {workflowId: workflow.id, state: 'CV Hold'}, // [Provider] assign to [Referral Coordinator] to work on STEP2_TEST screen
-    {workflowId: workflow.id, state: 'Lab Hold'}, // [Provider] assign to [Referral Coordinator] to work on STEP2_TEST screen
-    {workflowId: workflow.id, state: 'Late'}, // [Provider] assign to [Referral Coordinator] to work on STEP1_DISPATCH screen
-    {workflowId: workflow.id, state: 'Medical Hold'}, // [Provider] assign to [Secondary Reviewer] to work on STEP3_REVIEW screen
-    {workflowId: workflow.id, state: 'Reschedule'}, // [Provider] assign to [Referral Coordinator] to work on STEP1_DISPATCH screen
+    {workflowId: workflow.id, name: 'Pass'}, // [Provider] finish the process
+    {workflowId: workflow.id, name: 'Fail'}, // [Provider] finish the process
+    {workflowId: workflow.id, name: 'Discontinue'}, // [Provider] finish the process
+    {workflowId: workflow.id, name: 'Termed-Secondary Medical Hold'}, // [Provider] finish the process
+    {workflowId: workflow.id, name: 'Cancelled'}, // [Provider] assign to [Referral Coordinator] to work on STEP1_DISPATCH screen
+    {workflowId: workflow.id, name: 'Cancelled - CV hold'}, // [Provider] assign to [Referral Coordinator] to work on STEP1_DISPATCH screen
+    {workflowId: workflow.id, name: 'Cancelled - Medical Hold'}, // [Provider] assign to [Referral Coordinator] to work on STEP1_DISPATCH screen
+    {workflowId: workflow.id, name: 'CV Hold'}, // [Provider] assign to [Referral Coordinator] to work on STEP2_TEST screen
+    {workflowId: workflow.id, name: 'Lab Hold'}, // [Provider] assign to [Referral Coordinator] to work on STEP2_TEST screen
+    {workflowId: workflow.id, name: 'Late'}, // [Provider] assign to [Referral Coordinator] to work on STEP1_DISPATCH screen
+    {workflowId: workflow.id, name: 'Medical Hold'}, // [Provider] assign to [Secondary Reviewer] to work on STEP3_REVIEW screen
+    {workflowId: workflow.id, name: 'Reschedule'}, // [Provider] assign to [Referral Coordinator] to work on STEP1_DISPATCH screen
 
-    {workflowId: workflow.id, state: 'D-Failed'}, // [Secondary Reviewer] finish the process
-    {workflowId: workflow.id, state: 'MD-CLR'}, // [Secondary Reviewer] finish the process
-    {workflowId: workflow.id, state: 'MD-CLR-P-CV'}, // [Secondary Reviewer] finish the process
-    {workflowId: workflow.id, state: 'MD-CLR-WL'}, // [Secondary Reviewer] finish the process
-    {workflowId: workflow.id, state: 'MD-DISC'}, // [Secondary Reviewer] finish the process
-    {workflowId: workflow.id, state: 'MD-NOT-CLR'}, // [Secondary Reviewer] finish the process
-    {workflowId: workflow.id, state: 'Terminated'}, // [Secondary Reviewer] finish the process
-    {workflowId: workflow.id, state: 'Reviewer Hold'}, // [Secondary Reviewer] assign to [Secondary Reviewer] to work on STEP3_REVIEW screen
-    {workflowId: workflow.id, state: 'Resubmission'}, // [Secondary Reviewer] assign to [Provider] to work on STEP2_TEST screen
+    {workflowId: workflow.id, name: 'D-Failed'}, // [Secondary Reviewer] finish the process
+    {workflowId: workflow.id, name: 'MD-CLR'}, // [Secondary Reviewer] finish the process
+    {workflowId: workflow.id, name: 'MD-CLR-P-CV'}, // [Secondary Reviewer] finish the process
+    {workflowId: workflow.id, name: 'MD-CLR-WL'}, // [Secondary Reviewer] finish the process
+    {workflowId: workflow.id, name: 'MD-DISC'}, // [Secondary Reviewer] finish the process
+    {workflowId: workflow.id, name: 'MD-NOT-CLR'}, // [Secondary Reviewer] finish the process
+    {workflowId: workflow.id, name: 'Terminated'}, // [Secondary Reviewer] finish the process
+    {workflowId: workflow.id, name: 'Reviewer Hold'}, // [Secondary Reviewer] assign to [Secondary Reviewer] to work on STEP3_REVIEW screen
+    {workflowId: workflow.id, name: 'Resubmission'}, // [Secondary Reviewer] assign to [Provider] to work on STEP2_TEST screen
   ];
   for (let i = 0; i < states.length; i++) {
     await workflowStateController.createWorkflowState(states[i]);

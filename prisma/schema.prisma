@@ -279,13 +279,14 @@ enum VerificationCodeUse {
 // * WorkflowRoute                                                //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 model Workflow {
-  id        String          @id @default(uuid())
-  name      String          @unique
-  views     WorkflowView[]
-  states    WorkflowState[]
-  routes    WorkflowRoute[]
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
+  id          String          @id @default(uuid())
+  name        String          @unique
+  description String?
+  views       WorkflowView[]
+  states      WorkflowState[]
+  routes      WorkflowRoute[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 
   @@schema("microservice/workflow")
 }
@@ -308,14 +309,15 @@ enum WorkflowNodeType {
 }
 
 model WorkflowView {
-  id         Int                     @id @default(autoincrement())
-  view       String                  @unique
-  startSign  Boolean?                @unique
-  components WorkflowViewComponent[]
-  createdAt  DateTime                @default(now())
-  updatedAt  DateTime                @updatedAt
-  workflow   Workflow                @relation(fields: [workflowId], references: [id], onDelete: Cascade)
-  workflowId String
+  id          Int                     @id @default(autoincrement())
+  name        String                  @unique
+  description String?
+  startSign   Boolean?                @unique
+  components  WorkflowViewComponent[]
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
+  workflow    Workflow                @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId  String
 
   @@schema("microservice/workflow")
 }
@@ -333,12 +335,13 @@ model WorkflowViewComponent {
 }
 
 model WorkflowState {
-  id         Int      @id @default(autoincrement())
-  state      String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  workflow   Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
-  workflowId String
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  workflow    Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId  String
 
   @@schema("microservice/workflow")
 }

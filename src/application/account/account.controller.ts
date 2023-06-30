@@ -716,7 +716,7 @@ export class AccountController {
       // [step 3] Send verification code.
       await this.emailNotificationService.sendEmail({
         email: params.email,
-        subject: 'Your Employwell Verificaiton Code',
+        subject: 'Your Verificaiton Code',
         plainText:
           verificationCode.code +
           ' is your verification code valid for the next 10 minutes.',

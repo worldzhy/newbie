@@ -21,34 +21,34 @@ export async function seedForTcRequest() {
   });
 
   const views = [
-    {workflowId: workflow.id, view: 'START', startSign: true},
-    {workflowId: workflow.id, view: 'DETAILS'},
-    {workflowId: workflow.id, view: 'PURPOSE'},
-    {workflowId: workflow.id, view: 'TYPE'},
-    {workflowId: workflow.id, view: 'MARITAL'},
-    {workflowId: workflow.id, view: 'EMPLOYMENT'},
-    {workflowId: workflow.id, view: 'CITIZEN_TCUK_OR_OTHERS'},
-    {workflowId: workflow.id, view: 'CITIZEN_TCUK'},
-    {workflowId: workflow.id, view: 'CITIZEN_OTHERS'},
-    {workflowId: workflow.id, view: 'CITIZEN_TC'},
-    {workflowId: workflow.id, view: 'CITIZEN_UK'},
-    {workflowId: workflow.id, view: 'PAYMENT'},
-    {workflowId: workflow.id, view: 'COMPLETED'},
-    {workflowId: workflow.id, view: 'END'},
+    {workflowId: workflow.id, name: 'START', startSign: true},
+    {workflowId: workflow.id, name: 'DETAILS'},
+    {workflowId: workflow.id, name: 'PURPOSE'},
+    {workflowId: workflow.id, name: 'TYPE'},
+    {workflowId: workflow.id, name: 'MARITAL'},
+    {workflowId: workflow.id, name: 'EMPLOYMENT'},
+    {workflowId: workflow.id, name: 'CITIZEN_TCUK_OR_OTHERS'},
+    {workflowId: workflow.id, name: 'CITIZEN_TCUK'},
+    {workflowId: workflow.id, name: 'CITIZEN_OTHERS'},
+    {workflowId: workflow.id, name: 'CITIZEN_TC'},
+    {workflowId: workflow.id, name: 'CITIZEN_UK'},
+    {workflowId: workflow.id, name: 'PAYMENT'},
+    {workflowId: workflow.id, name: 'COMPLETED'},
+    {workflowId: workflow.id, name: 'END'},
   ];
   for (let i = 0; i < views.length; i++) {
     await workflowViewController.createWorkflowView(views[i]);
   }
 
   const states = [
-    {workflowId: workflow.id, state: 'CONTINUE'},
-    {workflowId: workflow.id, state: 'SUBMIT'},
-    {workflowId: workflow.id, state: 'YES'},
-    {workflowId: workflow.id, state: 'NO'},
-    {workflowId: workflow.id, state: 'PAYMENT_SUCCEEDED'},
-    {workflowId: workflow.id, state: 'PAYMENT_FAILED'},
-    {workflowId: workflow.id, state: 'PASS'},
-    {workflowId: workflow.id, state: 'FAIL'},
+    {workflowId: workflow.id, name: 'CONTINUE'},
+    {workflowId: workflow.id, name: 'SUBMIT'},
+    {workflowId: workflow.id, name: 'YES'},
+    {workflowId: workflow.id, name: 'NO'},
+    {workflowId: workflow.id, name: 'PAYMENT_SUCCEEDED'},
+    {workflowId: workflow.id, name: 'PAYMENT_FAILED'},
+    {workflowId: workflow.id, name: 'PASS'},
+    {workflowId: workflow.id, name: 'FAIL'},
   ];
   for (let i = 0; i < states.length; i++) {
     await workflowStateController.createWorkflowState(states[i]);
