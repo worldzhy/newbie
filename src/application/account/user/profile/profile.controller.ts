@@ -7,12 +7,12 @@ import {
   Body,
   Param,
   Query,
-  BadRequestException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {PermissionAction, Prisma, UserProfile} from '@prisma/client';
 import {RequirePermission} from '../../authorization/authorization.decorator';
 import {UserProfileService} from './profile.service';
+import {generatePaginationParams} from '../../../../toolkit/pagination/pagination';
 
 @ApiTags('[Application] Account / User / Profile')
 @ApiBearerAuth()
@@ -57,7 +57,7 @@ export class UserProfileController {
   @Get('')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.UserProfile)
   async getUserProfiles(
-    @Query() query: {name?: string; page?: string}
+    @Query() query: {name?: string; page?: string; pageSize?: string}
   ): Promise<UserProfile[]> {
     // [step 1] Construct where argument.
     let where: Prisma.UserProfileWhereInput | undefined;
@@ -75,20 +75,10 @@ export class UserProfileController {
     }
 
     // [step 2] Construct take and skip arguments.
-    let take: number, skip: number;
-    if (query.page) {
-      // Actually 'page' is string because it comes from URL param.
-      const page = parseInt(query.page);
-      if (page > 0) {
-        take = 10;
-        skip = 10 * (page - 1);
-      } else {
-        throw new BadRequestException('The page must be larger than 0.');
-      }
-    } else {
-      take = 10;
-      skip = 0;
-    }
+    const {take, skip} = generatePaginationParams({
+      page: query.page,
+      pageSize: query.pageSize,
+    });
 
     // [step 3] Get user profiles.
     return await this.userProfileService.findMany({

@@ -6,7 +6,6 @@ import {
   Body,
   Param,
   Query,
-  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -24,6 +23,7 @@ import {
 import {RequirePermission} from '../../../../account/authorization/authorization.decorator';
 import {RoleService} from '../../../../account/role/role.service';
 import {UserService} from '../../../../account/user/user.service';
+import {generatePaginationParams} from '../../../../../toolkit/pagination/pagination';
 
 @ApiTags('[Application] Recruitment / Job Application / Workflow Step')
 @ApiBearerAuth()
@@ -56,23 +56,10 @@ export class JobApplicationWorkflowStepController {
     }
 
     // [step 2] Construct take and skip arguments.
-    let take: number, skip: number;
-    if (query.page && query.pageSize) {
-      // Actually 'page' is string because it comes from URL param.
-      const page = parseInt(query.page);
-      const pageSize = parseInt(query.pageSize);
-      if (page > 0 && pageSize > 0) {
-        take = pageSize;
-        skip = pageSize * (page - 1);
-      } else {
-        throw new BadRequestException(
-          'The page and pageSize must be larger than 0.'
-        );
-      }
-    } else {
-      take = 10;
-      skip = 0;
-    }
+    const {take, skip} = generatePaginationParams({
+      page: query.page,
+      pageSize: query.pageSize,
+    });
 
     // [step 3] Get workflow steps.
     const steps = await this.workflowStepService.findMany({

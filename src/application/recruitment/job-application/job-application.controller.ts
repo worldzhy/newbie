@@ -37,6 +37,7 @@ import {WorkflowRouteService} from '../../../microservices/workflow/route/route.
 import {JobApplicationWorkflowService} from './workflow/workflow.service';
 import {RoleService} from 'src/application/account/role/role.service';
 import {JobApplicationWorkflowFileService} from './workflow/file/file.service';
+import {generatePaginationParams} from '../../../toolkit/pagination/pagination';
 
 @ApiTags('[Application] Recruitment / Job Application')
 @ApiBearerAuth()
@@ -181,23 +182,10 @@ export class JobApplicationController {
     }
 
     // [step 2] Construct take and skip arguments.
-    let take: number, skip: number;
-    if (query.page && query.pageSize) {
-      // Actually 'page' is string because it comes from URL param.
-      const page = parseInt(query.page);
-      const pageSize = parseInt(query.pageSize);
-      if (page > 0 && pageSize > 0) {
-        take = pageSize;
-        skip = pageSize * (page - 1);
-      } else {
-        throw new BadRequestException(
-          'The page and pageSize must be larger than 0.'
-        );
-      }
-    } else {
-      take = 10;
-      skip = 0;
-    }
+    const {take, skip} = generatePaginationParams({
+      page: query.page,
+      pageSize: query.pageSize,
+    });
 
     // [step 4] Get job applications.
     const roleIds = await this.getRoleIdsFromHttpRequest(request);
@@ -248,23 +236,10 @@ export class JobApplicationController {
     ) as {userId: string};
 
     // [step 2] Construct take and skip arguments.
-    let take: number, skip: number;
-    if (query.page && query.pageSize) {
-      // Actually 'page' is string because it comes from URL param.
-      const page = parseInt(query.page);
-      const pageSize = parseInt(query.pageSize);
-      if (page > 0 && pageSize > 0) {
-        take = pageSize;
-        skip = pageSize * (page - 1);
-      } else {
-        throw new BadRequestException(
-          'The page and pageSize must be larger than 0.'
-        );
-      }
-    } else {
-      take = 10;
-      skip = 0;
-    }
+    const {take, skip} = generatePaginationParams({
+      page: query.page,
+      pageSize: query.pageSize,
+    });
 
     // [step 4] Return job applications.
     return await this.jobApplicationService.findMany({
@@ -322,23 +297,10 @@ export class JobApplicationController {
       };
     }
     // [step 2] Construct take and skip arguments.
-    let take: number, skip: number;
-    if (query.page && query.pageSize) {
-      // Actually 'page' is string because it comes from URL param.
-      const page = parseInt(query.page);
-      const pageSize = parseInt(query.pageSize);
-      if (page > 0 && pageSize > 0) {
-        take = pageSize;
-        skip = pageSize * (page - 1);
-      } else {
-        throw new BadRequestException(
-          'The page and pageSize must be larger than 0.'
-        );
-      }
-    } else {
-      take = 10;
-      skip = 0;
-    }
+    const {take, skip} = generatePaginationParams({
+      page: query.page,
+      pageSize: query.pageSize,
+    });
 
     // [step 2] Get job applications.
     const jobApplications = await this.jobApplicationService.findMany({

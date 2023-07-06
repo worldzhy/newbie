@@ -22,7 +22,10 @@ import {UserService} from './user.service';
 import {RequirePermission} from '../authorization/authorization.decorator';
 import {compareHash} from '../../../toolkit/utilities/common.util';
 import {verifyUuid} from '../../../toolkit/validators/user.validator';
-import {formatPaginationResponse} from '../../../toolkit/format/pagination.format';
+import {
+  generatePaginationParams,
+  generatePaginationResponse,
+} from '../../../toolkit/pagination/pagination';
 
 @ApiTags('[Application] Account / User')
 @ApiBearerAuth()
@@ -152,23 +155,10 @@ export class UserController {
     }
 
     // [step 2] Construct take and skip arguments.
-    let take: number, skip: number;
-    if (query.page && query.pageSize) {
-      // Actually 'page' is string because it comes from URL param.
-      const page = parseInt(query.page);
-      const pageSize = parseInt(query.pageSize);
-      if (page > 0 && pageSize > 0) {
-        take = pageSize;
-        skip = pageSize * (page - 1);
-      } else {
-        throw new BadRequestException(
-          'The page and pageSize must be larger than 0.'
-        );
-      }
-    } else {
-      take = 10;
-      skip = 0;
-    }
+    const {take, skip} = generatePaginationParams({
+      page: query.page,
+      pageSize: query.pageSize,
+    });
 
     // [step 3] Get users.
     const [users, total] = await this.userService.findManyWithTotal({
@@ -187,7 +177,7 @@ export class UserController {
       return this.userService.withoutPassword(user);
     });
 
-    return formatPaginationResponse({records, total, query});
+    return generatePaginationResponse({records, total, query});
   }
 
   @Get(':userId')

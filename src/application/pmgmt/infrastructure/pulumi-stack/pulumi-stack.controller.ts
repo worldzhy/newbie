@@ -21,7 +21,7 @@ import {
 
 @ApiTags('[Application] Project Management / Infrastructure / Pulumi Stack')
 @ApiBearerAuth()
-@Controller('project-management-pulumi-stacks')
+@Controller('project-pulumi-stacks')
 export class PulumiStackController {
   private stackService = new PulumiStackService();
 

@@ -22,6 +22,15 @@ export class ProjectService {
     return await this.prisma.project.findMany(params);
   }
 
+  async findManyWithTotal(
+    params: Prisma.ProjectFindManyArgs
+  ): Promise<[Project[], number]> {
+    return await this.prisma.$transaction([
+      this.prisma.project.findMany(params),
+      this.prisma.project.count({where: params.where}),
+    ]);
+  }
+
   async create(params: Prisma.ProjectCreateArgs): Promise<Project> {
     return await this.prisma.project.create(params);
   }

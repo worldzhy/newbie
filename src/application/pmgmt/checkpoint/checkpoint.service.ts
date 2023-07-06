@@ -3,7 +3,7 @@ import {Prisma, ProjectCheckpoint} from '@prisma/client';
 import {PrismaService} from '../../../toolkit/prisma/prisma.service';
 
 @Injectable()
-export class CheckpointService {
+export class ProjectCheckpointService {
   private prisma: PrismaService = new PrismaService();
 
   async findUnique(
@@ -19,9 +19,9 @@ export class CheckpointService {
   }
 
   async create(
-    data: Prisma.ProjectCheckpointCreateInput
+    params: Prisma.ProjectCheckpointCreateArgs
   ): Promise<ProjectCheckpoint> {
-    return await this.prisma.projectCheckpoint.create({data});
+    return await this.prisma.projectCheckpoint.create(params);
   }
 
   async update(

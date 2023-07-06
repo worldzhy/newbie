@@ -7,41 +7,47 @@ import {
   Body,
   Param,
   BadRequestException,
+  Query,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiParam,
+  ApiBody,
+  ApiQuery,
+} from '@nestjs/swagger';
 import {ProjectService} from './project.service';
-import {CheckpointService} from '../checkpoint/checkpoint.service';
-import {EnvironmentService} from '../environment/environment.service';
 import {verifyProjectName} from '../../../toolkit/validators/project.validator';
 
 import {
+  PermissionAction,
   Prisma,
   Project,
   ProjectCheckpointType,
   ProjectEnvironmentType,
   ProjectState,
 } from '@prisma/client';
+import {
+  generatePaginationParams,
+  generatePaginationResponse,
+} from '../../../toolkit/pagination/pagination';
+import {RequirePermission} from '../../../application/account/authorization/authorization.decorator';
 
 @ApiTags('[Application] Project Management / Project')
 @ApiBearerAuth()
-@Controller('project-management-projects')
+@Controller('projects')
 export class ProjectController {
   private projectService = new ProjectService();
-  private checkpointService = new CheckpointService();
-  private environmentService = new EnvironmentService();
 
   //* Create
   @Post('')
   @ApiBody({
-    description:
-      "The 'projectName', 'clientName' and 'clientEmail' are required in request body.",
+    description: "The 'name' is required in request body.",
     examples: {
       a: {
         summary: '1. Create',
         value: {
           name: 'Galaxy',
-          clientName: 'Henry Zhao',
-          clientEmail: 'henry@inceptionpad.com',
         },
       },
     },
@@ -61,8 +67,6 @@ export class ProjectController {
     return await this.projectService.create({
       data: {
         name: body.name,
-        clientName: body.clientName,
-        clientEmail: body.clientEmail,
         state: ProjectState.DESIGNING,
         checkpoints: {
           createMany: {
@@ -86,8 +90,49 @@ export class ProjectController {
 
   //* Get many
   @Get('')
-  async getProjects(): Promise<Project[]> {
-    return await this.projectService.findMany({});
+  @RequirePermission(PermissionAction.List, Prisma.ModelName.Project)
+  @ApiQuery({name: 'name', type: 'string'})
+  @ApiQuery({name: 'page', type: 'number'})
+  @ApiQuery({name: 'pageSize', type: 'number'})
+  async getProjects(
+    @Query()
+    query: {
+      name?: string;
+      page?: string;
+      pageSize?: string;
+    }
+  ) {
+    // [step 1] Construct where argument.
+    let where: Prisma.UserWhereInput | undefined;
+    const whereConditions: object[] = [];
+    if (query.name) {
+      const name = query.name.trim();
+      if (name.length > 0) {
+        whereConditions.push({name: {contains: name}});
+      }
+    }
+
+    if (whereConditions.length > 1) {
+      where = {OR: whereConditions};
+    } else if (whereConditions.length === 1) {
+      where = whereConditions[0];
+    } else {
+      // where === undefined
+    }
+
+    // [step 2] Construct take and skip arguments.
+    const {take, skip} = generatePaginationParams({
+      page: query.page,
+      pageSize: query.pageSize,
+    });
+
+    const [records, total] = await this.projectService.findManyWithTotal({
+      where: where,
+      take: take,
+      skip: skip,
+    });
+
+    return generatePaginationResponse({records, total, query});
   }
 
   //* Get
@@ -115,15 +160,12 @@ export class ProjectController {
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
   @ApiBody({
-    description:
-      "The 'projectName', 'clientName' and 'clientEmail' are required in request body.",
+    description: '',
     examples: {
       a: {
         summary: '1. Update',
         value: {
           name: 'Galaxy',
-          clientName: 'Henry Zhao',
-          clientEmail: 'henry@inceptionpad.com',
         },
       },
     },

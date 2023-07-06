@@ -7,12 +7,12 @@ import {
   Body,
   Param,
   Query,
-  BadRequestException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {PermissionAction, Prisma, CandidateProfile} from '@prisma/client';
 import {RequirePermission} from '../../../account/authorization/authorization.decorator';
 import {CandidateProfileService} from './profile.service';
+import {generatePaginationParams} from '../../../../toolkit/pagination/pagination';
 
 @ApiTags('[Application] Recruitment / Candidate / Profile')
 @ApiBearerAuth()
@@ -60,7 +60,7 @@ export class CandidateProfileController {
   @Get('')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.CandidateProfile)
   async getCandidateProfiles(
-    @Query() query: {name?: string; page?: string}
+    @Query() query: {name?: string; page?: string; pageSize?: string}
   ): Promise<CandidateProfile[]> {
     // [step 1] Construct where argument.
     let where: Prisma.CandidateProfileWhereInput | undefined;
@@ -70,27 +70,17 @@ export class CandidateProfileController {
           search: query.name
             .trim()
             .split(' ')
-            .filter((word) => word !== '')
+            .filter(word => word !== '')
             .join('|'),
         },
       };
     }
 
     // [step 2] Construct take and skip arguments.
-    let take: number, skip: number;
-    if (query.page) {
-      // Actually 'page' is string because it comes from URL param.
-      const page = parseInt(query.page);
-      if (page > 0) {
-        take = 10;
-        skip = 10 * (page - 1);
-      } else {
-        throw new BadRequestException('The page must be larger than 0.');
-      }
-    } else {
-      take = 10;
-      skip = 0;
-    }
+    const {take, skip} = generatePaginationParams({
+      page: query.page,
+      pageSize: query.pageSize,
+    });
 
     // [step 3] Get candidate profiles.
     return await this.candidateProfileService.findMany({

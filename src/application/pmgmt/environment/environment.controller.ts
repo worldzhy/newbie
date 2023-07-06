@@ -1,17 +1,17 @@
 import {Controller, Delete, Get, Patch, Body, Param} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {EnvironmentService} from './environment.service';
+import {ProjectEnvironmentService} from './environment.service';
 import {
   Prisma,
   ProjectEnvironment,
   ProjectEnvironmentType,
 } from '@prisma/client';
 
-@ApiTags('[Application] Project Management / Environment')
+@ApiTags('[Application] Project Management / Project Environment')
 @ApiBearerAuth()
-@Controller('project-management-environments')
-export class EnvironmentController {
-  private environmentService = new EnvironmentService();
+@Controller('project-environments')
+export class ProjectEnvironmentController {
+  private environmentService = new ProjectEnvironmentService();
 
   @Get('types')
   listEnvironmentEnvironments() {
@@ -28,8 +28,8 @@ export class EnvironmentController {
   @Get(':environmentId')
   @ApiParam({
     name: 'environmentId',
-    schema: {type: 'string'},
-    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
+    schema: {type: 'number'},
+    example: '1',
   })
   async getEnvironment(
     @Param('environmentId') environmentId: string
@@ -43,8 +43,8 @@ export class EnvironmentController {
   @Patch(':environmentId')
   @ApiParam({
     name: 'environmentId',
-    schema: {type: 'string'},
-    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
+    schema: {type: 'number'},
+    example: '1',
   })
   @ApiBody({
     description: 'Update environment variables.',
@@ -82,8 +82,8 @@ export class EnvironmentController {
   @Delete(':environmentId')
   @ApiParam({
     name: 'environmentId',
-    schema: {type: 'string'},
-    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
+    schema: {type: 'number'},
+    example: '1',
   })
   async deleteEnvironment(
     @Param('environmentId') environmentId: string

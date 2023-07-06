@@ -23,7 +23,7 @@ import {
   '[Application] Project Management / Infrastructure / CloudFormation Stack'
 )
 @ApiBearerAuth()
-@Controller('project-management-cloudformation-stacks')
+@Controller('project-cloudformation-stacks')
 export class CloudFormationStackController {
   private stackService = new CloudFormationStackService();
 

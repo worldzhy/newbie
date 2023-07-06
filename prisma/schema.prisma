@@ -839,10 +839,9 @@ model Project {
   id                   String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name                 String                @unique
   state                ProjectState          @default(PLANNING)
-  clientName           String?
-  clientEmail          String?
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
+  elements             ProjectElement[]
   checkpoints          ProjectCheckpoint[]
   environments         ProjectEnvironment[]
   cloudformationStacks CloudFormationStack[]
@@ -856,6 +855,19 @@ enum ProjectState {
   DESIGNING
   DEVELOPING
   DONE
+
+  @@schema("application/pmgmt")
+}
+
+model ProjectElement {
+  id        Int      @id @default(autoincrement())
+  section   String?
+  label     String
+  content   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  project   Project? @relation(fields: [projectId], references: [id])
+  projectId String?  @db.Uuid
 
   @@schema("application/pmgmt")
 }

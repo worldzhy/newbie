@@ -3,7 +3,7 @@ import {Prisma, ProjectEnvironment} from '@prisma/client';
 import {PrismaService} from '../../../toolkit/prisma/prisma.service';
 
 @Injectable()
-export class EnvironmentService {
+export class ProjectEnvironmentService {
   private prisma: PrismaService = new PrismaService();
 
   async findUnique(

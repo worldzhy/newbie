@@ -1,6 +1,6 @@
 import {Controller, Delete, Get, Patch, Body, Param} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {CheckpointService} from './checkpoint.service';
+import {ProjectCheckpointService} from './checkpoint.service';
 import {
   Prisma,
   ProjectCheckpoint,
@@ -8,11 +8,11 @@ import {
   ProjectCheckpointType,
 } from '@prisma/client';
 
-@ApiTags('[Application] Project Management / Checkpoint')
+@ApiTags('[Application] Project Management / Project Checkpoint')
 @ApiBearerAuth()
-@Controller('project-management-checkpoints')
-export class CheckpointController {
-  private checkpointService = new CheckpointService();
+@Controller('project-checkpoints')
+export class ProjectCheckpointController {
+  private checkpointService = new ProjectCheckpointService();
 
   @Get('types')
   listCheckpointCheckpoints() {
@@ -29,8 +29,8 @@ export class CheckpointController {
   @Get(':checkpointId')
   @ApiParam({
     name: 'checkpointId',
-    schema: {type: 'string'},
-    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
+    schema: {type: 'number'},
+    example: '1',
   })
   async getCheckpoint(
     @Param('checkpointId') checkpointId: string
@@ -45,7 +45,7 @@ export class CheckpointController {
   @ApiParam({
     name: 'checkpointId',
     schema: {type: 'number'},
-    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
+    example: '1',
   })
   @ApiBody({
     description: 'Update checkpoint state.',
@@ -72,8 +72,8 @@ export class CheckpointController {
   @Delete(':checkpointId')
   @ApiParam({
     name: 'checkpointId',
-    schema: {type: 'string'},
-    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
+    schema: {type: 'number'},
+    example: '1',
   })
   async deleteCheckpoint(
     @Param('checkpointId') checkpointId: string

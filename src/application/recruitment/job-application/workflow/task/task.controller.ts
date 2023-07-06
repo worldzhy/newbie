@@ -29,6 +29,7 @@ import {RequirePermission} from '../../../../account/authorization/authorization
 import {UserService} from '../../../../account/user/user.service';
 import {TokenService} from '../../../../../toolkit/token/token.service';
 import {JobApplicationWorkflowService} from '../workflow.service';
+import {generatePaginationParams} from '../../../../../toolkit/pagination/pagination';
 
 @ApiTags('[Application] Recruitment / Job Application / Workflow Task')
 @ApiBearerAuth()
@@ -115,23 +116,10 @@ export class JobApplicationWorkflowTaskController {
     }
 
     // [step 2] Construct take and skip arguments.
-    let take: number, skip: number;
-    if (query.page && query.pageSize) {
-      // Actually 'page' is string because it comes from URL param.
-      const page = parseInt(query.page);
-      const pageSize = parseInt(query.pageSize);
-      if (page > 0 && pageSize > 0) {
-        take = pageSize;
-        skip = pageSize * (page - 1);
-      } else {
-        throw new BadRequestException(
-          'The page and pageSize must be larger than 0.'
-        );
-      }
-    } else {
-      take = 10;
-      skip = 0;
-    }
+    const {take, skip} = generatePaginationParams({
+      page: query.page,
+      pageSize: query.pageSize,
+    });
 
     return await this.jobApplicationWorkflowTaskService.findMany({
       where: where,

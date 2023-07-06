@@ -13,6 +13,7 @@ import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {Organization, PermissionAction, Prisma} from '@prisma/client';
 import {RequirePermission} from '../authorization/authorization.decorator';
 import {OrganizationService} from './organization.service';
+import {generatePaginationParams} from 'src/toolkit/pagination/pagination';
 
 @ApiTags('[Application] Account / Organization')
 @ApiBearerAuth()
@@ -59,7 +60,7 @@ export class OrganizationController {
     example: 1,
   })
   async getOrganizations(
-    @Query() query: {name?: string; page?: string}
+    @Query() query: {name?: string; page?: string; pageSize?: string}
   ): Promise<Organization[]> {
     // [step 1] Construct where argument.
     let where: Prisma.OrganizationWhereInput | undefined;
@@ -71,20 +72,10 @@ export class OrganizationController {
     }
 
     // [step 2] Construct take and skip arguments.
-    let take: number, skip: number;
-    if (query.page) {
-      // Actually 'page' is string because it comes from URL param.
-      const page = parseInt(query.page);
-      if (page > 0) {
-        take = 10;
-        skip = 10 * (page - 1);
-      } else {
-        throw new BadRequestException('The page must be larger than 0.');
-      }
-    } else {
-      take = 10;
-      skip = 0;
-    }
+    const {take, skip} = generatePaginationParams({
+      page: query.page,
+      pageSize: query.pageSize,
+    });
 
     // [step 3] Get organizations.
     return await this.organizationService.findMany({

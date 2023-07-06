@@ -20,7 +20,10 @@ import {TcWorkflow, Prisma} from '@prisma/client';
 import {TcWorkflowService, WorkflowStatus} from '../workflow.service';
 import {RoleService} from '../../../account/role/role.service';
 import {UserService} from '../../../account/user/user.service';
-import {formatPaginationResponse} from '../../../../toolkit/format/pagination.format';
+import {
+  generatePaginationParams,
+  generatePaginationResponse,
+} from '../../../../toolkit/pagination/pagination';
 import {TokenService} from '../../../../toolkit/token/token.service';
 
 @ApiTags('[Application] Tc Request / Workflow / Officer')
@@ -103,23 +106,10 @@ export class OfficerWorkflowController {
     }
 
     // [step 2] Construct take and skip arguments.
-    let take: number, skip: number;
-    if (query.page && query.pageSize) {
-      // Actually 'page' is string because it comes from URL param.
-      const page = parseInt(query.page);
-      const pageSize = parseInt(query.pageSize);
-      if (page > 0 && pageSize > 0) {
-        take = pageSize;
-        skip = pageSize * (page - 1);
-      } else {
-        throw new BadRequestException(
-          'The page and pageSize must be larger than 0.'
-        );
-      }
-    } else {
-      take = 10;
-      skip = 0;
-    }
+    const {take, skip} = generatePaginationParams({
+      page: query.page,
+      pageSize: query.pageSize,
+    });
 
     // [step 3] Get many.
     const [workflows, total] = await this.tcWorkflowService.findManyWithTotal({
@@ -142,7 +132,7 @@ export class OfficerWorkflowController {
       }
     }
 
-    return formatPaginationResponse({records: workflows, total, query});
+    return generatePaginationResponse({records: workflows, total, query});
   }
 
   @Get(':workflowId')
