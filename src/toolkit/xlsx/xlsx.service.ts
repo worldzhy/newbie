@@ -1,5 +1,5 @@
 import {Injectable} from '@nestjs/common';
-var XLSX = require('xlsx');
+const XLSX = require('xlsx');
 
 @Injectable()
 export class XLSXService {

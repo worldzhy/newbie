@@ -47,7 +47,9 @@ export async function prismaMiddleware(
       case 'create':
       case 'update':
         if (params.args['data']['dateOfBirth']) {
-          params.args['data']['dateOfBirth'] =  new Date(params.args['data']['dateOfBirth'].toString());
+          params.args['data']['dateOfBirth'] = new Date(
+            params.args['data']['dateOfBirth'].toString()
+          );
         }
         return next(params);
       default:
@@ -63,11 +65,13 @@ export async function prismaMiddleware(
             ? params.args['data']['profile']['create']['middleName'] + ' '
             : '') +
           params.args['data']['profile']['create']['lastName'];
-        
+
         if (params.args['data']['profile']['create']['dateOfBirth']) {
-          params.args['data']['profile']['create']['dateOfBirth'] =  new Date(params.args['data']['profile']['create']['dateOfBirth'].toString());
+          params.args['data']['profile']['create']['dateOfBirth'] = new Date(
+            params.args['data']['profile']['create']['dateOfBirth'].toString()
+          );
         }
-        
+
         return next(params);
       case 'update':
         params.args['data']['profile']['update']['fullName'] =
@@ -77,11 +81,13 @@ export async function prismaMiddleware(
             ? params.args['data']['profile']['update']['middleName'] + ' '
             : '') +
           params.args['data']['profile']['update']['lastName'];
-          
+
         if (params.args['data']['profile']['create']['dateOfBirth']) {
-          params.args['data']['profile']['create']['dateOfBirth'] =  new Date(params.args['data']['profile']['create']['dateOfBirth'].toString());
+          params.args['data']['profile']['create']['dateOfBirth'] = new Date(
+            params.args['data']['profile']['create']['dateOfBirth'].toString()
+          );
         }
-        
+
         return next(params);
       default:
         return next(params);

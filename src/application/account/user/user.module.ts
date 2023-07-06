@@ -6,11 +6,7 @@ import {UserProfileModule} from './profile/profile.module';
 import {UserTokenModule} from './token/token.module';
 
 @Module({
-  imports: [
-    LocationModule,
-    UserProfileModule,
-    UserTokenModule,
-  ],
+  imports: [LocationModule, UserProfileModule, UserTokenModule],
   controllers: [UserController],
   providers: [UserService],
   exports: [UserService],
