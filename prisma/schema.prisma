@@ -836,16 +836,14 @@ enum ElasticsearchDataboardColumnFormatter {
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
 model Project {
-  id                   String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                 String                @unique
-  state                ProjectState          @default(PLANNING)
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  elements             ProjectElement[]
-  checkpoints          ProjectCheckpoint[]
-  environments         ProjectEnvironment[]
-  cloudformationStacks CloudFormationStack[]
-  pulumiStacks         PulumiStack[]
+  id           String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String               @unique
+  state        ProjectState         @default(PLANNING)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  elements     ProjectElement[]
+  checkpoints  ProjectCheckpoint[]
+  environments ProjectEnvironment[]
 
   @@schema("application/pmgmt")
 }
@@ -912,27 +910,20 @@ enum ProjectCheckpointState {
 }
 
 model ProjectEnvironment {
-  id                  Int                    @id @default(autoincrement())
-  type                ProjectEnvironmentType
-  awsAccountId        String?
-  awsProfile          String?
-  awsAccessKeyId      String?
-  awsSecretAccessKey  String? // automatic hashing
-  awsRegion           String?
-  s3ForCloudformation String?
-  createdAt           DateTime               @default(now())
-  updatedAt           DateTime               @updatedAt
-  project             Project                @relation(fields: [projectId], references: [id])
-  projectId           String                 @db.Uuid
-
-  @@unique([type, projectId])
-  @@schema("application/pmgmt")
-}
-
-enum ProjectEnvironmentType {
-  DEVELOPMENT
-  STAGING
-  PRODUCTION
+  id                   Int                   @id @default(autoincrement())
+  name                 String
+  awsAccountId         String?
+  awsProfile           String?
+  awsAccessKeyId       String?
+  awsSecretAccessKey   String? // automatic hashing
+  awsRegion            String?
+  s3ForCloudformation  String?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  project              Project               @relation(fields: [projectId], references: [id])
+  projectId            String                @db.Uuid
+  cloudFormationStacks CloudFormationStack[]
+  pulumiStacks         PulumiStack[]
 
   @@schema("application/pmgmt")
 }
@@ -943,14 +934,13 @@ model CloudFormationStack {
   type                CloudFormationStackType
   params              Json?
   state               CloudFormationStackState @default(PENDING)
-  environment         ProjectEnvironmentType
   createStackOutput   Json?
   describeStackOutput Json?
   deleteStackOutput   Json?
   createdAt           DateTime                 @default(now())
   updatedAt           DateTime                 @updatedAt
-  project             Project                  @relation(fields: [projectId], references: [id])
-  projectId           String                   @db.Uuid
+  environment         ProjectEnvironment       @relation(fields: [environmentId], references: [id])
+  environmentId       Int
 
   @@schema("application/pmgmt")
 }
@@ -976,18 +966,17 @@ enum CloudFormationStackState {
 }
 
 model PulumiStack {
-  id            String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name          String?                @unique // Set default value via prisma middleware.
+  id            String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String?            @unique // Set default value via prisma middleware.
   type          PulumiStackType
   params        Json?
-  state         PulumiStackState       @default(PENDING)
-  environment   ProjectEnvironmentType
+  state         PulumiStackState   @default(PENDING)
   upResult      Json?
   destroyResult Json?
-  createdAt     DateTime               @default(now())
-  updatedAt     DateTime               @updatedAt
-  project       Project                @relation(fields: [projectId], references: [id])
-  projectId     String                 @db.Uuid
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  environment   ProjectEnvironment @relation(fields: [environmentId], references: [id])
+  environmentId Int
 
   @@schema("application/pmgmt")
 }

@@ -1,11 +1,16 @@
-import {Controller, Delete, Get, Patch, Body, Param} from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  Patch,
+  Body,
+  Param,
+  Post,
+  BadRequestException,
+} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {ProjectEnvironmentService} from './environment.service';
-import {
-  Prisma,
-  ProjectEnvironment,
-  ProjectEnvironmentType,
-} from '@prisma/client';
+import {Prisma, ProjectEnvironment} from '@prisma/client';
 
 @ApiTags('[Application] Project Management / Project Environment')
 @ApiBearerAuth()
@@ -13,15 +18,35 @@ import {
 export class ProjectEnvironmentController {
   private environmentService = new ProjectEnvironmentService();
 
-  @Get('types')
-  listEnvironmentEnvironments() {
-    return Object.values(ProjectEnvironmentType);
-  }
+  //* Create
+  @Post('')
+  @ApiBody({
+    description: "The 'name' is required in request body.",
+    examples: {
+      a: {
+        summary: '1. Create',
+        value: {
+          name: 'Development',
+          projectId: '8ad800c8-31c0-44bb-989b-230c6adfad22',
+        },
+      },
+    },
+  })
+  async createEnvironment(
+    @Body()
+    body: Prisma.ProjectEnvironmentUncheckedCreateInput
+  ): Promise<ProjectEnvironment> {
+    // [step 1] Guard statement.
+    if (!body.name) {
+      throw new BadRequestException(
+        'Invalid project environment name in the request body.'
+      );
+    }
 
-  //* Get many
-  @Get('')
-  async getEnvironments(): Promise<ProjectEnvironment[]> {
-    return await this.environmentService.findMany({});
+    // [step 2] Create project.
+    return await this.environmentService.create({
+      data: body,
+    });
   }
 
   //* Get
@@ -92,5 +117,40 @@ export class ProjectEnvironmentController {
       where: {id: parseInt(environmentId)},
     });
   }
+
+  //* Get cloudformation stacks
+  @Get(':environmentId/cloudformation-stacks')
+  @ApiParam({
+    name: 'environmentId',
+    schema: {type: 'number'},
+    description: 'The id of the environment.',
+    example: '1',
+  })
+  async getProjectCloudformationStacks(
+    @Param('environmentId') environmentId: string
+  ): Promise<ProjectEnvironment> {
+    return await this.environmentService.findUniqueOrThrow({
+      where: {id: parseInt(environmentId)},
+      include: {cloudFormationStacks: true},
+    });
+  }
+
+  //* Get pulumi stacks
+  @Get(':environmentId/pulumi-stacks')
+  @ApiParam({
+    name: 'environmentId',
+    schema: {type: 'number'},
+    description: 'The uuid of the project.',
+    example: '1',
+  })
+  async getProjectPulumiStacks(
+    @Param('environmentId') environmentId: string
+  ): Promise<ProjectEnvironment> {
+    return await this.environmentService.findUniqueOrThrow({
+      where: {id: parseInt(environmentId)},
+      include: {pulumiStacks: true},
+    });
+  }
+
   /* End */
 }

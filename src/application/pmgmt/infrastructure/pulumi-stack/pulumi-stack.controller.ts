@@ -14,7 +14,6 @@ import {PulumiStackService} from './pulumi-stack.service';
 import {
   PulumiStackState,
   PulumiStackType,
-  ProjectEnvironmentType,
   Prisma,
   PulumiStack,
 } from '@prisma/client';
@@ -48,12 +47,11 @@ export class PulumiStackController {
       a: {
         summary: '1. HIPAA network stack',
         value: {
-          projectId: '5a91888b-0b60-49ac-9a32-493f21bd5545',
           type: PulumiStackType.NETWORK_HIPAA,
           params: {
             SNSAlarmEmail: 'henry@inceptionpad.com',
           },
-          environment: ProjectEnvironmentType.DEVELOPMENT,
+          environmentId: '1',
         },
       },
       b: {
@@ -65,7 +63,7 @@ export class PulumiStackController {
             instanceName: 'postgres-default',
             instanceClass: 'db.t3.micro',
           },
-          environment: ProjectEnvironmentType.DEVELOPMENT,
+          environmentId: '1',
         },
       },
     },
@@ -181,7 +179,7 @@ export class PulumiStackController {
     // [step 1] Get the stack.
     const stack = await this.stackService.findUnique({
       where: {id: stackId},
-      include: {project: true},
+      include: {environment: {include: {project: true}}},
     });
     if (!stack) {
       throw new NotFoundException('Not found the stack.');
@@ -220,7 +218,7 @@ export class PulumiStackController {
     // [step 1] Get the stack.
     const stack = await this.stackService.findUnique({
       where: {id: stackId},
-      include: {project: true},
+      include: {environment: {include: {project: true}}},
     });
     if (!stack) {
       throw new NotFoundException('Not found the stack.');

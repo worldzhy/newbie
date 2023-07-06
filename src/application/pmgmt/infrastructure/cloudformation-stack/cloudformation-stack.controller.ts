@@ -16,7 +16,6 @@ import {
   CloudFormationStackState,
   CloudFormationStackType,
   Prisma,
-  ProjectEnvironmentType,
 } from '@prisma/client';
 
 @ApiTags(
@@ -60,24 +59,22 @@ export class CloudFormationStackController {
       a: {
         summary: '1. HIPAA network stack',
         value: {
-          projectId: '5a91888b-0b60-49ac-9a32-493f21bd5545',
           type: CloudFormationStackType.NETWORK_HIPAA,
           params: {
             SNSAlarmEmail: 'henry@inceptionpad.com',
           },
-          environment: ProjectEnvironmentType.DEVELOPMENT,
+          environmentId: '1',
         },
       },
       b: {
         summary: '2. Data engine stack',
         value: {
-          projectId: '5a91888b-0b60-49ac-9a32-493f21bd5545',
           type: CloudFormationStackType.PRODUCT_DATA_ENGINE,
           params: {
             instanceName: 'postgres-default',
             instanceClass: 'db.t3.micro',
           },
-          environment: ProjectEnvironmentType.DEVELOPMENT,
+          environmentId: '1',
         },
       },
     },

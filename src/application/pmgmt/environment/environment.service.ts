@@ -12,6 +12,12 @@ export class ProjectEnvironmentService {
     return await this.prisma.projectEnvironment.findUnique(params);
   }
 
+  async findUniqueOrThrow(
+    params: Prisma.ProjectEnvironmentFindUniqueOrThrowArgs
+  ): Promise<ProjectEnvironment> {
+    return await this.prisma.projectEnvironment.findUniqueOrThrow(params);
+  }
+
   async findMany(
     params: Prisma.ProjectEnvironmentFindManyArgs
   ): Promise<ProjectEnvironment[]> {

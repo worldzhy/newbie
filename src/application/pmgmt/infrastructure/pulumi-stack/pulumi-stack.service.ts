@@ -97,7 +97,10 @@ export class PulumiStackService {
   async createResources(stack: PulumiStack): Promise<PulumiStack> {
     // [step 1] Create or select pulumi stack.
     const args: InlineProgramArgs = {
-      projectName: stack['project'].name.replace(/ /g, '_'),
+      projectName:
+        stack['environment']['project'].name.replace(/ /g, '_') +
+        '_' +
+        stack['environment'].name.replace(/ /g, '_'),
       stackName: stack.name!,
       program: this.getStackProgramByType(stack.type, stack.params),
     };
@@ -150,7 +153,10 @@ export class PulumiStackService {
   async destroyResources(stack: PulumiStack): Promise<PulumiStack> {
     // [step 1] Get pulumi stack.
     const args: InlineProgramArgs = {
-      projectName: stack['project'].name.replace(/ /g, '_'),
+      projectName:
+        stack['environment']['project'].name.replace(/ /g, '_') +
+        '_' +
+        stack['environment'].name.replace(/ /g, '_'),
       stackName: stack.name!,
       program: async () => {},
     };

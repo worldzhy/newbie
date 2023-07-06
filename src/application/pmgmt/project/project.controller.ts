@@ -24,7 +24,6 @@ import {
   Prisma,
   Project,
   ProjectCheckpointType,
-  ProjectEnvironmentType,
   ProjectState,
 } from '@prisma/client';
 import {
@@ -73,14 +72,6 @@ export class ProjectController {
             skipDuplicates: true,
             data: Object.values(ProjectCheckpointType).map(checkpointType => {
               return {type: checkpointType};
-            }),
-          },
-        },
-        environments: {
-          createMany: {
-            skipDuplicates: true,
-            data: Object.values(ProjectEnvironmentType).map(environmentType => {
-              return {type: environmentType};
             }),
           },
         },
@@ -223,40 +214,6 @@ export class ProjectController {
     return await this.projectService.findUniqueOrThrow({
       where: {id: projectId},
       include: {environments: true},
-    });
-  }
-
-  //* Get cloudformation stacks
-  @Get(':projectId/cloudformation-stacks')
-  @ApiParam({
-    name: 'projectId',
-    schema: {type: 'string'},
-    description: 'The uuid of the project.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
-  async getProjectCloudformationStacks(
-    @Param('projectId') projectId: string
-  ): Promise<Project> {
-    return await this.projectService.findUniqueOrThrow({
-      where: {id: projectId},
-      include: {cloudformationStacks: true},
-    });
-  }
-
-  //* Get pulumi stacks
-  @Get(':projectId/pulumi-stacks')
-  @ApiParam({
-    name: 'projectId',
-    schema: {type: 'string'},
-    description: 'The uuid of the project.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
-  async getProjectPulumiStacks(
-    @Param('projectId') projectId: string
-  ): Promise<Project> {
-    return await this.projectService.findUniqueOrThrow({
-      where: {id: projectId},
-      include: {pulumiStacks: true},
     });
   }
 

@@ -1,12 +1,7 @@
 import {Controller, Delete, Get, Patch, Body, Param} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {ProjectCheckpointService} from './checkpoint.service';
-import {
-  Prisma,
-  ProjectCheckpoint,
-  ProjectCheckpointState,
-  ProjectCheckpointType,
-} from '@prisma/client';
+import {Prisma, ProjectCheckpoint, ProjectCheckpointType} from '@prisma/client';
 
 @ApiTags('[Application] Project Management / Project Checkpoint')
 @ApiBearerAuth()
@@ -15,14 +10,13 @@ export class ProjectCheckpointController {
   private checkpointService = new ProjectCheckpointService();
 
   @Get('types')
-  listCheckpointCheckpoints() {
+  listCheckpoints() {
     return Object.values(ProjectCheckpointType);
   }
 
-  //* Get many
-  @Get('')
-  async getCheckpoints(): Promise<ProjectCheckpoint[]> {
-    return await this.checkpointService.findMany({});
+  @Get('states')
+  listCheckpointStates() {
+    return ['Todo', 'Processing', 'Done', '-'];
   }
 
   //* Get
@@ -53,7 +47,7 @@ export class ProjectCheckpointController {
       a: {
         summary: '1. Update state',
         value: {
-          state: ProjectCheckpointState.PROCESSING,
+          state: 'Processing',
         },
       },
     },
