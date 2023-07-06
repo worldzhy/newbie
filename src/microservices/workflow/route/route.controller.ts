@@ -28,12 +28,15 @@ export class WorkflowRouteController {
 
   @Post('')
   @ApiBody({
-    description: "The 'name' is required in request body.",
+    description: '',
     examples: {
       a: {
         summary: '1. Create',
         value: {
-          name: 'Admin',
+          view: 'view001',
+          state: 'Yes',
+          nextView: 'view002',
+          workflowId: 'd8141ece-f242-4288-a60a-8675538549cd',
         },
       },
     },
@@ -65,7 +68,7 @@ export class WorkflowRouteController {
   @ApiParam({
     name: 'routeId',
     schema: {type: 'number'},
-    description: 'The id of the workflow.',
+    description: 'The id of the workflow route.',
     example: 11,
   })
   async getWorkflowRoute(
@@ -80,16 +83,24 @@ export class WorkflowRouteController {
   @ApiParam({
     name: 'routeId',
     schema: {type: 'number'},
-    description: 'The id of the workflow.',
+    description: 'The id of the workflow route.',
     example: 11,
   })
   @ApiBody({
     description: '',
     examples: {
       a: {
-        summary: '1. Update name',
+        summary: '1. Update route',
         value: {
-          name: 'InceptionPad Inc',
+          view: 'view001',
+          state: 'Yes',
+          nextView: 'view002',
+        },
+      },
+      b: {
+        summary: '2. Update start sign',
+        value: {
+          startSign: true,
         },
       },
     },
@@ -99,6 +110,12 @@ export class WorkflowRouteController {
     @Body()
     body: Prisma.WorkflowRouteUpdateInput
   ): Promise<WorkflowRoute> {
+    if (body.startSign && body.startSign === true) {
+      this.workflowRouteService.updateMany({
+        data: {startSign: null},
+      });
+    }
+
     return await this.workflowRouteService.update({
       where: {id: parseInt(routeId)},
       data: body,

@@ -30,6 +30,12 @@ export class WorkflowRouteService {
     return await this.prisma.workflowRoute.update(params);
   }
 
+  async updateMany(
+    params: Prisma.WorkflowRouteUpdateManyArgs
+  ): Promise<Prisma.BatchPayload> {
+    return await this.prisma.workflowRoute.updateMany(params);
+  }
+
   async delete(params: Prisma.WorkflowRouteDeleteArgs): Promise<WorkflowRoute> {
     return await this.prisma.workflowRoute.delete(params);
   }
