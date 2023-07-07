@@ -7,10 +7,10 @@ import {ProjectCheckpointController} from './checkpoint/checkpoint.controller';
 import {ProjectCheckpointService} from './checkpoint/checkpoint.service';
 import {ProjectEnvironmentController} from './environment/environment.controller';
 import {ProjectEnvironmentService} from './environment/environment.service';
-import {PulumiStackController} from './infrastructure/pulumi-stack/pulumi-stack.controller';
-import {PulumiStackService} from './infrastructure/pulumi-stack/pulumi-stack.service';
-import {CloudFormationStackController} from './infrastructure/cloudformation-stack/cloudformation-stack.controller';
-import {CloudFormationStackService} from './infrastructure/cloudformation-stack/cloudformation-stack.service';
+import {PulumiStackService} from './infrastructure/pulumi/pulumi.service';
+import {CloudFormationStackService} from './infrastructure/cloudformation/cloudformation.service';
+import {ProjectInfrastructureStackController} from './infrastructure/infrastructure-stack.controller';
+import {ProjectInfrastructureStackService} from './infrastructure/infrastructure-stack.service';
 
 @Module({
   controllers: [
@@ -18,14 +18,14 @@ import {CloudFormationStackService} from './infrastructure/cloudformation-stack/
     ProjectElementController,
     ProjectCheckpointController,
     ProjectEnvironmentController,
-    CloudFormationStackController,
-    PulumiStackController,
+    ProjectInfrastructureStackController,
   ],
   providers: [
     ProjectService,
     ProjectElementService,
     ProjectCheckpointService,
     ProjectEnvironmentService,
+    ProjectInfrastructureStackService,
     CloudFormationStackService,
     PulumiStackService,
   ],
@@ -34,6 +34,7 @@ import {CloudFormationStackService} from './infrastructure/cloudformation-stack/
     ProjectElementService,
     ProjectCheckpointService,
     ProjectEnvironmentService,
+    ProjectInfrastructureStackService,
     CloudFormationStackService,
     PulumiStackService,
   ],

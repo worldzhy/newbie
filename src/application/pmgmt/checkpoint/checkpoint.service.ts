@@ -12,6 +12,12 @@ export class ProjectCheckpointService {
     return await this.prisma.projectCheckpoint.findUnique(params);
   }
 
+  async findUniqueOrThrow(
+    params: Prisma.ProjectCheckpointFindUniqueOrThrowArgs
+  ): Promise<ProjectCheckpoint> {
+    return await this.prisma.projectCheckpoint.findUniqueOrThrow(params);
+  }
+
   async findMany(
     params: Prisma.ProjectCheckpointFindManyArgs
   ): Promise<ProjectCheckpoint[]> {

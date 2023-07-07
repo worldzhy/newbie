@@ -922,84 +922,37 @@ model ProjectEnvironment {
   updatedAt            DateTime              @updatedAt
   project              Project               @relation(fields: [projectId], references: [id])
   projectId            String                @db.Uuid
-  cloudFormationStacks CloudFormationStack[]
-  pulumiStacks         PulumiStack[]
+  infrastructureStacks InfrastructureStack[]
 
   @@schema("application/pmgmt")
 }
 
-model CloudFormationStack {
-  id                  String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                String?                  @unique // Set default value via prisma middleware.
-  type                CloudFormationStackType
+model InfrastructureStack {
+  id                  String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                String?                    @unique // Set default value via prisma middleware.
+  manager             InfrastructureStackManager
+  type                String
   params              Json?
-  state               CloudFormationStackState @default(PENDING)
+  state               InfrastructureStackState   @default(PENDING)
   createStackOutput   Json?
   describeStackOutput Json?
   deleteStackOutput   Json?
-  createdAt           DateTime                 @default(now())
-  updatedAt           DateTime                 @updatedAt
-  environment         ProjectEnvironment       @relation(fields: [environmentId], references: [id])
+  createdAt           DateTime                   @default(now())
+  updatedAt           DateTime                   @updatedAt
+  environment         ProjectEnvironment         @relation(fields: [environmentId], references: [id])
   environmentId       Int
 
   @@schema("application/pmgmt")
 }
 
-enum CloudFormationStackType {
-  CICD_BUILD
-  CICD_PIPELINE
-  CICD_REPOSITORY
-  COMPUTING_FARGATE
-  NETWORK_HIPAA
-  PRODUCT_DATA_ENGINE
-  PRODUCT_MESSAGE_TRACKER
+enum InfrastructureStackManager {
+  CloudFormation
+  Pulumi
 
   @@schema("application/pmgmt")
 }
 
-enum CloudFormationStackState {
-  PENDING
-  BUILD
-  DESTROYED
-
-  @@schema("application/pmgmt")
-}
-
-model PulumiStack {
-  id            String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name          String?            @unique // Set default value via prisma middleware.
-  type          PulumiStackType
-  params        Json?
-  state         PulumiStackState   @default(PENDING)
-  upResult      Json?
-  destroyResult Json?
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
-  environment   ProjectEnvironment @relation(fields: [environmentId], references: [id])
-  environmentId Int
-
-  @@schema("application/pmgmt")
-}
-
-enum PulumiStackType {
-  AWS_CLOUDFRONT
-  AWS_CODE_COMMIT
-  AWS_ECR
-  AWS_ECS
-  AWS_EKS
-  AWS_IAM_USER
-  AWS_RDS
-  AWS_S3
-  AWS_SQS
-  AWS_VPC
-  AWS_WAF
-  COMPUTING_FARGATE
-  NETWORK_HIPAA
-
-  @@schema("application/pmgmt")
-}
-
-enum PulumiStackState {
+enum InfrastructureStackState {
   PENDING
   BUILD_PROCESSING
   BUILD_SUCCEEDED

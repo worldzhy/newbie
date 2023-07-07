@@ -1,12 +1,12 @@
-import {Injectable} from '@nestjs/common';
+import {BadRequestException, Injectable} from '@nestjs/common';
 import axios from 'axios';
-import {InlineProgramArgs, LocalWorkspace} from '@pulumi/pulumi/automation';
 import {
-  Prisma,
-  PulumiStack,
-  PulumiStackState,
-  PulumiStackType,
-} from '@prisma/client';
+  DestroyResult,
+  InlineProgramArgs,
+  LocalWorkspace,
+  UpResult,
+} from '@pulumi/pulumi/automation';
+import {InfrastructureStack, ProjectEnvironment} from '@prisma/client';
 import {AwsCloudfront_Stack} from './stack/aws-cloudfront.stack';
 import {AwsCodecommit_Stack} from './stack/aws-codecommit.stack';
 import {AwsIamUser_Stack} from './stack/aws-iam-user.stack';
@@ -15,53 +15,27 @@ import {AwsS3_Stack} from './stack/aws-s3.stack';
 import {AwsSqs_Stack} from './stack/aws-sqs.stack';
 import {AwsVpc_Stack} from './stack/aws-vpc.stack';
 import {AwsWaf_Stack} from './stack/aws-waf.stack';
-import {Null_Stack} from './stack/null.stack';
-import {getAwsConfig} from '../../../../toolkit/aws/aws.config';
+import {Pulumi_Null_Stack} from './stack/null.stack';
 import {getPulumiConfig} from './pulumi.config';
-import {PrismaService} from '../../../../toolkit/prisma/prisma.service';
-import {generateRandomNumbers} from '../../../../toolkit/utilities/common.util';
+
+export const PulumiStackType = {
+  AWS_CLOUDFRONT: 'AWS_CLOUDFRONT',
+  AWS_CODE_COMMIT: 'AWS_CODE_COMMIT',
+  AWS_ECR: 'AWS_ECR',
+  AWS_ECS: 'AWS_ECS',
+  AWS_EKS: 'AWS_EKS',
+  AWS_IAM_USER: 'AWS_IAM_USER',
+  AWS_RDS: 'AWS_RDS',
+  AWS_S3: 'AWS_S3',
+  AWS_SQS: 'AWS_SQS',
+  AWS_VPC: 'AWS_VPC',
+  AWS_WAF: 'AWS_WAF',
+  COMPUTING_FARGATE: 'COMPUTING_FARGATE',
+};
 
 @Injectable()
 export class PulumiStackService {
   private pulumiConfig = getPulumiConfig();
-  private prisma: PrismaService = new PrismaService();
-
-  async findUnique(
-    params: Prisma.PulumiStackFindUniqueArgs
-  ): Promise<PulumiStack | null> {
-    return await this.prisma.pulumiStack.findUnique(params);
-  }
-
-  async findMany(
-    params: Prisma.PulumiStackFindManyArgs
-  ): Promise<PulumiStack[]> {
-    return await this.prisma.pulumiStack.findMany(params);
-  }
-
-  async create(params: Prisma.PulumiStackCreateArgs): Promise<PulumiStack> {
-    // [middleware] Set the default stack name.
-    this.prisma.$use(async (params, next) => {
-      if (params.model === 'PulumiStack') {
-        if (params.action === 'create') {
-          if (!params.args['data']['name']) {
-            params.args['data']['name'] =
-              params.args['data']['type'] + '-' + generateRandomNumbers(8);
-          }
-        }
-      }
-      return next(params);
-    });
-
-    return await this.prisma.pulumiStack.create(params);
-  }
-
-  async update(params: Prisma.PulumiStackUpdateArgs): Promise<PulumiStack> {
-    return await this.prisma.pulumiStack.update(params);
-  }
-
-  async delete(params: Prisma.PulumiStackDeleteArgs): Promise<PulumiStack> {
-    return await this.prisma.pulumiStack.delete(params);
-  }
 
   /**
    * Start a stack.
@@ -94,8 +68,9 @@ export class PulumiStackService {
       }
    *
    */
-  async createResources(stack: PulumiStack): Promise<PulumiStack> {
+  async createResources(stack: InfrastructureStack): Promise<UpResult> {
     // [step 1] Create or select pulumi stack.
+    const environment = stack['environment'] as ProjectEnvironment;
     const args: InlineProgramArgs = {
       projectName:
         stack['environment']['project'].name.replace(/ /g, '_') +
@@ -111,46 +86,31 @@ export class PulumiStackService {
       'aws',
       this.pulumiConfig.awsVersion!
     );
-    if (getAwsConfig().profile) {
+    if (environment.awsProfile && environment.awsRegion) {
       await pulumiStack.setAllConfig({
-        'aws:profile': {value: getAwsConfig().profile!},
-        'aws:region': {value: getAwsConfig().region!},
+        'aws:profile': {value: environment.awsProfile},
+        'aws:region': {value: environment.awsRegion},
+      });
+    } else if (
+      environment.awsAccessKeyId &&
+      environment.awsSecretAccessKey &&
+      environment.awsRegion
+    ) {
+      await pulumiStack.setAllConfig({
+        'aws:accessKey': {value: environment.awsAccessKeyId},
+        'aws:secretKey': {value: environment.awsSecretAccessKey},
+        'aws:region': {value: environment.awsRegion},
       });
     } else {
-      await pulumiStack.setAllConfig({
-        'aws:accessKey': {value: getAwsConfig().accessKeyId!},
-        'aws:secretKey': {value: getAwsConfig().secretAccessKey!},
-        'aws:region': {value: getAwsConfig().region!},
-      });
+      throw new BadRequestException('The AWS config is not ready.');
     }
 
     // [step 3] Create resources.
-    const upResult = await pulumiStack.up({onOutput: console.log});
-
-    // [step 4] Update the stack state in database.
-    // pulumiStackResult.summary.result is one of ['failed', 'in-progress', 'not-started', 'succeeded']
-    let state: PulumiStackState;
-    if (upResult.summary.result === 'succeeded') {
-      state = PulumiStackState.BUILD_SUCCEEDED;
-    } else if (upResult.summary.result === 'in-progress') {
-      state = PulumiStackState.BUILD_PROCESSING;
-    } else if (upResult.summary.result === 'failed') {
-      state = PulumiStackState.BUILD_FAILED;
-    } else {
-      state = PulumiStackState.PENDING;
-    }
-
-    return await this.prisma.pulumiStack.update({
-      where: {id: stack.id},
-      data: {
-        state: state,
-        upResult: upResult as object,
-      },
-    });
+    return await pulumiStack.up({onOutput: console.log});
   }
 
   //* Destroy resources
-  async destroyResources(stack: PulumiStack): Promise<PulumiStack> {
+  async destroyResources(stack: InfrastructureStack): Promise<DestroyResult> {
     // [step 1] Get pulumi stack.
     const args: InlineProgramArgs = {
       projectName:
@@ -167,26 +127,7 @@ export class PulumiStackService {
     const destroyResult = await pulumiStack.destroy({onOutput: console.log});
     await pulumiStack.workspace.removeStack(stack.name!);
 
-    // [step 3] Update the stack state in database.
-    // pulumiStackResult.summary.result is one of ['failed', 'in-progress', 'not-started', 'succeeded']
-    let state: PulumiStackState;
-    if (destroyResult.summary.result === 'succeeded') {
-      state = PulumiStackState.DESTROY_SUCCEEDED;
-    } else if (destroyResult.summary.result === 'in-progress') {
-      state = PulumiStackState.DESTROY_PROCESSING;
-    } else if (destroyResult.summary.result === 'failed') {
-      state = PulumiStackState.DESTROY_FAILED;
-    } else {
-      state = PulumiStackState.PENDING;
-    }
-
-    return await this.prisma.pulumiStack.update({
-      where: {id: stack.id},
-      data: {
-        state: state,
-        destroyResult: destroyResult as object,
-      },
-    });
+    return destroyResult;
   }
 
   /**
@@ -226,68 +167,36 @@ export class PulumiStackService {
     });
   }
 
-  //* Get stack outputs.
-  async getStackOutputs(
-    stackProjectName: string,
-    stackName: string,
-    stackType: PulumiStackType
-  ) {
-    // [step 1] Create stack args.
-    const args: InlineProgramArgs = {
-      projectName: stackProjectName,
-      stackName,
-      program: async () => {},
-    };
-
-    // [step 2] Get stack.
-    const stack = await LocalWorkspace.selectStack(args);
-    await stack.workspace.installPlugin('aws', this.pulumiConfig.awsVersion!);
-    await stack.setAllConfig({
-      'aws:region': {value: getAwsConfig().region!},
-      'aws:profile': {value: stackProjectName},
-    });
-
-    // [step 3] Get stack outputs.
-    const outputs = await stack.outputs();
-    const outputKeys =
-      this.getStackServiceByType(stackType)?.getStackOutputKeys();
-    return outputKeys?.map(key => {
-      if (outputs[key].secret) {
-        return {[key]: outputs[key].value};
-      } else {
-        return {[key]: outputs[key].value};
-      }
-    });
-  }
-
   //* Get example parameters of stack.
-  getStackParams(stackType: PulumiStackType) {
+  getStackParams(stackType: string) {
     return this.getStackServiceByType(stackType)?.getStackParams();
   }
 
   //* Check parameters before building stack.
-  checkStackParams(stackType: PulumiStackType, params: any) {
-    return this.getStackServiceByType(stackType)?.checkStackParams(params);
+  checkStackParams(params: {stackType: string; stackParams: any}) {
+    return this.getStackServiceByType(params.stackType).checkStackParams(
+      params.stackParams
+    );
   }
 
   //* Get Pulumi program for stack-up.
-  private getStackProgramByType(stackType: PulumiStackType, stackParams: any) {
+  private getStackProgramByType(stackType: string, stackParams: any) {
     return this.getStackServiceByType(stackType).getStackProgram(stackParams);
   }
 
   //* Get stack class
-  private getStackServiceByType(type: PulumiStackType) {
+  private getStackServiceByType(type: string) {
     switch (type) {
       case PulumiStackType.AWS_CLOUDFRONT:
         return AwsCloudfront_Stack;
       case PulumiStackType.AWS_CODE_COMMIT:
         return AwsCodecommit_Stack;
       case PulumiStackType.AWS_ECR:
-        return Null_Stack;
+        return Pulumi_Null_Stack;
       case PulumiStackType.AWS_ECS:
-        return Null_Stack;
+        return Pulumi_Null_Stack;
       case PulumiStackType.AWS_EKS:
-        return Null_Stack;
+        return Pulumi_Null_Stack;
       case PulumiStackType.AWS_IAM_USER:
         return AwsIamUser_Stack;
       case PulumiStackType.AWS_RDS:
@@ -301,11 +210,9 @@ export class PulumiStackService {
       case PulumiStackType.AWS_WAF:
         return AwsWaf_Stack;
       case PulumiStackType.COMPUTING_FARGATE:
-        return Null_Stack;
-      case PulumiStackType.NETWORK_HIPAA:
-        return Null_Stack;
+        return Pulumi_Null_Stack;
       default:
-        return Null_Stack;
+        return Pulumi_Null_Stack;
     }
   }
 

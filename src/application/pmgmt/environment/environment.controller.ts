@@ -18,7 +18,6 @@ import {Prisma, ProjectEnvironment} from '@prisma/client';
 export class ProjectEnvironmentController {
   private environmentService = new ProjectEnvironmentService();
 
-  //* Create
   @Post('')
   @ApiBody({
     description: "The 'name' is required in request body.",
@@ -49,7 +48,6 @@ export class ProjectEnvironmentController {
     });
   }
 
-  //* Get
   @Get(':environmentId')
   @ApiParam({
     name: 'environmentId',
@@ -58,13 +56,12 @@ export class ProjectEnvironmentController {
   })
   async getEnvironment(
     @Param('environmentId') environmentId: string
-  ): Promise<ProjectEnvironment | null> {
-    return await this.environmentService.findUnique({
+  ): Promise<ProjectEnvironment> {
+    return await this.environmentService.findUniqueOrThrow({
       where: {id: parseInt(environmentId)},
     });
   }
 
-  //* Update
   @Patch(':environmentId')
   @ApiParam({
     name: 'environmentId',
@@ -103,7 +100,6 @@ export class ProjectEnvironmentController {
     });
   }
 
-  //* Delete
   @Delete(':environmentId')
   @ApiParam({
     name: 'environmentId',
@@ -119,7 +115,7 @@ export class ProjectEnvironmentController {
   }
 
   //* Get cloudformation stacks
-  @Get(':environmentId/cloudformation-stacks')
+  @Get(':environmentId/infrastructure-stacks')
   @ApiParam({
     name: 'environmentId',
     schema: {type: 'number'},
@@ -131,24 +127,7 @@ export class ProjectEnvironmentController {
   ): Promise<ProjectEnvironment> {
     return await this.environmentService.findUniqueOrThrow({
       where: {id: parseInt(environmentId)},
-      include: {cloudFormationStacks: true},
-    });
-  }
-
-  //* Get pulumi stacks
-  @Get(':environmentId/pulumi-stacks')
-  @ApiParam({
-    name: 'environmentId',
-    schema: {type: 'number'},
-    description: 'The uuid of the project.',
-    example: '1',
-  })
-  async getProjectPulumiStacks(
-    @Param('environmentId') environmentId: string
-  ): Promise<ProjectEnvironment> {
-    return await this.environmentService.findUniqueOrThrow({
-      where: {id: parseInt(environmentId)},
-      include: {pulumiStacks: true},
+      include: {infrastructureStacks: true},
     });
   }
 

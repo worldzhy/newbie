@@ -1,6 +1,6 @@
 import {BadRequestException} from '@nestjs/common';
 import {Prisma} from '@prisma/client';
-import {generateHash} from '../utilities/common.util';
+import {generateHash, generateRandomNumbers} from '../utilities/common.util';
 import {verifyEmail, verifyPassword} from '../validators/user.validator';
 
 export async function prismaMiddleware(
@@ -55,6 +55,18 @@ export async function prismaMiddleware(
       default:
         return next(params);
     }
+  } else if (params.model === Prisma.ModelName.InfrastructureStack) {
+    // [middleware] Set the default stack name. AWS Infrastructure stack name must satisfy regular expression pattern: "[a-zA-Z][-a-zA-Z0-9]*".
+    if (params.action === 'create') {
+      if (!params.args['data']['name']) {
+        params.args['data']['name'] = (
+          params.args['data']['type'] +
+          '-' +
+          generateRandomNumbers(8)
+        ).replace(/_/g, '-');
+      }
+    }
+    return next(params);
   } else if (params.model === Prisma.ModelName.Candidate) {
     switch (params.action) {
       case 'create':

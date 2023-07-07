@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 
 @Injectable()
-export class Null_Stack {
+export class Pulumi_Null_Stack {
   static getStackParams() {
     return {};
   }

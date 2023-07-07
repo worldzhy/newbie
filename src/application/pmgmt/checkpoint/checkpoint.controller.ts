@@ -19,7 +19,6 @@ export class ProjectCheckpointController {
     return ['Todo', 'Processing', 'Done', '-'];
   }
 
-  //* Get
   @Get(':checkpointId')
   @ApiParam({
     name: 'checkpointId',
@@ -29,12 +28,11 @@ export class ProjectCheckpointController {
   async getCheckpoint(
     @Param('checkpointId') checkpointId: string
   ): Promise<ProjectCheckpoint | null> {
-    return await this.checkpointService.findUnique({
+    return await this.checkpointService.findUniqueOrThrow({
       where: {id: parseInt(checkpointId)},
     });
   }
 
-  //* Update
   @Patch(':checkpointId')
   @ApiParam({
     name: 'checkpointId',
@@ -62,7 +60,6 @@ export class ProjectCheckpointController {
     });
   }
 
-  //* Delete
   @Delete(':checkpointId')
   @ApiParam({
     name: 'checkpointId',
