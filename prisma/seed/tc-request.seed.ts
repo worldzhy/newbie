@@ -1,5 +1,5 @@
 import {TrustedEntityType} from '@prisma/client';
-import {AccountController} from '../../src/application/account/account.controller';
+import {AccountSignupController} from '../../src/application/account/account-signup.controller';
 import {RoleController} from '../../src/application/account/role/role.controller';
 import {PermissionController} from '../../src/application/account/permission/permission.controller';
 import {WorkflowController} from '../../src/microservices/workflow/workflow.controller';
@@ -167,7 +167,7 @@ export async function seedForTcRequest() {
   console.log('* Creating roles, admin user and permissions...');
 
   const roleController = new RoleController();
-  const authController = new AccountController();
+  const signupController = new AccountSignupController();
   const permissionController = new PermissionController();
   const permissionResources = permissionController.listPermissionResources();
   const permissionActions = permissionController.listPermissionActions();
@@ -194,14 +194,14 @@ export async function seedForTcRequest() {
 
     if (role.name === RoleName.Admin) {
       // Create user with this role.
-      await authController.signup({
+      await signupController.signup({
         username: 'admin',
         password: 'Abc1234!',
         roles: {connect: [{id: role.id}]},
       });
     } else if (role.name === RoleName.Officer) {
       // Create user with this role.
-      await authController.signup({
+      await signupController.signup({
         username: 'officer01',
         email: 'officer01@tc.com',
         password: 'TCpwd@2023',

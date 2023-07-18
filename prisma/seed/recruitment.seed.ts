@@ -1,5 +1,5 @@
 import {PermissionAction, Prisma, TrustedEntityType} from '@prisma/client';
-import {AccountController} from '../../src/application/account/account.controller';
+import {AccountSignupController} from '../../src/application/account/account-signup.controller';
 import {OrganizationController} from '../../src/application/account/organization/organization.controller';
 import {RoleController} from '../../src/application/account/role/role.controller';
 import {PermissionController} from '../../src/application/account/permission/permission.controller';
@@ -141,7 +141,7 @@ export async function seedForRecruitment() {
 
   const organizationController = new OrganizationController();
   const roleController = new RoleController();
-  const authController = new AccountController();
+  const signupController = new AccountSignupController();
   const permissionController = new PermissionController();
   const permissionResources = permissionController.listPermissionResources();
   const permissionActions = permissionController.listPermissionActions();
@@ -211,12 +211,12 @@ export async function seedForRecruitment() {
 
     if (role.name === RoleName.Admin) {
       // Create user with this role.
-      await authController.signup({
+      await signupController.signup({
         username: 'admin',
         password: 'Abc1234!',
         roles: {connect: [{id: role.id}]},
       });
-      await authController.signup({
+      await signupController.signup({
         username: 'admin02',
         email: 'admin02@hd.com',
         password: 'HDpwd@2022',
@@ -224,7 +224,7 @@ export async function seedForRecruitment() {
       });
     } else if (role.name === RoleName.Recruiter) {
       // Create user with this role.
-      await authController.signup({
+      await signupController.signup({
         username: 'recruiter02',
         email: 'recruiter02@hd.com',
         password: 'HDpwd@2022',
@@ -232,7 +232,7 @@ export async function seedForRecruitment() {
       });
     } else if (role.name === RoleName.Dispatcher) {
       // Create user with this role.
-      await authController.signup({
+      await signupController.signup({
         username: 'dispatcher02',
         email: 'dispatcher02@hd.com',
         password: 'HDpwd@2022',
@@ -303,7 +303,7 @@ export async function seedForRecruitment() {
       }
     } else if (role.name === RoleName.Provider) {
       // Create user with this role.
-      await authController.signup({
+      await signupController.signup({
         username: 'provider02',
         email: 'provider02@hd.com',
         password: 'HDpwd@2022',
@@ -332,7 +332,7 @@ export async function seedForRecruitment() {
       }
     } else if (role.name === RoleName.Reviewer) {
       // Create user with this role.
-      await authController.signup({
+      await signupController.signup({
         username: 's_reviewer02',
         email: 's_reviewer02@hd.com',
         password: 'HDpwd@2022',

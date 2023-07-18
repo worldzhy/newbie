@@ -5,7 +5,7 @@ import {
   Prisma,
   TrustedEntityType,
 } from '@prisma/client';
-import {AccountController} from '../../src/application/account/account.controller';
+import {AccountSignupController} from '../../src/application/account/account-signup.controller';
 import {RoleController} from '../../src/application/account/role/role.controller';
 import {PermissionController} from '../../src/application/account/permission/permission.controller';
 import {PostgresqlDatasourceController} from '../../src/application/engined/datasource/postgresql/postgresql-datasource.controller';
@@ -17,7 +17,7 @@ export async function seedForEngined() {
   console.log('* Creating organization, roles, admin user and permissions...');
 
   const roleController = new RoleController();
-  const authController = new AccountController();
+  const signupController = new AccountSignupController();
   const permissionController = new PermissionController();
   const permissionResources = permissionController.listPermissionResources();
   const permissionActions = permissionController.listPermissionActions();
@@ -57,7 +57,7 @@ export async function seedForEngined() {
 
     if (role.name === RoleName.Admin) {
       // Create user with this role.
-      await authController.signup({
+      await signupController.signup({
         username: 'admin',
         password: 'Abc1234!',
         roles: {connect: [{id: role.id}]},
