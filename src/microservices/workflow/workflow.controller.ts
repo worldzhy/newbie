@@ -47,13 +47,14 @@ export class WorkflowController {
     name: 'workflowId',
     schema: {type: 'string'},
     description: 'The id of the workflow.',
-    example: 11,
+    example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
   async getWorkflow(
     @Param('workflowId') workflowId: string
   ): Promise<Workflow | null> {
     return await this.workflowService.findUnique({
       where: {id: workflowId},
+      include: {routes: true, views: true, states: true},
     });
   }
 
@@ -62,7 +63,7 @@ export class WorkflowController {
     name: 'workflowId',
     schema: {type: 'string'},
     description: 'The id of the workflow.',
-    example: 11,
+    example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
   @ApiBody({
     description: '',
@@ -90,7 +91,7 @@ export class WorkflowController {
   @ApiParam({
     name: 'workflowId',
     schema: {type: 'string'},
-    example: 11,
+    example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
   async deleteWorkflow(
     @Param('workflowId') workflowId: string
