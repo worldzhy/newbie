@@ -8,7 +8,7 @@ import {
   Param,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {WorkflowState, Prisma, PermissionAction} from '@prisma/client';
+import {WorkflowState, Prisma} from '@prisma/client';
 import {WorkflowStateService} from './state.service';
 
 @ApiTags('[Microservice] Workflow / State')
@@ -25,6 +25,7 @@ export class WorkflowStateController {
         summary: '1. Create',
         value: {
           name: 'Admin',
+          workflowId: 'd8141ece-f242-4288-a60a-8675538549cd',
         },
       },
     },

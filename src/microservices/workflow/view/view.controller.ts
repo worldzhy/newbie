@@ -27,6 +27,7 @@ export class WorkflowViewController {
         summary: '1. Create',
         value: {
           name: 'Admin',
+          workflowId: 'd8141ece-f242-4288-a60a-8675538549cd',
         },
       },
     },
