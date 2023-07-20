@@ -14,10 +14,10 @@ import {
   ApiBody,
   ApiQuery,
 } from '@nestjs/swagger';
-import {JobApplicationWorkflowStepService} from './step.service';
+import {JobApplicationWorkflowTrailService} from './trail.service';
 import {
   Prisma,
-  JobApplicationWorkflowStep,
+  JobApplicationWorkflowTrail,
   PermissionAction,
 } from '@prisma/client';
 import {RequirePermission} from '../../../../account/authorization/authorization.decorator';
@@ -28,15 +28,15 @@ import {generatePaginationParams} from '../../../../../toolkit/pagination/pagina
 @ApiTags('[Application] Recruitment / Job Application / Workflow Step')
 @ApiBearerAuth()
 @Controller('recruitment-workflow-steps')
-export class JobApplicationWorkflowStepController {
-  private workflowStepService = new JobApplicationWorkflowStepService();
+export class JobApplicationWorkflowTrailController {
+  private workflowStepService = new JobApplicationWorkflowTrailService();
   private userService = new UserService();
   private roleService = new RoleService();
 
   @Get('')
   @RequirePermission(
     PermissionAction.List,
-    Prisma.ModelName.JobApplicationWorkflowStep
+    Prisma.ModelName.JobApplicationWorkflowTrail
   )
   @ApiQuery({name: 'workflowId', type: 'string'})
   @ApiQuery({name: 'page', type: 'number'})
@@ -48,9 +48,9 @@ export class JobApplicationWorkflowStepController {
       page?: string;
       pageSize?: string;
     }
-  ): Promise<JobApplicationWorkflowStep[]> {
+  ): Promise<JobApplicationWorkflowTrail[]> {
     // [step 1] Construct where argument.
-    let where: Prisma.JobApplicationWorkflowStepWhereInput | undefined;
+    let where: Prisma.JobApplicationWorkflowTrailWhereInput | undefined;
     if (query.workflowId) {
       where = {workflowId: query.workflowId};
     }
@@ -95,7 +95,7 @@ export class JobApplicationWorkflowStepController {
   @Get(':stepId')
   @RequirePermission(
     PermissionAction.Get,
-    Prisma.ModelName.JobApplicationWorkflowStep
+    Prisma.ModelName.JobApplicationWorkflowTrail
   )
   @ApiParam({
     name: 'stepId',
@@ -104,7 +104,7 @@ export class JobApplicationWorkflowStepController {
   })
   async getWorkflowStep(
     @Param('stepId') stepId: string
-  ): Promise<JobApplicationWorkflowStep | null> {
+  ): Promise<JobApplicationWorkflowTrail | null> {
     return await this.workflowStepService.findUnique({
       where: {id: parseInt(stepId)},
     });
@@ -113,7 +113,7 @@ export class JobApplicationWorkflowStepController {
   @Patch(':stepId')
   @RequirePermission(
     PermissionAction.Update,
-    Prisma.ModelName.JobApplicationWorkflowStep
+    Prisma.ModelName.JobApplicationWorkflowTrail
   )
   @ApiParam({
     name: 'stepId',
@@ -144,8 +144,8 @@ export class JobApplicationWorkflowStepController {
   })
   async updateWorkflowStep(
     @Param('stepId') stepId: string,
-    @Body() body: Prisma.JobApplicationWorkflowStepUpdateInput
-  ): Promise<JobApplicationWorkflowStep> {
+    @Body() body: Prisma.JobApplicationWorkflowTrailUpdateInput
+  ): Promise<JobApplicationWorkflowTrail> {
     return await this.workflowStepService.update({
       where: {id: parseInt(stepId)},
       data: body,
@@ -155,7 +155,7 @@ export class JobApplicationWorkflowStepController {
   @Delete(':stepId')
   @RequirePermission(
     PermissionAction.Delete,
-    Prisma.ModelName.JobApplicationWorkflowStep
+    Prisma.ModelName.JobApplicationWorkflowTrail
   )
   @ApiParam({
     name: 'stepId',
@@ -164,7 +164,7 @@ export class JobApplicationWorkflowStepController {
   })
   async deleteWorkflowStep(
     @Param('stepId') stepId: string
-  ): Promise<JobApplicationWorkflowStep> {
+  ): Promise<JobApplicationWorkflowTrail> {
     return await this.workflowStepService.delete({
       where: {id: parseInt(stepId)},
     });

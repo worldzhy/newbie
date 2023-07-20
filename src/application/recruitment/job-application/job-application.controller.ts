@@ -107,15 +107,15 @@ export class JobApplicationController {
       await this.jobApplicationWorkflowService.create({
         data: {
           jobApplicationId: jobApplication.id,
-          state: route.state,
-          nextStep: route.nextView,
+          stateId: route.stateId,
+          nextViewId: route.nextViewId,
           nextRoleId: route.nextRoleId,
           payload: {create: {testType: testType}},
-          steps: {
+          trails: {
             create: {
-              step: route.view,
-              state: route.state,
-              nextStep: route.nextView,
+              viewId: route.viewId,
+              stateId: route.stateId,
+              nextViewId: route.nextViewId,
               nextRoleId: route.nextRoleId,
               processedByUserId: userId,
             },
@@ -313,7 +313,7 @@ export class JobApplicationController {
         workflows: {
           include: {
             payload: true,
-            steps: {orderBy: {createdAt: 'desc'}},
+            trails: {orderBy: {createdAt: 'desc'}},
           },
         },
       },

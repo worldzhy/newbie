@@ -353,7 +353,7 @@ export class CandidateController {
               orderBy: {createdAt: 'desc'},
               include: {
                 payload: true,
-                steps: {orderBy: {createdAt: 'desc'}},
+                trails: {orderBy: {createdAt: 'desc'}},
               },
             },
           },

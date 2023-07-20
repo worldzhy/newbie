@@ -14,7 +14,6 @@ import {AccountModule} from './account/account.module';
 import {EnginedModule} from './engined/engined.module';
 import {ProjectManagementModule} from './pmgmt/pmgmt.module';
 import {RecruitmentModule} from './recruitment/recruitment.module';
-import {TcRequestModule} from './tc-request/request.module';
 
 @Module({
   imports: [
@@ -29,7 +28,6 @@ import {TcRequestModule} from './tc-request/request.module';
     EnginedModule,
     ProjectManagementModule,
     RecruitmentModule,
-    TcRequestModule,
   ],
   providers: [
     // Guards

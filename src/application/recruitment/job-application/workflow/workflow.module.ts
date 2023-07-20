@@ -2,7 +2,7 @@ import {Module} from '@nestjs/common';
 import {JobApplicationWorkflowFileModule} from './file/file.module';
 import {JobApplicationWorkflowNoteModule} from './note/note.module';
 import {JobApplicationWorkflowTaskModule} from './task/task.module';
-import {JobApplicationWorkflowStepModule} from './step/step.module';
+import {JobApplicationWorkflowTrailModule} from './trail/trail.module';
 import {JobApplicationWorkflowController} from './workflow.controller';
 import {JobApplicationWorkflowService} from './workflow.service';
 
@@ -11,7 +11,7 @@ import {JobApplicationWorkflowService} from './workflow.service';
     JobApplicationWorkflowFileModule,
     JobApplicationWorkflowNoteModule,
     JobApplicationWorkflowTaskModule,
-    JobApplicationWorkflowStepModule,
+    JobApplicationWorkflowTrailModule,
   ],
   controllers: [JobApplicationWorkflowController],
   providers: [JobApplicationWorkflowService],

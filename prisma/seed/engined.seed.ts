@@ -1,70 +1,9 @@
-import {
-  ElasticsearchDatasource,
-  PermissionAction,
-  PostgresqlDatasource,
-  Prisma,
-  TrustedEntityType,
-} from '@prisma/client';
-import {AccountSignupController} from '../../src/application/account/account-signup.controller';
-import {RoleController} from '../../src/application/account/role/role.controller';
-import {PermissionController} from '../../src/application/account/permission/permission.controller';
+import {ElasticsearchDatasource, PostgresqlDatasource} from '@prisma/client';
 import {PostgresqlDatasourceController} from '../../src/application/engined/datasource/postgresql/postgresql-datasource.controller';
 import {ElasticsearchDatasourceController} from '../../src/application/engined/datasource/elasticsearch/elasticsearch-datasource.controller';
 import {DatatransPipelineController} from '../../src/application/engined/datatrans/pipeline/pipeline.controller';
 
 export async function seedForEngined() {
-  // Seed account data.
-  console.log('* Creating organization, roles, admin user and permissions...');
-
-  const roleController = new RoleController();
-  const signupController = new AccountSignupController();
-  const permissionController = new PermissionController();
-  const permissionResources = permissionController.listPermissionResources();
-  const permissionActions = permissionController.listPermissionActions();
-  const RoleName = {Admin: 'Admin'};
-
-  const roles = [{name: RoleName.Admin}];
-  for (let i = 0; i < roles.length; i++) {
-    const role = await roleController.createRole(roles[i]);
-
-    // [Create permissions] 'manage', 'create', 'delete', 'read', 'update' permissions of all resources.
-    for (const resource of permissionResources) {
-      for (const action of permissionActions) {
-        await permissionController.createPermission({
-          resource,
-          action,
-          trustedEntityType: TrustedEntityType.ROLE,
-          trustedEntityId: role.id,
-        });
-      }
-    }
-    // [Create permissions] In the pending request screen, each role(except Admin) can only see the requests with testings those are waiting to be processed by the role.
-    await permissionController.createPermission({
-      action: PermissionAction.List,
-      resource: Prisma.ModelName.JobApplication,
-      where: {workflows: {some: {nextRoleId: role.id}}},
-      trustedEntityType: TrustedEntityType.ROLE,
-      trustedEntityId: role.id,
-    });
-
-    await permissionController.createPermission({
-      action: PermissionAction.Get,
-      resource: Prisma.ModelName.JobApplication,
-      where: {workflows: {some: {nextRoleId: role.id}}},
-      trustedEntityType: TrustedEntityType.ROLE,
-      trustedEntityId: role.id,
-    });
-
-    if (role.name === RoleName.Admin) {
-      // Create user with this role.
-      await signupController.signup({
-        username: 'admin',
-        password: 'Abc1234!',
-        roles: {connect: [{id: role.id}]},
-      });
-    }
-  }
-
   // Seed datasource module.
   console.log('* Creating postgresql and elasticsearch datasources...');
   const postgresqlDatasourceController = new PostgresqlDatasourceController();

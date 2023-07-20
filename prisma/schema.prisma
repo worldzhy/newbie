@@ -273,8 +273,9 @@ enum VerificationCodeUse {
 // ! ------------------------------------------------------------ //
 // !             [Microservice] Workflow models                   //
 // ! ------------------------------------------------------------ //
-// * WorkflowNode                                                 //
+// * Workflow                                                     //
 // * WorkflowView                                                 //
+// * WorkflowViewComponent                                        //
 // * WorkflowState                                                //
 // * WorkflowRoute                                                //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
@@ -282,40 +283,22 @@ model Workflow {
   id          String          @id @default(uuid())
   name        String          @unique
   description String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
   views       WorkflowView[]
   states      WorkflowState[]
   routes      WorkflowRoute[]
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-
-  @@schema("microservice/workflow")
-}
-
-model WorkflowNode {
-  id        Int              @id @default(autoincrement())
-  type      WorkflowNodeType
-  startSign Boolean?         @unique
-  endSign   Boolean?         @unique
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
-
-  @@schema("microservice/workflow")
-}
-
-enum WorkflowNodeType {
-  VIEW
 
   @@schema("microservice/workflow")
 }
 
 model WorkflowView {
   id          Int                     @id @default(autoincrement())
-  name        String                  @unique
+  name        String
   description String?
-  startSign   Boolean?                @unique
-  components  WorkflowViewComponent[]
   createdAt   DateTime                @default(now())
   updatedAt   DateTime                @updatedAt
+  components  WorkflowViewComponent[]
   workflow    Workflow                @relation(fields: [workflowId], references: [id], onDelete: Cascade)
   workflowId  String
 
@@ -323,13 +306,30 @@ model WorkflowView {
 }
 
 model WorkflowViewComponent {
-  id             Int           @id @default(autoincrement())
-  name           String
-  type           String
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  workflowView   WorkflowView? @relation(fields: [workflowViewId], references: [id], onDelete: Cascade)
-  workflowViewId Int?
+  id         Int                          @id @default(autoincrement())
+  type       WorkflowViewComponentType
+  subType    WorkflowViewComponentSubType
+  properties Json
+  createdAt  DateTime                     @default(now())
+  updatedAt  DateTime                     @updatedAt
+  view       WorkflowView                 @relation(fields: [viewId], references: [id], onDelete: Cascade)
+  viewId     Int
+
+  @@schema("microservice/workflow")
+}
+
+enum WorkflowViewComponentType {
+  Static
+  UserInput
+
+  @@schema("microservice/workflow")
+}
+
+enum WorkflowViewComponentSubType {
+  Static_Text
+  Static_Image
+  UserInput_String
+  UserInput_Number
 
   @@schema("microservice/workflow")
 }
@@ -349,9 +349,9 @@ model WorkflowState {
 model WorkflowRoute {
   id         Int      @id @default(autoincrement())
   startSign  Boolean? @unique
-  view       String
-  state      String
-  nextView   String
+  viewId     Int
+  stateId    Int
+  nextViewId Int
   nextRoleId String?  @db.Uuid // The next role to take over the next step.
   nextUserId String?  @db.Uuid // The next user to take over the next step.
   createdAt  DateTime @default(now())
@@ -359,7 +359,7 @@ model WorkflowRoute {
   workflow   Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
   workflowId String
 
-  @@unique([view, state])
+  @@unique([viewId, stateId])
   @@schema("microservice/workflow")
 }
 
@@ -1095,25 +1095,25 @@ model JobApplicationWorkflow {
   jobApplicationId   String                         @db.Uuid
   beingHeldByUser    User?                          @relation(fields: [beingHeldByUserId], references: [id])
   beingHeldByUserId  String?                        @db.Uuid
-  steps              JobApplicationWorkflowStep[]
   payload            JobApplicationWorkflowPayload? // workflow payload
   files              JobApplicationWorkflowFile[] // work payload
   notes              JobApplicationWorkflowNote[] // workflow payload
   tasks              JobApplicationWorkflowTask[] // workflow payload
+  trails             JobApplicationWorkflowTrail[]
   // Below fields copy from latest workflow step.
-  state              String
-  nextStep           String
+  stateId            Int
+  nextViewId         Int
   nextRoleId         String?
   processedByUserIds String[] // Store id of users who have processed this workflow.
 
   @@schema("application/recruitment")
 }
 
-model JobApplicationWorkflowStep {
+model JobApplicationWorkflowTrail {
   id                Int                    @id @default(autoincrement())
-  step              String
-  state             String // The state that is selected in this step.
-  nextStep          String
+  viewId            Int
+  stateId           Int // The state that is selected in this step.
+  nextViewId        Int
   nextRoleId        String?                @db.Uuid // The role who will process the next step.
   processedByUserId String                 @db.Uuid // The user who processed this step.
   comment           String?

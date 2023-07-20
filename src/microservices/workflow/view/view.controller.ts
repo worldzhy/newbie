@@ -10,11 +10,9 @@ import {
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {WorkflowView, Prisma} from '@prisma/client';
 import {WorkflowViewService} from './view.service';
-import {Public} from '../../../application/account/authentication/public/public.decorator';
 
 @ApiTags('[Microservice] Workflow / View')
 @ApiBearerAuth()
-@Public()
 @Controller('workflow-views')
 export class WorkflowViewController {
   private workflowViewService = new WorkflowViewService();
@@ -57,6 +55,7 @@ export class WorkflowViewController {
   ): Promise<WorkflowView | null> {
     return await this.workflowViewService.findUnique({
       where: {id: parseInt(viewId)},
+      include: {components: true},
     });
   }
 

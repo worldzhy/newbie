@@ -1,15 +1,15 @@
 import {seedForEngined} from './seed/engined.seed';
 import {seedForPmgmt} from './seed/pmgmt.seed';
-import {seedForRecruitment} from './seed/recruitment.seed';
-import {seedForTcRequest} from './seed/tc-request.seed';
+import {seedForAccount} from './seed/account.seed';
+import {seedForWorkflow} from './seed/workflow.seed';
 
 async function main() {
   console.log('Start seeding ...');
 
-  // await seedForEngined();
-  // await seedForPmgmt();
-  // await seedForRecruitment();
-  await seedForTcRequest();
+  await seedForAccount();
+  await seedForWorkflow();
+  await seedForEngined();
+  await seedForPmgmt();
 
   console.log('Seeding finished.');
 }

@@ -7,13 +7,12 @@ import {
   Body,
   Param,
   Query,
-  BadRequestException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {Organization, PermissionAction, Prisma} from '@prisma/client';
 import {RequirePermission} from '../authorization/authorization.decorator';
 import {OrganizationService} from './organization.service';
-import {generatePaginationParams} from 'src/toolkit/pagination/pagination';
+import {generatePaginationParams} from '../../../toolkit/pagination/pagination';
 
 @ApiTags('[Application] Account / Organization')
 @ApiBearerAuth()

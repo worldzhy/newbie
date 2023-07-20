@@ -17,11 +17,9 @@ import {
 } from '@nestjs/swagger';
 import {WorkflowRoute, Prisma} from '@prisma/client';
 import {WorkflowRouteService} from './route.service';
-import {Public} from '../../../application/account/authentication/public/public.decorator';
 
 @ApiTags('[Microservice] Workflow / Route')
 @ApiBearerAuth()
-@Public()
 @Controller('workflow-routes')
 export class WorkflowRouteController {
   private workflowRouteService = new WorkflowRouteService();
@@ -33,9 +31,9 @@ export class WorkflowRouteController {
       a: {
         summary: '1. Create',
         value: {
-          view: 'view001',
-          state: 'Yes',
-          nextView: 'view002',
+          viewId: 1,
+          stateId: 1,
+          nextViewId: 2,
           workflowId: 'd8141ece-f242-4288-a60a-8675538549cd',
         },
       },
@@ -50,14 +48,14 @@ export class WorkflowRouteController {
   }
 
   @Get('')
-  @ApiQuery({name: 'view', type: 'string'})
+  @ApiQuery({name: 'viewId', type: 'number'})
   async getWorkflowRoutes(
-    @Query() query: {view?: string}
+    @Query() query: {viewId?: string}
   ): Promise<WorkflowRoute[]> {
     // [step 1] Construct where argument.
     let where: Prisma.WorkflowRouteWhereInput | undefined;
-    if (query.view) {
-      where = {view: query.view};
+    if (query.viewId) {
+      where = {viewId: parseInt(query.viewId)};
     }
 
     // [step 2] Get workflows.
@@ -92,9 +90,9 @@ export class WorkflowRouteController {
       a: {
         summary: '1. Update route',
         value: {
-          view: 'view001',
-          state: 'Yes',
-          nextView: 'view002',
+          viewId: 1,
+          stateId: 1,
+          nextViewId: 3,
         },
       },
       b: {

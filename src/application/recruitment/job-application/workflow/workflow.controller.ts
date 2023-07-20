@@ -12,7 +12,7 @@ import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {JobApplicationWorkflow, PermissionAction, Prisma} from '@prisma/client';
 import {JobApplicationWorkflowService} from './workflow.service';
 import {JobApplicationWorkflowFileService} from './file/file.service';
-import {JobApplicationWorkflowStepService} from './step/step.service';
+import {JobApplicationWorkflowTrailService} from './trail/trail.service';
 import {RequirePermission} from '../../../account/authorization/authorization.decorator';
 import {RoleService} from '../../../account/role/role.service';
 import {UserService} from '../../../account/user/user.service';
@@ -30,8 +30,8 @@ export class JobApplicationWorkflowController {
   private roleService = new RoleService();
   private workflowRouteService = new WorkflowRouteService();
   private jobApplicationWorkflowService = new JobApplicationWorkflowService();
-  private jobApplicationWorkflowStepService =
-    new JobApplicationWorkflowStepService();
+  private jobApplicationWorkflowTrailService =
+    new JobApplicationWorkflowTrailService();
   private jobApplicationWorkflowFileService =
     new JobApplicationWorkflowFileService();
 
@@ -131,7 +131,7 @@ export class JobApplicationWorkflowController {
             include: {candidate: {include: {profile: true}}},
           },
           payload: true,
-          steps: {orderBy: {createdAt: 'desc'}},
+          trails: {orderBy: {createdAt: 'desc'}},
           notes: true,
           tasks: true,
         },
@@ -185,8 +185,8 @@ export class JobApplicationWorkflowController {
       a: {
         summary: '1. Submit step 1',
         value: {
-          step: 'STEP1_DISPATCH',
-          state: 'Pending Test',
+          viewId: 1,
+          stateId: 2,
           comment: 'Leave some comments here.',
           payload: {
             testSite: 'Harley Davidson Lifestyle Centers',
@@ -198,8 +198,8 @@ export class JobApplicationWorkflowController {
       b: {
         summary: '2. Submit step 2',
         value: {
-          step: 'STEP2_TEST',
-          state: 'Pass',
+          viewId: 2,
+          stateId: 1,
           comment: 'Leave some comments here.',
           fileIds: ['d8141ece-f242-4288-a60a-8675538549cd'],
         },
@@ -207,8 +207,8 @@ export class JobApplicationWorkflowController {
       c: {
         summary: '3. Submit step 3',
         value: {
-          step: 'STEP3_REVIEW',
-          state: 'MD-CLR-WL',
+          viewId: 3,
+          stateId: 1,
           comment: 'Leave some comments here.',
         },
       },
@@ -219,8 +219,8 @@ export class JobApplicationWorkflowController {
     @Param('workflowId') workflowId: string,
     @Body()
     body: {
-      step: string;
-      state: string;
+      viewId: number;
+      stateId: number;
       comment?: string;
       payload?: {
         testSite?: string;
@@ -245,17 +245,17 @@ export class JobApplicationWorkflowController {
     // [step 3] Get workflow route.
     const route = await this.workflowRouteService.findUniqueOrThrow({
       where: {
-        view_state: {view: body.step, state: body.state},
+        viewId_stateId: {viewId: body.viewId, stateId: body.stateId},
       },
     });
 
     // [step 4] Create workflow step.
-    const step = await this.jobApplicationWorkflowStepService.create({
+    const step = await this.jobApplicationWorkflowTrailService.create({
       data: {
         workflowId: workflowId,
-        step: route.view,
-        state: route.state,
-        nextStep: route.nextView,
+        viewId: route.viewId,
+        stateId: route.stateId,
+        nextViewId: route.nextViewId,
         nextRoleId: route.nextRoleId,
         processedByUserId: userId,
         comment: body.comment,
@@ -268,8 +268,8 @@ export class JobApplicationWorkflowController {
       updateInput.processedByUserIds =
         workflow.processedByUserIds.concat(userId);
     }
-    updateInput.state = route.state;
-    updateInput.nextStep = route.nextView;
+    updateInput.stateId = route.stateId;
+    updateInput.nextViewId = route.nextViewId;
     updateInput.nextRoleId = route.nextRoleId;
     if (body.payload) {
       updateInput.payload = {
