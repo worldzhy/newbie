@@ -22,7 +22,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "compile": "tsc",
-    "prepare": "npx prisma generate",
+    "prepare": "npx husky install && npx prisma generate",
     "pretest": "npm run compile",
     "posttest": "npm run lint"
   },
