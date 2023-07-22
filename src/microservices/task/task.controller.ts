@@ -8,17 +8,20 @@ import {
   Param,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {ConfigService} from '@nestjs/config';
 import {Prisma, Task} from '@prisma/client';
-import {getAwsSqsConfig} from 'src/toolkit/aws/sqs/sqs.config';
-import {SqsService} from '../../toolkit/aws/sqs/sqs.service';
 import {TaskService} from './task.service';
+import {SqsService} from '../../toolkit/aws/aws.sqs.service';
 
 @ApiTags('[Microservice] Task')
 @ApiBearerAuth()
 @Controller('tasks')
 export class TaskController {
-  private taskService = new TaskService();
-  private sqs = new SqsService();
+  constructor(
+    private readonly taskService: TaskService,
+    private readonly sqsService: SqsService,
+    private readonly configService: ConfigService
+  ) {}
 
   @Post('')
   @ApiBody({
@@ -102,8 +105,10 @@ export class TaskController {
     });
 
     // [step 2] Send queue message.
-    const output = await this.sqs.sendMessage({
-      queueUrl: getAwsSqsConfig().sqsTaskQueueUrl,
+    const output = await this.sqsService.sendMessage({
+      queueUrl: this.configService.get<string>(
+        'microservices.task.sqsQueueUrl'
+      )!,
       body: task.payload as object,
     });
 

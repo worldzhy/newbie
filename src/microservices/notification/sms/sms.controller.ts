@@ -7,7 +7,9 @@ import {SmsNotificationService} from './sms.service';
 @ApiBearerAuth()
 @Controller('notification')
 export class SmsNotificationController {
-  private smsNotificationService = new SmsNotificationService();
+  constructor(
+    private readonly smsNotificationService: SmsNotificationService
+  ) {}
 
   @ApiBody({
     description: "The request body should be {'phone', 'text'}.",

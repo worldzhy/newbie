@@ -1,32 +1,15 @@
 import {Injectable} from '@nestjs/common';
-import {
-  PinpointClient,
-  SendMessagesCommand,
-  SendMessagesCommandInput,
-  SendMessagesCommandOutput,
-} from '@aws-sdk/client-pinpoint';
+import {SendMessagesCommandOutput} from '@aws-sdk/client-pinpoint';
 import {EmailNotification, Prisma} from '@prisma/client';
 import {PrismaService} from '../../../toolkit/prisma/prisma.service';
-import {getAwsPinpointConfig} from '../../../toolkit/aws/pinpoint/pinpoint.config';
+import {PinpointService} from '../../../toolkit/aws/aws.pinpoint.service';
 
 @Injectable()
 export class EmailNotificationService {
-  private prisma = new PrismaService();
-  private client: PinpointClient;
-  private pinpointAppId: string;
-  private pinpointFromAddress?: string;
-
-  constructor() {
-    this.client = new PinpointClient({
-      region: getAwsPinpointConfig().region,
-      credentials: {
-        accessKeyId: getAwsPinpointConfig().accessKeyId,
-        secretAccessKey: getAwsPinpointConfig().secretAccessKey,
-      },
-    });
-    this.pinpointAppId = getAwsPinpointConfig().pinpointApplicationId;
-    this.pinpointFromAddress = getAwsPinpointConfig().pinpointFromAddress;
-  }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly pinpointService: PinpointService
+  ) {}
 
   async findUnique(
     params: Prisma.EmailNotificationFindUniqueArgs
@@ -65,15 +48,8 @@ export class EmailNotificationService {
     html?: string;
   }): Promise<EmailNotification> {
     // [step 1] Send AWS Pinpoint message.
-    const commandInput = this.buildSendMessagesParams_Email({
-      emails: [params.email],
-      subject: params.subject,
-      plainText: params.plainText,
-      html: params.html,
-    });
-    const output: SendMessagesCommandOutput = await this.client.send(
-      new SendMessagesCommand(commandInput)
-    );
+    const output: SendMessagesCommandOutput =
+      await this.pinpointService.sendEmail(params);
 
     // [step 2] Save notification record.
     let pinpointRequestId: string | undefined;
@@ -94,80 +70,5 @@ export class EmailNotificationService {
         pinpointResponse: output as object,
       },
     });
-  }
-
-  /**
-   * Construct params for sending emails.
-   * * We recommend using plain text format for email clients that don't render HTML content
-   * * and clients that are connected to high-latency networks, such as mobile devices.
-   *
-   * @param data
-   * @returns
-   */
-  private buildSendMessagesParams_Email(data: {
-    emails: string[];
-    subject: string;
-    plainText?: string;
-    html?: string;
-  }): SendMessagesCommandInput {
-    const addresses: {[email: string]: {ChannelType: string}} = {};
-    data.emails.map(email => {
-      addresses[email] = {
-        ChannelType: 'EMAIL',
-      };
-    });
-
-    return {
-      ApplicationId: this.pinpointAppId,
-      MessageRequest: {
-        Addresses: addresses,
-        MessageConfiguration: {
-          EmailMessage: {
-            FromAddress: this.pinpointFromAddress,
-            SimpleEmail: {
-              Subject: {
-                Charset: 'UTF-8',
-                Data: data.subject,
-              },
-              HtmlPart: {
-                Charset: 'UTF-8',
-                Data: data.html,
-              },
-              TextPart: {
-                Charset: 'UTF-8',
-                Data: data.plainText,
-              },
-            },
-          },
-        },
-      },
-    };
-  }
-
-  buildSendMessagesParams_RawEmail(data: {
-    emails: string[];
-    rawData: Uint8Array;
-  }): SendMessagesCommandInput {
-    const addresses: {[email: string]: {ChannelType: string}} = {};
-    data.emails.map(email => {
-      addresses[email] = {
-        ChannelType: 'EMAIL',
-      };
-    });
-
-    return {
-      ApplicationId: this.pinpointAppId,
-      MessageRequest: {
-        Addresses: addresses,
-        MessageConfiguration: {
-          EmailMessage: {
-            FromAddress: this.pinpointFromAddress,
-            RawEmail: {
-              Data: data.rawData,
-            },
-          },
-        },
-      },
-    };
   }
 }

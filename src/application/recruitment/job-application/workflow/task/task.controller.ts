@@ -26,7 +26,7 @@ import {
   Prisma,
 } from '@prisma/client';
 import {RequirePermission} from '../../../../account/authorization/authorization.decorator';
-import {UserService} from '../../../../account/user/user.service';
+import {UserService} from '../../../../../microservices/user/user.service';
 import {TokenService} from '../../../../../toolkit/token/token.service';
 import {JobApplicationWorkflowService} from '../workflow.service';
 import {generatePaginationParams} from '../../../../../toolkit/pagination/pagination';
@@ -35,11 +35,12 @@ import {generatePaginationParams} from '../../../../../toolkit/pagination/pagina
 @ApiBearerAuth()
 @Controller('recruitment-workflow-tasks')
 export class JobApplicationWorkflowTaskController {
-  private userService = new UserService();
-  private tokenService = new TokenService();
-  private jobApplicationWorkflowService = new JobApplicationWorkflowService();
-  private jobApplicationWorkflowTaskService =
-    new JobApplicationWorkflowTaskService();
+  constructor(
+    private readonly userService: UserService,
+    private readonly tokenService: TokenService,
+    private readonly jobApplicationWorkflowService: JobApplicationWorkflowService,
+    private readonly jobApplicationWorkflowTaskService: JobApplicationWorkflowTaskService
+  ) {}
 
   @Post('')
   @RequirePermission(

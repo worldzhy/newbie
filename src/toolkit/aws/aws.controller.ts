@@ -1,13 +1,19 @@
 import {Controller, Delete, Post, Body} from '@nestjs/common';
 import {ApiBearerAuth, ApiBody, ApiTags} from '@nestjs/swagger';
-import {S3Service} from './s3/s3.service';
-import {SnsService} from './sns/sns.service';
-import {SqsService} from './sqs/sqs.service';
+import {S3Service} from './aws.s3.service';
+import {SnsService} from './aws.sns.service';
+import {SqsService} from './aws.sqs.service';
 
 @ApiTags('[Toolkit] AWS')
 @ApiBearerAuth()
 @Controller('aws')
 export class AwsController {
+  constructor(
+    private readonly s3Service: S3Service,
+    private readonly sqsService: SqsService,
+    private readonly snsService: SnsService
+  ) {}
+
   //* S3 create bucket.
   @ApiBody({
     description: "The request body should contain 'bucketName' attribute.",
@@ -22,8 +28,7 @@ export class AwsController {
   })
   @Post('s3/bucket')
   async createS3Bucket(@Body() body: {bucketName: string}) {
-    const s3Service = new S3Service();
-    return await s3Service.createBucket(body.bucketName);
+    return await this.s3Service.createBucket(body.bucketName);
   }
 
   //* S3 delete bucket.
@@ -40,8 +45,7 @@ export class AwsController {
   })
   @Delete('s3/bucket')
   async deleteS3Bucket(@Body() body: {bucketName: string}) {
-    const s3Service = new S3Service();
-    return await s3Service.deleteBucket(body.bucketName);
+    return await this.s3Service.deleteBucket(body.bucketName);
   }
 
   //* SQS send message.
@@ -62,8 +66,7 @@ export class AwsController {
   })
   @Post('sqs/message')
   async sendSqsMessage(@Body() body: {queueUrl: string; payload: object}) {
-    const sqsService = new SqsService();
-    return await sqsService.sendMessage({
+    return await this.sqsService.sendMessage({
       queueUrl: body.queueUrl,
       body: body.payload,
     });
@@ -84,8 +87,7 @@ export class AwsController {
   })
   @Post('sns/publish')
   async sendSnsMessage(@Body() body: {phone: string; message: string}) {
-    const snsService = new SnsService();
-    return await snsService.publish({
+    return await this.snsService.publish({
       PhoneNumber: body.phone,
       Message: body.message,
     });

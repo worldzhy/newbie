@@ -33,13 +33,12 @@ enum ConstraintType {
 @ApiBearerAuth()
 @Controller('postgresql-datasources')
 export class PostgresqlDatasourceController {
-  private postgresqlDatasourceService = new PostgresqlDatasourceService();
-  private postgresqlDatasourceConstraintService =
-    new PostgresqlDatasourceConstraintService();
-  private postgresqlDatasourceTableService =
-    new PostgresqlDatasourceTableService();
-  private postgresqlDatasourceTableColumnService =
-    new PostgresqlDatasourceTableColumnService();
+  constructor(
+    private readonly postgresqlDatasourceService: PostgresqlDatasourceService,
+    private readonly postgresqlDatasourceConstraintService: PostgresqlDatasourceConstraintService,
+    private readonly postgresqlDatasourceTableService: PostgresqlDatasourceTableService,
+    private readonly postgresqlDatasourceTableColumnService: PostgresqlDatasourceTableColumnService
+  ) {}
 
   @Post('')
   @ApiBody({

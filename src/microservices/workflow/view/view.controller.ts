@@ -15,7 +15,7 @@ import {WorkflowViewService} from './view.service';
 @ApiBearerAuth()
 @Controller('workflow-views')
 export class WorkflowViewController {
-  private workflowViewService = new WorkflowViewService();
+  constructor(private readonly workflowViewService: WorkflowViewService) {}
 
   @Post('')
   @ApiBody({

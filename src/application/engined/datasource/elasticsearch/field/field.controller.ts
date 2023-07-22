@@ -15,8 +15,9 @@ import {ElasticsearchDatasourceIndexFieldService} from './field.service';
 @ApiBearerAuth()
 @Controller('elasticsearch-datasource-index-fields')
 export class ElasticsearchDatasourceIndexFieldController {
-  private elasticsearchDatasourceIndexFieldService =
-    new ElasticsearchDatasourceIndexFieldService();
+  constructor(
+    private elasticsearchDatasourceIndexFieldService: ElasticsearchDatasourceIndexFieldService
+  ) {}
 
   @Post('')
   @ApiBody({

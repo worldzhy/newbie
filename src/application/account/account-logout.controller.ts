@@ -1,14 +1,16 @@
 import {Controller, Post, Body, Request} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {UserTokenStatus} from '@prisma/client';
-import {UserTokenService} from './user/token/token.service';
+import {UserTokenService} from '../../microservices/user/token/token.service';
 import {TokenService} from '../../toolkit/token/token.service';
 
 @ApiTags('[Application] Account')
 @Controller('account')
 export class AccountLogoutController {
-  private tokenService = new TokenService();
-  private userTokenService = new UserTokenService();
+  constructor(
+    private readonly tokenService: TokenService,
+    private readonly userTokenService: UserTokenService
+  ) {}
 
   @Post('logout')
   @ApiBearerAuth()

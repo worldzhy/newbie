@@ -1,17 +1,26 @@
 import {Module} from '@nestjs/common';
-import {AuthPasswordModule} from './password/password.module';
-import {AuthProfileModule} from './profile/profile.module';
-import {AuthUuidModule} from './uuid/uuid.module';
-import {AuthVerificationCodeModule} from './verification-code/verification-code.module';
-import {AuthJwtModule} from './jwt/jwt.module';
+import {JwtModule} from '@nestjs/jwt';
+import {UserModule} from '../../../microservices/user/user.module';
+import {JwtStrategy} from './jwt/jwt.strategy';
+import {AuthPasswordStrategy} from './password/password.strategy';
+import {AuthProfileStrategy} from './profile/profile.strategy';
+import {AuthUuidStrategy} from './uuid/uuid.strategy';
+import {AuthVerificationCodeStrategy} from './verification-code/verification-code.strategy';
 
 @Module({
   imports: [
-    AuthJwtModule,
-    AuthPasswordModule,
-    AuthProfileModule,
-    AuthUuidModule,
-    AuthVerificationCodeModule,
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+      signOptions: {expiresIn: '1h'},
+    }),
+    UserModule,
+  ],
+  providers: [
+    JwtStrategy,
+    AuthPasswordStrategy,
+    AuthProfileStrategy,
+    AuthUuidStrategy,
+    AuthVerificationCodeStrategy,
   ],
 })
 export class AuthenticationModule {}

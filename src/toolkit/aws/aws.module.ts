@@ -1,8 +1,8 @@
 import {Global, Module} from '@nestjs/common';
-import {S3Service} from './s3/s3.service';
-import {SqsService} from './sqs/sqs.service';
-import {SnsService} from './sns/sns.service';
-import {PinpointService} from './pinpoint/pinpoint.service';
+import {S3Service} from './aws.s3.service';
+import {SqsService} from './aws.sqs.service';
+import {SnsService} from './aws.sns.service';
+import {PinpointService} from './aws.pinpoint.service';
 import {AwsController} from './aws.controller';
 
 @Global()

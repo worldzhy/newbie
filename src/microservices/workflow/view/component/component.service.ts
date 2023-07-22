@@ -4,7 +4,7 @@ import {Prisma, WorkflowViewComponent} from '@prisma/client';
 
 @Injectable()
 export class WorkflowViewComponentService {
-  private prisma: PrismaService = new PrismaService();
+  constructor(private readonly prisma: PrismaService) {}
 
   async findUnique(
     params: Prisma.WorkflowViewComponentFindUniqueArgs

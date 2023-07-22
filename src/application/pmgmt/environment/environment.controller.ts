@@ -16,7 +16,7 @@ import {Prisma, ProjectEnvironment} from '@prisma/client';
 @ApiBearerAuth()
 @Controller('project-environments')
 export class ProjectEnvironmentController {
-  private environmentService = new ProjectEnvironmentService();
+  constructor(private readonly environmentService: ProjectEnvironmentService) {}
 
   @Post('')
   @ApiBody({

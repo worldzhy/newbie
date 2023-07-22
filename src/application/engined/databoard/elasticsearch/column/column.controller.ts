@@ -15,8 +15,9 @@ import {ElasticsearchDataboardColumn, Prisma} from '@prisma/client';
 @ApiBearerAuth()
 @Controller('elasticsearch-databoard-columns')
 export class ElasticsearchDataboardColumnController {
-  private elasticsearchDataboardColumnService =
-    new ElasticsearchDataboardColumnService();
+  constructor(
+    private elasticsearchDataboardColumnService: ElasticsearchDataboardColumnService
+  ) {}
 
   @Post('')
   @ApiBody({

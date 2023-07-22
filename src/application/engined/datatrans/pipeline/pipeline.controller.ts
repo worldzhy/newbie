@@ -18,11 +18,11 @@ import {DatatransPipeline, Prisma} from '@prisma/client';
 @ApiBearerAuth()
 @Controller('datatrans-pipelines')
 export class DatatransPipelineController {
-  private pipelineService = new DatatransPipelineService();
-  private postgresqlDatasourceTableService =
-    new PostgresqlDatasourceTableService();
-  private elasticsearchDatasourceIndexService =
-    new ElasticsearchDatasourceIndexService();
+  constructor(
+    private readonly pipelineService: DatatransPipelineService,
+    private readonly postgresqlDatasourceTableService: PostgresqlDatasourceTableService,
+    private readonly elasticsearchDatasourceIndexService: ElasticsearchDatasourceIndexService
+  ) {}
 
   @Post('')
   @ApiBody({

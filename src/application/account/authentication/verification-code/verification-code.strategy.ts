@@ -2,7 +2,7 @@ import {Strategy} from 'passport-local';
 import {PassportStrategy} from '@nestjs/passport';
 import {Injectable, UnauthorizedException} from '@nestjs/common';
 import {VerificationCodeService} from '../../../../microservices/verification-code/verification-code.service';
-import {UserService} from '../../user/user.service';
+import {UserService} from '../../../../microservices/user/user.service';
 import {
   verifyEmail,
   verifyPhone,
@@ -13,10 +13,10 @@ export class AuthVerificationCodeStrategy extends PassportStrategy(
   Strategy,
   'passport-local.verification-code'
 ) {
-  private verificationCodeService = new VerificationCodeService();
-  private userService = new UserService();
-
-  constructor() {
+  constructor(
+    private readonly verificationCodeService: VerificationCodeService,
+    private readonly userService: UserService
+  ) {
     super({
       usernameField: 'account',
       passwordField: 'verificationCode',

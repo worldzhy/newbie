@@ -1,7 +1,8 @@
-import {Module} from '@nestjs/common';
+import {Global, Module} from '@nestjs/common';
 import {TaskController} from './task.controller';
 import {TaskService} from './task.service';
 
+@Global()
 @Module({
   controllers: [TaskController],
   providers: [TaskService],

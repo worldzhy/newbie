@@ -22,7 +22,7 @@ import {WorkflowRouteService} from './route.service';
 @ApiBearerAuth()
 @Controller('workflow-routes')
 export class WorkflowRouteController {
-  private workflowRouteService = new WorkflowRouteService();
+  constructor(private readonly workflowRouteService: WorkflowRouteService) {}
 
   @Post('')
   @ApiBody({

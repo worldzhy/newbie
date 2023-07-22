@@ -16,7 +16,7 @@ import {Prisma, ProjectElement} from '@prisma/client';
 @ApiBearerAuth()
 @Controller('project-elements')
 export class ProjectElementController {
-  private elementService = new ProjectElementService();
+  constructor(private readonly elementService: ProjectElementService) {}
 
   @Post('')
   @ApiBody({

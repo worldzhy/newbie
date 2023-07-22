@@ -13,8 +13,9 @@ import {RequirePermission} from '../../../../account/authorization/authorization
 @ApiBearerAuth()
 @Controller('recruitment-workflow-files')
 export class JobApplicationWorkflowFileController {
-  private jobApplicationWorkflowFileService =
-    new JobApplicationWorkflowFileService();
+  constructor(
+    private readonly jobApplicationWorkflowFileService: JobApplicationWorkflowFileService
+  ) {}
 
   @Get('')
   @RequirePermission(

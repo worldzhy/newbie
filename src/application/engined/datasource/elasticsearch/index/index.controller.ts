@@ -22,8 +22,9 @@ import {ElasticsearchDatasourceIndexService} from './index.service';
 @ApiBearerAuth()
 @Controller('elasticsearch-datasource-indices')
 export class ElasticsearchDatasourceIndexController {
-  private elasticsearchDatasourceIndexService =
-    new ElasticsearchDatasourceIndexService();
+  constructor(
+    private elasticsearchDatasourceIndexService: ElasticsearchDatasourceIndexService
+  ) {}
 
   @Post('')
   @ApiBody({

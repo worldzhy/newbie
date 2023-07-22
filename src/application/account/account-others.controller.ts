@@ -3,9 +3,9 @@ import {ApiTags, ApiBody, ApiBearerAuth} from '@nestjs/swagger';
 import {UserTokenStatus, VerificationCodeUse} from '@prisma/client';
 import {AccountService} from './account.service';
 import {Public} from './authentication/public/public.decorator';
-import {UserService} from './user/user.service';
-import {UserTokenService} from './user/token/token.service';
-import {UserProfileService} from './user/profile/profile.service';
+import {UserService} from '../../microservices/user/user.service';
+import {UserTokenService} from '../../microservices/user/token/token.service';
+import {UserProfileService} from '../../microservices/user/profile/profile.service';
 import {TokenService} from '../../toolkit/token/token.service';
 import {
   verifyEmail,
@@ -15,11 +15,13 @@ import {
 @ApiTags('[Application] Account')
 @Controller('account')
 export class AccountOthersController {
-  private accountService = new AccountService();
-  private userService = new UserService();
-  private userTokenService = new UserTokenService();
-  private tokenService = new TokenService();
-  private profileService = new UserProfileService();
+  constructor(
+    private readonly accountService: AccountService,
+    private readonly userService: UserService,
+    private readonly userTokenService: UserTokenService,
+    private readonly tokenService: TokenService,
+    private readonly profileService: UserProfileService
+  ) {}
 
   @Get('current-user')
   @ApiBearerAuth()

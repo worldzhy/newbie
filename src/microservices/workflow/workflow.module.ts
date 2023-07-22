@@ -1,4 +1,4 @@
-import {Module} from '@nestjs/common';
+import {Global, Module} from '@nestjs/common';
 import {WorkflowController} from './workflow.controller';
 import {WorkflowStateController} from './state/state.controller';
 import {WorkflowViewController} from './view/view.controller';
@@ -10,6 +10,7 @@ import {WorkflowViewService} from './view/view.service';
 import {WorkflowViewComponentService} from './view/component/component.service';
 import {WorkflowRouteService} from './route/route.service';
 
+@Global()
 @Module({
   controllers: [
     WorkflowController,

@@ -7,7 +7,9 @@ import {EmailNotificationService} from './email.service';
 @ApiBearerAuth()
 @Controller('notification')
 export class EmailNotificationController {
-  private emailNotificationService = new EmailNotificationService();
+  constructor(
+    private readonly emailNotificationService: EmailNotificationService
+  ) {}
 
   @ApiBody({
     description:

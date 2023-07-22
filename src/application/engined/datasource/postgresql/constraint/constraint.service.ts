@@ -4,7 +4,7 @@ import {PrismaService} from '../../../../../toolkit/prisma/prisma.service';
 
 @Injectable()
 export class PostgresqlDatasourceConstraintService {
-  private prisma: PrismaService = new PrismaService();
+  constructor(private readonly prisma: PrismaService) {}
 
   async findFirstOrThrow(
     params: Prisma.PostgresqlDatasourceConstraintFindFirstOrThrowArgs

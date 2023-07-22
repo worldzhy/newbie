@@ -4,7 +4,7 @@ import {Prisma, WorkflowView} from '@prisma/client';
 
 @Injectable()
 export class WorkflowViewService {
-  private prisma: PrismaService = new PrismaService();
+  constructor(private readonly prisma: PrismaService) {}
 
   async findUnique(
     params: Prisma.WorkflowViewFindUniqueArgs
@@ -18,6 +18,12 @@ export class WorkflowViewService {
 
   async create(params: Prisma.WorkflowViewCreateArgs): Promise<WorkflowView> {
     return await this.prisma.workflowView.create(params);
+  }
+
+  async createMany(
+    params: Prisma.WorkflowViewCreateManyArgs
+  ): Promise<Prisma.BatchPayload> {
+    return await this.prisma.workflowView.createMany(params);
   }
 
   async update(params: Prisma.WorkflowViewUpdateArgs): Promise<WorkflowView> {

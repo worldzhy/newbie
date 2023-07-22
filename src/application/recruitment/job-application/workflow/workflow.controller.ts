@@ -14,8 +14,8 @@ import {JobApplicationWorkflowService} from './workflow.service';
 import {JobApplicationWorkflowFileService} from './file/file.service';
 import {JobApplicationWorkflowTrailService} from './trail/trail.service';
 import {RequirePermission} from '../../../account/authorization/authorization.decorator';
-import {RoleService} from '../../../account/role/role.service';
-import {UserService} from '../../../account/user/user.service';
+import {RoleService} from '../../../../microservices/user/role/role.service';
+import {UserService} from '../../../../microservices/user/user.service';
 import {WorkflowRouteService} from '../../../../microservices/workflow/route/route.service';
 import {FileService} from '../../../../microservices/fmgmt/file/file.service';
 import {TokenService} from '../../../../toolkit/token/token.service';
@@ -24,16 +24,16 @@ import {TokenService} from '../../../../toolkit/token/token.service';
 @ApiBearerAuth()
 @Controller('recruitment-workflows')
 export class JobApplicationWorkflowController {
-  private fileService = new FileService();
-  private tokenService = new TokenService();
-  private userService = new UserService();
-  private roleService = new RoleService();
-  private workflowRouteService = new WorkflowRouteService();
-  private jobApplicationWorkflowService = new JobApplicationWorkflowService();
-  private jobApplicationWorkflowTrailService =
-    new JobApplicationWorkflowTrailService();
-  private jobApplicationWorkflowFileService =
-    new JobApplicationWorkflowFileService();
+  constructor(
+    private readonly fileService: FileService,
+    private readonly tokenService: TokenService,
+    private readonly userService: UserService,
+    private readonly roleService: RoleService,
+    private readonly workflowRouteService: WorkflowRouteService,
+    private readonly jobApplicationWorkflowService: JobApplicationWorkflowService,
+    private readonly jobApplicationWorkflowTrailService: JobApplicationWorkflowTrailService,
+    private readonly jobApplicationWorkflowFileService: JobApplicationWorkflowFileService
+  ) {}
 
   @Get('test-types')
   listJobApplicationWorkflowTypes(): string[] {

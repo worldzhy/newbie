@@ -15,13 +15,18 @@ import {CustomLoggerService} from './logger.service';
  * @implements {TypeOrmLogger}
  */
 export class CustomTypeOrmLogger implements TypeOrmLogger {
-  private readonly logger = new CustomLoggerService('TypeOrm');
+  private loggerContext = 'TypeOrm';
+
+  constructor(private readonly logger: CustomLoggerService) {}
 
   logQuery(query: string, parameters?: unknown[], queryRunner?: QueryRunner) {
     if (queryRunner?.data?.isCreatingLogs) {
       return;
     }
-    this.logger.log(`${query} -- Parameters: ${JSON.stringify(parameters)}`);
+    this.logger.log(
+      `${query} -- Parameters: ${JSON.stringify(parameters)}`,
+      this.loggerContext
+    );
   }
 
   logQueryError(
@@ -34,7 +39,8 @@ export class CustomTypeOrmLogger implements TypeOrmLogger {
       return;
     }
     this.logger.error(
-      `${query} -- Parameters: ${JSON.stringify(parameters)} -- ${error}`
+      `${query} -- Parameters: ${JSON.stringify(parameters)} -- ${error}`,
+      this.loggerContext
     );
   }
 
@@ -48,16 +54,17 @@ export class CustomTypeOrmLogger implements TypeOrmLogger {
       return;
     }
     this.logger.warn(
-      `Time: ${time} -- Parameters: ${JSON.stringify(parameters)} -- ${query}`
+      `Time: ${time} -- Parameters: ${JSON.stringify(parameters)} -- ${query}`,
+      this.loggerContext
     );
   }
 
   logMigration(message: string) {
-    this.logger.log(message);
+    this.logger.log(message, this.loggerContext);
   }
 
   logSchemaBuild(message: string) {
-    this.logger.log(message);
+    this.logger.log(message, this.loggerContext);
   }
 
   log(
@@ -69,13 +76,13 @@ export class CustomTypeOrmLogger implements TypeOrmLogger {
       return;
     }
     if (level === 'log') {
-      return this.logger.log(message);
+      return this.logger.log(message, this.loggerContext);
     }
     if (level === 'info') {
-      return this.logger.debug(message);
+      return this.logger.debug(message, this.loggerContext);
     }
     if (level === 'warn') {
-      return this.logger.warn(message);
+      return this.logger.warn(message, this.loggerContext);
     }
   }
 }

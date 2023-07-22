@@ -4,8 +4,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {UserStatus, UserTokenStatus, VerificationCodeUse} from '@prisma/client';
-import {UserService} from './user/user.service';
-import {UserTokenService} from './user/token/token.service';
+import {UserService} from '../../microservices/user/user.service';
+import {UserTokenService} from '../../microservices/user/token/token.service';
 import {VerificationCodeService} from '../../microservices/verification-code/verification-code.service';
 import {EmailNotificationService} from '../../microservices/notification/email/email.service';
 import {SmsNotificationService} from '../../microservices/notification/sms/sms.service';
@@ -13,12 +13,14 @@ import {TokenService} from '../../toolkit/token/token.service';
 
 @Injectable()
 export class AccountService {
-  private userService = new UserService();
-  private userTokenService = new UserTokenService();
-  private tokenService = new TokenService();
-  private verificationCodeService = new VerificationCodeService();
-  private emailNotificationService = new EmailNotificationService();
-  private smsNotificationService = new SmsNotificationService();
+  constructor(
+    private readonly userService: UserService,
+    private readonly userTokenService: UserTokenService,
+    private readonly tokenService: TokenService,
+    private readonly verificationCodeService: VerificationCodeService,
+    private readonly emailNotificationService: EmailNotificationService,
+    private readonly smsNotificationService: SmsNotificationService
+  ) {}
 
   async login(account: string) {
     // [step 1] Get user.

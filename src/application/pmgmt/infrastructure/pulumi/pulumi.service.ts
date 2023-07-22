@@ -8,7 +8,6 @@ import {
 } from '@pulumi/pulumi/automation';
 import {InfrastructureStack, ProjectEnvironment} from '@prisma/client';
 import {AwsCloudfront_Stack} from './stack/aws-cloudfront.stack';
-import {AwsCodecommit_Stack} from './stack/aws-codecommit.stack';
 import {AwsIamUser_Stack} from './stack/aws-iam-user.stack';
 import {AwsRds_Stack} from './stack/aws-rds.stack';
 import {AwsS3_Stack} from './stack/aws-s3.stack';
@@ -16,7 +15,7 @@ import {AwsSqs_Stack} from './stack/aws-sqs.stack';
 import {AwsVpc_Stack} from './stack/aws-vpc.stack';
 import {AwsWaf_Stack} from './stack/aws-waf.stack';
 import {Pulumi_Null_Stack} from './stack/null.stack';
-import {getPulumiConfig} from './pulumi.config';
+import {ConfigService} from '@nestjs/config';
 
 export const PulumiStackType = {
   AWS_CLOUDFRONT: 'AWS_CLOUDFRONT',
@@ -35,7 +34,7 @@ export const PulumiStackType = {
 
 @Injectable()
 export class PulumiStackService {
-  private pulumiConfig = getPulumiConfig();
+  constructor(private readonly configService: ConfigService) {}
 
   /**
    * Start a stack.
@@ -84,7 +83,7 @@ export class PulumiStackService {
     // [step 2] Configure pulumi stack.
     await pulumiStack.workspace.installPlugin(
       'aws',
-      this.pulumiConfig.awsVersion!
+      this.configService.get<string>('application.pulumi.awsVersion')!
     );
     if (environment.awsProfile && environment.awsRegion) {
       await pulumiStack.setAllConfig({
@@ -145,7 +144,9 @@ export class PulumiStackService {
       headers: {
         Accept: 'application/vnd.pulumi+8',
         'Content-Type': 'application/json',
-        Authorization: 'token ' + this.pulumiConfig.accessToken,
+        Authorization:
+          'token ' +
+          this.configService.get<string>('application.pulumi.accessToken'),
       },
       params: {
         force: true,
@@ -162,7 +163,9 @@ export class PulumiStackService {
       headers: {
         Accept: 'application/vnd.pulumi+8',
         'Content-Type': 'application/json',
-        Authorization: 'token ' + this.pulumiConfig.accessToken,
+        Authorization:
+          'token ' +
+          this.configService.get<string>('application.pulumi.accessToken'),
       },
     });
   }
@@ -189,8 +192,6 @@ export class PulumiStackService {
     switch (type) {
       case PulumiStackType.AWS_CLOUDFRONT:
         return AwsCloudfront_Stack;
-      case PulumiStackType.AWS_CODE_COMMIT:
-        return AwsCodecommit_Stack;
       case PulumiStackType.AWS_ECR:
         return Pulumi_Null_Stack;
       case PulumiStackType.AWS_ECS:

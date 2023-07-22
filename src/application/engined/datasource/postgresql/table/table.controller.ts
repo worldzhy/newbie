@@ -15,8 +15,9 @@ import {PostgresqlDatasourceTableService} from './table.service';
 @ApiBearerAuth()
 @Controller('postgresql-datasource-tables')
 export class PostgresqlDatasourceTableController {
-  private postgresqlDatasourceTableService =
-    new PostgresqlDatasourceTableService();
+  constructor(
+    private postgresqlDatasourceTableService: PostgresqlDatasourceTableService
+  ) {}
 
   @Post('')
   @ApiBody({

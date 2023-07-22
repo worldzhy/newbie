@@ -17,8 +17,10 @@ import {DatatransTaskService} from './task/task.service';
 @ApiBearerAuth()
 @Controller('datatrans-missions')
 export class DatatransMissionController {
-  private datatransMissionService = new DatatransMissionService();
-  private datatransTaskService = new DatatransTaskService();
+  constructor(
+    private readonly datatransMissionService: DatatransMissionService,
+    private readonly datatransTaskService: DatatransTaskService
+  ) {}
 
   @Post('')
   @ApiBody({

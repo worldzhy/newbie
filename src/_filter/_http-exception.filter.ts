@@ -9,7 +9,9 @@ import {CustomLoggerService} from '../microservices/logger/logger.service';
 
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
-  private readonly logger = new CustomLoggerService('HttpException');
+  private loggerContext = 'HttpException';
+
+  constructor(private readonly logger: CustomLoggerService) {}
 
   catch(exception: HttpException, host: ArgumentsHost) {
     const statusCode = exception.getStatus(); // such as: 401

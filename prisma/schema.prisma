@@ -21,7 +21,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["microservice/fmgmt", "microservice/location", "microservice/notification", "microservice/order", "microservice/task", "microservice/verification-code", "microservice/workflow", "application/account", "application/engined", "application/pmgmt", "application/recruitment", "application/tc-request"]
+  schemas  = ["microservice/fmgmt", "microservice/location", "microservice/notification", "microservice/order", "microservice/organization", "microservice/task", "microservice/user", "microservice/verification-code", "microservice/workflow", "application/account", "application/engined", "application/pmgmt", "application/recruitment", "application/tc-request"]
 }
 
 // !! ------------------------------------------------------------ //
@@ -364,19 +364,9 @@ model WorkflowRoute {
 }
 
 // ! ------------------------------------------------------------ //
-// !                [Application] Account models                  //
+// !                [Microservice] Organization models                  //
 // ! ------------------------------------------------------------ //
 // * Organization                                                 //
-// * UserToRole                                                   //
-// * Role                                                         //
-// * User                                                         //
-// * UserJwt                                                      //
-// * UserProfile                                                  //
-// * RoutePermission(unused)                                      //
-// * ComponentPermission(unused)                                  //
-// * EndpointPermission(unused)                                   //
-// * Permission                                                   //
-// * UserToRole                                                   //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
 model Organization {
@@ -387,20 +377,22 @@ model Organization {
   roles     Role[]
   users     User[]
 
-  @@schema("application/account")
+  @@schema("microservice/organization")
 }
 
-// model UserToRole {
-//   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-//   userId    String   @db.Uuid
-//   role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
-//   roleId    String   @db.Uuid
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-
-//   @@id([userId, roleId])
-//   @@schema("application/account")
-// }
+// ! ------------------------------------------------------------ //
+// !                [Microservice] User models                  //
+// ! ------------------------------------------------------------ //
+// * UserToRole                                                   //
+// * Role                                                         //
+// * User                                                         //
+// * UserJwt                                                      //
+// * UserProfile                                                  //
+// * RoutePermission(unused)                                      //
+// * ComponentPermission(unused)                                  //
+// * EndpointPermission(unused)                                   //
+// * Permission                                                   //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
 model Role {
   // A role is a subgroup of a user group with some specified permissions.
@@ -415,7 +407,7 @@ model Role {
   users          User[]
 
   @@unique([name, organizationId])
-  @@schema("application/account")
+  @@schema("microservice/user")
 }
 
 model User {
@@ -439,14 +431,14 @@ model User {
   locations        Location[]
   holdingWorkflows JobApplicationWorkflow[]
 
-  @@schema("application/account")
+  @@schema("microservice/user")
 }
 
 enum UserStatus {
   ACTIVE
   INACTIVE
 
-  @@schema("application/account")
+  @@schema("microservice/user")
 }
 
 model UserToken {
@@ -457,14 +449,14 @@ model UserToken {
   createdAt DateTime        @default(now())
   updatedAt DateTime        @updatedAt
 
-  @@schema("application/account")
+  @@schema("microservice/user")
 }
 
 enum UserTokenStatus {
   ACTIVE
   INACTIVE
 
-  @@schema("application/account")
+  @@schema("microservice/user")
 }
 
 model UserProfile {
@@ -486,7 +478,7 @@ model UserProfile {
   user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         String             @db.Uuid
 
-  @@schema("application/account")
+  @@schema("microservice/user")
 }
 
 enum UserProfileGender {
@@ -494,7 +486,7 @@ enum UserProfileGender {
   Female
   Intersex
 
-  @@schema("application/account")
+  @@schema("microservice/user")
 }
 
 model RoutePermission {
@@ -505,7 +497,7 @@ model RoutePermission {
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
-  @@schema("application/account")
+  @@schema("microservice/user")
 }
 
 model ComponentPermission {
@@ -516,7 +508,7 @@ model ComponentPermission {
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
-  @@schema("application/account")
+  @@schema("microservice/user")
 }
 
 model EndpointPermission {
@@ -527,7 +519,7 @@ model EndpointPermission {
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
-  @@schema("application/account")
+  @@schema("microservice/user")
 }
 
 model Permission {
@@ -543,7 +535,7 @@ model Permission {
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
-  @@schema("application/account")
+  @@schema("microservice/user")
 }
 
 enum PermissionAction {
@@ -553,7 +545,7 @@ enum PermissionAction {
   Update
   Delete
 
-  @@schema("application/account")
+  @@schema("microservice/user")
 }
 
 enum TrustedEntityType {
@@ -561,7 +553,7 @@ enum TrustedEntityType {
   ROLE
   USER
 
-  @@schema("application/account")
+  @@schema("microservice/user")
 }
 
 // ! ------------------------------------------------------------ //

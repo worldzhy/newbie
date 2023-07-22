@@ -20,7 +20,9 @@ import {WorkflowViewComponentService} from './component.service';
 @ApiBearerAuth()
 @Controller('workflow-view-components')
 export class WorkflowViewComponentController {
-  private workflowViewComponentService = new WorkflowViewComponentService();
+  constructor(
+    private readonly workflowViewComponentService: WorkflowViewComponentService
+  ) {}
 
   @Post('')
   @ApiBody({

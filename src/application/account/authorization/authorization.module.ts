@@ -1,7 +1,7 @@
 import {Module} from '@nestjs/common';
-import {PermissionModule} from '../permission/permission.module';
+import {UserModule} from '../../../microservices/user/user.module';
 
 @Module({
-  imports: [PermissionModule],
+  imports: [UserModule],
 })
 export class AuthorizationModule {}

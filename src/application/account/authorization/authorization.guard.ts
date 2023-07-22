@@ -6,18 +6,19 @@ import {
   Role,
   TrustedEntityType,
 } from '@prisma/client';
-import {UserService} from '../user/user.service';
-import {PermissionService} from '../permission/permission.service';
+import {UserService} from '../../../microservices/user/user.service';
+import {PermissionService} from '../../../microservices/user/permission/permission.service';
 import {PERMISSION_KEY} from './authorization.decorator';
 import {TokenService} from '../../../toolkit/token/token.service';
 
 @Injectable()
 export class AuthorizationGuard implements CanActivate {
-  private userService = new UserService();
-  private tokenService = new TokenService();
-  private permissionService = new PermissionService();
-
-  constructor(private reflector: Reflector) {}
+  constructor(
+    private reflector: Reflector,
+    private readonly userService: UserService,
+    private readonly tokenService: TokenService,
+    private readonly permissionService: PermissionService
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     // [step 1] Get required permission.

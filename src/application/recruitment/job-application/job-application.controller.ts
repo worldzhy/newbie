@@ -30,12 +30,12 @@ import {
 } from '@prisma/client';
 import {RequirePermission} from '../../account/authorization/authorization.decorator';
 import {CandidateService} from '../candidate/candidate.service';
-import {UserService} from '../../account/user/user.service';
+import {UserService} from '../../../microservices/user/user.service';
 import {TokenService} from '../../../toolkit/token/token.service';
-import {PermissionService} from '../../account/permission/permission.service';
+import {PermissionService} from '../../../microservices/user/permission/permission.service';
 import {WorkflowRouteService} from '../../../microservices/workflow/route/route.service';
 import {JobApplicationWorkflowService} from './workflow/workflow.service';
-import {RoleService} from 'src/application/account/role/role.service';
+import {RoleService} from 'src/microservices/user/role/role.service';
 import {JobApplicationWorkflowFileService} from './workflow/file/file.service';
 import {generatePaginationParams} from '../../../toolkit/pagination/pagination';
 
@@ -43,16 +43,17 @@ import {generatePaginationParams} from '../../../toolkit/pagination/pagination';
 @ApiBearerAuth()
 @Controller('recruitment-job-applications')
 export class JobApplicationController {
-  private userService = new UserService();
-  private tokenService = new TokenService();
-  private permissionService = new PermissionService();
-  private workflowRouteService = new WorkflowRouteService();
-  private candidateService = new CandidateService();
-  private roleService = new RoleService();
-  private jobApplicationService = new JobApplicationService();
-  private jobApplicationWorkflowService = new JobApplicationWorkflowService();
-  private jobApplicationWorkflowFileService =
-    new JobApplicationWorkflowFileService();
+  constructor(
+    private readonly userService: UserService,
+    private readonly tokenService: TokenService,
+    private readonly permissionService: PermissionService,
+    private readonly workflowRouteService: WorkflowRouteService,
+    private readonly candidateService: CandidateService,
+    private readonly roleService: RoleService,
+    private readonly jobApplicationService: JobApplicationService,
+    private readonly jobApplicationWorkflowService: JobApplicationWorkflowService,
+    private readonly jobApplicationWorkflowFileService: JobApplicationWorkflowFileService
+  ) {}
 
   @Post('')
   @RequirePermission(PermissionAction.Create, Prisma.ModelName.JobApplication)

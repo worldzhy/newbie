@@ -36,7 +36,7 @@ import {RequirePermission} from '../../../application/account/authorization/auth
 @ApiBearerAuth()
 @Controller('projects')
 export class ProjectController {
-  private projectService = new ProjectService();
+  constructor(private projectService: ProjectService) {}
 
   //* Create
   @Post('')

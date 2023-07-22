@@ -7,7 +7,7 @@ import {Prisma, ProjectCheckpoint, ProjectCheckpointType} from '@prisma/client';
 @ApiBearerAuth()
 @Controller('project-checkpoints')
 export class ProjectCheckpointController {
-  private checkpointService = new ProjectCheckpointService();
+  constructor(private readonly checkpointService: ProjectCheckpointService) {}
 
   @Get('types')
   listCheckpoints() {

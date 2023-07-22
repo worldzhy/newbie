@@ -24,7 +24,7 @@ import {generatePaginationParams} from '../../toolkit/pagination/pagination';
 @ApiBearerAuth()
 @Controller('locations')
 export class LocationController {
-  private locationService = new LocationService();
+  constructor(private readonly locationService: LocationService) {}
 
   @Post('')
   @RequirePermission(PermissionAction.Create, Prisma.ModelName.Location)

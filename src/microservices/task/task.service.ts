@@ -4,7 +4,7 @@ import {PrismaService} from '../../toolkit/prisma/prisma.service';
 
 @Injectable()
 export class TaskService {
-  private prisma: PrismaService = new PrismaService();
+  constructor(private readonly prisma: PrismaService) {}
 
   async findUnique(params: Prisma.TaskFindUniqueArgs): Promise<Task | null> {
     return await this.prisma.task.findUnique(params);

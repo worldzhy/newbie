@@ -1,7 +1,7 @@
 import {Controller, Post, Body} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {UserToken} from '@prisma/client';
-import {UserProfileService} from './user/profile/profile.service';
+import {UserProfileService} from '../../microservices/user/profile/profile.service';
 import {LoggingInByPassword} from './authentication/password/password.decorator';
 import {LoggingInByProfile} from './authentication/profile/profile.decorator';
 import {LoggingInByUuid} from './authentication/uuid/uuid.decorator';
@@ -11,7 +11,10 @@ import {AccountService} from './account.service';
 @ApiTags('[Application] Account')
 @Controller('account')
 export class AccountLoginController {
-  private accountService = new AccountService();
+  constructor(
+    private readonly accountService: AccountService,
+    private readonly profileService: UserProfileService
+  ) {}
 
   /**
    * After a user is verified by auth guard, this 'login' function returns
@@ -101,11 +104,9 @@ export class AccountLoginController {
       dateOfBirth: Date;
     }
   ): Promise<UserToken> {
-    const profileService = new UserProfileService();
-
     // [step 1] It has been confirmed there is only one profile.
     const {firstName, middleName, lastName, suffix, dateOfBirth} = body;
-    const profiles = await profileService.findMany({
+    const profiles = await this.profileService.findMany({
       where: {firstName, middleName, lastName, suffix, dateOfBirth},
     });
 

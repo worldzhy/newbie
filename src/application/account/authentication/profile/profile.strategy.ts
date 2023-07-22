@@ -2,16 +2,14 @@ import {Injectable, UnauthorizedException} from '@nestjs/common';
 import {PassportStrategy} from '@nestjs/passport';
 import {Strategy} from 'passport-custom';
 import {Request} from 'express';
-import {UserProfileService} from '../../user/profile/profile.service';
+import {UserProfileService} from '../../../../microservices/user/profile/profile.service';
 
 @Injectable()
 export class AuthProfileStrategy extends PassportStrategy(
   Strategy,
   'passport-custom.user-profile'
 ) {
-  private userProfileService = new UserProfileService();
-
-  constructor() {
+  constructor(private readonly userProfileService: UserProfileService) {
     super();
   }
 

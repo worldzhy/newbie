@@ -18,7 +18,7 @@ import {
   Prisma,
 } from '@prisma/client';
 import {RequirePermission} from '../../../../account/authorization/authorization.decorator';
-import {UserService} from '../../../../account/user/user.service';
+import {UserService} from '../../../../../microservices/user/user.service';
 import {TokenService} from '../../../../../toolkit/token/token.service';
 import {JobApplicationWorkflowService} from '../workflow.service';
 
@@ -26,11 +26,12 @@ import {JobApplicationWorkflowService} from '../workflow.service';
 @ApiBearerAuth()
 @Controller('recruitment-workflow-notes')
 export class JobApplicationWorkflowNoteController {
-  private userService = new UserService();
-  private tokenService = new TokenService();
-  private jobApplicationWorkflowService = new JobApplicationWorkflowService();
-  private jobApplicationWorkflowNoteService =
-    new JobApplicationWorkflowNoteService();
+  constructor(
+    private readonly userService: UserService,
+    private readonly tokenService: TokenService,
+    private readonly jobApplicationWorkflowService: JobApplicationWorkflowService,
+    private readonly jobApplicationWorkflowNoteService: JobApplicationWorkflowNoteService
+  ) {}
 
   @Post('')
   @RequirePermission(

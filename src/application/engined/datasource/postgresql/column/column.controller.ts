@@ -16,10 +16,10 @@ import {PostgresqlDatasourceTableColumnService} from './column.service';
 @ApiBearerAuth()
 @Controller('postgresql-datasource-table-columns')
 export class PostgresqlDatasourceTableColumnController {
-  private postgresqlDatasourceTableService =
-    new PostgresqlDatasourceTableService();
-  private postgresqlDatasourceTableColumnService =
-    new PostgresqlDatasourceTableColumnService();
+  constructor(
+    private readonly postgresqlDatasourceTableService: PostgresqlDatasourceTableService,
+    private readonly postgresqlDatasourceTableColumnService: PostgresqlDatasourceTableColumnService
+  ) {}
 
   @Post('')
   @ApiBody({

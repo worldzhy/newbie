@@ -12,9 +12,10 @@ import * as util from '../../toolkit/utilities/common.util';
 
 @Injectable()
 export class VerificationCodeService {
-  private prisma = new PrismaService();
   private timeoutAfter = 10; // The verification code will be invalid after 10 minutes.
   private resendAfter = 1; // The verification code can be resend after 1 minute.
+
+  constructor(private readonly prisma: PrismaService) {}
 
   async findUnique(
     params: Prisma.VerificationCodeFindUniqueArgs

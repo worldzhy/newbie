@@ -39,9 +39,11 @@ import {
 @ApiBearerAuth()
 @Controller('project-infrastructure-stacks')
 export class ProjectInfrastructureStackController {
-  private infrastructureStackService = new ProjectInfrastructureStackService();
-  private cloudformationStackService = new CloudFormationStackService();
-  private pulumiStackService = new PulumiStackService();
+  constructor(
+    private readonly infrastructureStackService: ProjectInfrastructureStackService,
+    private readonly cloudformationStackService: CloudFormationStackService,
+    private readonly pulumiStackService: PulumiStackService
+  ) {}
 
   @Get('managers')
   listStackManagers() {

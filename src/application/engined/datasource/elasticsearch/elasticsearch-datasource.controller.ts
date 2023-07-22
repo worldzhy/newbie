@@ -22,11 +22,11 @@ import {ElasticsearchDatasourceIndexService} from './index/index.service';
 @ApiBearerAuth()
 @Controller('elasticsearch-datasources')
 export class ElasticsearchDatasourceController {
-  private elasticsearchDatasourceService = new ElasticsearchDatasourceService();
-  private elasticsearchDatasourceIndexService =
-    new ElasticsearchDatasourceIndexService();
-  private elasticsearchDatasourceIndexFieldService =
-    new ElasticsearchDatasourceIndexFieldService();
+  constructor(
+    private readonly elasticsearchDatasourceService: ElasticsearchDatasourceService,
+    private readonly elasticsearchDatasourceIndexService: ElasticsearchDatasourceIndexService,
+    private readonly elasticsearchDatasourceIndexFieldService: ElasticsearchDatasourceIndexFieldService
+  ) {}
 
   @Post('')
   @ApiBody({

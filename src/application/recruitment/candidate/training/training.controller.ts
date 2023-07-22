@@ -18,8 +18,10 @@ import {RequirePermission} from '../../../account/authorization/authorization.de
 @ApiBearerAuth()
 @Controller('recruitment-candidate-trainings')
 export class CandidateTrainingController {
-  private candidateTrainingService = new CandidateTrainingService();
-  private candidateService = new CandidateService();
+  constructor(
+    private readonly candidateTrainingService: CandidateTrainingService,
+    private readonly candidateService: CandidateService
+  ) {}
 
   //* Create
   @Post('')

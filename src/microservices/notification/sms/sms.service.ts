@@ -1,26 +1,15 @@
 import {Injectable} from '@nestjs/common';
-import {
-  PinpointClient,
-  SendMessagesCommand,
-  SendMessagesCommandInput,
-  SendMessagesCommandOutput,
-} from '@aws-sdk/client-pinpoint';
+import {SendMessagesCommandOutput} from '@aws-sdk/client-pinpoint';
 import {SmsNotification, Prisma} from '@prisma/client';
 import {PrismaService} from '../../../toolkit/prisma/prisma.service';
-import {getAwsPinpointConfig} from '../../../toolkit/aws/pinpoint/pinpoint.config';
+import {PinpointService} from '../../../toolkit/aws/aws.pinpoint.service';
 
 @Injectable()
 export class SmsNotificationService {
-  private prisma = new PrismaService();
-  private client: PinpointClient;
-  private pinpointAppId: string;
-  private pinpointSenderId: string;
-
-  constructor() {
-    this.client = new PinpointClient({});
-    this.pinpointAppId = getAwsPinpointConfig().pinpointApplicationId;
-    this.pinpointSenderId = getAwsPinpointConfig().pinpointSenderId;
-  }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly pinpointService: PinpointService
+  ) {}
 
   async findUnique(
     params: Prisma.SmsNotificationFindUniqueArgs
@@ -57,13 +46,8 @@ export class SmsNotificationService {
     text: string;
   }): Promise<SmsNotification> {
     // [step 1] Send AWS Pinpoint message.
-    const commandInput = this.buildSendMessagesParams_Sms({
-      phones: [params.phone],
-      text: params.text,
-    });
-    const output: SendMessagesCommandOutput = await this.client.send(
-      new SendMessagesCommand(commandInput)
-    );
+    const output: SendMessagesCommandOutput =
+      await this.pinpointService.sendSms(params);
 
     // [step 2] Save notification record.
     let pinpointRequestId: string | undefined;
@@ -84,39 +68,5 @@ export class SmsNotificationService {
         pinpointResponse: output as object,
       },
     });
-  }
-
-  /**
-   * Construct params for sending text messages.
-   * @param data
-   * @returns
-   */
-  private buildSendMessagesParams_Sms(data: {
-    phones: string[];
-    text: string;
-    keyword?: string;
-    messageType?: string; // 'TRANSACTIONAL' or 'PROMOTIONAL'
-  }): SendMessagesCommandInput {
-    const addresses: {[phone: string]: {ChannelType: string}} = {};
-    data.phones.map(phone => {
-      addresses[phone] = {
-        ChannelType: 'SMS',
-      };
-    });
-
-    return {
-      ApplicationId: this.pinpointAppId,
-      MessageRequest: {
-        Addresses: addresses,
-        MessageConfiguration: {
-          SMSMessage: {
-            Body: data.text,
-            Keyword: data.keyword,
-            MessageType: data.messageType,
-            SenderId: this.pinpointSenderId,
-          },
-        },
-      },
-    };
   }
 }

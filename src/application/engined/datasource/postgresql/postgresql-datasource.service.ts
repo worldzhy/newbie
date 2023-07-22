@@ -8,7 +8,7 @@ import {PrismaService} from '../../../../toolkit/prisma/prisma.service';
 
 @Injectable()
 export class PostgresqlDatasourceService {
-  private prisma: PrismaService = new PrismaService();
+  constructor(private readonly prisma: PrismaService) {}
 
   async findUnique(
     params: Prisma.PostgresqlDatasourceFindUniqueArgs

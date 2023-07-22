@@ -21,17 +21,19 @@ import {
   PermissionAction,
 } from '@prisma/client';
 import {RequirePermission} from '../../../../account/authorization/authorization.decorator';
-import {RoleService} from '../../../../account/role/role.service';
-import {UserService} from '../../../../account/user/user.service';
+import {RoleService} from '../../../../../microservices/user/role/role.service';
+import {UserService} from '../../../../../microservices/user/user.service';
 import {generatePaginationParams} from '../../../../../toolkit/pagination/pagination';
 
 @ApiTags('[Application] Recruitment / Job Application / Workflow Step')
 @ApiBearerAuth()
 @Controller('recruitment-workflow-steps')
 export class JobApplicationWorkflowTrailController {
-  private workflowStepService = new JobApplicationWorkflowTrailService();
-  private userService = new UserService();
-  private roleService = new RoleService();
+  constructor(
+    private readonly workflowStepService: JobApplicationWorkflowTrailService,
+    private readonly userService: UserService,
+    private readonly roleService: RoleService
+  ) {}
 
   @Get('')
   @RequirePermission(

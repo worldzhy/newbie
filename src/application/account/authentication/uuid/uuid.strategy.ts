@@ -2,7 +2,7 @@ import {Injectable, UnauthorizedException} from '@nestjs/common';
 import {PassportStrategy} from '@nestjs/passport';
 import {Strategy} from 'passport-custom';
 import {Request} from 'express';
-import {UserService} from '../../user/user.service';
+import {UserService} from '../../../../microservices/user/user.service';
 import {verifyUuid} from '../../../../toolkit/validators/user.validator';
 
 @Injectable()
@@ -10,9 +10,7 @@ export class AuthUuidStrategy extends PassportStrategy(
   Strategy,
   'passport-custom.uuid'
 ) {
-  private userService = new UserService();
-
-  constructor() {
+  constructor(private readonly userService: UserService) {
     super();
   }
 

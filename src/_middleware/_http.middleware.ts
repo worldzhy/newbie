@@ -4,7 +4,9 @@ import {CustomLoggerService} from '../microservices/logger/logger.service';
 
 @Injectable()
 export class HttpMiddleware implements NestMiddleware {
-  private readonly logger = new CustomLoggerService('HttpMiddleware');
+  private loggerContext = 'HttpMiddleware';
+
+  constructor(private readonly logger: CustomLoggerService) {}
 
   use(request: Request, response: Response, next: NextFunction) {
     response.on('finish', () => {
