@@ -40,10 +40,10 @@ export class JobApplicationWorkflowFileController {
     example: 1,
   })
   async getJobApplicationWorkflowFile(
-    @Param('fileId') fileId: string
+    @Param('fileId') fileId: number
   ): Promise<JobApplicationWorkflowFile | null> {
     return await this.jobApplicationWorkflowFileService.findUnique({
-      where: {id: parseInt(fileId)},
+      where: {id: fileId},
     });
   }
 
@@ -70,11 +70,11 @@ export class JobApplicationWorkflowFileController {
     },
   })
   async updateJobApplicationWorkflowFile(
-    @Param('fileId') fileId: string,
+    @Param('fileId') fileId: number,
     @Body() body: Prisma.JobApplicationWorkflowFileUpdateInput
   ): Promise<JobApplicationWorkflowFile> {
     return await this.jobApplicationWorkflowFileService.update({
-      where: {id: parseInt(fileId)},
+      where: {id: fileId},
       data: body,
     });
   }
@@ -91,10 +91,10 @@ export class JobApplicationWorkflowFileController {
     example: 1,
   })
   async deleteJobApplicationWorkflowFile(
-    @Param('fileId') fileId: string
+    @Param('fileId') fileId: number
   ): Promise<JobApplicationWorkflowFile> {
     return await this.jobApplicationWorkflowFileService.delete({
-      where: {id: parseInt(fileId)},
+      where: {id: fileId},
     });
   }
 

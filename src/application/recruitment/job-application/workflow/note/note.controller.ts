@@ -101,10 +101,10 @@ export class JobApplicationWorkflowNoteController {
     example: 1,
   })
   async getJobApplicationWorkflowNote(
-    @Param('noteId') noteId: string
+    @Param('noteId') noteId: number
   ): Promise<JobApplicationWorkflowNote | null> {
     return await this.jobApplicationWorkflowNoteService.findUnique({
-      where: {id: parseInt(noteId)},
+      where: {id: noteId},
     });
   }
 
@@ -131,11 +131,11 @@ export class JobApplicationWorkflowNoteController {
     },
   })
   async updateJobApplicationWorkflowNote(
-    @Param('noteId') noteId: string,
+    @Param('noteId') noteId: number,
     @Body() body: Prisma.JobApplicationWorkflowNoteUpdateInput
   ): Promise<JobApplicationWorkflowNote> {
     return await this.jobApplicationWorkflowNoteService.update({
-      where: {id: parseInt(noteId)},
+      where: {id: noteId},
       data: body,
     });
   }
@@ -152,10 +152,10 @@ export class JobApplicationWorkflowNoteController {
     example: 1,
   })
   async deleteJobApplicationWorkflowNote(
-    @Param('noteId') noteId: string
+    @Param('noteId') noteId: number
   ): Promise<JobApplicationWorkflowNote> {
     return await this.jobApplicationWorkflowNoteService.delete({
-      where: {id: parseInt(noteId)},
+      where: {id: noteId},
     });
   }
 

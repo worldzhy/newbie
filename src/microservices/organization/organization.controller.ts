@@ -8,7 +8,13 @@ import {
   Param,
   Query,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiParam,
+  ApiBody,
+  ApiQuery,
+} from '@nestjs/swagger';
 import {Organization, PermissionAction, Prisma} from '@prisma/client';
 import {RequirePermission} from '../../application/account/authorization/authorization.decorator';
 import {OrganizationService} from './organization.service';
@@ -43,28 +49,18 @@ export class OrganizationController {
 
   @Get('')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.Organization)
-  @ApiParam({
-    required: false,
-    name: 'name',
-    description: 'The string you want to search in the organization pool.',
-    example: 'jack',
-    schema: {type: 'string'},
-  })
-  @ApiParam({
-    required: false,
-    name: 'page',
-    schema: {type: 'number'},
-    description:
-      'The page of the organization list. It must be a number and LARGER THAN 0.',
-    example: 1,
-  })
+  @ApiQuery({name: 'name', type: 'string'})
+  @ApiQuery({name: 'page', type: 'number'})
+  @ApiQuery({name: 'pageSize', type: 'number'})
   async getOrganizations(
-    @Query() query: {name?: string; page?: string; pageSize?: string}
+    @Query('name') name?: string,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number
   ): Promise<Organization[]> {
     // [step 1] Construct where argument.
     let where: Prisma.OrganizationWhereInput | undefined;
-    if (query.name) {
-      const name = query.name.trim();
+    if (name) {
+      name = name.trim();
       if (name.length > 0) {
         where = {name: {search: name}};
       }
@@ -72,8 +68,8 @@ export class OrganizationController {
 
     // [step 2] Construct take and skip arguments.
     const {take, skip} = generatePaginationParams({
-      page: query.page,
-      pageSize: query.pageSize,
+      page: page,
+      pageSize: pageSize,
     });
 
     // [step 3] Get organizations.

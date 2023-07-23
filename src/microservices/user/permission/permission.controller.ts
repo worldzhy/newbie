@@ -66,13 +66,13 @@ export class PermissionController {
   @Get('')
   @ApiQuery({name: 'resource', type: 'string'})
   async getPermissions(
-    @Query() query: {resource?: string}
+    @Query('resource') resource?: string
   ): Promise<Permission[]> {
     // [step 1] Construct where argument.
     let where: Prisma.PermissionWhereInput | undefined;
     const whereConditions: object[] = [];
-    if (query.resource) {
-      const resource = query.resource.trim();
+    if (resource) {
+      resource = resource.trim();
       if (resource.length > 0) {
         whereConditions.push({resource: {search: resource}});
       }
@@ -94,10 +94,10 @@ export class PermissionController {
     example: 1,
   })
   async getPermission(
-    @Param('permissionId') permissionId: string
+    @Param('permissionId') permissionId: number
   ): Promise<Permission | null> {
     return await this.permissionService.findUnique({
-      where: {id: parseInt(permissionId)},
+      where: {id: permissionId},
     });
   }
 
@@ -123,12 +123,12 @@ export class PermissionController {
     },
   })
   async updatePermission(
-    @Param('permissionId') permissionId: string,
+    @Param('permissionId') permissionId: number,
     @Body()
     body: Prisma.PermissionUpdateInput
   ): Promise<Permission> {
     return await this.permissionService.update({
-      where: {id: parseInt(permissionId)},
+      where: {id: permissionId},
       data: body,
     });
   }
@@ -140,10 +140,10 @@ export class PermissionController {
     example: 1,
   })
   async deletePermission(
-    @Param('permissionId') permissionId: string
+    @Param('permissionId') permissionId: number
   ): Promise<Permission> {
     return await this.permissionService.delete({
-      where: {id: parseInt(permissionId)},
+      where: {id: permissionId},
     });
   }
 

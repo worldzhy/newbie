@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
-import {PrismaService} from '../../toolkit/prisma/prisma.service';
 import {Prisma, User} from '@prisma/client';
+import {PrismaService} from '../../toolkit/prisma/prisma.service';
 import {verifyUuid} from '../../toolkit/validators/user.validator';
 
 @Injectable()

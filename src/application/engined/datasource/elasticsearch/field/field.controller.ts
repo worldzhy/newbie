@@ -50,30 +50,30 @@ export class ElasticsearchDatasourceIndexFieldController {
   @Get(':indexId')
   @ApiParam({
     name: 'indexId',
-    schema: {type: 'string'},
-    description: 'The uuid of the datasource.',
+    schema: {type: 'number'},
+    description: 'The id of the index.',
     example: 1,
   })
   async getElasticsearchDatasourceIndexField(
-    @Param('indexId') indexId: string
+    @Param('indexId') indexId: number
   ): Promise<ElasticsearchDatasourceIndexField | null> {
     return await this.elasticsearchDatasourceIndexFieldService.findUnique({
-      where: {id: parseInt(indexId)},
+      where: {id: indexId},
     });
   }
 
   @Patch(':indexId')
   @ApiParam({
     name: 'indexId',
-    schema: {type: 'string'},
+    schema: {type: 'number'},
     example: 1,
   })
   async updateElasticsearchDatasourceIndexField(
-    @Param('indexId') indexId: string,
+    @Param('indexId') indexId: number,
     @Body() body: Prisma.ElasticsearchDatasourceIndexFieldUpdateInput
   ): Promise<ElasticsearchDatasourceIndexField> {
     return await this.elasticsearchDatasourceIndexFieldService.update({
-      where: {id: parseInt(indexId)},
+      where: {id: indexId},
       data: body,
     });
   }
@@ -81,14 +81,14 @@ export class ElasticsearchDatasourceIndexFieldController {
   @Delete(':indexId')
   @ApiParam({
     name: 'indexId',
-    schema: {type: 'string'},
+    schema: {type: 'number'},
     example: 1,
   })
   async deleteElasticsearchDatasourceIndexField(
-    @Param('indexId') indexId: string
+    @Param('indexId') indexId: number
   ): Promise<ElasticsearchDatasourceIndexField> {
     return await this.elasticsearchDatasourceIndexFieldService.delete({
-      where: {id: parseInt(indexId)},
+      where: {id: indexId},
     });
   }
 

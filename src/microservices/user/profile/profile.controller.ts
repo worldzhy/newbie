@@ -8,7 +8,13 @@ import {
   Param,
   Query,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiParam,
+  ApiBody,
+  ApiQuery,
+} from '@nestjs/swagger';
 import {PermissionAction, Prisma, UserProfile} from '@prisma/client';
 import {RequirePermission} from '../../../application/account/authorization/authorization.decorator';
 import {UserProfileService} from './profile.service';
@@ -56,13 +62,18 @@ export class UserProfileController {
 
   @Get('')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.UserProfile)
+  @ApiQuery({name: 'name', type: 'string'})
+  @ApiQuery({name: 'page', type: 'number'})
+  @ApiQuery({name: 'pageSize', type: 'number'})
   async getUserProfiles(
-    @Query() query: {name?: string; page?: string; pageSize?: string}
+    @Query('name') name?: string,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number
   ): Promise<UserProfile[]> {
     // [step 1] Construct where argument.
     let where: Prisma.UserProfileWhereInput | undefined;
-    if (query.name) {
-      const name = query.name.trim();
+    if (name) {
+      name = name.trim();
       if (name.length > 0) {
         where = {
           OR: [
@@ -76,8 +87,8 @@ export class UserProfileController {
 
     // [step 2] Construct take and skip arguments.
     const {take, skip} = generatePaginationParams({
-      page: query.page,
-      pageSize: query.pageSize,
+      page: page,
+      pageSize: pageSize,
     });
 
     // [step 3] Get user profiles.

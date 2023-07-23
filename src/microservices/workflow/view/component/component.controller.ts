@@ -60,10 +60,10 @@ export class WorkflowViewComponentController {
     example: 11,
   })
   async getWorkflowViewComponent(
-    @Param('componentId') componentId: string
+    @Param('componentId') componentId: number
   ): Promise<WorkflowViewComponent | null> {
     return await this.workflowViewComponentService.findUnique({
-      where: {id: parseInt(componentId)},
+      where: {id: componentId},
     });
   }
 
@@ -86,12 +86,12 @@ export class WorkflowViewComponentController {
     },
   })
   async updateWorkflowViewComponent(
-    @Param('componentId') componentId: string,
+    @Param('componentId') componentId: number,
     @Body()
     body: Prisma.WorkflowViewComponentUpdateInput
   ): Promise<WorkflowViewComponent> {
     return await this.workflowViewComponentService.update({
-      where: {id: parseInt(componentId)},
+      where: {id: componentId},
       data: body,
     });
   }
@@ -103,10 +103,10 @@ export class WorkflowViewComponentController {
     example: 11,
   })
   async deleteWorkflowViewComponent(
-    @Param('componentId') componentId: string
+    @Param('componentId') componentId: number
   ): Promise<WorkflowViewComponent> {
     return await this.workflowViewComponentService.delete({
-      where: {id: parseInt(componentId)},
+      where: {id: componentId},
     });
   }
 

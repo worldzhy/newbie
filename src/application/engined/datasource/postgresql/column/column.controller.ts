@@ -67,30 +67,30 @@ export class PostgresqlDatasourceTableColumnController {
   @Get(':columnId')
   @ApiParam({
     name: 'columnId',
-    schema: {type: 'string'},
+    schema: {type: 'number'},
     description: 'The uuid of the datasource.',
     example: 1,
   })
   async getPostgresqlDatasourceTableColumn(
-    @Param('columnId') columnId: string
+    @Param('columnId') columnId: number
   ): Promise<PostgresqlDatasourceTableColumn | null> {
     return await this.postgresqlDatasourceTableColumnService.findUnique({
-      where: {id: parseInt(columnId)},
+      where: {id: columnId},
     });
   }
 
   @Patch(':columnId')
   @ApiParam({
     name: 'columnId',
-    schema: {type: 'string'},
+    schema: {type: 'number'},
     example: 1,
   })
   async updatePostgresqlDatasourceTableColumn(
-    @Param('columnId') columnId: string,
+    @Param('columnId') columnId: number,
     @Body() body: Prisma.ElasticsearchDatasourceIndexUpdateInput
   ): Promise<PostgresqlDatasourceTableColumn> {
     return await this.postgresqlDatasourceTableColumnService.update({
-      where: {id: parseInt(columnId)},
+      where: {id: columnId},
       data: body,
     });
   }
@@ -98,16 +98,16 @@ export class PostgresqlDatasourceTableColumnController {
   @Delete(':columnId')
   @ApiParam({
     name: 'columnId',
-    schema: {type: 'string'},
+    schema: {type: 'number'},
     example: 1,
   })
   async deletePostgresqlDatasourceTableColumn(
-    @Param('columnId') columnId: string
+    @Param('columnId') columnId: number
   ): Promise<PostgresqlDatasourceTableColumn> {
     // [step 1] Get the column.
     const column =
       await this.postgresqlDatasourceTableColumnService.findUniqueOrThrow({
-        where: {id: parseInt(columnId)},
+        where: {id: columnId},
         include: {table: true},
       });
 
@@ -116,7 +116,7 @@ export class PostgresqlDatasourceTableColumnController {
 
     // [step 3] Delete column record in database.
     return await this.postgresqlDatasourceTableColumnService.delete({
-      where: {id: parseInt(columnId)},
+      where: {id: columnId},
     });
   }
 

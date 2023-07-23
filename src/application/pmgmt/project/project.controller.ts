@@ -86,18 +86,15 @@ export class ProjectController {
   @ApiQuery({name: 'page', type: 'number'})
   @ApiQuery({name: 'pageSize', type: 'number'})
   async getProjects(
-    @Query()
-    query: {
-      name?: string;
-      page?: string;
-      pageSize?: string;
-    }
+    @Query('name') name?: string,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number
   ) {
     // [step 1] Construct where argument.
     let where: Prisma.UserWhereInput | undefined;
     const whereConditions: object[] = [];
-    if (query.name) {
-      const name = query.name.trim();
+    if (name) {
+      name = name.trim();
       if (name.length > 0) {
         whereConditions.push({name: {contains: name}});
       }
@@ -113,8 +110,8 @@ export class ProjectController {
 
     // [step 2] Construct take and skip arguments.
     const {take, skip} = generatePaginationParams({
-      page: query.page,
-      pageSize: query.pageSize,
+      page: page,
+      pageSize: pageSize,
     });
 
     const [records, total] = await this.projectService.findManyWithTotal({
@@ -123,7 +120,7 @@ export class ProjectController {
       skip: skip,
     });
 
-    return generatePaginationResponse({records, total, query});
+    return generatePaginationResponse({records, total, page, pageSize});
   }
 
   //* Get

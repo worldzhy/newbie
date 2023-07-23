@@ -55,9 +55,9 @@ export class TaskController {
     description: 'The id of the task.',
     example: 81,
   })
-  async getTask(@Param('taskId') taskId: string): Promise<Task | null> {
+  async getTask(@Param('taskId') taskId: number): Promise<Task | null> {
     return await this.taskService.findUnique({
-      where: {id: parseInt(taskId)},
+      where: {id: taskId},
     });
   }
 
@@ -69,11 +69,11 @@ export class TaskController {
     example: 81,
   })
   async updateTask(
-    @Param('taskId') taskId: string,
+    @Param('taskId') taskId: number,
     @Body() body: Prisma.TaskUpdateInput
   ): Promise<Task> {
     return await this.taskService.update({
-      where: {id: parseInt(taskId)},
+      where: {id: taskId},
       data: body,
     });
   }
@@ -85,9 +85,9 @@ export class TaskController {
     description: 'The id of the task.',
     example: 81,
   })
-  async deleteTask(@Param('taskId') taskId: string): Promise<Task> {
+  async deleteTask(@Param('taskId') taskId: number): Promise<Task> {
     return await this.taskService.delete({
-      where: {id: parseInt(taskId)},
+      where: {id: taskId},
     });
   }
 
@@ -98,10 +98,10 @@ export class TaskController {
     description: 'The id of the task.',
     example: 81,
   })
-  async send2queue(@Param('taskId') taskId: string): Promise<Task> {
+  async send2queue(@Param('taskId') taskId: number): Promise<Task> {
     // [step 1] Get task.
     const task = await this.taskService.findUniqueOrThrow({
-      where: {id: parseInt(taskId)},
+      where: {id: taskId},
     });
 
     // [step 2] Send queue message.
@@ -114,7 +114,7 @@ export class TaskController {
 
     // [step 3] Update task record.
     return await this.taskService.update({
-      where: {id: parseInt(taskId)},
+      where: {id: taskId},
       data: {
         sqsMessageId: output.MessageId,
         sqsResponse: output as object,

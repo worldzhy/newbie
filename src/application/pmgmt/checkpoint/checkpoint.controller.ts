@@ -26,10 +26,10 @@ export class ProjectCheckpointController {
     example: '1',
   })
   async getCheckpoint(
-    @Param('checkpointId') checkpointId: string
+    @Param('checkpointId') checkpointId: number
   ): Promise<ProjectCheckpoint | null> {
     return await this.checkpointService.findUniqueOrThrow({
-      where: {id: parseInt(checkpointId)},
+      where: {id: checkpointId},
     });
   }
 
@@ -67,10 +67,10 @@ export class ProjectCheckpointController {
     example: '1',
   })
   async deleteCheckpoint(
-    @Param('checkpointId') checkpointId: string
+    @Param('checkpointId') checkpointId: number
   ): Promise<ProjectCheckpoint | null> {
     return await this.checkpointService.delete({
-      where: {id: parseInt(checkpointId)},
+      where: {id: checkpointId},
     });
   }
 

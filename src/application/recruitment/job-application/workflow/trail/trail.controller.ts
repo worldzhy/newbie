@@ -25,12 +25,12 @@ import {RoleService} from '../../../../../microservices/user/role/role.service';
 import {UserService} from '../../../../../microservices/user/user.service';
 import {generatePaginationParams} from '../../../../../toolkit/pagination/pagination';
 
-@ApiTags('[Application] Recruitment / Job Application / Workflow Step')
+@ApiTags('[Application] Recruitment / Job Application / Workflow Trail')
 @ApiBearerAuth()
 @Controller('recruitment-workflow-steps')
 export class JobApplicationWorkflowTrailController {
   constructor(
-    private readonly workflowStepService: JobApplicationWorkflowTrailService,
+    private readonly workflowTrailService: JobApplicationWorkflowTrailService,
     private readonly userService: UserService,
     private readonly roleService: RoleService
   ) {}
@@ -43,28 +43,25 @@ export class JobApplicationWorkflowTrailController {
   @ApiQuery({name: 'workflowId', type: 'string'})
   @ApiQuery({name: 'page', type: 'number'})
   @ApiQuery({name: 'pageSize', type: 'number'})
-  async getWorkflowSteps(
-    @Query()
-    query: {
-      workflowId?: string;
-      page?: string;
-      pageSize?: string;
-    }
+  async getWorkflowTrails(
+    @Query('workflowId') workflowId?: string,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number
   ): Promise<JobApplicationWorkflowTrail[]> {
     // [step 1] Construct where argument.
     let where: Prisma.JobApplicationWorkflowTrailWhereInput | undefined;
-    if (query.workflowId) {
-      where = {workflowId: query.workflowId};
+    if (workflowId) {
+      where = {workflowId: workflowId};
     }
 
     // [step 2] Construct take and skip arguments.
     const {take, skip} = generatePaginationParams({
-      page: query.page,
-      pageSize: query.pageSize,
+      page: page,
+      pageSize: pageSize,
     });
 
     // [step 3] Get workflow steps.
-    const steps = await this.workflowStepService.findMany({
+    const steps = await this.workflowTrailService.findMany({
       where: where,
       take: take,
       skip: skip,
@@ -94,31 +91,31 @@ export class JobApplicationWorkflowTrailController {
     return steps;
   }
 
-  @Get(':stepId')
+  @Get(':trailId')
   @RequirePermission(
     PermissionAction.Get,
     Prisma.ModelName.JobApplicationWorkflowTrail
   )
   @ApiParam({
-    name: 'stepId',
+    name: 'trailId',
     schema: {type: 'number'},
     example: 1,
   })
-  async getWorkflowStep(
-    @Param('stepId') stepId: string
+  async getWorkflowTrail(
+    @Param('trailId') trailId: number
   ): Promise<JobApplicationWorkflowTrail | null> {
-    return await this.workflowStepService.findUnique({
-      where: {id: parseInt(stepId)},
+    return await this.workflowTrailService.findUnique({
+      where: {id: trailId},
     });
   }
 
-  @Patch(':stepId')
+  @Patch(':trailId')
   @RequirePermission(
     PermissionAction.Update,
     Prisma.ModelName.JobApplicationWorkflowTrail
   )
   @ApiParam({
-    name: 'stepId',
+    name: 'trailId',
     schema: {type: 'number'},
     example: 1,
   })
@@ -144,31 +141,31 @@ export class JobApplicationWorkflowTrailController {
       },
     },
   })
-  async updateWorkflowStep(
-    @Param('stepId') stepId: string,
+  async updateWorkflowTrail(
+    @Param('trailId') trailId: number,
     @Body() body: Prisma.JobApplicationWorkflowTrailUpdateInput
   ): Promise<JobApplicationWorkflowTrail> {
-    return await this.workflowStepService.update({
-      where: {id: parseInt(stepId)},
+    return await this.workflowTrailService.update({
+      where: {id: trailId},
       data: body,
     });
   }
 
-  @Delete(':stepId')
+  @Delete(':trailId')
   @RequirePermission(
     PermissionAction.Delete,
     Prisma.ModelName.JobApplicationWorkflowTrail
   )
   @ApiParam({
-    name: 'stepId',
+    name: 'trailId',
     schema: {type: 'number'},
     example: 1,
   })
-  async deleteWorkflowStep(
-    @Param('stepId') stepId: string
+  async deleteWorkflowTrail(
+    @Param('trailId') trailId: number
   ): Promise<JobApplicationWorkflowTrail> {
-    return await this.workflowStepService.delete({
-      where: {id: parseInt(stepId)},
+    return await this.workflowTrailService.delete({
+      where: {id: trailId},
     });
   }
 

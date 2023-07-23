@@ -23,7 +23,6 @@ export class CandidateTrainingController {
     private readonly candidateService: CandidateService
   ) {}
 
-  //* Create
   @Post('')
   @RequirePermission(
     PermissionAction.Create,
@@ -54,31 +53,28 @@ export class CandidateTrainingController {
     return await this.candidateTrainingService.create({data: body});
   }
 
-  //* Get many
   @Get('')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.CandidateTraining)
   async getCandidateTrainings(): Promise<CandidateTraining[]> {
     return await this.candidateTrainingService.findMany({});
   }
 
-  //* Get
   @Get(':trainingId')
   @RequirePermission(PermissionAction.Get, Prisma.ModelName.CandidateTraining)
   @ApiParam({
     name: 'trainingId',
-    schema: {type: 'string'},
+    schema: {type: 'number'},
     description: 'The id of the candidateTraining.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
+    example: 1,
   })
   async getCandidateTraining(
-    @Param('trainingId') trainingId: string
+    @Param('trainingId') trainingId: number
   ): Promise<CandidateTraining | null> {
     return await this.candidateTrainingService.findUnique({
-      where: {id: parseInt(trainingId)},
+      where: {id: trainingId},
     });
   }
 
-  //* Update
   @Patch(':trainingId')
   @RequirePermission(
     PermissionAction.Update,
@@ -86,7 +82,7 @@ export class CandidateTrainingController {
   )
   @ApiParam({
     name: 'trainingId',
-    schema: {type: 'string'},
+    schema: {type: 'number'},
     description: 'The id of the candidateTraining.',
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
@@ -102,16 +98,15 @@ export class CandidateTrainingController {
     },
   })
   async updateCandidateTraining(
-    @Param('trainingId') trainingId: string,
+    @Param('trainingId') trainingId: number,
     @Body() body: Prisma.CandidateTrainingUpdateInput
   ): Promise<CandidateTraining> {
     return await this.candidateTrainingService.update({
-      where: {id: parseInt(trainingId)},
+      where: {id: trainingId},
       data: body,
     });
   }
 
-  //* Delete
   @Delete(':trainingId')
   @RequirePermission(
     PermissionAction.Delete,
@@ -119,15 +114,15 @@ export class CandidateTrainingController {
   )
   @ApiParam({
     name: 'trainingId',
-    schema: {type: 'string'},
+    schema: {type: 'number'},
     description: 'The id of the candidateTraining.',
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
   async deleteCandidateTraining(
-    @Param('trainingId') trainingId: string
+    @Param('trainingId') trainingId: number
   ): Promise<CandidateTraining> {
     return await this.candidateTrainingService.delete({
-      where: {id: parseInt(trainingId)},
+      where: {id: trainingId},
     });
   }
 

@@ -1,4 +1,4 @@
-import {INestApplication} from '@nestjs/common';
+import {INestApplication, ValidationPipe} from '@nestjs/common';
 import {NestFactory} from '@nestjs/core';
 import {ConfigService} from '@nestjs/config';
 import {FastifyAdapter, NestFastifyApplication} from '@nestjs/platform-fastify';
@@ -56,6 +56,17 @@ async function bootstrap() {
 
   // Enable CORS
   app.enableCors();
+
+  /**
+   * By default, every path parameter and query parameter comes over the network as a string.
+   * When we enable this behavior globally, the ValidationPipe will try to automatically convert a string identifier
+   * to a number if we specified the id type as a number (in the method signature).
+   */
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+    })
+  );
 
   // Listen port
   const port = configService.get<number>('project.port') || 3000;

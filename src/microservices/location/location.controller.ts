@@ -64,12 +64,13 @@ export class LocationController {
   @ApiQuery({name: 'page', type: 'number'})
   @ApiQuery({name: 'pageSize', type: 'number'})
   async getLocations(
-    @Query() query: {page?: string; pageSize?: string}
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number
   ): Promise<Location[]> {
     // [step 1] Construct take and skip arguments.
     const {take, skip} = generatePaginationParams({
-      page: query.page,
-      pageSize: query.pageSize,
+      page: page,
+      pageSize: pageSize,
     });
 
     // [step 2] Get locations.

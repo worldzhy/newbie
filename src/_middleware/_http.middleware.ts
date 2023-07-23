@@ -21,11 +21,11 @@ export class HttpMiddleware implements NestMiddleware {
 
       // [step 2] Write log.
       if (statusCode >= 500) {
-        return this.logger.error(content);
+        return this.logger.error(content, this.loggerContext);
       } else if (statusCode >= 400) {
-        return this.logger.warn(content);
+        return this.logger.warn(content, this.loggerContext);
       } else {
-        return this.logger.log(content);
+        return this.logger.log(content, this.loggerContext);
       }
     });
 

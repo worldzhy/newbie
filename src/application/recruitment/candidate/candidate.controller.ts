@@ -87,16 +87,18 @@ export class CandidateController {
   @ApiQuery({name: 'email', type: 'string'})
   @ApiQuery({name: 'phone', type: 'string'})
   async countCandidates(
-    @Query() query: {name?: string; email?: string; phone?: string}
+    @Query('name') name?: string,
+    @Query('email') email?: string,
+    @Query('phone') phone?: string
   ): Promise<number> {
     // [step 1] Construct where argument.
     let where: Prisma.CandidateWhereInput | undefined;
     const whereConditions: object[] = [];
-    if (query.name && query.name.trim().length > 0) {
+    if (name && name.trim().length > 0) {
       whereConditions.push({
         profile: {
           fullName: {
-            search: query.name
+            search: name
               .trim()
               .split(' ')
               .filter(word => word !== '')
@@ -105,17 +107,17 @@ export class CandidateController {
         },
       });
     }
-    if (query.email && query.email.trim().length > 0) {
+    if (email && email.trim().length > 0) {
       whereConditions.push({
-        profile: {email: {contains: query.email.trim()}},
+        profile: {email: {contains: email.trim()}},
       });
     }
-    if (query.phone && query.phone.trim().length > 0) {
+    if (phone && phone.trim().length > 0) {
       whereConditions.push({
-        profile: {primaryPhone: {contains: query.phone.trim()}},
+        profile: {primaryPhone: {contains: phone.trim()}},
       });
       whereConditions.push({
-        profile: {alternatePhone: {contains: query.phone.trim()}},
+        profile: {alternatePhone: {contains: phone.trim()}},
       });
     }
 
@@ -137,23 +139,20 @@ export class CandidateController {
   @ApiQuery({name: 'page', type: 'number'})
   @ApiQuery({name: 'pageSize', type: 'number'})
   async getCandidates(
-    @Query()
-    query: {
-      name?: string;
-      email?: string;
-      phone?: string;
-      page?: string;
-      pageSize?: string;
-    }
+    @Query('name') name?: string,
+    @Query('email') email?: string,
+    @Query('phone') phone?: string,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number
   ): Promise<Candidate[]> {
     // [step 1] Construct where argument.
     let where: Prisma.CandidateWhereInput | undefined;
     const whereConditions: object[] = [];
-    if (query.name && query.name.trim().length > 0) {
+    if (name && name.trim().length > 0) {
       whereConditions.push({
         profile: {
           fullName: {
-            search: query.name
+            search: name
               .trim()
               .split(' ')
               .filter(word => word !== '')
@@ -162,17 +161,17 @@ export class CandidateController {
         },
       });
     }
-    if (query.email && query.email.trim().length > 0) {
+    if (email && email.trim().length > 0) {
       whereConditions.push({
-        profile: {email: {contains: query.email.trim()}},
+        profile: {email: {contains: email.trim()}},
       });
     }
-    if (query.phone && query.phone.trim().length > 0) {
+    if (phone && phone.trim().length > 0) {
       whereConditions.push({
-        profile: {primaryPhone: {contains: query.phone.trim()}},
+        profile: {primaryPhone: {contains: phone.trim()}},
       });
       whereConditions.push({
-        profile: {alternatePhone: {contains: query.phone.trim()}},
+        profile: {alternatePhone: {contains: phone.trim()}},
       });
     }
 
@@ -182,8 +181,8 @@ export class CandidateController {
 
     // [step 2] Construct take and skip arguments.
     const {take, skip} = generatePaginationParams({
-      page: query.page,
-      pageSize: query.pageSize,
+      page: page,
+      pageSize: pageSize,
     });
 
     // [step 3] Get candidates.

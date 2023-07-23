@@ -62,10 +62,10 @@ export class ProjectElementController {
     example: '1',
   })
   async getElement(
-    @Param('elementId') elementId: string
+    @Param('elementId') elementId: number
   ): Promise<ProjectElement | null> {
     return await this.elementService.findUnique({
-      where: {id: parseInt(elementId)},
+      where: {id: elementId},
     });
   }
 
@@ -105,10 +105,10 @@ export class ProjectElementController {
     example: '1',
   })
   async deleteElement(
-    @Param('elementId') elementId: string
+    @Param('elementId') elementId: number
   ): Promise<ProjectElement | null> {
     return await this.elementService.delete({
-      where: {id: parseInt(elementId)},
+      where: {id: elementId},
     });
   }
 

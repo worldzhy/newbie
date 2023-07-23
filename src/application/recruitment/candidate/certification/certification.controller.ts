@@ -78,10 +78,10 @@ export class CandidateCertificationController {
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
   async getCandidateCertification(
-    @Param('certificationId') certificationId: string
+    @Param('certificationId') certificationId: number
   ): Promise<CandidateCertification | null> {
     return await this.candidateCertificationService.findUnique({
-      where: {id: parseInt(certificationId)},
+      where: {id: certificationId},
     });
   }
 
@@ -109,11 +109,11 @@ export class CandidateCertificationController {
     },
   })
   async updateCandidateCertification(
-    @Param('certificationId') certificationId: string,
+    @Param('certificationId') certificationId: number,
     @Body() body: Prisma.CandidateCertificationUpdateInput
   ): Promise<CandidateCertification> {
     return await this.candidateCertificationService.update({
-      where: {id: parseInt(certificationId)},
+      where: {id: certificationId},
       data: body,
     });
   }
@@ -131,10 +131,10 @@ export class CandidateCertificationController {
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
   async deleteCandidateCertification(
-    @Param('certificationId') certificationId: string
+    @Param('certificationId') certificationId: number
   ): Promise<CandidateCertification> {
     return await this.candidateCertificationService.delete({
-      where: {id: parseInt(certificationId)},
+      where: {id: certificationId},
     });
   }
 

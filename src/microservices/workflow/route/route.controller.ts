@@ -50,12 +50,12 @@ export class WorkflowRouteController {
   @Get('')
   @ApiQuery({name: 'viewId', type: 'number'})
   async getWorkflowRoutes(
-    @Query() query: {viewId?: string}
+    @Query('viewId') viewId?: number
   ): Promise<WorkflowRoute[]> {
     // [step 1] Construct where argument.
     let where: Prisma.WorkflowRouteWhereInput | undefined;
-    if (query.viewId) {
-      where = {viewId: parseInt(query.viewId)};
+    if (viewId) {
+      where = {viewId: viewId};
     }
 
     // [step 2] Get workflows.
@@ -70,10 +70,10 @@ export class WorkflowRouteController {
     example: 11,
   })
   async getWorkflowRoute(
-    @Param('routeId') routeId: string
+    @Param('routeId') routeId: number
   ): Promise<WorkflowRoute | null> {
     return await this.workflowRouteService.findUnique({
-      where: {id: parseInt(routeId)},
+      where: {id: routeId},
     });
   }
 
@@ -104,7 +104,7 @@ export class WorkflowRouteController {
     },
   })
   async updateWorkflowRoute(
-    @Param('routeId') routeId: string,
+    @Param('routeId') routeId: number,
     @Body()
     body: Prisma.WorkflowRouteUpdateInput
   ): Promise<WorkflowRoute> {
@@ -115,7 +115,7 @@ export class WorkflowRouteController {
     }
 
     return await this.workflowRouteService.update({
-      where: {id: parseInt(routeId)},
+      where: {id: routeId},
       data: body,
     });
   }
@@ -127,10 +127,10 @@ export class WorkflowRouteController {
     example: 11,
   })
   async deleteWorkflowRoute(
-    @Param('routeId') routeId: string
+    @Param('routeId') routeId: number
   ): Promise<WorkflowRoute> {
     return await this.workflowRouteService.delete({
-      where: {id: parseInt(routeId)},
+      where: {id: routeId},
     });
   }
 

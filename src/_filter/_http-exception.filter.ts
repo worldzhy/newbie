@@ -31,11 +31,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     // [step 2] Write log.
     if (statusCode >= 500) {
-      this.logger.error(content);
+      this.logger.error(content, this.loggerContext);
     } else if (statusCode >= 400) {
-      this.logger.warn(content);
+      this.logger.warn(content, this.loggerContext);
     } else {
-      this.logger.log(content);
+      this.logger.log(content, this.loggerContext);
     }
 
     // [step 3] Response.

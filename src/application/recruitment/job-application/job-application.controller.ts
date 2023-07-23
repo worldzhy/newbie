@@ -162,7 +162,8 @@ export class JobApplicationController {
   @ApiQuery({name: 'pageSize', type: 'number'})
   async getJobApplications(
     @Request() request: Request,
-    @Query() query: {page?: string; pageSize?: string}
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number
   ): Promise<JobApplication[]> {
     // [step 1] Construct where arguments.
     let where: Prisma.JobApplicationWhereInput | undefined;
@@ -184,8 +185,8 @@ export class JobApplicationController {
 
     // [step 2] Construct take and skip arguments.
     const {take, skip} = generatePaginationParams({
-      page: query.page,
-      pageSize: query.pageSize,
+      page: page,
+      pageSize: pageSize,
     });
 
     // [step 4] Get job applications.
@@ -229,7 +230,8 @@ export class JobApplicationController {
   @ApiQuery({name: 'pageSize', type: 'number'})
   async getProcessedJobApplications(
     @Request() request: Request,
-    @Query() query: {page?: string; pageSize?: string}
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number
   ): Promise<JobApplication[]> {
     // [step 1] Get userId from http request header.
     const {userId} = this.tokenService.decodeToken(
@@ -238,8 +240,8 @@ export class JobApplicationController {
 
     // [step 2] Construct take and skip arguments.
     const {take, skip} = generatePaginationParams({
-      page: query.page,
-      pageSize: query.pageSize,
+      page: page,
+      pageSize: pageSize,
     });
 
     // [step 4] Return job applications.
@@ -288,19 +290,21 @@ export class JobApplicationController {
   @ApiQuery({name: 'pageSize', type: 'number'})
   @ApiQuery({name: 'dateRange', type: 'string', isArray: true})
   async getAllJobApplications(
-    @Query() query: {page?: string; pageSize?: string; dateRange: string[]}
+    @Query('dateRange') dateRange?: string[],
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number
   ): Promise<JobApplication[]> {
     // [step 1] Construct where arguments.
     let where: Prisma.JobApplicationWhereInput | undefined;
-    if (Array.isArray(query.dateRange) && query.dateRange.length === 2) {
+    if (Array.isArray(dateRange) && dateRange.length === 2) {
       where = {
-        createdAt: {gte: query.dateRange[0], lte: query.dateRange[1]},
+        createdAt: {gte: dateRange[0], lte: dateRange[1]},
       };
     }
     // [step 2] Construct take and skip arguments.
     const {take, skip} = generatePaginationParams({
-      page: query.page,
-      pageSize: query.pageSize,
+      page: page,
+      pageSize: pageSize,
     });
 
     // [step 2] Get job applications.

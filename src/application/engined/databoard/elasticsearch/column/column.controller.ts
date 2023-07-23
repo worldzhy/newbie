@@ -48,23 +48,23 @@ export class ElasticsearchDataboardColumnController {
   @Get(':columnId')
   @ApiParam({
     name: 'columnId',
-    schema: {type: 'string'},
-    description: 'The uuid of the databoard.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
+    schema: {type: 'number'},
+    description: 'The id of the column.',
+    example: 1,
   })
   async getElasticsearchDataboardColumn(
-    @Param('columnId') columnId: string
+    @Param('columnId') columnId: number
   ): Promise<ElasticsearchDataboardColumn | null> {
     return await this.elasticsearchDataboardColumnService.findUnique({
-      where: {id: parseInt(columnId)},
+      where: {id: columnId},
     });
   }
 
   @Patch(':columnId')
   @ApiParam({
     name: 'columnId',
-    schema: {type: 'string'},
-    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
+    schema: {type: 'number'},
+    example: 1,
   })
   @ApiBody({
     description: 'Update column.',
@@ -78,11 +78,11 @@ export class ElasticsearchDataboardColumnController {
     },
   })
   async updateElasticsearchDataboardColumn(
-    @Param('columnId') columnId: string,
+    @Param('columnId') columnId: number,
     @Body() body: Prisma.ElasticsearchDataboardColumnUpdateInput
   ): Promise<ElasticsearchDataboardColumn> {
     return await this.elasticsearchDataboardColumnService.update({
-      where: {id: parseInt(columnId)},
+      where: {id: columnId},
       data: body,
     });
   }
@@ -90,14 +90,14 @@ export class ElasticsearchDataboardColumnController {
   @Delete(':columnId')
   @ApiParam({
     name: 'columnId',
-    schema: {type: 'string'},
-    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
+    schema: {type: 'number'},
+    example: 1,
   })
   async deleteElasticsearchDataboardColumn(
-    @Param('columnId') columnId: string
+    @Param('columnId') columnId: number
   ): Promise<ElasticsearchDataboardColumn> {
     return await this.elasticsearchDataboardColumnService.delete({
-      where: {id: parseInt(columnId)},
+      where: {id: columnId},
     });
   }
 

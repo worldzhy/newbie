@@ -51,10 +51,10 @@ export class WorkflowStateController {
     example: 11,
   })
   async getWorkflowState(
-    @Param('stateId') stateId: string
+    @Param('stateId') stateId: number
   ): Promise<WorkflowState | null> {
     return await this.workflowStateService.findUnique({
-      where: {id: parseInt(stateId)},
+      where: {id: stateId},
     });
   }
 
@@ -77,12 +77,12 @@ export class WorkflowStateController {
     },
   })
   async updateWorkflowState(
-    @Param('stateId') stateId: string,
+    @Param('stateId') stateId: number,
     @Body()
     body: Prisma.WorkflowStateUpdateInput
   ): Promise<WorkflowState> {
     return await this.workflowStateService.update({
-      where: {id: parseInt(stateId)},
+      where: {id: stateId},
       data: body,
     });
   }
@@ -94,10 +94,10 @@ export class WorkflowStateController {
     example: 11,
   })
   async deleteWorkflowState(
-    @Param('stateId') stateId: string
+    @Param('stateId') stateId: number
   ): Promise<WorkflowState> {
     return await this.workflowStateService.delete({
-      where: {id: parseInt(stateId)},
+      where: {id: stateId},
     });
   }
 

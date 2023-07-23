@@ -69,10 +69,10 @@ export class DatatransTaskController {
     example: 1,
   })
   async getDatatransTask(
-    @Param('taskId') taskId: string
+    @Param('taskId') taskId: number
   ): Promise<DatatransTask | null> {
     return await this.datatransTaskService.findUnique({
-      where: {id: parseInt(taskId)},
+      where: {id: taskId},
     });
   }
 
@@ -84,11 +84,11 @@ export class DatatransTaskController {
     example: 1,
   })
   async updateDatatransTask(
-    @Param('taskId') taskId: string,
+    @Param('taskId') taskId: number,
     @Body() body: Prisma.DatatransTaskUpdateInput
   ): Promise<DatatransTask> {
     return await this.datatransTaskService.update({
-      where: {id: parseInt(taskId)},
+      where: {id: taskId},
       data: body,
     });
   }
@@ -101,10 +101,10 @@ export class DatatransTaskController {
     example: 1,
   })
   async deleteDatatransTask(
-    @Param('taskId') taskId: string
+    @Param('taskId') taskId: number
   ): Promise<DatatransTask> {
     return await this.datatransTaskService.delete({
-      where: {id: parseInt(taskId)},
+      where: {id: taskId},
     });
   }
 
@@ -116,11 +116,11 @@ export class DatatransTaskController {
     example: 1,
   })
   async stopDatatransTask(
-    @Param('taskId') taskId: string
+    @Param('taskId') taskId: number
   ): Promise<DatatransTask> {
     // [step 1] Get task.
     const task = await this.datatransTaskService.findUniqueOrThrow({
-      where: {id: parseInt(taskId)},
+      where: {id: taskId},
       include: {
         mission: {
           include: {
@@ -191,7 +191,7 @@ export class DatatransTaskController {
 
     // [step 4] Update task state.
     return await this.datatransTaskService.update({
-      where: {id: parseInt(taskId)},
+      where: {id: taskId},
       data: {state: DatatransTaskState.DONE},
     });
   }
@@ -204,11 +204,11 @@ export class DatatransTaskController {
     example: 1,
   })
   async startDatatransTask(
-    @Param('taskId') taskId: string
+    @Param('taskId') taskId: number
   ): Promise<DatatransTask> {
     // [step 1] Get task.
     const task = await this.datatransTaskService.findUniqueOrThrow({
-      where: {id: parseInt(taskId)},
+      where: {id: taskId},
     });
 
     // [step 2] Send task to queue.
@@ -221,7 +221,7 @@ export class DatatransTaskController {
 
     // [step 3] Update task state.
     return await this.datatransTaskService.update({
-      where: {id: parseInt(taskId)},
+      where: {id: taskId},
       data: {
         state: DatatransTaskState.IN_QUEUE,
         sqsMessageId: output.MessageId,

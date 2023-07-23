@@ -31,10 +31,30 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     });
 
     // Register event handlers.
-    this.$on<any>('query', this.queryEventHandler);
-    this.$on<any>('info', this.infoEventHandler);
-    this.$on<any>('warn', this.warnEventHandler);
-    this.$on<any>('error', this.errorEventHandler);
+    this.$on<any>('query', (e: Prisma.QueryEvent) => {
+      this.logger.log('👇👇👇');
+      this.logger.log(`time: ${e.timestamp}`, this.loggerContext);
+      this.logger.log(`query: ${e.query}`, this.loggerContext);
+      this.logger.log(`params: ${e.params}`, this.loggerContext);
+      this.logger.log(`duration: ${e.duration} ms`, this.loggerContext);
+      this.logger.log(`target: ${e.target}`, this.loggerContext);
+      this.logger.log('');
+    });
+
+    this.$on<any>('info', (e: Prisma.LogEvent) => {
+      const message = `${e.timestamp} >> ${e.message} >> [Target] ${e.target}`;
+      this.logger.log(message, this.loggerContext);
+    });
+
+    this.$on<any>('warn', (e: Prisma.LogEvent) => {
+      const message = `${e.timestamp} >> ${e.message} >> [Target] ${e.target}`;
+      this.logger.warn(message, this.loggerContext);
+    });
+
+    this.$on<any>('error', (e: Prisma.LogEvent) => {
+      const message = `${e.timestamp} >> ${e.message} >> [Target] ${e.target}`;
+      this.logger.error(message, this.loggerContext);
+    });
 
     // Register middlewares.
     this.$use(prismaMiddleware);
@@ -48,30 +68,5 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     this.$on('beforeExit', async () => {
       await app.close();
     });
-  }
-
-  private queryEventHandler(e: Prisma.QueryEvent) {
-    this.logger.log('👇👇👇');
-    this.logger.log(`time: ${e.timestamp}`, this.loggerContext);
-    this.logger.log(`query: ${e.query}`, this.loggerContext);
-    this.logger.log(`params: ${e.params}`, this.loggerContext);
-    this.logger.log(`duration: ${e.duration} ms`, this.loggerContext);
-    this.logger.log(`target: ${e.target}`, this.loggerContext);
-    this.logger.log('');
-  }
-
-  private infoEventHandler(e: Prisma.LogEvent) {
-    const message = `${e.timestamp} >> ${e.message} >> [Target] ${e.target}`;
-    this.logger.log(message);
-  }
-
-  private warnEventHandler(e: Prisma.LogEvent) {
-    const message = `${e.timestamp} >> ${e.message} >> [Target] ${e.target}`;
-    this.logger.warn(message, this.loggerContext);
-  }
-
-  private errorEventHandler(e: Prisma.LogEvent) {
-    const message = `${e.timestamp} >> ${e.message} >> [Target] ${e.target}`;
-    this.logger.error(message, this.loggerContext);
   }
 }

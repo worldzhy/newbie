@@ -104,12 +104,14 @@ export class JobApplicationWorkflowTaskController {
   @ApiQuery({name: 'assignedToMe', type: 'string'})
   async getJobApplicationWorkflowTasks(
     @Request() request: Request,
-    @Query() query: {page?: string; pageSize?: string; assignedToMe?: string}
+    @Query('assignedToMe') assignedToMe?: string,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number
   ): Promise<JobApplicationWorkflowTask[]> {
     // [step 1] Construct where argument.
     let where: Prisma.JobApplicationWorkflowTaskWhereInput | undefined =
       undefined;
-    if (query.assignedToMe && query.assignedToMe.trim()) {
+    if (assignedToMe && assignedToMe.trim()) {
       const {userId} = this.tokenService.decodeToken(
         this.tokenService.getTokenFromHttpRequest(request)
       ) as {userId: string};
@@ -118,8 +120,8 @@ export class JobApplicationWorkflowTaskController {
 
     // [step 2] Construct take and skip arguments.
     const {take, skip} = generatePaginationParams({
-      page: query.page,
-      pageSize: query.pageSize,
+      page: page,
+      pageSize: pageSize,
     });
 
     return await this.jobApplicationWorkflowTaskService.findMany({
@@ -141,10 +143,10 @@ export class JobApplicationWorkflowTaskController {
     example: 1,
   })
   async getJobApplicationWorkflowTask(
-    @Param('taskId') taskId: string
+    @Param('taskId') taskId: number
   ): Promise<JobApplicationWorkflowTask | null> {
     return await this.jobApplicationWorkflowTaskService.findUnique({
-      where: {id: parseInt(taskId)},
+      where: {id: taskId},
     });
   }
 
@@ -171,11 +173,11 @@ export class JobApplicationWorkflowTaskController {
     },
   })
   async updateJobApplicationWorkflowTask(
-    @Param('taskId') taskId: string,
+    @Param('taskId') taskId: number,
     @Body() body: Prisma.JobApplicationWorkflowTaskUpdateInput
   ): Promise<JobApplicationWorkflowTask> {
     return await this.jobApplicationWorkflowTaskService.update({
-      where: {id: parseInt(taskId)},
+      where: {id: taskId},
       data: body,
     });
   }
@@ -192,10 +194,10 @@ export class JobApplicationWorkflowTaskController {
     example: 1,
   })
   async deleteJobApplicationWorkflowTask(
-    @Param('taskId') taskId: string
+    @Param('taskId') taskId: number
   ): Promise<JobApplicationWorkflowTask> {
     return await this.jobApplicationWorkflowTaskService.delete({
-      where: {id: parseInt(taskId)},
+      where: {id: taskId},
     });
   }
 

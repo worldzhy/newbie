@@ -60,14 +60,16 @@ export class CandidateProfileController {
   @Get('')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.CandidateProfile)
   async getCandidateProfiles(
-    @Query() query: {name?: string; page?: string; pageSize?: string}
+    @Query('name') name?: string,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number
   ): Promise<CandidateProfile[]> {
     // [step 1] Construct where argument.
     let where: Prisma.CandidateProfileWhereInput | undefined;
-    if (query.name && query.name.trim().length > 0) {
+    if (name && name.trim().length > 0) {
       where = {
         fullName: {
-          search: query.name
+          search: name
             .trim()
             .split(' ')
             .filter(word => word !== '')
@@ -78,8 +80,8 @@ export class CandidateProfileController {
 
     // [step 2] Construct take and skip arguments.
     const {take, skip} = generatePaginationParams({
-      page: query.page,
-      pageSize: query.pageSize,
+      page: page,
+      pageSize: pageSize,
     });
 
     // [step 3] Get candidate profiles.
