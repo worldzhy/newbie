@@ -18,14 +18,14 @@ import {RoleService} from '../../../account/role/role.service';
 import {UserService} from '../../../account/user/user.service';
 import {WorkflowRouteService} from '../../../../microservices/workflow/route/route.service';
 import {FileService} from '../../../../microservices/fmgmt/file/file.service';
-import {TokenService} from '../../../../toolkit/token/token.service';
+import {AccessTokenService} from '../../../../toolkit/token/token.service';
 
 @ApiTags('[Application] Recruitment / Job Application / Workflow')
 @ApiBearerAuth()
 @Controller('recruitment-workflows')
 export class JobApplicationWorkflowController {
   private fileService = new FileService();
-  private tokenService = new TokenService();
+  private accessTokenService = new AccessTokenService();
   private userService = new UserService();
   private roleService = new RoleService();
   private workflowRouteService = new WorkflowRouteService();
@@ -238,8 +238,8 @@ export class JobApplicationWorkflowController {
     );
 
     // [step 2] Get current user's id.
-    const {userId} = this.tokenService.decodeToken(
-      this.tokenService.getTokenFromHttpRequest(request)
+    const {userId} = this.accessTokenService.decodeToken(
+      this.accessTokenService.getTokenFromHttpRequest(request)
     ) as {userId: string};
 
     // [step 3] Get workflow route.
@@ -371,8 +371,8 @@ export class JobApplicationWorkflowController {
     @Request() request: Request,
     @Param('workflowId') workflowId: string
   ): Promise<JobApplicationWorkflow> {
-    const {userId} = this.tokenService.decodeToken(
-      this.tokenService.getTokenFromHttpRequest(request)
+    const {userId} = this.accessTokenService.decodeToken(
+      this.accessTokenService.getTokenFromHttpRequest(request)
     ) as {userId: string};
 
     return await this.jobApplicationWorkflowService.update({
@@ -402,8 +402,8 @@ export class JobApplicationWorkflowController {
     @Request() request: Request,
     @Param('workflowId') workflowId: string
   ): Promise<JobApplicationWorkflow> {
-    const {userId} = this.tokenService.decodeToken(
-      this.tokenService.getTokenFromHttpRequest(request)
+    const {userId} = this.accessTokenService.decodeToken(
+      this.accessTokenService.getTokenFromHttpRequest(request)
     ) as {userId: string};
     const jobApplication =
       await this.jobApplicationWorkflowService.findUniqueOrThrow({
