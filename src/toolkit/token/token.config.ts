@@ -1,11 +1,14 @@
-export function getJwtConfig(): {
-  bcryptSaltRounds: string | undefined;
-  expiresIn: string | undefined;
-  secret: string | undefined;
-} {
+export function getJwtConfig() {
   return {
-    bcryptSaltRounds: process.env.JWT_BCRYPT_SALT_ROUNDS,
-    expiresIn: process.env.JWT_EXPIRES_IN,
-    secret: process.env.JWT_SECRET,
+    accessToken: {
+      bcryptSaltRounds: process.env.JWT_BCRYPT_SALT_ROUNDS,
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN,
+      secret: process.env.ACCESS_TOKEN_SECRET,
+    },
+    refreshToken: {
+      bcryptSaltRounds: process.env.JWT_BCRYPT_SALT_ROUNDS,
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN,
+      secret: process.env.REFRESH_TOKEN_SECRET,
+    },
   };
 }

@@ -1,12 +1,13 @@
-import {Controller, Post, Body} from '@nestjs/common';
+import {Controller, Post, Body, Res} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {UserToken} from '@prisma/client';
+import {AccessToken} from '@prisma/client';
 import {UserProfileService} from './user/profile/profile.service';
 import {LoggingInByPassword} from './authentication/password/password.decorator';
 import {LoggingInByProfile} from './authentication/profile/profile.decorator';
 import {LoggingInByUuid} from './authentication/uuid/uuid.decorator';
 import {LoggingInByVerificationCode} from './authentication/verification-code/verification-code.decorator';
 import {AccountService} from './account.service';
+import {Response} from 'express';
 
 @ApiTags('[Application] Account')
 @Controller('account')
@@ -58,9 +59,21 @@ export class AccountLoginController {
     body: {
       account: string;
       password: string;
-    }
-  ): Promise<UserToken> {
-    return await this.accountService.login(body.account);
+    },
+    @Res({passthrough: true})
+    response: Response
+  ): Promise<AccessToken> {
+    // [step 1] Login with username-password and generate tokens.
+    const {accessToken, refreshToken} = await this.accountService.login(
+      body.account
+    );
+
+    // [step 2] Send refresh token to cookie.
+    const {name, token, cookieConfig} = refreshToken;
+    response.cookie(name, token, cookieConfig);
+
+    // [step 3] Send access token as response.
+    return accessToken;
   }
 
   @LoggingInByProfile()
@@ -99,8 +112,10 @@ export class AccountLoginController {
       lastName: string;
       suffix?: string;
       dateOfBirth: Date;
-    }
-  ): Promise<UserToken> {
+    },
+    @Res({passthrough: true})
+    response: Response
+  ): Promise<AccessToken> {
     const profileService = new UserProfileService();
 
     // [step 1] It has been confirmed there is only one profile.
@@ -109,8 +124,17 @@ export class AccountLoginController {
       where: {firstName, middleName, lastName, suffix, dateOfBirth},
     });
 
-    // [step 2] Login with userId.
-    return await this.accountService.login(profiles[0].userId);
+    // [step 2] Login with userId and generate tokens.
+    const {accessToken, refreshToken} = await this.accountService.login(
+      profiles[0].userId
+    );
+
+    // [step 3] Send refresh token to cookie.
+    const {name, token, cookieConfig} = refreshToken;
+    response.cookie(name, token, cookieConfig);
+
+    // [step 4] Send access token as response.
+    return accessToken;
   }
 
   @LoggingInByUuid()
@@ -131,9 +155,21 @@ export class AccountLoginController {
     @Body()
     body: {
       uuid: string;
-    }
-  ): Promise<UserToken> {
-    return await this.accountService.login(body.uuid);
+    },
+    @Res({passthrough: true})
+    response: Response
+  ): Promise<AccessToken> {
+    // [step 1] Login with uuid and generate tokens.
+    const {accessToken, refreshToken} = await this.accountService.login(
+      body.uuid
+    );
+
+    // [step 2] Send refresh token to cookie.
+    const {name, token, cookieConfig} = refreshToken;
+    response.cookie(name, token, cookieConfig);
+
+    // [step 3] Send access token as response.
+    return accessToken;
   }
 
   /**
@@ -169,9 +205,21 @@ export class AccountLoginController {
     body: {
       account: string;
       verificationCode: string;
-    }
-  ): Promise<UserToken> {
-    return await this.accountService.login(body.account);
+    },
+    @Res({passthrough: true})
+    response: Response
+  ): Promise<AccessToken> {
+    // [step 1] Login with verification code and generate tokens.
+    const {accessToken, refreshToken} = await this.accountService.login(
+      body.account
+    );
+
+    // [step 2] Send refresh token to cookie.
+    const {name, token, cookieConfig} = refreshToken;
+    response.cookie(name, token, cookieConfig);
+
+    // [step 3] Send access token as response.
+    return accessToken;
   }
 
   /* End */
