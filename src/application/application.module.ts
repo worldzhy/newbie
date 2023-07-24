@@ -1,5 +1,6 @@
 import {APP_FILTER, APP_GUARD} from '@nestjs/core';
 import {Module, MiddlewareConsumer} from '@nestjs/common';
+import {ScheduleModule} from '@nestjs/schedule';
 import {AuthenticationGuard} from './account/authentication/authentication.guard';
 import {AuthorizationGuard} from './account/authorization/authorization.guard';
 import {AllExceptionsFilter} from '../_filter/_all-exceptions.filter';
@@ -34,11 +35,12 @@ import ToolkitConfiguration from '../_config/toolkit.config';
       ],
       isGlobal: true,
     }),
+    ScheduleModule.forRoot(),
 
     // Toolkit (Global modules)
     ToolkitModule,
 
-    // Microservices
+    // Microservices (Global modules)
     FileManagementModule,
     CustomLoggerModule,
     UserModule,
