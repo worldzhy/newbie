@@ -9,12 +9,12 @@ import {
 import {UserService} from '../user/user.service';
 import {PermissionService} from '../permission/permission.service';
 import {PERMISSION_KEY} from './authorization.decorator';
-import {TokenService} from '../../../toolkit/token/token.service';
+import {AccessTokenService} from '../../../toolkit/token/token.service';
 
 @Injectable()
 export class AuthorizationGuard implements CanActivate {
   private userService = new UserService();
-  private tokenService = new TokenService();
+  private accessTokenService = new AccessTokenService();
   private permissionService = new PermissionService();
 
   constructor(private reflector: Reflector) {}
@@ -32,8 +32,8 @@ export class AuthorizationGuard implements CanActivate {
 
     // [step 2] Parse JWT.
     const req = context.switchToHttp().getRequest();
-    const payload = this.tokenService.decodeToken(
-      this.tokenService.getTokenFromHttpRequest(req)
+    const payload = this.accessTokenService.decodeToken(
+      this.accessTokenService.getTokenFromHttpRequest(req)
     ) as {
       userId: string;
       sub: string;

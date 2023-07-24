@@ -11,6 +11,9 @@ import {IS_LOGGING_IN_PASSWORD_KEY} from './password/password.decorator';
 import {IS_LOGGING_IN_PROFILE_KEY} from './profile/profile.decorator';
 import {IS_LOGGING_IN_UUID_KEY} from './uuid/uuid.decorator';
 import {IS_LOGGING_IN_VERIFICATION_CODE_KEY} from './verification-code/verification-code.decorator';
+import {getServerConfig} from 'src/config';
+import {IS_ACCESSING_REFRESH_ENDPOINT} from './refresh/refresh.decorator';
+import {RefreshAuthGuard} from './refresh/refresh.guard';
 
 @Injectable()
 export class AuthenticationGuard extends AuthGuard('global-guard') {
@@ -19,6 +22,12 @@ export class AuthenticationGuard extends AuthGuard('global-guard') {
   }
 
   canActivate(context: ExecutionContext) {
+    // Allow only requests from allowed origins
+    const origin = context.switchToHttp().getRequest().headers.origin;
+    if (origin && !getServerConfig().allowedOrigins.includes(origin)) {
+      return false;
+    }
+
     // Use @Public() for non-authentication
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
@@ -63,6 +72,16 @@ export class AuthenticationGuard extends AuthGuard('global-guard') {
       );
     if (isLoggingInByVerificationCode) {
       return new AuthVerificationCodeGuard().canActivate(context);
+    }
+
+    // Use @AccessingRefreshEndpoint() for refresh endpoint authentication
+    const isAccessingRefreshEndpoint =
+      this.reflector.getAllAndOverride<boolean>(IS_ACCESSING_REFRESH_ENDPOINT, [
+        context.getHandler(),
+        context.getClass(),
+      ]);
+    if (isAccessingRefreshEndpoint) {
+      return new RefreshAuthGuard().canActivate(context);
     }
 
     // JWT guard is the default guard.

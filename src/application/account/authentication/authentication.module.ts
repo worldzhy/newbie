@@ -4,6 +4,7 @@ import {AuthProfileModule} from './profile/profile.module';
 import {AuthUuidModule} from './uuid/uuid.module';
 import {AuthVerificationCodeModule} from './verification-code/verification-code.module';
 import {AuthJwtModule} from './jwt/jwt.module';
+import {AuthRefreshModule} from './refresh/refresh.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import {AuthJwtModule} from './jwt/jwt.module';
     AuthProfileModule,
     AuthUuidModule,
     AuthVerificationCodeModule,
+    AuthRefreshModule,
   ],
 })
 export class AuthenticationModule {}

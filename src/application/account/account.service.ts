@@ -3,19 +3,26 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import {UserStatus, UserTokenStatus, VerificationCodeUse} from '@prisma/client';
+import {UserStatus, VerificationCodeUse} from '@prisma/client';
 import {UserService} from './user/user.service';
-import {UserTokenService} from './user/token/token.service';
+import {UserAccessTokenService} from './user/accessToken/accessToken.service';
 import {VerificationCodeService} from '../../microservices/verification-code/verification-code.service';
 import {EmailNotificationService} from '../../microservices/notification/email/email.service';
 import {SmsNotificationService} from '../../microservices/notification/sms/sms.service';
-import {TokenService} from '../../toolkit/token/token.service';
+import {
+  AccessTokenService,
+  RefreshTokenService,
+} from '../../toolkit/token/token.service';
+import {UserRefreshTokenService} from './user/refreshToken/refreshToken.service';
+import {getSecondsUntilunixTimestamp} from 'src/toolkit/utilities/date.util';
 
 @Injectable()
 export class AccountService {
   private userService = new UserService();
-  private userTokenService = new UserTokenService();
-  private tokenService = new TokenService();
+  private userAccessTokenService = new UserAccessTokenService();
+  private accessTokenService = new AccessTokenService();
+  private userRefreshTokenService = new UserRefreshTokenService();
+  private refreshTokenService = new RefreshTokenService();
   private verificationCodeService = new VerificationCodeService();
   private emailNotificationService = new EmailNotificationService();
   private smsNotificationService = new SmsNotificationService();
@@ -35,10 +42,7 @@ export class AccountService {
     }
 
     // [step 3] Disable active JSON web token if existed.
-    await this.userTokenService.updateMany({
-      where: {userId: user.id},
-      data: {status: UserTokenStatus.INACTIVE},
-    });
+    await this.invalidateTokens(user.id);
 
     // [step 4] Update last login time.
     await this.userService.update({
@@ -46,11 +50,66 @@ export class AccountService {
       data: {lastLoginAt: new Date()},
     });
 
-    // [step 5] Generate a new JSON web token.
-    const token = this.tokenService.sign({userId: user.id, sub: account});
-    return await this.userTokenService.create({
-      data: {userId: user.id, token: token},
-    });
+    // [step 5] Generate new tokens.
+    return await this.generateTokens(user.id, account);
+  }
+
+  async invalidateTokens(userId: string) {
+    await Promise.all([
+      this.userAccessTokenService.deleteMany({
+        where: {userId},
+      }),
+      this.userRefreshTokenService.deleteMany({
+        where: {userId},
+      }),
+    ]);
+  }
+
+  async generateTokens(
+    userId: string,
+    sub: string,
+    opt?: {refreshTokenExpiryUnix: number}
+  ) {
+    // [step 1] Generate JWT payload
+    const jwtPayload = {
+      userId: userId,
+      sub: sub,
+    };
+
+    // [step 2] Set refresh token options.
+    const refreshTokenOptions = {
+      // If refreshTokenExpiryUnix has value, use it to calculte the expiry. Otherwise, use default expiry (24 hours).
+      ...(opt?.refreshTokenExpiryUnix && {
+        expiresIn: getSecondsUntilunixTimestamp(opt?.refreshTokenExpiryUnix),
+      }),
+    };
+
+    // [step 3] Generate tokens
+    const [accessToken, refreshToken] = await Promise.all([
+      this.userAccessTokenService.create({
+        data: {
+          userId: userId,
+          token: this.accessTokenService.sign(jwtPayload),
+        },
+      }),
+      this.userRefreshTokenService.create({
+        data: {
+          userId: userId,
+          token: this.refreshTokenService.sign(jwtPayload, refreshTokenOptions),
+        },
+      }),
+    ]);
+
+    return {
+      accessToken,
+      refreshToken: {
+        ...refreshToken,
+        name: this.refreshTokenService.cookieName,
+        cookieConfig: this.refreshTokenService.getCookieConfig(
+          refreshToken.token
+        ),
+      },
+    };
   }
 
   // *

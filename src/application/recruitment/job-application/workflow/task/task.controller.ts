@@ -27,7 +27,7 @@ import {
 } from '@prisma/client';
 import {RequirePermission} from '../../../../account/authorization/authorization.decorator';
 import {UserService} from '../../../../account/user/user.service';
-import {TokenService} from '../../../../../toolkit/token/token.service';
+import {AccessTokenService} from '../../../../../toolkit/token/token.service';
 import {JobApplicationWorkflowService} from '../workflow.service';
 import {generatePaginationParams} from '../../../../../toolkit/pagination/pagination';
 
@@ -36,7 +36,7 @@ import {generatePaginationParams} from '../../../../../toolkit/pagination/pagina
 @Controller('recruitment-workflow-tasks')
 export class JobApplicationWorkflowTaskController {
   private userService = new UserService();
-  private tokenService = new TokenService();
+  private accessTokenService = new AccessTokenService();
   private jobApplicationWorkflowService = new JobApplicationWorkflowService();
   private jobApplicationWorkflowTaskService =
     new JobApplicationWorkflowTaskService();
@@ -74,8 +74,8 @@ export class JobApplicationWorkflowTaskController {
     }
 
     // [step 2] Get reporter user.
-    const {userId} = this.tokenService.decodeToken(
-      this.tokenService.getTokenFromHttpRequest(request)
+    const {userId} = this.accessTokenService.decodeToken(
+      this.accessTokenService.getTokenFromHttpRequest(request)
     ) as {userId: string};
     const reporterUser = await this.userService.findUniqueOrThrow({
       where: {id: userId},
@@ -109,8 +109,8 @@ export class JobApplicationWorkflowTaskController {
     let where: Prisma.JobApplicationWorkflowTaskWhereInput | undefined =
       undefined;
     if (query.assignedToMe && query.assignedToMe.trim()) {
-      const {userId} = this.tokenService.decodeToken(
-        this.tokenService.getTokenFromHttpRequest(request)
+      const {userId} = this.accessTokenService.decodeToken(
+        this.accessTokenService.getTokenFromHttpRequest(request)
       ) as {userId: string};
       where = {assigneeUserId: userId};
     }
