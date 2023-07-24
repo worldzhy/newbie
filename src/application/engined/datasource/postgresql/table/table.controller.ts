@@ -11,7 +11,7 @@ import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {PostgresqlDatasourceTable, Prisma} from '@prisma/client';
 import {PostgresqlDatasourceTableService} from './table.service';
 
-@ApiTags('[Application] EngineD / Postgresql Datasource Table')
+@ApiTags('EngineD / Postgresql Datasource Table')
 @ApiBearerAuth()
 @Controller('postgresql-datasource-tables')
 export class PostgresqlDatasourceTableController {

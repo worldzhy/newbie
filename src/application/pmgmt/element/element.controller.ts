@@ -12,7 +12,7 @@ import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {ProjectElementService} from './element.service';
 import {Prisma, ProjectElement} from '@prisma/client';
 
-@ApiTags('[Application] Project Management / Project Element')
+@ApiTags('Project Management / Project Element')
 @ApiBearerAuth()
 @Controller('project-elements')
 export class ProjectElementController {

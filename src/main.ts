@@ -2,6 +2,7 @@ import {INestApplication, ValidationPipe} from '@nestjs/common';
 import {NestFactory} from '@nestjs/core';
 import {ConfigService} from '@nestjs/config';
 import {FastifyAdapter, NestFastifyApplication} from '@nestjs/platform-fastify';
+import * as cookieParser from 'cookie-parser';
 import {
   DocumentBuilder,
   SwaggerModule,
@@ -29,6 +30,7 @@ async function bootstrap() {
     );
   } else {
     app = await NestFactory.create(ApplicationModule);
+    app.use(cookieParser());
   }
 
   // Check environment variables.
@@ -41,6 +43,7 @@ async function bootstrap() {
       .setTitle("Here's the Newbie")
       .setDescription("It's good to see you guys 🥤")
       .setVersion('1.0')
+      .addCookieAuth('refreshToken')
       .addBearerAuth()
       .build();
     const document = SwaggerModule.createDocument(app, config);

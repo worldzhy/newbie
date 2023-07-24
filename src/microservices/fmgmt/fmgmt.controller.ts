@@ -23,14 +23,14 @@ import {FileService} from './file/file.service';
 import {S3Service} from '../../toolkit/aws/aws.s3.service';
 import {generateRandomLetters} from '../../toolkit/utilities/common.util';
 import {FolderService} from './folder/folder.service';
-import {TokenService} from '../../toolkit/token/token.service';
+import {AccessTokenService} from '../../toolkit/token/token.service';
 
 @ApiTags('[Microservice] File Management')
 @ApiBearerAuth()
 @Controller('fmgmt')
 export class FileManagementController {
   constructor(
-    private readonly tokenService: TokenService,
+    private readonly accessTokenService: AccessTokenService,
     private readonly fileService: FileService,
     private readonly s3Service: S3Service,
     private readonly folderService: FolderService,
@@ -67,7 +67,7 @@ export class FileManagementController {
     // [step 2] Generate file name and put file to AWS S3.
     const filename = Date.now() + generateRandomLetters(4);
     const bucket = this.configService.get<string>(
-      'microservice.fmgmt.s3Bucket'
+      'microservice.fmgmt.awsS3Bucket'
     )!;
     const s3Key = folder.name + '/' + filename;
     const output = await this.s3Service.putObject({
@@ -143,13 +143,15 @@ export class FileManagementController {
       include: {folder: true},
     });
 
-    const token = this.tokenService.getTokenFromHttpRequest(request);
+    const token = this.accessTokenService.getTokenFromHttpRequest(request);
 
     return {
       ...file,
       url:
         'https://' +
-        this.configService.get<string>('microservice.fmgmt.cloudfrontDomain') +
+        this.configService.get<string>(
+          'microservice.fmgmt.awsCloudfrontDomain'
+        ) +
         '/' +
         file.s3Key,
       token: token,
@@ -160,7 +162,7 @@ export class FileManagementController {
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
-        destination: process.env.FILE_MANAGEMENT_LOCAL_PATH,
+        destination: process.env.FILE_MANAGEMENT_LOCAL_PATH, // ! Why configService can not be used here?
       }),
     })
   )

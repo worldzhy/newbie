@@ -1,10 +1,23 @@
-import {INestApplication, Injectable, OnModuleInit} from '@nestjs/common';
+import {
+  BadRequestException,
+  INestApplication,
+  Injectable,
+  OnModuleInit,
+} from '@nestjs/common';
 import {Prisma, PrismaClient} from '@prisma/client';
 import {prismaMiddleware} from './prisma.middleware';
-import {CustomLoggerService} from '../../microservices/logger/logger.service';
+import {CustomLoggerService} from '../logger/logger.service';
+import {verifyEmail, verifyPassword} from '../validators/user.validator';
+import {generateHash} from '../utilities/common.util';
 
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit {
+export class PrismaService
+  extends PrismaClient<
+    Prisma.PrismaClientOptions,
+    'query' | 'info' | 'warn' | 'error' | 'beforeExit'
+  >
+  implements OnModuleInit
+{
   private loggerContext = 'Prisma';
 
   constructor(private readonly logger: CustomLoggerService) {
@@ -31,7 +44,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     });
 
     // Register event handlers.
-    this.$on<any>('query', (e: Prisma.QueryEvent) => {
+    this.$on('query', (e: Prisma.QueryEvent) => {
       this.logger.log('👇👇👇');
       this.logger.log(`time: ${e.timestamp}`, this.loggerContext);
       this.logger.log(`query: ${e.query}`, this.loggerContext);
@@ -41,23 +54,72 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
       this.logger.log('');
     });
 
-    this.$on<any>('info', (e: Prisma.LogEvent) => {
+    this.$on('info', (e: Prisma.LogEvent) => {
       const message = `${e.timestamp} >> ${e.message} >> [Target] ${e.target}`;
       this.logger.log(message, this.loggerContext);
     });
 
-    this.$on<any>('warn', (e: Prisma.LogEvent) => {
+    this.$on('warn', (e: Prisma.LogEvent) => {
       const message = `${e.timestamp} >> ${e.message} >> [Target] ${e.target}`;
       this.logger.warn(message, this.loggerContext);
     });
 
-    this.$on<any>('error', (e: Prisma.LogEvent) => {
+    this.$on('error', (e: Prisma.LogEvent) => {
       const message = `${e.timestamp} >> ${e.message} >> [Target] ${e.target}`;
       this.logger.error(message, this.loggerContext);
     });
 
     // Register middlewares.
     this.$use(prismaMiddleware);
+    // this.$extends({
+    //   name: 'query-extension-usr',
+    //   query: {
+    //     user: {
+    //       async create({args, query}) {
+    //         if (args.data.email) {
+    //           if (!verifyEmail(args.data.email)) {
+    //             throw new BadRequestException('Your email is not valid.');
+    //           }
+    //           args.data.email = args.data.email.toLowerCase();
+    //         }
+
+    //         if (args.data.password) {
+    //           if (!verifyPassword(args.data.password)) {
+    //             throw new BadRequestException(
+    //               'The password is not strong enough. (length >= 8, lowercase >= 1, uppercase >= 1, numbers >= 1, symbols >= 1)'
+    //             );
+    //           }
+    //           // Generate hash of the password.
+    //           const hash = await generateHash(args.data.password);
+    //           args.data.password = hash;
+    //         }
+
+    //         return query(args);
+    //       },
+    //       async update({args, query}) {
+    //         if (args.data.email) {
+    //           if (!verifyEmail(args.data.email as string)) {
+    //             throw new BadRequestException('Your email is not valid.');
+    //           }
+    //           args.data.email = (args.data.email as string).toLowerCase();
+    //         }
+
+    //         if (args.data.password) {
+    //           if (!verifyPassword(args.data.password as string)) {
+    //             throw new BadRequestException(
+    //               'The password is not strong enough. (length >= 8, lowercase >= 1, uppercase >= 1, numbers >= 1, symbols >= 1)'
+    //             );
+    //           }
+    //           // Generate hash of the password.
+    //           const hash = await generateHash(args.data.password as string);
+    //           args.data.password = hash;
+    //         }
+
+    //         return query(args);
+    //       },
+    //     },
+    //   },
+    // });
   }
 
   async onModuleInit() {

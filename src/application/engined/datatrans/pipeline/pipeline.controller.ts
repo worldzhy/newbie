@@ -14,7 +14,7 @@ import {PostgresqlDatasourceTableService} from '../../datasource/postgresql/tabl
 import {ElasticsearchDatasourceIndexService} from '../../datasource/elasticsearch/index/index.service';
 import {DatatransPipeline, Prisma} from '@prisma/client';
 
-@ApiTags('[Application] EngineD / Datatrans Pipeline')
+@ApiTags('EngineD / Datatrans Pipeline')
 @ApiBearerAuth()
 @Controller('datatrans-pipelines')
 export class DatatransPipelineController {

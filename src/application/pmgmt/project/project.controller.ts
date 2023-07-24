@@ -30,15 +30,14 @@ import {
   generatePaginationParams,
   generatePaginationResponse,
 } from '../../../toolkit/pagination/pagination';
-import {RequirePermission} from '../../../application/account/authorization/authorization.decorator';
+import {RequirePermission} from '../../../microservices/account/authorization/authorization.decorator';
 
-@ApiTags('[Application] Project Management / Project')
+@ApiTags('Project Management / Project')
 @ApiBearerAuth()
 @Controller('projects')
 export class ProjectController {
   constructor(private projectService: ProjectService) {}
 
-  //* Create
   @Post('')
   @ApiBody({
     description: "The 'name' is required in request body.",
@@ -79,7 +78,6 @@ export class ProjectController {
     });
   }
 
-  //* Get many
   @Get('')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.Project)
   @ApiQuery({name: 'name', type: 'string'})
@@ -91,7 +89,7 @@ export class ProjectController {
     @Query('pageSize') pageSize?: number
   ) {
     // [step 1] Construct where argument.
-    let where: Prisma.UserWhereInput | undefined;
+    let where: Prisma.ProjectWhereInput | undefined;
     const whereConditions: object[] = [];
     if (name) {
       name = name.trim();
@@ -123,7 +121,6 @@ export class ProjectController {
     return generatePaginationResponse({records, total, page, pageSize});
   }
 
-  //* Get
   @Get(':projectId')
   @ApiParam({
     name: 'projectId',
@@ -139,7 +136,6 @@ export class ProjectController {
     });
   }
 
-  //* Update
   @Patch(':projectId')
   @ApiParam({
     name: 'projectId',
@@ -168,7 +164,6 @@ export class ProjectController {
     });
   }
 
-  //* Delete
   @Delete(':projectId')
   @ApiParam({
     name: 'projectId',

@@ -29,7 +29,7 @@ enum ConstraintType {
   CHECK = 'CHECK',
 }
 
-@ApiTags('[Application] EngineD / Postgresql Datasource')
+@ApiTags('EngineD / Postgresql Datasource')
 @ApiBearerAuth()
 @Controller('postgresql-datasources')
 export class PostgresqlDatasourceController {

@@ -28,24 +28,24 @@ import {
   Role,
   TrustedEntityType,
 } from '@prisma/client';
-import {RequirePermission} from '../../account/authorization/authorization.decorator';
+import {RequirePermission} from '../../../microservices/account/authorization/authorization.decorator';
 import {CandidateService} from '../candidate/candidate.service';
-import {UserService} from '../../../microservices/user/user.service';
-import {TokenService} from '../../../toolkit/token/token.service';
-import {PermissionService} from '../../../microservices/user/permission/permission.service';
-import {WorkflowRouteService} from '../../../microservices/workflow/route/route.service';
+import {AccessTokenService} from '../../../toolkit/token/token.service';
+import {WorkflowRouteService} from '../../../microservices/workflow/workflow-route.service';
 import {JobApplicationWorkflowService} from './workflow/workflow.service';
-import {RoleService} from 'src/microservices/user/role/role.service';
+import {RoleService} from '../../../microservices/account/role/role.service';
 import {JobApplicationWorkflowFileService} from './workflow/file/file.service';
 import {generatePaginationParams} from '../../../toolkit/pagination/pagination';
+import {UserService} from '../../../microservices/account/user/user.service';
+import {PermissionService} from '../../../microservices/account/permission/permission.service';
 
-@ApiTags('[Application] Recruitment / Job Application')
+@ApiTags('Recruitment / Job Application')
 @ApiBearerAuth()
 @Controller('recruitment-job-applications')
 export class JobApplicationController {
   constructor(
     private readonly userService: UserService,
-    private readonly tokenService: TokenService,
+    private readonly accessTokenService: AccessTokenService,
     private readonly permissionService: PermissionService,
     private readonly workflowRouteService: WorkflowRouteService,
     private readonly candidateService: CandidateService,
@@ -86,8 +86,8 @@ export class JobApplicationController {
     }
 
     // [step 2] Create job application.
-    const {userId} = this.tokenService.decodeToken(
-      this.tokenService.getTokenFromHttpRequest(request)
+    const {userId} = this.accessTokenService.decodeToken(
+      this.accessTokenService.getTokenFromHttpRequest(request)
     ) as {userId: string};
     const user = await this.userService.findUniqueOrThrow({
       where: {id: userId},
@@ -212,8 +212,8 @@ export class JobApplicationController {
     @Request() request: Request
   ): Promise<number> {
     // [step 1] Get userId from http request header.
-    const {userId} = this.tokenService.decodeToken(
-      this.tokenService.getTokenFromHttpRequest(request)
+    const {userId} = this.accessTokenService.decodeToken(
+      this.accessTokenService.getTokenFromHttpRequest(request)
     ) as {userId: string};
 
     // [step 2] Return count of job applications.
@@ -234,8 +234,8 @@ export class JobApplicationController {
     @Query('pageSize') pageSize?: number
   ): Promise<JobApplication[]> {
     // [step 1] Get userId from http request header.
-    const {userId} = this.tokenService.decodeToken(
-      this.tokenService.getTokenFromHttpRequest(request)
+    const {userId} = this.accessTokenService.decodeToken(
+      this.accessTokenService.getTokenFromHttpRequest(request)
     ) as {userId: string};
 
     // [step 2] Construct take and skip arguments.
@@ -435,8 +435,8 @@ export class JobApplicationController {
   ): Promise<Permission[]> {
     let additionalPermission: object | undefined = undefined;
 
-    const {userId} = this.tokenService.decodeToken(
-      this.tokenService.getTokenFromHttpRequest(request)
+    const {userId} = this.accessTokenService.decodeToken(
+      this.accessTokenService.getTokenFromHttpRequest(request)
     ) as {userId: string};
     const user = await this.userService.findUniqueOrThrow({
       where: {id: userId},
@@ -473,8 +473,8 @@ export class JobApplicationController {
   }
 
   private async getRoleIdsFromHttpRequest(request: Request): Promise<string[]> {
-    const {userId} = this.tokenService.decodeToken(
-      this.tokenService.getTokenFromHttpRequest(request)
+    const {userId} = this.accessTokenService.decodeToken(
+      this.accessTokenService.getTokenFromHttpRequest(request)
     ) as {userId: string};
     const user = await this.userService.findUniqueOrThrow({
       where: {id: userId},

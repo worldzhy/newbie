@@ -17,27 +17,26 @@ import {
   ApiBody,
   ApiQuery,
 } from '@nestjs/swagger';
-import {JobApplicationWorkflowTaskService} from './task.service';
-
 import {
   JobApplicationWorkflowTask,
   JobApplicationWorkflowTaskState,
   PermissionAction,
   Prisma,
 } from '@prisma/client';
-import {RequirePermission} from '../../../../account/authorization/authorization.decorator';
-import {UserService} from '../../../../../microservices/user/user.service';
-import {TokenService} from '../../../../../toolkit/token/token.service';
+import {RequirePermission} from '../../../../../microservices/account/authorization/authorization.decorator';
+import {AccessTokenService} from '../../../../../toolkit/token/token.service';
 import {JobApplicationWorkflowService} from '../workflow.service';
+import {JobApplicationWorkflowTaskService} from './task.service';
 import {generatePaginationParams} from '../../../../../toolkit/pagination/pagination';
+import {UserService} from '../../../../../microservices/account/user/user.service';
 
-@ApiTags('[Application] Recruitment / Job Application / Workflow Task')
+@ApiTags('Recruitment / Job Application / Workflow Task')
 @ApiBearerAuth()
 @Controller('recruitment-workflow-tasks')
 export class JobApplicationWorkflowTaskController {
   constructor(
     private readonly userService: UserService,
-    private readonly tokenService: TokenService,
+    private readonly accessTokenService: AccessTokenService,
     private readonly jobApplicationWorkflowService: JobApplicationWorkflowService,
     private readonly jobApplicationWorkflowTaskService: JobApplicationWorkflowTaskService
   ) {}
@@ -75,8 +74,8 @@ export class JobApplicationWorkflowTaskController {
     }
 
     // [step 2] Get reporter user.
-    const {userId} = this.tokenService.decodeToken(
-      this.tokenService.getTokenFromHttpRequest(request)
+    const {userId} = this.accessTokenService.decodeToken(
+      this.accessTokenService.getTokenFromHttpRequest(request)
     ) as {userId: string};
     const reporterUser = await this.userService.findUniqueOrThrow({
       where: {id: userId},
@@ -112,8 +111,8 @@ export class JobApplicationWorkflowTaskController {
     let where: Prisma.JobApplicationWorkflowTaskWhereInput | undefined =
       undefined;
     if (assignedToMe && assignedToMe.trim()) {
-      const {userId} = this.tokenService.decodeToken(
-        this.tokenService.getTokenFromHttpRequest(request)
+      const {userId} = this.accessTokenService.decodeToken(
+        this.accessTokenService.getTokenFromHttpRequest(request)
       ) as {userId: string};
       where = {assigneeUserId: userId};
     }

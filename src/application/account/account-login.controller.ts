@@ -1,14 +1,15 @@
-import {Controller, Post, Body} from '@nestjs/common';
+import {Controller, Post, Body, Res} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {UserToken} from '@prisma/client';
-import {UserProfileService} from '../../microservices/user/profile/profile.service';
-import {LoggingInByPassword} from './authentication/password/password.decorator';
-import {LoggingInByProfile} from './authentication/profile/profile.decorator';
-import {LoggingInByUuid} from './authentication/uuid/uuid.decorator';
-import {LoggingInByVerificationCode} from './authentication/verification-code/verification-code.decorator';
-import {AccountService} from './account.service';
+import {UserAccessToken} from '@prisma/client';
+import {Response} from 'express';
+import {LoggingInByPassword} from '../../microservices/account/authentication/password/password.decorator';
+import {LoggingInByProfile} from '../../microservices/account/authentication/profile/profile.decorator';
+import {LoggingInByUuid} from '../../microservices/account/authentication/uuid/uuid.decorator';
+import {LoggingInByVerificationCode} from '../../microservices/account/authentication/verification-code/verification-code.decorator';
+import {AccountService} from '../../microservices/account/account.service';
+import {UserProfileService} from '../../microservices/account/user/user-profile.service';
 
-@ApiTags('[Application] Account')
+@ApiTags('Account')
 @Controller('account')
 export class AccountLoginController {
   constructor(
@@ -61,9 +62,21 @@ export class AccountLoginController {
     body: {
       account: string;
       password: string;
-    }
-  ): Promise<UserToken> {
-    return await this.accountService.login(body.account);
+    },
+    @Res({passthrough: true})
+    response: Response
+  ): Promise<UserAccessToken> {
+    // [step 1] Login with username-password and generate tokens.
+    const {accessToken, refreshToken} = await this.accountService.login(
+      body.account
+    );
+
+    // [step 2] Send refresh token to cookie.
+    const {name, token, cookieConfig} = refreshToken;
+    response.cookie(name, token, cookieConfig);
+
+    // [step 3] Send access token as response.
+    return accessToken;
   }
 
   @LoggingInByProfile()
@@ -102,16 +115,27 @@ export class AccountLoginController {
       lastName: string;
       suffix?: string;
       dateOfBirth: Date;
-    }
-  ): Promise<UserToken> {
+    },
+    @Res({passthrough: true})
+    response: Response
+  ): Promise<UserAccessToken> {
     // [step 1] It has been confirmed there is only one profile.
     const {firstName, middleName, lastName, suffix, dateOfBirth} = body;
     const profiles = await this.profileService.findMany({
       where: {firstName, middleName, lastName, suffix, dateOfBirth},
     });
 
-    // [step 2] Login with userId.
-    return await this.accountService.login(profiles[0].userId);
+    // [step 2] Login with userId and generate tokens.
+    const {accessToken, refreshToken} = await this.accountService.login(
+      profiles[0].userId
+    );
+
+    // [step 3] Send refresh token to cookie.
+    const {name, token, cookieConfig} = refreshToken;
+    response.cookie(name, token, cookieConfig);
+
+    // [step 4] Send access token as response.
+    return accessToken;
   }
 
   @LoggingInByUuid()
@@ -132,9 +156,21 @@ export class AccountLoginController {
     @Body()
     body: {
       uuid: string;
-    }
-  ): Promise<UserToken> {
-    return await this.accountService.login(body.uuid);
+    },
+    @Res({passthrough: true})
+    response: Response
+  ): Promise<UserAccessToken> {
+    // [step 1] Login with uuid and generate tokens.
+    const {accessToken, refreshToken} = await this.accountService.login(
+      body.uuid
+    );
+
+    // [step 2] Send refresh token to cookie.
+    const {name, token, cookieConfig} = refreshToken;
+    response.cookie(name, token, cookieConfig);
+
+    // [step 3] Send access token as response.
+    return accessToken;
   }
 
   /**
@@ -170,9 +206,21 @@ export class AccountLoginController {
     body: {
       account: string;
       verificationCode: string;
-    }
-  ): Promise<UserToken> {
-    return await this.accountService.login(body.account);
+    },
+    @Res({passthrough: true})
+    response: Response
+  ): Promise<UserAccessToken> {
+    // [step 1] Login with verification code and generate tokens.
+    const {accessToken, refreshToken} = await this.accountService.login(
+      body.account
+    );
+
+    // [step 2] Send refresh token to cookie.
+    const {name, token, cookieConfig} = refreshToken;
+    response.cookie(name, token, cookieConfig);
+
+    // [step 3] Send access token as response.
+    return accessToken;
   }
 
   /* End */

@@ -1,37 +1,45 @@
-import {Controller, Get, Body, Post, Request} from '@nestjs/common';
-import {ApiTags, ApiBody, ApiBearerAuth} from '@nestjs/swagger';
-import {UserTokenStatus, VerificationCodeUse} from '@prisma/client';
-import {AccountService} from './account.service';
-import {Public} from './authentication/public/public.decorator';
-import {UserService} from '../../microservices/user/user.service';
-import {UserTokenService} from '../../microservices/user/token/token.service';
-import {UserProfileService} from '../../microservices/user/profile/profile.service';
-import {TokenService} from '../../toolkit/token/token.service';
+import {Controller, Get, Body, Post, Req, Res} from '@nestjs/common';
+import {ApiTags, ApiBody, ApiBearerAuth, ApiCookieAuth} from '@nestjs/swagger';
+import {UserAccessToken, VerificationCodeUse} from '@prisma/client';
+import {Request, Response} from 'express';
+import {AccountService} from '../../microservices/account/account.service';
+import {Public} from '../../microservices/account/authentication/public/public.decorator';
+import {
+  AccessTokenService,
+  RefreshTokenService,
+} from '../../toolkit/token/token.service';
 import {
   verifyEmail,
   verifyPhone,
 } from '../../toolkit/validators/user.validator';
+import {Cookies} from '../../_decorator/cookie.decorator';
+import {AccessingRefreshEndpoint} from '../../microservices/account/authentication/refresh/refresh.decorator';
+import {UserService} from '../../microservices/account/user/user.service';
+import {UserProfileService} from '../../microservices/account/user/user-profile.service';
+import {UserAccessTokenService} from '../../microservices/account/user/user-access-token.service';
 
-@ApiTags('[Application] Account')
+@ApiTags('Account')
 @Controller('account')
 export class AccountOthersController {
   constructor(
     private readonly accountService: AccountService,
     private readonly userService: UserService,
-    private readonly userTokenService: UserTokenService,
-    private readonly tokenService: TokenService,
-    private readonly profileService: UserProfileService
+    private readonly profileService: UserProfileService,
+    private readonly userAccessTokenService: UserAccessTokenService,
+    private readonly accessTokenService: AccessTokenService,
+    private readonly refreshTokenService: RefreshTokenService
   ) {}
 
   @Get('current-user')
   @ApiBearerAuth()
-  async getCurrentUser(@Request() request: Request) {
+  async getCurrentUser(@Req() request: Request) {
     // [step 1] Parse token from http request header.
-    const accessToken = this.tokenService.getTokenFromHttpRequest(request);
+    const accessToken =
+      this.accessTokenService.getTokenFromHttpRequest(request);
 
     // [step 2] Get UserToken record.
-    const userToken = await this.userTokenService.findFirstOrThrow({
-      where: {AND: [{token: accessToken}, {status: UserTokenStatus.ACTIVE}]},
+    const userToken = await this.userAccessTokenService.findFirstOrThrow({
+      where: {AND: [{token: accessToken}]},
     });
 
     // [step 3] Get user.
@@ -169,6 +177,37 @@ export class AccountOthersController {
       count: 0,
       message: 'Your account does not exist.',
     };
+  }
+
+  @AccessingRefreshEndpoint()
+  @Post('refresh')
+  @ApiCookieAuth()
+  async refresh(
+    @Cookies('refreshToken') refreshToken: string,
+    @Res({passthrough: true}) response: Response
+  ): Promise<UserAccessToken> {
+    // [step 1] Validate refresh token
+    const userData = this.refreshTokenService.decodeToken(refreshToken) as {
+      userId: string;
+      sub: string;
+      exp: number;
+    };
+
+    // [step 2] Invalidate existing tokens
+    await this.accountService.invalidateTokens(userData.userId);
+
+    // [step 3] Generate new tokens
+    const {accessToken, refreshToken: newRefreshToken} =
+      await this.accountService.generateTokens(userData.userId, userData.sub, {
+        refreshTokenExpiryUnix: userData.exp,
+      });
+
+    // [step 4] Send refresh token to cookie.
+    const {name, token, cookieConfig} = newRefreshToken;
+    response.cookie(name, token, cookieConfig);
+
+    // [step 5] Send access token as response.
+    return accessToken;
   }
 
   /* End */

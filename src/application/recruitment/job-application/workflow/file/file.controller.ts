@@ -7,9 +7,9 @@ import {
   PermissionAction,
   Prisma,
 } from '@prisma/client';
-import {RequirePermission} from '../../../../account/authorization/authorization.decorator';
+import {RequirePermission} from '../../../../../microservices/account/authorization/authorization.decorator';
 
-@ApiTags('[Application] Recruitment / Job Application / Workflow File')
+@ApiTags('Recruitment / Job Application / Workflow File')
 @ApiBearerAuth()
 @Controller('recruitment-workflow-files')
 export class JobApplicationWorkflowFileController {

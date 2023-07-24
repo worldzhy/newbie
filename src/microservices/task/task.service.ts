@@ -1,10 +1,22 @@
 import {Injectable} from '@nestjs/common';
+import {ConfigService} from '@nestjs/config';
 import {Prisma, Task} from '@prisma/client';
 import {PrismaService} from '../../toolkit/prisma/prisma.service';
+import {SqsService} from 'src/toolkit/aws/aws.sqs.service';
 
 @Injectable()
 export class TaskService {
-  constructor(private readonly prisma: PrismaService) {}
+  private awsSqsQueueUrl: string;
+
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly prisma: PrismaService,
+    private readonly sqsService: SqsService
+  ) {
+    this.awsSqsQueueUrl = this.configService.get<string>(
+      'microservice.task.awsSqsQueueUrl'
+    )!;
+  }
 
   async findUnique(params: Prisma.TaskFindUniqueArgs): Promise<Task | null> {
     return await this.prisma.task.findUnique(params);
@@ -44,5 +56,26 @@ export class TaskService {
     return await this.prisma.task.delete(params);
   }
 
+  async send2queue(taskId: number): Promise<Task> {
+    // [step 1] Get task.
+    const task = await this.prisma.task.findUniqueOrThrow({
+      where: {id: taskId},
+    });
+
+    // [step 2] Send queue message.
+    const output = await this.sqsService.sendMessage({
+      queueUrl: this.awsSqsQueueUrl,
+      body: task.payload as object,
+    });
+
+    // [step 3] Update task record.
+    return await this.prisma.task.update({
+      where: {id: taskId},
+      data: {
+        sqsMessageId: output.MessageId,
+        sqsResponse: output as object,
+      },
+    });
+  }
   /* End */
 }

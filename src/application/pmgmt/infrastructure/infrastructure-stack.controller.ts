@@ -35,7 +35,7 @@ import {
   DeleteStackCommandOutput,
 } from '@aws-sdk/client-cloudformation';
 
-@ApiTags('[Application] Project Management / Infrastructure Stack')
+@ApiTags('Project Management / Infrastructure Stack')
 @ApiBearerAuth()
 @Controller('project-infrastructure-stacks')
 export class ProjectInfrastructureStackController {

@@ -13,20 +13,20 @@ import {JobApplicationWorkflow, PermissionAction, Prisma} from '@prisma/client';
 import {JobApplicationWorkflowService} from './workflow.service';
 import {JobApplicationWorkflowFileService} from './file/file.service';
 import {JobApplicationWorkflowTrailService} from './trail/trail.service';
-import {RequirePermission} from '../../../account/authorization/authorization.decorator';
-import {RoleService} from '../../../../microservices/user/role/role.service';
-import {UserService} from '../../../../microservices/user/user.service';
-import {WorkflowRouteService} from '../../../../microservices/workflow/route/route.service';
+import {RequirePermission} from '../../../../microservices/account/authorization/authorization.decorator';
+import {RoleService} from '../../../../microservices/account/role/role.service';
+import {UserService} from '../../../../microservices/account/user/user.service';
+import {WorkflowRouteService} from '../../../../microservices/workflow/workflow-route.service';
 import {FileService} from '../../../../microservices/fmgmt/file/file.service';
-import {TokenService} from '../../../../toolkit/token/token.service';
+import {AccessTokenService} from '../../../../toolkit/token/token.service';
 
-@ApiTags('[Application] Recruitment / Job Application / Workflow')
+@ApiTags('Recruitment / Job Application / Workflow')
 @ApiBearerAuth()
 @Controller('recruitment-workflows')
 export class JobApplicationWorkflowController {
   constructor(
     private readonly fileService: FileService,
-    private readonly tokenService: TokenService,
+    private readonly accessTokenService: AccessTokenService,
     private readonly userService: UserService,
     private readonly roleService: RoleService,
     private readonly workflowRouteService: WorkflowRouteService,
@@ -238,8 +238,8 @@ export class JobApplicationWorkflowController {
     );
 
     // [step 2] Get current user's id.
-    const {userId} = this.tokenService.decodeToken(
-      this.tokenService.getTokenFromHttpRequest(request)
+    const {userId} = this.accessTokenService.decodeToken(
+      this.accessTokenService.getTokenFromHttpRequest(request)
     ) as {userId: string};
 
     // [step 3] Get workflow route.
@@ -371,8 +371,8 @@ export class JobApplicationWorkflowController {
     @Request() request: Request,
     @Param('workflowId') workflowId: string
   ): Promise<JobApplicationWorkflow> {
-    const {userId} = this.tokenService.decodeToken(
-      this.tokenService.getTokenFromHttpRequest(request)
+    const {userId} = this.accessTokenService.decodeToken(
+      this.accessTokenService.getTokenFromHttpRequest(request)
     ) as {userId: string};
 
     return await this.jobApplicationWorkflowService.update({
@@ -402,8 +402,8 @@ export class JobApplicationWorkflowController {
     @Request() request: Request,
     @Param('workflowId') workflowId: string
   ): Promise<JobApplicationWorkflow> {
-    const {userId} = this.tokenService.decodeToken(
-      this.tokenService.getTokenFromHttpRequest(request)
+    const {userId} = this.accessTokenService.decodeToken(
+      this.accessTokenService.getTokenFromHttpRequest(request)
     ) as {userId: string};
     const jobApplication =
       await this.jobApplicationWorkflowService.findUniqueOrThrow({

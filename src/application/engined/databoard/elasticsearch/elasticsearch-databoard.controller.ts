@@ -18,7 +18,7 @@ import {
 import {ElasticsearchDataboardService} from './elasticsearch-databoard.service';
 import {ElasticsearchDataboardColumnService} from './column/column.service';
 
-@ApiTags('[Application] EngineD / Elasticsearch Databoard')
+@ApiTags('EngineD / Elasticsearch Databoard')
 @ApiBearerAuth()
 @Controller('elasticsearch-databoards')
 export class ElasticsearchDataboardController {

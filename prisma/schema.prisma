@@ -21,7 +21,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["microservice/fmgmt", "microservice/location", "microservice/notification", "microservice/order", "microservice/organization", "microservice/task", "microservice/user", "microservice/verification-code", "microservice/workflow", "application/account", "application/engined", "application/pmgmt", "application/recruitment", "application/tc-request"]
+  schemas  = ["microservice/account", "microservice/fmgmt", "microservice/location", "microservice/notification", "microservice/order", "microservice/task", "microservice/verification-code", "microservice/workflow", "application/engined", "application/pmgmt", "application/recruitment", "application/tc-request"]
 }
 
 // !! ------------------------------------------------------------ //
@@ -364,9 +364,18 @@ model WorkflowRoute {
 }
 
 // ! ------------------------------------------------------------ //
-// !                [Microservice] Organization models                  //
+// !                [Microservice] Account models                 //
 // ! ------------------------------------------------------------ //
 // * Organization                                                 //
+// * User                                                         //
+// * UserAccessToken                                              //
+// * UserRefreshToken                                             //
+// * UserProfile                                                  //
+// * Role                                                         //
+// * RoutePermission(unused)                                      //
+// * ComponentPermission(unused)                                  //
+// * EndpointPermission(unused)                                   //
+// * Permission                                                   //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
 model Organization {
@@ -377,44 +386,13 @@ model Organization {
   roles     Role[]
   users     User[]
 
-  @@schema("microservice/organization")
-}
-
-// ! ------------------------------------------------------------ //
-// !                [Microservice] User models                  //
-// ! ------------------------------------------------------------ //
-// * UserToRole                                                   //
-// * Role                                                         //
-// * User                                                         //
-// * UserJwt                                                      //
-// * UserProfile                                                  //
-// * RoutePermission(unused)                                      //
-// * ComponentPermission(unused)                                  //
-// * EndpointPermission(unused)                                   //
-// * Permission                                                   //
-// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
-
-model Role {
-  // A role is a subgroup of a user group with some specified permissions.
-
-  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name           String
-  description    String?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  organization   Organization? @relation(fields: [organizationId], references: [id])
-  organizationId String?       @db.Uuid
-  users          User[]
-
-  @@unique([name, organizationId])
-  @@schema("microservice/user")
+  @@schema("microservice/account")
 }
 
 model User {
   // [1] The 'User' and 'VerificationCode' models are both used for logging in.
   // [2] The 'User' is designed for long-term use and the 'VerificationCode' is designed for short-term use.
   // [3] Actually, the 'User' model should be named 'UserPassword' and the 'VerificationCode' should be named 'UserVerificationCode'.
-
   id               String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   email            String?                  @unique
   phone            String?                  @unique
@@ -431,32 +409,34 @@ model User {
   locations        Location[]
   holdingWorkflows JobApplicationWorkflow[]
 
-  @@schema("microservice/user")
+  @@schema("microservice/account")
 }
 
 enum UserStatus {
   ACTIVE
   INACTIVE
 
-  @@schema("microservice/user")
+  @@schema("microservice/account")
 }
 
-model UserToken {
-  id        Int             @id @default(autoincrement())
-  userId    String          @db.Uuid
+model UserAccessToken {
+  id        Int      @id @default(autoincrement())
+  userId    String   @db.Uuid
   token     String
-  status    UserTokenStatus @default(ACTIVE)
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@schema("microservice/user")
+  @@schema("microservice/account")
 }
 
-enum UserTokenStatus {
-  ACTIVE
-  INACTIVE
+model UserRefreshToken {
+  id        Int      @id @default(autoincrement())
+  userId    String   @db.Uuid
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@schema("microservice/user")
+  @@schema("microservice/account")
 }
 
 model UserProfile {
@@ -478,7 +458,7 @@ model UserProfile {
   user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         String             @db.Uuid
 
-  @@schema("microservice/user")
+  @@schema("microservice/account")
 }
 
 enum UserProfileGender {
@@ -486,40 +466,22 @@ enum UserProfileGender {
   Female
   Intersex
 
-  @@schema("microservice/user")
+  @@schema("microservice/account")
 }
 
-model RoutePermission {
-  id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  route             String
-  trustedEntityType TrustedEntityType
-  trustedEntityId   String            @db.Uuid
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+model Role {
+  // A role is a subgroup of a user group with some specified permissions.
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String
+  description    String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String?       @db.Uuid
+  users          User[]
 
-  @@schema("microservice/user")
-}
-
-model ComponentPermission {
-  id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  component         String
-  trustedEntityType TrustedEntityType
-  trustedEntityId   String            @db.Uuid
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
-
-  @@schema("microservice/user")
-}
-
-model EndpointPermission {
-  id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  endpoint          String
-  trustedEntityType TrustedEntityType
-  trustedEntityId   String            @db.Uuid
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
-
-  @@schema("microservice/user")
+  @@unique([name, organizationId])
+  @@schema("microservice/account")
 }
 
 model Permission {
@@ -535,7 +497,7 @@ model Permission {
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
-  @@schema("microservice/user")
+  @@schema("microservice/account")
 }
 
 enum PermissionAction {
@@ -545,7 +507,7 @@ enum PermissionAction {
   Update
   Delete
 
-  @@schema("microservice/user")
+  @@schema("microservice/account")
 }
 
 enum TrustedEntityType {
@@ -553,7 +515,40 @@ enum TrustedEntityType {
   ROLE
   USER
 
-  @@schema("microservice/user")
+  @@schema("microservice/account")
+}
+
+model EndpointPermission {
+  id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  endpoint          String
+  trustedEntityType TrustedEntityType
+  trustedEntityId   String            @db.Uuid
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@schema("microservice/account")
+}
+
+model ComponentPermission {
+  id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  component         String
+  trustedEntityType TrustedEntityType
+  trustedEntityId   String            @db.Uuid
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@schema("microservice/account")
+}
+
+model RoutePermission {
+  id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  route             String
+  trustedEntityType TrustedEntityType
+  trustedEntityId   String            @db.Uuid
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@schema("microservice/account")
 }
 
 // ! ------------------------------------------------------------ //

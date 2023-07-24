@@ -1,10 +1,14 @@
 import {ConfigService} from '@nestjs/config';
-import {CustomLoggerService} from '../../src/microservices/logger/logger.service';
+import {CustomLoggerService} from '../../src/toolkit/logger/logger.service';
 import {PrismaService} from '../../src/toolkit/prisma/prisma.service';
+import {SqsService} from '../../src/toolkit/aws/aws.sqs.service';
 
 export async function seedForWorkflow() {
   const prisma = new PrismaService(
-    new CustomLoggerService(new ConfigService())
+    new CustomLoggerService(
+      new ConfigService(),
+      new SqsService(new ConfigService())
+    )
   );
 
   // Seed workflow data.

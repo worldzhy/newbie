@@ -3,7 +3,7 @@ import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {ProjectCheckpointService} from './checkpoint.service';
 import {Prisma, ProjectCheckpoint, ProjectCheckpointType} from '@prisma/client';
 
-@ApiTags('[Application] Project Management / Project Checkpoint')
+@ApiTags('Project Management / Project Checkpoint')
 @ApiBearerAuth()
 @Controller('project-checkpoints')
 export class ProjectCheckpointController {

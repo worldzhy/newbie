@@ -12,7 +12,7 @@ import {PostgresqlDatasourceTableColumn, Prisma} from '@prisma/client';
 import {PostgresqlDatasourceTableService} from '../table/table.service';
 import {PostgresqlDatasourceTableColumnService} from './column.service';
 
-@ApiTags('[Application] EngineD / Postgresql Datasource Table Column')
+@ApiTags('EngineD / Postgresql Datasource Table Column')
 @ApiBearerAuth()
 @Controller('postgresql-datasource-table-columns')
 export class PostgresqlDatasourceTableColumnController {

@@ -1,15 +1,15 @@
-import {Controller, Post, Body, Request} from '@nestjs/common';
+import {Controller, Post, Body, Res} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {UserTokenStatus} from '@prisma/client';
-import {UserTokenService} from '../../microservices/user/token/token.service';
-import {TokenService} from '../../toolkit/token/token.service';
+import {Response} from 'express';
+import {AccountService} from '../../microservices/account/account.service';
+import {RefreshTokenService} from 'src/toolkit/token/token.service';
 
-@ApiTags('[Application] Account')
+@ApiTags('Account')
 @Controller('account')
 export class AccountLogoutController {
   constructor(
-    private readonly tokenService: TokenService,
-    private readonly userTokenService: UserTokenService
+    private readonly accountService: AccountService,
+    private readonly refreshTokenService: RefreshTokenService
   ) {}
 
   @Post('logout')
@@ -26,17 +26,19 @@ export class AccountLogoutController {
     },
   })
   async logout(
-    @Request() request: Request,
-    @Body() body: {userId: string}
+    @Body() body: {userId: string},
+    @Res({passthrough: true}) response: Response
   ): Promise<{data: {message: string}}> {
-    const accessToken = this.tokenService.getTokenFromHttpRequest(request);
+    // [step 1] Invalidate all tokens
+    await this.accountService.invalidateTokens(body.userId);
 
-    await this.userTokenService.updateMany({
-      where: {AND: [{userId: body.userId}, {token: accessToken}]},
-      data: {status: UserTokenStatus.INACTIVE},
-    });
+    // [step 2] Clear cookie
+    response.clearCookie(
+      this.refreshTokenService.cookieName,
+      this.refreshTokenService.getCookieConfig()
+    );
 
-    // Always return success no matter if the user exists.
+    // [step 3] Always return success no matter if the user exists.
     return {
       data: {message: 'User logs out successfully'},
     };

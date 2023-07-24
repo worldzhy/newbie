@@ -13,9 +13,9 @@ import {CandidateCertificationService} from './certification.service';
 
 import {CandidateCertification, PermissionAction, Prisma} from '@prisma/client';
 import {CandidateService} from '../candidate.service';
-import {RequirePermission} from '../../../account/authorization/authorization.decorator';
+import {RequirePermission} from '../../../../microservices/account/authorization/authorization.decorator';
 
-@ApiTags('[Application] Recruitment / Candidate / Certification')
+@ApiTags('Recruitment / Candidate / Certification')
 @ApiBearerAuth()
 @Controller('recruitment-candidate-certifications')
 export class CandidateCertificationController {

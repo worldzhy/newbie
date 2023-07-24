@@ -24,7 +24,7 @@ import {PrismaService} from '../../../../../toolkit/prisma/prisma.service';
 import {PostgresqlDatasourceConstraintService} from 'src/application/engined/datasource/postgresql/constraint/constraint.service';
 import {ConfigService} from '@nestjs/config';
 
-@ApiTags('[Application] EngineD / Datatrans Task')
+@ApiTags('EngineD / Datatrans Task')
 @ApiBearerAuth()
 @Controller('datatrans-tasks')
 export class DatatransTaskController {

@@ -17,18 +17,18 @@ import {
   PermissionAction,
   Prisma,
 } from '@prisma/client';
-import {RequirePermission} from '../../../../account/authorization/authorization.decorator';
-import {UserService} from '../../../../../microservices/user/user.service';
-import {TokenService} from '../../../../../toolkit/token/token.service';
+import {RequirePermission} from '../../../../../microservices/account/authorization/authorization.decorator';
+import {AccessTokenService} from '../../../../../toolkit/token/token.service';
 import {JobApplicationWorkflowService} from '../workflow.service';
+import {UserService} from '../../../../../microservices/account/user/user.service';
 
-@ApiTags('[Application] Recruitment / Job Application / Workflow Note')
+@ApiTags('Recruitment / Job Application / Workflow Note')
 @ApiBearerAuth()
 @Controller('recruitment-workflow-notes')
 export class JobApplicationWorkflowNoteController {
   constructor(
     private readonly userService: UserService,
-    private readonly tokenService: TokenService,
+    private readonly accessTokenService: AccessTokenService,
     private readonly jobApplicationWorkflowService: JobApplicationWorkflowService,
     private readonly jobApplicationWorkflowNoteService: JobApplicationWorkflowNoteService
   ) {}
@@ -65,8 +65,8 @@ export class JobApplicationWorkflowNoteController {
     }
 
     // [step 2] Get user.
-    const {userId} = this.tokenService.decodeToken(
-      this.tokenService.getTokenFromHttpRequest(request)
+    const {userId} = this.accessTokenService.decodeToken(
+      this.accessTokenService.getTokenFromHttpRequest(request)
     ) as {userId: string};
     const user = await this.userService.findUniqueOrThrow({
       where: {id: userId},

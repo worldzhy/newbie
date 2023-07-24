@@ -18,7 +18,7 @@ import {ElasticsearchDatasourceService} from './elasticsearch-datasource.service
 import {ElasticsearchDatasourceIndexFieldService} from './field/field.service';
 import {ElasticsearchDatasourceIndexService} from './index/index.service';
 
-@ApiTags('[Application] EngineD / Elasticsearch Datasource')
+@ApiTags('EngineD / Elasticsearch Datasource')
 @ApiBearerAuth()
 @Controller('elasticsearch-datasources')
 export class ElasticsearchDatasourceController {
