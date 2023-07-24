@@ -28,31 +28,32 @@ import {
   Role,
   TrustedEntityType,
 } from '@prisma/client';
-import {RequirePermission} from '../../account/authorization/authorization.decorator';
+import {RequirePermission} from '../../../microservices/account/authorization/authorization.decorator';
 import {CandidateService} from '../candidate/candidate.service';
-import {UserService} from '../../account/user/user.service';
 import {AccessTokenService} from '../../../toolkit/token/token.service';
-import {PermissionService} from '../../account/permission/permission.service';
-import {WorkflowRouteService} from '../../../microservices/workflow/route/route.service';
+import {WorkflowRouteService} from '../../../microservices/workflow/workflow-route.service';
 import {JobApplicationWorkflowService} from './workflow/workflow.service';
-import {RoleService} from 'src/application/account/role/role.service';
+import {RoleService} from '../../../microservices/account/role/role.service';
 import {JobApplicationWorkflowFileService} from './workflow/file/file.service';
 import {generatePaginationParams} from '../../../toolkit/pagination/pagination';
+import {UserService} from '../../../microservices/account/user/user.service';
+import {PermissionService} from '../../../microservices/account/permission/permission.service';
 
-@ApiTags('[Application] Recruitment / Job Application')
+@ApiTags('Recruitment / Job Application')
 @ApiBearerAuth()
 @Controller('recruitment-job-applications')
 export class JobApplicationController {
-  private userService = new UserService();
-  private accessTokenService = new AccessTokenService();
-  private permissionService = new PermissionService();
-  private workflowRouteService = new WorkflowRouteService();
-  private candidateService = new CandidateService();
-  private roleService = new RoleService();
-  private jobApplicationService = new JobApplicationService();
-  private jobApplicationWorkflowService = new JobApplicationWorkflowService();
-  private jobApplicationWorkflowFileService =
-    new JobApplicationWorkflowFileService();
+  constructor(
+    private readonly userService: UserService,
+    private readonly accessTokenService: AccessTokenService,
+    private readonly permissionService: PermissionService,
+    private readonly workflowRouteService: WorkflowRouteService,
+    private readonly candidateService: CandidateService,
+    private readonly roleService: RoleService,
+    private readonly jobApplicationService: JobApplicationService,
+    private readonly jobApplicationWorkflowService: JobApplicationWorkflowService,
+    private readonly jobApplicationWorkflowFileService: JobApplicationWorkflowFileService
+  ) {}
 
   @Post('')
   @RequirePermission(PermissionAction.Create, Prisma.ModelName.JobApplication)
@@ -161,7 +162,8 @@ export class JobApplicationController {
   @ApiQuery({name: 'pageSize', type: 'number'})
   async getJobApplications(
     @Request() request: Request,
-    @Query() query: {page?: string; pageSize?: string}
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number
   ): Promise<JobApplication[]> {
     // [step 1] Construct where arguments.
     let where: Prisma.JobApplicationWhereInput | undefined;
@@ -183,8 +185,8 @@ export class JobApplicationController {
 
     // [step 2] Construct take and skip arguments.
     const {take, skip} = generatePaginationParams({
-      page: query.page,
-      pageSize: query.pageSize,
+      page: page,
+      pageSize: pageSize,
     });
 
     // [step 4] Get job applications.
@@ -228,7 +230,8 @@ export class JobApplicationController {
   @ApiQuery({name: 'pageSize', type: 'number'})
   async getProcessedJobApplications(
     @Request() request: Request,
-    @Query() query: {page?: string; pageSize?: string}
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number
   ): Promise<JobApplication[]> {
     // [step 1] Get userId from http request header.
     const {userId} = this.accessTokenService.decodeToken(
@@ -237,8 +240,8 @@ export class JobApplicationController {
 
     // [step 2] Construct take and skip arguments.
     const {take, skip} = generatePaginationParams({
-      page: query.page,
-      pageSize: query.pageSize,
+      page: page,
+      pageSize: pageSize,
     });
 
     // [step 4] Return job applications.
@@ -287,19 +290,21 @@ export class JobApplicationController {
   @ApiQuery({name: 'pageSize', type: 'number'})
   @ApiQuery({name: 'dateRange', type: 'string', isArray: true})
   async getAllJobApplications(
-    @Query() query: {page?: string; pageSize?: string; dateRange: string[]}
+    @Query('dateRange') dateRange?: string[],
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number
   ): Promise<JobApplication[]> {
     // [step 1] Construct where arguments.
     let where: Prisma.JobApplicationWhereInput | undefined;
-    if (Array.isArray(query.dateRange) && query.dateRange.length === 2) {
+    if (Array.isArray(dateRange) && dateRange.length === 2) {
       where = {
-        createdAt: {gte: query.dateRange[0], lte: query.dateRange[1]},
+        createdAt: {gte: dateRange[0], lte: dateRange[1]},
       };
     }
     // [step 2] Construct take and skip arguments.
     const {take, skip} = generatePaginationParams({
-      page: query.page,
-      pageSize: query.pageSize,
+      page: page,
+      pageSize: pageSize,
     });
 
     // [step 2] Get job applications.

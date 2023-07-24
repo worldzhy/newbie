@@ -1,13 +1,13 @@
-export function getServerConfig(): {
-  node_framework: string | undefined;
-  environment: string | undefined;
-  port: number;
-  allowedOrigins: string[];
-} {
+export function getConfig() {
   return {
-    node_framework: process.env.NODE_FRAMEWORK || 'express', // support 'express' and 'fastify'.
-    environment: process.env.ENVIRONMENT,
-    port: parseInt(process.env.PORT!, 10) || 3000,
     allowedOrigins: (process.env.ALLOWED_ORIGINS || '').split(','),
+    accessToken: {
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN,
+      secret: process.env.ACCESS_TOKEN_SECRET,
+    },
+    refreshToken: {
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN,
+      secret: process.env.REFRESH_TOKEN_SECRET,
+    },
   };
 }

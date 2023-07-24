@@ -18,12 +18,13 @@ import {
 } from '@prisma/client';
 import {ElasticsearchDatasourceIndexService} from './index.service';
 
-@ApiTags('[Application] EngineD / Elasticsearch Datasource Index')
+@ApiTags('EngineD / Elasticsearch Datasource Index')
 @ApiBearerAuth()
 @Controller('elasticsearch-datasource-indices')
 export class ElasticsearchDatasourceIndexController {
-  private elasticsearchDatasourceIndexService =
-    new ElasticsearchDatasourceIndexService();
+  constructor(
+    private elasticsearchDatasourceIndexService: ElasticsearchDatasourceIndexService
+  ) {}
 
   @Post('')
   @ApiBody({
@@ -60,30 +61,30 @@ export class ElasticsearchDatasourceIndexController {
   @Get(':indexId')
   @ApiParam({
     name: 'indexId',
-    schema: {type: 'string'},
-    description: 'The id of the datasource.',
+    schema: {type: 'number'},
+    description: 'The id of the index.',
     example: 1,
   })
   async getElasticsearchDatasourceIndex(
-    @Param('indexId') indexId: string
+    @Param('indexId') indexId: number
   ): Promise<ElasticsearchDatasourceIndex | null> {
     return await this.elasticsearchDatasourceIndexService.findUnique({
-      where: {id: parseInt(indexId)},
+      where: {id: indexId},
     });
   }
 
   @Patch(':indexId')
   @ApiParam({
     name: 'indexId',
-    schema: {type: 'string'},
+    schema: {type: 'number'},
     example: 1,
   })
   async updateElasticsearchDatasourceIndex(
-    @Param('indexId') indexId: string,
+    @Param('indexId') indexId: number,
     @Body() body: Prisma.ElasticsearchDatasourceIndexUpdateInput
   ): Promise<ElasticsearchDatasourceIndex> {
     return await this.elasticsearchDatasourceIndexService.update({
-      where: {id: parseInt(indexId)},
+      where: {id: indexId},
       data: body,
     });
   }
@@ -91,16 +92,16 @@ export class ElasticsearchDatasourceIndexController {
   @Delete(':indexId')
   @ApiParam({
     name: 'indexId',
-    schema: {type: 'string'},
+    schema: {type: 'number'},
     example: 1,
   })
   async deleteElasticsearchDatasourceIndex(
-    @Param('indexId') indexId: string
+    @Param('indexId') indexId: number
   ): Promise<ElasticsearchDatasourceIndex> {
     // [step 1] Get the index.
     const index =
       await this.elasticsearchDatasourceIndexService.findUniqueOrThrow({
-        where: {id: parseInt(indexId)},
+        where: {id: indexId},
       });
 
     // [step 2] Delete an index in elasticsearch.
@@ -108,24 +109,24 @@ export class ElasticsearchDatasourceIndexController {
 
     // [step 3] Save the index record in database.
     return await this.elasticsearchDatasourceIndexService.delete({
-      where: {id: parseInt(indexId)},
+      where: {id: indexId},
     });
   }
 
   @Put(':indexId/mapping')
   @ApiParam({
     name: 'indexId',
-    schema: {type: 'string'},
+    schema: {type: 'number'},
     description: 'The id of the index.',
     example: 1,
   })
   async putElasticsearchDatasourceIndexMapping(
-    @Param('indexId') indexId: string
+    @Param('indexId') indexId: number
   ): Promise<ElasticsearchDatasourceIndex> {
     // [step 1] Get index.
     const index =
       await this.elasticsearchDatasourceIndexService.findUniqueOrThrow({
-        where: {id: parseInt(indexId)},
+        where: {id: indexId},
         include: {fields: true},
       });
 
@@ -147,7 +148,7 @@ export class ElasticsearchDatasourceIndexController {
 
     // [step 3] Update index state.
     return this.elasticsearchDatasourceIndexService.update({
-      where: {id: parseInt(indexId)},
+      where: {id: indexId},
       data: {state: ElasticsearchDatasourceIndexState.HAS_MAPPING},
     });
   }
@@ -155,16 +156,16 @@ export class ElasticsearchDatasourceIndexController {
   @Get(':indexId/mapping')
   @ApiParam({
     name: 'indexId',
-    schema: {type: 'string'},
+    schema: {type: 'number'},
     description: 'The id of the index.',
     example: 1,
   })
   async getElasticsearchDatasourceIndexMapping(
-    @Param('indexId') indexId: string
+    @Param('indexId') indexId: number
   ) {
     const index =
       await this.elasticsearchDatasourceIndexService.findUniqueOrThrow({
-        where: {id: parseInt(indexId)},
+        where: {id: indexId},
       });
     if (index.state === ElasticsearchDatasourceIndexState.NO_MAPPING) {
       throw new BadRequestException(

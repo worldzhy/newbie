@@ -11,12 +11,13 @@ import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {PostgresqlDatasourceTable, Prisma} from '@prisma/client';
 import {PostgresqlDatasourceTableService} from './table.service';
 
-@ApiTags('[Application] EngineD / Postgresql Datasource Table')
+@ApiTags('EngineD / Postgresql Datasource Table')
 @ApiBearerAuth()
 @Controller('postgresql-datasource-tables')
 export class PostgresqlDatasourceTableController {
-  private postgresqlDatasourceTableService =
-    new PostgresqlDatasourceTableService();
+  constructor(
+    private postgresqlDatasourceTableService: PostgresqlDatasourceTableService
+  ) {}
 
   @Post('')
   @ApiBody({
@@ -51,30 +52,30 @@ export class PostgresqlDatasourceTableController {
   @Get(':tableId')
   @ApiParam({
     name: 'tableId',
-    schema: {type: 'string'},
-    description: 'The uuid of the table.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
+    schema: {type: 'number'},
+    description: 'The id of the table.',
+    example: 1,
   })
   async getPostgresqlDatasourceTable(
-    @Param('tableId') tableId: string
+    @Param('tableId') tableId: number
   ): Promise<PostgresqlDatasourceTable | null> {
     return await this.postgresqlDatasourceTableService.findUnique({
-      where: {id: parseInt(tableId)},
+      where: {id: tableId},
     });
   }
 
   @Patch(':tableId')
   @ApiParam({
     name: 'tableId',
-    schema: {type: 'string'},
+    schema: {type: 'number'},
     example: 1,
   })
   async updateElasticsearchDatasourceIndex(
-    @Param('tableId') tableId: string,
+    @Param('tableId') tableId: number,
     @Body() body: Prisma.PostgresqlDatasourceTableUpdateInput
   ): Promise<PostgresqlDatasourceTable> {
     return await this.postgresqlDatasourceTableService.update({
-      where: {id: parseInt(tableId)},
+      where: {id: tableId},
       data: body,
     });
   }
@@ -82,15 +83,15 @@ export class PostgresqlDatasourceTableController {
   @Delete(':tableId')
   @ApiParam({
     name: 'tableId',
-    schema: {type: 'string'},
+    schema: {type: 'number'},
     example: 1,
   })
   async deletePostgresqlDatasourceTable(
-    @Param('tableId') tableId: string
+    @Param('tableId') tableId: number
   ): Promise<PostgresqlDatasourceTable> {
     // [step 1] Get the table.
     const table = await this.postgresqlDatasourceTableService.findUniqueOrThrow(
-      {where: {id: parseInt(tableId)}}
+      {where: {id: tableId}}
     );
 
     // [step 2] Delete table in Postgresql.
@@ -98,22 +99,22 @@ export class PostgresqlDatasourceTableController {
 
     // [step 3] Delete the table record in database.
     return await this.postgresqlDatasourceTableService.delete({
-      where: {id: parseInt(tableId)},
+      where: {id: tableId},
     });
   }
 
   @Get(':tableId/columns')
   @ApiParam({
     name: 'tableId',
-    schema: {type: 'string'},
+    schema: {type: 'number'},
     description: 'The uuid of the table.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
+    example: 1,
   })
   async getPostgresqlDatasourceColumns(
-    @Param('tableId') tableId: string
+    @Param('tableId') tableId: number
   ): Promise<PostgresqlDatasourceTable> {
     return await this.postgresqlDatasourceTableService.findUniqueOrThrow({
-      where: {id: parseInt(tableId)},
+      where: {id: tableId},
       include: {columns: true},
     });
   }

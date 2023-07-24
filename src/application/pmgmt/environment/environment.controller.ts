@@ -12,11 +12,11 @@ import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {ProjectEnvironmentService} from './environment.service';
 import {Prisma, ProjectEnvironment} from '@prisma/client';
 
-@ApiTags('[Application] Project Management / Project Environment')
+@ApiTags('Project Management / Project Environment')
 @ApiBearerAuth()
 @Controller('project-environments')
 export class ProjectEnvironmentController {
-  private environmentService = new ProjectEnvironmentService();
+  constructor(private readonly environmentService: ProjectEnvironmentService) {}
 
   @Post('')
   @ApiBody({
@@ -55,10 +55,10 @@ export class ProjectEnvironmentController {
     example: '1',
   })
   async getEnvironment(
-    @Param('environmentId') environmentId: string
+    @Param('environmentId') environmentId: number
   ): Promise<ProjectEnvironment> {
     return await this.environmentService.findUniqueOrThrow({
-      where: {id: parseInt(environmentId)},
+      where: {id: environmentId},
     });
   }
 
@@ -91,11 +91,11 @@ export class ProjectEnvironmentController {
     },
   })
   async updateEnvironment(
-    @Param('environmentId') environmentId: string,
+    @Param('environmentId') environmentId: number,
     @Body() body: Prisma.ProjectEnvironmentUpdateInput
   ): Promise<ProjectEnvironment> {
     return await this.environmentService.update({
-      where: {id: parseInt(environmentId)},
+      where: {id: environmentId},
       data: body,
     });
   }
@@ -107,10 +107,10 @@ export class ProjectEnvironmentController {
     example: '1',
   })
   async deleteEnvironment(
-    @Param('environmentId') environmentId: string
+    @Param('environmentId') environmentId: number
   ): Promise<ProjectEnvironment> {
     return await this.environmentService.delete({
-      where: {id: parseInt(environmentId)},
+      where: {id: environmentId},
     });
   }
 
@@ -123,10 +123,10 @@ export class ProjectEnvironmentController {
     example: '1',
   })
   async getProjectCloudformationStacks(
-    @Param('environmentId') environmentId: string
+    @Param('environmentId') environmentId: number
   ): Promise<ProjectEnvironment> {
     return await this.environmentService.findUniqueOrThrow({
-      where: {id: parseInt(environmentId)},
+      where: {id: environmentId},
       include: {infrastructureStacks: true},
     });
   }

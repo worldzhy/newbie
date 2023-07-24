@@ -13,14 +13,16 @@ import {CandidateCertificationService} from './certification.service';
 
 import {CandidateCertification, PermissionAction, Prisma} from '@prisma/client';
 import {CandidateService} from '../candidate.service';
-import {RequirePermission} from '../../../account/authorization/authorization.decorator';
+import {RequirePermission} from '../../../../microservices/account/authorization/authorization.decorator';
 
-@ApiTags('[Application] Recruitment / Candidate / Certification')
+@ApiTags('Recruitment / Candidate / Certification')
 @ApiBearerAuth()
 @Controller('recruitment-candidate-certifications')
 export class CandidateCertificationController {
-  private candidateCertificationService = new CandidateCertificationService();
-  private candidateService = new CandidateService();
+  constructor(
+    private readonly candidateCertificationService: CandidateCertificationService,
+    private readonly candidateService: CandidateService
+  ) {}
 
   //* Create
   @Post('')
@@ -76,10 +78,10 @@ export class CandidateCertificationController {
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
   async getCandidateCertification(
-    @Param('certificationId') certificationId: string
+    @Param('certificationId') certificationId: number
   ): Promise<CandidateCertification | null> {
     return await this.candidateCertificationService.findUnique({
-      where: {id: parseInt(certificationId)},
+      where: {id: certificationId},
     });
   }
 
@@ -107,11 +109,11 @@ export class CandidateCertificationController {
     },
   })
   async updateCandidateCertification(
-    @Param('certificationId') certificationId: string,
+    @Param('certificationId') certificationId: number,
     @Body() body: Prisma.CandidateCertificationUpdateInput
   ): Promise<CandidateCertification> {
     return await this.candidateCertificationService.update({
-      where: {id: parseInt(certificationId)},
+      where: {id: certificationId},
       data: body,
     });
   }
@@ -129,10 +131,10 @@ export class CandidateCertificationController {
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
   async deleteCandidateCertification(
-    @Param('certificationId') certificationId: string
+    @Param('certificationId') certificationId: number
   ): Promise<CandidateCertification> {
     return await this.candidateCertificationService.delete({
-      where: {id: parseInt(certificationId)},
+      where: {id: certificationId},
     });
   }
 

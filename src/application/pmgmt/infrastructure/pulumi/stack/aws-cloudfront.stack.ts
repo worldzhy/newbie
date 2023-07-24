@@ -1,12 +1,10 @@
 import {Injectable} from '@nestjs/common';
 import * as aws from '@pulumi/aws';
-import {getAwsConfig} from '../../../../../toolkit/aws/aws.config';
+import {getAwsConfig} from '../pulumi.config';
 import {buildResourceOptions} from '../../../../../toolkit/utilities/pulumi.util';
 
 @Injectable()
 export class AwsCloudfront_Stack {
-  private awsConfig = getAwsConfig();
-
   static getStackParams() {
     return {
       repositoryName: 'example-repository',

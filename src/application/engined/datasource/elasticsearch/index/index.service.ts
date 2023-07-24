@@ -5,8 +5,10 @@ import {PrismaService} from '../../../../../toolkit/prisma/prisma.service';
 
 @Injectable()
 export class ElasticsearchDatasourceIndexService {
-  private prisma: PrismaService = new PrismaService();
-  private elastic: ElasticService = new ElasticService();
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly elastic: ElasticService
+  ) {}
 
   async findUnique(
     params: Prisma.ElasticsearchDatasourceIndexFindUniqueArgs

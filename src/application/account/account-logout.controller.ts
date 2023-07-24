@@ -1,14 +1,16 @@
 import {Controller, Post, Body, Res} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {AccountService} from './account.service';
 import {Response} from 'express';
+import {AccountService} from '../../microservices/account/account.service';
 import {RefreshTokenService} from 'src/toolkit/token/token.service';
 
-@ApiTags('[Application] Account')
+@ApiTags('Account')
 @Controller('account')
 export class AccountLogoutController {
-  private accountService = new AccountService();
-  private refreshTokenService = new RefreshTokenService();
+  constructor(
+    private readonly accountService: AccountService,
+    private readonly refreshTokenService: RefreshTokenService
+  ) {}
 
   @Post('logout')
   @ApiBearerAuth()

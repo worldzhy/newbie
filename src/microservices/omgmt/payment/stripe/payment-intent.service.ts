@@ -9,7 +9,7 @@ const YOUR_DOMAIN = 'http://localhost:4242';
 
 @Injectable()
 export class StripePaymentIntentService {
-  private prisma = new PrismaService();
+  constructor(private readonly prisma: PrismaService) {}
 
   async findUnique(
     params: Prisma.StripePaymentIntentFindUniqueArgs

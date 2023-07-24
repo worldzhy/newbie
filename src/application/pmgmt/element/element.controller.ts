@@ -12,11 +12,11 @@ import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {ProjectElementService} from './element.service';
 import {Prisma, ProjectElement} from '@prisma/client';
 
-@ApiTags('[Application] Project Management / Project Element')
+@ApiTags('Project Management / Project Element')
 @ApiBearerAuth()
 @Controller('project-elements')
 export class ProjectElementController {
-  private elementService = new ProjectElementService();
+  constructor(private readonly elementService: ProjectElementService) {}
 
   @Post('')
   @ApiBody({
@@ -62,10 +62,10 @@ export class ProjectElementController {
     example: '1',
   })
   async getElement(
-    @Param('elementId') elementId: string
+    @Param('elementId') elementId: number
   ): Promise<ProjectElement | null> {
     return await this.elementService.findUnique({
-      where: {id: parseInt(elementId)},
+      where: {id: elementId},
     });
   }
 
@@ -105,10 +105,10 @@ export class ProjectElementController {
     example: '1',
   })
   async deleteElement(
-    @Param('elementId') elementId: string
+    @Param('elementId') elementId: number
   ): Promise<ProjectElement | null> {
     return await this.elementService.delete({
-      where: {id: parseInt(elementId)},
+      where: {id: elementId},
     });
   }
 

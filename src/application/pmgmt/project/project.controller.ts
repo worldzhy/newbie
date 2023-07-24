@@ -30,15 +30,14 @@ import {
   generatePaginationParams,
   generatePaginationResponse,
 } from '../../../toolkit/pagination/pagination';
-import {RequirePermission} from '../../../application/account/authorization/authorization.decorator';
+import {RequirePermission} from '../../../microservices/account/authorization/authorization.decorator';
 
-@ApiTags('[Application] Project Management / Project')
+@ApiTags('Project Management / Project')
 @ApiBearerAuth()
 @Controller('projects')
 export class ProjectController {
-  private projectService = new ProjectService();
+  constructor(private projectService: ProjectService) {}
 
-  //* Create
   @Post('')
   @ApiBody({
     description: "The 'name' is required in request body.",
@@ -79,25 +78,21 @@ export class ProjectController {
     });
   }
 
-  //* Get many
   @Get('')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.Project)
   @ApiQuery({name: 'name', type: 'string'})
   @ApiQuery({name: 'page', type: 'number'})
   @ApiQuery({name: 'pageSize', type: 'number'})
   async getProjects(
-    @Query()
-    query: {
-      name?: string;
-      page?: string;
-      pageSize?: string;
-    }
+    @Query('name') name?: string,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number
   ) {
     // [step 1] Construct where argument.
-    let where: Prisma.UserWhereInput | undefined;
+    let where: Prisma.ProjectWhereInput | undefined;
     const whereConditions: object[] = [];
-    if (query.name) {
-      const name = query.name.trim();
+    if (name) {
+      name = name.trim();
       if (name.length > 0) {
         whereConditions.push({name: {contains: name}});
       }
@@ -113,8 +108,8 @@ export class ProjectController {
 
     // [step 2] Construct take and skip arguments.
     const {take, skip} = generatePaginationParams({
-      page: query.page,
-      pageSize: query.pageSize,
+      page: page,
+      pageSize: pageSize,
     });
 
     const [records, total] = await this.projectService.findManyWithTotal({
@@ -123,10 +118,9 @@ export class ProjectController {
       skip: skip,
     });
 
-    return generatePaginationResponse({records, total, query});
+    return generatePaginationResponse({records, total, page, pageSize});
   }
 
-  //* Get
   @Get(':projectId')
   @ApiParam({
     name: 'projectId',
@@ -142,7 +136,6 @@ export class ProjectController {
     });
   }
 
-  //* Update
   @Patch(':projectId')
   @ApiParam({
     name: 'projectId',
@@ -171,7 +164,6 @@ export class ProjectController {
     });
   }
 
-  //* Delete
   @Delete(':projectId')
   @ApiParam({
     name: 'projectId',

@@ -1,8 +1,8 @@
 import {Injectable} from '@nestjs/common';
 import {JwtService} from '@nestjs/jwt';
-import {getJwtConfig} from './token.config';
 import * as express from 'express';
 import {convertUnixToDate} from '../utilities/date.util';
+import {getConfig} from '../../config';
 
 @Injectable()
 class TokenService extends JwtService {
@@ -24,7 +24,7 @@ class TokenService extends JwtService {
 
 export class AccessTokenService extends TokenService {
   constructor() {
-    const jwtConfig = getJwtConfig().accessToken;
+    const jwtConfig = getConfig().accessToken;
     const config = {
       secret: jwtConfig.secret,
       signOptions: {expiresIn: jwtConfig.expiresIn},
@@ -41,7 +41,7 @@ export class RefreshTokenService extends TokenService {
   public cookieName = 'refreshToken';
 
   constructor() {
-    const jwtConfig = getJwtConfig().refreshToken;
+    const jwtConfig = getConfig().refreshToken;
     const config = {
       secret: jwtConfig.secret,
       signOptions: {expiresIn: jwtConfig.expiresIn},

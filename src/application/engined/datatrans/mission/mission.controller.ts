@@ -13,12 +13,14 @@ import {Prisma, DatatransMission, DatatransMissionState} from '@prisma/client';
 import {DatatransMissionService} from './mission.service';
 import {DatatransTaskService} from './task/task.service';
 
-@ApiTags('[Application] EngineD / Datatrans Mission')
+@ApiTags('EngineD / Datatrans Mission')
 @ApiBearerAuth()
 @Controller('datatrans-missions')
 export class DatatransMissionController {
-  private datatransMissionService = new DatatransMissionService();
-  private datatransTaskService = new DatatransTaskService();
+  constructor(
+    private readonly datatransMissionService: DatatransMissionService,
+    private readonly datatransTaskService: DatatransTaskService
+  ) {}
 
   @Post('')
   @ApiBody({

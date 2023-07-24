@@ -1,19 +1,21 @@
-import {WorkflowController} from '../../src/microservices/workflow/workflow.controller';
-import {WorkflowRouteController} from '../../src/microservices/workflow/route/route.controller';
-import {WorkflowViewController} from '../../src/microservices/workflow/view/view.controller';
-import {WorkflowStateController} from '../../src/microservices/workflow/state/state.controller';
+import {ConfigService} from '@nestjs/config';
+import {CustomLoggerService} from '../../src/toolkit/logger/logger.service';
+import {PrismaService} from '../../src/toolkit/prisma/prisma.service';
+import {SqsService} from '../../src/toolkit/aws/aws.sqs.service';
 
 export async function seedForWorkflow() {
+  const prisma = new PrismaService(
+    new CustomLoggerService(
+      new ConfigService(),
+      new SqsService(new ConfigService())
+    )
+  );
+
   // Seed workflow data.
   console.log('* Creating workflow routes...');
 
-  const workflowController = new WorkflowController();
-  const workflowRouteController = new WorkflowRouteController();
-  const workflowViewController = new WorkflowViewController();
-  const workflowStateController = new WorkflowStateController();
-
-  const workflow = await workflowController.createWorkflow({
-    name: 'TC Workflow for Citizen',
+  const workflow = await prisma.workflow.create({
+    data: {name: 'A Good Workflow'},
   });
 
   const views = [
@@ -33,7 +35,7 @@ export async function seedForWorkflow() {
     {workflowId: workflow.id, name: 'END'},
   ];
   for (let i = 0; i < views.length; i++) {
-    await workflowViewController.createWorkflowView(views[i]);
+    await prisma.workflowView.createMany({data: views[i]});
   }
 
   const states = [
@@ -47,7 +49,7 @@ export async function seedForWorkflow() {
     {workflowId: workflow.id, name: 'FAIL'},
   ];
   for (let i = 0; i < states.length; i++) {
-    await workflowStateController.createWorkflowState(states[i]);
+    await prisma.workflowState.create({data: states[i]});
   }
 
   const routes = [
@@ -156,6 +158,6 @@ export async function seedForWorkflow() {
     },
   ];
   for (let i = 0; i < routes.length; i++) {
-    await workflowRouteController.createWorkflowRoute(routes[i]);
+    await prisma.workflowRoute.createMany({data: routes[i]});
   }
 }

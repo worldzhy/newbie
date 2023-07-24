@@ -19,20 +19,22 @@ import {
   PostgresqlDatasourceConstraintKeyType,
 } from '@prisma/client';
 import {DatatransTaskService} from './task.service';
-import {SqsService} from '../../../../../toolkit/aws/sqs/sqs.service';
-import {getAwsSqsConfig} from '../../../../../toolkit/aws/sqs/sqs.config';
+import {SqsService} from '../../../../../toolkit/aws/aws.sqs.service';
 import {PrismaService} from '../../../../../toolkit/prisma/prisma.service';
 import {PostgresqlDatasourceConstraintService} from 'src/application/engined/datasource/postgresql/constraint/constraint.service';
+import {ConfigService} from '@nestjs/config';
 
-@ApiTags('[Application] EngineD / Datatrans Task')
+@ApiTags('EngineD / Datatrans Task')
 @ApiBearerAuth()
 @Controller('datatrans-tasks')
 export class DatatransTaskController {
-  private datatransTaskService = new DatatransTaskService();
-  private sqs = new SqsService();
-  private prisma = new PrismaService();
-  private postgresqlDatasourceConstraintService =
-    new PostgresqlDatasourceConstraintService();
+  constructor(
+    private readonly datatransTaskService: DatatransTaskService,
+    private readonly sqsService: SqsService,
+    private readonly prisma: PrismaService,
+    private readonly postgresqlDatasourceConstraintService: PostgresqlDatasourceConstraintService,
+    private readonly configService: ConfigService
+  ) {}
 
   @Post('')
   @ApiBody({
@@ -67,10 +69,10 @@ export class DatatransTaskController {
     example: 1,
   })
   async getDatatransTask(
-    @Param('taskId') taskId: string
+    @Param('taskId') taskId: number
   ): Promise<DatatransTask | null> {
     return await this.datatransTaskService.findUnique({
-      where: {id: parseInt(taskId)},
+      where: {id: taskId},
     });
   }
 
@@ -82,11 +84,11 @@ export class DatatransTaskController {
     example: 1,
   })
   async updateDatatransTask(
-    @Param('taskId') taskId: string,
+    @Param('taskId') taskId: number,
     @Body() body: Prisma.DatatransTaskUpdateInput
   ): Promise<DatatransTask> {
     return await this.datatransTaskService.update({
-      where: {id: parseInt(taskId)},
+      where: {id: taskId},
       data: body,
     });
   }
@@ -99,10 +101,10 @@ export class DatatransTaskController {
     example: 1,
   })
   async deleteDatatransTask(
-    @Param('taskId') taskId: string
+    @Param('taskId') taskId: number
   ): Promise<DatatransTask> {
     return await this.datatransTaskService.delete({
-      where: {id: parseInt(taskId)},
+      where: {id: taskId},
     });
   }
 
@@ -114,11 +116,11 @@ export class DatatransTaskController {
     example: 1,
   })
   async stopDatatransTask(
-    @Param('taskId') taskId: string
+    @Param('taskId') taskId: number
   ): Promise<DatatransTask> {
     // [step 1] Get task.
     const task = await this.datatransTaskService.findUniqueOrThrow({
-      where: {id: parseInt(taskId)},
+      where: {id: taskId},
       include: {
         mission: {
           include: {
@@ -189,7 +191,7 @@ export class DatatransTaskController {
 
     // [step 4] Update task state.
     return await this.datatransTaskService.update({
-      where: {id: parseInt(taskId)},
+      where: {id: taskId},
       data: {state: DatatransTaskState.DONE},
     });
   }
@@ -202,22 +204,24 @@ export class DatatransTaskController {
     example: 1,
   })
   async startDatatransTask(
-    @Param('taskId') taskId: string
+    @Param('taskId') taskId: number
   ): Promise<DatatransTask> {
     // [step 1] Get task.
     const task = await this.datatransTaskService.findUniqueOrThrow({
-      where: {id: parseInt(taskId)},
+      where: {id: taskId},
     });
 
     // [step 2] Send task to queue.
-    const output = await this.sqs.sendMessage({
-      queueUrl: getAwsSqsConfig().sqsTaskQueueUrl,
+    const output = await this.sqsService.sendMessage({
+      queueUrl: this.configService.get<string>(
+        'microservices.task.sqsQueueUrl'
+      )!,
       body: {missionId: task.missionId, take: task.take, skip: task.skip},
     });
 
     // [step 3] Update task state.
     return await this.datatransTaskService.update({
-      where: {id: parseInt(taskId)},
+      where: {id: taskId},
       data: {
         state: DatatransTaskState.IN_QUEUE,
         sqsMessageId: output.MessageId,

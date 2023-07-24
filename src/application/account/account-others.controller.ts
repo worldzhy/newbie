@@ -1,11 +1,9 @@
 import {Controller, Get, Body, Post, Req, Res} from '@nestjs/common';
 import {ApiTags, ApiBody, ApiBearerAuth, ApiCookieAuth} from '@nestjs/swagger';
-import {AccessToken, VerificationCodeUse} from '@prisma/client';
-import {AccountService} from './account.service';
-import {Public} from './authentication/public/public.decorator';
-import {UserService} from './user/user.service';
-import {UserAccessTokenService} from './user/accessToken/accessToken.service';
-import {UserProfileService} from './user/profile/profile.service';
+import {UserAccessToken, VerificationCodeUse} from '@prisma/client';
+import {Request, Response} from 'express';
+import {AccountService} from '../../microservices/account/account.service';
+import {Public} from '../../microservices/account/authentication/public/public.decorator';
 import {
   AccessTokenService,
   RefreshTokenService,
@@ -14,19 +12,23 @@ import {
   verifyEmail,
   verifyPhone,
 } from '../../toolkit/validators/user.validator';
-import {Cookies} from 'src/_decorator/cookie.decorator';
-import {Request, Response} from 'express';
-import {AccessingRefreshEndpoint} from './authentication/refresh/refresh.decorator';
+import {Cookies} from '../../_decorator/cookie.decorator';
+import {AccessingRefreshEndpoint} from '../../microservices/account/authentication/refresh/refresh.decorator';
+import {UserService} from '../../microservices/account/user/user.service';
+import {UserProfileService} from '../../microservices/account/user/user-profile.service';
+import {UserAccessTokenService} from '../../microservices/account/user/user-access-token.service';
 
-@ApiTags('[Application] Account')
+@ApiTags('Account')
 @Controller('account')
 export class AccountOthersController {
-  private accountService = new AccountService();
-  private userService = new UserService();
-  private userAccessTokenService = new UserAccessTokenService();
-  private accessTokenService = new AccessTokenService();
-  private profileService = new UserProfileService();
-  private refreshTokenService = new RefreshTokenService();
+  constructor(
+    private readonly accountService: AccountService,
+    private readonly userService: UserService,
+    private readonly profileService: UserProfileService,
+    private readonly userAccessTokenService: UserAccessTokenService,
+    private readonly accessTokenService: AccessTokenService,
+    private readonly refreshTokenService: RefreshTokenService
+  ) {}
 
   @Get('current-user')
   @ApiBearerAuth()
@@ -183,7 +185,7 @@ export class AccountOthersController {
   async refresh(
     @Cookies('refreshToken') refreshToken: string,
     @Res({passthrough: true}) response: Response
-  ): Promise<AccessToken> {
+  ): Promise<UserAccessToken> {
     // [step 1] Validate refresh token
     const userData = this.refreshTokenService.decodeToken(refreshToken) as {
       userId: string;

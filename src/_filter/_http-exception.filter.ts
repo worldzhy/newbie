@@ -5,11 +5,13 @@ import {
   HttpException,
 } from '@nestjs/common';
 import {Request, Response} from 'express';
-import {CustomLoggerService} from '../microservices/logger/logger.service';
+import {CustomLoggerService} from '../toolkit/logger/logger.service';
 
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
-  private readonly logger = new CustomLoggerService('HttpException');
+  private loggerContext = 'HttpException';
+
+  constructor(private readonly logger: CustomLoggerService) {}
 
   catch(exception: HttpException, host: ArgumentsHost) {
     const statusCode = exception.getStatus(); // such as: 401
@@ -29,11 +31,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     // [step 2] Write log.
     if (statusCode >= 500) {
-      this.logger.error(content);
+      this.logger.error(content, this.loggerContext);
     } else if (statusCode >= 400) {
-      this.logger.warn(content);
+      this.logger.warn(content, this.loggerContext);
     } else {
-      this.logger.log(content);
+      this.logger.log(content, this.loggerContext);
     }
 
     // [step 3] Response.

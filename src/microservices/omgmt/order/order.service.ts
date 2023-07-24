@@ -4,7 +4,7 @@ import {PrismaService} from '../../../toolkit/prisma/prisma.service';
 
 @Injectable()
 export class OrderService {
-  private prisma = new PrismaService();
+  constructor(private readonly prisma: PrismaService) {}
 
   async findUnique(params: Prisma.OrderFindUniqueArgs): Promise<Order | null> {
     return await this.prisma.order.findUnique(params);

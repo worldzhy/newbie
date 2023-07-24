@@ -1,4 +1,5 @@
 import {Injectable} from '@nestjs/common';
+import {ConfigService} from '@nestjs/config';
 import {PrismaService} from '../../toolkit/prisma/prisma.service';
 import {
   Prisma,
@@ -12,9 +13,20 @@ import * as util from '../../toolkit/utilities/common.util';
 
 @Injectable()
 export class VerificationCodeService {
-  private prisma = new PrismaService();
-  private timeoutAfter = 10; // The verification code will be invalid after 10 minutes.
-  private resendAfter = 1; // The verification code can be resend after 1 minute.
+  private timeoutMinutes: number; // The verification code will be invalid after x minutes.
+  private resendMinutes: number; // The verification code can be resend after y minute.
+
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly prisma: PrismaService
+  ) {
+    this.timeoutMinutes = this.configService.get<number>(
+      'microservice.verificationCode.timeoutMinutes'
+    )!;
+    this.resendMinutes = this.configService.get<number>(
+      'microservice.verificationCode.resendMinutes'
+    )!;
+  }
 
   async findUnique(
     params: Prisma.VerificationCodeFindUniqueArgs
@@ -56,7 +68,7 @@ export class VerificationCodeService {
         email: {equals: email, mode: 'insensitive'},
         status: VerificationCodeStatus.ACTIVE,
         expiredAt: {
-          gte: util.nowPlusMinutes(this.timeoutAfter - this.resendAfter),
+          gte: util.nowPlusMinutes(this.timeoutMinutes - this.resendMinutes),
         },
       },
     });
@@ -83,7 +95,7 @@ export class VerificationCodeService {
         code: newCode,
         use: use,
         status: VerificationCodeStatus.ACTIVE,
-        expiredAt: util.nowPlusMinutes(this.timeoutAfter),
+        expiredAt: util.nowPlusMinutes(this.timeoutMinutes),
       },
     });
   }
@@ -98,7 +110,7 @@ export class VerificationCodeService {
         phone: phone,
         status: VerificationCodeStatus.ACTIVE,
         expiredAt: {
-          gte: util.nowPlusMinutes(this.timeoutAfter - this.resendAfter),
+          gte: util.nowPlusMinutes(this.timeoutMinutes - this.resendMinutes),
         },
       },
     });
@@ -122,7 +134,7 @@ export class VerificationCodeService {
         code: newCode,
         use: use,
         status: VerificationCodeStatus.ACTIVE,
-        expiredAt: util.nowPlusMinutes(this.timeoutAfter),
+        expiredAt: util.nowPlusMinutes(this.timeoutMinutes),
       },
     });
   }

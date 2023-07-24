@@ -14,15 +14,15 @@ import {PostgresqlDatasourceTableService} from '../../datasource/postgresql/tabl
 import {ElasticsearchDatasourceIndexService} from '../../datasource/elasticsearch/index/index.service';
 import {DatatransPipeline, Prisma} from '@prisma/client';
 
-@ApiTags('[Application] EngineD / Datatrans Pipeline')
+@ApiTags('EngineD / Datatrans Pipeline')
 @ApiBearerAuth()
 @Controller('datatrans-pipelines')
 export class DatatransPipelineController {
-  private pipelineService = new DatatransPipelineService();
-  private postgresqlDatasourceTableService =
-    new PostgresqlDatasourceTableService();
-  private elasticsearchDatasourceIndexService =
-    new ElasticsearchDatasourceIndexService();
+  constructor(
+    private readonly pipelineService: DatatransPipelineService,
+    private readonly postgresqlDatasourceTableService: PostgresqlDatasourceTableService,
+    private readonly elasticsearchDatasourceIndexService: ElasticsearchDatasourceIndexService
+  ) {}
 
   @Post('')
   @ApiBody({

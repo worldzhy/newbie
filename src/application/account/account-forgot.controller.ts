@@ -1,19 +1,21 @@
 import {Controller, Patch, Body, BadRequestException} from '@nestjs/common';
 import {ApiTags, ApiBody} from '@nestjs/swagger';
 import {User} from '@prisma/client';
-import {UserService} from './user/user.service';
-import {Public} from './authentication/public/public.decorator';
+import {UserService} from '../../microservices/account/user/user.service';
+import {Public} from '../../microservices/account/authentication/public/public.decorator';
 import {VerificationCodeService} from '../../microservices/verification-code/verification-code.service';
 import {
   verifyEmail,
   verifyPhone,
 } from '../../toolkit/validators/user.validator';
 
-@ApiTags('[Application] Account')
+@ApiTags('Account')
 @Controller('account')
 export class AccountForgotController {
-  private userService = new UserService();
-  private verificationCodeService = new VerificationCodeService();
+  constructor(
+    private readonly userService: UserService,
+    private readonly verificationCodeService: VerificationCodeService
+  ) {}
 
   @Public()
   @Patch('forgot-password')

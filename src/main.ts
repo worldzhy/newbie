@@ -1,20 +1,29 @@
-import {INestApplication} from '@nestjs/common';
+import {INestApplication, ValidationPipe} from '@nestjs/common';
 import {NestFactory} from '@nestjs/core';
+import {ConfigService} from '@nestjs/config';
 import {FastifyAdapter, NestFastifyApplication} from '@nestjs/platform-fastify';
+import * as cookieParser from 'cookie-parser';
 import {
   DocumentBuilder,
   SwaggerModule,
   SwaggerCustomOptions,
 } from '@nestjs/swagger';
 import {ApplicationModule} from './application/application.module';
-import {getServerConfig} from './config';
-import * as cookieParser from 'cookie-parser';
+
+function checkEnvironment(configService: ConfigService) {
+  const requiredEnvVars = ['ENVIRONMENT', 'PORT'];
+
+  requiredEnvVars.forEach(envVar => {
+    if (!configService.get<string>(envVar)) {
+      throw Error(`Undefined environment variable: ${envVar}`);
+    }
+  });
+}
 
 async function bootstrap() {
   // Create a nestjs application.
-  const serverConfig = getServerConfig();
   let app: INestApplication;
-  if (serverConfig.node_framework === 'fastify') {
+  if (process.env.NODE_FRAMEWORK === 'fastify') {
     app = await NestFactory.create<NestFastifyApplication>(
       ApplicationModule,
       new FastifyAdapter()
@@ -24,8 +33,12 @@ async function bootstrap() {
     app.use(cookieParser());
   }
 
+  // Check environment variables.
+  const configService = app.get<ConfigService>(ConfigService);
+  checkEnvironment(configService);
+
   // API document is only available in development environment.
-  if (serverConfig.environment === 'development') {
+  if (configService.get<string>('application.environment') === 'development') {
     const config = new DocumentBuilder()
       .setTitle("Here's the Newbie")
       .setDescription("It's good to see you guys 🥤")
@@ -47,8 +60,19 @@ async function bootstrap() {
   // Enable CORS
   app.enableCors();
 
+  /**
+   * By default, every path parameter and query parameter comes over the network as a string.
+   * When we enable this behavior globally, the ValidationPipe will try to automatically convert a string identifier
+   * to a number if we specified the id type as a number (in the method signature).
+   */
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+    })
+  );
+
   // Listen port
-  const port = serverConfig.port;
+  const port = configService.get<number>('project.port') || 3000;
   await app.listen(port, '0.0.0.0');
   console.log(`Application is running on: ${await app.getUrl()}`);
 }

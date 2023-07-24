@@ -3,11 +3,11 @@ import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {ProjectCheckpointService} from './checkpoint.service';
 import {Prisma, ProjectCheckpoint, ProjectCheckpointType} from '@prisma/client';
 
-@ApiTags('[Application] Project Management / Project Checkpoint')
+@ApiTags('Project Management / Project Checkpoint')
 @ApiBearerAuth()
 @Controller('project-checkpoints')
 export class ProjectCheckpointController {
-  private checkpointService = new ProjectCheckpointService();
+  constructor(private readonly checkpointService: ProjectCheckpointService) {}
 
   @Get('types')
   listCheckpoints() {
@@ -26,10 +26,10 @@ export class ProjectCheckpointController {
     example: '1',
   })
   async getCheckpoint(
-    @Param('checkpointId') checkpointId: string
+    @Param('checkpointId') checkpointId: number
   ): Promise<ProjectCheckpoint | null> {
     return await this.checkpointService.findUniqueOrThrow({
-      where: {id: parseInt(checkpointId)},
+      where: {id: checkpointId},
     });
   }
 
@@ -67,10 +67,10 @@ export class ProjectCheckpointController {
     example: '1',
   })
   async deleteCheckpoint(
-    @Param('checkpointId') checkpointId: string
+    @Param('checkpointId') checkpointId: number
   ): Promise<ProjectCheckpoint | null> {
     return await this.checkpointService.delete({
-      where: {id: parseInt(checkpointId)},
+      where: {id: checkpointId},
     });
   }
 

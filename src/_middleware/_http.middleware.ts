@@ -1,10 +1,12 @@
 import {Injectable, NestMiddleware} from '@nestjs/common';
 import {Request, Response, NextFunction} from 'express';
-import {CustomLoggerService} from '../microservices/logger/logger.service';
+import {CustomLoggerService} from '../toolkit/logger/logger.service';
 
 @Injectable()
 export class HttpMiddleware implements NestMiddleware {
-  private readonly logger = new CustomLoggerService('HttpMiddleware');
+  private loggerContext = 'HttpMiddleware';
+
+  constructor(private readonly logger: CustomLoggerService) {}
 
   use(request: Request, response: Response, next: NextFunction) {
     response.on('finish', () => {
@@ -19,11 +21,11 @@ export class HttpMiddleware implements NestMiddleware {
 
       // [step 2] Write log.
       if (statusCode >= 500) {
-        return this.logger.error(content);
+        return this.logger.error(content, this.loggerContext);
       } else if (statusCode >= 400) {
-        return this.logger.warn(content);
+        return this.logger.warn(content, this.loggerContext);
       } else {
-        return this.logger.log(content);
+        return this.logger.log(content, this.loggerContext);
       }
     });
 

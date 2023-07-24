@@ -6,8 +6,6 @@ import {
   Post,
   Body,
   Param,
-  Query,
-  BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
@@ -20,13 +18,14 @@ import {
 import {ElasticsearchDataboardService} from './elasticsearch-databoard.service';
 import {ElasticsearchDataboardColumnService} from './column/column.service';
 
-@ApiTags('[Application] EngineD / Elasticsearch Databoard')
+@ApiTags('EngineD / Elasticsearch Databoard')
 @ApiBearerAuth()
 @Controller('elasticsearch-databoards')
 export class ElasticsearchDataboardController {
-  private elasticsearchDataboardService = new ElasticsearchDataboardService();
-  private elasticsearchDataboardColumnService =
-    new ElasticsearchDataboardColumnService();
+  constructor(
+    private readonly elasticsearchDataboardService: ElasticsearchDataboardService,
+    private readonly elasticsearchDataboardColumnService: ElasticsearchDataboardColumnService
+  ) {}
 
   @Post('')
   @ApiBody({

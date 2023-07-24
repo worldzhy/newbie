@@ -7,8 +7,10 @@ import {get as lodash_get, split as lodash_split} from 'lodash';
 
 @Injectable()
 export class ElasticsearchDatasourceService {
-  private elastic: ElasticService = new ElasticService();
-  private prisma: PrismaService = new PrismaService();
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly elastic: ElasticService
+  ) {}
 
   async findUnique(
     params: Prisma.ElasticsearchDatasourceFindUniqueArgs

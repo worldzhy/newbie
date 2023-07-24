@@ -18,8 +18,8 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import {PermissionAction, Prisma, User, UserStatus} from '@prisma/client';
-import {UserService} from './user.service';
-import {RequirePermission} from '../authorization/authorization.decorator';
+import {UserService} from '../../../microservices/account/user/user.service';
+import {RequirePermission} from '../../../microservices/account/authorization/authorization.decorator';
 import {compareHash} from '../../../toolkit/utilities/common.util';
 import {verifyUuid} from '../../../toolkit/validators/user.validator';
 import {
@@ -27,21 +27,21 @@ import {
   generatePaginationResponse,
 } from '../../../toolkit/pagination/pagination';
 
-@ApiTags('[Application] Account / User')
+@ApiTags('Account / User')
 @ApiBearerAuth()
 @Controller('users')
 export class UserController {
-  private userService = new UserService();
+  constructor(private userService: UserService) {}
 
   @Get('count')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.User)
   @ApiQuery({name: 'name', type: 'string'})
-  async countUsers(@Query() query: {name?: string}): Promise<number> {
+  async countUsers(@Query('name') name?: string): Promise<number> {
     // [step 1] Construct where argument.
     let where: Prisma.UserWhereInput | undefined;
     const conditions: object[] = [];
-    if (query.name) {
-      const name = query.name.trim();
+    if (name) {
+      name = name.trim();
       if (name.length > 0) {
         conditions.push({username: {search: name}});
         conditions.push({
@@ -121,26 +121,23 @@ export class UserController {
   @ApiQuery({name: 'page', type: 'number'})
   @ApiQuery({name: 'pageSize', type: 'number'})
   async getUsers(
-    @Query()
-    query: {
-      name?: string;
-      roleId?: string;
-      page?: string;
-      pageSize?: string;
-    }
+    @Query('name') name?: string,
+    @Query('roleId') roleId?: string,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number
   ) {
     // [step 1] Construct where argument.
     let where: Prisma.UserWhereInput | undefined;
     const whereConditions: object[] = [];
-    if (query.name) {
-      const name = query.name.trim();
+    if (name) {
+      name = name.trim();
       if (name.length > 0) {
         whereConditions.push({username: {contains: name}});
       }
     }
 
-    if (query.roleId) {
-      const roleId = query.roleId.trim();
+    if (roleId) {
+      roleId = roleId.trim();
       if (verifyUuid(roleId)) {
         whereConditions.push({userToRoles: {some: {roleId: roleId}}});
       }
@@ -156,8 +153,8 @@ export class UserController {
 
     // [step 2] Construct take and skip arguments.
     const {take, skip} = generatePaginationParams({
-      page: query.page,
-      pageSize: query.pageSize,
+      page: page,
+      pageSize: pageSize,
     });
 
     // [step 3] Get users.
@@ -177,7 +174,7 @@ export class UserController {
       return this.userService.withoutPassword(user);
     });
 
-    return generatePaginationResponse({records, total, query});
+    return generatePaginationResponse({page, pageSize, records, total});
   }
 
   @Get(':userId')

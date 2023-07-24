@@ -17,20 +17,21 @@ import {
   PermissionAction,
   Prisma,
 } from '@prisma/client';
-import {RequirePermission} from '../../../../account/authorization/authorization.decorator';
-import {UserService} from '../../../../account/user/user.service';
+import {RequirePermission} from '../../../../../microservices/account/authorization/authorization.decorator';
 import {AccessTokenService} from '../../../../../toolkit/token/token.service';
 import {JobApplicationWorkflowService} from '../workflow.service';
+import {UserService} from '../../../../../microservices/account/user/user.service';
 
-@ApiTags('[Application] Recruitment / Job Application / Workflow Note')
+@ApiTags('Recruitment / Job Application / Workflow Note')
 @ApiBearerAuth()
 @Controller('recruitment-workflow-notes')
 export class JobApplicationWorkflowNoteController {
-  private userService = new UserService();
-  private accessTokenService = new AccessTokenService();
-  private jobApplicationWorkflowService = new JobApplicationWorkflowService();
-  private jobApplicationWorkflowNoteService =
-    new JobApplicationWorkflowNoteService();
+  constructor(
+    private readonly userService: UserService,
+    private readonly accessTokenService: AccessTokenService,
+    private readonly jobApplicationWorkflowService: JobApplicationWorkflowService,
+    private readonly jobApplicationWorkflowNoteService: JobApplicationWorkflowNoteService
+  ) {}
 
   @Post('')
   @RequirePermission(
@@ -100,10 +101,10 @@ export class JobApplicationWorkflowNoteController {
     example: 1,
   })
   async getJobApplicationWorkflowNote(
-    @Param('noteId') noteId: string
+    @Param('noteId') noteId: number
   ): Promise<JobApplicationWorkflowNote | null> {
     return await this.jobApplicationWorkflowNoteService.findUnique({
-      where: {id: parseInt(noteId)},
+      where: {id: noteId},
     });
   }
 
@@ -130,11 +131,11 @@ export class JobApplicationWorkflowNoteController {
     },
   })
   async updateJobApplicationWorkflowNote(
-    @Param('noteId') noteId: string,
+    @Param('noteId') noteId: number,
     @Body() body: Prisma.JobApplicationWorkflowNoteUpdateInput
   ): Promise<JobApplicationWorkflowNote> {
     return await this.jobApplicationWorkflowNoteService.update({
-      where: {id: parseInt(noteId)},
+      where: {id: noteId},
       data: body,
     });
   }
@@ -151,10 +152,10 @@ export class JobApplicationWorkflowNoteController {
     example: 1,
   })
   async deleteJobApplicationWorkflowNote(
-    @Param('noteId') noteId: string
+    @Param('noteId') noteId: number
   ): Promise<JobApplicationWorkflowNote> {
     return await this.jobApplicationWorkflowNoteService.delete({
-      where: {id: parseInt(noteId)},
+      where: {id: noteId},
     });
   }
 

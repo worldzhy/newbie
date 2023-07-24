@@ -17,29 +17,29 @@ import {
   ApiBody,
   ApiQuery,
 } from '@nestjs/swagger';
-import {JobApplicationWorkflowTaskService} from './task.service';
-
 import {
   JobApplicationWorkflowTask,
   JobApplicationWorkflowTaskState,
   PermissionAction,
   Prisma,
 } from '@prisma/client';
-import {RequirePermission} from '../../../../account/authorization/authorization.decorator';
-import {UserService} from '../../../../account/user/user.service';
+import {RequirePermission} from '../../../../../microservices/account/authorization/authorization.decorator';
 import {AccessTokenService} from '../../../../../toolkit/token/token.service';
 import {JobApplicationWorkflowService} from '../workflow.service';
+import {JobApplicationWorkflowTaskService} from './task.service';
 import {generatePaginationParams} from '../../../../../toolkit/pagination/pagination';
+import {UserService} from '../../../../../microservices/account/user/user.service';
 
-@ApiTags('[Application] Recruitment / Job Application / Workflow Task')
+@ApiTags('Recruitment / Job Application / Workflow Task')
 @ApiBearerAuth()
 @Controller('recruitment-workflow-tasks')
 export class JobApplicationWorkflowTaskController {
-  private userService = new UserService();
-  private accessTokenService = new AccessTokenService();
-  private jobApplicationWorkflowService = new JobApplicationWorkflowService();
-  private jobApplicationWorkflowTaskService =
-    new JobApplicationWorkflowTaskService();
+  constructor(
+    private readonly userService: UserService,
+    private readonly accessTokenService: AccessTokenService,
+    private readonly jobApplicationWorkflowService: JobApplicationWorkflowService,
+    private readonly jobApplicationWorkflowTaskService: JobApplicationWorkflowTaskService
+  ) {}
 
   @Post('')
   @RequirePermission(
@@ -103,12 +103,14 @@ export class JobApplicationWorkflowTaskController {
   @ApiQuery({name: 'assignedToMe', type: 'string'})
   async getJobApplicationWorkflowTasks(
     @Request() request: Request,
-    @Query() query: {page?: string; pageSize?: string; assignedToMe?: string}
+    @Query('assignedToMe') assignedToMe?: string,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number
   ): Promise<JobApplicationWorkflowTask[]> {
     // [step 1] Construct where argument.
     let where: Prisma.JobApplicationWorkflowTaskWhereInput | undefined =
       undefined;
-    if (query.assignedToMe && query.assignedToMe.trim()) {
+    if (assignedToMe && assignedToMe.trim()) {
       const {userId} = this.accessTokenService.decodeToken(
         this.accessTokenService.getTokenFromHttpRequest(request)
       ) as {userId: string};
@@ -117,8 +119,8 @@ export class JobApplicationWorkflowTaskController {
 
     // [step 2] Construct take and skip arguments.
     const {take, skip} = generatePaginationParams({
-      page: query.page,
-      pageSize: query.pageSize,
+      page: page,
+      pageSize: pageSize,
     });
 
     return await this.jobApplicationWorkflowTaskService.findMany({
@@ -140,10 +142,10 @@ export class JobApplicationWorkflowTaskController {
     example: 1,
   })
   async getJobApplicationWorkflowTask(
-    @Param('taskId') taskId: string
+    @Param('taskId') taskId: number
   ): Promise<JobApplicationWorkflowTask | null> {
     return await this.jobApplicationWorkflowTaskService.findUnique({
-      where: {id: parseInt(taskId)},
+      where: {id: taskId},
     });
   }
 
@@ -170,11 +172,11 @@ export class JobApplicationWorkflowTaskController {
     },
   })
   async updateJobApplicationWorkflowTask(
-    @Param('taskId') taskId: string,
+    @Param('taskId') taskId: number,
     @Body() body: Prisma.JobApplicationWorkflowTaskUpdateInput
   ): Promise<JobApplicationWorkflowTask> {
     return await this.jobApplicationWorkflowTaskService.update({
-      where: {id: parseInt(taskId)},
+      where: {id: taskId},
       data: body,
     });
   }
@@ -191,10 +193,10 @@ export class JobApplicationWorkflowTaskController {
     example: 1,
   })
   async deleteJobApplicationWorkflowTask(
-    @Param('taskId') taskId: string
+    @Param('taskId') taskId: number
   ): Promise<JobApplicationWorkflowTask> {
     return await this.jobApplicationWorkflowTaskService.delete({
-      where: {id: parseInt(taskId)},
+      where: {id: taskId},
     });
   }
 
