@@ -11,7 +11,7 @@ import {IS_LOGGING_IN_PASSWORD_KEY} from './password/password.decorator';
 import {IS_LOGGING_IN_PROFILE_KEY} from './profile/profile.decorator';
 import {IS_LOGGING_IN_UUID_KEY} from './uuid/uuid.decorator';
 import {IS_LOGGING_IN_VERIFICATION_CODE_KEY} from './verification-code/verification-code.decorator';
-import {getConfig} from 'src/config';
+import {getConfig} from '../../../../src/config';
 import {IS_ACCESSING_REFRESH_ENDPOINT} from './refresh/refresh.decorator';
 import {RefreshAuthGuard} from './refresh/refresh.guard';
 
