@@ -1,16 +1,12 @@
-import {ConfigService} from '@nestjs/config';
-import {PermissionAction, Prisma, TrustedEntityType} from '@prisma/client';
-import {CustomLoggerService} from '../../src/toolkit/logger/logger.service';
-import {PrismaService} from '../../src/toolkit/prisma/prisma.service';
-import {SqsService} from '../../src/toolkit/aws/aws.sqs.service';
+import {
+  PermissionAction,
+  Prisma,
+  PrismaClient,
+  TrustedEntityType,
+} from '@prisma/client';
 
 export async function seedForAccount() {
-  const prisma = new PrismaService(
-    new CustomLoggerService(
-      new ConfigService(),
-      new SqsService(new ConfigService())
-    )
-  );
+  const prisma = new PrismaClient();
 
   // Seed account data.
   console.log('* Creating organization, roles, admin user and permissions...');
