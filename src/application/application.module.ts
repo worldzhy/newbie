@@ -1,8 +1,6 @@
 import {APP_FILTER, APP_GUARD} from '@nestjs/core';
 import {Module, MiddlewareConsumer} from '@nestjs/common';
 import {ConfigModule} from '@nestjs/config';
-import {JwtModule} from '@nestjs/jwt';
-import {ScheduleModule} from '@nestjs/schedule';
 import {AuthenticationGuard} from '../microservices/account/authentication/authentication.guard';
 import {AuthorizationGuard} from '../microservices/account/authorization/authorization.guard';
 import {AllExceptionsFilter} from '../_filter/_all-exceptions.filter';
@@ -57,11 +55,6 @@ import {NotificationController} from './samples/notification.controller';
       ],
       isGlobal: true,
     }),
-    JwtModule.register({
-      secret: process.env.JWT_SECRET,
-      signOptions: {expiresIn: '1h'},
-    }),
-    ScheduleModule.forRoot(),
 
     // Toolkit (Global modules)
     ToolkitModule,

@@ -13,12 +13,14 @@ export class PinpointService {
 
   constructor(private readonly configService: ConfigService) {
     this.client = new PinpointClient({
-      region: this.configService.get<string>('toolkit.aws.pinpoint.region'),
+      region: this.configService.getOrThrow<string>(
+        'toolkit.aws.pinpoint.region'
+      ),
       credentials: {
-        accessKeyId: this.configService.get<string>(
+        accessKeyId: this.configService.getOrThrow<string>(
           'toolkit.aws.pinpoint.accessKeyId'
         )!,
-        secretAccessKey: this.configService.get<string>(
+        secretAccessKey: this.configService.getOrThrow<string>(
           'toolkit.aws.pinpoint.secretAccessKey'
         )!,
       },

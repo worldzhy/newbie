@@ -14,7 +14,7 @@ function checkEnvironment(configService: ConfigService) {
   const requiredEnvVars = ['ENVIRONMENT', 'PORT'];
 
   requiredEnvVars.forEach(envVar => {
-    if (!configService.get<string>(envVar)) {
+    if (!configService.getOrThrow<string>(envVar)) {
       throw Error(`Undefined environment variable: ${envVar}`);
     }
   });
@@ -38,7 +38,10 @@ async function bootstrap() {
   checkEnvironment(configService);
 
   // API document is only available in development environment.
-  if (configService.get<string>('application.environment') === 'development') {
+  if (
+    configService.getOrThrow<string>('application.environment') ===
+    'development'
+  ) {
     const config = new DocumentBuilder()
       .setTitle("Here's the Newbie")
       .setDescription("It's good to see you guys 🥤")
@@ -72,7 +75,7 @@ async function bootstrap() {
   );
 
   // Listen port
-  const port = configService.get<number>('project.port') || 3000;
+  const port = configService.getOrThrow<number>('application.port');
   await app.listen(port, '0.0.0.0');
   console.log(`Application is running on: ${await app.getUrl()}`);
 }

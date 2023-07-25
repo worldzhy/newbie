@@ -4,6 +4,7 @@ export default registerAs('application', () => ({
   environment: process.env.ENVIRONMENT,
   nodeFramework: process.env.NODE_FRAMEWORK || 'express', // support 'express' and 'fastify'.
   port: parseInt(process.env.PORT!, 10),
+  allowedOrigins: (process.env.ALLOWED_ORIGINS || '').split(','),
   database: {
     url: process.env.DATABASE_URL,
   },

@@ -21,7 +21,7 @@ export class CustomLoggerService extends ConsoleLogger {
     super();
 
     this.environment =
-      this.configService.get<string>('application.environment') ||
+      this.configService.getOrThrow<string>('application.environment') ||
       'development';
   }
 
@@ -35,7 +35,7 @@ export class CustomLoggerService extends ConsoleLogger {
       super.log(message, context);
     } else {
       this.sqsService.sendMessage({
-        queueUrl: this.configService.get<string>(
+        queueUrl: this.configService.getOrThrow<string>(
           'toolkit.logger.awsSqsQueueUrl'
         )!,
         body: {
@@ -51,7 +51,7 @@ export class CustomLoggerService extends ConsoleLogger {
       super.warn(message, context);
     } else {
       this.sqsService.sendMessage({
-        queueUrl: this.configService.get<string>(
+        queueUrl: this.configService.getOrThrow<string>(
           'toolkit.logger.awsSqsQueueUrl'
         )!,
         body: {
@@ -68,7 +68,7 @@ export class CustomLoggerService extends ConsoleLogger {
       super.error(message, context);
     } else {
       this.sqsService.sendMessage({
-        queueUrl: this.configService.get<string>(
+        queueUrl: this.configService.getOrThrow<string>(
           'toolkit.logger.awsSqsQueueUrl'
         )!,
         body: {

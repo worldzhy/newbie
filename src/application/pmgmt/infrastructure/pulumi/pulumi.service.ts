@@ -83,7 +83,7 @@ export class PulumiStackService {
     // [step 2] Configure pulumi stack.
     await pulumiStack.workspace.installPlugin(
       'aws',
-      this.configService.get<string>('application.pulumi.awsVersion')!
+      this.configService.getOrThrow<string>('application.pulumi.awsVersion')
     );
     if (environment.awsProfile && environment.awsRegion) {
       await pulumiStack.setAllConfig({
@@ -146,7 +146,9 @@ export class PulumiStackService {
         'Content-Type': 'application/json',
         Authorization:
           'token ' +
-          this.configService.get<string>('application.pulumi.accessToken'),
+          this.configService.getOrThrow<string>(
+            'application.pulumi.accessToken'
+          ),
       },
       params: {
         force: true,
@@ -165,7 +167,9 @@ export class PulumiStackService {
         'Content-Type': 'application/json',
         Authorization:
           'token ' +
-          this.configService.get<string>('application.pulumi.accessToken'),
+          this.configService.getOrThrow<string>(
+            'application.pulumi.accessToken'
+          ),
       },
     });
   }

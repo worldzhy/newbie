@@ -12,13 +12,15 @@ export class SqsService {
   private client: SQSClient;
 
   constructor(private readonly configService: ConfigService) {
-    const accessKeyId = this.configService.get<string>(
+    const accessKeyId = this.configService.getOrThrow<string>(
       'toolkit.aws.sqs.accessKeyId'
     );
-    const secretAccessKey = this.configService.get<string>(
+    const secretAccessKey = this.configService.getOrThrow<string>(
       'toolkit.aws.sqs.secretAccessKey'
     );
-    const region = this.configService.get<string>('toolkit.aws.sqs.region');
+    const region = this.configService.getOrThrow<string>(
+      'toolkit.aws.sqs.region'
+    );
 
     if (accessKeyId && secretAccessKey && region) {
       this.client = new SQSClient({

@@ -20,12 +20,12 @@ export class S3Service {
 
   constructor(private readonly configService: ConfigService) {
     this.client = new S3Client({
-      region: this.configService.get<string>('toolkit.aws.s3.region'),
+      region: this.configService.getOrThrow<string>('toolkit.aws.s3.region'),
       credentials: {
-        accessKeyId: this.configService.get<string>(
+        accessKeyId: this.configService.getOrThrow<string>(
           'toolkit.aws.s3.accessKeyId'
         )!,
-        secretAccessKey: this.configService.get<string>(
+        secretAccessKey: this.configService.getOrThrow<string>(
           'toolkit.aws.s3.secretAccessKey'
         )!,
       },

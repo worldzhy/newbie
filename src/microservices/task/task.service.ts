@@ -13,7 +13,7 @@ export class TaskService {
     private readonly prisma: PrismaService,
     private readonly sqsService: SqsService
   ) {
-    this.awsSqsQueueUrl = this.configService.get<string>(
+    this.awsSqsQueueUrl = this.configService.getOrThrow<string>(
       'microservice.task.awsSqsQueueUrl'
     )!;
   }

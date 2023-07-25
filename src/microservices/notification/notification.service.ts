@@ -18,16 +18,16 @@ export class NotificationService {
     private readonly prisma: PrismaService,
     private readonly pinpointService: PinpointService
   ) {
-    this.emailPinpointApplicationId = this.configService.get<string>(
+    this.emailPinpointApplicationId = this.configService.getOrThrow<string>(
       'microservice.notification.email.awsPinpointApplicationId'
     )!;
-    this.emailPinpointFromAddress = this.configService.get<string>(
+    this.emailPinpointFromAddress = this.configService.getOrThrow<string>(
       'microservice.notification.email.awsPinpointFromAddress'
     )!;
-    this.smsPinpointApplicationId = this.configService.get<string>(
+    this.smsPinpointApplicationId = this.configService.getOrThrow<string>(
       'microservice.notification.sms.awsPinpointApplicationId'
     )!;
-    this.smsPinpointSenderId = this.configService.get<string>(
+    this.smsPinpointSenderId = this.configService.getOrThrow<string>(
       'microservice.notification.sms.awsPinpointSenderId'
     )!;
   }

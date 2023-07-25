@@ -1,5 +1,6 @@
 import {Injectable, ExecutionContext} from '@nestjs/common';
 import {Reflector} from '@nestjs/core';
+import {ConfigService} from '@nestjs/config';
 import {AuthGuard} from '@nestjs/passport';
 import {JwtAuthGuard} from './jwt/jwt.guard';
 import {AuthPasswordGuard} from './password/password.guard';
@@ -11,20 +12,27 @@ import {IS_LOGGING_IN_PASSWORD_KEY} from './password/password.decorator';
 import {IS_LOGGING_IN_PROFILE_KEY} from './profile/profile.decorator';
 import {IS_LOGGING_IN_UUID_KEY} from './uuid/uuid.decorator';
 import {IS_LOGGING_IN_VERIFICATION_CODE_KEY} from './verification-code/verification-code.decorator';
-import {getConfig} from '../../../../src/config';
 import {IS_ACCESSING_REFRESH_ENDPOINT} from './refresh/refresh.decorator';
 import {RefreshAuthGuard} from './refresh/refresh.guard';
 
 @Injectable()
 export class AuthenticationGuard extends AuthGuard('global-guard') {
-  constructor(private reflector: Reflector) {
+  private allowedOrigins: string[];
+
+  constructor(
+    private readonly configService: ConfigService,
+    private reflector: Reflector
+  ) {
     super();
+    this.allowedOrigins = this.configService.getOrThrow<string[]>(
+      'application.allowedOrigins'
+    );
   }
 
   canActivate(context: ExecutionContext) {
     // Allow only requests from allowed origins
     const origin = context.switchToHttp().getRequest().headers.origin;
-    if (origin && !getConfig().allowedOrigins.includes(origin)) {
+    if (origin && !this.allowedOrigins.includes(origin)) {
       return false;
     }
 

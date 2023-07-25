@@ -66,9 +66,9 @@ export class FileManagementController {
 
     // [step 2] Generate file name and put file to AWS S3.
     const filename = Date.now() + generateRandomLetters(4);
-    const bucket = this.configService.get<string>(
+    const bucket = this.configService.getOrThrow<string>(
       'microservice.fmgmt.awsS3Bucket'
-    )!;
+    );
     const s3Key = folder.name + '/' + filename;
     const output = await this.s3Service.putObject({
       Bucket: bucket,
@@ -149,7 +149,7 @@ export class FileManagementController {
       ...file,
       url:
         'https://' +
-        this.configService.get<string>(
+        this.configService.getOrThrow<string>(
           'microservice.fmgmt.awsCloudfrontDomain'
         ) +
         '/' +
