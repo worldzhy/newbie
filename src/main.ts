@@ -3,6 +3,7 @@ import {NestFactory} from '@nestjs/core';
 import {ConfigService} from '@nestjs/config';
 import {FastifyAdapter, NestFastifyApplication} from '@nestjs/platform-fastify';
 import * as cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 import {
   DocumentBuilder,
   SwaggerModule,
@@ -31,6 +32,7 @@ async function bootstrap() {
   } else {
     app = await NestFactory.create(ApplicationModule);
     app.use(cookieParser());
+    app.use(helmet());
   }
 
   // Check environment variables.
