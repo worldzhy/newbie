@@ -4,6 +4,7 @@ import {
   PrismaClient,
   TrustedEntityType,
 } from '@prisma/client';
+import {generateHash} from '../../src/toolkit/utilities/common.util';
 
 export async function seedForAccount() {
   const prisma = new PrismaClient();
@@ -88,7 +89,7 @@ export async function seedForAccount() {
       await prisma.user.create({
         data: {
           username: 'admin',
-          password: 'Abc1234!',
+          password: await generateHash('Abc1234!'),
           email: 'admin@inceptionpad.com',
           roles: {connect: [{id: role.id}]},
         },
@@ -97,7 +98,7 @@ export async function seedForAccount() {
         data: {
           username: 'admin02',
           email: 'admin02@hd.com',
-          password: 'HDpwd@2022',
+          password: await generateHash('HDpwd@2022'),
           roles: {connect: [{id: role.id}]},
         },
       });
@@ -107,7 +108,7 @@ export async function seedForAccount() {
         data: {
           username: 'recruiter02',
           email: 'recruiter02@hd.com',
-          password: 'HDpwd@2022',
+          password: await generateHash('HDpwd@2022'),
           roles: {connect: [{id: role.id}]},
         },
       });
@@ -117,7 +118,7 @@ export async function seedForAccount() {
         data: {
           username: 'dispatcher02',
           email: 'dispatcher02@hd.com',
-          password: 'HDpwd@2022',
+          password: await generateHash('HDpwd@2022'),
           roles: {connect: [{id: role.id}]},
         },
       });
@@ -127,7 +128,7 @@ export async function seedForAccount() {
         data: {
           username: 'provider02',
           email: 'provider02@hd.com',
-          password: 'HDpwd@2022',
+          password: await generateHash('HDpwd@2022'),
           roles: {connect: [{id: role.id}]},
         },
       });
@@ -137,7 +138,7 @@ export async function seedForAccount() {
         data: {
           username: 's_reviewer02',
           email: 's_reviewer02@hd.com',
-          password: 'HDpwd@2022',
+          password: await generateHash('HDpwd@2022'),
           roles: {connect: [{id: role.id}]},
         },
       });
