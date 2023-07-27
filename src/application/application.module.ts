@@ -44,6 +44,8 @@ import {WorkflowRouteController} from './samples/workflow/workflow-route.control
 import {AwsController} from './samples/aws.controller';
 import {LocationController} from './samples/location.controller';
 import {NotificationController} from './samples/notification.controller';
+import {ThrottlerGuard, ThrottlerModule} from '@nestjs/throttler';
+import {ThrottlerExceptionFilter} from 'src/_filter/_throttler-exception.filter';
 
 @Module({
   imports: [
@@ -54,6 +56,12 @@ import {NotificationController} from './samples/notification.controller';
         ToolkitConfiguration,
       ],
       isGlobal: true,
+    }),
+
+    // Rate Limit (Maximum of 60 requests per 60 seconds)
+    ThrottlerModule.forRoot({
+      limit: 60,
+      ttl: 60,
     }),
 
     // Toolkit (Global modules)
@@ -77,13 +85,15 @@ import {NotificationController} from './samples/notification.controller';
   ],
   providers: [
     // Guards
-    {provide: APP_GUARD, useClass: AuthenticationGuard}, // 1st priority guard.
-    {provide: APP_GUARD, useClass: AuthorizationGuard}, // 2nd priority guard.
+    {provide: APP_GUARD, useClass: ThrottlerGuard}, // 1st priority guard.
+    {provide: APP_GUARD, useClass: AuthenticationGuard}, // 2nd priority guard.
+    {provide: APP_GUARD, useClass: AuthorizationGuard}, // 3rd priority guard.
 
     // Filters
-    {provide: APP_FILTER, useClass: AllExceptionsFilter}, // 3rd priority for all exceptions.
-    {provide: APP_FILTER, useClass: PrismaExceptionFilter}, // 2nd priority for exceptions thrown by services.
-    {provide: APP_FILTER, useClass: HttpExceptionFilter}, // 1st priority for exceptions thrown by controllers.
+    {provide: APP_FILTER, useClass: AllExceptionsFilter}, // 4th priority for all exceptions.
+    {provide: APP_FILTER, useClass: PrismaExceptionFilter}, // 3rd priority for exceptions thrown by services.
+    {provide: APP_FILTER, useClass: HttpExceptionFilter}, // 2nd priority for exceptions thrown by controllers.
+    {provide: APP_FILTER, useClass: ThrottlerExceptionFilter}, // 1st priority for exceptions thrown by throttler (rate limit).
   ],
   controllers: [
     ApplicationController,
