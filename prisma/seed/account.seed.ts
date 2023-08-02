@@ -9,41 +9,28 @@ import {generateHash} from '../../src/toolkit/utilities/common.util';
 export async function seedForAccount() {
   const prisma = new PrismaClient();
 
-  // Seed account data.
-  console.log('* Creating organization, roles, admin user and permissions...');
+  console.log('\n* Account Service');
 
-  const permissionResources = Object.values(Prisma.ModelName);
-  const permissionActions = Object.values(PermissionAction);
-  const RoleName = {
-    Admin: 'Admin',
-    Recruiter: 'Recruiter',
-    Dispatcher: 'Referral Coordinator',
-    Provider: 'Provider and Reviewer',
-    Reviewer: 'Secondary Reviewer',
-  };
-
+  console.log('- Creating organization...');
   const organization = await prisma.organization.create({
     data: {name: 'InceptionPad'},
   });
+
+  console.log('- Creating roles, permissions and users...');
+  const RoleName = {
+    Admin: 'Admin',
+    Client: 'Client',
+  };
+  const permissionResources = Object.values(Prisma.ModelName);
+  const permissionActions = Object.values(PermissionAction);
+
   const roles = [
     {
       name: RoleName.Admin,
       organizationId: organization.id,
     },
     {
-      name: RoleName.Recruiter,
-      organizationId: organization.id,
-    },
-    {
-      name: RoleName.Dispatcher,
-      organizationId: organization.id,
-    },
-    {
-      name: RoleName.Provider,
-      organizationId: organization.id,
-    },
-    {
-      name: RoleName.Reviewer,
+      name: RoleName.Client,
       organizationId: organization.id,
     },
   ];
@@ -94,51 +81,13 @@ export async function seedForAccount() {
           roles: {connect: [{id: role.id}]},
         },
       });
-      await prisma.user.create({
-        data: {
-          username: 'admin02',
-          email: 'admin02@hd.com',
-          password: await generateHash('HDpwd@2022'),
-          roles: {connect: [{id: role.id}]},
-        },
-      });
-    } else if (role.name === RoleName.Recruiter) {
+    } else if (role.name === RoleName.Client) {
       // Create user with this role.
       await prisma.user.create({
         data: {
-          username: 'recruiter02',
-          email: 'recruiter02@hd.com',
-          password: await generateHash('HDpwd@2022'),
-          roles: {connect: [{id: role.id}]},
-        },
-      });
-    } else if (role.name === RoleName.Dispatcher) {
-      // Create user with this role.
-      await prisma.user.create({
-        data: {
-          username: 'dispatcher02',
-          email: 'dispatcher02@hd.com',
-          password: await generateHash('HDpwd@2022'),
-          roles: {connect: [{id: role.id}]},
-        },
-      });
-    } else if (role.name === RoleName.Provider) {
-      // Create user with this role.
-      await prisma.user.create({
-        data: {
-          username: 'provider02',
-          email: 'provider02@hd.com',
-          password: await generateHash('HDpwd@2022'),
-          roles: {connect: [{id: role.id}]},
-        },
-      });
-    } else if (role.name === RoleName.Reviewer) {
-      // Create user with this role.
-      await prisma.user.create({
-        data: {
-          username: 's_reviewer02',
-          email: 's_reviewer02@hd.com',
-          password: await generateHash('HDpwd@2022'),
+          username: 'client',
+          email: 'client@inceptionpad.com',
+          password: await generateHash('Abc1234!'),
           roles: {connect: [{id: role.id}]},
         },
       });

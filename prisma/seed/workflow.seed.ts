@@ -3,13 +3,14 @@ import {PrismaClient} from '@prisma/client';
 export async function seedForWorkflow() {
   const prisma = new PrismaClient();
 
-  // Seed workflow data.
-  console.log('* Creating workflow routes...');
+  console.log('\n* Workflow Service');
 
+  console.log('- Creating workflow...');
   const workflow = await prisma.workflow.create({
     data: {name: 'A Good Workflow'},
   });
 
+  console.log('- Creating workflow views...');
   const views = [
     {workflowId: workflow.id, name: 'START'},
     {workflowId: workflow.id, name: 'DETAILS'},
@@ -30,6 +31,7 @@ export async function seedForWorkflow() {
     await prisma.workflowView.createMany({data: views[i]});
   }
 
+  console.log('- Creating workflow states...');
   const states = [
     {workflowId: workflow.id, name: 'CONTINUE'},
     {workflowId: workflow.id, name: 'SUBMIT'},
@@ -44,6 +46,7 @@ export async function seedForWorkflow() {
     await prisma.workflowState.create({data: states[i]});
   }
 
+  console.log('- Creating workflow routes...');
   const routes = [
     {
       workflowId: workflow.id,

@@ -1,12 +1,14 @@
 import {seedForEngined} from './seed/engined.seed';
 import {seedForPmgmt} from './seed/pmgmt.seed';
 import {seedForAccount} from './seed/account.seed';
+import {seedForReservation} from './seed/reservation.seed';
 import {seedForWorkflow} from './seed/workflow.seed';
 
 async function main() {
   console.log('Start seeding ...');
 
   await seedForAccount();
+  await seedForReservation();
   await seedForWorkflow();
   await seedForEngined();
   await seedForPmgmt();
