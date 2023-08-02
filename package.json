@@ -47,6 +47,7 @@
     "@nestjs/platform-fastify": "^9.4.0",
     "@nestjs/schedule": "^3.0.1",
     "@nestjs/swagger": "^6.3.0",
+    "@nestjs/throttler": "^4.2.1",
     "@prisma/client": "^5.0.0",
     "@pulumi/aws": "5.37.0",
     "@pulumi/pulumi": "3.64.0",

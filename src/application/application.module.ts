@@ -14,7 +14,7 @@ import {FileManagementModule} from '../microservices/fmgmt/fmgmt.module';
 import {LocationModule} from '../microservices/location/location.module';
 import {NotificationModule} from '../microservices/notification/notification.module';
 import {OrderManagementModule} from '../microservices/omgmt/omgmt.module';
-import {SchedulingModule} from '../microservices/scheduling/scheduling.module';
+import {TaskSchedulingModule} from '../microservices/task-scheduling/task-scheduling.module';
 import {TaskModule} from 'src/microservices/task/task.module';
 import {VerificationCodeModule} from '../microservices/verification-code/verification-code.module';
 import {WorkflowModule} from '../microservices/workflow/workflow.module';
@@ -73,7 +73,7 @@ import {ThrottlerExceptionFilter} from 'src/_filter/_throttler-exception.filter'
     LocationModule,
     NotificationModule,
     OrderManagementModule,
-    SchedulingModule,
+    TaskSchedulingModule,
     TaskModule,
     VerificationCodeModule,
     WorkflowModule,

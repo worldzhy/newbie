@@ -10,4 +10,4 @@ import {TimeoutService} from './timeout.service';
   providers: [CronJobService, IntervalService, TimeoutService],
   exports: [CronJobService, IntervalService, TimeoutService],
 })
-export class SchedulingModule {}
+export class TaskSchedulingModule {}
