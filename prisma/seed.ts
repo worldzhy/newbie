@@ -5,7 +5,7 @@ import {seedForReservation} from './seed/reservation.seed';
 import {seedForWorkflow} from './seed/workflow.seed';
 
 async function main() {
-  console.log('Start seeding ...');
+  console.log('**Seeding Start');
 
   await seedForAccount();
   await seedForReservation();
@@ -13,7 +13,7 @@ async function main() {
   await seedForEngined();
   await seedForPmgmt();
 
-  console.log('Seeding finished.');
+  console.log('\n**Seeding End');
 }
 
 main()
