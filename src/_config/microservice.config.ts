@@ -1,6 +1,20 @@
 import {registerAs} from '@nestjs/config';
 
 export default registerAs('microservice', () => ({
+  account: {
+    security: {
+      ipLoginAttempt: {
+        points: process.env.ACCOUNT_SECURITY_IP_LOGIN_ATTEMPT_POINTS,
+        durationSeconds:
+          process.env.ACCOUNT_SECURITY_IP_LOGIN_ATTEMPT_DURATION_SECONDS,
+      },
+      userLoginAttempt: {
+        points: process.env.ACCOUNT_SECURITY_USER_LOGIN_ATTEMPT_POINTS,
+        durationSeconds:
+          process.env.ACCOUNT_SECURITY_USER_LOGIN_ATTEMPT_DURATION_SECONDS,
+      },
+    },
+  },
   fmgmt: {
     awsS3Bucket: process.env.FILE_MANAGEMENT_AWS_S3_BUCKET,
     awsCloudfrontDomain: process.env.FILE_MANAGEMENT_AWS_CLOUDFRONT_DOMAIN,
@@ -26,15 +40,5 @@ export default registerAs('microservice', () => ({
   verificationCode: {
     timeoutMinutes: process.env.VERIFICATION_CODE_TIMEOUT_MINUTES,
     resendMinutes: process.env.VERIFICATION_CODE_RESEND_MINUTES,
-  },
-  security: {
-    ipLoginAttempt: {
-      points: process.env.SECURITY_IP_LOGIN_ATTEMPT_POINTS,
-      durationSeconds: process.env.SECURITY_IP_LOGIN_ATTEMPT_DURATION_SECONDS,
-    },
-    userLoginAttempt: {
-      points: process.env.SECURITY_USER_LOGIN_ATTEMPT_POINTS,
-      durationSeconds: process.env.SECURITY_USER_LOGIN_ATTEMPT_DURATION_SECONDS,
-    },
   },
 }));

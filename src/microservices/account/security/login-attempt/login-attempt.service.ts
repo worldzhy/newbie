@@ -28,10 +28,10 @@ export class IpLoginAttemptService extends LoginAttemptService {
   constructor(private readonly configService: ConfigService) {
     super();
     this.points = this.configService.getOrThrow<number>(
-      'microservice.security.ipLoginAttempt.points'
+      'microservice.account.security.ipLoginAttempt.points'
     );
     this.duration = this.configService.getOrThrow<number>(
-      'microservice.security.ipLoginAttempt.durationSeconds'
+      'microservice.account.security.ipLoginAttempt.durationSeconds'
     );
     this.limiter = new RateLimiterMemory({
       points: this.points,
@@ -48,10 +48,10 @@ export class UserLoginAttemptService extends LoginAttemptService {
   constructor(private readonly configService: ConfigService) {
     super();
     this.points = this.configService.getOrThrow<number>(
-      'microservice.security.userLoginAttempt.points'
+      'microservice.account.security.userLoginAttempt.points'
     );
     this.duration = this.configService.getOrThrow<number>(
-      'microservice.security.userLoginAttempt.durationSeconds'
+      'microservice.account.security.userLoginAttempt.durationSeconds'
     );
     this.limiter = new RateLimiterMemory({
       points: this.points,
