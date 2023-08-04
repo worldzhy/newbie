@@ -1,4 +1,4 @@
-import {Controller, Post, Body} from '@nestjs/common';
+import {Controller, Post, Body, Patch} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {EventCalendarService} from '../../../microservices/event-calendar/event-calendar.service';
 import {AvailabilityContainerStatus} from '@prisma/client';
@@ -9,12 +9,12 @@ import {AvailabilityContainerStatus} from '@prisma/client';
 export class EventCalendarController {
   constructor(private readonly eventCalendarService: EventCalendarService) {}
 
-  @Post('create-event-calendar')
+  @Post('')
   @ApiBody({
     description: "The 'name' is required in request body.",
     examples: {
       a: {
-        summary: '1. Create',
+        summary: '1. Calendar for single event',
         value: {
           event: {
             name: 'An Event',
@@ -35,12 +35,27 @@ export class EventCalendarController {
           ],
         },
       },
+      b: {
+        summary: '2. Calendar for multiple events',
+        value: {
+          availabilityContainer: {
+            status: AvailabilityContainerStatus.ACTIVE,
+            dateOfOpening: '2020-12-12',
+            dateOfClosure: '2021-12-12',
+            timezone: 'Europe/Athens',
+          },
+          availabilities: [
+            {cronExpression: '0 11 2 8 *', eventId: 1},
+            {cronExpression: '0 12 3 9 *', eventId: 2},
+          ],
+        },
+      },
     },
   })
   async createEventCalendar(
     @Body()
     body: {
-      event: {
+      event?: {
         name: string;
         minutesOfDuration: number;
         minutesInAdvanceToReserve: number;
@@ -53,21 +68,50 @@ export class EventCalendarController {
         dateOfClosure: Date;
         timezone: string;
       };
-      availabilities: [{cronExpression: string}];
+      availabilities: [{cronExpression: string; eventId?: number}];
     }
   ) {
     return await this.eventCalendarService.createEventCalendar(body);
   }
 
-  @Post('set-availability-for-events')
+  @Patch('')
   @ApiBody({
     description: "The 'name' is required in request body.",
     examples: {
       a: {
-        summary: '1. Create',
+        summary: '1. Calendar for single event',
         value: {
-          defaultEventId: 1,
-          availabilityContainerId: 1,
+          event: {
+            id: 1,
+            name: 'An Event',
+            minutesOfDuration: 60,
+            minutesInAdvanceToReserve: 120,
+            minutesInAdvanceToCancel: 120,
+            numberOfSeats: 10,
+          },
+          availabilityContainer: {
+            id: 1,
+            status: AvailabilityContainerStatus.ACTIVE,
+            dateOfOpening: '2020-12-12',
+            dateOfClosure: '2021-12-12',
+            timezone: 'Europe/Athens',
+          },
+          availabilities: [
+            {cronExpression: '0 11 2 8 *'},
+            {cronExpression: '0 12 3 9 *'},
+          ],
+        },
+      },
+      b: {
+        summary: '2. Calendar for multiple events',
+        value: {
+          availabilityContainer: {
+            id: 1,
+            status: AvailabilityContainerStatus.ACTIVE,
+            dateOfOpening: '2020-12-12',
+            dateOfClosure: '2021-12-12',
+            timezone: 'Europe/Athens',
+          },
           availabilities: [
             {cronExpression: '0 11 2 8 *', eventId: 1},
             {cronExpression: '0 12 3 9 *', eventId: 2},
@@ -76,16 +120,28 @@ export class EventCalendarController {
       },
     },
   })
-  async setAvailabilityForEvents(
+  async updateEventCalendar(
     @Body()
     body: {
-      defaultEventId?: number;
-      availabilityContainerId: number;
+      event?: {
+        id: number;
+        name: string;
+        minutesOfDuration: number;
+        minutesInAdvanceToReserve: number;
+        minutesInAdanceToCancel: number;
+        numberOfSeats: number;
+      };
+      availabilityContainer: {
+        id: 1;
+        status: AvailabilityContainerStatus;
+        dateOfOpening: Date;
+        dateOfClosure: Date;
+        timezone: string;
+      };
       availabilities: [{cronExpression: string; eventId?: number}];
     }
   ) {
-    return await this.eventCalendarService.setAvailabilityForEvents(body);
+    return await this.eventCalendarService.updateEventCalendar(body);
   }
-
   /* End */
 }

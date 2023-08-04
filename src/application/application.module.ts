@@ -41,7 +41,6 @@ import {UserProfileController} from './account/user/user-profile.controller';
 import {PermissionController} from './account/permission.controller';
 import {RoleController} from './account/role.controller';
 import {EventController} from './samples/event-calendar/event.controller';
-import {AvailabilityContainerController} from './samples/event-calendar/availability-container.controller';
 import {EventCalendarController} from './samples/event-calendar/event-calendar.controller';
 import {WorkflowController} from './samples/workflow/workflow.controller';
 import {WorkflowStateController} from './samples/workflow/workflow-state.controller';
@@ -116,7 +115,6 @@ import {SecurityGuard} from 'src/microservices/account/security/security.guard';
     PermissionController,
     RoleController,
     EventController,
-    AvailabilityContainerController,
     EventCalendarController,
     WorkflowController,
     WorkflowStateController,
