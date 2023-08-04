@@ -13,6 +13,11 @@ import {UserProfileService} from './user/user-profile.service';
 import {UserAccessTokenService} from './user/user-access-token.service';
 import {UserRefreshTokenService} from './user/user-refresh-token.service';
 import {AccountService} from './account.service';
+import {
+  IpLoginAttemptService,
+  UserLoginAttemptService,
+} from './security/login-attempt/login-attempt.service';
+import {SecurityIpLoginAttemptGuard} from './security/login-attempt/login-attempt.guard';
 
 @Global()
 @Module({
@@ -31,6 +36,9 @@ import {AccountService} from './account.service';
     UserAccessTokenService,
     UserRefreshTokenService,
     AccountService,
+    SecurityIpLoginAttemptGuard,
+    IpLoginAttemptService,
+    UserLoginAttemptService,
   ],
   exports: [
     JwtStrategy,
@@ -47,6 +55,9 @@ import {AccountService} from './account.service';
     UserAccessTokenService,
     UserRefreshTokenService,
     AccountService,
+    SecurityIpLoginAttemptGuard,
+    IpLoginAttemptService,
+    UserLoginAttemptService,
   ],
 })
 export class AccountModule {}

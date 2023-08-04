@@ -1,16 +1,28 @@
-import {Injectable, UnauthorizedException} from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import {PassportStrategy} from '@nestjs/passport';
 import {Strategy} from 'passport-custom';
 import {Request} from 'express';
 import {UserService} from '../../user/user.service';
 import {verifyUuid} from '../../../../toolkit/validators/user.validator';
+import {
+  IpLoginAttemptService,
+  UserLoginAttemptService,
+} from '../../security/login-attempt/login-attempt.service';
 
 @Injectable()
 export class AuthUuidStrategy extends PassportStrategy(
   Strategy,
   'passport-custom.uuid'
 ) {
-  constructor(private readonly userService: UserService) {
+  constructor(
+    private readonly userService: UserService,
+    private readonly ipLoginAttemptService: IpLoginAttemptService,
+    private readonly userLoginAttemptService: UserLoginAttemptService
+  ) {
     super();
   }
 
@@ -18,6 +30,8 @@ export class AuthUuidStrategy extends PassportStrategy(
    * 'validate' function must be implemented.
    */
   async validate(req: Request): Promise<boolean> {
+    const ipAddress = req.socket.remoteAddress as string;
+
     // [step 1] Guard statement.
     const uuid = req.body.uuid;
     if (!verifyUuid(uuid)) {
@@ -28,10 +42,19 @@ export class AuthUuidStrategy extends PassportStrategy(
     const user = await this.userService.findUnique({
       where: {id: uuid},
     });
-    if (user) {
-      return true;
-    } else {
+    if (!user) {
+      await this.ipLoginAttemptService.increment(ipAddress);
       throw new UnauthorizedException('The uuid is incorrect.');
     }
+
+    // [step 3] Check if user is allowed to login.
+    const isUserAllowed = await this.userLoginAttemptService.isAllowed(user.id);
+    if (!isUserAllowed) {
+      throw new ForbiddenException('Forbidden resource');
+    }
+
+    // [step 4] OK.
+    await this.userLoginAttemptService.delete(user.id);
+    return true;
   }
 }

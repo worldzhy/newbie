@@ -51,6 +51,7 @@ import {WorkflowRouteController} from './samples/workflow/workflow-route.control
 import {AwsController} from './samples/aws.controller';
 import {LocationController} from './samples/location.controller';
 import {NotificationController} from './samples/notification.controller';
+import {SecurityGuard} from 'src/microservices/account/security/security.guard';
 
 @Module({
   imports: [
@@ -92,8 +93,9 @@ import {NotificationController} from './samples/notification.controller';
   providers: [
     // Guards
     {provide: APP_GUARD, useClass: ThrottlerGuard}, // 1st priority guard.
-    {provide: APP_GUARD, useClass: AuthenticationGuard}, // 2nd priority guard.
-    {provide: APP_GUARD, useClass: AuthorizationGuard}, // 3rd priority guard.
+    {provide: APP_GUARD, useClass: SecurityGuard}, // 2nd priority guard.
+    {provide: APP_GUARD, useClass: AuthenticationGuard}, // 3rd priority guard.
+    {provide: APP_GUARD, useClass: AuthorizationGuard}, // 4th priority guard.
 
     // Filters
     {provide: APP_FILTER, useClass: AllExceptionsFilter}, // 4th priority for all exceptions.

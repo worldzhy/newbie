@@ -27,4 +27,14 @@ export default registerAs('microservice', () => ({
     timeoutMinutes: process.env.VERIFICATION_CODE_TIMEOUT_MINUTES,
     resendMinutes: process.env.VERIFICATION_CODE_RESEND_MINUTES,
   },
+  security: {
+    ipLoginAttempt: {
+      points: process.env.SECURITY_IP_LOGIN_ATTEMPT_POINTS,
+      durationSeconds: process.env.SECURITY_IP_LOGIN_ATTEMPT_DURATION_SECONDS,
+    },
+    userLoginAttempt: {
+      points: process.env.SECURITY_USER_LOGIN_ATTEMPT_POINTS,
+      durationSeconds: process.env.SECURITY_USER_LOGIN_ATTEMPT_DURATION_SECONDS,
+    },
+  },
 }));

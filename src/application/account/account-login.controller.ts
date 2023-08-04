@@ -8,6 +8,7 @@ import {LoggingInByUuid} from '../../microservices/account/authentication/uuid/u
 import {LoggingInByVerificationCode} from '../../microservices/account/authentication/verification-code/verification-code.decorator';
 import {AccountService} from '../../microservices/account/account.service';
 import {UserProfileService} from '../../microservices/account/user/user-profile.service';
+import {LoggingIn} from 'src/microservices/account/security/login-attempt/login-attempt.decorator';
 
 @ApiTags('Account')
 @Controller('account')
@@ -27,6 +28,7 @@ export class AccountLoginController {
    * [3] phone
    */
 
+  @LoggingIn()
   @LoggingInByPassword()
   @Post('login-by-password')
   @ApiBearerAuth()
@@ -79,6 +81,7 @@ export class AccountLoginController {
     return accessToken;
   }
 
+  @LoggingIn()
   @LoggingInByProfile()
   @Post('login-by-profile')
   @ApiBearerAuth()
@@ -138,6 +141,7 @@ export class AccountLoginController {
     return accessToken;
   }
 
+  @LoggingIn()
   @LoggingInByUuid()
   @Post('login-by-uuid')
   @ApiBearerAuth()
@@ -178,6 +182,7 @@ export class AccountLoginController {
    * [1] email
    * [2] phone
    */
+  @LoggingIn()
   @LoggingInByVerificationCode()
   @Post('login-by-verification-code')
   @ApiBearerAuth()
