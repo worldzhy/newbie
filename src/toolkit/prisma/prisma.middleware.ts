@@ -104,59 +104,150 @@ export async function prismaMiddleware(
       default:
         return next(params);
     }
-  } else if (params.model === Prisma.ModelName.TcWorkflow) {
+  } else if (params.model === Prisma.ModelName.AvailabilityContainer) {
     switch (params.action) {
+      case 'create':
       case 'update':
-        if (params.args['data']['firstName']) {
-          params.args['data']['fullName'] =
-            params.args['data']['firstName'] +
-            ' ' +
-            (params.args['data']['middleName']
-              ? params.args['data']['middleName'] + ' '
-              : '') +
-            params.args['data']['lastName'];
+        const dateOfOpening = params.args['data']['dateOfOpening'];
+        const dateOfClosure = params.args['data']['dateOfClosure'];
+        if (dateOfOpening) {
+          params.args['data']['dateOfOpening'] = new Date(dateOfOpening);
+        }
+        if (dateOfClosure) {
+          params.args['data']['dateOfClosure'] = new Date(dateOfClosure);
         }
         return next(params);
-      default:
-        // Handle existed issue https://github.com/prisma/prisma/issues/17470
-        if (params.action.toString() === 'findUniqueOrThrow') {
-          const result = await next(params);
-          if (result) {
-            if (result.dateOfBirth) {
-              result.dateOfBirth = result.dateOfBirth
-                .toISOString()
-                .split('T')[0];
-            }
-            if (result.intendedDateOfTravel) {
-              result.intendedDateOfTravel = result.intendedDateOfTravel
-                .toISOString()
-                .split('T')[0];
-            }
-            if (result.dateOfExpiry) {
-              result.dateOfExpiry = result.dateOfExpiry
-                .toISOString()
-                .split('T')[0];
-            }
-            if (result.dateOfIssue) {
-              result.dateOfIssue = result.dateOfIssue
-                .toISOString()
-                .split('T')[0];
-            }
-            if (result.dateOfStatusCardIssue) {
-              result.dateOfStatusCardIssue = result.dateOfStatusCardIssue
-                .toISOString()
-                .split('T')[0];
-            }
-            if (result.dateOfRequest) {
-              result.dateOfRequest = result.dateOfRequest
-                .toISOString()
-                .split('T')[0];
-            }
-            return result;
+      case 'findUnique':
+      case 'findUniqueOrThrow':
+      case 'findFirst':
+      case 'findFirstOrThrow':
+        const resultOne = await next(params);
+        if (resultOne) {
+          if (resultOne.dateOfOpening) {
+            resultOne.dateOfOpening = new Date(resultOne.dateOfOpening)
+              .toISOString()
+              .split('T')[0];
           }
-          return null;
+          if (resultOne.dateOfClosure) {
+            resultOne.dateOfClosure = new Date(resultOne.dateOfClosure)
+              .toISOString()
+              .split('T')[0];
+          }
         }
+        return resultOne;
+      case 'findMany':
+        const resultMany = await next(params);
+        if (resultMany) {
+          for (let i = 0; i < resultMany.length; i++) {
+            const element = resultMany[i];
+            if (element.dateOfOpening) {
+              element.dateOfOpening = new Date(element.dateOfOpening)
+                .toISOString()
+                .split('T')[0];
+            }
+            if (element.dateOfClosure) {
+              element.dateOfClosure = new Date(element.dateOfClosure)
+                .toISOString()
+                .split('T')[0];
+            }
+          }
+        }
+        return resultMany;
+      default:
+        return next(params);
+    }
+  } else if (params.model === Prisma.ModelName.Availability) {
+    switch (params.action) {
+      case 'create':
+      case 'update':
+        const date = params.args['data']['date'];
+        const timeOfStarting = params.args['data']['timeOfStarting'];
+        const timeOfEnding = params.args['data']['timeOfEnding'];
+        if (date) {
+          params.args['data']['date'] = new Date(date);
+        }
+        if (timeOfStarting) {
+          params.args['data']['timeOfStarting'] = new Date(
+            date + 'T' + timeOfStarting
+          );
+        }
+        if (timeOfEnding) {
+          params.args['data']['timeOfEnding'] = new Date(
+            date + 'T' + timeOfEnding
+          );
+        }
+        return next(params);
+      case 'createMany':
+        for (let i = 0; i < params.args['data'].length; i++) {
+          const availability = params.args['data'][i];
 
+          const date = availability['date'];
+          const timeOfStarting = availability['timeOfStarting'];
+          const timeOfEnding = availability['timeOfEnding'];
+          if (date) {
+            params.args['data'][i]['date'] = new Date(date);
+          }
+          if (timeOfStarting) {
+            params.args['data'][i]['timeOfStarting'] = new Date(
+              date + 'T' + timeOfStarting
+            );
+          }
+          if (timeOfEnding) {
+            params.args['data'][i]['timeOfEnding'] = new Date(
+              date + 'T' + timeOfEnding
+            );
+          }
+        }
+        return next(params);
+      case 'findUnique':
+      case 'findUniqueOrThrow':
+      case 'findFirst':
+      case 'findFirstOrThrow':
+        const resultOne = await next(params);
+        if (resultOne) {
+          if (resultOne.date) {
+            resultOne.date = new Date(resultOne.date)
+              .toISOString()
+              .split('T')[0];
+          }
+          if (resultOne.timeOfStarting) {
+            resultOne.timeOfStarting = new Date(resultOne.timeOfStarting)
+              .toISOString()
+              .split('T')[1]
+              .replace('.000Z', '');
+          }
+          if (resultOne.timeOfEnding) {
+            resultOne.timeOfEnding = new Date(resultOne.timeOfEnding)
+              .toISOString()
+              .split('T')[1]
+              .replace('.000Z', '');
+          }
+        }
+        return resultOne;
+      case 'findMany':
+        const resultMany = await next(params);
+        if (resultMany) {
+          for (let i = 0; i < resultMany.length; i++) {
+            const element = resultMany[i];
+            if (element.date) {
+              element.date = new Date(element.date).toISOString().split('T')[0];
+            }
+            if (element.timeOfStarting) {
+              element.timeOfStarting = new Date(element.timeOfStarting)
+                .toISOString()
+                .split('T')[1]
+                .replace('.000Z', '');
+            }
+            if (element.timeOfEnding) {
+              element.timeOfEnding = new Date(element.timeOfEnding)
+                .toISOString()
+                .split('T')[1]
+                .replace('.000Z', '');
+            }
+          }
+        }
+        return resultMany;
+      default:
         return next(params);
     }
   }

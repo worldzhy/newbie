@@ -1,29 +1,33 @@
 import {APP_FILTER, APP_GUARD} from '@nestjs/core';
 import {Module, MiddlewareConsumer} from '@nestjs/common';
 import {ConfigModule} from '@nestjs/config';
-import {AuthenticationGuard} from '../microservices/account/authentication/authentication.guard';
-import {AuthorizationGuard} from '../microservices/account/authorization/authorization.guard';
+import {ThrottlerGuard, ThrottlerModule} from '@nestjs/throttler';
+import ApplicationConfiguration from '../_config/application.config';
+import MicroservicesConfiguration from '../_config/microservice.config';
+import ToolkitConfiguration from '../_config/toolkit.config';
 import {AllExceptionsFilter} from '../_filter/_all-exceptions.filter';
 import {HttpExceptionFilter} from '../_filter/_http-exception.filter';
 import {PrismaExceptionFilter} from '../_filter/_prisma-exception.filter';
+import {ThrottlerExceptionFilter} from '../_filter/_throttler-exception.filter';
 import {HttpMiddleware} from '../_middleware/_http.middleware';
 
 import {ToolkitModule} from '../toolkit/toolkit.module';
+import {AuthenticationGuard} from '../microservices/account/authentication/authentication.guard';
+import {AuthorizationGuard} from '../microservices/account/authorization/authorization.guard';
 import {AccountModule} from '../microservices/account/account.module';
 import {FileManagementModule} from '../microservices/fmgmt/fmgmt.module';
 import {LocationModule} from '../microservices/location/location.module';
 import {NotificationModule} from '../microservices/notification/notification.module';
 import {OrderManagementModule} from '../microservices/omgmt/omgmt.module';
+import {ReservationModule} from 'src/microservices/event-calendar/event-calendar.module';
+import {TaskModule} from '../microservices/task/task.module';
 import {TaskSchedulingModule} from '../microservices/task-scheduling/task-scheduling.module';
-import {TaskModule} from 'src/microservices/task/task.module';
 import {VerificationCodeModule} from '../microservices/verification-code/verification-code.module';
 import {WorkflowModule} from '../microservices/workflow/workflow.module';
+
 import {EnginedModule} from './engined/engined.module';
 import {ProjectManagementModule} from './pmgmt/pmgmt.module';
 import {RecruitmentModule} from './recruitment/recruitment.module';
-import ApplicationConfiguration from '../_config/application.config';
-import MicroservicesConfiguration from '../_config/microservice.config';
-import ToolkitConfiguration from '../_config/toolkit.config';
 
 import {ApplicationController} from './application.controller';
 import {AccountForgotController} from './account/account-forgot.controller';
@@ -36,6 +40,9 @@ import {UserController} from './account/user/user.controller';
 import {UserProfileController} from './account/user/user-profile.controller';
 import {PermissionController} from './account/permission.controller';
 import {RoleController} from './account/role.controller';
+import {EventController} from './samples/event-calendar/event.controller';
+import {AvailabilityContainerController} from './samples/event-calendar/availability-container.controller';
+import {EventCalendarController} from './samples/event-calendar/event-calendar.controller';
 import {WorkflowController} from './samples/workflow/workflow.controller';
 import {WorkflowStateController} from './samples/workflow/workflow-state.controller';
 import {WorkflowViewController} from './samples/workflow/workflow-view.controller';
@@ -44,8 +51,6 @@ import {WorkflowRouteController} from './samples/workflow/workflow-route.control
 import {AwsController} from './samples/aws.controller';
 import {LocationController} from './samples/location.controller';
 import {NotificationController} from './samples/notification.controller';
-import {ThrottlerGuard, ThrottlerModule} from '@nestjs/throttler';
-import {ThrottlerExceptionFilter} from 'src/_filter/_throttler-exception.filter';
 
 @Module({
   imports: [
@@ -73,8 +78,9 @@ import {ThrottlerExceptionFilter} from 'src/_filter/_throttler-exception.filter'
     LocationModule,
     NotificationModule,
     OrderManagementModule,
-    TaskSchedulingModule,
+    ReservationModule,
     TaskModule,
+    TaskSchedulingModule,
     VerificationCodeModule,
     WorkflowModule,
 
@@ -107,6 +113,9 @@ import {ThrottlerExceptionFilter} from 'src/_filter/_throttler-exception.filter'
     UserProfileController,
     PermissionController,
     RoleController,
+    EventController,
+    AvailabilityContainerController,
+    EventCalendarController,
     WorkflowController,
     WorkflowStateController,
     WorkflowViewController,

@@ -4,10 +4,11 @@ import {
   PrismaClient,
   TrustedEntityType,
 } from '@prisma/client';
-import {generateHash} from '../../src/toolkit/utilities/common.util';
+import {prismaMiddleware} from '../../src/toolkit/prisma/prisma.middleware';
 
 export async function seedForAccount() {
   const prisma = new PrismaClient();
+  prisma.$use(prismaMiddleware);
 
   console.log('\n* Account Service');
 
@@ -76,7 +77,7 @@ export async function seedForAccount() {
       await prisma.user.create({
         data: {
           username: 'admin',
-          password: await generateHash('Abc1234!'),
+          password: 'Abc1234!',
           email: 'admin@inceptionpad.com',
           roles: {connect: [{id: role.id}]},
         },
@@ -87,7 +88,7 @@ export async function seedForAccount() {
         data: {
           username: 'client',
           email: 'client@inceptionpad.com',
-          password: await generateHash('Abc1234!'),
+          password: 'Abc1234!',
           roles: {connect: [{id: role.id}]},
         },
       });

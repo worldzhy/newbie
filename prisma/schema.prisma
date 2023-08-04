@@ -21,7 +21,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["microservice/account", "microservice/fmgmt", "microservice/location", "microservice/notification", "microservice/order", "microservice/reservation", "microservice/task", "microservice/verification-code", "microservice/workflow", "application/engined", "application/pmgmt", "application/recruitment", "application/tc-request"]
+  schemas  = ["microservice/account", "microservice/event-calendar", "microservice/fmgmt", "microservice/location", "microservice/notification", "microservice/order", "microservice/task", "microservice/verification-code", "microservice/workflow", "application/engined", "application/pmgmt", "application/recruitment", "application/tc-request"]
 }
 
 // ! ------------------------------------------------------------ //
@@ -213,6 +213,79 @@ model RoutePermission {
 }
 
 // !! ------------------------------------------------------------ //
+// !!            [Microservice] Event calendar models              //
+// !! ------------------------------------------------------------ //
+// * Event                                                         //
+// * AvailabilityContainer                                         //
+// * Availability                                                  //
+// * Reservation                                                   //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
+
+model Event {
+  id                        Int            @id @default(autoincrement())
+  name                      String
+  hostUserId                String?        @db.Uuid
+  minutesOfDuration         Int
+  minutesInAdvanceToReserve Int?
+  minutesInAdvanceToCancel  Int?
+  numberOfSeats             Int?
+  createdAt                 DateTime       @default(now())
+  updatedAt                 DateTime       @updatedAt
+  availabilities            Availability[]
+
+  @@schema("microservice/event-calendar")
+}
+
+model AvailabilityContainer {
+  id             Int                         @id @default(autoincrement())
+  name           String?
+  status         AvailabilityContainerStatus
+  dateOfOpening  DateTime                    @db.Date
+  dateOfClosure  DateTime?                   @db.Date
+  timezone       String // https://www.iplocate.com/en/resources/timezones/list-of-timezones
+  createdAt      DateTime                    @default(now())
+  updatedAt      DateTime                    @updatedAt
+  availabilities Availability[]
+
+  @@schema("microservice/event-calendar")
+}
+
+enum AvailabilityContainerStatus {
+  ACTIVE
+  INACTIVE
+
+  @@schema("microservice/event-calendar")
+}
+
+model Availability {
+  id             Int                   @id @default(autoincrement())
+  date           DateTime              @db.Date
+  timeOfStarting DateTime              @db.Time(0)
+  timeOfEnding   DateTime              @db.Time(0)
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+  event          Event                 @relation(fields: [eventId], references: [id])
+  eventId        Int
+  container      AvailabilityContainer @relation(fields: [containerId], references: [id])
+  containerId    Int
+  reservations   Reservation[]
+
+  @@unique([date, timeOfStarting, timeOfEnding, eventId])
+  @@schema("microservice/event-calendar")
+}
+
+model Reservation {
+  id             Int          @id @default(autoincrement())
+  clientUserId   String       @db.Uuid
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  availability   Availability @relation(fields: [availabilityId], references: [id])
+  availabilityId Int
+
+  @@schema("microservice/event-calendar")
+}
+
+// !! ------------------------------------------------------------ //
 // !!            [Microservice] File Management models             //
 // !! ------------------------------------------------------------ //
 // * File                                                          //
@@ -384,75 +457,6 @@ model StripePaymentIntent {
   orderId      String?
 
   @@schema("microservice/order")
-}
-
-// !! ------------------------------------------------------------ //
-// !!            [Microservice] Reservation models                 //
-// !! ------------------------------------------------------------ //
-// * AvailabilityProvider                                          //
-// * AvailabilityRoom                                              //
-// * AvailabilityPeriod                                            //
-// * Reservation                                                   //
-// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
-
-model AvailabilityProvider {
-  id                      Int                  @id @default(autoincrement())
-  providerUserId          String?              @db.Uuid
-  providedContent         String?
-  canReserveBeforeMinutes Int?
-  canCancelBeforeMinutes  Int?
-  numberOfSeats           Int?
-  createdAt               DateTime             @default(now())
-  updatedAt               DateTime             @updatedAt
-  availabilityPeriods     AvailabilityPeriod[]
-
-  @@schema("microservice/reservation")
-}
-
-model AvailabilityRoom {
-  id                  Int                  @id @default(autoincrement())
-  name                String?
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-  availabilityPeriods AvailabilityPeriod[]
-
-  @@schema("microservice/reservation")
-}
-
-model AvailabilityPeriod {
-  id                     Int                     @id @default(autoincrement())
-  status                 AvailabilityPeriodState
-  date                   DateTime                @db.Date
-  startTime              DateTime                @db.Time
-  endTime                DateTime                @db.Time
-  timezone               String
-  createdAt              DateTime                @default(now())
-  updatedAt              DateTime                @updatedAt
-  availabilityProvider   AvailabilityProvider    @relation(fields: [availabilityProviderId], references: [id])
-  availabilityProviderId Int
-  availabilityRoom       AvailabilityRoom        @relation(fields: [availabilityRoomId], references: [id])
-  availabilityRoomId     Int
-  reservations           Reservation[]
-
-  @@schema("microservice/reservation")
-}
-
-enum AvailabilityPeriodState {
-  ACTIVE
-  INACTIVE
-
-  @@schema("microservice/reservation")
-}
-
-model Reservation {
-  id                   Int                @id @default(autoincrement())
-  clientUserId         String             @db.Uuid
-  createdAt            DateTime           @default(now())
-  updatedAt            DateTime           @updatedAt
-  availabilityPeriod   AvailabilityPeriod @relation(fields: [availabilityPeriodId], references: [id])
-  availabilityPeriodId Int
-
-  @@schema("microservice/reservation")
 }
 
 // ! ------------------------------------------------------------ //

@@ -68,7 +68,9 @@ export class VerificationCodeService {
         email: {equals: email, mode: 'insensitive'},
         status: VerificationCodeStatus.ACTIVE,
         expiredAt: {
-          gte: util.nowPlusMinutes(this.timeoutMinutes - this.resendMinutes),
+          gte: util.currentPlusMinutes(
+            this.timeoutMinutes - this.resendMinutes
+          ),
         },
       },
     });
@@ -95,7 +97,7 @@ export class VerificationCodeService {
         code: newCode,
         use: use,
         status: VerificationCodeStatus.ACTIVE,
-        expiredAt: util.nowPlusMinutes(this.timeoutMinutes),
+        expiredAt: util.currentPlusMinutes(this.timeoutMinutes),
       },
     });
   }
@@ -110,7 +112,9 @@ export class VerificationCodeService {
         phone: phone,
         status: VerificationCodeStatus.ACTIVE,
         expiredAt: {
-          gte: util.nowPlusMinutes(this.timeoutMinutes - this.resendMinutes),
+          gte: util.currentPlusMinutes(
+            this.timeoutMinutes - this.resendMinutes
+          ),
         },
       },
     });
@@ -134,7 +138,7 @@ export class VerificationCodeService {
         code: newCode,
         use: use,
         status: VerificationCodeStatus.ACTIVE,
-        expiredAt: util.nowPlusMinutes(this.timeoutMinutes),
+        expiredAt: util.currentPlusMinutes(this.timeoutMinutes),
       },
     });
   }
