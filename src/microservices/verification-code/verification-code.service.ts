@@ -1,13 +1,14 @@
 import {Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
-import {PrismaService} from '../../toolkit/prisma/prisma.service';
 import {
   Prisma,
   VerificationCode,
   VerificationCodeStatus,
   VerificationCodeUse,
 } from '@prisma/client';
-import * as util from '../../toolkit/utilities/common.util';
+import {PrismaService} from '../../toolkit/prisma/prisma.service';
+import {currentPlusMinutes} from '../../toolkit/utilities/date.util';
+import {generateRandomNumbers} from '../../toolkit/utilities/common.util';
 
 // Todo: We do not support inactivate verification code automatically now.
 
@@ -68,9 +69,7 @@ export class VerificationCodeService {
         email: {equals: email, mode: 'insensitive'},
         status: VerificationCodeStatus.ACTIVE,
         expiredAt: {
-          gte: util.currentPlusMinutes(
-            this.timeoutMinutes - this.resendMinutes
-          ),
+          gte: currentPlusMinutes(this.timeoutMinutes - this.resendMinutes),
         },
       },
     });
@@ -90,14 +89,14 @@ export class VerificationCodeService {
     });
 
     // [step 3] Generate and send verification code.
-    const newCode = util.generateRandomNumbers(6);
+    const newCode = generateRandomNumbers(6);
     return await this.prisma.verificationCode.create({
       data: {
         email: email,
         code: newCode,
         use: use,
         status: VerificationCodeStatus.ACTIVE,
-        expiredAt: util.currentPlusMinutes(this.timeoutMinutes),
+        expiredAt: currentPlusMinutes(this.timeoutMinutes),
       },
     });
   }
@@ -112,9 +111,7 @@ export class VerificationCodeService {
         phone: phone,
         status: VerificationCodeStatus.ACTIVE,
         expiredAt: {
-          gte: util.currentPlusMinutes(
-            this.timeoutMinutes - this.resendMinutes
-          ),
+          gte: currentPlusMinutes(this.timeoutMinutes - this.resendMinutes),
         },
       },
     });
@@ -129,7 +126,7 @@ export class VerificationCodeService {
     });
 
     // [step 3] Generate and send verification code.
-    const newCode = util.generateRandomNumbers(6);
+    const newCode = generateRandomNumbers(6);
 
     // [step 4] Save the code in database.
     return await this.prisma.verificationCode.create({
@@ -138,7 +135,7 @@ export class VerificationCodeService {
         code: newCode,
         use: use,
         status: VerificationCodeStatus.ACTIVE,
-        expiredAt: util.currentPlusMinutes(this.timeoutMinutes),
+        expiredAt: currentPlusMinutes(this.timeoutMinutes),
       },
     });
   }

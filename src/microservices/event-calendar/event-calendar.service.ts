@@ -9,7 +9,7 @@ import {PrismaService} from '../../toolkit/prisma/prisma.service';
 import {
   datePlusMinutes,
   datePlusYears,
-} from '../../toolkit/utilities/common.util';
+} from '../../toolkit/utilities/date.util';
 const CronParser = require('cron-parser');
 
 @Injectable()
