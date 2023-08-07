@@ -1,9 +1,9 @@
 import {Module, Global} from '@nestjs/common';
-import {AccessTokenService, RefreshTokenService} from './token.service';
+import {AccessTokenModule} from './access-token/access-token.module';
+import {RefreshTokenModule} from './refresh-token/refresh-token.module';
 
 @Global()
 @Module({
-  providers: [AccessTokenService, RefreshTokenService],
-  exports: [AccessTokenService, RefreshTokenService],
+  imports: [AccessTokenModule, RefreshTokenModule],
 })
 export class TokenModule {}

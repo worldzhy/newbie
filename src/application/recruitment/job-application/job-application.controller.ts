@@ -30,7 +30,7 @@ import {
 } from '@prisma/client';
 import {RequirePermission} from '../../../microservices/account/authorization/authorization.decorator';
 import {CandidateService} from '../candidate/candidate.service';
-import {AccessTokenService} from '../../../toolkit/token/token.service';
+import {AccessTokenService} from '../../../toolkit/token/access-token/access-token.service';
 import {WorkflowRouteService} from '../../../microservices/workflow/workflow-route.service';
 import {JobApplicationWorkflowService} from './workflow/workflow.service';
 import {RoleService} from '../../../microservices/account/role/role.service';

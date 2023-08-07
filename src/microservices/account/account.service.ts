@@ -6,10 +6,8 @@ import {
 import {UserStatus, VerificationCodeUse} from '@prisma/client';
 import {VerificationCodeService} from '../verification-code/verification-code.service';
 import {NotificationService} from '../notification/notification.service';
-import {
-  AccessTokenService,
-  RefreshTokenService,
-} from '../../toolkit/token/token.service';
+import {AccessTokenService} from '../../toolkit/token/access-token/access-token.service';
+import {RefreshTokenService} from '../../toolkit/token/refresh-token/refresh-token.service';
 import {getSecondsUntilunixTimestamp} from '../../toolkit/utilities/date.util';
 import {UserService} from './user/user.service';
 import {UserAccessTokenService} from './user/user-access-token.service';

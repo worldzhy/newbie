@@ -18,7 +18,7 @@ import {RoleService} from '../../../../microservices/account/role/role.service';
 import {UserService} from '../../../../microservices/account/user/user.service';
 import {WorkflowRouteService} from '../../../../microservices/workflow/workflow-route.service';
 import {FileService} from '../../../../microservices/fmgmt/file/file.service';
-import {AccessTokenService} from '../../../../toolkit/token/token.service';
+import {AccessTokenService} from '../../../../toolkit/token/access-token/access-token.service';
 
 @ApiTags('Recruitment / Job Application / Workflow')
 @ApiBearerAuth()

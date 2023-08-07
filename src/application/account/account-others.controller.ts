@@ -4,10 +4,8 @@ import {UserAccessToken, VerificationCodeUse} from '@prisma/client';
 import {Request, Response} from 'express';
 import {AccountService} from '../../microservices/account/account.service';
 import {Public} from '../../microservices/account/authentication/public/public.decorator';
-import {
-  AccessTokenService,
-  RefreshTokenService,
-} from '../../toolkit/token/token.service';
+import {AccessTokenService} from '../../toolkit/token/access-token/access-token.service';
+import {RefreshTokenService} from '../../toolkit/token/refresh-token/refresh-token.service';
 import {
   verifyEmail,
   verifyPhone,
