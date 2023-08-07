@@ -6,12 +6,19 @@ import {
   Post,
   Body,
   Param,
+  Query,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiParam,
+  ApiBody,
+  ApiQuery,
+} from '@nestjs/swagger';
 import {WorkflowState, Prisma} from '@prisma/client';
-import {WorkflowStateService} from '../../../microservices/workflow/workflow-state.service';
+import {WorkflowStateService} from '../../microservices/workflow/workflow-state.service';
 
-@ApiTags('Samples: Workflow / State')
+@ApiTags('Workflow / State')
 @ApiBearerAuth()
 @Controller('workflow-states')
 export class WorkflowStateController {
@@ -39,23 +46,11 @@ export class WorkflowStateController {
   }
 
   @Get('')
-  async getWorkflowStates(): Promise<WorkflowState[]> {
-    return await this.workflowStateService.findMany({});
-  }
-
-  @Get(':stateId')
-  @ApiParam({
-    name: 'stateId',
-    schema: {type: 'number'},
-    description: 'The id of the workflow state.',
-    example: 11,
-  })
-  async getWorkflowState(
-    @Param('stateId') stateId: number
-  ): Promise<WorkflowState | null> {
-    return await this.workflowStateService.findUnique({
-      where: {id: stateId},
-    });
+  @ApiQuery({name: 'workflowId', type: 'string'})
+  async getWorkflowStates(
+    @Query('workflowId') workflowId?: string
+  ): Promise<WorkflowState[]> {
+    return await this.workflowStateService.findMany({where: {workflowId}});
   }
 
   @Patch(':stateId')

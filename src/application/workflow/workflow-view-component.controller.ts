@@ -12,17 +12,21 @@ import {
   WorkflowViewComponent,
   Prisma,
   WorkflowViewComponentType,
-  WorkflowViewComponentSubType,
 } from '@prisma/client';
-import {WorkflowViewComponentService} from '../../../microservices/workflow/workflow-view-component.service';
+import {WorkflowViewComponentService} from '../../microservices/workflow/workflow-view-component.service';
 
-@ApiTags('Samples: Workflow / View / Component')
+@ApiTags('Workflow / View / Component')
 @ApiBearerAuth()
 @Controller('workflow-view-components')
 export class WorkflowViewComponentController {
   constructor(
     private readonly workflowViewComponentService: WorkflowViewComponentService
   ) {}
+
+  @Get('types')
+  async listWorkflowViewComponentTypes() {
+    return Object.keys(WorkflowViewComponentType);
+  }
 
   @Post('')
   @ApiBody({
@@ -31,25 +35,28 @@ export class WorkflowViewComponentController {
       a: {
         summary: '1. Create',
         value: {
-          type: WorkflowViewComponentType.Static,
-          subType: WorkflowViewComponentSubType.Static_Text,
-          properties: {},
-          viewId: 1,
+          data: [
+            {
+              type: WorkflowViewComponentType.INFO_Title,
+              properties: {},
+              viewId: 1,
+            },
+            {
+              type: WorkflowViewComponentType.INFO_Description,
+              properties: {},
+              viewId: 1,
+            },
+          ],
         },
       },
     },
   })
-  async createWorkflowViewComponent(
-    @Body() body: Prisma.WorkflowViewComponentUncheckedCreateInput
-  ): Promise<WorkflowViewComponent> {
-    return await this.workflowViewComponentService.create({
-      data: body,
+  async createWorkflowViewComponents(
+    @Body() body: Prisma.WorkflowViewComponentCreateManyArgs
+  ) {
+    return await this.workflowViewComponentService.createMany({
+      data: body.data,
     });
-  }
-
-  @Get('')
-  async getWorkflowViewComponents(): Promise<WorkflowViewComponent[]> {
-    return await this.workflowViewComponentService.findMany({});
   }
 
   @Get(':componentId')

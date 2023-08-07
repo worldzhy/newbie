@@ -6,12 +6,19 @@ import {
   Post,
   Body,
   Param,
+  Query,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiParam,
+  ApiBody,
+  ApiQuery,
+} from '@nestjs/swagger';
 import {WorkflowView, Prisma} from '@prisma/client';
-import {WorkflowViewService} from '../../../microservices/workflow/workflow-view.service';
+import {WorkflowViewService} from '../../microservices/workflow/workflow-view.service';
 
-@ApiTags('Samples: Workflow / View')
+@ApiTags('Workflow / View')
 @ApiBearerAuth()
 @Controller('workflow-views')
 export class WorkflowViewController {
@@ -39,8 +46,11 @@ export class WorkflowViewController {
   }
 
   @Get('')
-  async getWorkflowViews(): Promise<WorkflowView[]> {
-    return await this.workflowViewService.findMany({});
+  @ApiQuery({name: 'workflowId', type: 'string'})
+  async getWorkflowViews(
+    @Query('workflowId') workflowId?: string
+  ): Promise<WorkflowView[]> {
+    return await this.workflowViewService.findMany({where: {workflowId}});
   }
 
   @Get(':viewId')

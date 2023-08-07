@@ -16,9 +16,9 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import {WorkflowRoute, Prisma} from '@prisma/client';
-import {WorkflowRouteService} from '../../../microservices/workflow/workflow-route.service';
+import {WorkflowRouteService} from '../../microservices/workflow/workflow-route.service';
 
-@ApiTags('Samples: Workflow / Route')
+@ApiTags('Workflow / Route')
 @ApiBearerAuth()
 @Controller('workflow-routes')
 export class WorkflowRouteController {
@@ -48,15 +48,19 @@ export class WorkflowRouteController {
   }
 
   @Get('')
+  @ApiQuery({name: 'workflowId', type: 'string'})
   @ApiQuery({name: 'viewId', type: 'number'})
   async getWorkflowRoutes(
+    @Query('workflowId') workflowId?: string,
     @Query('viewId') viewId?: number
   ): Promise<WorkflowRoute[]> {
     // [step 1] Construct where argument.
-    let where: Prisma.WorkflowRouteWhereInput | undefined;
-    if (viewId) {
-      where = {viewId: viewId};
-    }
+    const where: Prisma.WorkflowRouteWhereInput = {
+      workflowId: undefined,
+      viewId: undefined,
+    };
+    where.workflowId = workflowId;
+    where.viewId = viewId;
 
     // [step 2] Get workflows.
     return await this.workflowRouteService.findMany({where: where});

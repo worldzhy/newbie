@@ -22,6 +22,12 @@ export class WorkflowViewComponentService {
     return await this.prisma.workflowViewComponent.create(params);
   }
 
+  async createMany(
+    params: Prisma.WorkflowViewComponentCreateManyArgs
+  ): Promise<Prisma.BatchPayload> {
+    return await this.prisma.workflowViewComponent.createMany(params);
+  }
+
   async update(
     params: Prisma.WorkflowViewComponentUpdateArgs
   ): Promise<WorkflowViewComponent> {
