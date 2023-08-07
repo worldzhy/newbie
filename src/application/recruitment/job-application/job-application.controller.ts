@@ -93,7 +93,7 @@ export class JobApplicationController {
       where: {id: userId},
     });
     const jobApplication = await this.jobApplicationService.create({
-      data: {...body, referredBy: user.username || user.id},
+      data: {...body, referredBy: user.name || user.id},
     });
 
     // [step 3] Create job application testings.
@@ -335,9 +335,9 @@ export class JobApplicationController {
           // Attach processedBy username.
           const user = await this.userService.findUniqueOrThrow({
             where: {id: step.processedByUserId},
-            select: {username: true},
+            select: {name: true},
           });
-          step['processedByUser'] = user.username;
+          step['processedByUser'] = user.name;
 
           // Attach next role name.
           if (step.nextRoleId) {

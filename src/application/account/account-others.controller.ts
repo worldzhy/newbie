@@ -95,25 +95,19 @@ export class AccountOthersController {
       "The request body should contain at least one of the three attributes ['username', 'email', 'phone']. If 'username' is contained, then 'password' is required, or 'password' is optional.",
     examples: {
       a: {
-        summary: '1. Check username',
-        value: {
-          username: 'henry',
-        },
-      },
-      b: {
-        summary: '2. Check email',
+        summary: '1. Check email',
         value: {
           email: 'email@example.com',
         },
       },
-      c: {
-        summary: '3. Check phone',
+      b: {
+        summary: '2. Check phone',
         value: {
           phone: '13960068008',
         },
       },
-      d: {
-        summary: '4. Check profile',
+      c: {
+        summary: '3. Check profile',
         value: {
           profile: {
             prefix: 'Mr',
@@ -130,7 +124,6 @@ export class AccountOthersController {
   async check(
     @Body()
     body: {
-      username?: string;
       email?: string;
       phone?: string;
       profile?: object;
@@ -139,11 +132,7 @@ export class AccountOthersController {
     // [step 1] Check account existence with username, email and phone.
     const users = await this.userService.findMany({
       where: {
-        OR: [
-          {username: body.username},
-          {email: body.email},
-          {phone: body.phone},
-        ],
+        OR: [{email: body.email}, {phone: body.phone}],
       },
     });
     if (users.length > 0) {

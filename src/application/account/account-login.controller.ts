@@ -37,21 +37,14 @@ export class AccountLoginController {
       "The request body should contain 'account' and 'password' attributes.",
     examples: {
       a: {
-        summary: '1. Log in with username',
+        summary: '1. Log in with email',
         value: {
-          account: 'admin',
+          account: 'admin@inceptionpad.com',
           password: 'Abc1234!',
         },
       },
       b: {
-        summary: '2. Log in with email',
-        value: {
-          account: 'email@example.com',
-          password: 'Abc1234!',
-        },
-      },
-      c: {
-        summary: '3. Log in with phone',
+        summary: '2. Log in with phone',
         value: {
           account: '13960068008',
           password: 'Abc1234!',
@@ -68,7 +61,7 @@ export class AccountLoginController {
     @Res({passthrough: true})
     response: Response
   ): Promise<UserAccessToken> {
-    // [step 1] Login with username-password and generate tokens.
+    // [step 1] Login with password and generate tokens.
     const {accessToken, refreshToken} = await this.accountService.login(
       body.account
     );
@@ -188,7 +181,7 @@ export class AccountLoginController {
   @ApiBearerAuth()
   @ApiBody({
     description:
-      "The request body must contain 'account' and 'verificationCode' attributes. The 'username' accepts username, email or phone.",
+      "The request body must contain 'account' and 'verificationCode' attributes. The 'account' accepts email or phone.",
     examples: {
       a: {
         summary: '1. Log in with email',

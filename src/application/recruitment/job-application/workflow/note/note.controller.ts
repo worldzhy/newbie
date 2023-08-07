@@ -72,7 +72,7 @@ export class JobApplicationWorkflowNoteController {
       where: {id: userId},
     });
     body.reporterUserId = userId;
-    body.reporter = user.username;
+    body.reporter = user.name;
 
     // [step 3] Create jobApplicationWorkflowNote.
     return await this.jobApplicationWorkflowNoteService.create({data: body});

@@ -36,12 +36,12 @@ import {AccountLogoutController} from './account/account-logout.controller';
 import {AccountSignupController} from './account/account-signup.controller';
 import {AccountOthersController} from './account/account-others.controller';
 import {OrganizationController} from './account/organization.controller';
-import {UserController} from './account/user/user.controller';
-import {UserProfileController} from './account/user/user-profile.controller';
+import {UserController} from './account/user.controller';
+import {UserProfileController} from './account/user-profile.controller';
 import {PermissionController} from './account/permission.controller';
 import {RoleController} from './account/role.controller';
-import {EventController} from './samples/event-calendar/event.controller';
-import {EventCalendarController} from './samples/event-calendar/event-calendar.controller';
+import {ClassController} from './class-calendar/class.controller';
+import {ClassCalendarController} from './class-calendar/class-calendar.controller';
 import {WorkflowController} from './samples/workflow/workflow.controller';
 import {WorkflowStateController} from './samples/workflow/workflow-state.controller';
 import {WorkflowViewController} from './samples/workflow/workflow-view.controller';
@@ -114,8 +114,8 @@ import {SecurityGuard} from 'src/microservices/account/security/security.guard';
     UserProfileController,
     PermissionController,
     RoleController,
-    EventController,
-    EventCalendarController,
+    ClassController,
+    ClassCalendarController,
     WorkflowController,
     WorkflowStateController,
     WorkflowViewController,

@@ -1,12 +1,12 @@
 import {Controller, Post, Body, Patch} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {EventCalendarService} from '../../../microservices/event-calendar/event-calendar.service';
+import {EventCalendarService} from '../../microservices/event-calendar/event-calendar.service';
 import {AvailabilityContainerStatus} from '@prisma/client';
 
-@ApiTags('Samples: Event Calendar')
+@ApiTags('Class Calendar')
 @ApiBearerAuth()
-@Controller('event-calendar')
-export class EventCalendarController {
+@Controller('class-calendar')
+export class ClassCalendarController {
   constructor(private readonly eventCalendarService: EventCalendarService) {}
 
   @Post('')
@@ -52,7 +52,7 @@ export class EventCalendarController {
       },
     },
   })
-  async createEventCalendar(
+  async createClassCalendar(
     @Body()
     body: {
       event?: {
@@ -120,7 +120,7 @@ export class EventCalendarController {
       },
     },
   })
-  async updateEventCalendar(
+  async updateClassCalendar(
     @Body()
     body: {
       event?: {

@@ -144,9 +144,9 @@ export class JobApplicationWorkflowController {
       const step = workflow['steps'][i];
       const user = await this.userService.findUniqueOrThrow({
         where: {id: step.processedByUserId},
-        select: {username: true},
+        select: {name: true},
       });
-      step['processedByUser'] = user.username;
+      step['processedByUser'] = user.name;
 
       // Attach next role name.
       if (step.nextRoleId) {

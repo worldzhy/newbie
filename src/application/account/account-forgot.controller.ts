@@ -59,7 +59,7 @@ export class AccountForgotController {
         return await this.userService.update({
           where: {email: body.email.toLowerCase()},
           data: {password: body.newPassword},
-          select: {id: true, username: true, email: true, phone: true},
+          select: {id: true, name: true, email: true, phone: true},
         });
       }
     } else if (body.phone && verifyPhone(body.phone)) {
@@ -72,7 +72,7 @@ export class AccountForgotController {
         return await this.userService.update({
           where: {phone: body.phone},
           data: {password: body.newPassword},
-          select: {id: true, username: true, email: true, phone: true},
+          select: {id: true, name: true, email: true, phone: true},
         });
       }
     }

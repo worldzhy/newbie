@@ -16,9 +16,9 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import {PermissionAction, Prisma, UserProfile} from '@prisma/client';
-import {RequirePermission} from '../../../microservices/account/authorization/authorization.decorator';
-import {UserProfileService} from '../../../microservices/account/user/user-profile.service';
-import {generatePaginationParams} from '../../../toolkit/pagination/pagination';
+import {RequirePermission} from '../../microservices/account/authorization/authorization.decorator';
+import {UserProfileService} from '../../microservices/account/user/user-profile.service';
+import {generatePaginationParams} from '../../toolkit/pagination/pagination';
 
 @ApiTags('Account / User / Profile')
 @ApiBearerAuth()

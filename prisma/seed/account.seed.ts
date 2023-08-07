@@ -76,7 +76,6 @@ export async function seedForAccount() {
       // Create user with this role.
       await prisma.user.create({
         data: {
-          username: 'admin',
           password: 'Abc1234!',
           email: 'admin@inceptionpad.com',
           roles: {connect: [{id: role.id}]},
@@ -86,7 +85,6 @@ export async function seedForAccount() {
       // Create user with this role.
       await prisma.user.create({
         data: {
-          username: 'client',
           email: 'client@inceptionpad.com',
           password: 'Abc1234!',
           roles: {connect: [{id: role.id}]},

@@ -17,9 +17,8 @@ export class AccountSignupController {
 
   /**
    * Sign up by:
-   * [1] username: password is required
-   * [2] email: password is optional
-   * [3] phone: password is optional
+   * [1] email: password is optional
+   * [2] phone: password is optional
    *
    * [Constraint] 'password' is required if neither email nor phone is provided.
    */
@@ -27,29 +26,23 @@ export class AccountSignupController {
   @Post('signup')
   @ApiBody({
     description:
-      "The request body should contain at least one of the three attributes ['username', 'email', 'phone']. If 'username' is contained, then 'password' is required, or 'password' is optional.",
+      "The request body should contain at least one of the three attributes ['email', 'phone'].",
     examples: {
       a: {
-        summary: '1. Sign up with username',
+        summary: '1. Sign up with email',
         value: {
-          username: 'henry',
+          email: 'email@example.com',
           password: 'Abc1234!',
         },
       },
       b: {
-        summary: '2. Sign up with email',
-        value: {
-          email: 'email@example.com',
-        },
-      },
-      c: {
-        summary: '3. Sign up with phone',
+        summary: '2. Sign up with phone',
         value: {
           phone: '13960068008',
         },
       },
-      d: {
-        summary: '4. Sign up with profile',
+      c: {
+        summary: '3. Sign up with profile',
         value: {
           profile: {
             prefix: 'Mr',
@@ -67,7 +60,6 @@ export class AccountSignupController {
     @Body()
     body: Prisma.UserCreateInput
   ): Promise<User> {
-    let usernameCount = 0;
     let emailCount = 0;
     let phoneCount = 0;
     let profileCount = 0;
@@ -79,17 +71,6 @@ export class AccountSignupController {
           'Your password is not strong enough. (length >= 8, lowercase >= 1, uppercase >= 1, numbers >= 1, symbols >= 1)'
         );
       } else {
-        // Go on validating...
-        usernameCount += 1;
-      }
-    }
-
-    if (body.username) {
-      if (!verifyUsername(body.username)) {
-        throw new BadRequestException('Your username is not valid.');
-      } else {
-        // Go on validating...
-        usernameCount += 1;
       }
     }
 
@@ -118,24 +99,15 @@ export class AccountSignupController {
     // [step 2] Check account existence.
     const users = await this.userService.findMany({
       where: {
-        OR: [
-          {username: body.username},
-          {email: body.email},
-          {phone: body.phone},
-        ],
+        OR: [{email: body.email}, {phone: body.phone}],
       },
     });
     if (users.length > 0) {
-      throw new BadRequestException('Your username exists.');
+      throw new BadRequestException('User already exists.');
     }
 
     // [step 3] Create(Sign up) a new account.
-    if (
-      usernameCount === 2 ||
-      emailCount === 1 ||
-      phoneCount === 1 ||
-      profileCount === 1
-    ) {
+    if (emailCount === 1 || phoneCount === 1 || profileCount === 1) {
       // Generate password hash if needed.
       return await this.userService.create({
         data: body,
@@ -143,7 +115,7 @@ export class AccountSignupController {
           id: true,
           email: true,
           phone: true,
-          username: true,
+          name: true,
           status: true,
           profiles: true,
         },

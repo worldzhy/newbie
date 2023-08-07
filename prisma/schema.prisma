@@ -57,7 +57,7 @@ model User {
   id               String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   email            String?                  @unique
   phone            String?                  @unique
-  username         String?                  @unique
+  name             String?
   password         String? // automatic hashing
   status           UserStatus               @default(ACTIVE)
   lastLoginAt      DateTime?

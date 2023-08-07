@@ -31,15 +31,6 @@ export async function prismaMiddleware(
         }
         return next(params);
       default:
-        // Handle existed issue https://github.com/prisma/prisma/issues/17470
-        // if (params.action.toString() === 'findUniqueOrThrow') {
-        //   const result = await next(params);
-        //   if (result) {
-        //     const {password, ...newUser} = result;
-        //     return newUser;
-        //   }
-        //   return null;
-        // }
         return next(params);
     }
   } else if (params.model === Prisma.ModelName.UserProfile) {

@@ -56,7 +56,6 @@ export class UserService {
       const users = await this.prisma.user.findMany({
         where: {
           OR: [
-            {username: account},
             {email: {equals: account, mode: 'insensitive'}},
             {phone: account},
           ],

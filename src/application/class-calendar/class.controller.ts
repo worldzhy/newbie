@@ -9,13 +9,13 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {Event, Prisma} from '@prisma/client';
-import {EventService} from '../../../microservices/event-calendar/event.service';
+import {EventService} from '../../microservices/event-calendar/event.service';
 
-@ApiTags('Samples: Event Calendar / Event')
+@ApiTags('Class Calendar / Class')
 @ApiBearerAuth()
-@Controller('events')
-export class EventController {
-  constructor(private readonly availabilityProviderService: EventService) {}
+@Controller('classes')
+export class ClassController {
+  constructor(private readonly eventService: EventService) {}
 
   @Post('')
   @ApiBody({
@@ -33,17 +33,17 @@ export class EventController {
       },
     },
   })
-  async createEvent(
+  async createClass(
     @Body() body: Prisma.EventUncheckedCreateInput
   ): Promise<Event> {
-    return await this.availabilityProviderService.create({
+    return await this.eventService.create({
       data: body,
     });
   }
 
   @Get('')
-  async getEvents(): Promise<Event[]> {
-    return await this.availabilityProviderService.findMany({});
+  async getClasses(): Promise<Event[]> {
+    return await this.eventService.findMany({});
   }
 
   @Get(':eventId')
@@ -53,8 +53,8 @@ export class EventController {
     description: 'The id of the event.',
     example: 1,
   })
-  async getEvent(@Param('eventId') eventId: number): Promise<Event> {
-    return await this.availabilityProviderService.findUniqueOrThrow({
+  async getClass(@Param('eventId') eventId: number): Promise<Event> {
+    return await this.eventService.findUniqueOrThrow({
       where: {id: eventId},
     });
   }
@@ -79,12 +79,12 @@ export class EventController {
       },
     },
   })
-  async updateEvent(
+  async updateClass(
     @Param('eventId') eventId: number,
     @Body()
     body: Prisma.EventUpdateInput
   ): Promise<Event> {
-    return await this.availabilityProviderService.update({
+    return await this.eventService.update({
       where: {id: eventId},
       data: body,
     });
@@ -96,8 +96,8 @@ export class EventController {
     schema: {type: 'number'},
     example: 1,
   })
-  async deleteEvent(@Param('eventId') eventId: number): Promise<Event> {
-    return await this.availabilityProviderService.delete({
+  async deleteClass(@Param('eventId') eventId: number): Promise<Event> {
+    return await this.eventService.delete({
       where: {id: eventId},
     });
   }
