@@ -38,11 +38,13 @@ export class WorkflowViewComponentController {
           data: [
             {
               type: WorkflowViewComponentType.INFO_Title,
+              sort: 1,
               properties: {},
               viewId: 1,
             },
             {
               type: WorkflowViewComponentType.INFO_Description,
+              sort: 2,
               properties: {},
               viewId: 1,
             },
@@ -85,9 +87,12 @@ export class WorkflowViewComponentController {
     description: '',
     examples: {
       a: {
-        summary: '1. Update name',
+        summary: '1. Update',
         value: {
-          name: 'InceptionPad Inc',
+          type: WorkflowViewComponentType.INFO_Description,
+          sort: 2,
+          properties: {},
+          viewId: 1,
         },
       },
     },

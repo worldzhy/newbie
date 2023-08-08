@@ -570,6 +570,7 @@ model WorkflowView {
 model WorkflowViewComponent {
   id         Int                       @id @default(autoincrement())
   type       WorkflowViewComponentType
+  sort       Int
   properties Json
   createdAt  DateTime                  @default(now())
   updatedAt  DateTime                  @updatedAt

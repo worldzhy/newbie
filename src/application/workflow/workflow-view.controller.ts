@@ -50,7 +50,10 @@ export class WorkflowViewController {
   async getWorkflowStartViews(@Query('workflowId') workflowId?: string) {
     return await this.workflowViewService.findMany({
       where: {workflowId: workflowId, routes: {some: {startSign: true}}},
-      include: {components: true, routes: {include: {state: true}}},
+      include: {
+        components: {orderBy: {sort: 'asc'}},
+        routes: {include: {state: true}},
+      },
     });
   }
 
@@ -66,7 +69,10 @@ export class WorkflowViewController {
   ): Promise<WorkflowView> {
     return await this.workflowViewService.findUniqueOrThrow({
       where: {id: viewId},
-      include: {components: true, routes: {include: {state: true}}},
+      include: {
+        components: {orderBy: {sort: 'asc'}},
+        routes: {include: {state: true}},
+      },
     });
   }
 
