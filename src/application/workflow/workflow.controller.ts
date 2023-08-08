@@ -51,10 +51,10 @@ export class WorkflowController {
   })
   async getWorkflow(
     @Param('workflowId') workflowId: string
-  ): Promise<Workflow | null> {
-    return await this.workflowService.findUnique({
+  ): Promise<Workflow> {
+    return await this.workflowService.findUniqueOrThrow({
       where: {id: workflowId},
-      include: {routes: true, views: true, states: true},
+      include: {views: true, states: true},
     });
   }
 

@@ -45,12 +45,13 @@ export class WorkflowViewController {
     });
   }
 
-  @Get('')
+  @Get('start-views')
   @ApiQuery({name: 'workflowId', type: 'string'})
-  async getWorkflowViews(
-    @Query('workflowId') workflowId?: string
-  ): Promise<WorkflowView[]> {
-    return await this.workflowViewService.findMany({where: {workflowId}});
+  async getWorkflowStartViews(@Query('workflowId') workflowId?: string) {
+    return await this.workflowViewService.findMany({
+      where: {workflowId: workflowId, routes: {some: {startSign: true}}},
+      include: {components: true, routes: {include: {state: true}}},
+    });
   }
 
   @Get(':viewId')
@@ -62,10 +63,10 @@ export class WorkflowViewController {
   })
   async getWorkflowView(
     @Param('viewId') viewId: number
-  ): Promise<WorkflowView | null> {
-    return await this.workflowViewService.findUnique({
+  ): Promise<WorkflowView> {
+    return await this.workflowViewService.findUniqueOrThrow({
       where: {id: viewId},
-      include: {components: true},
+      include: {components: true, routes: {include: {state: true}}},
     });
   }
 

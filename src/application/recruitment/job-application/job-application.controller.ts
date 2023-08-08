@@ -100,7 +100,7 @@ export class JobApplicationController {
     if (!body.testTypes) {
       throw new BadRequestException('Invalid testTypes in the request body.');
     }
-    const route = await this.workflowRouteService.findUniqueOrThrow({
+    const route = await this.workflowRouteService.findFirstOrThrow({
       where: {startSign: true}, // Get the starting point of the process.
     });
     for (let i = 0; i < (body.testTypes as string[]).length; i++) {

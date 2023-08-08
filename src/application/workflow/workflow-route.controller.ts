@@ -34,7 +34,6 @@ export class WorkflowRouteController {
           viewId: 1,
           stateId: 1,
           nextViewId: 2,
-          workflowId: 'd8141ece-f242-4288-a60a-8675538549cd',
         },
       },
     },
@@ -49,35 +48,11 @@ export class WorkflowRouteController {
 
   @Get('')
   @ApiQuery({name: 'workflowId', type: 'string'})
-  @ApiQuery({name: 'viewId', type: 'number'})
   async getWorkflowRoutes(
-    @Query('workflowId') workflowId?: string,
-    @Query('viewId') viewId?: number
+    @Query('workflowId') workflowId: string
   ): Promise<WorkflowRoute[]> {
-    // [step 1] Construct where argument.
-    const where: Prisma.WorkflowRouteWhereInput = {
-      workflowId: undefined,
-      viewId: undefined,
-    };
-    where.workflowId = workflowId;
-    where.viewId = viewId;
-
-    // [step 2] Get workflows.
-    return await this.workflowRouteService.findMany({where: where});
-  }
-
-  @Get(':routeId')
-  @ApiParam({
-    name: 'routeId',
-    schema: {type: 'number'},
-    description: 'The id of the workflow route.',
-    example: 11,
-  })
-  async getWorkflowRoute(
-    @Param('routeId') routeId: number
-  ): Promise<WorkflowRoute | null> {
-    return await this.workflowRouteService.findUnique({
-      where: {id: routeId},
+    return await this.workflowRouteService.findMany({
+      where: {view: {workflowId}},
     });
   }
 
@@ -112,12 +87,6 @@ export class WorkflowRouteController {
     @Body()
     body: Prisma.WorkflowRouteUpdateInput
   ): Promise<WorkflowRoute> {
-    if (body.startSign && body.startSign === true) {
-      this.workflowRouteService.updateMany({
-        data: {startSign: null},
-      });
-    }
-
     return await this.workflowRouteService.update({
       where: {id: routeId},
       data: body,

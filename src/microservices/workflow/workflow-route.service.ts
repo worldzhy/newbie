@@ -18,6 +18,12 @@ export class WorkflowRouteService {
     return await this.prisma.workflowRoute.findUniqueOrThrow(params);
   }
 
+  async findFirstOrThrow(
+    params: Prisma.WorkflowRouteFindFirstOrThrowArgs
+  ): Promise<WorkflowRoute> {
+    return await this.prisma.workflowRoute.findFirstOrThrow(params);
+  }
+
   async findMany(params: Prisma.WorkflowRouteFindManyArgs) {
     return await this.prisma.workflowRoute.findMany(params);
   }

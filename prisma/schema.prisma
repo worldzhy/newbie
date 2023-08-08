@@ -549,7 +549,6 @@ model Workflow {
   updatedAt   DateTime        @updatedAt
   views       WorkflowView[]
   states      WorkflowState[]
-  routes      WorkflowRoute[]
 
   @@schema("microservice/workflow")
 }
@@ -561,6 +560,7 @@ model WorkflowView {
   createdAt   DateTime                @default(now())
   updatedAt   DateTime                @updatedAt
   components  WorkflowViewComponent[]
+  routes      WorkflowRoute[]
   workflow    Workflow                @relation(fields: [workflowId], references: [id], onDelete: Cascade)
   workflowId  String
 
@@ -599,29 +599,30 @@ enum WorkflowViewComponentTypePrefix {
 }
 
 model WorkflowState {
-  id          Int      @id @default(autoincrement())
+  id          Int             @id @default(autoincrement())
   name        String
   description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  workflow    Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  routes      WorkflowRoute[]
+  workflow    Workflow        @relation(fields: [workflowId], references: [id], onDelete: Cascade)
   workflowId  String
 
   @@schema("microservice/workflow")
 }
 
 model WorkflowRoute {
-  id         Int      @id @default(autoincrement())
-  startSign  Boolean? @unique
+  id         Int           @id @default(autoincrement())
+  startSign  Boolean       @default(false)
+  view       WorkflowView  @relation(fields: [viewId], references: [id], onDelete: Cascade)
   viewId     Int
+  state      WorkflowState @relation(fields: [stateId], references: [id], onDelete: Cascade)
   stateId    Int
   nextViewId Int
-  nextRoleId String?  @db.Uuid // The next role to take over the next step.
-  nextUserId String?  @db.Uuid // The next user to take over the next step.
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  workflow   Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
-  workflowId String
+  nextRoleId String?       @db.Uuid // The next role to take over the next step.
+  nextUserId String?       @db.Uuid // The next user to take over the next step.
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
 
   @@unique([viewId, stateId])
   @@schema("microservice/workflow")
