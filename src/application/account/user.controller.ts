@@ -132,7 +132,7 @@ export class UserController {
     if (name) {
       name = name.trim();
       if (name.length > 0) {
-        whereConditions.push({username: {contains: name}});
+        whereConditions.push({name: {contains: name}});
       }
     }
 
