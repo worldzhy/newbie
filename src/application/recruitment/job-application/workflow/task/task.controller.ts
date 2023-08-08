@@ -23,12 +23,12 @@ import {
   PermissionAction,
   Prisma,
 } from '@prisma/client';
-import {RequirePermission} from '../../../../../microservices/account/authorization/authorization.decorator';
-import {AccessTokenService} from '../../../../../toolkit/token/access-token/access-token.service';
+import {RequirePermission} from '@microservices/account/authorization/authorization.decorator';
+import {AccessTokenService} from '@toolkit/token/access-token/access-token.service';
 import {JobApplicationWorkflowService} from '../workflow.service';
 import {JobApplicationWorkflowTaskService} from './task.service';
-import {generatePaginationParams} from '../../../../../toolkit/pagination/pagination';
-import {UserService} from '../../../../../microservices/account/user/user.service';
+import {generatePaginationParams} from '@toolkit/pagination/pagination';
+import {UserService} from '@microservices/account/user/user.service';
 
 @ApiTags('Recruitment / Job Application / Workflow Task')
 @ApiBearerAuth()

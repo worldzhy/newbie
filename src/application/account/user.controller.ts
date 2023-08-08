@@ -18,14 +18,14 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import {PermissionAction, Prisma, User, UserStatus} from '@prisma/client';
-import {UserService} from '../../microservices/account/user/user.service';
-import {RequirePermission} from '../../microservices/account/authorization/authorization.decorator';
-import {compareHash} from '../../toolkit/utilities/common.util';
-import {verifyUuid} from '../../toolkit/validators/user.validator';
+import {UserService} from '@microservices/account/user/user.service';
+import {RequirePermission} from '@microservices/account/authorization/authorization.decorator';
+import {compareHash} from '@toolkit/utilities/common.util';
+import {verifyUuid} from '@toolkit/validators/user.validator';
 import {
   generatePaginationParams,
   generatePaginationResponse,
-} from '../../toolkit/pagination/pagination';
+} from '@toolkit/pagination/pagination';
 
 @ApiTags('Account / User')
 @ApiBearerAuth()

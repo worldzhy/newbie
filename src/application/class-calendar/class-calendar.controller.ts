@@ -1,6 +1,6 @@
 import {Controller, Post, Body, Patch} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {EventCalendarService} from '../../microservices/event-calendar/event-calendar.service';
+import {EventCalendarService} from '@microservices/event-calendar/event-calendar.service';
 import {AvailabilityContainerStatus} from '@prisma/client';
 
 @ApiTags('Class Calendar')

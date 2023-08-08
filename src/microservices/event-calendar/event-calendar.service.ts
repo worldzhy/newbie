@@ -5,11 +5,8 @@ import {
   Event,
   Prisma,
 } from '@prisma/client';
-import {PrismaService} from '../../toolkit/prisma/prisma.service';
-import {
-  datePlusMinutes,
-  datePlusYears,
-} from '../../toolkit/utilities/date.util';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {datePlusMinutes, datePlusYears} from '@toolkit/utilities/date.util';
 const CronParser = require('cron-parser');
 
 @Injectable()

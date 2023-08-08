@@ -1,5 +1,5 @@
 import {Injectable} from '@nestjs/common';
-import {PrismaService} from '../../../../toolkit/prisma/prisma.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {Prisma, StripePaymentIntent} from '@prisma/client';
 
 const stripe = require('stripe')(

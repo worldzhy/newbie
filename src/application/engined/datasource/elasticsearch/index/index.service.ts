@@ -1,7 +1,7 @@
 import {BadRequestException, Injectable} from '@nestjs/common';
 import {ElasticsearchDatasourceIndex, Prisma} from '@prisma/client';
-import {ElasticService} from '../../../../../toolkit/elastic/elastic.service';
-import {PrismaService} from '../../../../../toolkit/prisma/prisma.service';
+import {ElasticService} from '@toolkit/elastic/elastic.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @Injectable()
 export class ElasticsearchDatasourceIndexService {

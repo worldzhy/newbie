@@ -1,7 +1,7 @@
 import {Controller, Delete, Post, Body} from '@nestjs/common';
 import {ApiBearerAuth, ApiBody, ApiTags} from '@nestjs/swagger';
-import {S3Service} from '../../toolkit/aws/aws.s3.service';
-import {SqsService} from '../../toolkit/aws/aws.sqs.service';
+import {S3Service} from '@toolkit/aws/aws.s3.service';
+import {SqsService} from '@toolkit/aws/aws.sqs.service';
 
 @ApiTags('Samples: AWS')
 @ApiBearerAuth()

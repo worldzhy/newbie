@@ -2,9 +2,9 @@ import {Injectable, UnauthorizedException} from '@nestjs/common';
 import {PassportStrategy} from '@nestjs/passport';
 import {Strategy} from 'passport-custom';
 import {Request} from 'express';
-import {AccountService} from '../../account.service';
-import {RefreshTokenService} from '../../../../toolkit/token/refresh-token/refresh-token.service';
-import {UserRefreshTokenService} from '../../user/user-refresh-token.service';
+import {AccountService} from '@microservices/account/account.service';
+import {RefreshTokenService} from '@toolkit/token/refresh-token/refresh-token.service';
+import {UserRefreshTokenService} from '@microservices/account/user/user-refresh-token.service';
 
 @Injectable()
 export class AuthRefreshStrategy extends PassportStrategy(

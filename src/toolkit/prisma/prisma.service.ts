@@ -5,10 +5,10 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import {Prisma, PrismaClient} from '@prisma/client';
-import {prismaMiddleware} from './prisma.middleware';
-import {CustomLoggerService} from '../logger/logger.service';
-import {verifyEmail, verifyPassword} from '../validators/user.validator';
-import {generateHash} from '../utilities/common.util';
+import {prismaMiddleware} from '@toolkit/prisma/prisma.middleware';
+import {CustomLoggerService} from '@toolkit/logger/logger.service';
+import {verifyEmail, verifyPassword} from '@toolkit/validators/user.validator';
+import {generateHash} from '@toolkit/utilities/common.util';
 
 @Injectable()
 export class PrismaService

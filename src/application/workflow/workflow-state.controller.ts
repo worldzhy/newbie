@@ -16,7 +16,7 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import {WorkflowState, Prisma} from '@prisma/client';
-import {WorkflowStateService} from '../../microservices/workflow/workflow-state.service';
+import {WorkflowStateService} from '@microservices/workflow/workflow-state.service';
 
 @ApiTags('Workflow / State')
 @ApiBearerAuth()

@@ -1,8 +1,8 @@
 import {Injectable} from '@nestjs/common';
 import * as aws from '@pulumi/aws';
-import {verifyS3BucketName} from '../../../../../toolkit/validators/aws.validator';
-import {buildResourceOptions} from '../../../../../toolkit/utilities/pulumi.util';
-import {generateRandomNumbers} from '../../../../../toolkit/utilities/common.util';
+import {verifyS3BucketName} from '@toolkit/validators/aws.validator';
+import {buildResourceOptions} from '@toolkit/utilities/pulumi.util';
+import {generateRandomNumbers} from '@toolkit/utilities/common.util';
 import {getAwsConfig} from '../pulumi.config';
 
 @Injectable()

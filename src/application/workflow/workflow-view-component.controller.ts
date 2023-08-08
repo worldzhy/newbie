@@ -13,7 +13,7 @@ import {
   Prisma,
   WorkflowViewComponentType,
 } from '@prisma/client';
-import {WorkflowViewComponentService} from '../../microservices/workflow/workflow-view-component.service';
+import {WorkflowViewComponentService} from '@microservices/workflow/workflow-view-component.service';
 
 @ApiTags('Workflow / View / Component')
 @ApiBearerAuth()

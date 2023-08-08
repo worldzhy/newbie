@@ -28,16 +28,16 @@ import {
   Role,
   TrustedEntityType,
 } from '@prisma/client';
-import {RequirePermission} from '../../../microservices/account/authorization/authorization.decorator';
-import {CandidateService} from '../candidate/candidate.service';
-import {AccessTokenService} from '../../../toolkit/token/access-token/access-token.service';
-import {WorkflowRouteService} from '../../../microservices/workflow/workflow-route.service';
+import {RequirePermission} from '@microservices/account/authorization/authorization.decorator';
+import {CandidateService} from '@application/recruitment/candidate/candidate.service';
+import {AccessTokenService} from '@toolkit/token/access-token/access-token.service';
+import {WorkflowRouteService} from '@microservices/workflow/workflow-route.service';
 import {JobApplicationWorkflowService} from './workflow/workflow.service';
-import {RoleService} from '../../../microservices/account/role/role.service';
+import {RoleService} from '@microservices/account/role/role.service';
 import {JobApplicationWorkflowFileService} from './workflow/file/file.service';
-import {generatePaginationParams} from '../../../toolkit/pagination/pagination';
-import {UserService} from '../../../microservices/account/user/user.service';
-import {PermissionService} from '../../../microservices/account/permission/permission.service';
+import {generatePaginationParams} from '@toolkit/pagination/pagination';
+import {UserService} from '@microservices/account/user/user.service';
+import {PermissionService} from '@microservices/account/permission/permission.service';
 
 @ApiTags('Recruitment / Job Application')
 @ApiBearerAuth()

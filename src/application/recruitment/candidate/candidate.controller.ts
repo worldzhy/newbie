@@ -16,10 +16,10 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import {Prisma, Candidate, PermissionAction} from '@prisma/client';
-import {generateRandomNumbers} from '../../../toolkit/utilities/common.util';
-import {RequirePermission} from '../../../microservices/account/authorization/authorization.decorator';
+import {generateRandomNumbers} from '@toolkit/utilities/common.util';
+import {RequirePermission} from '@microservices/account/authorization/authorization.decorator';
 import {CandidateService} from './candidate.service';
-import {generatePaginationParams} from '../../../toolkit/pagination/pagination';
+import {generatePaginationParams} from '@toolkit/pagination/pagination';
 
 @ApiTags('Recruitment / Candidate')
 @ApiBearerAuth()

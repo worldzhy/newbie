@@ -1,14 +1,13 @@
 import {Controller, Post, Body, BadRequestException} from '@nestjs/common';
 import {ApiTags, ApiBody} from '@nestjs/swagger';
 import {Prisma, User} from '@prisma/client';
-import {UserService} from '../../microservices/account/user/user.service';
-import {Public} from '../../microservices/account/authentication/public/public.decorator';
+import {UserService} from '@microservices/account/user/user.service';
+import {Public} from '@microservices/account/authentication/public/public.decorator';
 import {
   verifyEmail,
   verifyPassword,
   verifyPhone,
-  verifyUsername,
-} from '../../toolkit/validators/user.validator';
+} from '@toolkit/validators/user.validator';
 
 @ApiTags('Account')
 @Controller('account')
@@ -70,7 +69,6 @@ export class AccountSignupController {
         throw new BadRequestException(
           'Your password is not strong enough. (length >= 8, lowercase >= 1, uppercase >= 1, numbers >= 1, symbols >= 1)'
         );
-      } else {
       }
     }
 

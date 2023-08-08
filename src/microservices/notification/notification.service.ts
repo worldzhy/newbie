@@ -2,8 +2,8 @@ import {Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import {SendMessagesCommandOutput} from '@aws-sdk/client-pinpoint';
 import {EmailNotification, SmsNotification} from '@prisma/client';
-import {PrismaService} from '../../toolkit/prisma/prisma.service';
-import {PinpointService} from '../../toolkit/aws/aws.pinpoint.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {PinpointService} from '@toolkit/aws/aws.pinpoint.service';
 
 @Injectable()
 export class NotificationService {

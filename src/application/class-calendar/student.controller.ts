@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {Prisma, User} from '@prisma/client';
-import {UserService} from '../../microservices/account/user/user.service';
+import {UserService} from '@microservices/account/user/user.service';
 
 @ApiTags('Class Calendar / Student')
 @ApiBearerAuth()
@@ -36,8 +36,6 @@ export class StudentController {
       data: body,
     });
   }
-
-  
 
   @Get('')
   async getStudents(): Promise<User[]> {

@@ -4,14 +4,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {UserStatus, VerificationCodeUse} from '@prisma/client';
-import {VerificationCodeService} from '../verification-code/verification-code.service';
-import {NotificationService} from '../notification/notification.service';
-import {AccessTokenService} from '../../toolkit/token/access-token/access-token.service';
-import {RefreshTokenService} from '../../toolkit/token/refresh-token/refresh-token.service';
-import {getSecondsUntilunixTimestamp} from '../../toolkit/utilities/date.util';
-import {UserService} from './user/user.service';
-import {UserAccessTokenService} from './user/user-access-token.service';
-import {UserRefreshTokenService} from './user/user-refresh-token.service';
+import {VerificationCodeService} from '@microservices/verification-code/verification-code.service';
+import {NotificationService} from '@microservices/notification/notification.service';
+import {AccessTokenService} from '@toolkit/token/access-token/access-token.service';
+import {RefreshTokenService} from '@toolkit/token/refresh-token/refresh-token.service';
+import {getSecondsUntilunixTimestamp} from '@toolkit/utilities/date.util';
+import {UserService} from '@microservices/account/user/user.service';
+import {UserAccessTokenService} from '@microservices/account/user/user-access-token.service';
+import {UserRefreshTokenService} from '@microservices/account/user/user-refresh-token.service';
 
 @Injectable()
 export class AccountService {

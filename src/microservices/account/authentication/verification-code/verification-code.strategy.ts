@@ -5,16 +5,13 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import {VerificationCodeService} from '../../../verification-code/verification-code.service';
-import {UserService} from '../../user/user.service';
-import {
-  verifyEmail,
-  verifyPhone,
-} from '../../../../toolkit/validators/user.validator';
+import {VerificationCodeService} from '@microservices/verification-code/verification-code.service';
+import {UserService} from '@microservices/account/user/user.service';
+import {verifyEmail, verifyPhone} from '@toolkit/validators/user.validator';
 import {
   IpLoginAttemptService,
   UserLoginAttemptService,
-} from '../../security/login-attempt/login-attempt.service';
+} from '@microservices/account/security/login-attempt/login-attempt.service';
 import {Request} from 'express';
 
 @Injectable()

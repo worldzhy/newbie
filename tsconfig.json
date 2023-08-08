@@ -16,6 +16,15 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@_config/*": ["src/_config/*"],
+      "@_decorator/*": ["src/_decorator/*"],
+      "@_filter/*": ["src/_filter/*"],
+      "@_middleware/*": ["src/_middleware/*"],
+      "@application/*": ["src/application/*"],
+      "@microservices/*": ["src/microservices/*"],
+      "@toolkit/*": ["src/toolkit/*"]
+    }
   }
 }

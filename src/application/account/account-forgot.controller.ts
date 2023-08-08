@@ -1,13 +1,10 @@
 import {Controller, Patch, Body, BadRequestException} from '@nestjs/common';
 import {ApiTags, ApiBody} from '@nestjs/swagger';
 import {User} from '@prisma/client';
-import {UserService} from '../../microservices/account/user/user.service';
-import {Public} from '../../microservices/account/authentication/public/public.decorator';
-import {VerificationCodeService} from '../../microservices/verification-code/verification-code.service';
-import {
-  verifyEmail,
-  verifyPhone,
-} from '../../toolkit/validators/user.validator';
+import {UserService} from '@microservices/account/user/user.service';
+import {Public} from '@microservices/account/authentication/public/public.decorator';
+import {VerificationCodeService} from '@microservices/verification-code/verification-code.service';
+import {verifyEmail, verifyPhone} from '@toolkit/validators/user.validator';
 
 @ApiTags('Account')
 @Controller('account')

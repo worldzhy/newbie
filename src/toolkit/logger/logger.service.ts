@@ -1,5 +1,5 @@
 import {ConsoleLogger, Injectable} from '@nestjs/common';
-import {SqsService} from '../aws/aws.sqs.service';
+import {SqsService} from '@toolkit/aws/aws.sqs.service';
 import {ConfigService} from '@nestjs/config';
 
 /**

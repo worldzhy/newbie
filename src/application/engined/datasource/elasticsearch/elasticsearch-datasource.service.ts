@@ -1,8 +1,8 @@
 import {RequestParams} from '@elastic/elasticsearch';
 import {Injectable, NotFoundException} from '@nestjs/common';
 import {ElasticsearchDatasource, Prisma} from '@prisma/client';
-import {ElasticService} from '../../../../toolkit/elastic/elastic.service';
-import {PrismaService} from '../../../../toolkit/prisma/prisma.service';
+import {ElasticService} from '@toolkit/elastic/elastic.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {get as lodash_get, split as lodash_split} from 'lodash';
 
 @Injectable()

@@ -6,9 +6,9 @@ import {
   VerificationCodeStatus,
   VerificationCodeUse,
 } from '@prisma/client';
-import {PrismaService} from '../../toolkit/prisma/prisma.service';
-import {currentPlusMinutes} from '../../toolkit/utilities/date.util';
-import {generateRandomNumbers} from '../../toolkit/utilities/common.util';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {currentPlusMinutes} from '@toolkit/utilities/date.util';
+import {generateRandomNumbers} from '@toolkit/utilities/common.util';
 
 // Todo: We do not support inactivate verification code automatically now.
 

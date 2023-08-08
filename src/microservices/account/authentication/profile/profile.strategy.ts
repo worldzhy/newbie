@@ -6,11 +6,11 @@ import {
 import {PassportStrategy} from '@nestjs/passport';
 import {Strategy} from 'passport-custom';
 import {Request} from 'express';
-import {UserProfileService} from '../../user/user-profile.service';
+import {UserProfileService} from '@microservices/account/user/user-profile.service';
 import {
   IpLoginAttemptService,
   UserLoginAttemptService,
-} from '../../security/login-attempt/login-attempt.service';
+} from '@microservices/account/security/login-attempt/login-attempt.service';
 
 @Injectable()
 export class AuthProfileStrategy extends PassportStrategy(

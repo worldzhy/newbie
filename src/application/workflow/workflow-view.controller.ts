@@ -16,7 +16,7 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import {WorkflowView, Prisma} from '@prisma/client';
-import {WorkflowViewService} from '../../microservices/workflow/workflow-view.service';
+import {WorkflowViewService} from '@microservices/workflow/workflow-view.service';
 
 @ApiTags('Workflow / View')
 @ApiBearerAuth()

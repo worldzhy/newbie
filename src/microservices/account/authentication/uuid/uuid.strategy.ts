@@ -6,12 +6,12 @@ import {
 import {PassportStrategy} from '@nestjs/passport';
 import {Strategy} from 'passport-custom';
 import {Request} from 'express';
-import {UserService} from '../../user/user.service';
-import {verifyUuid} from '../../../../toolkit/validators/user.validator';
+import {UserService} from '@microservices/account/user/user.service';
+import {verifyUuid} from '@toolkit/validators/user.validator';
 import {
   IpLoginAttemptService,
   UserLoginAttemptService,
-} from '../../security/login-attempt/login-attempt.service';
+} from '@microservices/account/security/login-attempt/login-attempt.service';
 
 @Injectable()
 export class AuthUuidStrategy extends PassportStrategy(

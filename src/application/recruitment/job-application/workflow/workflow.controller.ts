@@ -13,12 +13,12 @@ import {JobApplicationWorkflow, PermissionAction, Prisma} from '@prisma/client';
 import {JobApplicationWorkflowService} from './workflow.service';
 import {JobApplicationWorkflowFileService} from './file/file.service';
 import {JobApplicationWorkflowTrailService} from './trail/trail.service';
-import {RequirePermission} from '../../../../microservices/account/authorization/authorization.decorator';
-import {RoleService} from '../../../../microservices/account/role/role.service';
-import {UserService} from '../../../../microservices/account/user/user.service';
-import {WorkflowRouteService} from '../../../../microservices/workflow/workflow-route.service';
-import {FileService} from '../../../../microservices/fmgmt/file/file.service';
-import {AccessTokenService} from '../../../../toolkit/token/access-token/access-token.service';
+import {RequirePermission} from '@microservices/account/authorization/authorization.decorator';
+import {RoleService} from '@microservices/account/role/role.service';
+import {UserService} from '@microservices/account/user/user.service';
+import {WorkflowRouteService} from '@microservices/workflow/workflow-route.service';
+import {FileService} from '@microservices/fmgmt/file/file.service';
+import {AccessTokenService} from '@toolkit/token/access-token/access-token.service';
 
 @ApiTags('Recruitment / Job Application / Workflow')
 @ApiBearerAuth()

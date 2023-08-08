@@ -1,5 +1,5 @@
 import {AvailabilityContainerStatus, PrismaClient} from '@prisma/client';
-import {prismaMiddleware} from '../../src/toolkit/prisma/prisma.middleware';
+import {prismaMiddleware} from '@toolkit/prisma/prisma.middleware';
 
 export async function seedForReservation() {
   const prisma = new PrismaClient();

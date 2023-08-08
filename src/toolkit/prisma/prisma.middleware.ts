@@ -1,7 +1,10 @@
 import {BadRequestException} from '@nestjs/common';
 import {Prisma} from '@prisma/client';
-import {generateHash, generateRandomNumbers} from '../utilities/common.util';
-import {verifyEmail, verifyPassword} from '../validators/user.validator';
+import {
+  generateHash,
+  generateRandomNumbers,
+} from '@toolkit/utilities/common.util';
+import {verifyEmail, verifyPassword} from '@toolkit/validators/user.validator';
 
 export async function prismaMiddleware(
   params: Prisma.MiddlewareParams,

@@ -21,7 +21,7 @@ import {
   Prisma,
   TrustedEntityType,
 } from '@prisma/client';
-import {PermissionService} from '../../microservices/account/permission/permission.service';
+import {PermissionService} from '@microservices/account/permission/permission.service';
 
 @ApiTags('Account / Permission')
 @ApiBearerAuth()

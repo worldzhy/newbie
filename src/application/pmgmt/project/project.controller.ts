@@ -17,7 +17,7 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import {ProjectService} from './project.service';
-import {verifyProjectName} from '../../../toolkit/validators/project.validator';
+import {verifyProjectName} from '@toolkit/validators/project.validator';
 
 import {
   PermissionAction,
@@ -29,8 +29,8 @@ import {
 import {
   generatePaginationParams,
   generatePaginationResponse,
-} from '../../../toolkit/pagination/pagination';
-import {RequirePermission} from '../../../microservices/account/authorization/authorization.decorator';
+} from '@toolkit/pagination/pagination';
+import {RequirePermission} from '@microservices/account/authorization/authorization.decorator';
 
 @ApiTags('Project Management / Project')
 @ApiBearerAuth()

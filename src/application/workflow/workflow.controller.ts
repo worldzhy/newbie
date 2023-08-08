@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {Workflow, Prisma} from '@prisma/client';
-import {WorkflowService} from '../../microservices/workflow/workflow.service';
+import {WorkflowService} from '@microservices/workflow/workflow.service';
 
 @ApiTags('Workflow')
 @ApiBearerAuth()

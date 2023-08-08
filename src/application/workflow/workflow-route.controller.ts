@@ -16,7 +16,7 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import {WorkflowRoute, Prisma} from '@prisma/client';
-import {WorkflowRouteService} from '../../microservices/workflow/workflow-route.service';
+import {WorkflowRouteService} from '@microservices/workflow/workflow-route.service';
 
 @ApiTags('Workflow / Route')
 @ApiBearerAuth()

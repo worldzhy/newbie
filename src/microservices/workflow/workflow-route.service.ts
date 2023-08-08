@@ -1,5 +1,5 @@
 import {Injectable} from '@nestjs/common';
-import {PrismaService} from '../../toolkit/prisma/prisma.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {Prisma, WorkflowRoute} from '@prisma/client';
 
 @Injectable()

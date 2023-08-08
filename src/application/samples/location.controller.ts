@@ -16,9 +16,9 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import {PermissionAction, Prisma, Location} from '@prisma/client';
-import {RequirePermission} from '../../microservices/account/authorization/authorization.decorator';
-import {LocationService} from '../../microservices/location/location.service';
-import {generatePaginationParams} from '../../toolkit/pagination/pagination';
+import {RequirePermission} from '@microservices/account/authorization/authorization.decorator';
+import {LocationService} from '@microservices/location/location.service';
+import {generatePaginationParams} from '@toolkit/pagination/pagination';
 
 @ApiTags('Samples: Location')
 @ApiBearerAuth()

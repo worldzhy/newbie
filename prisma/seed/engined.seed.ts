@@ -1,7 +1,7 @@
 import {ElasticsearchDatasource, PostgresqlDatasource} from '@prisma/client';
-import {PostgresqlDatasourceController} from '../../src/application/engined/datasource/postgresql/postgresql-datasource.controller';
-import {ElasticsearchDatasourceController} from '../../src/application/engined/datasource/elasticsearch/elasticsearch-datasource.controller';
-import {DatatransPipelineController} from '../../src/application/engined/datatrans/pipeline/pipeline.controller';
+import {PostgresqlDatasourceController} from '@application/engined/datasource/postgresql/postgresql-datasource.controller';
+import {ElasticsearchDatasourceController} from '@application/engined/datasource/elasticsearch/elasticsearch-datasource.controller';
+import {DatatransPipelineController} from '@application/engined/datatrans/pipeline/pipeline.controller';
 
 export async function seedForEngined() {
   // Seed datasource module.
