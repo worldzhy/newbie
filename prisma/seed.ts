@@ -1,3 +1,4 @@
+/* eslint-disable node/no-unpublished-import */
 import {seedForEngined} from './seed/engined.seed';
 import {seedForPmgmt} from './seed/pmgmt.seed';
 import {seedForAccount} from './seed/account.seed';

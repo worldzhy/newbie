@@ -101,7 +101,7 @@ export async function prismaMiddleware(
   } else if (params.model === Prisma.ModelName.AvailabilityContainer) {
     switch (params.action) {
       case 'create':
-      case 'update':
+      case 'update': {
         const dateOfOpening = params.args['data']['dateOfOpening'];
         const dateOfClosure = params.args['data']['dateOfClosure'];
         if (dateOfOpening) {
@@ -111,10 +111,11 @@ export async function prismaMiddleware(
           params.args['data']['dateOfClosure'] = new Date(dateOfClosure);
         }
         return next(params);
+      }
       case 'findUnique':
       case 'findUniqueOrThrow':
       case 'findFirst':
-      case 'findFirstOrThrow':
+      case 'findFirstOrThrow': {
         const resultOne = await next(params);
         if (resultOne) {
           if (resultOne.dateOfOpening) {
@@ -129,7 +130,8 @@ export async function prismaMiddleware(
           }
         }
         return resultOne;
-      case 'findMany':
+      }
+      case 'findMany': {
         const resultMany = await next(params);
         if (resultMany) {
           for (let i = 0; i < resultMany.length; i++) {
@@ -147,13 +149,14 @@ export async function prismaMiddleware(
           }
         }
         return resultMany;
+      }
       default:
         return next(params);
     }
   } else if (params.model === Prisma.ModelName.Availability) {
     switch (params.action) {
       case 'create':
-      case 'update':
+      case 'update': {
         const date = params.args['data']['date'];
         const timeOfStarting = params.args['data']['timeOfStarting'];
         const timeOfEnding = params.args['data']['timeOfEnding'];
@@ -171,7 +174,8 @@ export async function prismaMiddleware(
           );
         }
         return next(params);
-      case 'createMany':
+      }
+      case 'createMany': {
         for (let i = 0; i < params.args['data'].length; i++) {
           const availability = params.args['data'][i];
 
@@ -193,10 +197,11 @@ export async function prismaMiddleware(
           }
         }
         return next(params);
+      }
       case 'findUnique':
       case 'findUniqueOrThrow':
       case 'findFirst':
-      case 'findFirstOrThrow':
+      case 'findFirstOrThrow': {
         const resultOne = await next(params);
         if (resultOne) {
           if (resultOne.date) {
@@ -218,7 +223,8 @@ export async function prismaMiddleware(
           }
         }
         return resultOne;
-      case 'findMany':
+      }
+      case 'findMany': {
         const resultMany = await next(params);
         if (resultMany) {
           for (let i = 0; i < resultMany.length; i++) {
@@ -241,6 +247,7 @@ export async function prismaMiddleware(
           }
         }
         return resultMany;
+      }
       default:
         return next(params);
     }
