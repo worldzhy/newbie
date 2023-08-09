@@ -49,10 +49,11 @@ export class WorkflowViewController {
   @ApiQuery({name: 'workflowId', type: 'string'})
   async getWorkflowStartViews(@Query('workflowId') workflowId?: string) {
     return await this.workflowViewService.findMany({
-      where: {workflowId: workflowId, routes: {some: {startSign: true}}},
+      where: {workflowId: workflowId, inboundRoutes: {some: {startSign: true}}},
       include: {
         components: {orderBy: {sort: 'asc'}},
-        routes: {include: {state: true}},
+        inboundRoutes: {include: {state: true}},
+        outboundRoutes: {include: {state: true}},
       },
     });
   }
@@ -71,7 +72,8 @@ export class WorkflowViewController {
       where: {id: viewId},
       include: {
         components: {orderBy: {sort: 'asc'}},
-        routes: {include: {state: true}},
+        inboundRoutes: {include: {state: true}},
+        outboundRoutes: {include: {state: true}},
       },
     });
   }

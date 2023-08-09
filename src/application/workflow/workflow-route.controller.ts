@@ -53,6 +53,7 @@ export class WorkflowRouteController {
   ): Promise<WorkflowRoute[]> {
     return await this.workflowRouteService.findMany({
       where: {view: {workflowId}},
+      include: {view: true, state: true, nextView: true},
     });
   }
 

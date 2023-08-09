@@ -554,15 +554,16 @@ model Workflow {
 }
 
 model WorkflowView {
-  id          Int                     @id @default(autoincrement())
-  name        String
-  description String?
-  createdAt   DateTime                @default(now())
-  updatedAt   DateTime                @updatedAt
-  components  WorkflowViewComponent[]
-  routes      WorkflowRoute[]
-  workflow    Workflow                @relation(fields: [workflowId], references: [id], onDelete: Cascade)
-  workflowId  String
+  id             Int                     @id @default(autoincrement())
+  name           String
+  description    String?
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  components     WorkflowViewComponent[]
+  outboundRoutes WorkflowRoute[]         @relation("outboundRoutes")
+  inboundRoutes  WorkflowRoute[]         @relation("inboundRoutes")
+  workflow       Workflow                @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId     String
 
   @@schema("microservice/workflow")
 }
@@ -615,10 +616,11 @@ model WorkflowState {
 model WorkflowRoute {
   id         Int           @id @default(autoincrement())
   startSign  Boolean       @default(false)
-  view       WorkflowView  @relation(fields: [viewId], references: [id], onDelete: Cascade)
+  view       WorkflowView  @relation("outboundRoutes", fields: [viewId], references: [id], onDelete: Cascade)
   viewId     Int
   state      WorkflowState @relation(fields: [stateId], references: [id], onDelete: Cascade)
   stateId    Int
+  nextView   WorkflowView  @relation("inboundRoutes", fields: [nextViewId], references: [id], onDelete: Cascade)
   nextViewId Int
   nextRoleId String?       @db.Uuid // The next role to take over the next step.
   nextUserId String?       @db.Uuid // The next user to take over the next step.
