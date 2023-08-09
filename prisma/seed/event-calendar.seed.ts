@@ -1,7 +1,7 @@
 import {AvailabilityContainerStatus, PrismaClient} from '@prisma/client';
 import {prismaMiddleware} from '@toolkit/prisma/prisma.middleware';
 
-export async function seedForReservation() {
+export async function seedForEventCalendar() {
   const prisma = new PrismaClient();
   prisma.$use(prismaMiddleware);
 

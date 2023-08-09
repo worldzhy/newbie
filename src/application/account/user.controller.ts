@@ -17,7 +17,14 @@ import {
   ApiBody,
   ApiQuery,
 } from '@nestjs/swagger';
-import {PermissionAction, Prisma, User, UserStatus} from '@prisma/client';
+import {
+  PermissionAction,
+  Prisma,
+  Role,
+  User,
+  Location,
+  UserStatus,
+} from '@prisma/client';
 import {UserService} from '@microservices/account/user/user.service';
 import {RequirePermission} from '@microservices/account/authorization/authorization.decorator';
 import {compareHash} from '@toolkit/utilities/common.util';
@@ -81,28 +88,26 @@ export class UserController {
           username: 'dispatcher',
           password: 'Abc1234!',
           status: UserStatus.ACTIVE,
-          roleIds: [{id: '013f92b0-4a53-45cb-8eca-e66089a3919f'}],
+          roles: [{id: '013f92b0-4a53-45cb-8eca-e66089a3919f'}],
         },
       },
     },
   })
   async createUser(
     @Body()
-    body: Prisma.UserCreateInput & {roleIds?: {id: string; name: string}[]} & {
-      locationNames?: string[];
-    }
+    body: Prisma.UserCreateInput & {roles?: Role[]; locations?: Location[]}
   ): Promise<User> {
+    const {roles, locations, ...user} = body;
+    const userCreateInput: Prisma.UserCreateInput = user;
     // Construct roles.
-    if (body.roleIds && body.roleIds.length > 0) {
-      body.roles = {
-        connect: body.roleIds,
+    if (roles && roles.length > 0) {
+      userCreateInput.roles = {
+        connect: roles,
       };
-      // Remove roleIds since it is not a field of User model.
-      delete body.roleIds;
     }
 
     return await this.userService.create({
-      data: body,
+      data: userCreateInput,
       select: {
         id: true,
         email: true,
@@ -227,34 +232,29 @@ export class UserController {
   async updateUser(
     @Param('userId') userId: string,
     @Body()
-    body: Prisma.UserUpdateInput & {roleIds?: {id: string; name: string}[]} & {
-      locationNames?: string[];
-    }
+    body: Prisma.UserUpdateInput & {roles?: Role[]; locations?: Location[]}
   ): Promise<User> {
+    const {roles, locations, ...user} = body;
+    const userUpdateInput: Prisma.UserUpdateInput = user;
+
     // Construct roles.
-    if (body.roleIds && Array.isArray(body.roleIds)) {
-      body.roles = {
-        set: body.roleIds, // Overwrite the connections with roles.
+    if (roles && Array.isArray(roles)) {
+      userUpdateInput.roles = {
+        set: roles, // Overwrite the connections with roles.
       };
-      // Remove roleIds since it is not a field of User model.
-      delete body.roleIds;
     }
 
     // Construct locationss.
-    if (body.locationNames) {
-      body.locations = {
+    if (locations && Array.isArray(locations)) {
+      userUpdateInput.locations = {
         deleteMany: {},
-        create: body.locationNames.map(locationName => {
-          return {name: locationName};
-        }),
+        create: locations,
       };
-      // Remove locationNames since it is not a field of User model.
-      delete body.locationNames;
     }
 
     return await this.userService.update({
       where: {id: userId},
-      data: body,
+      data: userUpdateInput,
     });
   }
 
