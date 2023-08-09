@@ -1,4 +1,4 @@
-import {Controller, Patch, Body, BadRequestException} from '@nestjs/common';
+import {Controller, Body, BadRequestException, Post} from '@nestjs/common';
 import {ApiTags, ApiBody} from '@nestjs/swagger';
 import {User} from '@prisma/client';
 import {UserService} from '@microservices/account/user/user.service';
@@ -15,7 +15,7 @@ export class AccountForgotController {
   ) {}
 
   @Public()
-  @Patch('forgot-password')
+  @Post('forgot-password')
   @ApiBody({
     description: '',
     examples: {
