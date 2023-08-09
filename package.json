@@ -27,7 +27,7 @@
     "posttest": "npm run lint"
   },
   "prisma": {
-    "seed": "ts-node ./prisma/seed.ts"
+    "seed": "ts-node -r tsconfig-paths/register ./prisma/seed.ts"
   },
   "dependencies": {
     "@aws-sdk/client-cloudformation": "^3.316.0",
