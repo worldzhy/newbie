@@ -77,7 +77,7 @@
     "swagger-ui-express": "^4.6.2",
     "typeorm": "^0.3.15",
     "validator": "^13.9.0",
-    "xlsx": "^0.18.5"
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.19.3/xlsx-0.19.3.tgz"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.6.1",
