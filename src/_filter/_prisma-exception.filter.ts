@@ -6,12 +6,12 @@ import {
 } from '@nestjs/common';
 import {Prisma} from '@prisma/client';
 import {Response} from 'express';
+import {getPrismaExceptionMessage} from '@toolkit/exceptions/prisma.exceptions';
 
 /**
  * @see [PrismaErrors] https://www.prisma.io/docs/reference/api-reference/error-reference#error-codes
  */
 @Catch(
-  Prisma.NotFoundError,
   Prisma.PrismaClientKnownRequestError,
   Prisma.PrismaClientUnknownRequestError,
   Prisma.PrismaClientRustPanicError,
@@ -21,100 +21,121 @@ import {Response} from 'express';
 export class PrismaExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
     const response = host.switchToHttp().getResponse<Response>();
-
     let statusCode: HttpStatus;
-    if (exception instanceof Prisma.NotFoundError) {
-      statusCode = HttpStatus.NOT_FOUND;
 
-      // HTTP response
-      response.status(statusCode).json({
-        message: exception.message,
-        statusCode: statusCode,
-      });
-    } else if (exception instanceof Prisma.PrismaClientKnownRequestError) {
-      // Set HTTP status code
-      if (exception.code.startsWith('P1')) {
+    /*
+     * PrismaClientKnownRequestError
+     * Engine returns a known error related to the request
+     */
+    if (exception instanceof Prisma.PrismaClientKnownRequestError) {
+      const {code, message} = exception;
+      switch (true) {
         // Common errors
-        statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
-      } else if (exception.code.startsWith('P2')) {
-        // Prisma Client (Query Engine) errors
-        statusCode = HttpStatus.BAD_REQUEST;
-        if (exception.code === 'P2002') {
-          return response.status(statusCode).json({
-            message: `The ${exception.meta!.target} is already existed.`,
-            statusCode: statusCode,
-          });
-        } else if (exception.code === 'P2025') {
-          return response.status(statusCode).json({
-            message: exception.meta!.cause,
-            statusCode: statusCode,
-          });
-        }
-      } else if (exception.code.startsWith('P3')) {
-        // Prisma Migrate (Migration Engine) errors
-        statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
-      } else if (exception.code.startsWith('P4')) {
-        // prisma db pull (Introspection Engine) errors
-        statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
-      } else {
-        statusCode = HttpStatus.OK;
+        case code.startsWith('P1'):
+          statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+          break;
+        // Client (Query Engine) errors
+        case code.startsWith('P2'):
+          statusCode = HttpStatus.BAD_REQUEST;
+          break;
+        // Migrate (Schema Engine) errors
+        case code.startsWith('P3'):
+          statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+          break;
+        // DB pull errors
+        case code.startsWith('P4'):
+          statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+          break;
+        // Data Proxy errors
+        case code.startsWith('P5'):
+          statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+          break;
+        // Other errors
+        default:
+          statusCode = HttpStatus.OK;
+          break;
       }
-
-      // HTTP response
       response.status(statusCode).json({
-        message: exception.meta,
-        statusCode: statusCode,
-        prismaCode: exception.code,
+        message: getPrismaExceptionMessage(code, message),
+        statusCode,
       });
-    } else if (exception instanceof Prisma.PrismaClientUnknownRequestError) {
-      // HTTP response
-      response.status(400).json({
-        message: exception.message,
-        statusCode: 400,
-        prismaVersion: exception.clientVersion,
-      });
-    } else if (exception instanceof Prisma.PrismaClientRustPanicError) {
-      // HTTP response
+      return;
+    }
+
+    /*
+     * PrismaClientUnknownRequestError
+     * Engine returns an error related to a request that does not have an error code
+     */
+    if (exception instanceof Prisma.PrismaClientUnknownRequestError) {
       response.status(HttpStatus.BAD_REQUEST).json({
         message: exception.message,
         statusCode: HttpStatus.BAD_REQUEST,
       });
-    } else if (exception instanceof Prisma.PrismaClientInitializationError) {
-      // Set HTTP status code
-      if (exception.errorCode?.startsWith('P1')) {
-        // Common errors
-        statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
-      } else if (exception.errorCode?.startsWith('P2')) {
-        // Prisma Client (Query Engine) errors
-        statusCode = HttpStatus.BAD_REQUEST;
-      } else if (exception.errorCode?.startsWith('P3')) {
-        // Prisma Migrate (Migration Engine) errors
-        statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
-      } else if (exception.errorCode?.startsWith('P4')) {
-        // prisma db pull (Introspection Engine) errors
-        statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
-      } else {
-        statusCode = HttpStatus.OK;
-      }
+      return;
+    }
 
-      // HTTP response
-      response.status(statusCode).json({
-        message: exception.message,
-        statusCode: statusCode,
-        prismaCode: exception.errorCode,
-      });
-    } else if (exception instanceof Prisma.PrismaClientValidationError) {
-      // HTTP response
+    /*
+     * PrismaClientRustPanicError
+     * Engine crashes and exits with a non-zero exit code
+     */
+    if (exception instanceof Prisma.PrismaClientRustPanicError) {
       response.status(HttpStatus.BAD_REQUEST).json({
-        // message: exception.message,
+        message: exception.message,
+        statusCode: HttpStatus.BAD_REQUEST,
+      });
+      return;
+    }
+
+    /*
+     * PrismaClientInitializationError
+     * Something goes wrong when the query engine is started and the connection to the database is created
+     */
+    if (exception instanceof Prisma.PrismaClientInitializationError) {
+      const {errorCode, message} = exception;
+      switch (true) {
+        // Common errors
+        case errorCode?.startsWith('P1'):
+          statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+          break;
+        // Client (Query Engine) errors
+        case errorCode?.startsWith('P2'):
+          statusCode = HttpStatus.BAD_REQUEST;
+          break;
+        // Migrate (Schema Engine) errors
+        case errorCode?.startsWith('P3'):
+          statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+          break;
+        // DB pull errors
+        case errorCode?.startsWith('P4'):
+          statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+          break;
+        // Data Proxy errors
+        case errorCode?.startsWith('P5'):
+          statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+          break;
+        // Other errors
+        default:
+          statusCode = HttpStatus.OK;
+          break;
+      }
+      response.status(statusCode).json({
+        message: getPrismaExceptionMessage(errorCode, message),
+        statusCode,
+      });
+      return;
+    }
+
+    /*
+     * PrismaClientValidationError
+     * Validation fails
+     */
+    if (exception instanceof Prisma.PrismaClientValidationError) {
+      response.status(HttpStatus.BAD_REQUEST).json({
         message:
           'Validation failed due to missing, incorrect field name, incorrect field types, etc.',
         statusCode: HttpStatus.BAD_REQUEST,
       });
-    } else {
-      // The PrismaExceptionFilter can not handle the exception.
-      // Throw this exception for other exception filters to handle.
-      throw exception;
+      return;
     }
   }
 }
