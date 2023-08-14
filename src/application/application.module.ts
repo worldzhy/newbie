@@ -5,7 +5,7 @@ import {ThrottlerGuard, ThrottlerModule} from '@nestjs/throttler';
 import ApplicationConfiguration from '@_config/application.config';
 import MicroservicesConfiguration from '@_config/microservice.config';
 import ToolkitConfiguration from '@_config/toolkit.config';
-import {AllExceptionsFilter} from '@_filter/_all-exceptions.filter';
+import {AllExceptionFilter} from '@_filter/_all-exception.filter';
 import {HttpExceptionFilter} from '@_filter/_http-exception.filter';
 import {PrismaExceptionFilter} from '@_filter/_prisma-exception.filter';
 import {ThrottlerExceptionFilter} from '@_filter/_throttler-exception.filter';
@@ -98,7 +98,7 @@ import {NotificationController} from '@application/samples/notification.controll
     {provide: APP_GUARD, useClass: AuthorizationGuard}, // 4th priority guard.
 
     // Filters
-    {provide: APP_FILTER, useClass: AllExceptionsFilter}, // 4th priority for all exceptions.
+    {provide: APP_FILTER, useClass: AllExceptionFilter}, // 4th priority for all exceptions.
     {provide: APP_FILTER, useClass: PrismaExceptionFilter}, // 3rd priority for exceptions thrown by services.
     {provide: APP_FILTER, useClass: HttpExceptionFilter}, // 2nd priority for exceptions thrown by controllers.
     {provide: APP_FILTER, useClass: ThrottlerExceptionFilter}, // 1st priority for exceptions thrown by throttler (rate limit).

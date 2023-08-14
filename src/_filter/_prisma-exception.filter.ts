@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import {Prisma} from '@prisma/client';
 import {Response} from 'express';
-import {getPrismaExceptionMessage} from '@toolkit/exceptions/prisma.exceptions';
+import {getPrismaExceptionMessage} from '@toolkit/prisma/prisma.exception';
 
 /**
  * @see [PrismaErrors] https://www.prisma.io/docs/reference/api-reference/error-reference#error-codes
