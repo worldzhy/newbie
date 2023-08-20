@@ -1,9 +1,10 @@
 import {Injectable} from '@nestjs/common';
 import {
-  AvailabilityContainer,
-  AvailabilityContainerStatus,
+  EventContainer,
+  EventContainerStatus,
   Event,
   Prisma,
+  EventType,
 } from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {datePlusMinutes, datePlusYears} from '@toolkit/utilities/date.util';
@@ -18,57 +19,58 @@ export class EventCalendarService {
    * *Usage scenario 2: Create calendar for multiple events. In this case, 'event' shouldn't appear.
    */
   async createEventCalendar(params: {
-    event?: {
+    eventType?: {
       name: string;
       minutesOfDuration: number;
       minutesInAdvanceToReserve: number;
       minutesInAdanceToCancel: number;
-      numberOfSeats: number;
     };
-    availabilityContainer: {
-      status: AvailabilityContainerStatus;
+    eventContainer: {
+      status: EventContainerStatus;
       dateOfOpening: Date;
       dateOfClosure: Date;
       timezone: string;
     };
-    availabilities: [{cronExpression: string; eventId?: number}];
+    events: [{cronExpression: string; eventTypeId?: number}];
   }): Promise<{
-    event: Event | undefined;
-    availabilityContainer: AvailabilityContainer;
+    eventType: EventType | undefined;
+    eventContainer: EventContainer;
+    events: Event[];
   }> {
     return await this.prisma.$transaction<{
-      event: Event | undefined;
-      availabilityContainer: AvailabilityContainer;
+      eventType: EventType | undefined;
+      eventContainer: EventContainer;
+      events: Event[];
     }>(async tx => {
-      // [step 1] Create availability container.
-      const availabilityContainer = await tx.availabilityContainer.create({
-        data: params.availabilityContainer,
+      // [step 1] Create event container.
+      const eventContainer = await tx.eventContainer.create({
+        data: params.eventContainer,
       });
 
-      // [step 2] Construct data of availabilities.
-      let newEvent: Event | undefined;
-      if (params.event) {
-        newEvent = await tx.event.create({data: params.event});
+      // [step 2] Construct data of events.
+      let newEventType: EventType | undefined;
+      if (params.eventType) {
+        newEventType = await tx.eventType.create({data: params.eventType});
       }
-      const constructedAvailabilities = await this.constructAvailabilities({
-        defaultEvent: newEvent,
-        availabilityContainer: availabilityContainer,
-        availabilities: params.availabilities,
+      const constructedEvents = await this.constructEvents({
+        defaultEventType: newEventType,
+        eventContainer: eventContainer,
+        events: params.events,
       });
 
-      // [step 3] Create availabilities.
-      await tx.availability.createMany({
-        data: constructedAvailabilities as Prisma.AvailabilityCreateManyInput[],
+      // [step 3] Create events.
+      await tx.event.createMany({
+        data: constructedEvents as Prisma.EventCreateManyInput[],
       });
 
       // [step 4] Return.
-      const generatedAvailabilities = await tx.availability.findMany({
-        where: {containerId: availabilityContainer.id},
+      const generatedEvents = await tx.event.findMany({
+        where: {containerId: eventContainer.id},
       });
       return {
-        event: newEvent,
-        availabilityContainer,
-        availabilities: generatedAvailabilities,
+        eventType: newEventType,
+        eventContainer,
+        events: generatedEvents,
       };
     });
   }
@@ -78,83 +80,83 @@ export class EventCalendarService {
    * *Usage scenario 2: Update calendar for multiple events. In this case, 'event' shouldn't appear.
    */
   async updateEventCalendar(params: {
-    event?: {
+    eventType?: {
       id: number;
       name: string;
       minutesOfDuration: number;
       minutesInAdvanceToReserve: number;
       minutesInAdanceToCancel: number;
-      numberOfSeats: number;
     };
-    availabilityContainer: {
+    eventContainer: {
       id: number;
-      status: AvailabilityContainerStatus;
+      status: EventContainerStatus;
       dateOfOpening: Date;
       dateOfClosure: Date;
       timezone: string;
     };
-    availabilities: [{cronExpression: string; eventId?: number}];
+    events: [{cronExpression: string; eventTypeId?: number}];
   }): Promise<{
-    event: Event | undefined;
-    availabilityContainer: AvailabilityContainer;
+    eventType: EventType | undefined;
+    eventContainer: EventContainer;
+    events: Event[];
   }> {
     return await this.prisma.$transaction<{
-      event: Event | undefined;
-      availabilityContainer: AvailabilityContainer;
+      eventType: EventType | undefined;
+      eventContainer: EventContainer;
+      events: Event[];
     }>(async tx => {
-      // [step 1] Delete existing availabilities related to this container.
-      await tx.availability.deleteMany({
-        where: {containerId: params.availabilityContainer.id},
+      // [step 1] Delete existing events related to this container.
+      await tx.event.deleteMany({
+        where: {containerId: params.eventContainer.id},
       });
 
-      // [step 2] Update availability container.
-      const updatedAvailabilityContainer =
-        await tx.availabilityContainer.update({
-          where: {id: params.availabilityContainer.id},
-          data: params.availabilityContainer,
-        });
+      // [step 2] Update event container.
+      const updatedEventContainer = await tx.eventContainer.update({
+        where: {id: params.eventContainer.id},
+        data: params.eventContainer,
+      });
 
-      // [step 3] Construct data of availabilities.
-      let updatedEvent: Event | undefined;
-      if (params.event) {
-        updatedEvent = await tx.event.update({
-          where: {id: params.event.id},
-          data: params.event,
+      // [step 3] Construct data of events.
+      let updatedEventType: EventType | undefined;
+      if (params.eventType) {
+        updatedEventType = await tx.eventType.update({
+          where: {id: params.eventType.id},
+          data: params.eventType,
         });
       }
-      const constructedAvailabilities = await this.constructAvailabilities({
-        defaultEvent: updatedEvent,
-        availabilityContainer: updatedAvailabilityContainer,
-        availabilities: params.availabilities,
+      const constructedEvents = await this.constructEvents({
+        defaultEventType: updatedEventType,
+        eventContainer: updatedEventContainer,
+        events: params.events,
       });
 
-      // [step 4] Create availabilities.
-      await tx.availability.createMany({
-        data: constructedAvailabilities as Prisma.AvailabilityCreateManyInput[],
+      // [step 4] Create events.
+      await tx.event.createMany({
+        data: constructedEvents as Prisma.EventCreateManyInput[],
       });
 
       // [step 5] Return.
-      const generatedAvailabilities = await tx.availability.findMany({
-        where: {containerId: updatedAvailabilityContainer.id},
+      const generatedEvents = await tx.event.findMany({
+        where: {containerId: updatedEventContainer.id},
       });
       return {
-        event: updatedEvent,
-        availabilityContainer: updatedAvailabilityContainer,
-        availabilities: generatedAvailabilities,
+        eventType: updatedEventType,
+        eventContainer: updatedEventContainer,
+        events: generatedEvents,
       };
     });
   }
 
   /**
-   * Return an availability array.
+   * Return an event array.
    */
-  private async constructAvailabilities(params: {
-    defaultEvent?: Event;
-    availabilityContainer: AvailabilityContainer;
-    availabilities: [{cronExpression: string; eventId?: number}];
+  private async constructEvents(params: {
+    defaultEventType?: EventType;
+    eventContainer: EventContainer;
+    events: [{cronExpression: string; eventTypeId?: number}];
   }) {
     // [step 1] Construct the cron-parser options.
-    const container = params.availabilityContainer;
+    const container = params.eventContainer;
     const cronParserOptions = {
       // ! https://unpkg.com/browse/cron-parser@4.8.1/README.md
       tz: container.timezone,
@@ -165,16 +167,16 @@ export class EventCalendarService {
       iterator: true,
     };
 
-    // [step 2] Parse availability cron expressions.
-    const constructedAvailabilities: object[] = [];
-    for (let i = 0; i < params.availabilities.length; i++) {
-      let event: Event;
-      const element = params.availabilities[i];
-      if (params.defaultEvent) {
-        event = params.defaultEvent;
+    // [step 2] Parse event cron expressions.
+    const constructedEvents: object[] = [];
+    for (let i = 0; i < params.events.length; i++) {
+      let eventType: EventType;
+      const element = params.events[i];
+      if (params.defaultEventType) {
+        eventType = params.defaultEventType;
       } else {
-        event = await this.prisma.event.findUniqueOrThrow({
-          where: {id: element.eventId},
+        eventType = await this.prisma.eventType.findUniqueOrThrow({
+          where: {id: element.eventTypeId},
         });
       }
 
@@ -187,24 +189,24 @@ export class EventCalendarService {
         const dateStartTime = new Date(interval.next().value.toString());
         const dateEndTime = datePlusMinutes(
           dateStartTime,
-          event.minutesOfDuration
+          eventType.minutesOfDuration
         );
 
         const dateStartTimeArr = dateStartTime.toISOString().split('T');
         const dateEndTimeArr = dateEndTime.toISOString().split('T');
 
-        // Construct availability period data.
-        constructedAvailabilities.push({
+        // Construct event period data.
+        constructedEvents.push({
           date: dateStartTimeArr[0],
           timeOfStarting: dateStartTimeArr[1].replace('.000Z', ''),
           timeOfEnding: dateEndTimeArr[1].replace('.000Z', ''),
-          eventId: event.id,
+          eventTypeId: eventType.id,
           containerId: container.id,
         });
       }
     }
 
-    return constructedAvailabilities;
+    return constructedEvents;
   }
 
   /* End */

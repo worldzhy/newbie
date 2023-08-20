@@ -1,12 +1,12 @@
 import {Controller, Post, Body, Patch} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {EventCalendarService} from '@microservices/event-calendar/event-calendar.service';
-import {AvailabilityContainerStatus} from '@prisma/client';
+import {EventContainerStatus} from '@prisma/client';
 
-@ApiTags('Class Calendar')
+@ApiTags('Event Calendar')
 @ApiBearerAuth()
-@Controller('class-calendar')
-export class ClassCalendarController {
+@Controller('event-calendar')
+export class EventCalendarController {
   constructor(private readonly eventCalendarService: EventCalendarService) {}
 
   @Post('')
@@ -16,20 +16,19 @@ export class ClassCalendarController {
       a: {
         summary: '1. Calendar for single event',
         value: {
-          event: {
+          eventType: {
             name: 'An Event',
             minutesOfDuration: 60,
             minutesInAdvanceToReserve: 120,
             minutesInAdvanceToCancel: 120,
-            numberOfSeats: 10,
           },
-          availabilityContainer: {
-            status: AvailabilityContainerStatus.ACTIVE,
+          eventContainer: {
+            status: EventContainerStatus.ACTIVE,
             dateOfOpening: '2020-12-12',
             dateOfClosure: '2021-12-12',
             timezone: 'Europe/Athens',
           },
-          availabilities: [
+          events: [
             {cronExpression: '0 11 2 8 *'},
             {cronExpression: '0 12 3 9 *'},
           ],
@@ -38,37 +37,36 @@ export class ClassCalendarController {
       b: {
         summary: '2. Calendar for multiple events',
         value: {
-          availabilityContainer: {
-            status: AvailabilityContainerStatus.ACTIVE,
+          eventContainer: {
+            status: EventContainerStatus.ACTIVE,
             dateOfOpening: '2020-12-12',
             dateOfClosure: '2021-12-12',
             timezone: 'Europe/Athens',
           },
-          availabilities: [
-            {cronExpression: '0 11 2 8 *', eventId: 1},
-            {cronExpression: '0 12 3 9 *', eventId: 2},
+          events: [
+            {cronExpression: '0 11 2 8 *', eventTypeId: 1},
+            {cronExpression: '0 12 3 9 *', eventTypeId: 2},
           ],
         },
       },
     },
   })
-  async createClassCalendar(
+  async createEventCalendar(
     @Body()
     body: {
-      event?: {
+      eventType?: {
         name: string;
         minutesOfDuration: number;
         minutesInAdvanceToReserve: number;
         minutesInAdanceToCancel: number;
-        numberOfSeats: number;
       };
-      availabilityContainer: {
-        status: AvailabilityContainerStatus;
+      eventContainer: {
+        status: EventContainerStatus;
         dateOfOpening: Date;
         dateOfClosure: Date;
         timezone: string;
       };
-      availabilities: [{cronExpression: string; eventId?: number}];
+      events: [{cronExpression: string; eventTypeId?: number}];
     }
   ) {
     return await this.eventCalendarService.createEventCalendar(body);
@@ -81,22 +79,21 @@ export class ClassCalendarController {
       a: {
         summary: '1. Calendar for single event',
         value: {
-          event: {
+          eventType: {
             id: 1,
             name: 'An Event',
             minutesOfDuration: 60,
             minutesInAdvanceToReserve: 120,
             minutesInAdvanceToCancel: 120,
-            numberOfSeats: 10,
           },
-          availabilityContainer: {
+          eventContainer: {
             id: 1,
-            status: AvailabilityContainerStatus.ACTIVE,
+            status: EventContainerStatus.ACTIVE,
             dateOfOpening: '2020-12-12',
             dateOfClosure: '2021-12-12',
             timezone: 'Europe/Athens',
           },
-          availabilities: [
+          events: [
             {cronExpression: '0 11 2 8 *'},
             {cronExpression: '0 12 3 9 *'},
           ],
@@ -105,40 +102,39 @@ export class ClassCalendarController {
       b: {
         summary: '2. Calendar for multiple events',
         value: {
-          availabilityContainer: {
+          eventContainer: {
             id: 1,
-            status: AvailabilityContainerStatus.ACTIVE,
+            status: EventContainerStatus.ACTIVE,
             dateOfOpening: '2020-12-12',
             dateOfClosure: '2021-12-12',
             timezone: 'Europe/Athens',
           },
-          availabilities: [
-            {cronExpression: '0 11 2 8 *', eventId: 1},
-            {cronExpression: '0 12 3 9 *', eventId: 2},
+          events: [
+            {cronExpression: '0 11 2 8 *', eventTypeId: 1},
+            {cronExpression: '0 12 3 9 *', eventTypeId: 2},
           ],
         },
       },
     },
   })
-  async updateClassCalendar(
+  async updateEventCalendar(
     @Body()
     body: {
-      event?: {
+      eventType?: {
         id: number;
         name: string;
         minutesOfDuration: number;
         minutesInAdvanceToReserve: number;
         minutesInAdanceToCancel: number;
-        numberOfSeats: number;
       };
-      availabilityContainer: {
+      eventContainer: {
         id: 1;
-        status: AvailabilityContainerStatus;
+        status: EventContainerStatus;
         dateOfOpening: Date;
         dateOfClosure: Date;
         timezone: string;
       };
-      availabilities: [{cronExpression: string; eventId?: number}];
+      events: [{cronExpression: string; eventTypeId?: number}];
     }
   ) {
     return await this.eventCalendarService.updateEventCalendar(body);

@@ -98,7 +98,7 @@ export async function prismaMiddleware(
       default:
         return next(params);
     }
-  } else if (params.model === Prisma.ModelName.AvailabilityContainer) {
+  } else if (params.model === Prisma.ModelName.EventContainer) {
     switch (params.action) {
       case 'create':
       case 'update': {
@@ -119,14 +119,10 @@ export async function prismaMiddleware(
         const resultOne = await next(params);
         if (resultOne) {
           if (resultOne.dateOfOpening) {
-            resultOne.dateOfOpening = new Date(resultOne.dateOfOpening)
-              .toISOString()
-              .split('T')[0];
+            resultOne.dateOfOpening = formatOutputDate(resultOne.dateOfOpening);
           }
           if (resultOne.dateOfClosure) {
-            resultOne.dateOfClosure = new Date(resultOne.dateOfClosure)
-              .toISOString()
-              .split('T')[0];
+            resultOne.dateOfClosure = formatOutputDate(resultOne.dateOfClosure);
           }
         }
         return resultOne;
@@ -137,14 +133,10 @@ export async function prismaMiddleware(
           for (let i = 0; i < resultMany.length; i++) {
             const element = resultMany[i];
             if (element.dateOfOpening) {
-              element.dateOfOpening = new Date(element.dateOfOpening)
-                .toISOString()
-                .split('T')[0];
+              element.dateOfOpening = formatOutputDate(element.dateOfOpening);
             }
             if (element.dateOfClosure) {
-              element.dateOfClosure = new Date(element.dateOfClosure)
-                .toISOString()
-                .split('T')[0];
+              element.dateOfClosure = formatOutputDate(element.dateOfClosure);
             }
           }
         }
@@ -153,7 +145,7 @@ export async function prismaMiddleware(
       default:
         return next(params);
     }
-  } else if (params.model === Prisma.ModelName.Availability) {
+  } else if (params.model === Prisma.ModelName.Event) {
     switch (params.action) {
       case 'create':
       case 'update': {
@@ -205,21 +197,15 @@ export async function prismaMiddleware(
         const resultOne = await next(params);
         if (resultOne) {
           if (resultOne.date) {
-            resultOne.date = new Date(resultOne.date)
-              .toISOString()
-              .split('T')[0];
+            resultOne.date = formatOutputDate(resultOne.date);
           }
           if (resultOne.timeOfStarting) {
-            resultOne.timeOfStarting = new Date(resultOne.timeOfStarting)
-              .toISOString()
-              .split('T')[1]
-              .replace('.000Z', '');
+            resultOne.timeOfStarting = formatOutputTime(
+              resultOne.timeOfStarting
+            );
           }
           if (resultOne.timeOfEnding) {
-            resultOne.timeOfEnding = new Date(resultOne.timeOfEnding)
-              .toISOString()
-              .split('T')[1]
-              .replace('.000Z', '');
+            resultOne.timeOfEnding = formatOutputTime(resultOne.timeOfEnding);
           }
         }
         return resultOne;
@@ -230,19 +216,13 @@ export async function prismaMiddleware(
           for (let i = 0; i < resultMany.length; i++) {
             const element = resultMany[i];
             if (element.date) {
-              element.date = new Date(element.date).toISOString().split('T')[0];
+              element.date = formatOutputDate(element.date);
             }
             if (element.timeOfStarting) {
-              element.timeOfStarting = new Date(element.timeOfStarting)
-                .toISOString()
-                .split('T')[1]
-                .replace('.000Z', '');
+              element.timeOfStarting = formatOutputTime(element.timeOfStarting);
             }
             if (element.timeOfEnding) {
-              element.timeOfEnding = new Date(element.timeOfEnding)
-                .toISOString()
-                .split('T')[1]
-                .replace('.000Z', '');
+              element.timeOfEnding = formatOutputTime(element.timeOfEnding);
             }
           }
         }
@@ -254,4 +234,20 @@ export async function prismaMiddleware(
   }
 
   return next(params);
+}
+
+// 2023-08-10 -> 2023-08-10T12:00:00.000Z
+function formatInputDate() {}
+
+// 12:00:00 -> 2023-08-10T12:00:00.000Z
+function formatInputTime() {}
+
+// 2023-08-10T12:00:00.000Z -> 2023-08-10
+function formatOutputDate(date: Date) {
+  return new Date(date).toISOString().split('T')[0];
+}
+
+// 2023-08-10T12:00:00.000Z -> 12:00:00
+function formatOutputTime(date: Date) {
+  return new Date(date).toISOString().split('T')[1].replace('.000Z', '');
 }

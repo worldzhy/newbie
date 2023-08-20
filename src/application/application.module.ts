@@ -17,11 +17,11 @@ import {AuthenticationGuard} from '@microservices/account/authentication/authent
 import {AuthorizationGuard} from '@microservices/account/authorization/authorization.guard';
 import {SecurityGuard} from '@microservices/account/security/security.guard';
 import {AccountModule} from '@microservices/account/account.module';
+import {EventCalendarModule} from '@microservices/event-calendar/event-calendar.module';
 import {FileManagementModule} from '@microservices/fmgmt/fmgmt.module';
 import {LocationModule} from '@microservices/location/location.module';
 import {NotificationModule} from '@microservices/notification/notification.module';
 import {OrderManagementModule} from '@microservices/omgmt/omgmt.module';
-import {ReservationModule} from '@microservices/event-calendar/event-calendar.module';
 import {TaskModule} from '@microservices/task/task.module';
 import {TaskSchedulingModule} from '@microservices/task-scheduling/task-scheduling.module';
 import {VerificationCodeModule} from '@microservices/verification-code/verification-code.module';
@@ -42,8 +42,9 @@ import {UserController} from '@application/account/user.controller';
 import {UserProfileController} from '@application/account/user-profile.controller';
 import {PermissionController} from '@application/account/permission.controller';
 import {RoleController} from '@application/account/role.controller';
-import {ClassController} from '@application/class-calendar/class.controller';
-import {ClassCalendarController} from '@application/class-calendar/class-calendar.controller';
+import {SpaceController} from './event-calendar/space.controller';
+import {EventTypeController} from '@application/event-calendar/event-type.controller';
+import {EventCalendarController} from '@application/event-calendar/event-calendar.controller';
 import {WorkflowController} from '@application/workflow/workflow.controller';
 import {WorkflowStateController} from '@application/workflow/workflow-state.controller';
 import {WorkflowViewController} from '@application/workflow/workflow-view.controller';
@@ -75,11 +76,11 @@ import {NotificationController} from '@application/samples/notification.controll
 
     // Microservices (Global modules)
     AccountModule,
+    EventCalendarModule,
     FileManagementModule,
     LocationModule,
     NotificationModule,
     OrderManagementModule,
-    ReservationModule,
     TaskModule,
     TaskSchedulingModule,
     VerificationCodeModule,
@@ -115,8 +116,9 @@ import {NotificationController} from '@application/samples/notification.controll
     UserProfileController,
     PermissionController,
     RoleController,
-    ClassController,
-    ClassCalendarController,
+    SpaceController,
+    EventTypeController,
+    EventCalendarController,
     WorkflowController,
     WorkflowStateController,
     WorkflowViewController,

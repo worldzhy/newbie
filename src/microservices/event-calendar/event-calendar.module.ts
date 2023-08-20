@@ -1,25 +1,28 @@
 import {Global, Module} from '@nestjs/common';
+import {EventTypeService} from './event-type.service';
+import {EventContainerService} from './event-container.service';
 import {EventService} from './event.service';
-import {AvailabilityContainerService} from './availability-container.service';
-import {AvailabilityService} from './availability.service';
 import {ReservationService} from './reservation.service';
 import {EventCalendarService} from './event-calendar.service';
+import {SpaceService} from './space.service';
 
 @Global()
 @Module({
   providers: [
+    SpaceService,
+    EventTypeService,
+    EventContainerService,
     EventService,
-    AvailabilityContainerService,
-    AvailabilityService,
     ReservationService,
     EventCalendarService,
   ],
   exports: [
+    SpaceService,
+    EventTypeService,
+    EventContainerService,
     EventService,
-    AvailabilityContainerService,
-    AvailabilityService,
     ReservationService,
     EventCalendarService,
   ],
 })
-export class ReservationModule {}
+export class EventCalendarModule {}

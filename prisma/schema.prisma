@@ -221,67 +221,81 @@ model RoutePermission {
 // * Reservation                                                   //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
 
-model Event {
-  id                        Int            @id @default(autoincrement())
+model Space {
+  id             Int      @id @default(autoincrement())
+  name           String
+  numberOfSeats  Int      @default(1)
+  timeOfDayStart DateTime @db.Time(0)
+  timeOfDayEnd   DateTime @db.Time(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  events         Event[]
+
+  @@schema("microservice/event-calendar")
+}
+
+model EventType {
+  id                        Int      @id @default(autoincrement())
   name                      String
-  hostUserId                String?        @db.Uuid
   minutesOfDuration         Int
   minutesOfBreak            Int?
   minutesInAdvanceToReserve Int?
   minutesInAdvanceToCancel  Int?
-  numberOfSeats             Int?
-  createdAt                 DateTime       @default(now())
-  updatedAt                 DateTime       @updatedAt
-  availabilities            Availability[]
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+  events                    Event[]
 
   @@schema("microservice/event-calendar")
 }
 
-model AvailabilityContainer {
-  id             Int                         @id @default(autoincrement())
-  name           String?
-  status         AvailabilityContainerStatus
-  dateOfOpening  DateTime                    @db.Date
-  dateOfClosure  DateTime?                   @db.Date
-  timezone       String // https://www.iplocate.com/en/resources/timezones/list-of-timezones
-  createdAt      DateTime                    @default(now())
-  updatedAt      DateTime                    @updatedAt
-  availabilities Availability[]
+model EventContainer {
+  id            Int                  @id @default(autoincrement())
+  name          String?
+  status        EventContainerStatus
+  dateOfOpening DateTime             @db.Date
+  dateOfClosure DateTime?            @db.Date
+  timezone      String // https://www.iplocate.com/en/resources/timezones/list-of-timezones
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  events        Event[]
 
   @@schema("microservice/event-calendar")
 }
 
-enum AvailabilityContainerStatus {
+enum EventContainerStatus {
   ACTIVE
   INACTIVE
 
   @@schema("microservice/event-calendar")
 }
 
-model Availability {
-  id             Int                   @id @default(autoincrement())
-  date           DateTime              @db.Date
-  timeOfStarting DateTime              @db.Time(0)
-  timeOfEnding   DateTime              @db.Time(0)
-  createdAt      DateTime              @default(now())
-  updatedAt      DateTime              @updatedAt
-  event          Event                 @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  eventId        Int
-  container      AvailabilityContainer @relation(fields: [containerId], references: [id], onDelete: Cascade)
+model Event {
+  id             Int            @id @default(autoincrement())
+  hostUserId     String?        @db.Uuid
+  date           DateTime       @db.Date
+  timeOfStarting DateTime       @db.Time(0)
+  timeOfEnding   DateTime       @db.Time(0)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  eventType      EventType      @relation(fields: [eventTypeId], references: [id], onDelete: Cascade)
+  eventTypeId    Int
+  space          Space?         @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  spaceId        Int?
+  container      EventContainer @relation(fields: [containerId], references: [id], onDelete: Cascade)
   containerId    Int
   reservations   Reservation[]
 
-  @@unique([eventId, containerId, date, timeOfStarting, timeOfEnding])
+  @@unique([eventTypeId, containerId, date, timeOfStarting, timeOfEnding])
   @@schema("microservice/event-calendar")
 }
 
 model Reservation {
-  id             Int          @id @default(autoincrement())
-  clientUserId   String       @db.Uuid
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  availability   Availability @relation(fields: [availabilityId], references: [id], onDelete: Cascade)
-  availabilityId Int
+  id           Int      @id @default(autoincrement())
+  clientUserId String   @db.Uuid
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId      Int
 
   @@schema("microservice/event-calendar")
 }
