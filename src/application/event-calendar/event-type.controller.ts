@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {EventType, Prisma} from '@prisma/client';
-import {EventTypeService} from '@microservices/event-calendar/event-type.service';
+import {EventTypeService} from '@microservices/event-scheduling/event-type.service';
 
 @ApiTags('Event Calendar / Event Type')
 @ApiBearerAuth()

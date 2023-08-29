@@ -17,7 +17,7 @@ import {AuthenticationGuard} from '@microservices/account/authentication/authent
 import {AuthorizationGuard} from '@microservices/account/authorization/authorization.guard';
 import {SecurityGuard} from '@microservices/account/security/security.guard';
 import {AccountModule} from '@microservices/account/account.module';
-import {EventCalendarModule} from '@microservices/event-calendar/event-calendar.module';
+import {EventSchedulingModule} from '@microservices/event-scheduling/event-scheduling.module';
 import {FileManagementModule} from '@microservices/fmgmt/fmgmt.module';
 import {LocationModule} from '@microservices/location/location.module';
 import {NotificationModule} from '@microservices/notification/notification.module';
@@ -76,7 +76,7 @@ import {NotificationController} from '@application/samples/notification.controll
 
     // Microservices (Global modules)
     AccountModule,
-    EventCalendarModule,
+    EventSchedulingModule,
     FileManagementModule,
     LocationModule,
     NotificationModule,

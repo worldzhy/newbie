@@ -5,24 +5,27 @@ import {EventService} from './event.service';
 import {ReservationService} from './reservation.service';
 import {EventCalendarService} from './event-calendar.service';
 import {SpaceService} from './space.service';
+import {HeatmapService} from './heatmap.service';
 
 @Global()
 @Module({
   providers: [
-    SpaceService,
-    EventTypeService,
-    EventContainerService,
-    EventService,
-    ReservationService,
     EventCalendarService,
+    EventContainerService,
+    EventTypeService,
+    EventService,
+    HeatmapService,
+    ReservationService,
+    SpaceService,
   ],
   exports: [
-    SpaceService,
-    EventTypeService,
-    EventContainerService,
-    EventService,
-    ReservationService,
     EventCalendarService,
+    EventContainerService,
+    EventTypeService,
+    EventService,
+    HeatmapService,
+    ReservationService,
+    SpaceService,
   ],
 })
-export class EventCalendarModule {}
+export class EventSchedulingModule {}

@@ -213,7 +213,7 @@ model RoutePermission {
 }
 
 // !! ------------------------------------------------------------ //
-// !!            [Microservice] Event calendar models              //
+// !!            [Microservice] Event scheduling models              //
 // !! ------------------------------------------------------------ //
 // * Event                                                         //
 // * AvailabilityContainer                                         //
@@ -270,22 +270,22 @@ enum EventContainerStatus {
 }
 
 model Event {
-  id             Int            @id @default(autoincrement())
-  hostUserId     String?        @db.Uuid
-  date           DateTime       @db.Date
-  timeOfStarting DateTime       @db.Time(0)
-  timeOfEnding   DateTime       @db.Time(0)
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  eventType      EventType      @relation(fields: [eventTypeId], references: [id], onDelete: Cascade)
-  eventTypeId    Int
-  space          Space?         @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  spaceId        Int?
-  container      EventContainer @relation(fields: [containerId], references: [id], onDelete: Cascade)
-  containerId    Int
-  reservations   Reservation[]
+  id           Int            @id @default(autoincrement())
+  hostUserId   String?        @db.Uuid
+  dateOfStart  DateTime       @db.Date
+  timeOfStart  DateTime       @db.Time(0)
+  dateOfEnd    DateTime       @db.Date
+  timeOfEnd    DateTime       @db.Time(0)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  eventType    EventType      @relation(fields: [eventTypeId], references: [id], onDelete: Cascade)
+  eventTypeId  Int
+  space        Space?         @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  spaceId      Int?
+  container    EventContainer @relation(fields: [containerId], references: [id], onDelete: Cascade)
+  containerId  Int
+  reservations Reservation[]
 
-  @@unique([eventTypeId, containerId, date, timeOfStarting, timeOfEnding])
   @@schema("microservice/event-calendar")
 }
 
