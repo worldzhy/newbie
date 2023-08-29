@@ -12,47 +12,25 @@ import {ThrottlerExceptionFilter} from '@_filter/_throttler-exception.filter';
 import {HttpMiddleware} from '@_middleware/_http.middleware';
 
 import {ToolkitModule} from '@toolkit/toolkit.module';
+import {AccountModule} from '@microservices/account/account.module';
+import {EventSchedulingModule} from '@microservices/event-scheduling/event-scheduling.module';
 
 import {AuthenticationGuard} from '@microservices/account/authentication/authentication.guard';
 import {AuthorizationGuard} from '@microservices/account/authorization/authorization.guard';
 import {SecurityGuard} from '@microservices/account/security/security.guard';
-import {AccountModule} from '@microservices/account/account.module';
-import {EventSchedulingModule} from '@microservices/event-scheduling/event-scheduling.module';
-import {FileManagementModule} from '@microservices/fmgmt/fmgmt.module';
-import {LocationModule} from '@microservices/location/location.module';
-import {NotificationModule} from '@microservices/notification/notification.module';
-import {OrderManagementModule} from '@microservices/omgmt/omgmt.module';
-import {TaskModule} from '@microservices/task/task.module';
-import {TaskSchedulingModule} from '@microservices/task-scheduling/task-scheduling.module';
-import {VerificationCodeModule} from '@microservices/verification-code/verification-code.module';
-import {WorkflowModule} from '@microservices/workflow/workflow.module';
-
-import {EnginedModule} from '@application/engined/engined.module';
-import {ProjectManagementModule} from '@application/pmgmt/pmgmt.module';
-import {RecruitmentModule} from '@application/recruitment/recruitment.module';
 
 import {ApplicationController} from '@application/application.controller';
-import {AccountForgotController} from '@application/account/account-forgot.controller';
-import {AccountLoginController} from '@application/account/account-login.controller';
-import {AccountLogoutController} from '@application/account/account-logout.controller';
-import {AccountSignupController} from '@application/account/account-signup.controller';
-import {AccountOthersController} from '@application/account/account-others.controller';
-import {OrganizationController} from '@application/account/organization.controller';
-import {UserController} from '@application/account/user.controller';
-import {UserProfileController} from '@application/account/user-profile.controller';
-import {PermissionController} from '@application/account/permission.controller';
-import {RoleController} from '@application/account/role.controller';
-import {SpaceController} from './event-calendar/space.controller';
+import {AccountForgotController} from '@application-example/account/account-forgot.controller';
+import {AccountLoginController} from '@application-example/account/account-login.controller';
+import {AccountLogoutController} from '@application-example/account/account-logout.controller';
+import {AccountSignupController} from '@application-example/account/account-signup.controller';
+import {AccountOthersController} from '@application-example/account/account-others.controller';
+import {UserController} from '@application-example/account/user.controller';
+import {UserProfileController} from '@application-example/account/user-profile.controller';
+
+import {SpaceController} from '@application/event-calendar/space.controller';
 import {EventTypeController} from '@application/event-calendar/event-type.controller';
 import {EventCalendarController} from '@application/event-calendar/event-calendar.controller';
-import {WorkflowController} from '@application/workflow/workflow.controller';
-import {WorkflowStateController} from '@application/workflow/workflow-state.controller';
-import {WorkflowViewController} from '@application/workflow/workflow-view.controller';
-import {WorkflowViewComponentController} from '@application/workflow/workflow-view-component.controller';
-import {WorkflowRouteController} from '@application/workflow/workflow-route.controller';
-import {AwsController} from '@application/samples/aws.controller';
-import {LocationController} from '@application/samples/location.controller';
-import {NotificationController} from '@application/samples/notification.controller';
 
 @Module({
   imports: [
@@ -77,19 +55,6 @@ import {NotificationController} from '@application/samples/notification.controll
     // Microservices (Global modules)
     AccountModule,
     EventSchedulingModule,
-    FileManagementModule,
-    LocationModule,
-    NotificationModule,
-    OrderManagementModule,
-    TaskModule,
-    TaskSchedulingModule,
-    VerificationCodeModule,
-    WorkflowModule,
-
-    // Application
-    EnginedModule,
-    ProjectManagementModule,
-    RecruitmentModule,
   ],
   providers: [
     // Guards
@@ -111,22 +76,11 @@ import {NotificationController} from '@application/samples/notification.controll
     AccountLogoutController,
     AccountSignupController,
     AccountOthersController,
-    OrganizationController,
     UserController,
     UserProfileController,
-    PermissionController,
-    RoleController,
     SpaceController,
     EventTypeController,
     EventCalendarController,
-    WorkflowController,
-    WorkflowStateController,
-    WorkflowViewController,
-    WorkflowViewComponentController,
-    WorkflowRouteController,
-    AwsController,
-    LocationController,
-    NotificationController,
   ],
 })
 export class ApplicationModule {

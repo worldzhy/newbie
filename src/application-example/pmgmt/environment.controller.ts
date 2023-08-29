@@ -9,7 +9,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {ProjectEnvironmentService} from './environment.service';
+import {ProjectEnvironmentService} from '@microservices/pmgmt/environment/environment.service';
 import {Prisma, ProjectEnvironment} from '@prisma/client';
 
 @ApiTags('Project Management / Project Environment')

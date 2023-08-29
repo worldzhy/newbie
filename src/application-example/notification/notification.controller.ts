@@ -3,7 +3,7 @@ import {ApiBearerAuth, ApiBody, ApiTags} from '@nestjs/swagger';
 import {EmailNotification, SmsNotification} from '@prisma/client';
 import {NotificationService} from '@microservices/notification/notification.service';
 
-@ApiTags('Samples: Notification')
+@ApiTags('Notification')
 @ApiBearerAuth()
 @Controller('notification')
 export class NotificationController {

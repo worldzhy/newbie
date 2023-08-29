@@ -1,6 +1,6 @@
 import {Controller, Delete, Get, Patch, Body, Param} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
-import {ProjectCheckpointService} from './checkpoint.service';
+import {ProjectCheckpointService} from '@microservices/pmgmt/checkpoint/checkpoint.service';
 import {Prisma, ProjectCheckpoint, ProjectCheckpointType} from '@prisma/client';
 
 @ApiTags('Project Management / Project Checkpoint')

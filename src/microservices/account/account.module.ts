@@ -19,8 +19,12 @@ import {
 } from './security/login-attempt/login-attempt.service';
 import {SecurityIpLoginAttemptGuard} from './security/login-attempt/login-attempt.guard';
 
+import {NotificationModule} from '@microservices/notification/notification.module';
+import {VerificationCodeModule} from '@microservices/verification-code/verification-code.module';
+
 @Global()
 @Module({
+  imports: [NotificationModule, VerificationCodeModule],
   providers: [
     JwtStrategy,
     AuthPasswordStrategy,
@@ -36,9 +40,9 @@ import {SecurityIpLoginAttemptGuard} from './security/login-attempt/login-attemp
     UserAccessTokenService,
     UserRefreshTokenService,
     AccountService,
-    SecurityIpLoginAttemptGuard,
     IpLoginAttemptService,
     UserLoginAttemptService,
+    SecurityIpLoginAttemptGuard,
   ],
   exports: [
     JwtStrategy,
@@ -55,9 +59,9 @@ import {SecurityIpLoginAttemptGuard} from './security/login-attempt/login-attemp
     UserAccessTokenService,
     UserRefreshTokenService,
     AccountService,
-    SecurityIpLoginAttemptGuard,
     IpLoginAttemptService,
     UserLoginAttemptService,
+    SecurityIpLoginAttemptGuard,
   ],
 })
 export class AccountModule {}

@@ -21,7 +21,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["microservice/account", "microservice/event-calendar", "microservice/fmgmt", "microservice/location", "microservice/notification", "microservice/order", "microservice/task", "microservice/verification-code", "microservice/workflow", "application/engined", "application/pmgmt", "application/recruitment", "application/tc-request"]
+  schemas  = ["microservice/account", "microservice/event-calendar", "microservice/fmgmt", "microservice/location", "microservice/notification", "microservice/order", "microservice/pmgmt", "microservice/task", "microservice/verification-code", "microservice/workflow", "application/engined", "application/recruitment", "application/tc-request"]
 }
 
 // ! ------------------------------------------------------------ //
@@ -475,6 +475,145 @@ model StripePaymentIntent {
 }
 
 // ! ------------------------------------------------------------ //
+// !          [Microservice] Project Management models             //
+// ! ------------------------------------------------------------ //
+// * Project                                                      //
+// * ProjectCheckpoint                                            //
+// * ProjectEnvironment                                           //
+// * CloudFormationStack                                          //
+// * PulumiStack                                                  //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
+
+model Project {
+  id           String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String               @unique
+  state        ProjectState         @default(PLANNING)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  elements     ProjectElement[]
+  checkpoints  ProjectCheckpoint[]
+  environments ProjectEnvironment[]
+
+  @@schema("microservice/pmgmt")
+}
+
+enum ProjectState {
+  PLANNING
+  DESIGNING
+  DEVELOPING
+  DONE
+
+  @@schema("microservice/pmgmt")
+}
+
+model ProjectElement {
+  id        Int      @id @default(autoincrement())
+  section   String?
+  label     String
+  content   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  project   Project? @relation(fields: [projectId], references: [id])
+  projectId String?  @db.Uuid
+
+  @@schema("microservice/pmgmt")
+}
+
+model ProjectCheckpoint {
+  id        Int                    @id @default(autoincrement())
+  type      ProjectCheckpointType
+  state     ProjectCheckpointState @default(TODO)
+  createdAt DateTime               @default(now())
+  updatedAt DateTime               @updatedAt
+  Project   Project                @relation(fields: [projectId], references: [id])
+  projectId String                 @db.Uuid
+
+  @@unique([type, projectId])
+  @@schema("microservice/pmgmt")
+}
+
+enum ProjectCheckpointType {
+  MANAGER_PRODUCT_REQUIREMENTS
+  MANAGER_PROJECT_KANBAN
+  DESIGNER_WIREFRAMES
+  DESIGNER_PROTOTYPES
+  DEVELOPER_ACCOUNT_APPLE
+  DEVELOPER_ACCOUNT_GOOGLE
+  DEVELOPER_BACKEND_REPO
+  DEVELOPER_BACKEND_FRAMEWORK
+  DEVELOPER_BACKEND_DATABASE
+  DEVELOPER_BACKEND_API
+  DEVELOPER_FRONTEND_REPO
+  DEVELOPER_FRONTEND_FRAMEWORK
+  DEVELOPER_INFRASTRUCTURE
+
+  @@schema("microservice/pmgmt")
+}
+
+enum ProjectCheckpointState {
+  TODO
+  PROCESSING
+  DONE
+
+  @@schema("microservice/pmgmt")
+}
+
+model ProjectEnvironment {
+  id                   Int                   @id @default(autoincrement())
+  name                 String
+  awsAccountId         String?
+  awsProfile           String?
+  awsAccessKeyId       String?
+  awsSecretAccessKey   String? // automatic hashing
+  awsRegion            String?
+  s3ForCloudformation  String?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  project              Project               @relation(fields: [projectId], references: [id])
+  projectId            String                @db.Uuid
+  infrastructureStacks InfrastructureStack[]
+
+  @@schema("microservice/pmgmt")
+}
+
+model InfrastructureStack {
+  id                  String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                String?                    @unique // Set default value via prisma middleware.
+  manager             InfrastructureStackManager
+  type                String
+  params              Json?
+  state               InfrastructureStackState   @default(PENDING)
+  createStackOutput   Json?
+  describeStackOutput Json?
+  deleteStackOutput   Json?
+  createdAt           DateTime                   @default(now())
+  updatedAt           DateTime                   @updatedAt
+  environment         ProjectEnvironment         @relation(fields: [environmentId], references: [id])
+  environmentId       Int
+
+  @@schema("microservice/pmgmt")
+}
+
+enum InfrastructureStackManager {
+  CloudFormation
+  Pulumi
+
+  @@schema("microservice/pmgmt")
+}
+
+enum InfrastructureStackState {
+  PENDING
+  BUILD_PROCESSING
+  BUILD_SUCCEEDED
+  BUILD_FAILED
+  DESTROY_PROCESSING
+  DESTROY_SUCCEEDED
+  DESTROY_FAILED
+
+  @@schema("microservice/pmgmt")
+}
+
+// ! ------------------------------------------------------------ //
 // !           [Microservice] Task Management models              //
 // ! ------------------------------------------------------------ //
 // * Task (This is an example model.)                             //
@@ -904,145 +1043,6 @@ enum ElasticsearchDataboardColumnFormatter {
   CURRENCY
 
   @@schema("application/engined")
-}
-
-// ! ------------------------------------------------------------ //
-// !          [Application] Project Management models             //
-// ! ------------------------------------------------------------ //
-// * Project                                                      //
-// * ProjectCheckpoint                                            //
-// * ProjectEnvironment                                           //
-// * CloudFormationStack                                          //
-// * PulumiStack                                                  //
-// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
-
-model Project {
-  id           String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name         String               @unique
-  state        ProjectState         @default(PLANNING)
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
-  elements     ProjectElement[]
-  checkpoints  ProjectCheckpoint[]
-  environments ProjectEnvironment[]
-
-  @@schema("application/pmgmt")
-}
-
-enum ProjectState {
-  PLANNING
-  DESIGNING
-  DEVELOPING
-  DONE
-
-  @@schema("application/pmgmt")
-}
-
-model ProjectElement {
-  id        Int      @id @default(autoincrement())
-  section   String?
-  label     String
-  content   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  project   Project? @relation(fields: [projectId], references: [id])
-  projectId String?  @db.Uuid
-
-  @@schema("application/pmgmt")
-}
-
-model ProjectCheckpoint {
-  id        Int                    @id @default(autoincrement())
-  type      ProjectCheckpointType
-  state     ProjectCheckpointState @default(TODO)
-  createdAt DateTime               @default(now())
-  updatedAt DateTime               @updatedAt
-  Project   Project                @relation(fields: [projectId], references: [id])
-  projectId String                 @db.Uuid
-
-  @@unique([type, projectId])
-  @@schema("application/pmgmt")
-}
-
-enum ProjectCheckpointType {
-  MANAGER_PRODUCT_REQUIREMENTS
-  MANAGER_PROJECT_KANBAN
-  DESIGNER_WIREFRAMES
-  DESIGNER_PROTOTYPES
-  DEVELOPER_ACCOUNT_APPLE
-  DEVELOPER_ACCOUNT_GOOGLE
-  DEVELOPER_BACKEND_REPO
-  DEVELOPER_BACKEND_FRAMEWORK
-  DEVELOPER_BACKEND_DATABASE
-  DEVELOPER_BACKEND_API
-  DEVELOPER_FRONTEND_REPO
-  DEVELOPER_FRONTEND_FRAMEWORK
-  DEVELOPER_INFRASTRUCTURE
-
-  @@schema("application/pmgmt")
-}
-
-enum ProjectCheckpointState {
-  TODO
-  PROCESSING
-  DONE
-
-  @@schema("application/pmgmt")
-}
-
-model ProjectEnvironment {
-  id                   Int                   @id @default(autoincrement())
-  name                 String
-  awsAccountId         String?
-  awsProfile           String?
-  awsAccessKeyId       String?
-  awsSecretAccessKey   String? // automatic hashing
-  awsRegion            String?
-  s3ForCloudformation  String?
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  project              Project               @relation(fields: [projectId], references: [id])
-  projectId            String                @db.Uuid
-  infrastructureStacks InfrastructureStack[]
-
-  @@schema("application/pmgmt")
-}
-
-model InfrastructureStack {
-  id                  String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                String?                    @unique // Set default value via prisma middleware.
-  manager             InfrastructureStackManager
-  type                String
-  params              Json?
-  state               InfrastructureStackState   @default(PENDING)
-  createStackOutput   Json?
-  describeStackOutput Json?
-  deleteStackOutput   Json?
-  createdAt           DateTime                   @default(now())
-  updatedAt           DateTime                   @updatedAt
-  environment         ProjectEnvironment         @relation(fields: [environmentId], references: [id])
-  environmentId       Int
-
-  @@schema("application/pmgmt")
-}
-
-enum InfrastructureStackManager {
-  CloudFormation
-  Pulumi
-
-  @@schema("application/pmgmt")
-}
-
-enum InfrastructureStackState {
-  PENDING
-  BUILD_PROCESSING
-  BUILD_SUCCEEDED
-  BUILD_FAILED
-  DESTROY_PROCESSING
-  DESTROY_SUCCEEDED
-  DESTROY_FAILED
-
-  @@schema("application/pmgmt")
 }
 
 // ! ------------------------------------------------------------ //

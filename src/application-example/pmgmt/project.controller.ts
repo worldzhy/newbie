@@ -16,7 +16,7 @@ import {
   ApiBody,
   ApiQuery,
 } from '@nestjs/swagger';
-import {ProjectService} from './project.service';
+import {ProjectService} from '@microservices/pmgmt/project/project.service';
 import {verifyProjectName} from '@toolkit/validators/project.validator';
 
 import {

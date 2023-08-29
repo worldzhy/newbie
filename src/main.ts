@@ -10,6 +10,7 @@ import {
   SwaggerCustomOptions,
 } from '@nestjs/swagger';
 import {ApplicationModule} from '@application/application.module';
+// import {ApplicationExampleModule as ApplicationModule} from '@application-example/application-example.module';
 
 function checkEnvironment(configService: ConfigService) {
   const requiredEnvVars = ['ENVIRONMENT', 'PORT'];
@@ -45,7 +46,7 @@ async function bootstrap() {
     'development'
   ) {
     const config = new DocumentBuilder()
-      .setTitle("Here's the Newbie")
+      .setTitle('API Document')
       .setDescription("It's good to see you guys 🥤")
       .setVersion('1.0')
       .addCookieAuth('refreshToken')
@@ -57,7 +58,7 @@ async function bootstrap() {
         persistAuthorization: true,
         tagsSorter: 'alpha',
       },
-      customSiteTitle: 'Newbie APIs',
+      customSiteTitle: 'API Document',
     };
     SwaggerModule.setup('api', app, document, customOptions);
   }

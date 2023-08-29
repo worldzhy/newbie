@@ -29,7 +29,7 @@ import {
   TrustedEntityType,
 } from '@prisma/client';
 import {RequirePermission} from '@microservices/account/authorization/authorization.decorator';
-import {CandidateService} from '@application/recruitment/candidate/candidate.service';
+import {CandidateService} from 'src/application-example/recruitment/candidate/candidate.service';
 import {AccessTokenService} from '@toolkit/token/access-token/access-token.service';
 import {WorkflowRouteService} from '@microservices/workflow/workflow-route.service';
 import {JobApplicationWorkflowService} from './workflow/workflow.service';

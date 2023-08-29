@@ -20,7 +20,7 @@ import {RequirePermission} from '@microservices/account/authorization/authorizat
 import {LocationService} from '@microservices/location/location.service';
 import {generatePaginationParams} from '@toolkit/pagination/pagination';
 
-@ApiTags('Samples: Location')
+@ApiTags('Location')
 @ApiBearerAuth()
 @Controller('locations')
 export class LocationController {
