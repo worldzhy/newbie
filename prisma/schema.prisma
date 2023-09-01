@@ -21,7 +21,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["microservice/account", "microservice/event-calendar", "microservice/fmgmt", "microservice/location", "microservice/notification", "microservice/order", "microservice/pmgmt", "microservice/task", "microservice/verification-code", "microservice/workflow", "application/engined", "application/recruitment", "application/tc-request"]
+  schemas  = ["microservice/account", "microservice/event-calendar", "microservice/fmgmt", "microservice/map", "microservice/notification", "microservice/order", "microservice/pmgmt", "microservice/task", "microservice/verification-code", "microservice/workflow", "application/engined", "application/recruitment", "application/tc-request"]
 }
 
 // ! ------------------------------------------------------------ //
@@ -67,7 +67,6 @@ model User {
   organizationId   String?                  @db.Uuid
   profiles         UserProfile[]
   roles            Role[]
-  locations        Location[]
   holdingWorkflows JobApplicationWorkflow[]
 
   @@schema("microservice/account")
@@ -162,6 +161,7 @@ model Permission {
 }
 
 enum PermissionAction {
+  All
   List
   Get
   Create
@@ -221,7 +221,7 @@ model RoutePermission {
 // * Reservation                                                   //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
 
-model Space {
+model EventLocation {
   id             Int      @id @default(autoincrement())
   name           String
   numberOfSeats  Int      @default(1)
@@ -278,10 +278,10 @@ model Event {
   timeOfEnd    DateTime       @db.Time(0)
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
-  eventType    EventType      @relation(fields: [eventTypeId], references: [id], onDelete: Cascade)
-  eventTypeId  Int
-  space        Space?         @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  spaceId      Int?
+  type         EventType      @relation(fields: [typeId], references: [id], onDelete: Cascade)
+  typeId       Int
+  location     EventLocation? @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  locationId   Int?
   container    EventContainer @relation(fields: [containerId], references: [id], onDelete: Cascade)
   containerId  Int
   reservations Reservation[]
@@ -296,6 +296,16 @@ model Reservation {
   updatedAt    DateTime @updatedAt
   event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
   eventId      Int
+
+  @@schema("microservice/event-calendar")
+}
+
+model Tag {
+  id        Int      @id @default(autoincrement())
+  name      String
+  group     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@schema("microservice/event-calendar")
 }
@@ -338,13 +348,14 @@ model Folder {
 }
 
 // !! ------------------------------------------------------------ //
-// !!            [Microservice] Location models                    //
+// !!            [Microservice] Google Map models                    //
 // !! ------------------------------------------------------------ //
 // * Location                                                      //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
 
-model Location {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+model GmapPlace {
+  id        Int      @id @default(autoincrement())
+  placeId   String?
   name      String?
   address   String?
   address2  String?
@@ -354,10 +365,8 @@ model Location {
   geoJSON   Json? // https://datatracker.ietf.org/doc/html/rfc7946
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String?  @db.Uuid
 
-  @@schema("microservice/location")
+  @@schema("microservice/map")
 }
 
 // !! ------------------------------------------------------------ //

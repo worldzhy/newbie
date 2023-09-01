@@ -11,18 +11,47 @@ export async function seedForEventCalendar() {
   await prisma.eventType.createMany({
     data: [
       {
-        name: 'Adult English Class',
-        minutesOfDuration: 30,
+        name: 'Full Body',
+        minutesOfDuration: 50,
         minutesInAdvanceToReserve: 120,
         minutesInAdvanceToCancel: 120,
       },
       {
-        name: 'Teenager English Class',
-        minutesOfDuration: 30,
+        name: 'Arms + Abs',
+        minutesOfDuration: 50,
+        minutesInAdvanceToReserve: 120,
+        minutesInAdvanceToCancel: 120,
+      },
+      {
+        name: 'Beginner50',
+        minutesOfDuration: 50,
+        minutesInAdvanceToReserve: 120,
+        minutesInAdvanceToCancel: 120,
+      },
+      {
+        name: 'Buns + Guns',
+        minutesOfDuration: 50,
+        minutesInAdvanceToReserve: 120,
+        minutesInAdvanceToCancel: 120,
+      },
+      {
+        name: 'Coach-in-Training',
+        minutesOfDuration: 50,
         minutesInAdvanceToReserve: 120,
         minutesInAdvanceToCancel: 120,
       },
     ],
+  });
+
+  console.log('- Creating spaces...');
+  await prisma.eventContainer.create({
+    data: {
+      name: 'Henry English Class Room',
+      status: EventContainerStatus.ACTIVE,
+      dateOfOpening: '2023-08-10',
+      dateOfClosure: '2023-08-12',
+      timezone: 'Europe/Athens',
+    },
   });
 
   console.log('- Creating event container...');
@@ -34,5 +63,27 @@ export async function seedForEventCalendar() {
       dateOfClosure: '2023-08-12',
       timezone: 'Europe/Athens',
     },
+  });
+
+  console.log('- Creating tags...');
+  await prisma.tag.createMany({
+    data: [
+      {
+        name: 'experienced',
+        group: 'Coach',
+      },
+      {
+        name: 'patient',
+        group: 'Coach',
+      },
+      {
+        name: 'near-college',
+        group: 'Location',
+      },
+      {
+        name: 'near-business-center',
+        group: 'Location',
+      },
+    ],
   });
 }

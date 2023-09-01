@@ -12,23 +12,22 @@ import {ThrottlerExceptionFilter} from '@_filter/_throttler-exception.filter';
 import {HttpMiddleware} from '@_middleware/_http.middleware';
 
 import {ToolkitModule} from '@toolkit/toolkit.module';
-import {AccountModule} from '@microservices/account/account.module';
-import {EventSchedulingModule} from '@microservices/event-scheduling/event-scheduling.module';
 
+import {AccountModule} from '@microservices/account/account.module';
 import {AuthenticationGuard} from '@microservices/account/authentication/authentication.guard';
 import {AuthorizationGuard} from '@microservices/account/authorization/authorization.guard';
 import {SecurityGuard} from '@microservices/account/security/security.guard';
+import {EventSchedulingModule} from '@microservices/event-scheduling/event-scheduling.module';
 
 import {ApplicationController} from '@application/application.controller';
-import {AccountForgotController} from '@application-example/account/account-forgot.controller';
-import {AccountLoginController} from '@application-example/account/account-login.controller';
-import {AccountLogoutController} from '@application-example/account/account-logout.controller';
-import {AccountSignupController} from '@application-example/account/account-signup.controller';
-import {AccountOthersController} from '@application-example/account/account-others.controller';
-import {UserController} from '@application-example/account/user.controller';
-import {UserProfileController} from '@application-example/account/user-profile.controller';
-
-import {SpaceController} from '@application/event-calendar/space.controller';
+import {AccountForgotController} from '@application/account/account-forgot.controller';
+import {AccountLoginController} from '@application/account/account-login.controller';
+import {AccountLogoutController} from '@application/account/account-logout.controller';
+import {AccountSignupController} from '@application/account/account-signup.controller';
+import {AccountOthersController} from '@application/account/account-others.controller';
+import {UserController} from '@application/account/user.controller';
+import {UserProfileController} from '@application/account/user-profile.controller';
+import {EventLocationController} from '@application/event-calendar/event-location.controller';
 import {EventTypeController} from '@application/event-calendar/event-type.controller';
 import {EventCalendarController} from '@application/event-calendar/event-calendar.controller';
 
@@ -78,7 +77,7 @@ import {EventCalendarController} from '@application/event-calendar/event-calenda
     AccountOthersController,
     UserController,
     UserProfileController,
-    SpaceController,
+    EventLocationController,
     EventTypeController,
     EventCalendarController,
   ],

@@ -17,14 +17,7 @@ import {
   ApiBody,
   ApiQuery,
 } from '@nestjs/swagger';
-import {
-  PermissionAction,
-  Prisma,
-  Role,
-  User,
-  GmapPlace,
-  UserStatus,
-} from '@prisma/client';
+import {PermissionAction, Prisma, Role, User, UserStatus} from '@prisma/client';
 import {UserService} from '@microservices/account/user/user.service';
 import {RequirePermission} from '@microservices/account/authorization/authorization.decorator';
 import {compareHash} from '@toolkit/utilities/common.util';
@@ -95,7 +88,7 @@ export class UserController {
   })
   async createUser(
     @Body()
-    body: Prisma.UserCreateInput & {roles?: Role[]; locations?: GmapPlace[]}
+    body: Prisma.UserCreateInput & {roles?: Role[]; locations?: Location[]}
   ): Promise<User> {
     const {roles, locations, ...user} = body;
     const userCreateInput: Prisma.UserCreateInput = user;
@@ -230,7 +223,7 @@ export class UserController {
   async updateUser(
     @Param('userId') userId: string,
     @Body()
-    body: Prisma.UserUpdateInput & {roles?: Role[]; locations?: GmapPlace[]}
+    body: Prisma.UserUpdateInput & {roles?: Role[]; locations?: Location[]}
   ): Promise<User> {
     const {roles, locations, ...user} = body;
     const userUpdateInput: Prisma.UserUpdateInput = user;

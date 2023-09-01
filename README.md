@@ -30,6 +30,10 @@
 
 > https://nodejs.org/en/download/package-manager/
 
+#### pm2
+
+> https://pm2.io/
+
 #### Nestjs
 
 > https://docs.nestjs.com/first-steps
@@ -132,6 +136,12 @@ $ npx prisma migrate deploy
 ```bash
 $ npm run build
 $ npm run start:prod
+```
+
+or
+
+```bash
+$ pm2 start ./dist/src/main.js --name newbie
 ```
 
 ## Stay in touch

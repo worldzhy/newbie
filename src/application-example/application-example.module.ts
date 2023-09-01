@@ -19,7 +19,7 @@ import {SecurityGuard} from '@microservices/account/security/security.guard';
 import {AccountModule} from '@microservices/account/account.module';
 import {EventSchedulingModule} from '@microservices/event-scheduling/event-scheduling.module';
 import {FileManagementModule} from '@microservices/fmgmt/fmgmt.module';
-import {LocationModule} from '@microservices/location/location.module';
+import {GmapModule} from '@microservices/google-map/gmap.module';
 import {NotificationModule} from '@microservices/notification/notification.module';
 import {OrderManagementModule} from '@microservices/omgmt/omgmt.module';
 import {ProjectManagementModule} from '@microservices/pmgmt/pmgmt.module';
@@ -28,32 +28,32 @@ import {TaskSchedulingModule} from '@microservices/task-scheduling/task-scheduli
 import {VerificationCodeModule} from '@microservices/verification-code/verification-code.module';
 import {WorkflowModule} from '@microservices/workflow/workflow.module';
 
-import {EnginedModule} from './engined/engined.module';
-import {RecruitmentModule} from './recruitment/recruitment.module';
+import {EnginedModule} from '@application-example/engined/engined.module';
+import {RecruitmentModule} from '@application-example/recruitment/recruitment.module';
 
-import {ApplicationExampleController} from './application-example.controller';
-import {AccountForgotController} from './account/account-forgot.controller';
-import {AccountLoginController} from './account/account-login.controller';
-import {AccountLogoutController} from './account/account-logout.controller';
-import {AccountSignupController} from './account/account-signup.controller';
-import {AccountOthersController} from './account/account-others.controller';
-import {OrganizationController} from './account/organization.controller';
-import {UserController} from './account/user.controller';
-import {UserProfileController} from './account/user-profile.controller';
-import {PermissionController} from './account/permission.controller';
-import {RoleController} from './account/role.controller';
-import {LocationController} from './location/location.controller';
-import {NotificationController} from './notification/notification.controller';
-import {ProjectCheckpointController} from './pmgmt/checkpoint.controller';
-import {ProjectEnvironmentController} from './pmgmt/environment.controller';
-import {ProjectInfrastructureStackController} from './pmgmt/infrastructure-stack.controller';
-import {ProjectElementController} from './pmgmt/project-element.controller';
-import {ProjectController} from './pmgmt/project.controller';
-import {WorkflowController} from './workflow/workflow.controller';
-import {WorkflowStateController} from './workflow/workflow-state.controller';
-import {WorkflowViewController} from './workflow/workflow-view.controller';
-import {WorkflowViewComponentController} from './workflow/workflow-view-component.controller';
-import {WorkflowRouteController} from './workflow/workflow-route.controller';
+import {ApplicationExampleController} from '@application-example/application-example.controller';
+import {AccountForgotController} from '@application-example/account/account-forgot.controller';
+import {AccountLoginController} from '@application-example/account/account-login.controller';
+import {AccountLogoutController} from '@application-example/account/account-logout.controller';
+import {AccountSignupController} from '@application-example/account/account-signup.controller';
+import {AccountOthersController} from '@application-example/account/account-others.controller';
+import {OrganizationController} from '@application-example/account/organization.controller';
+import {UserController} from '@application-example/account/user.controller';
+import {UserProfileController} from '@application-example/account/user-profile.controller';
+import {PermissionController} from '@application-example/account/permission.controller';
+import {RoleController} from '@application-example/account/role.controller';
+import {GmapPlaceController} from '@application-example/google-map/gmap-place.controller';
+import {NotificationController} from '@application-example/notification/notification.controller';
+import {ProjectCheckpointController} from '@application-example/pmgmt/checkpoint.controller';
+import {ProjectEnvironmentController} from '@application-example/pmgmt/environment.controller';
+import {ProjectInfrastructureStackController} from '@application-example/pmgmt/infrastructure-stack.controller';
+import {ProjectElementController} from '@application-example/pmgmt/project-element.controller';
+import {ProjectController} from '@application-example/pmgmt/project.controller';
+import {WorkflowController} from '@application-example/workflow/workflow.controller';
+import {WorkflowStateController} from '@application-example/workflow/workflow-state.controller';
+import {WorkflowViewController} from '@application-example/workflow/workflow-view.controller';
+import {WorkflowViewComponentController} from '@application-example/workflow/workflow-view-component.controller';
+import {WorkflowRouteController} from '@application-example/workflow/workflow-route.controller';
 
 @Module({
   imports: [
@@ -79,7 +79,7 @@ import {WorkflowRouteController} from './workflow/workflow-route.controller';
     AccountModule,
     EventSchedulingModule,
     FileManagementModule,
-    LocationModule,
+    GmapModule,
     NotificationModule,
     OrderManagementModule,
     ProjectManagementModule,
@@ -118,7 +118,7 @@ import {WorkflowRouteController} from './workflow/workflow-route.controller';
     PermissionController,
     RoleController,
 
-    LocationController,
+    GmapPlaceController,
 
     NotificationController,
 

@@ -4,7 +4,7 @@ import {EventContainerService} from './event-container.service';
 import {EventService} from './event.service';
 import {ReservationService} from './reservation.service';
 import {EventCalendarService} from './event-calendar.service';
-import {SpaceService} from './space.service';
+import {EventLocationService} from './event-location.service';
 import {HeatmapService} from './heatmap.service';
 
 @Global()
@@ -12,20 +12,20 @@ import {HeatmapService} from './heatmap.service';
   providers: [
     EventCalendarService,
     EventContainerService,
+    EventLocationService,
     EventTypeService,
     EventService,
     HeatmapService,
     ReservationService,
-    SpaceService,
   ],
   exports: [
     EventCalendarService,
     EventContainerService,
+    EventLocationService,
     EventTypeService,
     EventService,
     HeatmapService,
     ReservationService,
-    SpaceService,
   ],
 })
 export class EventSchedulingModule {}

@@ -56,8 +56,7 @@ export class CandidateController {
   })
   async createCandidate(
     @Body()
-    body: Prisma.LocationCreateInput &
-      Prisma.CandidateProfileCreateWithoutCandidateInput
+    body: Prisma.CandidateProfileCreateWithoutCandidateInput
   ): Promise<Candidate> {
     const profileCreateInput: Prisma.CandidateProfileCreateWithoutCandidateInput =
       {
@@ -293,8 +292,7 @@ export class CandidateController {
   async updateCandidate(
     @Param('candidateId') candidateId: string,
     @Body()
-    body: Prisma.LocationUpdateInput &
-      Prisma.CandidateProfileUpdateWithoutCandidateInput
+    body: Prisma.CandidateProfileUpdateWithoutCandidateInput
   ): Promise<Candidate> {
     return await this.candidateService.update({
       where: {id: candidateId},
