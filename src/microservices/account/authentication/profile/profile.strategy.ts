@@ -8,8 +8,8 @@ import {Strategy} from 'passport-custom';
 import {Request} from 'express';
 import {UserProfileService} from '@microservices/account/user/user-profile.service';
 import {
-  IpLoginAttemptService,
-  UserLoginAttemptService,
+  SecurityLoginIpAttemptService,
+  SecurityLoginUserAttemptService,
 } from '@microservices/account/security/login-attempt/login-attempt.service';
 
 @Injectable()
@@ -19,8 +19,8 @@ export class AuthProfileStrategy extends PassportStrategy(
 ) {
   constructor(
     private readonly userProfileService: UserProfileService,
-    private readonly ipLoginAttemptService: IpLoginAttemptService,
-    private readonly userLoginAttemptService: UserLoginAttemptService
+    private readonly securityLoginIpAttemptService: SecurityLoginIpAttemptService,
+    private readonly securityLoginUserAttemptService: SecurityLoginUserAttemptService
   ) {
     super();
   }
@@ -45,19 +45,21 @@ export class AuthProfileStrategy extends PassportStrategy(
       where: {firstName, middleName, lastName, suffix, dateOfBirth},
     });
     if (profiles.length !== 1) {
-      await this.ipLoginAttemptService.increment(ipAddress);
+      await this.securityLoginIpAttemptService.increment(ipAddress);
       throw new UnauthorizedException('There are 0 or multiple users.');
     }
 
     // [step 3] Check if user is allowed to login.
     const userId = profiles[0].userId;
-    const isUserAllowed = await this.userLoginAttemptService.isAllowed(userId);
+    const isUserAllowed = await this.securityLoginUserAttemptService.isAllowed(
+      userId
+    );
     if (!isUserAllowed) {
       throw new ForbiddenException('Forbidden resource');
     }
 
     // [step 4] OK.
-    await this.userLoginAttemptService.delete(userId);
+    await this.securityLoginUserAttemptService.delete(userId);
     return true;
   }
 }

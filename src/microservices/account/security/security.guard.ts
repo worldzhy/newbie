@@ -2,7 +2,7 @@ import {Injectable, ExecutionContext} from '@nestjs/common';
 import {Reflector} from '@nestjs/core';
 import {ConfigService} from '@nestjs/config';
 import {IS_LOGGING_IN} from './login-attempt/login-attempt.decorator';
-import {SecurityIpLoginAttemptGuard} from './login-attempt/login-attempt.guard';
+import {SecurityLoginIpAttemptGuard} from './login-attempt/login-attempt.guard';
 
 @Injectable()
 export class SecurityGuard {
@@ -10,7 +10,7 @@ export class SecurityGuard {
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly securityIpLoginAttemptGuard: SecurityIpLoginAttemptGuard,
+    private readonly securityLoginIpAttemptGuard: SecurityLoginIpAttemptGuard,
     private reflector: Reflector
   ) {
     this.allowedOrigins = this.configService.getOrThrow<string[]>(
@@ -31,7 +31,7 @@ export class SecurityGuard {
       [context.getHandler(), context.getClass()]
     );
     if (isLoggingIn) {
-      const isIpAllowed = await this.securityIpLoginAttemptGuard.canActivate(
+      const isIpAllowed = await this.securityLoginIpAttemptGuard.canActivate(
         context
       );
       if (!isIpAllowed) {

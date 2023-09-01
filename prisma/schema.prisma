@@ -161,7 +161,7 @@ model Permission {
 }
 
 enum PermissionAction {
-  All
+  Manage
   List
   Get
   Create

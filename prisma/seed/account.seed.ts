@@ -22,7 +22,7 @@ export async function seedForAccount() {
   const permissions = {
     Admin: [
       {
-        action: PermissionAction.All,
+        action: PermissionAction.Manage,
         resource: Prisma.ModelName.User,
         where: undefined,
         trustedEntityType: TrustedEntityType.ROLE,
@@ -30,7 +30,7 @@ export async function seedForAccount() {
     ],
     Manager: [
       {
-        action: PermissionAction.All,
+        action: PermissionAction.Manage,
         resource: Prisma.ModelName.User,
         where: undefined,
         trustedEntityType: TrustedEntityType.ROLE,

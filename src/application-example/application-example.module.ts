@@ -1,7 +1,6 @@
-import {APP_FILTER, APP_GUARD} from '@nestjs/core';
+import {APP_FILTER} from '@nestjs/core';
 import {Module, MiddlewareConsumer} from '@nestjs/common';
 import {ConfigModule} from '@nestjs/config';
-import {ThrottlerGuard, ThrottlerModule} from '@nestjs/throttler';
 import ApplicationConfiguration from '@_config/application.config';
 import MicroservicesConfiguration from '@_config/microservice.config';
 import ToolkitConfiguration from '@_config/toolkit.config';
@@ -13,9 +12,6 @@ import {HttpMiddleware} from '@_middleware/_http.middleware';
 
 import {ToolkitModule} from '@toolkit/toolkit.module';
 
-import {AuthenticationGuard} from '@microservices/account/authentication/authentication.guard';
-import {AuthorizationGuard} from '@microservices/account/authorization/authorization.guard';
-import {SecurityGuard} from '@microservices/account/security/security.guard';
 import {AccountModule} from '@microservices/account/account.module';
 import {EventSchedulingModule} from '@microservices/event-scheduling/event-scheduling.module';
 import {FileManagementModule} from '@microservices/fmgmt/fmgmt.module';
@@ -25,7 +21,6 @@ import {OrderManagementModule} from '@microservices/omgmt/omgmt.module';
 import {ProjectManagementModule} from '@microservices/pmgmt/pmgmt.module';
 import {TaskModule} from '@microservices/task/task.module';
 import {TaskSchedulingModule} from '@microservices/task-scheduling/task-scheduling.module';
-import {VerificationCodeModule} from '@microservices/verification-code/verification-code.module';
 import {WorkflowModule} from '@microservices/workflow/workflow.module';
 
 import {EnginedModule} from '@application-example/engined/engined.module';
@@ -66,12 +61,6 @@ import {WorkflowRouteController} from '@application-example/workflow/workflow-ro
       isGlobal: true,
     }),
 
-    // Rate Limit (Maximum of 60 requests per 60 seconds)
-    ThrottlerModule.forRoot({
-      limit: 60,
-      ttl: 60,
-    }),
-
     // Toolkit (Global modules)
     ToolkitModule,
 
@@ -85,7 +74,6 @@ import {WorkflowRouteController} from '@application-example/workflow/workflow-ro
     ProjectManagementModule,
     TaskModule,
     TaskSchedulingModule,
-    VerificationCodeModule,
     WorkflowModule,
 
     // Application
@@ -93,12 +81,6 @@ import {WorkflowRouteController} from '@application-example/workflow/workflow-ro
     RecruitmentModule,
   ],
   providers: [
-    // Guards
-    {provide: APP_GUARD, useClass: ThrottlerGuard}, // 1st priority guard.
-    {provide: APP_GUARD, useClass: SecurityGuard}, // 2nd priority guard.
-    {provide: APP_GUARD, useClass: AuthenticationGuard}, // 3rd priority guard.
-    {provide: APP_GUARD, useClass: AuthorizationGuard}, // 4th priority guard.
-
     // Filters
     {provide: APP_FILTER, useClass: AllExceptionFilter}, // 4th priority for all exceptions.
     {provide: APP_FILTER, useClass: PrismaExceptionFilter}, // 3rd priority for exceptions thrown by services.

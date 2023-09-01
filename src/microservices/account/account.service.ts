@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {UserStatus, VerificationCodeUse} from '@prisma/client';
-import {VerificationCodeService} from '@microservices/verification-code/verification-code.service';
+import {VerificationCodeService} from '@microservices/account/verification-code/verification-code.service';
 import {NotificationService} from '@microservices/notification/notification.service';
 import {AccessTokenService} from '@toolkit/token/access-token/access-token.service';
 import {RefreshTokenService} from '@toolkit/token/refresh-token/refresh-token.service';

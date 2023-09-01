@@ -21,7 +21,7 @@ abstract class LoginAttemptService {
 }
 
 @Injectable()
-export class IpLoginAttemptService extends LoginAttemptService {
+export class SecurityLoginIpAttemptService extends LoginAttemptService {
   private points: number;
   private duration: number;
 
@@ -41,7 +41,7 @@ export class IpLoginAttemptService extends LoginAttemptService {
 }
 
 @Injectable()
-export class UserLoginAttemptService extends LoginAttemptService {
+export class SecurityLoginUserAttemptService extends LoginAttemptService {
   private points: number;
   private duration: number;
 

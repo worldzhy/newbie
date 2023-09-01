@@ -5,12 +5,12 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import {VerificationCodeService} from '@microservices/verification-code/verification-code.service';
+import {VerificationCodeService} from '@microservices/account/verification-code/verification-code.service';
 import {UserService} from '@microservices/account/user/user.service';
 import {verifyEmail, verifyPhone} from '@toolkit/validators/user.validator';
 import {
-  IpLoginAttemptService,
-  UserLoginAttemptService,
+  SecurityLoginIpAttemptService,
+  SecurityLoginUserAttemptService,
 } from '@microservices/account/security/login-attempt/login-attempt.service';
 import {Request} from 'express';
 
@@ -22,8 +22,8 @@ export class AuthVerificationCodeStrategy extends PassportStrategy(
   constructor(
     private readonly verificationCodeService: VerificationCodeService,
     private readonly userService: UserService,
-    private readonly ipLoginAttemptService: IpLoginAttemptService,
-    private readonly userLoginAttemptService: UserLoginAttemptService
+    private readonly securityLoginIpAttemptService: SecurityLoginIpAttemptService,
+    private readonly securityLoginUserAttemptService: SecurityLoginUserAttemptService
   ) {
     super({
       usernameField: 'account',
@@ -50,19 +50,21 @@ export class AuthVerificationCodeStrategy extends PassportStrategy(
     // [step 1] Get the user.
     const user = await this.userService.findByAccount(account);
     if (!user) {
-      await this.ipLoginAttemptService.increment(ipAddress);
+      await this.securityLoginIpAttemptService.increment(ipAddress);
       throw new UnauthorizedException('The user does not exist.');
     }
 
     // [step 2] Check if user is allowed to login.
-    const isUserAllowed = await this.userLoginAttemptService.isAllowed(user.id);
+    const isUserAllowed = await this.securityLoginUserAttemptService.isAllowed(
+      user.id
+    );
     if (!isUserAllowed) {
       throw new ForbiddenException('Forbidden resource');
     }
 
     // [step 3] Handle invalid account situation.
     if (!verifyEmail(account) && !verifyPhone(account)) {
-      await this.userLoginAttemptService.delete(user.id);
+      await this.securityLoginUserAttemptService.delete(user.id);
       throw new UnauthorizedException('Invalid account.');
     }
 
@@ -77,12 +79,12 @@ export class AuthVerificationCodeStrategy extends PassportStrategy(
           account
         );
     if (!isCodeValid) {
-      await this.userLoginAttemptService.increment(user.id);
+      await this.securityLoginUserAttemptService.increment(user.id);
       return false;
     }
 
     // [Step 5] OK.
-    await this.userLoginAttemptService.delete(user.id);
+    await this.securityLoginUserAttemptService.delete(user.id);
     return true;
   }
 }

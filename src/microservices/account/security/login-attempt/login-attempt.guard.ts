@@ -1,12 +1,14 @@
 import {Injectable, ExecutionContext, CanActivate} from '@nestjs/common';
-import {IpLoginAttemptService} from './login-attempt.service';
+import {SecurityLoginIpAttemptService} from './login-attempt.service';
 
 @Injectable()
-export class SecurityIpLoginAttemptGuard implements CanActivate {
-  constructor(private ipLoginAttemptService: IpLoginAttemptService) {}
+export class SecurityLoginIpAttemptGuard implements CanActivate {
+  constructor(
+    private securityLoginIpAttemptService: SecurityLoginIpAttemptService
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const ipAddress = context.switchToHttp().getRequest().socket.remoteAddress;
-    return await this.ipLoginAttemptService.isAllowed(ipAddress);
+    return await this.securityLoginIpAttemptService.isAllowed(ipAddress);
   }
 }
