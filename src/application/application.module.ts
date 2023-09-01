@@ -4,11 +4,6 @@ import {ConfigModule} from '@nestjs/config';
 import ApplicationConfiguration from '@_config/application.config';
 import MicroservicesConfiguration from '@_config/microservice.config';
 import ToolkitConfiguration from '@_config/toolkit.config';
-import {AllExceptionFilter} from '@_filter/_all-exception.filter';
-import {HttpExceptionFilter} from '@_filter/_http-exception.filter';
-import {PrismaExceptionFilter} from '@_filter/_prisma-exception.filter';
-import {ThrottlerExceptionFilter} from '@_filter/_throttler-exception.filter';
-import {HttpMiddleware} from '@_middleware/_http.middleware';
 
 import {ToolkitModule} from '@toolkit/toolkit.module';
 import {AccountModule} from '@microservices/account/account.module';
@@ -25,6 +20,13 @@ import {UserProfileController} from '@application/account/user-profile.controlle
 import {EventLocationController} from '@application/event-calendar/event-location.controller';
 import {EventTypeController} from '@application/event-calendar/event-type.controller';
 import {EventCalendarController} from '@application/event-calendar/event-calendar.controller';
+import {TagController} from '@application/event-calendar/tag.controller';
+
+import {AllExceptionFilter} from '@_filter/_all-exception.filter';
+import {HttpExceptionFilter} from '@_filter/_http-exception.filter';
+import {PrismaExceptionFilter} from '@_filter/_prisma-exception.filter';
+import {ThrottlerExceptionFilter} from '@_filter/_throttler-exception.filter';
+import {HttpMiddleware} from '@_middleware/_http.middleware';
 
 @Module({
   imports: [
@@ -44,13 +46,6 @@ import {EventCalendarController} from '@application/event-calendar/event-calenda
     AccountModule,
     EventSchedulingModule,
   ],
-  providers: [
-    // Filters
-    {provide: APP_FILTER, useClass: AllExceptionFilter}, // 4th priority for all exceptions.
-    {provide: APP_FILTER, useClass: PrismaExceptionFilter}, // 3rd priority for exceptions thrown by services.
-    {provide: APP_FILTER, useClass: HttpExceptionFilter}, // 2nd priority for exceptions thrown by controllers.
-    {provide: APP_FILTER, useClass: ThrottlerExceptionFilter}, // 1st priority for exceptions thrown by throttler (rate limit).
-  ],
   controllers: [
     ApplicationController,
     AccountForgotController,
@@ -63,6 +58,14 @@ import {EventCalendarController} from '@application/event-calendar/event-calenda
     EventLocationController,
     EventTypeController,
     EventCalendarController,
+    TagController,
+  ],
+  providers: [
+    // Filters
+    {provide: APP_FILTER, useClass: AllExceptionFilter}, // 4th priority for all exceptions.
+    {provide: APP_FILTER, useClass: PrismaExceptionFilter}, // 3rd priority for exceptions thrown by services.
+    {provide: APP_FILTER, useClass: HttpExceptionFilter}, // 2nd priority for exceptions thrown by controllers.
+    {provide: APP_FILTER, useClass: ThrottlerExceptionFilter}, // 1st priority for exceptions thrown by throttler (rate limit).
   ],
 })
 export class ApplicationModule {

@@ -51,7 +51,7 @@ export async function seedForAccount() {
       await prisma.user.create({
         data: {
           password: 'Abc1234!',
-          email: 'admin@solidcore.com',
+          email: 'admin@inceptionpad.com',
           roles: {connect: [{id: role.id}]},
         },
       });

@@ -4,14 +4,8 @@ import {ConfigModule} from '@nestjs/config';
 import ApplicationConfiguration from '@_config/application.config';
 import MicroservicesConfiguration from '@_config/microservice.config';
 import ToolkitConfiguration from '@_config/toolkit.config';
-import {AllExceptionFilter} from '@_filter/_all-exception.filter';
-import {HttpExceptionFilter} from '@_filter/_http-exception.filter';
-import {PrismaExceptionFilter} from '@_filter/_prisma-exception.filter';
-import {ThrottlerExceptionFilter} from '@_filter/_throttler-exception.filter';
-import {HttpMiddleware} from '@_middleware/_http.middleware';
 
 import {ToolkitModule} from '@toolkit/toolkit.module';
-
 import {AccountModule} from '@microservices/account/account.module';
 import {EventSchedulingModule} from '@microservices/event-scheduling/event-scheduling.module';
 import {FileManagementModule} from '@microservices/fmgmt/fmgmt.module';
@@ -22,7 +16,6 @@ import {ProjectManagementModule} from '@microservices/pmgmt/pmgmt.module';
 import {TaskModule} from '@microservices/task/task.module';
 import {TaskSchedulingModule} from '@microservices/task-scheduling/task-scheduling.module';
 import {WorkflowModule} from '@microservices/workflow/workflow.module';
-
 import {EnginedModule} from '@application-example/engined/engined.module';
 import {RecruitmentModule} from '@application-example/recruitment/recruitment.module';
 
@@ -49,6 +42,12 @@ import {WorkflowStateController} from '@application-example/workflow/workflow-st
 import {WorkflowViewController} from '@application-example/workflow/workflow-view.controller';
 import {WorkflowViewComponentController} from '@application-example/workflow/workflow-view-component.controller';
 import {WorkflowRouteController} from '@application-example/workflow/workflow-route.controller';
+
+import {AllExceptionFilter} from '@_filter/_all-exception.filter';
+import {HttpExceptionFilter} from '@_filter/_http-exception.filter';
+import {PrismaExceptionFilter} from '@_filter/_prisma-exception.filter';
+import {ThrottlerExceptionFilter} from '@_filter/_throttler-exception.filter';
+import {HttpMiddleware} from '@_middleware/_http.middleware';
 
 @Module({
   imports: [
@@ -80,13 +79,6 @@ import {WorkflowRouteController} from '@application-example/workflow/workflow-ro
     EnginedModule,
     RecruitmentModule,
   ],
-  providers: [
-    // Filters
-    {provide: APP_FILTER, useClass: AllExceptionFilter}, // 4th priority for all exceptions.
-    {provide: APP_FILTER, useClass: PrismaExceptionFilter}, // 3rd priority for exceptions thrown by services.
-    {provide: APP_FILTER, useClass: HttpExceptionFilter}, // 2nd priority for exceptions thrown by controllers.
-    {provide: APP_FILTER, useClass: ThrottlerExceptionFilter}, // 1st priority for exceptions thrown by throttler (rate limit).
-  ],
   controllers: [
     ApplicationExampleController,
     AccountForgotController,
@@ -115,6 +107,13 @@ import {WorkflowRouteController} from '@application-example/workflow/workflow-ro
     WorkflowViewController,
     WorkflowViewComponentController,
     WorkflowRouteController,
+  ],
+  providers: [
+    // Filters
+    {provide: APP_FILTER, useClass: AllExceptionFilter}, // 4th priority for all exceptions.
+    {provide: APP_FILTER, useClass: PrismaExceptionFilter}, // 3rd priority for exceptions thrown by services.
+    {provide: APP_FILTER, useClass: HttpExceptionFilter}, // 2nd priority for exceptions thrown by controllers.
+    {provide: APP_FILTER, useClass: ThrottlerExceptionFilter}, // 1st priority for exceptions thrown by throttler (rate limit).
   ],
 })
 export class ApplicationExampleModule {

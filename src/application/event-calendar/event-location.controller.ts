@@ -22,7 +22,7 @@ import {
   generatePaginationResponse,
 } from '@toolkit/pagination/pagination';
 
-@ApiTags('Event Calendar / Location')
+@ApiTags('Event Scheduling / Location')
 @ApiBearerAuth()
 @Controller('event-locations')
 export class EventLocationController {
@@ -30,15 +30,16 @@ export class EventLocationController {
 
   @Post('')
   @ApiBody({
-    description: "The 'name' is required in request body.",
+    description: '',
     examples: {
       a: {
         summary: '1. Create',
         value: {
-          name: 'Speaking EventLocation',
+          name: 'CA, West Hollywood',
+          address: '9001 Santa Monica Boulevard suite 103',
+          city: 'West Hollywood',
           numberOfSeats: 20,
-          timeOfDayStart: '6:00',
-          timeOfDayEnd: '22:00',
+          minutesOfBreak: 10,
         },
       },
     },
@@ -87,6 +88,7 @@ export class EventLocationController {
     // [step 3] Get users.
     const [records, total] = await this.spaceService.findManyWithTotal({
       where: where,
+      include: {tags: true},
       take: take,
       skip: skip,
     });
@@ -106,6 +108,7 @@ export class EventLocationController {
   ): Promise<EventLocation> {
     return await this.spaceService.findUniqueOrThrow({
       where: {id: eventLocationId},
+      include: {tags: true},
     });
   }
 
@@ -122,10 +125,12 @@ export class EventLocationController {
       a: {
         summary: '1. Update',
         value: {
-          name: 'Speaking EventLocation',
-          numberOfSeats: 25,
-          timeOfDayStart: '7:00',
-          timeOfDayEnd: '23:00',
+          name: 'CA, West Hollywood',
+          address: '9001 Santa Monica Boulevard suite 103',
+          city: 'West Hollywood',
+          numberOfSeats: 20,
+          minutesOfBreak: 10,
+          tags: {set: [{id: 1}, {id: 2}]},
         },
       },
     },

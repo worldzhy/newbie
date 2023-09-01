@@ -11,7 +11,7 @@ import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {EventType, Prisma} from '@prisma/client';
 import {EventTypeService} from '@microservices/event-scheduling/event-type.service';
 
-@ApiTags('Event Calendar / Type')
+@ApiTags('Event Scheduling / Type')
 @ApiBearerAuth()
 @Controller('event-types')
 export class EventTypeController {

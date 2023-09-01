@@ -2,7 +2,7 @@ import {Controller, Get} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth} from '@nestjs/swagger';
 import {HeatmapService} from '@microservices/event-scheduling/heatmap.service';
 
-@ApiTags('Event Calendar')
+@ApiTags('Event Scheduling / Heatmap')
 @ApiBearerAuth()
 @Controller('heatmap')
 export class EventCalendarController {

@@ -2,14 +2,14 @@
 import {seedForEngined} from './seed/engined.seed';
 import {seedForPmgmt} from './seed/pmgmt.seed';
 import {seedForAccount} from './seed/account.seed';
-import {seedForEventCalendar} from './seed/event-calendar.seed';
+import {seedForEventScheduling} from './seed/event-scheduling.seed';
 import {seedForWorkflow} from './seed/workflow.seed';
 
 async function main() {
   console.log('**Seeding Start');
 
   await seedForAccount();
-  await seedForEventCalendar();
+  await seedForEventScheduling();
   // await seedForWorkflow();
   // await seedForEngined();
   // await seedForPmgmt();

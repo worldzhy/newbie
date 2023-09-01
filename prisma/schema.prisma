@@ -21,7 +21,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["microservice/account", "microservice/event-calendar", "microservice/fmgmt", "microservice/map", "microservice/notification", "microservice/order", "microservice/pmgmt", "microservice/task", "microservice/verification-code", "microservice/workflow", "application/engined", "application/recruitment", "application/tc-request"]
+  schemas  = ["microservice/account", "microservice/event-scheduling", "microservice/fmgmt", "microservice/map", "microservice/notification", "microservice/order", "microservice/pmgmt", "microservice/task", "microservice/verification-code", "microservice/workflow", "application/engined", "application/recruitment", "application/tc-request"]
 }
 
 // ! ------------------------------------------------------------ //
@@ -222,16 +222,20 @@ model RoutePermission {
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
 
 model EventLocation {
-  id             Int      @id @default(autoincrement())
+  id             Int       @id @default(autoincrement())
   name           String
-  numberOfSeats  Int      @default(1)
-  timeOfDayStart DateTime @db.Time(0)
-  timeOfDayEnd   DateTime @db.Time(0)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  address        String
+  city           String
+  numberOfSeats  Int       @default(1)
+  minutesOfBreak Int?
+  timeOfDayStart DateTime? @db.Time(0)
+  timeOfDayEnd   DateTime? @db.Time(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  tags           Tag[]
   events         Event[]
 
-  @@schema("microservice/event-calendar")
+  @@schema("microservice/event-scheduling")
 }
 
 model EventType {
@@ -245,7 +249,7 @@ model EventType {
   updatedAt                 DateTime @updatedAt
   events                    Event[]
 
-  @@schema("microservice/event-calendar")
+  @@schema("microservice/event-scheduling")
 }
 
 model EventContainer {
@@ -259,14 +263,14 @@ model EventContainer {
   updatedAt     DateTime             @updatedAt
   events        Event[]
 
-  @@schema("microservice/event-calendar")
+  @@schema("microservice/event-scheduling")
 }
 
 enum EventContainerStatus {
   ACTIVE
   INACTIVE
 
-  @@schema("microservice/event-calendar")
+  @@schema("microservice/event-scheduling")
 }
 
 model Event {
@@ -286,7 +290,7 @@ model Event {
   containerId  Int
   reservations Reservation[]
 
-  @@schema("microservice/event-calendar")
+  @@schema("microservice/event-scheduling")
 }
 
 model Reservation {
@@ -297,17 +301,18 @@ model Reservation {
   event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
   eventId      Int
 
-  @@schema("microservice/event-calendar")
+  @@schema("microservice/event-scheduling")
 }
 
 model Tag {
-  id        Int      @id @default(autoincrement())
+  id        Int             @id @default(autoincrement())
   name      String
   group     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  locations EventLocation[]
 
-  @@schema("microservice/event-calendar")
+  @@schema("microservice/event-scheduling")
 }
 
 // !! ------------------------------------------------------------ //
