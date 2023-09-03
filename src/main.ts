@@ -12,7 +12,7 @@ import {
 import {ApplicationModule} from './application/application.module';
 // import {ApplicationExampleModule as ApplicationModule} from './application-example/application-example.module';
 
-function checkEnvironment(configService: ConfigService) {
+function checkEnvVars(configService: ConfigService) {
   const requiredEnvVars = ['ENVIRONMENT', 'PORT'];
 
   requiredEnvVars.forEach(envVar => {
@@ -33,18 +33,27 @@ async function bootstrap() {
   } else {
     app = await NestFactory.create(ApplicationModule);
     app.use(cookieParser());
-    app.use(helmet());
   }
 
   // Check environment variables.
   const configService = app.get<ConfigService>(ConfigService);
-  checkEnvironment(configService);
+  checkEnvVars(configService);
 
-  // API document is only available in development environment.
-  if (
-    configService.getOrThrow<string>('application.environment') ===
-    'development'
-  ) {
+  // Get environment variables.
+  const port = configService.getOrThrow<number>('application.port');
+  const env = configService.getOrThrow<string>('application.environment');
+  const nodeFramework = configService.getOrThrow<string>(
+    'application.nodeFramework'
+  );
+
+  // Enable functions according to different env.
+  if (env === 'production') {
+    // helmet is only available in production environment.
+    if (nodeFramework === 'express') {
+      app.use(helmet());
+    }
+  } else if (env === 'development') {
+    // API document is only available in development environment.
     const config = new DocumentBuilder()
       .setTitle('API Document')
       .setDescription("It's good to see you guys 🥤")
@@ -78,8 +87,8 @@ async function bootstrap() {
   );
 
   // Listen port
-  const port = configService.getOrThrow<number>('application.port');
   await app.listen(port, '0.0.0.0');
+
   console.log(`Application is running on: ${await app.getUrl()}`);
 }
 bootstrap();
