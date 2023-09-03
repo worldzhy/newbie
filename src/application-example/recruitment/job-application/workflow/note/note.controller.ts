@@ -70,9 +70,10 @@ export class JobApplicationWorkflowNoteController {
     ) as {userId: string};
     const user = await this.userService.findUniqueOrThrow({
       where: {id: userId},
+      include: {profile: {select: {fullName: true}}},
     });
     body.reporterUserId = userId;
-    body.reporter = user.name;
+    body.reporter = user['profile'].fullName;
 
     // [step 3] Create jobApplicationWorkflowNote.
     return await this.jobApplicationWorkflowNoteService.create({data: body});

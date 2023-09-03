@@ -15,19 +15,19 @@ import {
   ApiBody,
   ApiQuery,
 } from '@nestjs/swagger';
-import {PermissionAction, Prisma, GmapPlace} from '@prisma/client';
+import {PermissionAction, Prisma, Place} from '@prisma/client';
 import {RequirePermission} from '@microservices/account/authorization/authorization.decorator';
-import {GmapPlaceService} from '@microservices/google-map/gmap-place.service';
+import {PlaceService} from '@microservices/map/place.service';
 import {generatePaginationParams} from '@toolkit/pagination/pagination';
 
-@ApiTags('GmapPlace')
+@ApiTags('Place')
 @ApiBearerAuth()
-@Controller('locations')
-export class GmapPlaceController {
-  constructor(private readonly locationService: GmapPlaceService) {}
+@Controller('places')
+export class PlaceController {
+  constructor(private readonly locationService: PlaceService) {}
 
   @Post('')
-  @RequirePermission(PermissionAction.Create, Prisma.ModelName.GmapPlace)
+  @RequirePermission(PermissionAction.Create, Prisma.ModelName.Place)
   @ApiBody({
     description: 'Optional fields are address2 and geoJSON.',
     examples: {
@@ -53,20 +53,20 @@ export class GmapPlaceController {
       },
     },
   })
-  async createGmapPlace(
-    @Body() body: Prisma.GmapPlaceUncheckedCreateInput
-  ): Promise<GmapPlace> {
+  async createPlace(
+    @Body() body: Prisma.PlaceUncheckedCreateInput
+  ): Promise<Place> {
     return await this.locationService.create({data: body});
   }
 
   @Get('')
-  @RequirePermission(PermissionAction.List, Prisma.ModelName.GmapPlace)
+  @RequirePermission(PermissionAction.List, Prisma.ModelName.Place)
   @ApiQuery({name: 'page', type: 'number'})
   @ApiQuery({name: 'pageSize', type: 'number'})
-  async getGmapPlaces(
+  async getPlaces(
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number
-  ): Promise<GmapPlace[]> {
+  ): Promise<Place[]> {
     // [step 1] Construct take and skip arguments.
     const {take, skip} = generatePaginationParams({
       page: page,
@@ -81,21 +81,19 @@ export class GmapPlaceController {
   }
 
   @Get(':placeId')
-  @RequirePermission(PermissionAction.Get, Prisma.ModelName.GmapPlace)
+  @RequirePermission(PermissionAction.Get, Prisma.ModelName.Place)
   @ApiParam({
     name: 'placeId',
     schema: {type: 'string'},
     description: 'The uuid of the location.',
     example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
   })
-  async getGmapPlace(
-    @Param('placeId') placeId: number
-  ): Promise<GmapPlace | null> {
+  async getPlace(@Param('placeId') placeId: number): Promise<Place | null> {
     return await this.locationService.findUnique({where: {id: placeId}});
   }
 
   @Patch(':placeId')
-  @RequirePermission(PermissionAction.Update, Prisma.ModelName.GmapPlace)
+  @RequirePermission(PermissionAction.Update, Prisma.ModelName.Place)
   @ApiParam({
     name: 'placeId',
     schema: {type: 'string'},
@@ -127,10 +125,10 @@ export class GmapPlaceController {
       },
     },
   })
-  async updateGmapPlace(
+  async updatePlace(
     @Param('placeId') placeId: number,
-    @Body() body: Prisma.GmapPlaceUpdateInput
-  ): Promise<GmapPlace> {
+    @Body() body: Prisma.PlaceUpdateInput
+  ): Promise<Place> {
     return await this.locationService.update({
       where: {id: placeId},
       data: body,
@@ -138,13 +136,13 @@ export class GmapPlaceController {
   }
 
   @Delete(':placeId')
-  @RequirePermission(PermissionAction.Delete, Prisma.ModelName.GmapPlace)
+  @RequirePermission(PermissionAction.Delete, Prisma.ModelName.Place)
   @ApiParam({
     name: 'placeId',
     schema: {type: 'string'},
     example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
   })
-  async deleteGmapPlace(@Param('placeId') placeId: number): Promise<GmapPlace> {
+  async deletePlace(@Param('placeId') placeId: number): Promise<Place> {
     return await this.locationService.delete({
       where: {id: placeId},
     });

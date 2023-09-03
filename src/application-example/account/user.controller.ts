@@ -17,14 +17,7 @@ import {
   ApiBody,
   ApiQuery,
 } from '@nestjs/swagger';
-import {
-  PermissionAction,
-  Prisma,
-  Role,
-  User,
-  GmapPlace,
-  UserStatus,
-} from '@prisma/client';
+import {PermissionAction, Prisma, Role, User, UserStatus} from '@prisma/client';
 import {UserService} from '@microservices/account/user/user.service';
 import {RequirePermission} from '@microservices/account/authorization/authorization.decorator';
 import {compareHash} from '@toolkit/utilities/common.util';
@@ -39,41 +32,6 @@ import {
 @Controller('users')
 export class UserController {
   constructor(private userService: UserService) {}
-
-  @Get('count')
-  @RequirePermission(PermissionAction.List, Prisma.ModelName.User)
-  @ApiQuery({name: 'name', type: 'string'})
-  async countUsers(@Query('name') name?: string): Promise<number> {
-    // [step 1] Construct where argument.
-    let where: Prisma.UserWhereInput | undefined;
-    const conditions: object[] = [];
-    if (name) {
-      name = name.trim();
-      if (name.length > 0) {
-        conditions.push({username: {search: name}});
-        conditions.push({
-          profiles: {
-            some: {
-              OR: [
-                {firstName: {search: name}},
-                {lastName: {search: name}},
-                {middleName: {search: name}},
-              ],
-            },
-          },
-        });
-      }
-    }
-
-    if (conditions.length > 0) {
-      where = {OR: conditions};
-    }
-
-    // [step 2] Count.
-    return await this.userService.count({
-      where: where,
-    });
-  }
 
   @Post('')
   @RequirePermission(PermissionAction.Create, Prisma.ModelName.User)
@@ -95,9 +53,9 @@ export class UserController {
   })
   async createUser(
     @Body()
-    body: Prisma.UserCreateInput & {roles?: Role[]; locations?: GmapPlace[]}
+    body: Prisma.UserCreateInput & {roles?: Role[]}
   ): Promise<User> {
-    const {roles, locations, ...user} = body;
+    const {roles, ...user} = body;
     const userCreateInput: Prisma.UserCreateInput = user;
     // Construct roles.
     if (roles && roles.length > 0) {
@@ -112,9 +70,8 @@ export class UserController {
         id: true,
         email: true,
         phone: true,
-        name: true,
         status: true,
-        profiles: true,
+        profile: true,
       },
     });
   }
@@ -169,7 +126,7 @@ export class UserController {
       skip: skip,
       include: {
         roles: true,
-        profiles: true,
+        profile: true,
       },
     });
 
@@ -194,7 +151,7 @@ export class UserController {
       where: {id: userId},
       include: {
         roles: true,
-        profiles: true,
+        profile: true,
       },
     });
 
@@ -230,9 +187,9 @@ export class UserController {
   async updateUser(
     @Param('userId') userId: string,
     @Body()
-    body: Prisma.UserUpdateInput & {roles?: Role[]; locations?: GmapPlace[]}
+    body: Prisma.UserUpdateInput & {roles?: Role[]}
   ): Promise<User> {
-    const {roles, locations, ...user} = body;
+    const {roles, ...user} = body;
     const userUpdateInput: Prisma.UserUpdateInput = user;
 
     // Construct roles.
@@ -272,7 +229,7 @@ export class UserController {
   async getUserProfiles(@Param('userId') userId: string) {
     const user = await this.userService.findUniqueOrThrow({
       where: {id: userId},
-      include: {profiles: true},
+      include: {profile: true},
     });
 
     return this.userService.withoutPassword(user);
@@ -355,7 +312,7 @@ export class UserController {
     return await this.userService.update({
       where: {id: userId},
       data: {password: body.newPassword},
-      select: {id: true, name: true, email: true, phone: true},
+      select: {id: true, email: true, phone: true},
     });
   }
 

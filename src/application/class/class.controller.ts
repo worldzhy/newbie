@@ -11,10 +11,10 @@ import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {EventType, Prisma} from '@prisma/client';
 import {EventTypeService} from '@microservices/event-scheduling/event-type.service';
 
-@ApiTags('Event Scheduling / Type')
+@ApiTags('Class')
 @ApiBearerAuth()
-@Controller('event-types')
-export class EventTypeController {
+@Controller('classes')
+export class ClassController {
   constructor(private readonly eventTypeService: EventTypeService) {}
 
   @Post('')

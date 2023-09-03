@@ -2,10 +2,10 @@ import {Controller, Get} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth} from '@nestjs/swagger';
 import {HeatmapService} from '@microservices/event-scheduling/heatmap.service';
 
-@ApiTags('Event Scheduling / Heatmap')
+@ApiTags('Heatmap')
 @ApiBearerAuth()
 @Controller('heatmap')
-export class EventCalendarController {
+export class HeatmapController {
   constructor(private readonly heatmapService: HeatmapService) {}
 
   @Get('coach-availability')

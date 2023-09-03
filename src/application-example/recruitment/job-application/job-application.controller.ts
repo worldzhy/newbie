@@ -91,9 +91,10 @@ export class JobApplicationController {
     ) as {userId: string};
     const user = await this.userService.findUniqueOrThrow({
       where: {id: userId},
+      include: {profile: {select: {fullName: true}}},
     });
     const jobApplication = await this.jobApplicationService.create({
-      data: {...body, referredBy: user.name || user.id},
+      data: {...body, referredBy: user['profile'].fullName || user.id},
     });
 
     // [step 3] Create job application testings.
@@ -335,9 +336,9 @@ export class JobApplicationController {
           // Attach processedBy username.
           const user = await this.userService.findUniqueOrThrow({
             where: {id: step.processedByUserId},
-            select: {name: true},
+            include: {profile: {select: {fullName: true}}},
           });
-          step['processedByUser'] = user.name;
+          step['processedByUser'] = user['profile'].fullName;
 
           // Attach next role name.
           if (step.nextRoleId) {

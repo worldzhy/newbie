@@ -9,9 +9,9 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {Tag, Prisma} from '@prisma/client';
-import {TagService} from '@microservices/event-scheduling/tag.service';
+import {TagService} from '@microservices/tag/tag.service';
 
-@ApiTags('Event Scheduling / Tag')
+@ApiTags('Tag')
 @ApiBearerAuth()
 @Controller('tags')
 export class TagController {

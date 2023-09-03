@@ -44,7 +44,7 @@ export async function seedForEventScheduling() {
   });
 
   console.log('- Creating event locations...');
-  await prisma.eventLocation.createMany({
+  await prisma.eventVenue.createMany({
     data: [
       {
         name: 'CA, Santa Monica',
@@ -72,27 +72,5 @@ export async function seedForEventScheduling() {
       dateOfClosure: '2023-08-12',
       timezone: 'Europe/Athens',
     },
-  });
-
-  console.log('- Creating tags...');
-  await prisma.tag.createMany({
-    data: [
-      {
-        name: 'experienced',
-        group: 'Coach',
-      },
-      {
-        name: 'patient',
-        group: 'Coach',
-      },
-      {
-        name: 'near-college',
-        group: 'Location',
-      },
-      {
-        name: 'near-business-center',
-        group: 'Location',
-      },
-    ],
   });
 }

@@ -90,7 +90,7 @@ export class AccountSignupController {
       }
     }
 
-    if (body.profiles) {
+    if (body.profile) {
       profileCount += 1;
     }
 
@@ -113,9 +113,8 @@ export class AccountSignupController {
           id: true,
           email: true,
           phone: true,
-          name: true,
           status: true,
-          profiles: true,
+          profile: true,
         },
       });
     } else {

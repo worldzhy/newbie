@@ -22,6 +22,7 @@ export async function prismaMiddleware(
             params.args['data']['email'] as string
           ).toLowerCase();
         }
+
         if (params.args['data']['password']) {
           if (!verifyPassword(params.args['data']['password'])) {
             throw new BadRequestException(
@@ -31,6 +32,17 @@ export async function prismaMiddleware(
           // Generate hash of the password.
           const hash = await generateHash(params.args['data']['password']);
           params.args['data']['password'] = hash;
+        }
+
+        if (params.args['data']['profile']) {
+          params.args['data']['profile'][params.action]['fullName'] =
+            params.args['data']['profile'][params.action]['firstName'] +
+            ' ' +
+            (params.args['data']['profile'][params.action]['middleName']
+              ? params.args['data']['profile'][params.action]['middleName'] +
+                ' '
+              : '') +
+            params.args['data']['profile'][params.action]['lastName'];
         }
         return next(params);
       default:
@@ -64,34 +76,22 @@ export async function prismaMiddleware(
   } else if (params.model === Prisma.ModelName.Candidate) {
     switch (params.action) {
       case 'create':
-        params.args['data']['profile']['create']['fullName'] =
-          params.args['data']['profile']['create']['firstName'] +
-          ' ' +
-          (params.args['data']['profile']['create']['middleName']
-            ? params.args['data']['profile']['create']['middleName'] + ' '
-            : '') +
-          params.args['data']['profile']['create']['lastName'];
-
-        if (params.args['data']['profile']['create']['dateOfBirth']) {
-          params.args['data']['profile']['create']['dateOfBirth'] = new Date(
-            params.args['data']['profile']['create']['dateOfBirth'].toString()
-          );
-        }
-
-        return next(params);
       case 'update':
-        params.args['data']['profile']['update']['fullName'] =
-          params.args['data']['profile']['update']['firstName'] +
+        params.args['data']['profile'][params.action]['fullName'] =
+          params.args['data']['profile'][params.action]['firstName'] +
           ' ' +
-          (params.args['data']['profile']['update']['middleName']
-            ? params.args['data']['profile']['update']['middleName'] + ' '
+          (params.args['data']['profile'][params.action]['middleName']
+            ? params.args['data']['profile'][params.action]['middleName'] + ' '
             : '') +
-          params.args['data']['profile']['update']['lastName'];
+          params.args['data']['profile'][params.action]['lastName'];
 
-        if (params.args['data']['profile']['create']['dateOfBirth']) {
-          params.args['data']['profile']['create']['dateOfBirth'] = new Date(
-            params.args['data']['profile']['create']['dateOfBirth'].toString()
-          );
+        if (params.args['data']['profile'][params.action]['dateOfBirth']) {
+          params.args['data']['profile'][params.action]['dateOfBirth'] =
+            new Date(
+              params.args['data']['profile'][params.action][
+                'dateOfBirth'
+              ].toString()
+            );
         }
 
         return next(params);

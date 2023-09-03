@@ -4,6 +4,7 @@ import {seedForPmgmt} from './seed/pmgmt.seed';
 import {seedForAccount} from './seed/account.seed';
 import {seedForEventScheduling} from './seed/event-scheduling.seed';
 import {seedForWorkflow} from './seed/workflow.seed';
+import {seedForTag} from './seed/tag.seed';
 
 async function main() {
   console.log('**Seeding Start');
@@ -13,6 +14,7 @@ async function main() {
   // await seedForWorkflow();
   // await seedForEngined();
   // await seedForPmgmt();
+  await seedForTag();
 
   console.log('\n**Seeding End');
 }

@@ -47,7 +47,7 @@ export class UserService {
   }
 
   /**
-   * The account supports username / email / phone.
+   * The account supports uuid / email / phone.
    */
   async findByAccount(account: string): Promise<User | null> {
     if (verifyUuid(account)) {

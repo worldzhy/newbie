@@ -21,7 +21,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["microservice/account", "microservice/event-scheduling", "microservice/fmgmt", "microservice/map", "microservice/notification", "microservice/order", "microservice/pmgmt", "microservice/task", "microservice/verification-code", "microservice/workflow", "application/engined", "application/recruitment", "application/tc-request"]
+  schemas  = ["microservice/account", "microservice/event-scheduling", "microservice/fmgmt", "microservice/map", "microservice/notification", "microservice/order", "microservice/pmgmt", "microservice/tag", "microservice/task", "microservice/verification-code", "microservice/workflow", "application/engined", "application/recruitment", "application/tc-request"]
 }
 
 // ! ------------------------------------------------------------ //
@@ -57,7 +57,6 @@ model User {
   id               String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   email            String?                  @unique
   phone            String?                  @unique
-  name             String?
   password         String? // automatic hashing
   status           UserStatus               @default(ACTIVE)
   lastLoginAt      DateTime?
@@ -65,7 +64,7 @@ model User {
   updatedAt        DateTime                 @updatedAt
   organization     Organization?            @relation(fields: [organizationId], references: [id])
   organizationId   String?                  @db.Uuid
-  profiles         UserProfile[]
+  profile          UserProfile?
   roles            Role[]
   holdingWorkflows JobApplicationWorkflow[]
 
@@ -100,23 +99,25 @@ model UserRefreshToken {
 }
 
 model UserProfile {
-  id             String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  prefix         String?
-  firstName      String?
-  middleName     String?
-  lastName       String?
-  suffix         String?
-  dateOfBirth    DateTime?          @db.Date
-  gender         UserProfileGender?
-  emails         Json[]
-  phones         Json[]
-  websites       Json? // {'facebook': 'https://www.facebook.com/grace', 'twitter': 'https://twitter.com/elonmusk'}
-  picture        String?
-  organizationId String?            @db.Uuid
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
-  user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId         String             @db.Uuid
+  id          String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  prefix      String?
+  fullName    String?
+  firstName   String?
+  middleName  String?
+  lastName    String?
+  suffix      String?
+  dateOfBirth DateTime?          @db.Date
+  gender      UserProfileGender?
+  emails      Json[]
+  phones      Json[]
+  locationIds Int[] // location ids
+  tagIds      Int[] // tag ids
+  websites    Json? // {'facebook': 'https://www.facebook.com/grace', 'twitter': 'https://twitter.com/elonmusk'}
+  picture     String?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String             @unique @db.Uuid
 
   @@schema("microservice/account")
 }
@@ -132,7 +133,7 @@ enum UserProfileGender {
 model Role {
   // A role is a subgroup of a user group with some specified permissions.
   id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name           String
+  name           String        @unique
   description    String?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
@@ -213,44 +214,14 @@ model RoutePermission {
 }
 
 // !! ------------------------------------------------------------ //
-// !!            [Microservice] Event scheduling models              //
+// !!            [Microservice] Event scheduling models            //
 // !! ------------------------------------------------------------ //
+// * EventContainer                                                //
+// * EventType                                                     //
+// * EventVenue                                                    //
 // * Event                                                         //
-// * AvailabilityContainer                                         //
-// * Availability                                                  //
 // * Reservation                                                   //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
-
-model EventLocation {
-  id             Int       @id @default(autoincrement())
-  name           String
-  address        String
-  city           String
-  numberOfSeats  Int       @default(1)
-  minutesOfBreak Int?
-  timeOfDayStart DateTime? @db.Time(0)
-  timeOfDayEnd   DateTime? @db.Time(0)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  tags           Tag[]
-  events         Event[]
-
-  @@schema("microservice/event-scheduling")
-}
-
-model EventType {
-  id                        Int      @id @default(autoincrement())
-  name                      String
-  minutesOfDuration         Int
-  minutesOfBreak            Int?
-  minutesInAdvanceToReserve Int?
-  minutesInAdvanceToCancel  Int?
-  createdAt                 DateTime @default(now())
-  updatedAt                 DateTime @updatedAt
-  events                    Event[]
-
-  @@schema("microservice/event-scheduling")
-}
 
 model EventContainer {
   id            Int                  @id @default(autoincrement())
@@ -273,6 +244,37 @@ enum EventContainerStatus {
   @@schema("microservice/event-scheduling")
 }
 
+model EventType {
+  id                        Int      @id @default(autoincrement())
+  name                      String
+  minutesOfDuration         Int
+  minutesOfBreak            Int?
+  minutesInAdvanceToReserve Int?
+  minutesInAdvanceToCancel  Int?
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+  events                    Event[]
+
+  @@schema("microservice/event-scheduling")
+}
+
+model EventVenue {
+  id             Int       @id @default(autoincrement())
+  name           String
+  address        String
+  city           String
+  numberOfSeats  Int       @default(1)
+  minutesOfBreak Int?
+  timeOfDayStart DateTime? @db.Time(0)
+  timeOfDayEnd   DateTime? @db.Time(0)
+  tagIds         Int[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  events         Event[]
+
+  @@schema("microservice/event-scheduling")
+}
+
 model Event {
   id           Int            @id @default(autoincrement())
   hostUserId   String?        @db.Uuid
@@ -284,8 +286,8 @@ model Event {
   updatedAt    DateTime       @updatedAt
   type         EventType      @relation(fields: [typeId], references: [id], onDelete: Cascade)
   typeId       Int
-  location     EventLocation? @relation(fields: [locationId], references: [id], onDelete: Cascade)
-  locationId   Int?
+  venue        EventVenue?    @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  venueId      Int?
   container    EventContainer @relation(fields: [containerId], references: [id], onDelete: Cascade)
   containerId  Int
   reservations Reservation[]
@@ -300,17 +302,6 @@ model Reservation {
   updatedAt    DateTime @updatedAt
   event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
   eventId      Int
-
-  @@schema("microservice/event-scheduling")
-}
-
-model Tag {
-  id        Int             @id @default(autoincrement())
-  name      String
-  group     String?
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
-  locations EventLocation[]
 
   @@schema("microservice/event-scheduling")
 }
@@ -353,23 +344,21 @@ model Folder {
 }
 
 // !! ------------------------------------------------------------ //
-// !!            [Microservice] Google Map models                    //
+// !!            [Microservice] Map models                         //
 // !! ------------------------------------------------------------ //
-// * Location                                                      //
+// * Place                                                         //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
 
-model GmapPlace {
-  id        Int      @id @default(autoincrement())
-  placeId   String?
-  name      String?
-  address   String?
-  address2  String?
-  city      String?
-  state     String?
-  zipcode   String?
-  geoJSON   Json? // https://datatracker.ietf.org/doc/html/rfc7946
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Place {
+  id                   Int      @id @default(autoincrement())
+  name                 String?
+  address              String?
+  city                 String?
+  state                String?
+  googleMapPlaceId     String?
+  googleMapPlaceResult Json?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 
   @@schema("microservice/map")
 }
@@ -625,6 +614,22 @@ enum InfrastructureStackState {
   DESTROY_FAILED
 
   @@schema("microservice/pmgmt")
+}
+
+// ! ------------------------------------------------------------ //
+// !           [Microservice] Tag  models                         //
+// ! ------------------------------------------------------------ //
+// * Tag                                                          //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
+
+model Tag {
+  id        Int      @id @default(autoincrement())
+  name      String
+  group     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@schema("microservice/tag")
 }
 
 // ! ------------------------------------------------------------ //

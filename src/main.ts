@@ -9,8 +9,8 @@ import {
   SwaggerModule,
   SwaggerCustomOptions,
 } from '@nestjs/swagger';
-import {ApplicationModule} from '@application/application.module';
-// import {ApplicationExampleModule as ApplicationModule} from '@application-example/application-example.module';
+import {ApplicationModule} from './application/application.module';
+// import {ApplicationExampleModule as ApplicationModule} from './application-example/application-example.module';
 
 function checkEnvironment(configService: ConfigService) {
   const requiredEnvVars = ['ENVIRONMENT', 'PORT'];

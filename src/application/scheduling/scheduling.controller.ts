@@ -3,10 +3,10 @@ import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {EventCalendarService} from '@microservices/event-scheduling/event-calendar.service';
 import {EventContainerStatus} from '@prisma/client';
 
-@ApiTags('Event Scheduling / Calendar')
+@ApiTags('Scheduling')
 @ApiBearerAuth()
-@Controller('event-calendar')
-export class EventCalendarController {
+@Controller('scheduling')
+export class SchedulingController {
   constructor(private readonly eventCalendarService: EventCalendarService) {}
 
   @Post('')

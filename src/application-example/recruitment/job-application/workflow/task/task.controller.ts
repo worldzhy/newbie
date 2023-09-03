@@ -79,15 +79,17 @@ export class JobApplicationWorkflowTaskController {
     ) as {userId: string};
     const reporterUser = await this.userService.findUniqueOrThrow({
       where: {id: userId},
+      include: {profile: {select: {fullName: true}}},
     });
-    body.reporter = reporterUser.name;
+    body.reporter = reporterUser['profile'].fullName;
     body.reporterUserId = userId;
 
     // [step 3] Get assignee user.
     const assigneeUser = await this.userService.findUniqueOrThrow({
       where: {id: body.assigneeUserId},
+      include: {profile: {select: {fullName: true}}},
     });
-    body.assignee = assigneeUser.name;
+    body.assignee = assigneeUser['profile'].fullName;
 
     // [step 3] Create jobApplicationTest.
     return await this.jobApplicationWorkflowTaskService.create({data: body});

@@ -15,18 +15,18 @@ import {
   ApiBody,
   ApiQuery,
 } from '@nestjs/swagger';
-import {EventLocation, Prisma} from '@prisma/client';
-import {EventLocationService} from '@microservices/event-scheduling/event-location.service';
+import {EventVenue, Prisma} from '@prisma/client';
+import {EventVenueService} from '@microservices/event-scheduling/event-venue.service';
 import {
   generatePaginationParams,
   generatePaginationResponse,
 } from '@toolkit/pagination/pagination';
 
-@ApiTags('Event Scheduling / Location')
+@ApiTags('Location')
 @ApiBearerAuth()
-@Controller('event-locations')
-export class EventLocationController {
-  constructor(private readonly spaceService: EventLocationService) {}
+@Controller('locations')
+export class LocationController {
+  constructor(private readonly eventVenueService: EventVenueService) {}
 
   @Post('')
   @ApiBody({
@@ -44,10 +44,10 @@ export class EventLocationController {
       },
     },
   })
-  async createEventLocation(
-    @Body() body: Prisma.EventLocationUncheckedCreateInput
-  ): Promise<EventLocation> {
-    return await this.spaceService.create({
+  async createEventVenue(
+    @Body() body: Prisma.EventVenueUncheckedCreateInput
+  ): Promise<EventVenue> {
+    return await this.eventVenueService.create({
       data: body,
     });
   }
@@ -56,13 +56,13 @@ export class EventLocationController {
   @ApiQuery({name: 'name', type: 'string'})
   @ApiQuery({name: 'page', type: 'number'})
   @ApiQuery({name: 'pageSize', type: 'number'})
-  async getEventLocations(
+  async getEventVenues(
     @Query('name') name?: string,
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number
   ) {
     // [step 1] Construct where argument.
-    let where: Prisma.EventLocationWhereInput | undefined;
+    let where: Prisma.EventVenueWhereInput | undefined;
     const whereConditions: object[] = [];
     if (name) {
       name = name.trim();
@@ -86,9 +86,8 @@ export class EventLocationController {
     });
 
     // [step 3] Get users.
-    const [records, total] = await this.spaceService.findManyWithTotal({
+    const [records, total] = await this.eventVenueService.findManyWithTotal({
       where: where,
-      include: {tags: true},
       take: take,
       skip: skip,
     });
@@ -96,25 +95,24 @@ export class EventLocationController {
     return generatePaginationResponse({page, pageSize, records, total});
   }
 
-  @Get(':eventLocationId')
+  @Get(':eventVenueId')
   @ApiParam({
-    name: 'eventLocationId',
+    name: 'eventVenueId',
     schema: {type: 'number'},
     description: 'The id of the event.',
     example: 1,
   })
-  async getEventLocation(
-    @Param('eventLocationId') eventLocationId: number
-  ): Promise<EventLocation> {
-    return await this.spaceService.findUniqueOrThrow({
-      where: {id: eventLocationId},
-      include: {tags: true},
+  async getEventVenue(
+    @Param('eventVenueId') eventVenueId: number
+  ): Promise<EventVenue> {
+    return await this.eventVenueService.findUniqueOrThrow({
+      where: {id: eventVenueId},
     });
   }
 
-  @Patch(':eventLocationId')
+  @Patch(':eventVenueId')
   @ApiParam({
-    name: 'eventLocationId',
+    name: 'eventVenueId',
     schema: {type: 'number'},
     description: 'The id of the event.',
     example: 1,
@@ -135,28 +133,28 @@ export class EventLocationController {
       },
     },
   })
-  async updateEventLocation(
-    @Param('eventLocationId') eventLocationId: number,
+  async updateEventVenue(
+    @Param('eventVenueId') eventVenueId: number,
     @Body()
-    body: Prisma.EventLocationUpdateInput
-  ): Promise<EventLocation> {
-    return await this.spaceService.update({
-      where: {id: eventLocationId},
+    body: Prisma.EventVenueUpdateInput
+  ): Promise<EventVenue> {
+    return await this.eventVenueService.update({
+      where: {id: eventVenueId},
       data: body,
     });
   }
 
-  @Delete(':eventLocationId')
+  @Delete(':eventVenueId')
   @ApiParam({
-    name: 'eventLocationId',
+    name: 'eventVenueId',
     schema: {type: 'number'},
     example: 1,
   })
-  async deleteEventLocation(
-    @Param('eventLocationId') eventLocationId: number
-  ): Promise<EventLocation> {
-    return await this.spaceService.delete({
-      where: {id: eventLocationId},
+  async deleteEventVenue(
+    @Param('eventVenueId') eventVenueId: number
+  ): Promise<EventVenue> {
+    return await this.eventVenueService.delete({
+      where: {id: eventVenueId},
     });
   }
 
