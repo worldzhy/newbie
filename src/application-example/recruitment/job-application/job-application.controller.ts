@@ -28,7 +28,7 @@ import {
   Role,
   TrustedEntityType,
 } from '@prisma/client';
-import {RequirePermission} from '@microservices/account/authorization/authorization.decorator';
+import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
 import {CandidateService} from 'src/application-example/recruitment/candidate/candidate.service';
 import {AccessTokenService} from '@toolkit/token/access-token/access-token.service';
 import {WorkflowRouteService} from '@microservices/workflow/workflow-route.service';

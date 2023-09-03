@@ -8,7 +8,7 @@ import {
 import {ApiTags, ApiBody, ApiBearerAuth} from '@nestjs/swagger';
 import {User} from '@prisma/client';
 import {UserService} from '@microservices/account/user/user.service';
-import {Public} from '@microservices/account/authentication/public/public.decorator';
+import {Public} from '@microservices/account/security/authentication/public/public.decorator';
 import {VerificationCodeService} from '@microservices/account/verification-code/verification-code.service';
 import {verifyEmail, verifyPhone} from '@toolkit/validators/user.validator';
 import {compareHash} from '@toolkit/utilities/common.util';

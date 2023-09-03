@@ -2,13 +2,13 @@ import {Controller, Post, Body, Res} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {UserAccessToken} from '@prisma/client';
 import {Response} from 'express';
-import {LoggingInByPassword} from '@microservices/account/authentication/password/password.decorator';
-import {LoggingInByProfile} from '@microservices/account/authentication/profile/profile.decorator';
-import {LoggingInByUuid} from '@microservices/account/authentication/uuid/uuid.decorator';
-import {LoggingInByVerificationCode} from '@microservices/account/authentication/verification-code/verification-code.decorator';
+import {LoggingInByPassword} from '@microservices/account/security/authentication/password/password.decorator';
+import {LoggingInByProfile} from '@microservices/account/security/authentication/profile/profile.decorator';
+import {LoggingInByUuid} from '@microservices/account/security/authentication/uuid/uuid.decorator';
+import {LoggingInByVerificationCode} from '@microservices/account/security/authentication/verification-code/verification-code.decorator';
 import {AccountService} from '@microservices/account/account.service';
 import {UserProfileService} from '@microservices/account/user/user-profile.service';
-import {LoggingIn} from '@microservices/account/security/login-attempt/login-attempt.decorator';
+import {LoggingIn} from '@microservices/account/security/login-limiter/ip-login-limiter.decorator';
 
 @ApiTags('Account')
 @Controller('account')

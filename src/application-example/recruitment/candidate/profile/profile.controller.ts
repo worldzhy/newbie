@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {PermissionAction, Prisma, CandidateProfile} from '@prisma/client';
-import {RequirePermission} from '@microservices/account/authorization/authorization.decorator';
+import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
 import {CandidateProfileService} from './profile.service';
 import {generatePaginationParams} from '@toolkit/pagination/pagination';
 

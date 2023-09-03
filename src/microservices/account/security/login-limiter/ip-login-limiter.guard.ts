@@ -1,16 +1,16 @@
 import {Injectable, ExecutionContext} from '@nestjs/common';
 import {Reflector} from '@nestjs/core';
 import {ConfigService} from '@nestjs/config';
-import {IS_LOGGING_IN} from './login-attempt/login-attempt.decorator';
-import {SecurityLoginIpAttemptGuard} from './login-attempt/login-attempt.guard';
+import {IS_LOGGING_IN} from './ip-login-limiter.decorator';
+import {IpLoginLimiterService} from './login-limiter.service';
 
 @Injectable()
-export class SecurityGuard {
+export class IpLoginLimiterGuard {
   private allowedOrigins: string[];
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly securityLoginIpAttemptGuard: SecurityLoginIpAttemptGuard,
+    private readonly ipLoginLimiterService: IpLoginLimiterService,
     private reflector: Reflector
   ) {
     this.allowedOrigins = this.configService.getOrThrow<string[]>(
@@ -21,6 +21,8 @@ export class SecurityGuard {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     // Allow only requests from allowed origins
     const origin = context.switchToHttp().getRequest().headers.origin;
+    const ipAddress = context.switchToHttp().getRequest().socket.remoteAddress;
+
     if (origin && !this.allowedOrigins.includes(origin)) {
       return false;
     }
@@ -31,9 +33,8 @@ export class SecurityGuard {
       [context.getHandler(), context.getClass()]
     );
     if (isLoggingIn) {
-      const isIpAllowed = await this.securityLoginIpAttemptGuard.canActivate(
-        context
-      );
+      const isIpAllowed = await this.ipLoginLimiterService.isAllowed(ipAddress);
+
       if (!isIpAllowed) {
         return false;
       }

@@ -8,9 +8,9 @@ import {Strategy} from 'passport-custom';
 import {Request} from 'express';
 import {UserProfileService} from '@microservices/account/user/user-profile.service';
 import {
-  SecurityLoginIpAttemptService,
-  SecurityLoginUserAttemptService,
-} from '@microservices/account/security/login-attempt/login-attempt.service';
+  IpLoginLimiterService,
+  UserLoginLimiterService,
+} from '@microservices/account/security/login-limiter/login-limiter.service';
 
 @Injectable()
 export class AuthProfileStrategy extends PassportStrategy(
@@ -19,8 +19,8 @@ export class AuthProfileStrategy extends PassportStrategy(
 ) {
   constructor(
     private readonly userProfileService: UserProfileService,
-    private readonly securityLoginIpAttemptService: SecurityLoginIpAttemptService,
-    private readonly securityLoginUserAttemptService: SecurityLoginUserAttemptService
+    private readonly securityLoginIpAttemptService: IpLoginLimiterService,
+    private readonly securityLoginUserAttemptService: UserLoginLimiterService
   ) {
     super();
   }

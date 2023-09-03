@@ -7,7 +7,7 @@ import {
   TrustedEntityType,
 } from '@prisma/client';
 import {UserService} from '@microservices/account/user/user.service';
-import {PermissionService} from '../permission/permission.service';
+import {PermissionService} from '../../permission/permission.service';
 import {PERMISSION_KEY} from './authorization.decorator';
 import {AccessTokenService} from '@toolkit/token/access-token/access-token.service';
 

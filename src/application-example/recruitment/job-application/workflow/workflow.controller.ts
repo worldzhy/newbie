@@ -13,7 +13,7 @@ import {JobApplicationWorkflow, PermissionAction, Prisma} from '@prisma/client';
 import {JobApplicationWorkflowService} from './workflow.service';
 import {JobApplicationWorkflowFileService} from './file/file.service';
 import {JobApplicationWorkflowTrailService} from './trail/trail.service';
-import {RequirePermission} from '@microservices/account/authorization/authorization.decorator';
+import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
 import {RoleService} from '@microservices/account/role/role.service';
 import {UserService} from '@microservices/account/user/user.service';
 import {WorkflowRouteService} from '@microservices/workflow/workflow-route.service';

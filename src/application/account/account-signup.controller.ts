@@ -2,7 +2,7 @@ import {Controller, Post, Body, BadRequestException} from '@nestjs/common';
 import {ApiTags, ApiBody} from '@nestjs/swagger';
 import {Prisma, User} from '@prisma/client';
 import {UserService} from '@microservices/account/user/user.service';
-import {Public} from '@microservices/account/authentication/public/public.decorator';
+import {Public} from '@microservices/account/security/authentication/public/public.decorator';
 import {
   verifyEmail,
   verifyPassword,

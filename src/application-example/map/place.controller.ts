@@ -16,7 +16,7 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import {PermissionAction, Prisma, Place} from '@prisma/client';
-import {RequirePermission} from '@microservices/account/authorization/authorization.decorator';
+import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
 import {PlaceService} from '@microservices/map/place.service';
 import {generatePaginationParams} from '@toolkit/pagination/pagination';
 

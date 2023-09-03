@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {Prisma, Job, PermissionAction, JobType} from '@prisma/client';
-import {RequirePermission} from '@microservices/account/authorization/authorization.decorator';
+import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
 import {JobService} from './job.service';
 
 @ApiTags('Recruitment / Job')

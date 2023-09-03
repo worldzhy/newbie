@@ -2,7 +2,7 @@ import {Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import {RateLimiterMemory} from 'rate-limiter-flexible';
 
-abstract class LoginAttemptService {
+abstract class LoginLimiterService {
   protected limiter: RateLimiterMemory;
 
   async isAllowed(key: string): Promise<boolean> {
@@ -21,17 +21,17 @@ abstract class LoginAttemptService {
 }
 
 @Injectable()
-export class SecurityLoginIpAttemptService extends LoginAttemptService {
+export class IpLoginLimiterService extends LoginLimiterService {
   private points: number;
   private duration: number;
 
   constructor(private readonly configService: ConfigService) {
     super();
     this.points = this.configService.getOrThrow<number>(
-      'microservice.account.security.ipLoginAttempt.points'
+      'microservice.account.security.ipLoginLimiter.points'
     );
     this.duration = this.configService.getOrThrow<number>(
-      'microservice.account.security.ipLoginAttempt.durationSeconds'
+      'microservice.account.security.ipLoginLimiter.durationSeconds'
     );
     this.limiter = new RateLimiterMemory({
       points: this.points,
@@ -41,17 +41,17 @@ export class SecurityLoginIpAttemptService extends LoginAttemptService {
 }
 
 @Injectable()
-export class SecurityLoginUserAttemptService extends LoginAttemptService {
+export class UserLoginLimiterService extends LoginLimiterService {
   private points: number;
   private duration: number;
 
   constructor(private readonly configService: ConfigService) {
     super();
     this.points = this.configService.getOrThrow<number>(
-      'microservice.account.security.userLoginAttempt.points'
+      'microservice.account.security.userLoginLimiter.points'
     );
     this.duration = this.configService.getOrThrow<number>(
-      'microservice.account.security.userLoginAttempt.durationSeconds'
+      'microservice.account.security.userLoginLimiter.durationSeconds'
     );
     this.limiter = new RateLimiterMemory({
       points: this.points,

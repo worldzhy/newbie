@@ -20,7 +20,7 @@ import {
   JobApplicationWorkflowTrail,
   PermissionAction,
 } from '@prisma/client';
-import {RequirePermission} from '@microservices/account/authorization/authorization.decorator';
+import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
 import {RoleService} from '@microservices/account/role/role.service';
 import {UserService} from '@microservices/account/user/user.service';
 import {generatePaginationParams} from '@toolkit/pagination/pagination';

@@ -9,9 +9,9 @@ import {Request} from 'express';
 import {UserService} from '@microservices/account/user/user.service';
 import {verifyUuid} from '@toolkit/validators/user.validator';
 import {
-  SecurityLoginIpAttemptService,
-  SecurityLoginUserAttemptService,
-} from '@microservices/account/security/login-attempt/login-attempt.service';
+  IpLoginLimiterService,
+  UserLoginLimiterService,
+} from '@microservices/account/security/login-limiter/login-limiter.service';
 
 @Injectable()
 export class AuthUuidStrategy extends PassportStrategy(
@@ -20,8 +20,8 @@ export class AuthUuidStrategy extends PassportStrategy(
 ) {
   constructor(
     private readonly userService: UserService,
-    private readonly securityLoginIpAttemptService: SecurityLoginIpAttemptService,
-    private readonly securityLoginUserAttemptService: SecurityLoginUserAttemptService
+    private readonly securityLoginIpAttemptService: IpLoginLimiterService,
+    private readonly securityLoginUserAttemptService: UserLoginLimiterService
   ) {
     super();
   }

@@ -9,9 +9,9 @@ import {VerificationCodeService} from '@microservices/account/verification-code/
 import {UserService} from '@microservices/account/user/user.service';
 import {verifyEmail, verifyPhone} from '@toolkit/validators/user.validator';
 import {
-  SecurityLoginIpAttemptService,
-  SecurityLoginUserAttemptService,
-} from '@microservices/account/security/login-attempt/login-attempt.service';
+  IpLoginLimiterService,
+  UserLoginLimiterService,
+} from '@microservices/account/security/login-limiter/login-limiter.service';
 import {Request} from 'express';
 
 @Injectable()
@@ -22,8 +22,8 @@ export class AuthVerificationCodeStrategy extends PassportStrategy(
   constructor(
     private readonly verificationCodeService: VerificationCodeService,
     private readonly userService: UserService,
-    private readonly securityLoginIpAttemptService: SecurityLoginIpAttemptService,
-    private readonly securityLoginUserAttemptService: SecurityLoginUserAttemptService
+    private readonly securityLoginIpAttemptService: IpLoginLimiterService,
+    private readonly securityLoginUserAttemptService: UserLoginLimiterService
   ) {
     super({
       usernameField: 'account',

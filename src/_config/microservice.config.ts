@@ -3,15 +3,15 @@ import {registerAs} from '@nestjs/config';
 export default registerAs('microservice', () => ({
   account: {
     security: {
-      ipLoginAttempt: {
-        points: process.env.ACCOUNT_SECURITY_IP_LOGIN_ATTEMPT_POINTS,
+      ipLoginLimiter: {
+        points: process.env.ACCOUNT_SECURITY_IP_LOGIN_LIMITER_POINTS,
         durationSeconds:
-          process.env.ACCOUNT_SECURITY_IP_LOGIN_ATTEMPT_DURATION_SECONDS,
+          process.env.ACCOUNT_SECURITY_IP_LOGIN_LIMITER_DURATION_SECONDS,
       },
-      userLoginAttempt: {
-        points: process.env.ACCOUNT_SECURITY_USER_LOGIN_ATTEMPT_POINTS,
+      userLoginLimiter: {
+        points: process.env.ACCOUNT_SECURITY_USER_LOGIN_LIMITER_POINTS,
         durationSeconds:
-          process.env.ACCOUNT_SECURITY_USER_LOGIN_ATTEMPT_DURATION_SECONDS,
+          process.env.ACCOUNT_SECURITY_USER_LOGIN_LIMITER_DURATION_SECONDS,
       },
     },
   },

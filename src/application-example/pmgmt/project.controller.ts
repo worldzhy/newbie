@@ -30,7 +30,7 @@ import {
   generatePaginationParams,
   generatePaginationResponse,
 } from '@toolkit/pagination/pagination';
-import {RequirePermission} from '@microservices/account/authorization/authorization.decorator';
+import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
 
 @ApiTags('Project Management / Project')
 @ApiBearerAuth()

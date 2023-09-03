@@ -8,9 +8,9 @@ import {Strategy} from 'passport-local';
 import {compareHash} from '@toolkit/utilities/common.util';
 import {UserService} from '@microservices/account/user/user.service';
 import {
-  SecurityLoginIpAttemptService,
-  SecurityLoginUserAttemptService,
-} from '@microservices/account/security/login-attempt/login-attempt.service';
+  IpLoginLimiterService,
+  UserLoginLimiterService,
+} from '@microservices/account/security/login-limiter/login-limiter.service';
 import {Request} from 'express';
 
 @Injectable()
@@ -20,8 +20,8 @@ export class AuthPasswordStrategy extends PassportStrategy(
 ) {
   constructor(
     private readonly userService: UserService,
-    private readonly securityLoginIpAttemptService: SecurityLoginIpAttemptService,
-    private readonly securityLoginUserAttemptService: SecurityLoginUserAttemptService
+    private readonly securityLoginIpAttemptService: IpLoginLimiterService,
+    private readonly securityLoginUserAttemptService: UserLoginLimiterService
   ) {
     super({
       usernameField: 'account',
