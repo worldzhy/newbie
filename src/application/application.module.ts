@@ -25,10 +25,12 @@ import {AccountOthersController} from './account/account-others.controller';
 import {AreaManagerController} from './area-manager/area-manager.controller';
 import {ClassController} from './class/class.controller';
 import {CoachController} from './coach/coach.controller';
+import {EventController} from './event/event.controller';
 import {HeatmapController} from './heatmap/heatmap.controller';
 import {LocationController} from './location/location.controller';
 import {SchedulingController} from './scheduling/scheduling.controller';
 import {TagController} from './tag/tag.controller';
+import {TagGroupController} from './tag/tag-group.controller';
 
 @Module({
   imports: [
@@ -59,10 +61,12 @@ import {TagController} from './tag/tag.controller';
     AreaManagerController,
     ClassController,
     CoachController,
+    EventController,
     HeatmapController,
     LocationController,
     SchedulingController,
     TagController,
+    TagGroupController,
   ],
   providers: [
     // Filters

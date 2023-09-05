@@ -40,6 +40,7 @@ export class LocationController {
           city: 'West Hollywood',
           numberOfSeats: 20,
           minutesOfBreak: 10,
+          tagIds: [1, 2],
         },
       },
     },

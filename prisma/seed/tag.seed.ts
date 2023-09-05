@@ -5,24 +5,29 @@ export async function seedForTag() {
 
   console.log('\n* Tag Service');
 
+  console.log('- Creating tag groups...');
+  await prisma.tagGroup.createMany({
+    data: [{name: 'Coach'}, {name: 'Location'}],
+  });
+
   console.log('- Creating tags...');
   await prisma.tag.createMany({
     data: [
       {
         name: 'experienced',
-        group: 'Coach',
+        groupId: 1,
       },
       {
         name: 'patient',
-        group: 'Coach',
+        groupId: 1,
       },
       {
         name: 'near-college',
-        group: 'Location',
+        groupId: 2,
       },
       {
         name: 'near-business-center',
-        group: 'Location',
+        groupId: 2,
       },
     ],
   });

@@ -223,6 +223,18 @@ model RoutePermission {
 // * Reservation                                                   //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
 
+model Availability {
+  id            Int       @id @default(autoincrement())
+  hostUserId    String?   @db.Uuid
+  dateOfOpening DateTime  @db.Date
+  dateOfClosure DateTime? @db.Date
+  timezone      String // https://www.iplocate.com/en/resources/timezones/list-of-timezones
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@schema("microservice/event-scheduling")
+}
+
 model EventContainer {
   id            Int                  @id @default(autoincrement())
   name          String?
@@ -516,7 +528,7 @@ model ProjectElement {
   content   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  project   Project? @relation(fields: [projectId], references: [id])
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId String?  @db.Uuid
 
   @@schema("microservice/pmgmt")
@@ -528,7 +540,7 @@ model ProjectCheckpoint {
   state     ProjectCheckpointState @default(TODO)
   createdAt DateTime               @default(now())
   updatedAt DateTime               @updatedAt
-  Project   Project                @relation(fields: [projectId], references: [id])
+  Project   Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId String                 @db.Uuid
 
   @@unique([type, projectId])
@@ -572,7 +584,7 @@ model ProjectEnvironment {
   s3ForCloudformation  String?
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
-  project              Project               @relation(fields: [projectId], references: [id])
+  project              Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId            String                @db.Uuid
   infrastructureStacks InfrastructureStack[]
 
@@ -591,7 +603,7 @@ model InfrastructureStack {
   deleteStackOutput   Json?
   createdAt           DateTime                   @default(now())
   updatedAt           DateTime                   @updatedAt
-  environment         ProjectEnvironment         @relation(fields: [environmentId], references: [id])
+  environment         ProjectEnvironment         @relation(fields: [environmentId], references: [id], onDelete: Cascade)
   environmentId       Int
 
   @@schema("microservice/pmgmt")
@@ -623,11 +635,22 @@ enum InfrastructureStackState {
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
 model Tag {
+  id        Int       @id @default(autoincrement())
+  name      String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  group     TagGroup? @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId   Int?
+
+  @@schema("microservice/tag")
+}
+
+model TagGroup {
   id        Int      @id @default(autoincrement())
   name      String
-  group     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  tags      Tag[]
 
   @@schema("microservice/tag")
 }

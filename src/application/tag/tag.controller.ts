@@ -37,7 +37,7 @@ export class TagController {
   }
 
   @Get('')
-  async getTages(): Promise<Tag[]> {
+  async getTags(): Promise<Tag[]> {
     return await this.tagService.findMany({});
   }
 
