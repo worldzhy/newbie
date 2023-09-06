@@ -6,8 +6,15 @@ import {
   Post,
   Body,
   Param,
+  Query,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiParam,
+  ApiBody,
+  ApiQuery,
+} from '@nestjs/swagger';
 import {Tag, Prisma} from '@prisma/client';
 import {TagService} from '@microservices/tag/tag.service';
 
@@ -37,8 +44,24 @@ export class TagController {
   }
 
   @Get('')
-  async getTags(): Promise<Tag[]> {
-    return await this.tagService.findMany({});
+  @ApiQuery({name: 'groupId', type: 'number'})
+  async getTags(@Query('groupId') groupId?: number): Promise<Tag[]> {
+    // [step 1] Construct where argument.
+    let where: Prisma.TagWhereInput | undefined;
+    const whereConditions: object[] = [];
+    if (groupId) {
+      whereConditions.push({groupId});
+    }
+
+    if (whereConditions.length > 1) {
+      where = {OR: whereConditions};
+    } else if (whereConditions.length === 1) {
+      where = whereConditions[0];
+    } else {
+      // where === undefined
+    }
+
+    return await this.tagService.findMany({where});
   }
 
   @Get(':tagId')

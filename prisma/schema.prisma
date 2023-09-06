@@ -216,6 +216,7 @@ model RoutePermission {
 // !! ------------------------------------------------------------ //
 // !!            [Microservice] Event scheduling models            //
 // !! ------------------------------------------------------------ //
+// * Availability                                                  //
 // * EventContainer                                                //
 // * EventType                                                     //
 // * EventVenue                                                    //
