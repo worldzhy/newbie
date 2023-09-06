@@ -20,6 +20,15 @@ export class TagService {
     return await this.prisma.tag.findMany(params);
   }
 
+  async findManyWithTotal(
+    params: Prisma.TagFindManyArgs
+  ): Promise<[Tag[], number]> {
+    return await this.prisma.$transaction([
+      this.prisma.tag.findMany(params),
+      this.prisma.tag.count({where: params.where}),
+    ]);
+  }
+
   async create(params: Prisma.TagCreateArgs): Promise<Tag> {
     return await this.prisma.tag.create(params);
   }
