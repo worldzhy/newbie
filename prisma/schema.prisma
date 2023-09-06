@@ -216,7 +216,8 @@ model RoutePermission {
 // !! ------------------------------------------------------------ //
 // !!            [Microservice] Event scheduling models            //
 // !! ------------------------------------------------------------ //
-// * Availability                                                  //
+// * AvailabilityExpression                                        //
+// * AvailabilityTimeslot                                          //
 // * EventContainer                                                //
 // * EventType                                                     //
 // * EventVenue                                                    //
@@ -224,14 +225,32 @@ model RoutePermission {
 // * Reservation                                                   //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
 
-model Availability {
-  id            Int       @id @default(autoincrement())
-  hostUserId    String?   @db.Uuid
-  dateOfOpening DateTime  @db.Date
-  dateOfClosure DateTime? @db.Date
-  timezone      String // https://www.iplocate.com/en/resources/timezones/list-of-timezones
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+model AvailabilityExpression {
+  id                                     Int                    @id @default(autoincrement())
+  hostUserId                             String?                @db.Uuid
+  cronExpressionsOfAvailableTimePoints   String[]
+  cronExpressionsOfUnavailableTimePoints String[]
+  minutesOfTimeslot                      Int // Generally it should be 30 or 60
+  timezone                               String? // https://www.iplocate.com/en/resources/timezones/list-of-timezones
+  createdAt                              DateTime               @default(now())
+  updatedAt                              DateTime               @updatedAt
+  timeslots                              AvailabilityTimeslot[]
+
+  @@schema("microservice/event-scheduling")
+}
+
+model AvailabilityTimeslot {
+  id           Int                    @id @default(autoincrement())
+  hostUserId   String?                @db.Uuid
+  dateOfStart  DateTime               @db.Date
+  timeOfStart  DateTime               @db.Time(0)
+  dateOfEnd    DateTime               @db.Date
+  timeOfEnd    DateTime               @db.Time(0)
+  timezone     String? // https://www.iplocate.com/en/resources/timezones/list-of-timezones
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+  expression   AvailabilityExpression @relation(fields: [expressionId], references: [id], onDelete: Cascade)
+  expressionId Int
 
   @@schema("microservice/event-scheduling")
 }
@@ -242,7 +261,7 @@ model EventContainer {
   status        EventContainerStatus
   dateOfOpening DateTime             @db.Date
   dateOfClosure DateTime?            @db.Date
-  timezone      String // https://www.iplocate.com/en/resources/timezones/list-of-timezones
+  timezone      String? // https://www.iplocate.com/en/resources/timezones/list-of-timezones
   createdAt     DateTime             @default(now())
   updatedAt     DateTime             @updatedAt
   events        Event[]
@@ -280,6 +299,7 @@ model EventVenue {
   minutesOfBreak Int?
   timeOfDayStart DateTime? @db.Time(0)
   timeOfDayEnd   DateTime? @db.Time(0)
+  timezone       String? // https://www.iplocate.com/en/resources/timezones/list-of-timezones
   tagIds         Int[]
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
