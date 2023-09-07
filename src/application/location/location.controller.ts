@@ -64,7 +64,7 @@ export class LocationController {
     if (name) {
       name = name.trim();
       if (name.length > 0) {
-        whereConditions.push({name: {contains: name}});
+        whereConditions.push({name: {contains: name, mode: 'insensitive'}});
       }
     }
 

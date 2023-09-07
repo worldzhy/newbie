@@ -43,7 +43,6 @@ import {ProjectEnvironmentController} from './pmgmt/environment.controller';
 import {ProjectInfrastructureStackController} from './pmgmt/infrastructure-stack.controller';
 import {ProjectElementController} from './pmgmt/project-element.controller';
 import {ProjectController} from './pmgmt/project.controller';
-import {TagController} from './tag/tag.controller';
 import {WorkflowController} from './workflow/workflow.controller';
 import {WorkflowStateController} from './workflow/workflow-state.controller';
 import {WorkflowViewController} from './workflow/workflow-view.controller';
@@ -103,8 +102,6 @@ import {WorkflowRouteController} from './workflow/workflow-route.controller';
     ProjectInfrastructureStackController,
     ProjectElementController,
     ProjectController,
-
-    TagController,
 
     WorkflowController,
     WorkflowStateController,

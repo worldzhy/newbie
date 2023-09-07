@@ -6,8 +6,15 @@ import {
   Post,
   Body,
   Param,
+  Query,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiParam,
+  ApiBody,
+  ApiQuery,
+} from '@nestjs/swagger';
 import {EventType, Prisma} from '@prisma/client';
 import {EventTypeService} from '@microservices/event-scheduling/event-type.service';
 
@@ -42,8 +49,23 @@ export class ClassController {
   }
 
   @Get('')
-  async getEventTypees(): Promise<EventType[]> {
-    return await this.eventTypeService.findMany({});
+  @ApiQuery({name: 'name', type: 'string'})
+  @ApiQuery({name: 'page', type: 'number'})
+  @ApiQuery({name: 'pageSize', type: 'number'})
+  async getEventTypes(
+    @Query('name') name?: string,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number
+  ) {
+    const where: Prisma.EventTypeWhereInput = {};
+    if (name && name.trim()) {
+      where.name = {contains: name, mode: 'insensitive'};
+    }
+
+    return await this.eventTypeService.findManyWithPagination(
+      {where},
+      {page, pageSize}
+    );
   }
 
   @Get(':eventTypeId')
