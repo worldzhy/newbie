@@ -16,6 +16,17 @@ export class OrganizationService {
     return await this.prisma.organization.findMany(params);
   }
 
+  async findManyWithPagination(
+    params: Prisma.OrganizationFindManyArgs,
+    pagination: {page?: number; pageSize?: number}
+  ) {
+    return await this.prisma.findManyWithPagination(
+      Prisma.ModelName.Organization,
+      params,
+      pagination
+    );
+  }
+
   async create(params: Prisma.OrganizationCreateArgs): Promise<Organization> {
     return await this.prisma.organization.create(params);
   }

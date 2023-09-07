@@ -14,6 +14,17 @@ export class PlaceService {
     return await this.prisma.place.findMany(params);
   }
 
+  async findManyWithPagination(
+    params: Prisma.PlaceFindManyArgs,
+    pagination: {page?: number; pageSize?: number}
+  ) {
+    return await this.prisma.findManyWithPagination(
+      Prisma.ModelName.Place,
+      params,
+      pagination
+    );
+  }
+
   async create(params: Prisma.PlaceCreateArgs): Promise<Place> {
     return await this.prisma.place.create(params);
   }

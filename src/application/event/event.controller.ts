@@ -17,7 +17,6 @@ import {
 } from '@nestjs/swagger';
 import {Prisma, Event} from '@prisma/client';
 import {EventService} from '@microservices/event-scheduling/event.service';
-import {generatePaginationParams} from '@toolkit/pagination/pagination';
 
 @ApiTags('Event')
 @ApiBearerAuth()
@@ -80,18 +79,11 @@ export class EventController {
       // where === undefined
     }
 
-    // [step 2] Construct take and skip arguments.
-    const {take, skip} = generatePaginationParams({
-      page: page,
-      pageSize: pageSize,
-    });
-
-    // [step 3] Get events.
-    return await this.eventService.findMany({
-      where: where,
-      take: take,
-      skip: skip,
-    });
+    // [step 2] Get events.
+    return await this.eventService.findManyWithPagination(
+      {where},
+      {page, pageSize}
+    );
   }
 
   @Get(':eventId')

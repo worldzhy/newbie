@@ -18,7 +18,6 @@ import {
 import {PermissionAction, Prisma, Place} from '@prisma/client';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
 import {PlaceService} from '@microservices/map/place.service';
-import {generatePaginationParams} from '@toolkit/pagination/pagination';
 
 @ApiTags('Place')
 @ApiBearerAuth()
@@ -66,18 +65,11 @@ export class PlaceController {
   async getPlaces(
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number
-  ): Promise<Place[]> {
-    // [step 1] Construct take and skip arguments.
-    const {take, skip} = generatePaginationParams({
-      page: page,
-      pageSize: pageSize,
-    });
-
-    // [step 2] Get locations.
-    return await this.locationService.findMany({
-      take: take,
-      skip: skip,
-    });
+  ) {
+    return await this.locationService.findManyWithPagination(
+      {},
+      {page, pageSize}
+    );
   }
 
   @Get(':placeId')

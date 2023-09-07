@@ -12,7 +12,6 @@ import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {PermissionAction, Prisma, CandidateProfile} from '@prisma/client';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
 import {CandidateProfileService} from './profile.service';
-import {generatePaginationParams} from '@toolkit/pagination/pagination';
 
 @ApiTags('Recruitment / Candidate / Profile')
 @ApiBearerAuth()
@@ -63,7 +62,7 @@ export class CandidateProfileController {
     @Query('name') name?: string,
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number
-  ): Promise<CandidateProfile[]> {
+  ) {
     // [step 1] Construct where argument.
     let where: Prisma.CandidateProfileWhereInput | undefined;
     if (name && name.trim().length > 0) {
@@ -78,18 +77,11 @@ export class CandidateProfileController {
       };
     }
 
-    // [step 2] Construct take and skip arguments.
-    const {take, skip} = generatePaginationParams({
-      page: page,
-      pageSize: pageSize,
-    });
-
-    // [step 3] Get candidate profiles.
-    return await this.candidateProfileService.findMany({
-      where: where,
-      take: take,
-      skip: skip,
-    });
+    // [step 2] Get candidate profiles.
+    return await this.candidateProfileService.findManyWithPagination(
+      {where: where},
+      {page, pageSize}
+    );
   }
 
   @Get(':profileId')

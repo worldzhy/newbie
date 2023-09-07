@@ -20,6 +20,17 @@ export class EventService {
     return await this.prisma.event.findMany(params);
   }
 
+  async findManyWithPagination(
+    params: Prisma.EventFindManyArgs,
+    pagination: {page?: number; pageSize?: number}
+  ) {
+    return await this.prisma.findManyWithPagination(
+      Prisma.ModelName.Event,
+      params,
+      pagination
+    );
+  }
+
   async create(params: Prisma.EventCreateArgs): Promise<Event> {
     return await this.prisma.event.create(params);
   }

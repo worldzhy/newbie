@@ -17,10 +17,6 @@ import {
 } from '@nestjs/swagger';
 import {Tag, Prisma} from '@prisma/client';
 import {TagService} from '@microservices/tag/tag.service';
-import {
-  generatePaginationParams,
-  generatePaginationResponse,
-} from '@toolkit/pagination/pagination';
 
 @ApiTags('Tag')
 @ApiBearerAuth()
@@ -53,8 +49,8 @@ export class TagController {
   @ApiQuery({name: 'pageSize', type: 'number'})
   async getTags(
     @Query('groupId') groupId?: number,
-    @Query('groupId') page?: number,
-    @Query('groupId') pageSize?: number
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number
   ) {
     // [step 1] Construct where argument.
     let where: Prisma.TagWhereInput | undefined;
@@ -71,19 +67,10 @@ export class TagController {
       // where === undefined
     }
 
-    // [step 2] Construct take and skip arguments.
-    const {take, skip} = generatePaginationParams({
-      page: page,
-      pageSize: pageSize,
-    });
-
-    const [records, total] = await this.tagService.findManyWithTotal({
-      where,
-      take,
-      skip,
-    });
-
-    return generatePaginationResponse({page, pageSize, records, total});
+    return await this.tagService.findManyWithPagination(
+      {where},
+      {page, pageSize}
+    );
   }
 
   @Get(':tagId')

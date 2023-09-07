@@ -18,7 +18,6 @@ import {
 import {Organization, PermissionAction, Prisma} from '@prisma/client';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
 import {OrganizationService} from '@microservices/account/organization/organization.service';
-import {generatePaginationParams} from '@toolkit/pagination/pagination';
 
 @ApiTags('Account / Organization')
 @ApiBearerAuth()
@@ -56,7 +55,7 @@ export class OrganizationController {
     @Query('name') name?: string,
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number
-  ): Promise<Organization[]> {
+  ) {
     // [step 1] Construct where argument.
     let where: Prisma.OrganizationWhereInput | undefined;
     if (name) {
@@ -66,25 +65,20 @@ export class OrganizationController {
       }
     }
 
-    // [step 2] Construct take and skip arguments.
-    const {take, skip} = generatePaginationParams({
-      page: page,
-      pageSize: pageSize,
-    });
-
-    // [step 3] Get organizations.
-    return await this.organizationService.findMany({
-      orderBy: {
-        _relevance: {
-          fields: ['name'],
-          search: 'database',
-          sort: 'asc',
+    // [step 2] Get organizations.
+    return await this.organizationService.findManyWithPagination(
+      {
+        orderBy: {
+          _relevance: {
+            fields: ['name'],
+            search: 'database',
+            sort: 'asc',
+          },
         },
+        where: where,
       },
-      where: where,
-      take: take,
-      skip: skip,
-    });
+      {page, pageSize}
+    );
   }
 
   @Get(':organizationId')

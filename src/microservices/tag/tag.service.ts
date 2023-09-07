@@ -20,13 +20,15 @@ export class TagService {
     return await this.prisma.tag.findMany(params);
   }
 
-  async findManyWithTotal(
-    params: Prisma.TagFindManyArgs
-  ): Promise<[Tag[], number]> {
-    return await this.prisma.$transaction([
-      this.prisma.tag.findMany(params),
-      this.prisma.tag.count({where: params.where}),
-    ]);
+  async findManyWithPagination(
+    params: Prisma.TagFindManyArgs,
+    pagination: {page?: number; pageSize?: number}
+  ) {
+    return await this.prisma.findManyWithPagination(
+      Prisma.ModelName.Tag,
+      params,
+      pagination
+    );
   }
 
   async create(params: Prisma.TagCreateArgs): Promise<Tag> {

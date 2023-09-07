@@ -24,6 +24,17 @@ export class ProjectEnvironmentService {
     return await this.prisma.projectEnvironment.findMany(params);
   }
 
+  async findManyWithPagination(
+    params: Prisma.ProjectEnvironmentFindManyArgs,
+    pagination: {page?: number; pageSize?: number}
+  ) {
+    return await this.prisma.findManyWithPagination(
+      Prisma.ModelName.ProjectEnvironment,
+      params,
+      pagination
+    );
+  }
+
   async create(
     params: Prisma.ProjectEnvironmentCreateArgs
   ): Promise<ProjectEnvironment> {

@@ -24,6 +24,17 @@ export class ProjectCheckpointService {
     return await this.prisma.projectCheckpoint.findMany(params);
   }
 
+  async findManyWithPagination(
+    params: Prisma.ProjectCheckpointFindManyArgs,
+    pagination: {page?: number; pageSize?: number}
+  ) {
+    return await this.prisma.findManyWithPagination(
+      Prisma.ModelName.ProjectCheckpoint,
+      params,
+      pagination
+    );
+  }
+
   async create(
     params: Prisma.ProjectCheckpointCreateArgs
   ): Promise<ProjectCheckpoint> {

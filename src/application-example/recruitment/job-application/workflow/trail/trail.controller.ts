@@ -23,7 +23,6 @@ import {
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
 import {RoleService} from '@microservices/account/role/role.service';
 import {UserService} from '@microservices/account/user/user.service';
-import {generatePaginationParams} from '@toolkit/pagination/pagination';
 
 @ApiTags('Recruitment / Job Application / Workflow Trail')
 @ApiBearerAuth()
@@ -47,31 +46,23 @@ export class JobApplicationWorkflowTrailController {
     @Query('workflowId') workflowId?: string,
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number
-  ): Promise<JobApplicationWorkflowTrail[]> {
+  ) {
     // [step 1] Construct where argument.
     let where: Prisma.JobApplicationWorkflowTrailWhereInput | undefined;
     if (workflowId) {
       where = {workflowId: workflowId};
     }
 
-    // [step 2] Construct take and skip arguments.
-    const {take, skip} = generatePaginationParams({
-      page: page,
-      pageSize: pageSize,
-    });
-
-    // [step 3] Get workflow steps.
-    const steps = await this.workflowTrailService.findMany({
-      where: where,
-      take: take,
-      skip: skip,
-      orderBy: {createdAt: 'desc'},
-    });
+    // [step 2] Get workflow steps.
+    const result = await this.workflowTrailService.findManyWithPagination(
+      {where: where, orderBy: {createdAt: 'desc'}},
+      {page, pageSize}
+    );
 
     // [step 4] Process before return.
-    for (let i = 0; i < steps.length; i++) {
+    for (let i = 0; i < result.records.length; i++) {
       // Attach processedBy username.
-      const step = steps[i];
+      const step = result.records[i];
       const user = await this.userService.findUniqueOrThrow({
         where: {id: step.processedByUserId},
         include: {profile: {select: {fullName: true}}},
@@ -88,7 +79,7 @@ export class JobApplicationWorkflowTrailController {
       }
     }
 
-    return steps;
+    return result;
   }
 
   @Get(':trailId')

@@ -22,13 +22,15 @@ export class ProjectService {
     return await this.prisma.project.findMany(params);
   }
 
-  async findManyWithTotal(
-    params: Prisma.ProjectFindManyArgs
-  ): Promise<[Project[], number]> {
-    return await this.prisma.$transaction([
-      this.prisma.project.findMany(params),
-      this.prisma.project.count({where: params.where}),
-    ]);
+  async findManyWithPagination(
+    params: Prisma.ProjectFindManyArgs,
+    pagination: {page?: number; pageSize?: number}
+  ) {
+    return await this.prisma.findManyWithPagination(
+      Prisma.ModelName.Project,
+      params,
+      pagination
+    );
   }
 
   async create(params: Prisma.ProjectCreateArgs): Promise<Project> {

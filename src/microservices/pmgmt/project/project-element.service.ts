@@ -18,6 +18,17 @@ export class ProjectElementService {
     return await this.prisma.projectElement.findMany(params);
   }
 
+  async findManyWithPagination(
+    params: Prisma.ProjectElementFindManyArgs,
+    pagination: {page?: number; pageSize?: number}
+  ) {
+    return await this.prisma.findManyWithPagination(
+      Prisma.ModelName.ProjectElement,
+      params,
+      pagination
+    );
+  }
+
   async create(
     params: Prisma.ProjectElementCreateArgs
   ): Promise<ProjectElement> {

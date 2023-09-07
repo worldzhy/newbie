@@ -19,7 +19,6 @@ import {Prisma, Candidate, PermissionAction} from '@prisma/client';
 import {generateRandomNumbers} from '@toolkit/utilities/common.util';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
 import {CandidateService} from './candidate.service';
-import {generatePaginationParams} from '@toolkit/pagination/pagination';
 
 @ApiTags('Recruitment / Candidate')
 @ApiBearerAuth()
@@ -143,7 +142,7 @@ export class CandidateController {
     @Query('phone') phone?: string,
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number
-  ): Promise<Candidate[]> {
+  ) {
     // [step 1] Construct where argument.
     let where: Prisma.CandidateWhereInput | undefined;
     const whereConditions: object[] = [];
@@ -178,36 +177,31 @@ export class CandidateController {
       where = {OR: whereConditions};
     }
 
-    // [step 2] Construct take and skip arguments.
-    const {take, skip} = generatePaginationParams({
-      page: page,
-      pageSize: pageSize,
-    });
-
-    // [step 3] Get candidates.
-    const candidates = await this.candidateService.findMany({
-      where: where,
-      orderBy: {updatedAt: 'desc'},
-      take: take,
-      skip: skip,
-      include: {
-        profile: true,
-        jobApplications: {
-          take: 1,
-          skip: 0,
-          orderBy: {createdAt: 'desc'},
-          include: {
-            workflows: {
-              include: {
-                payload: true,
+    // [step 2] Get candidates.
+    const result = await this.candidateService.findManyWithPagination(
+      {
+        where: where,
+        orderBy: {updatedAt: 'desc'},
+        include: {
+          profile: true,
+          jobApplications: {
+            take: 1,
+            skip: 0,
+            orderBy: {createdAt: 'desc'},
+            include: {
+              workflows: {
+                include: {
+                  payload: true,
+                },
               },
             },
           },
         },
       },
-    });
+      {page, pageSize}
+    );
 
-    return candidates.map(candidate => {
+    result.records = result.records.map(candidate => {
       const location = candidate['location'];
       const profile = candidate['profile'];
       delete candidate['location'];
@@ -223,6 +217,8 @@ export class CandidateController {
         ...profile,
       };
     });
+
+    return result;
   }
 
   @Get(':candidateId')

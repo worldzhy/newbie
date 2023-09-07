@@ -18,7 +18,6 @@ import {
 import {PermissionAction, Prisma, UserProfile} from '@prisma/client';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
 import {UserProfileService} from '@microservices/account/user/user-profile.service';
-import {generatePaginationParams} from '@toolkit/pagination/pagination';
 
 @ApiTags('Account / User / Profile')
 @ApiBearerAuth()
@@ -58,45 +57,6 @@ export class UserProfileController {
     @Body() body: Prisma.UserProfileUncheckedCreateInput
   ): Promise<UserProfile> {
     return await this.userProfileService.create({data: body});
-  }
-
-  @Get('')
-  @RequirePermission(PermissionAction.List, Prisma.ModelName.UserProfile)
-  @ApiQuery({name: 'name', type: 'string'})
-  @ApiQuery({name: 'page', type: 'number'})
-  @ApiQuery({name: 'pageSize', type: 'number'})
-  async getUserProfiles(
-    @Query('name') name?: string,
-    @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number
-  ): Promise<UserProfile[]> {
-    // [step 1] Construct where argument.
-    let where: Prisma.UserProfileWhereInput | undefined;
-    if (name) {
-      name = name.trim();
-      if (name.length > 0) {
-        where = {
-          OR: [
-            {firstName: {search: name}},
-            {middleName: {search: name}},
-            {lastName: {search: name}},
-          ],
-        };
-      }
-    }
-
-    // [step 2] Construct take and skip arguments.
-    const {take, skip} = generatePaginationParams({
-      page: page,
-      pageSize: pageSize,
-    });
-
-    // [step 3] Get user profiles.
-    return await this.userProfileService.findMany({
-      where: where,
-      take: take,
-      skip: skip,
-    });
   }
 
   @Get(':profileId')

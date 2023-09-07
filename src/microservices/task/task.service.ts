@@ -32,6 +32,17 @@ export class TaskService {
     return await this.prisma.task.findMany(params);
   }
 
+  async findManyWithPagination(
+    params: Prisma.TaskFindManyArgs,
+    pagination: {page?: number; pageSize?: number}
+  ) {
+    return await this.prisma.findManyWithPagination(
+      Prisma.ModelName.Task,
+      params,
+      pagination
+    );
+  }
+
   async create(params: Prisma.TaskCreateArgs): Promise<Task> {
     return await this.prisma.task.create(params);
   }

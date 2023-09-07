@@ -24,6 +24,20 @@ export class JobApplicationService {
     return await this.prisma.jobApplication.findMany(params);
   }
 
+  async findManyWithPagination(
+    params: Prisma.JobApplicationFindManyArgs,
+    pagination: {
+      page?: number;
+      pageSize?: number;
+    }
+  ) {
+    return await this.prisma.findManyWithPagination(
+      Prisma.ModelName.JobApplication,
+      params,
+      pagination
+    );
+  }
+
   async create(
     params: Prisma.JobApplicationCreateArgs
   ): Promise<JobApplication> {

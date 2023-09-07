@@ -18,6 +18,20 @@ export class JobApplicationWorkflowTrailService {
     return await this.prisma.jobApplicationWorkflowTrail.findMany(params);
   }
 
+  async findManyWithPagination(
+    params: Prisma.JobApplicationWorkflowTrailFindManyArgs,
+    pagination: {
+      page?: number;
+      pageSize?: number;
+    }
+  ) {
+    return await this.prisma.findManyWithPagination(
+      Prisma.ModelName.JobApplicationWorkflowTrail,
+      params,
+      pagination
+    );
+  }
+
   async create(
     params: Prisma.JobApplicationWorkflowTrailCreateArgs
   ): Promise<JobApplicationWorkflowTrail> {

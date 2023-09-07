@@ -28,6 +28,17 @@ export class WorkflowRouteService {
     return await this.prisma.workflowRoute.findMany(params);
   }
 
+  async findManyWithPagination(
+    params: Prisma.WorkflowRouteFindManyArgs,
+    pagination: {page?: number; pageSize?: number}
+  ) {
+    return await this.prisma.findManyWithPagination(
+      Prisma.ModelName.WorkflowRoute,
+      params,
+      pagination
+    );
+  }
+
   async create(params: Prisma.WorkflowRouteCreateArgs): Promise<WorkflowRoute> {
     return await this.prisma.workflowRoute.create(params);
   }

@@ -22,6 +22,17 @@ export class TagGroupService {
     return await this.prisma.tagGroup.findMany(params);
   }
 
+  async findManyWithPagination(
+    params: Prisma.TagGroupFindManyArgs,
+    pagination: {page?: number; pageSize?: number}
+  ) {
+    return await this.prisma.findManyWithPagination(
+      Prisma.ModelName.TagGroup,
+      params,
+      pagination
+    );
+  }
+
   async create(params: Prisma.TagGroupCreateArgs): Promise<TagGroup> {
     return await this.prisma.tagGroup.create(params);
   }

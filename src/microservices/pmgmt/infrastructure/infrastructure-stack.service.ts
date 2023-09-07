@@ -24,6 +24,17 @@ export class ProjectInfrastructureStackService {
     return await this.prisma.infrastructureStack.findMany(params);
   }
 
+  async findManyWithPagination(
+    params: Prisma.InfrastructureStackFindManyArgs,
+    pagination: {page?: number; pageSize?: number}
+  ) {
+    return await this.prisma.findManyWithPagination(
+      Prisma.ModelName.InfrastructureStack,
+      params,
+      pagination
+    );
+  }
+
   async create(
     params: Prisma.InfrastructureStackCreateArgs
   ): Promise<InfrastructureStack> {

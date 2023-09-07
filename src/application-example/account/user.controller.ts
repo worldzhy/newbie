@@ -22,10 +22,6 @@ import {UserService} from '@microservices/account/user/user.service';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
 import {compareHash} from '@toolkit/utilities/common.util';
 import {verifyUuid} from '@toolkit/validators/user.validator';
-import {
-  generatePaginationParams,
-  generatePaginationResponse,
-} from '@toolkit/pagination/pagination';
 
 @ApiTags('Account / User')
 @ApiBearerAuth()
@@ -43,10 +39,16 @@ export class UserController {
         value: {
           email: '',
           phone: '',
-          username: 'dispatcher',
           password: 'Abc1234!',
           status: UserStatus.ACTIVE,
           roles: [{id: '013f92b0-4a53-45cb-8eca-e66089a3919f'}],
+          profile: {
+            create: {
+              firstName: '',
+              middleName: '',
+              lastName: '',
+            },
+          },
         },
       },
     },
@@ -94,14 +96,22 @@ export class UserController {
     if (name) {
       name = name.trim();
       if (name.length > 0) {
-        whereConditions.push({name: {contains: name}});
+        whereConditions.push({
+          profile: {
+            OR: [
+              {firstName: {search: name}},
+              {middleName: {search: name}},
+              {lastName: {search: name}},
+            ],
+          },
+        });
       }
     }
 
     if (roleId) {
       roleId = roleId.trim();
       if (verifyUuid(roleId)) {
-        whereConditions.push({userToRoles: {some: {roleId: roleId}}});
+        whereConditions.push({roles: {some: {id: roleId}}});
       }
     }
 
@@ -113,29 +123,24 @@ export class UserController {
       // where === undefined
     }
 
-    // [step 2] Construct take and skip arguments.
-    const {take, skip} = generatePaginationParams({
-      page: page,
-      pageSize: pageSize,
-    });
-
-    // [step 3] Get users.
-    const [users, total] = await this.userService.findManyWithTotal({
-      where: where,
-      take: take,
-      skip: skip,
-      include: {
-        roles: true,
-        profile: true,
+    // [step 2] Get users.
+    const result = await this.userService.findManyWithPagination(
+      {
+        where: where,
+        include: {
+          roles: true,
+          profile: true,
+        },
       },
-    });
+      {page, pageSize}
+    );
 
-    // [step 4] Return users without password.
-    const records = users.map(user => {
+    // [step 3] Return users without password.
+    result.records = result.records.map(user => {
       return this.userService.withoutPassword(user);
     });
 
-    return generatePaginationResponse({page, pageSize, records, total});
+    return result;
   }
 
   @Get(':userId')
@@ -175,11 +180,13 @@ export class UserController {
         value: {
           email: '',
           phone: '',
-          username: 'dispatcher',
-          password: 'Abc1234!',
-          status: UserStatus.INACTIVE,
-          roleIds: [{id: '013f92b0-4a53-45cb-8eca-e66089a3919f'}],
-          locationNames: ['Harley Davidson Lifestyle Centers'],
+          profile: {
+            update: {
+              firstName: '',
+              middleName: '',
+              lastName: '',
+            },
+          },
         },
       },
     },

@@ -6,8 +6,15 @@ import {
   Post,
   Body,
   Param,
+  Query,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiParam,
+  ApiBody,
+  ApiQuery,
+} from '@nestjs/swagger';
 import {TagGroup, Prisma} from '@prisma/client';
 import {TagGroupService} from '@microservices/tag/tag-group.service';
 
@@ -39,8 +46,16 @@ export class TagGroupController {
   }
 
   @Get('')
-  async getTagGroups(): Promise<TagGroup[]> {
-    return await this.tagGroupService.findMany({});
+  @ApiQuery({name: 'page', type: 'number'})
+  @ApiQuery({name: 'pageSize', type: 'number'})
+  async getTagGroups(
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number
+  ) {
+    return await this.tagGroupService.findManyWithPagination(
+      {},
+      {page, pageSize}
+    );
   }
 
   @Get(':tagGroupId')

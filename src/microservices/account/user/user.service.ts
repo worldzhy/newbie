@@ -21,13 +21,15 @@ export class UserService {
     return await this.prisma.user.findMany(params);
   }
 
-  async findManyWithTotal(
-    params: Prisma.UserFindManyArgs
-  ): Promise<[User[], number]> {
-    return await this.prisma.$transaction([
-      this.prisma.user.findMany(params),
-      this.prisma.user.count({where: params.where}),
-    ]);
+  async findManyWithPagination(
+    params: Prisma.UserFindManyArgs,
+    pagination: {page?: number; pageSize?: number}
+  ) {
+    return await this.prisma.findManyWithPagination(
+      Prisma.ModelName.User,
+      params,
+      pagination
+    );
   }
 
   async create(params: Prisma.UserCreateArgs): Promise<User> {

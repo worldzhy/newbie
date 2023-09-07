@@ -17,10 +17,6 @@ import {
 } from '@nestjs/swagger';
 import {EventVenue, Prisma} from '@prisma/client';
 import {EventVenueService} from '@microservices/event-scheduling/event-venue.service';
-import {
-  generatePaginationParams,
-  generatePaginationResponse,
-} from '@toolkit/pagination/pagination';
 
 @ApiTags('Location')
 @ApiBearerAuth()
@@ -80,20 +76,11 @@ export class LocationController {
       // where === undefined
     }
 
-    // [step 2] Construct take and skip arguments.
-    const {take, skip} = generatePaginationParams({
-      page: page,
-      pageSize: pageSize,
-    });
-
-    // [step 3] Get users.
-    const [records, total] = await this.eventVenueService.findManyWithTotal({
-      where: where,
-      take: take,
-      skip: skip,
-    });
-
-    return generatePaginationResponse({page, pageSize, records, total});
+    // [step 2] Get users.
+    return await this.eventVenueService.findManyWithPagination(
+      {where},
+      {page, pageSize}
+    );
   }
 
   @Get(':eventVenueId')

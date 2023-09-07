@@ -35,7 +35,6 @@ import {WorkflowRouteService} from '@microservices/workflow/workflow-route.servi
 import {JobApplicationWorkflowService} from './workflow/workflow.service';
 import {RoleService} from '@microservices/account/role/role.service';
 import {JobApplicationWorkflowFileService} from './workflow/file/file.service';
-import {generatePaginationParams} from '@toolkit/pagination/pagination';
 import {UserService} from '@microservices/account/user/user.service';
 import {PermissionService} from '@microservices/account/permission/permission.service';
 
@@ -165,10 +164,11 @@ export class JobApplicationController {
     @Request() request: Request,
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number
-  ): Promise<JobApplication[]> {
+  ) {
     // [step 1] Construct where arguments.
     let where: Prisma.JobApplicationWhereInput | undefined;
     const whereConditions: object[] = [];
+    const roleIds = await this.getRoleIdsFromHttpRequest(request);
 
     // Get role permission to filter data. Fetch preset where regtax(in seed.ts) for each role.
     const permissions = await this.getResourcePermissionsFromHttpRequest(
@@ -184,27 +184,20 @@ export class JobApplicationController {
       where = {AND: whereConditions};
     }
 
-    // [step 2] Construct take and skip arguments.
-    const {take, skip} = generatePaginationParams({
-      page: page,
-      pageSize: pageSize,
-    });
-
-    // [step 4] Get job applications.
-    const roleIds = await this.getRoleIdsFromHttpRequest(request);
-    return await this.jobApplicationService.findMany({
-      where: where,
-      orderBy: {updatedAt: 'desc'},
-      take: take,
-      skip: skip,
-      include: {
-        candidate: {include: {profile: true}},
-        workflows: {
-          where: {nextRoleId: {in: roleIds}},
-          include: {payload: true},
+    return await this.jobApplicationService.findManyWithPagination(
+      {
+        where: where,
+        orderBy: {updatedAt: 'desc'},
+        include: {
+          candidate: {include: {profile: true}},
+          workflows: {
+            where: {nextRoleId: {in: roleIds}},
+            include: {payload: true},
+          },
         },
       },
-    });
+      {page, pageSize}
+    );
   }
 
   @Get('processed/count')
@@ -233,34 +226,29 @@ export class JobApplicationController {
     @Request() request: Request,
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number
-  ): Promise<JobApplication[]> {
+  ) {
     // [step 1] Get userId from http request header.
     const {userId} = this.accessTokenService.decodeToken(
       this.accessTokenService.getTokenFromHttpRequest(request)
     ) as {userId: string};
 
-    // [step 2] Construct take and skip arguments.
-    const {take, skip} = generatePaginationParams({
-      page: page,
-      pageSize: pageSize,
-    });
-
-    // [step 4] Return job applications.
-    return await this.jobApplicationService.findMany({
-      where: {
-        workflows: {some: {processedByUserIds: {has: userId}}},
-      },
-      orderBy: {updatedAt: 'desc'},
-      take: take,
-      skip: skip,
-      include: {
-        candidate: {include: {profile: true}},
-        workflows: {
-          where: {processedByUserIds: {has: userId}},
-          include: {payload: true},
+    // [step 2] Return job applications.
+    return await this.jobApplicationService.findManyWithPagination(
+      {
+        where: {
+          workflows: {some: {processedByUserIds: {has: userId}}},
+        },
+        orderBy: {updatedAt: 'desc'},
+        include: {
+          candidate: {include: {profile: true}},
+          workflows: {
+            where: {processedByUserIds: {has: userId}},
+            include: {payload: true},
+          },
         },
       },
-    });
+      {page, pageSize}
+    );
   }
 
   @Get('all/count')
@@ -294,7 +282,7 @@ export class JobApplicationController {
     @Query('dateRange') dateRange?: string[],
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number
-  ): Promise<JobApplication[]> {
+  ) {
     // [step 1] Construct where arguments.
     let where: Prisma.JobApplicationWhereInput | undefined;
     if (Array.isArray(dateRange) && dateRange.length === 2) {
@@ -302,31 +290,28 @@ export class JobApplicationController {
         createdAt: {gte: dateRange[0], lte: dateRange[1]},
       };
     }
-    // [step 2] Construct take and skip arguments.
-    const {take, skip} = generatePaginationParams({
-      page: page,
-      pageSize: pageSize,
-    });
 
     // [step 2] Get job applications.
-    const jobApplications = await this.jobApplicationService.findMany({
-      where: where,
-      orderBy: {updatedAt: 'desc'},
-      take: take,
-      skip: skip,
-      include: {
-        candidate: {include: {profile: true}},
-        workflows: {
+    const jobApplications =
+      await this.jobApplicationService.findManyWithPagination(
+        {
+          where: where,
+          orderBy: {updatedAt: 'desc'},
           include: {
-            payload: true,
-            trails: {orderBy: {createdAt: 'desc'}},
+            candidate: {include: {profile: true}},
+            workflows: {
+              include: {
+                payload: true,
+                trails: {orderBy: {createdAt: 'desc'}},
+              },
+            },
           },
         },
-      },
-    });
+        {page, pageSize}
+      );
 
     // [step 3] Process before return.
-    for (let i = 0; i < jobApplications.length; i++) {
+    for (let i = 0; i < jobApplications.records.length; i++) {
       const jobApplication = jobApplications[i];
       for (let j = 0; j < jobApplication['workflows'].length; j++) {
         const workflow = jobApplication['workflows'][j];

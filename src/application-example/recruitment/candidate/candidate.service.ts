@@ -22,6 +22,17 @@ export class CandidateService {
     return await this.prisma.candidate.findMany(params);
   }
 
+  async findManyWithPagination(
+    params: Prisma.CandidateFindManyArgs,
+    pagination: {page?: number; pageSize?: number}
+  ) {
+    return await this.prisma.findManyWithPagination(
+      Prisma.ModelName.Candidate,
+      params,
+      pagination
+    );
+  }
+
   async create(params: Prisma.CandidateCreateArgs): Promise<Candidate> {
     return await this.prisma.candidate.create(params);
   }

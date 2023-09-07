@@ -27,7 +27,6 @@ import {RequirePermission} from '@microservices/account/security/authorization/a
 import {AccessTokenService} from '@toolkit/token/access-token/access-token.service';
 import {JobApplicationWorkflowService} from '../workflow.service';
 import {JobApplicationWorkflowTaskService} from './task.service';
-import {generatePaginationParams} from '@toolkit/pagination/pagination';
 import {UserService} from '@microservices/account/user/user.service';
 
 @ApiTags('Recruitment / Job Application / Workflow Task')
@@ -108,7 +107,7 @@ export class JobApplicationWorkflowTaskController {
     @Query('assignedToMe') assignedToMe?: string,
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number
-  ): Promise<JobApplicationWorkflowTask[]> {
+  ) {
     // [step 1] Construct where argument.
     let where: Prisma.JobApplicationWorkflowTaskWhereInput | undefined =
       undefined;
@@ -119,17 +118,11 @@ export class JobApplicationWorkflowTaskController {
       where = {assigneeUserId: userId};
     }
 
-    // [step 2] Construct take and skip arguments.
-    const {take, skip} = generatePaginationParams({
-      page: page,
-      pageSize: pageSize,
-    });
-
-    return await this.jobApplicationWorkflowTaskService.findMany({
-      where: where,
-      take: take,
-      skip: skip,
-    });
+    // [step 2] Get records.
+    return await this.jobApplicationWorkflowTaskService.findManyWithPagination(
+      {where: where},
+      {page, pageSize}
+    );
   }
 
   @Get(':taskId')

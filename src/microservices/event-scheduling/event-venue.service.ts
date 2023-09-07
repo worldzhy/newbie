@@ -22,6 +22,17 @@ export class EventVenueService {
     return await this.prisma.eventVenue.findMany(params);
   }
 
+  async findManyWithPagination(
+    params: Prisma.EventVenueFindManyArgs,
+    pagination: {page?: number; pageSize?: number}
+  ) {
+    return await this.prisma.findManyWithPagination(
+      Prisma.ModelName.EventVenue,
+      params,
+      pagination
+    );
+  }
+
   async create(params: Prisma.EventVenueCreateArgs): Promise<EventVenue> {
     return await this.prisma.eventVenue.create(params);
   }
@@ -30,15 +41,6 @@ export class EventVenueService {
     params: Prisma.EventVenueCreateManyArgs
   ): Promise<Prisma.BatchPayload> {
     return await this.prisma.eventVenue.createMany(params);
-  }
-
-  async findManyWithTotal(
-    params: Prisma.EventVenueFindManyArgs
-  ): Promise<[EventVenue[], number]> {
-    return await this.prisma.$transaction([
-      this.prisma.eventVenue.findMany(params),
-      this.prisma.eventVenue.count({where: params.where}),
-    ]);
   }
 
   async update(params: Prisma.EventVenueUpdateArgs): Promise<EventVenue> {

@@ -18,6 +18,17 @@ export class CandidateProfileService {
     return await this.prisma.candidateProfile.findMany(params);
   }
 
+  async findManyWithPagination(
+    params: Prisma.CandidateProfileFindManyArgs,
+    pagination: {page?: number; pageSize?: number}
+  ) {
+    return await this.prisma.findManyWithPagination(
+      Prisma.ModelName.CandidateProfile,
+      params,
+      pagination
+    );
+  }
+
   async create(
     params: Prisma.CandidateProfileCreateArgs
   ): Promise<CandidateProfile> {

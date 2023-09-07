@@ -16,6 +16,17 @@ export class WorkflowViewComponentService {
     return await this.prisma.workflowViewComponent.findMany(params);
   }
 
+  async findManyWithPagination(
+    params: Prisma.WorkflowViewComponentFindManyArgs,
+    pagination: {page?: number; pageSize?: number}
+  ) {
+    return await this.prisma.findManyWithPagination(
+      Prisma.ModelName.WorkflowViewComponent,
+      params,
+      pagination
+    );
+  }
+
   async create(
     params: Prisma.WorkflowViewComponentCreateArgs
   ): Promise<WorkflowViewComponent> {

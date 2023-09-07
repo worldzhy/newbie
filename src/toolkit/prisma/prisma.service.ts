@@ -1,4 +1,9 @@
-import {INestApplication, Injectable, OnModuleInit} from '@nestjs/common';
+import {
+  BadRequestException,
+  INestApplication,
+  Injectable,
+  OnModuleInit,
+} from '@nestjs/common';
 import {Prisma, PrismaClient} from '@prisma/client';
 import {prismaMiddleware} from '@toolkit/prisma/prisma.middleware';
 import {CustomLoggerService} from '@toolkit/logger/logger.service';
@@ -123,5 +128,58 @@ export class PrismaService
     this.$on('beforeExit', async () => {
       await app.close();
     });
+  }
+
+  async findManyWithPagination(
+    model: Prisma.ModelName,
+    params: any,
+    pagination: {
+      page?: number;
+      pageSize?: number;
+    }
+  ) {
+    const modelLowercaseFirstLetter =
+      model.charAt(0).toLowerCase() + model.slice(1);
+    const {skip, take} = this.getSkipAndTake({
+      page: pagination.page,
+      pageSize: pagination.pageSize,
+    });
+
+    const [records, total] = await this.$transaction([
+      this[modelLowercaseFirstLetter].findMany({...params, take, skip}),
+      this[modelLowercaseFirstLetter].count({where: params.where}),
+    ]);
+
+    return {
+      records,
+      pagination: {
+        page: pagination.page,
+        pageSize: pagination.pageSize,
+        countOfCurrentPage: records.length,
+        countOfTotal: total,
+      },
+    };
+  }
+
+  private getSkipAndTake(params: {
+    page: number | undefined;
+    pageSize: number | undefined;
+  }) {
+    let take: number, skip: number;
+    if (params.page && params.pageSize) {
+      if (params.page > 0 && params.pageSize > 0) {
+        skip = params.pageSize * (params.page - 1);
+        take = params.pageSize;
+      } else {
+        throw new BadRequestException(
+          'The page and pageSize must be larger than 0.'
+        );
+      }
+    } else {
+      skip = 0;
+      take = 100;
+    }
+
+    return {skip, take};
   }
 }

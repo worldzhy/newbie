@@ -26,10 +26,6 @@ import {
   ProjectCheckpointType,
   ProjectState,
 } from '@prisma/client';
-import {
-  generatePaginationParams,
-  generatePaginationResponse,
-} from '@toolkit/pagination/pagination';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
 
 @ApiTags('Project Management / Project')
@@ -106,19 +102,11 @@ export class ProjectController {
       // where === undefined
     }
 
-    // [step 2] Construct take and skip arguments.
-    const {take, skip} = generatePaginationParams({
-      page: page,
-      pageSize: pageSize,
-    });
-
-    const [records, total] = await this.projectService.findManyWithTotal({
-      where: where,
-      take: take,
-      skip: skip,
-    });
-
-    return generatePaginationResponse({records, total, page, pageSize});
+    // [step 2] Get records.
+    return await this.projectService.findManyWithPagination(
+      {where},
+      {page, pageSize}
+    );
   }
 
   @Get(':projectId')

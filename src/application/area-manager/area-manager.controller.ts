@@ -17,10 +17,6 @@ import {
 } from '@nestjs/swagger';
 import {Prisma, User} from '@prisma/client';
 import {UserService} from '@microservices/account/user/user.service';
-import {
-  generatePaginationParams,
-  generatePaginationResponse,
-} from '@toolkit/pagination/pagination';
 
 const ROLE_NAME_AREA_MANAGER = 'Area Manager';
 
@@ -101,29 +97,24 @@ export class AreaManagerController {
       // where === undefined
     }
 
-    // [step 2] Construct take and skip arguments.
-    const {take, skip} = generatePaginationParams({
-      page: page,
-      pageSize: pageSize,
-    });
-
-    // [step 3] Get users.
-    const [users, total] = await this.userService.findManyWithTotal({
-      where: where,
-      take: take,
-      skip: skip,
-      include: {
-        roles: true,
-        profile: true,
+    // [step 2] Get users.
+    const result = await this.userService.findManyWithPagination(
+      {
+        where: where,
+        include: {
+          roles: true,
+          profile: true,
+        },
       },
-    });
+      {page, pageSize}
+    );
 
     // [step 4] Return users without password.
-    const records = users.map(user => {
+    result.records = result.records.map(user => {
       return this.userService.withoutPassword(user);
     });
 
-    return generatePaginationResponse({page, pageSize, records, total});
+    return result;
   }
 
   @Get(':userId')
