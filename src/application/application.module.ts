@@ -25,6 +25,7 @@ import {AccountOthersController} from './account/account-others.controller';
 import {AreaManagerController} from './area-manager/area-manager.controller';
 import {AvailabilityExpressionController} from './availability/availability-expression.controller';
 import {AvailabilityTimeslotController} from './availability/availability-timeslot.controller';
+import {AvailabilityController} from './availability/availability.controller';
 import {ClassController} from './class/class.controller';
 import {CoachController} from './coach/coach.controller';
 import {EventController} from './event/event.controller';
@@ -63,6 +64,7 @@ import {TagGroupController} from './tag/tag-group.controller';
     AreaManagerController,
     AvailabilityExpressionController,
     AvailabilityTimeslotController,
+    AvailabilityController,
     ClassController,
     CoachController,
     EventController,

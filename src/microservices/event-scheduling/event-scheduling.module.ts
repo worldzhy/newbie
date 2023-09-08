@@ -1,6 +1,7 @@
 import {Global, Module} from '@nestjs/common';
 import {AvailabilityExpressionService} from './availability-expression.service';
 import {AvailabilityTimeslotService} from './availability-timeslot.service';
+import {AvailabilityService} from './availability.service';
 import {EventTypeService} from './event-type.service';
 import {EventContainerService} from './event-container.service';
 import {EventService} from './event.service';
@@ -14,6 +15,7 @@ import {HeatmapService} from './heatmap.service';
   providers: [
     AvailabilityExpressionService,
     AvailabilityTimeslotService,
+    AvailabilityService,
     EventCalendarService,
     EventContainerService,
     EventTypeService,
@@ -25,6 +27,7 @@ import {HeatmapService} from './heatmap.service';
   exports: [
     AvailabilityExpressionService,
     AvailabilityTimeslotService,
+    AvailabilityService,
     EventCalendarService,
     EventContainerService,
     EventTypeService,

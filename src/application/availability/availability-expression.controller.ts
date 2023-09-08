@@ -6,15 +6,8 @@ import {
   Post,
   Body,
   Param,
-  Query,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiBearerAuth,
-  ApiParam,
-  ApiBody,
-  ApiQuery,
-} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
 import {AvailabilityExpression, Prisma} from '@prisma/client';
 import {AvailabilityExpressionService} from '@microservices/event-scheduling/availability-expression.service';
 
@@ -35,13 +28,12 @@ export class AvailabilityExpressionController {
         value: {
           hostUserId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
           cronExpressionsOfAvailableTimePoints: [
-            '0 0,30 18,19,20 ? 7,8,9 1 2023-2023',
-            '0 0,30 18,19,20 ? 7,8,9 3 2023-2023',
-            '0 0,30 18,19,20 ? 7,8,9 5 2023-2023',
+            '0,30 11-14 * 7-9 1,3,5',
+            '0,30 11-14 * 7-9 2,4,6',
           ],
-          cronExpressionsOfUnavailableTimePoints: [
-            '0 0,30 18 19 9 ? 2023-2023',
-          ],
+          cronExpressionsOfUnavailableTimePoints: ['0,30 11-14 20 9 *'],
+          dateOfOpening: '2023-01-01T00:00:00.000Z',
+          dateOfClosure: '2024-01-01T00:00:00.000Z',
           minutesOfTimeslot: 30,
         },
       },
@@ -90,13 +82,12 @@ export class AvailabilityExpressionController {
         value: {
           hostUserId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
           cronExpressionsOfAvailableTimePoints: [
-            '0 0,30 18,19,20 ? 7,8,9 1 2023-2023',
-            '0 0,30 18,19,20 ? 7,8,9 3 2023-2023',
-            '0 0,30 18,19,20 ? 7,8,9 5 2023-2023',
+            '0,30 11-14 * 7-9 1,3,5',
+            '0,30 11-14 * 7-9 2,4,6',
           ],
-          cronExpressionsOfUnavailableTimePoints: [
-            '0 0,30 18 19 9 ? 2023-2023',
-          ],
+          cronExpressionsOfUnavailableTimePoints: ['0,30 11-14 20 9 *'],
+          dateOfOpening: '2023-01-01T00:00:00.000Z',
+          dateOfClosure: '2024-01-01T00:00:00.000Z',
           minutesOfTimeslot: 30,
         },
       },

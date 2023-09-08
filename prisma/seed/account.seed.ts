@@ -28,14 +28,6 @@ export async function seedForAccount() {
         trustedEntityType: TrustedEntityType.ROLE,
       },
     ],
-    Manager: [
-      {
-        action: PermissionAction.Manage,
-        resource: Prisma.ModelName.User,
-        where: undefined,
-        trustedEntityType: TrustedEntityType.ROLE,
-      },
-    ],
   };
 
   const roles = [
@@ -58,28 +50,6 @@ export async function seedForAccount() {
 
       // Create permissions.
       for (const permission of permissions.Admin) {
-        await prisma.permission.create({
-          data: {
-            action: permission.action,
-            resource: permission.resource,
-            where: permission.where,
-            trustedEntityType: permission.trustedEntityType,
-            trustedEntityId: role.id,
-          },
-        });
-      }
-    } else if (role.name === RoleName.Manager) {
-      // Create user with this role.
-      await prisma.user.create({
-        data: {
-          email: 'tim@solidcore.com',
-          password: 'Abc1234!',
-          roles: {connect: [{id: role.id}]},
-        },
-      });
-
-      // Create permissions.
-      for (const permission of permissions.Manager) {
         await prisma.permission.create({
           data: {
             action: permission.action,

@@ -230,6 +230,8 @@ model AvailabilityExpression {
   hostUserId                             String?                @db.Uuid
   cronExpressionsOfAvailableTimePoints   String[]
   cronExpressionsOfUnavailableTimePoints String[]
+  dateOfOpening                          DateTime               @db.Date
+  dateOfClosure                          DateTime?              @db.Date
   minutesOfTimeslot                      Int // Generally it should be 30 or 60
   timezone                               String? // https://www.iplocate.com/en/resources/timezones/list-of-timezones
   createdAt                              DateTime               @default(now())
@@ -309,20 +311,20 @@ model EventVenue {
 }
 
 model Event {
-  id           Int            @id @default(autoincrement())
-  hostUserId   String?        @db.Uuid
-  dateOfStart  DateTime       @db.Date
-  timeOfStart  DateTime       @db.Time(0)
-  dateOfEnd    DateTime       @db.Date
-  timeOfEnd    DateTime       @db.Time(0)
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  type         EventType      @relation(fields: [typeId], references: [id], onDelete: Cascade)
+  id           Int             @id @default(autoincrement())
+  hostUserId   String?         @db.Uuid
+  dateOfStart  DateTime        @db.Date
+  timeOfStart  DateTime        @db.Time(0)
+  dateOfEnd    DateTime        @db.Date
+  timeOfEnd    DateTime        @db.Time(0)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  type         EventType       @relation(fields: [typeId], references: [id], onDelete: Cascade)
   typeId       Int
-  venue        EventVenue?    @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  venue        EventVenue?     @relation(fields: [venueId], references: [id], onDelete: Cascade)
   venueId      Int?
-  container    EventContainer @relation(fields: [containerId], references: [id], onDelete: Cascade)
-  containerId  Int
+  container    EventContainer? @relation(fields: [containerId], references: [id], onDelete: Cascade)
+  containerId  Int?
   reservations Reservation[]
 
   @@schema("microservice/event-scheduling")

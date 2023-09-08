@@ -54,5 +54,11 @@ export class AvailabilityTimeslotService {
     return await this.prisma.availabilityTimeslot.delete(params);
   }
 
+  async deleteMany(
+    params: Prisma.AvailabilityTimeslotDeleteManyArgs
+  ): Promise<Prisma.BatchPayload> {
+    return await this.prisma.availabilityTimeslot.deleteMany(params);
+  }
+
   /* End */
 }

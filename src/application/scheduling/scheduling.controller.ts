@@ -16,12 +16,7 @@ export class SchedulingController {
       a: {
         summary: '1. Calendar for single event',
         value: {
-          eventType: {
-            name: 'An Event',
-            minutesOfDuration: 60,
-            minutesInAdvanceToReserve: 120,
-            minutesInAdvanceToCancel: 120,
-          },
+          eventTypeId: 1,
           eventContainer: {
             status: EventContainerStatus.ACTIVE,
             dateOfOpening: '2020-12-12',
@@ -79,13 +74,7 @@ export class SchedulingController {
       a: {
         summary: '1. Calendar for single event',
         value: {
-          eventType: {
-            id: 1,
-            name: 'An Event',
-            minutesOfDuration: 60,
-            minutesInAdvanceToReserve: 120,
-            minutesInAdvanceToCancel: 120,
-          },
+          eventTypeId: 1,
           eventContainer: {
             id: 1,
             status: EventContainerStatus.ACTIVE,

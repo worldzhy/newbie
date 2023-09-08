@@ -15,16 +15,11 @@ export class EventCalendarService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * *Usage scenario 1: Create calendar for single event. In this case, 'event' is required.
-   * *Usage scenario 2: Create calendar for multiple events. In this case, 'event' shouldn't appear.
+   * *Usage scenario 1: Create calendar for single event type. In this case, 'eventTypeId' is required.
+   * *Usage scenario 2: Create calendar for multiple event types. In this case, 'eventTypeId' shouldn't appear.
    */
   async createEventCalendar(params: {
-    eventType?: {
-      name: string;
-      minutesOfDuration: number;
-      minutesInAdvanceToReserve: number;
-      minutesInAdanceToCancel: number;
-    };
+    eventTypeId?: number;
     eventContainer: {
       status: EventContainerStatus;
       dateOfOpening: Date;
@@ -33,12 +28,10 @@ export class EventCalendarService {
     };
     events: [{cronExpression: string; eventTypeId?: number}];
   }): Promise<{
-    eventType: EventType | undefined;
     eventContainer: EventContainer;
     events: Event[];
   }> {
     return await this.prisma.$transaction<{
-      eventType: EventType | undefined;
       eventContainer: EventContainer;
       events: Event[];
     }>(async tx => {
@@ -48,12 +41,14 @@ export class EventCalendarService {
       });
 
       // [step 2] Construct data of events.
-      let newEventType: EventType | undefined;
-      if (params.eventType) {
-        newEventType = await tx.eventType.create({data: params.eventType});
+      let eventType: EventType | undefined;
+      if (params.eventTypeId) {
+        eventType = await tx.eventType.findUniqueOrThrow({
+          where: {id: params.eventTypeId},
+        });
       }
       const constructedEvents = await this.constructEvents({
-        defaultEventType: newEventType,
+        defaultEventType: eventType,
         eventContainer: eventContainer,
         events: params.events,
       });
@@ -67,26 +62,16 @@ export class EventCalendarService {
       const generatedEvents = await tx.event.findMany({
         where: {containerId: eventContainer.id},
       });
-      return {
-        eventType: newEventType,
-        eventContainer,
-        events: generatedEvents,
-      };
+      return {eventContainer, events: generatedEvents};
     });
   }
 
   /**
-   * *Usage scenario 1: Update calendar for single event. In this case, 'event' is required.
+   * *Usage scenario 1: Update calendar for single event type. In this case, 'event' is required.
    * *Usage scenario 2: Update calendar for multiple events. In this case, 'event' shouldn't appear.
    */
   async updateEventCalendar(params: {
-    eventType?: {
-      id: number;
-      name: string;
-      minutesOfDuration: number;
-      minutesInAdvanceToReserve: number;
-      minutesInAdanceToCancel: number;
-    };
+    eventTypeId?: number;
     eventContainer: {
       id: number;
       status: EventContainerStatus;
@@ -96,12 +81,10 @@ export class EventCalendarService {
     };
     events: [{cronExpression: string; eventTypeId?: number}];
   }): Promise<{
-    eventType: EventType | undefined;
     eventContainer: EventContainer;
     events: Event[];
   }> {
     return await this.prisma.$transaction<{
-      eventType: EventType | undefined;
       eventContainer: EventContainer;
       events: Event[];
     }>(async tx => {
@@ -117,15 +100,14 @@ export class EventCalendarService {
       });
 
       // [step 3] Construct data of events.
-      let updatedEventType: EventType | undefined;
-      if (params.eventType) {
-        updatedEventType = await tx.eventType.update({
-          where: {id: params.eventType.id},
-          data: params.eventType,
+      let eventType: EventType | undefined;
+      if (params.eventTypeId) {
+        eventType = await tx.eventType.findUniqueOrThrow({
+          where: {id: params.eventTypeId},
         });
       }
       const constructedEvents = await this.constructEvents({
-        defaultEventType: updatedEventType,
+        defaultEventType: eventType,
         eventContainer: updatedEventContainer,
         events: params.events,
       });
@@ -140,7 +122,6 @@ export class EventCalendarService {
         where: {containerId: updatedEventContainer.id},
       });
       return {
-        eventType: updatedEventType,
         eventContainer: updatedEventContainer,
         events: generatedEvents,
       };

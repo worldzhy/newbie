@@ -6,8 +6,15 @@ import {
   Post,
   Body,
   Param,
+  Query,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiParam,
+  ApiBody,
+  ApiQuery,
+} from '@nestjs/swagger';
 import {AvailabilityTimeslot, Prisma} from '@prisma/client';
 import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
 
@@ -26,11 +33,12 @@ export class AvailabilityTimeslotController {
       a: {
         summary: '1. Create',
         value: {
-          name: 'Speaking AvailabilityTimeslot',
-          minutesOfDuration: 60,
-          minutesInAdvanceToReserve: 120,
-          minutesInAdvanceToCancel: 120,
-          numberOfSeats: 10,
+          hostUserId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
+          dateOfStart: '2023-09-20T00:00:00.000Z',
+          timeOfStart: '1970-01-01T14:30:00.000Z',
+          dateOfEnd: '2023-09-20T00:00:00.000Z',
+          timeOfEnd: '1970-01-01T15:30:00.000Z',
+          expressionId: 1,
         },
       },
     },
@@ -44,8 +52,13 @@ export class AvailabilityTimeslotController {
   }
 
   @Get('')
-  async getAvailabilityTimeslotes(): Promise<AvailabilityTimeslot[]> {
-    return await this.availabilityTimeslotService.findMany({});
+  @ApiQuery({name: 'availabilityExpressionId', type: 'number'})
+  async getAvailabilityTimeslotes(
+    @Query('availabilityExpressionId') availabilityExpressionId: number
+  ): Promise<AvailabilityTimeslot[]> {
+    return await this.availabilityTimeslotService.findMany({
+      where: {expressionId: availabilityExpressionId},
+    });
   }
 
   @Get(':availabilityTimeslotId')
@@ -76,9 +89,12 @@ export class AvailabilityTimeslotController {
       a: {
         summary: '1. Update',
         value: {
-          name: 'Speaking AvailabilityTimeslot',
-          minutesInAdvanceToReserve: 120,
-          minutesInAdvanceToCancel: 120,
+          hostUserId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
+          dateOfStart: '2023-09-20T00:00:00.000Z',
+          timeOfStart: '1970-01-01T14:30:00.000Z',
+          dateOfEnd: '2023-09-20T00:00:00.000Z',
+          timeOfEnd: '1970-01-01T15:30:00.000Z',
+          expressionId: 1,
         },
       },
     },
