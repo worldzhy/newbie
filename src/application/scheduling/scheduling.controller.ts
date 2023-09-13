@@ -18,7 +18,7 @@ export class SchedulingController {
         value: {
           eventTypeId: 1,
           eventContainer: {
-            status: EventContainerStatus.ACTIVE,
+            status: EventContainerStatus.EDITING,
             dateOfOpening: '2020-12-12',
             dateOfClosure: '2021-12-12',
             timezone: 'Europe/Athens',
@@ -33,7 +33,7 @@ export class SchedulingController {
         summary: '2. Calendar for multiple events',
         value: {
           eventContainer: {
-            status: EventContainerStatus.ACTIVE,
+            status: EventContainerStatus.EDITING,
             dateOfOpening: '2020-12-12',
             dateOfClosure: '2021-12-12',
             timezone: 'Europe/Athens',
@@ -77,7 +77,7 @@ export class SchedulingController {
           eventTypeId: 1,
           eventContainer: {
             id: 1,
-            status: EventContainerStatus.ACTIVE,
+            status: EventContainerStatus.EDITING,
             dateOfOpening: '2020-12-12',
             dateOfClosure: '2021-12-12',
             timezone: 'Europe/Athens',
@@ -93,7 +93,7 @@ export class SchedulingController {
         value: {
           eventContainer: {
             id: 1,
-            status: EventContainerStatus.ACTIVE,
+            status: EventContainerStatus.EDITING,
             dateOfOpening: '2020-12-12',
             dateOfClosure: '2021-12-12',
             timezone: 'Europe/Athens',

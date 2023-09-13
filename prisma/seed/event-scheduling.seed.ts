@@ -1,4 +1,4 @@
-import {EventContainerStatus, PrismaClient} from '@prisma/client';
+import {PrismaClient} from '@prisma/client';
 import {prismaMiddleware} from '@toolkit/prisma/prisma.middleware';
 
 export async function seedForEventScheduling() {
@@ -60,17 +60,74 @@ export async function seedForEventScheduling() {
         numberOfSeats: 20,
         minutesOfBreak: 10,
       },
+      {
+        name: 'NY, Center',
+        address: '2000 Main Street suite a',
+        city: 'New York City',
+        numberOfSeats: 20,
+        minutesOfBreak: 10,
+      },
+      {
+        name: 'NY, North',
+        address: '127 North Fair Oaks Avenue Suite 30',
+        city: 'New York City',
+        numberOfSeats: 20,
+        minutesOfBreak: 10,
+      },
     ],
   });
 
   console.log('- Creating event container...');
-  await prisma.eventContainer.create({
-    data: {
-      name: 'Henry English Class Room',
-      status: EventContainerStatus.ACTIVE,
-      dateOfOpening: '2023-08-10',
-      dateOfClosure: '2023-08-12',
-      timezone: 'Europe/Athens',
-    },
+  await prisma.eventContainer.createMany({
+    data: [
+      {
+        year: 2023,
+        month: 9,
+        timezone: 'Europe/Athens',
+        venueId: 1,
+      },
+      {
+        year: 2023,
+        month: 10,
+        timezone: 'Europe/Athens',
+        venueId: 1,
+      },
+      {
+        year: 2023,
+        month: 9,
+        timezone: 'Europe/Athens',
+        venueId: 2,
+      },
+      {
+        year: 2023,
+        month: 10,
+        timezone: 'Europe/Athens',
+        venueId: 2,
+      },
+      {
+        year: 2023,
+        month: 9,
+        timezone: 'Europe/Athens',
+        venueId: 3,
+      },
+      {
+        year: 2023,
+        month: 10,
+        timezone: 'Europe/Athens',
+        venueId: 3,
+      },
+      {
+        year: 2023,
+        month: 9,
+        timezone: 'Europe/Athens',
+        venueId: 4,
+      },
+      {
+        year: 2023,
+        month: 10,
+        timezone: 'Europe/Athens',
+        venueId: 4,
+      },
+    ],
   });
 }

@@ -141,10 +141,10 @@ export class EventCalendarService {
     const cronParserOptions = {
       // ! https://unpkg.com/browse/cron-parser@4.8.1/README.md
       tz: container.timezone,
-      currentDate: container.dateOfOpening.toISOString(),
+      currentDate: container.dateOfOpening!.toISOString(),
       endDate: container.dateOfClosure
         ? container.dateOfClosure.toISOString()
-        : datePlusYears(container.dateOfOpening, 1),
+        : datePlusYears(container.dateOfOpening!, 1),
       iterator: true,
     };
 

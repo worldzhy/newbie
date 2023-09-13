@@ -80,7 +80,7 @@ export class AvailabilityService {
         const dateStartTime = new Date(interval.next().value.toString());
         const dateEndTime = datePlusMinutes(
           dateStartTime,
-          expression.minutesOfTimeslot
+          expression.minutesOfDuration
         );
 
         const dateStartTimeArr = dateStartTime.toISOString().split('T');
@@ -88,6 +88,13 @@ export class AvailabilityService {
 
         // Construct event period data.
         timeslots.push({
+          year: dateStartTime.getFullYear(),
+          month: dateStartTime.getMonth(),
+          dayOfMonth: dateStartTime.getDate(),
+          dayOfWeek: dateStartTime.getDay(),
+          hour: dateStartTime.getHours(),
+          minute: dateStartTime.getMinutes(),
+          minutesOfDuration: expression.minutesOfDuration,
           hostUserId: expression.hostUserId,
           dateOfStart: dateStartTime, // dateStartTimeArr[0],
           timeOfStart: dateStartTime, // dateStartTimeArr[1].replace('.000Z', ''),
