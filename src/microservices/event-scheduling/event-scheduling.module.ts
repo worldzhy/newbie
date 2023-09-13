@@ -6,9 +6,7 @@ import {EventTypeService} from './event-type.service';
 import {EventContainerService} from './event-container.service';
 import {EventService} from './event.service';
 import {ReservationService} from './reservation.service';
-import {EventCalendarService} from './event-calendar.service';
 import {EventVenueService} from './event-venue.service';
-import {HeatmapService} from './heatmap.service';
 
 @Global()
 @Module({
@@ -16,24 +14,20 @@ import {HeatmapService} from './heatmap.service';
     AvailabilityExpressionService,
     AvailabilityTimeslotService,
     AvailabilityService,
-    EventCalendarService,
     EventContainerService,
     EventTypeService,
     EventVenueService,
     EventService,
-    HeatmapService,
     ReservationService,
   ],
   exports: [
     AvailabilityExpressionService,
     AvailabilityTimeslotService,
     AvailabilityService,
-    EventCalendarService,
     EventContainerService,
     EventTypeService,
     EventVenueService,
     EventService,
-    HeatmapService,
     ReservationService,
   ],
 })

@@ -18,6 +18,7 @@ import {
 } from '@nestjs/swagger';
 import {Prisma, EventContainer} from '@prisma/client';
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
+import {parseDaysOfMonth} from '@toolkit/utilities/date.util';
 
 @ApiTags('Event Container')
 @ApiBearerAuth()
@@ -83,10 +84,13 @@ export class EventContainerController {
     example: 1,
   })
   async getEventContainer(@Param('eventContainerId') eventContainerId: number) {
-    return await this.eventContainerService.findUniqueOrThrow({
+    const container = await this.eventContainerService.findUniqueOrThrow({
       where: {id: eventContainerId},
       include: {events: true},
     });
+
+    container['calendar'] = parseDaysOfMonth(container.year!, container.month!);
+    return container;
   }
 
   @Patch(':eventContainerId')

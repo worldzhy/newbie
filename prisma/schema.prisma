@@ -111,7 +111,7 @@ model UserProfile {
   gender      UserProfileGender?
   emails      Json[]
   phones      Json[]
-  locationIds Int[] // location ids
+  venueIds    Int[] // venue ids
   tagIds      Int[] // tag ids
   websites    Json? // {'facebook': 'https://www.facebook.com/grace', 'twitter': 'https://twitter.com/elonmusk'}
   picture     String?
@@ -243,24 +243,32 @@ model AvailabilityExpression {
 }
 
 model AvailabilityTimeslot {
-  id                Int                    @id @default(autoincrement())
-  hostUserId        String?                @db.Uuid
-  dateOfStart       DateTime               @db.Date
-  timeOfStart       DateTime               @db.Time(0)
-  dateOfEnd         DateTime               @db.Date
-  timeOfEnd         DateTime               @db.Time(0)
-  year              Int
-  month             Int
-  dayOfMonth        Int
-  dayOfWeek         Int
-  hour              Int
-  minute            Int
-  minutesOfDuration Int
+  id                Int                        @id @default(autoincrement())
+  status            AvailabilityTimeslotStatus @default(USABLE)
+  hostUserId        String?                    @db.Uuid
+  dateOfStart       DateTime?                  @db.Date
+  timeOfStart       DateTime?                  @db.Time(0)
+  dateOfEnd         DateTime?                  @db.Date
+  timeOfEnd         DateTime?                  @db.Time(0)
+  year              Int?
+  month             Int?
+  dayOfMonth        Int?
+  dayOfWeek         Int?
+  hour              Int?
+  minute            Int?
+  minutesOfDuration Int?
   timezone          String? // https://www.iplocate.com/en/resources/timezones/list-of-timezones
-  createdAt         DateTime               @default(now())
-  updatedAt         DateTime               @updatedAt
-  expression        AvailabilityExpression @relation(fields: [expressionId], references: [id], onDelete: Cascade)
+  createdAt         DateTime                   @default(now())
+  updatedAt         DateTime                   @updatedAt
+  expression        AvailabilityExpression     @relation(fields: [expressionId], references: [id], onDelete: Cascade)
   expressionId      Int
+
+  @@schema("microservice/event-scheduling")
+}
+
+enum AvailabilityTimeslotStatus {
+  USABLE
+  USED
 
   @@schema("microservice/event-scheduling")
 }

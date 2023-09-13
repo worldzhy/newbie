@@ -40,7 +40,7 @@ export class CoachController {
               firstName: '',
               middleName: '',
               lastName: '',
-              locationIds: [1, 2],
+              venueIds: [1, 2],
               tagIds: [1, 2],
             },
           },
@@ -70,32 +70,23 @@ export class CoachController {
 
   @Get('')
   @ApiQuery({name: 'name', type: 'string'})
+  @ApiQuery({name: 'venueId', type: 'number'})
   @ApiQuery({name: 'page', type: 'number'})
   @ApiQuery({name: 'pageSize', type: 'number'})
   async getUsers(
     @Query('name') name?: string,
+    @Query('venueId') venueId?: number,
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number
   ) {
     // [step 1] Construct where argument.
-    let where: Prisma.UserWhereInput | undefined;
-    const whereConditions: object[] = [];
-    if (name) {
-      name = name.trim();
-      if (name.length > 0) {
-        whereConditions.push({name: {contains: name, mode: 'insensitive'}});
-      }
-    }
-
-    whereConditions.push({roles: {some: {name: ROLE_NAME_COACH}}});
-
-    if (whereConditions.length > 1) {
-      where = {OR: whereConditions};
-    } else if (whereConditions.length === 1) {
-      where = whereConditions[0];
-    } else {
-      // where === undefined
-    }
+    let where: Prisma.UserWhereInput = {
+      profile: {
+        fullName: {contains: name, mode: 'insensitive'},
+        venueIds: {has: venueId},
+      },
+      roles: {some: {name: ROLE_NAME_COACH}},
+    };
 
     // [step 2] Get users.
     const result = await this.userService.findManyWithPagination(

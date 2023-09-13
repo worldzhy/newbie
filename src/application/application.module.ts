@@ -23,8 +23,6 @@ import {AccountLogoutController} from './account/account-logout.controller';
 import {AccountSignupController} from './account/account-signup.controller';
 import {AccountOthersController} from './account/account-others.controller';
 import {AreaManagerController} from './area-manager/area-manager.controller';
-import {AvailabilityExpressionController} from './availability/availability-expression.controller';
-import {AvailabilityTimeslotController} from './availability/availability-timeslot.controller';
 import {AvailabilityController} from './availability/availability.controller';
 import {ClassController} from './class/class.controller';
 import {CoachController} from './coach/coach.controller';
@@ -32,7 +30,6 @@ import {EventController} from './event/event.controller';
 import {EventContainerController} from './event/event-container.controller';
 import {HeatmapController} from './heatmap/heatmap.controller';
 import {LocationController} from './location/location.controller';
-import {SchedulingController} from './scheduling/scheduling.controller';
 import {TagController} from './tag/tag.controller';
 import {TagGroupController} from './tag/tag-group.controller';
 
@@ -63,8 +60,6 @@ import {TagGroupController} from './tag/tag-group.controller';
     AccountSignupController,
     AccountOthersController,
     AreaManagerController,
-    AvailabilityExpressionController,
-    AvailabilityTimeslotController,
     AvailabilityController,
     ClassController,
     CoachController,
@@ -72,7 +67,6 @@ import {TagGroupController} from './tag/tag-group.controller';
     EventContainerController,
     HeatmapController,
     LocationController,
-    SchedulingController,
     TagController,
     TagGroupController,
   ],
