@@ -1,5 +1,5 @@
 import {Controller, Delete, Get, Patch, Body, Param} from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {JobApplicationWorkflowFileService} from './file.service';
 
 import {
@@ -33,12 +33,6 @@ export class JobApplicationWorkflowFileController {
     PermissionAction.Get,
     Prisma.ModelName.JobApplicationWorkflowFile
   )
-  @ApiParam({
-    name: 'fileId',
-    schema: {type: 'number'},
-    description: 'The id of the jobApplicationWorkflowFile.',
-    example: 1,
-  })
   async getJobApplicationWorkflowFile(
     @Param('fileId') fileId: number
   ): Promise<JobApplicationWorkflowFile | null> {
@@ -52,12 +46,6 @@ export class JobApplicationWorkflowFileController {
     PermissionAction.Update,
     Prisma.ModelName.JobApplicationWorkflowFile
   )
-  @ApiParam({
-    name: 'fileId',
-    schema: {type: 'number'},
-    description: 'The id of the jobApplicationWorkflowFile.',
-    example: 1,
-  })
   @ApiBody({
     description: '',
     examples: {
@@ -84,12 +72,6 @@ export class JobApplicationWorkflowFileController {
     PermissionAction.Delete,
     Prisma.ModelName.JobApplicationWorkflowFile
   )
-  @ApiParam({
-    name: 'fileId',
-    schema: {type: 'number'},
-    description: 'The id of the jobApplicationWorkflowFile.',
-    example: 1,
-  })
   async deleteJobApplicationWorkflowFile(
     @Param('fileId') fileId: number
   ): Promise<JobApplicationWorkflowFile> {

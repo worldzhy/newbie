@@ -10,13 +10,7 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiBearerAuth,
-  ApiParam,
-  ApiBody,
-  ApiQuery,
-} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {PermissionAction, Prisma, Role, User, UserStatus} from '@prisma/client';
 import {UserService} from '@microservices/account/user/user.service';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
@@ -80,10 +74,6 @@ export class UserController {
 
   @Get('')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.User)
-  @ApiQuery({name: 'name', type: 'string'})
-  @ApiQuery({name: 'roleId', type: 'string'})
-  @ApiQuery({name: 'page', type: 'number'})
-  @ApiQuery({name: 'pageSize', type: 'number'})
   async getUsers(
     @Query('name') name?: string,
     @Query('roleId') roleId?: string,
@@ -145,12 +135,6 @@ export class UserController {
 
   @Get(':userId')
   @RequirePermission(PermissionAction.Get, Prisma.ModelName.User)
-  @ApiParam({
-    name: 'userId',
-    schema: {type: 'string'},
-    description: 'The uuid of the user.',
-    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
-  })
   async getUser(@Param('userId') userId: string) {
     const user = await this.userService.findUniqueOrThrow({
       where: {id: userId},
@@ -165,12 +149,6 @@ export class UserController {
 
   @Patch(':userId')
   @RequirePermission(PermissionAction.Update, Prisma.ModelName.User)
-  @ApiParam({
-    name: 'userId',
-    schema: {type: 'string'},
-    description: 'The uuid of the user.',
-    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
-  })
   @ApiBody({
     description:
       'Set roleIds with an empty array to remove all the roles of the user.',
@@ -214,11 +192,6 @@ export class UserController {
 
   @Delete(':userId')
   @RequirePermission(PermissionAction.Delete, Prisma.ModelName.User)
-  @ApiParam({
-    name: 'userId',
-    schema: {type: 'string'},
-    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
-  })
   async deleteUser(@Param('userId') userId: string): Promise<User> {
     return await this.userService.delete({
       where: {id: userId},
@@ -227,12 +200,6 @@ export class UserController {
 
   @Get(':userId/profiles')
   @RequirePermission(PermissionAction.Get, Prisma.ModelName.User)
-  @ApiParam({
-    name: 'userId',
-    schema: {type: 'string'},
-    description: 'The uuid of the user.',
-    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
-  })
   async getUserProfiles(@Param('userId') userId: string) {
     const user = await this.userService.findUniqueOrThrow({
       where: {id: userId},
@@ -244,12 +211,6 @@ export class UserController {
 
   @Get(':userId/roles')
   @RequirePermission(PermissionAction.Get, Prisma.ModelName.User)
-  @ApiParam({
-    name: 'userId',
-    schema: {type: 'string'},
-    description: 'The uuid of the user.',
-    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
-  })
   async getUserRoles(@Param('userId') userId: string) {
     const user = await this.userService.findUniqueOrThrow({
       where: {id: userId},
@@ -261,12 +222,6 @@ export class UserController {
 
   @Patch(':userId/change-password')
   @RequirePermission(PermissionAction.Update, Prisma.ModelName.User)
-  @ApiParam({
-    name: 'userId',
-    schema: {type: 'string'},
-    description: 'The uuid of the user.',
-    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
-  })
   @ApiBody({
     description:
       "The 'userId', 'currentPassword' and 'newPassword' are required in request body.",

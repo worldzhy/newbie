@@ -10,13 +10,7 @@ import {
   NotFoundException,
   Query,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiBearerAuth,
-  ApiParam,
-  ApiBody,
-  ApiQuery,
-} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {
   InfrastructureStack,
   InfrastructureStackManager,
@@ -54,16 +48,10 @@ export class ProjectInfrastructureStackController {
   }
 
   @Get('types')
-  @ApiQuery({name: 'manager', type: 'string'})
-  listStackTypes(
-    @Query()
-    query: {
-      manager: string;
-    }
-  ) {
-    if (query.manager === InfrastructureStackManager.CloudFormation) {
+  listStackTypes(@Query() manager: string) {
+    if (manager === InfrastructureStackManager.CloudFormation) {
       return Object.values(CloudFormationStackType);
-    } else if (query.manager === InfrastructureStackManager.Pulumi) {
+    } else if (manager === InfrastructureStackManager.Pulumi) {
       return Object.values(PulumiStackType);
     } else {
       throw new BadRequestException('The infrastructure manager is invalid.');
@@ -71,19 +59,11 @@ export class ProjectInfrastructureStackController {
   }
 
   @Get('params')
-  @ApiQuery({name: 'type', type: 'string'})
-  @ApiQuery({name: 'manager', type: 'string'})
-  async getStackParams(
-    @Query()
-    query: {
-      type: string;
-      manager: string;
-    }
-  ) {
-    if (query.manager === InfrastructureStackManager.CloudFormation) {
-      return this.cloudformationStackService.getStackParams(query.type);
-    } else if (query.manager === InfrastructureStackManager.Pulumi) {
-      return this.pulumiStackService.getStackParams(query.type);
+  async getStackParams(@Query() type: string, @Query() manager: string) {
+    if (manager === InfrastructureStackManager.CloudFormation) {
+      return this.cloudformationStackService.getStackParams(type);
+    } else if (manager === InfrastructureStackManager.Pulumi) {
+      return this.pulumiStackService.getStackParams(type);
     } else {
       throw new BadRequestException('The infrastructure manager is invalid.');
     }
@@ -126,11 +106,6 @@ export class ProjectInfrastructureStackController {
   }
 
   @Get(':stackId')
-  @ApiParam({
-    name: 'stackId',
-    schema: {type: 'string'},
-    example: 'ff337f2d-d3a5-4f2e-be16-62c75477b605',
-  })
   async getStack(
     @Param('stackId') stackId: string
   ): Promise<InfrastructureStack> {
@@ -140,11 +115,6 @@ export class ProjectInfrastructureStackController {
   }
 
   @Patch(':stackId')
-  @ApiParam({
-    name: 'stackId',
-    schema: {type: 'string'},
-    example: 'ff337f2d-d3a5-4f2e-be16-62c75477b605',
-  })
   @ApiBody({
     description: 'Update infrastructure stack.',
     examples: {
@@ -180,11 +150,6 @@ export class ProjectInfrastructureStackController {
   }
 
   @Delete(':stackId')
-  @ApiParam({
-    name: 'stackId',
-    schema: {type: 'string'},
-    example: 'ff337f2d-d3a5-4f2e-be16-62c75477b605',
-  })
   async deleteStack(
     @Param('stackId')
     stackId: string
@@ -216,11 +181,6 @@ export class ProjectInfrastructureStackController {
 
   //* Create resources
   @Post(':stackId/create-resources')
-  @ApiParam({
-    name: 'stackId',
-    schema: {type: 'string'},
-    example: 'ff337f2d-d3a5-4f2e-be16-62c75477b605',
-  })
   async createResources(
     @Param('stackId')
     stackId: string
@@ -300,11 +260,6 @@ export class ProjectInfrastructureStackController {
 
   //* Destroy resources
   @Post(':stackId/destroy-resources')
-  @ApiParam({
-    name: 'stackId',
-    schema: {type: 'string'},
-    example: 'ff337f2d-d3a5-4f2e-be16-62c75477b605',
-  })
   async destroyResources(
     @Param('stackId')
     stackId: string

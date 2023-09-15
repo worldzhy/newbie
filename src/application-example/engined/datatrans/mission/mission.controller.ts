@@ -8,7 +8,7 @@ import {
   Param,
   NotFoundException,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Prisma, DatatransMission, DatatransMissionState} from '@prisma/client';
 import {DatatransMissionService} from './mission.service';
 import {DatatransTaskService} from './task/task.service';
@@ -48,12 +48,6 @@ export class DatatransMissionController {
   }
 
   @Get(':missionId')
-  @ApiParam({
-    name: 'missionId',
-    schema: {type: 'string'},
-    description: 'The uuid of the datatransMission.',
-    example: '81a37534-915c-4114-96d0-01be815d821b',
-  })
   async getDatatransMission(
     @Param('missionId') missionId: string
   ): Promise<DatatransMission | null> {
@@ -63,12 +57,6 @@ export class DatatransMissionController {
   }
 
   @Patch(':missionId')
-  @ApiParam({
-    name: 'missionId',
-    schema: {type: 'string'},
-    description: 'The uuid of the datatrans mission.',
-    example: '81a37534-915c-4114-96d0-01be815d821b',
-  })
   async updateDatatransMission(
     @Param('missionId') missionId: string,
     @Body() body: Prisma.DatatransMissionUpdateInput
@@ -80,12 +68,6 @@ export class DatatransMissionController {
   }
 
   @Delete(':missionId')
-  @ApiParam({
-    name: 'missionId',
-    schema: {type: 'string'},
-    description: 'The uuid of the datatrans mission.',
-    example: '81a37534-915c-4114-96d0-01be815d821b',
-  })
   async deleteDatatransMission(
     @Param('missionId') missionId: string
   ): Promise<DatatransMission> {
@@ -95,11 +77,6 @@ export class DatatransMissionController {
   }
 
   @Patch(':missionId/mission2tasks')
-  @ApiParam({
-    name: 'missionId',
-    schema: {type: 'string'},
-    example: '81a37534-915c-4114-96d0-01be815d821b',
-  })
   async splitDatatransMission2Tasks(
     @Param('missionId') missionId: string
   ): Promise<DatatransMission> {

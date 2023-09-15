@@ -8,7 +8,7 @@ import {
   Param,
   NotFoundException,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {
   ElasticsearchDataboard,
   ElasticsearchDataboardState,
@@ -54,12 +54,6 @@ export class ElasticsearchDataboardController {
   }
 
   @Get(':databoardId')
-  @ApiParam({
-    name: 'databoardId',
-    schema: {type: 'string'},
-    description: 'The uuid of the databoard.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   async getElasticsearchDataboard(
     @Param('databoardId') databoardId: string
   ): Promise<ElasticsearchDataboard | null> {
@@ -69,11 +63,6 @@ export class ElasticsearchDataboardController {
   }
 
   @Patch(':databoardId')
-  @ApiParam({
-    name: 'databoardId',
-    schema: {type: 'string'},
-    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
-  })
   @ApiBody({
     description: 'Update databoard.',
     examples: {
@@ -96,11 +85,6 @@ export class ElasticsearchDataboardController {
   }
 
   @Delete(':databoardId')
-  @ApiParam({
-    name: 'databoardId',
-    schema: {type: 'string'},
-    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
-  })
   async deleteElasticsearchDataboard(
     @Param('databoardId') databoardId: string
   ): Promise<ElasticsearchDataboard> {
@@ -110,11 +94,6 @@ export class ElasticsearchDataboardController {
   }
 
   @Patch(':databoardId/load')
-  @ApiParam({
-    name: 'databoardId',
-    schema: {type: 'string'},
-    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
-  })
   async loadElasticsearchDataboard(
     @Param('databoardId') databoardId: string
   ): Promise<ElasticsearchDataboard> {
@@ -150,11 +129,6 @@ export class ElasticsearchDataboardController {
   }
 
   @Patch(':databoardId/unload')
-  @ApiParam({
-    name: 'databoardId',
-    schema: {type: 'string'},
-    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
-  })
   async unloadElasticsearchDataboard(
     @Param('databoardId') databoardId: string
   ): Promise<ElasticsearchDataboard> {
@@ -180,11 +154,6 @@ export class ElasticsearchDataboardController {
   }
 
   @Get(':databoardId/columns')
-  @ApiParam({
-    name: 'databoardId',
-    schema: {type: 'string'},
-    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
-  })
   async getElasticsearchDataboardColumns(
     @Param('databoardId') databoardId: string
   ): Promise<ElasticsearchDataboard> {

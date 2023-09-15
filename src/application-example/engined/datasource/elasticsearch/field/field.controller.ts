@@ -7,7 +7,7 @@ import {
   Body,
   Param,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {ElasticsearchDatasourceIndexField, Prisma} from '@prisma/client';
 import {ElasticsearchDatasourceIndexFieldService} from './field.service';
 
@@ -48,12 +48,6 @@ export class ElasticsearchDatasourceIndexFieldController {
   }
 
   @Get(':indexId')
-  @ApiParam({
-    name: 'indexId',
-    schema: {type: 'number'},
-    description: 'The id of the index.',
-    example: 1,
-  })
   async getElasticsearchDatasourceIndexField(
     @Param('indexId') indexId: number
   ): Promise<ElasticsearchDatasourceIndexField | null> {
@@ -63,11 +57,6 @@ export class ElasticsearchDatasourceIndexFieldController {
   }
 
   @Patch(':indexId')
-  @ApiParam({
-    name: 'indexId',
-    schema: {type: 'number'},
-    example: 1,
-  })
   async updateElasticsearchDatasourceIndexField(
     @Param('indexId') indexId: number,
     @Body() body: Prisma.ElasticsearchDatasourceIndexFieldUpdateInput
@@ -79,11 +68,6 @@ export class ElasticsearchDatasourceIndexFieldController {
   }
 
   @Delete(':indexId')
-  @ApiParam({
-    name: 'indexId',
-    schema: {type: 'number'},
-    example: 1,
-  })
   async deleteElasticsearchDatasourceIndexField(
     @Param('indexId') indexId: number
   ): Promise<ElasticsearchDatasourceIndexField> {

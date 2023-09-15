@@ -8,13 +8,7 @@ import {
   Param,
   Query,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiBearerAuth,
-  ApiParam,
-  ApiBody,
-  ApiQuery,
-} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {EventVenue, Prisma} from '@prisma/client';
 import {EventVenueService} from '@microservices/event-scheduling/event-venue.service';
 
@@ -50,9 +44,6 @@ export class LocationController {
   }
 
   @Get('')
-  @ApiQuery({name: 'name', type: 'string'})
-  @ApiQuery({name: 'page', type: 'number'})
-  @ApiQuery({name: 'pageSize', type: 'number'})
   async getEventVenues(
     @Query('name') name?: string,
     @Query('page') page?: number,
@@ -84,12 +75,6 @@ export class LocationController {
   }
 
   @Get(':eventVenueId')
-  @ApiParam({
-    name: 'eventVenueId',
-    schema: {type: 'number'},
-    description: 'The id of the event.',
-    example: 1,
-  })
   async getEventVenue(
     @Param('eventVenueId') eventVenueId: number
   ): Promise<EventVenue> {
@@ -99,12 +84,6 @@ export class LocationController {
   }
 
   @Patch(':eventVenueId')
-  @ApiParam({
-    name: 'eventVenueId',
-    schema: {type: 'number'},
-    description: 'The id of the event.',
-    example: 1,
-  })
   @ApiBody({
     description: '',
     examples: {
@@ -133,11 +112,6 @@ export class LocationController {
   }
 
   @Delete(':eventVenueId')
-  @ApiParam({
-    name: 'eventVenueId',
-    schema: {type: 'number'},
-    example: 1,
-  })
   async deleteEventVenue(
     @Param('eventVenueId') eventVenueId: number
   ): Promise<EventVenue> {

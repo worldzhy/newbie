@@ -8,13 +8,7 @@ import {
   Param,
   Query,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiBearerAuth,
-  ApiParam,
-  ApiBody,
-  ApiQuery,
-} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Prisma, Candidate, PermissionAction} from '@prisma/client';
 import {generateRandomNumbers} from '@toolkit/utilities/common.util';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
@@ -81,9 +75,6 @@ export class CandidateController {
 
   @Get('count')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.Candidate)
-  @ApiQuery({name: 'name', type: 'string'})
-  @ApiQuery({name: 'email', type: 'string'})
-  @ApiQuery({name: 'phone', type: 'string'})
   async countCandidates(
     @Query('name') name?: string,
     @Query('email') email?: string,
@@ -131,11 +122,6 @@ export class CandidateController {
 
   @Get('')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.Candidate)
-  @ApiQuery({name: 'name', type: 'string'})
-  @ApiQuery({name: 'email', type: 'string'})
-  @ApiQuery({name: 'phone', type: 'string'})
-  @ApiQuery({name: 'page', type: 'number'})
-  @ApiQuery({name: 'pageSize', type: 'number'})
   async getCandidates(
     @Query('name') name?: string,
     @Query('email') email?: string,
@@ -223,12 +209,6 @@ export class CandidateController {
 
   @Get(':candidateId')
   @RequirePermission(PermissionAction.Get, Prisma.ModelName.Candidate)
-  @ApiParam({
-    name: 'candidateId',
-    schema: {type: 'string'},
-    description: 'The uuid of the candidate.',
-    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
-  })
   async getCandidate(
     @Param('candidateId') candidateId: string
   ): Promise<Candidate | null> {
@@ -254,12 +234,6 @@ export class CandidateController {
 
   @Patch(':candidateId')
   @RequirePermission(PermissionAction.Update, Prisma.ModelName.Candidate)
-  @ApiParam({
-    name: 'candidateId',
-    schema: {type: 'string'},
-    description: 'The uuid of the candidate.',
-    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
-  })
   @ApiBody({
     description: 'Update a specific user candidate.',
     examples: {
@@ -313,11 +287,6 @@ export class CandidateController {
 
   @Delete(':candidateId')
   @RequirePermission(PermissionAction.Delete, Prisma.ModelName.Candidate)
-  @ApiParam({
-    name: 'candidateId',
-    schema: {type: 'string'},
-    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
-  })
   async deleteUser(
     @Param('candidateId') candidateId: string
   ): Promise<Candidate> {
@@ -328,12 +297,6 @@ export class CandidateController {
 
   @Get(':candidateId/job-applications')
   @RequirePermission(PermissionAction.Get, Prisma.ModelName.Candidate)
-  @ApiParam({
-    name: 'candidateId',
-    schema: {type: 'string'},
-    description: 'The uuid of the candidate.',
-    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
-  })
   async getCandidateJobApplications(
     @Param('candidateId') candidateId: string
   ): Promise<Candidate> {

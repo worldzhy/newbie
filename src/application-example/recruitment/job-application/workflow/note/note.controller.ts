@@ -9,7 +9,7 @@ import {
   Request,
   BadRequestException,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {JobApplicationWorkflowNoteService} from './note.service';
 
 import {
@@ -95,12 +95,6 @@ export class JobApplicationWorkflowNoteController {
     PermissionAction.Get,
     Prisma.ModelName.JobApplicationWorkflowNote
   )
-  @ApiParam({
-    name: 'noteId',
-    schema: {type: 'number'},
-    description: 'The id of the jobApplicationWorkflowNote.',
-    example: 1,
-  })
   async getJobApplicationWorkflowNote(
     @Param('noteId') noteId: number
   ): Promise<JobApplicationWorkflowNote | null> {
@@ -114,12 +108,6 @@ export class JobApplicationWorkflowNoteController {
     PermissionAction.Update,
     Prisma.ModelName.JobApplicationWorkflowNote
   )
-  @ApiParam({
-    name: 'noteId',
-    schema: {type: 'number'},
-    description: 'The id of the jobApplicationWorkflowNote.',
-    example: 1,
-  })
   @ApiBody({
     description: '',
     examples: {
@@ -146,12 +134,6 @@ export class JobApplicationWorkflowNoteController {
     PermissionAction.Delete,
     Prisma.ModelName.JobApplicationWorkflowNote
   )
-  @ApiParam({
-    name: 'noteId',
-    schema: {type: 'number'},
-    description: 'The id of the jobApplicationWorkflowNote.',
-    example: 1,
-  })
   async deleteJobApplicationWorkflowNote(
     @Param('noteId') noteId: number
   ): Promise<JobApplicationWorkflowNote> {

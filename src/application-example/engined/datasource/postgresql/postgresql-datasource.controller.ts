@@ -9,7 +9,7 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {
   PostgresqlDatasource,
   PostgresqlDatasourceConstraint,
@@ -82,12 +82,6 @@ export class PostgresqlDatasourceController {
   }
 
   @Get(':datasourceId')
-  @ApiParam({
-    name: 'datasourceId',
-    schema: {type: 'string'},
-    description: 'The uuid of the postgresql datasource.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   async getPostgresqlDatasource(
     @Param('datasourceId') datasourceId: string
   ): Promise<PostgresqlDatasource | null> {
@@ -97,11 +91,6 @@ export class PostgresqlDatasourceController {
   }
 
   @Patch(':datasourceId')
-  @ApiParam({
-    name: 'datasourceId',
-    schema: {type: 'string'},
-    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
-  })
   @ApiBody({
     description: 'Update postgresql datasource.',
     examples: {
@@ -127,11 +116,6 @@ export class PostgresqlDatasourceController {
   }
 
   @Delete(':datasourceId')
-  @ApiParam({
-    name: 'datasourceId',
-    schema: {type: 'string'},
-    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
-  })
   async deletePostgresqlDatasourceTable(
     @Param('datasourceId') datasourceId: string
   ): Promise<PostgresqlDatasource> {
@@ -141,12 +125,6 @@ export class PostgresqlDatasourceController {
   }
 
   @Patch(':datasourceId/load')
-  @ApiParam({
-    name: 'datasourceId',
-    schema: {type: 'string'},
-    description: 'The uuid of the postgresql datasource.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   async loadPostgresqlDatasource(
     @Param('datasourceId') datasourceId: string
   ): Promise<PostgresqlDatasource> {
@@ -278,12 +256,6 @@ export class PostgresqlDatasourceController {
    * Unload a postgresql datasource.
    */
   @Patch(':datasourceId/unload')
-  @ApiParam({
-    name: 'datasourceId',
-    schema: {type: 'string'},
-    description: 'The uuid of the postgresql datasource.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   async unloadPostgresqlDatasource(
     @Param('datasourceId') datasourceId: string
   ): Promise<PostgresqlDatasource> {
@@ -313,12 +285,6 @@ export class PostgresqlDatasourceController {
   }
 
   @Get(':datasourceId/tables')
-  @ApiParam({
-    name: 'datasourceId',
-    schema: {type: 'string'},
-    description: 'The uuid of the datasource.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   async getPostgresqlDatasourceTables(
     @Param('datasourceId') datasourceId: string
   ): Promise<PostgresqlDatasource> {
@@ -329,12 +295,6 @@ export class PostgresqlDatasourceController {
   }
 
   @Get(':datasourceId/constraints')
-  @ApiParam({
-    name: 'datasourceId',
-    schema: {type: 'string'},
-    description: 'The uuid of the postgresql datasource.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   async getPostgresqlDatasourceConstraints(
     @Param('datasourceId')
     datasourceId: string
@@ -346,18 +306,6 @@ export class PostgresqlDatasourceController {
   }
 
   @Get(':datasourceId/constraints/:tableName')
-  @ApiParam({
-    name: 'datasourceId',
-    schema: {type: 'string'},
-    description: 'The uuid of the datasource.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
-  @ApiParam({
-    name: 'tableName',
-    schema: {type: 'string'},
-    description: 'The name of the table.',
-    example: 'User',
-  })
   async getPostgresqlDatasourceConstraintsByTable(
     @Param('datasourceId') datasourceId: string,
     @Param('tableName') tableName: string
@@ -385,12 +333,6 @@ export class PostgresqlDatasourceController {
    * Overview a postgresql datasource.
    */
   @Get(':datasourceId/overview')
-  @ApiParam({
-    name: 'datasourceId',
-    schema: {type: 'string'},
-    description: 'The uuid of the datapipe.',
-    example: '81a37534-915c-4114-96d0-01be815d821b',
-  })
   async overviewPostgresqlDatasource(
     @Param('datasourceId') datasourceId: string
   ): Promise<{

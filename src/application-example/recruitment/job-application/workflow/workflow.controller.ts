@@ -8,7 +8,7 @@ import {
   BadRequestException,
   Request,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {JobApplicationWorkflow, PermissionAction, Prisma} from '@prisma/client';
 import {JobApplicationWorkflowService} from './workflow.service';
 import {JobApplicationWorkflowFileService} from './file/file.service';
@@ -114,12 +114,6 @@ export class JobApplicationWorkflowController {
     PermissionAction.Get,
     Prisma.ModelName.JobApplicationWorkflow
   )
-  @ApiParam({
-    name: 'workflowId',
-    schema: {type: 'string'},
-    description: 'The id of the jobApplicationWorkflow.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   async getJobApplicationWorkflow(
     @Param('workflowId') workflowId: string
   ): Promise<JobApplicationWorkflow> {
@@ -173,12 +167,6 @@ export class JobApplicationWorkflowController {
     PermissionAction.Update,
     Prisma.ModelName.JobApplicationWorkflow
   )
-  @ApiParam({
-    name: 'workflowId',
-    schema: {type: 'string'},
-    description: 'The id of the jobApplicationWorkflow.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   @ApiBody({
     description: '',
     examples: {
@@ -311,12 +299,6 @@ export class JobApplicationWorkflowController {
     PermissionAction.Delete,
     Prisma.ModelName.JobApplicationWorkflow
   )
-  @ApiParam({
-    name: 'workflowId',
-    schema: {type: 'string'},
-    description: 'The id of the jobApplicationWorkflow.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   async deleteJobApplicationWorkflow(
     @Param('workflowId') workflowId: string
   ): Promise<JobApplicationWorkflow> {
@@ -335,12 +317,6 @@ export class JobApplicationWorkflowController {
     PermissionAction.Get,
     Prisma.ModelName.JobApplicationWorkflow
   )
-  @ApiParam({
-    name: 'workflowId',
-    schema: {type: 'string'},
-    description: 'The uuid of the jobApplication.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   async getJobApplicationLock(
     @Param('workflowId') workflowId: string
   ): Promise<JobApplicationWorkflow> {
@@ -361,12 +337,6 @@ export class JobApplicationWorkflowController {
     PermissionAction.Update,
     Prisma.ModelName.JobApplicationWorkflow
   )
-  @ApiParam({
-    name: 'workflowId',
-    schema: {type: 'string'},
-    description: 'The uuid of the jobApplication.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   async lockJobApplication(
     @Request() request: Request,
     @Param('workflowId') workflowId: string
@@ -392,12 +362,6 @@ export class JobApplicationWorkflowController {
     PermissionAction.Update,
     Prisma.ModelName.JobApplicationWorkflow
   )
-  @ApiParam({
-    name: 'workflowId',
-    schema: {type: 'number'},
-    description: 'The uuid of the jobApplication.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   async unlockJobApplication(
     @Request() request: Request,
     @Param('workflowId') workflowId: string

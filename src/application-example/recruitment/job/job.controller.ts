@@ -7,7 +7,7 @@ import {
   Body,
   Param,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Prisma, Job, PermissionAction, JobType} from '@prisma/client';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
 import {JobService} from './job.service';
@@ -87,24 +87,12 @@ export class JobController {
 
   @Get(':jobId')
   @RequirePermission(PermissionAction.Get, Prisma.ModelName.Job)
-  @ApiParam({
-    name: 'jobId',
-    schema: {type: 'string'},
-    description: 'The uuid of the job.',
-    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
-  })
   async getJob(@Param('jobId') jobId: string): Promise<Job | null> {
     return await this.jobService.findUnique({where: {id: jobId}});
   }
 
   @Patch(':jobId')
   @RequirePermission(PermissionAction.Update, Prisma.ModelName.Job)
-  @ApiParam({
-    name: 'jobId',
-    schema: {type: 'string'},
-    description: 'The uuid of the job.',
-    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
-  })
   @ApiBody({
     description: 'Update a specific user job.',
     examples: {
@@ -132,11 +120,6 @@ export class JobController {
 
   @Delete(':jobId')
   @RequirePermission(PermissionAction.Delete, Prisma.ModelName.Job)
-  @ApiParam({
-    name: 'jobId',
-    schema: {type: 'string'},
-    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
-  })
   async deleteUser(@Param('jobId') jobId: string): Promise<Job> {
     return await this.jobService.delete({
       where: {id: jobId},

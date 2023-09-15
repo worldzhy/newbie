@@ -8,7 +8,7 @@ import {
   Param,
   BadRequestException,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {CandidateCertificationService} from './certification.service';
 
 import {CandidateCertification, PermissionAction, Prisma} from '@prisma/client';
@@ -71,12 +71,6 @@ export class CandidateCertificationController {
     PermissionAction.Get,
     Prisma.ModelName.CandidateCertification
   )
-  @ApiParam({
-    name: 'certificationId',
-    schema: {type: 'string'},
-    description: 'The id of the candidateCertification.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   async getCandidateCertification(
     @Param('certificationId') certificationId: number
   ): Promise<CandidateCertification | null> {
@@ -91,12 +85,6 @@ export class CandidateCertificationController {
     PermissionAction.Update,
     Prisma.ModelName.CandidateCertification
   )
-  @ApiParam({
-    name: 'certificationId',
-    schema: {type: 'string'},
-    description: 'The id of the candidateCertification.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   @ApiBody({
     description: '',
     examples: {
@@ -124,12 +112,6 @@ export class CandidateCertificationController {
     PermissionAction.Delete,
     Prisma.ModelName.CandidateCertification
   )
-  @ApiParam({
-    name: 'certificationId',
-    schema: {type: 'string'},
-    description: 'The id of the candidateCertification.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   async deleteCandidateCertification(
     @Param('certificationId') certificationId: number
   ): Promise<CandidateCertification> {

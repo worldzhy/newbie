@@ -7,7 +7,7 @@ import {
   Body,
   Param,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {PostgresqlDatasourceTableColumn, Prisma} from '@prisma/client';
 import {PostgresqlDatasourceTableService} from '../table/table.service';
 import {PostgresqlDatasourceTableColumnService} from './column.service';
@@ -65,12 +65,6 @@ export class PostgresqlDatasourceTableColumnController {
   }
 
   @Get(':columnId')
-  @ApiParam({
-    name: 'columnId',
-    schema: {type: 'number'},
-    description: 'The uuid of the datasource.',
-    example: 1,
-  })
   async getPostgresqlDatasourceTableColumn(
     @Param('columnId') columnId: number
   ): Promise<PostgresqlDatasourceTableColumn | null> {
@@ -80,11 +74,6 @@ export class PostgresqlDatasourceTableColumnController {
   }
 
   @Patch(':columnId')
-  @ApiParam({
-    name: 'columnId',
-    schema: {type: 'number'},
-    example: 1,
-  })
   async updatePostgresqlDatasourceTableColumn(
     @Param('columnId') columnId: number,
     @Body() body: Prisma.ElasticsearchDatasourceIndexUpdateInput
@@ -96,11 +85,6 @@ export class PostgresqlDatasourceTableColumnController {
   }
 
   @Delete(':columnId')
-  @ApiParam({
-    name: 'columnId',
-    schema: {type: 'number'},
-    example: 1,
-  })
   async deletePostgresqlDatasourceTableColumn(
     @Param('columnId') columnId: number
   ): Promise<PostgresqlDatasourceTableColumn> {

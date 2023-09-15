@@ -8,7 +8,7 @@ import {
   Param,
   Query,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {PermissionAction, Prisma, CandidateProfile} from '@prisma/client';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
 import {CandidateProfileService} from './profile.service';
@@ -86,12 +86,6 @@ export class CandidateProfileController {
 
   @Get(':profileId')
   @RequirePermission(PermissionAction.Get, Prisma.ModelName.CandidateProfile)
-  @ApiParam({
-    name: 'profileId',
-    schema: {type: 'string'},
-    description: 'The uuid of the profile.',
-    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
-  })
   async getCandidateProfile(
     @Param('profileId') profileId: string
   ): Promise<CandidateProfile | null> {
@@ -102,12 +96,6 @@ export class CandidateProfileController {
 
   @Patch(':profileId')
   @RequirePermission(PermissionAction.Update, Prisma.ModelName.CandidateProfile)
-  @ApiParam({
-    name: 'profileId',
-    schema: {type: 'string'},
-    description: 'The uuid of the profile.',
-    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
-  })
   @ApiBody({
     description: 'Update a specific candidate profile.',
     examples: {
@@ -143,11 +131,6 @@ export class CandidateProfileController {
 
   @Delete(':profileId')
   @RequirePermission(PermissionAction.Delete, Prisma.ModelName.CandidateProfile)
-  @ApiParam({
-    name: 'profileId',
-    schema: {type: 'string'},
-    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
-  })
   async deleteCandidateProfile(
     @Param('profileId') profileId: string
   ): Promise<CandidateProfile> {

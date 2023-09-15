@@ -7,7 +7,7 @@ import {
   Body,
   Param,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {
   WorkflowViewComponent,
   Prisma,
@@ -62,12 +62,6 @@ export class WorkflowViewComponentController {
   }
 
   @Get(':componentId')
-  @ApiParam({
-    name: 'componentId',
-    schema: {type: 'number'},
-    description: 'The id of the workflow view component.',
-    example: 11,
-  })
   async getWorkflowViewComponent(
     @Param('componentId') componentId: number
   ): Promise<WorkflowViewComponent | null> {
@@ -77,12 +71,6 @@ export class WorkflowViewComponentController {
   }
 
   @Patch(':componentId')
-  @ApiParam({
-    name: 'componentId',
-    schema: {type: 'number'},
-    description: 'The id of the workflow view component.',
-    example: 11,
-  })
   @ApiBody({
     description: '',
     examples: {
@@ -109,11 +97,6 @@ export class WorkflowViewComponentController {
   }
 
   @Delete(':componentId')
-  @ApiParam({
-    name: 'componentId',
-    schema: {type: 'number'},
-    example: 11,
-  })
   async deleteWorkflowViewComponent(
     @Param('componentId') componentId: number
   ): Promise<WorkflowViewComponent> {

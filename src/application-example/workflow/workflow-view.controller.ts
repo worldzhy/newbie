@@ -8,13 +8,7 @@ import {
   Param,
   Query,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiBearerAuth,
-  ApiParam,
-  ApiBody,
-  ApiQuery,
-} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {WorkflowView, Prisma} from '@prisma/client';
 import {WorkflowViewService} from '@microservices/workflow/workflow-view.service';
 
@@ -46,7 +40,6 @@ export class WorkflowViewController {
   }
 
   @Get('start-views')
-  @ApiQuery({name: 'workflowId', type: 'string'})
   async getWorkflowStartViews(@Query('workflowId') workflowId?: string) {
     return await this.workflowViewService.findMany({
       where: {workflowId: workflowId, inboundRoutes: {some: {startSign: true}}},
@@ -59,12 +52,6 @@ export class WorkflowViewController {
   }
 
   @Get(':viewId')
-  @ApiParam({
-    name: 'viewId',
-    schema: {type: 'number'},
-    description: 'The id of the workflow view.',
-    example: 11,
-  })
   async getWorkflowView(
     @Param('viewId') viewId: number
   ): Promise<WorkflowView> {
@@ -79,12 +66,6 @@ export class WorkflowViewController {
   }
 
   @Patch(':viewId')
-  @ApiParam({
-    name: 'viewId',
-    schema: {type: 'number'},
-    description: 'The id of the workflow view.',
-    example: 11,
-  })
   @ApiBody({
     description: '',
     examples: {
@@ -108,11 +89,6 @@ export class WorkflowViewController {
   }
 
   @Delete(':viewId')
-  @ApiParam({
-    name: 'viewId',
-    schema: {type: 'number'},
-    example: 11,
-  })
   async deleteWorkflowView(
     @Param('viewId') viewId: number
   ): Promise<WorkflowView> {

@@ -8,7 +8,7 @@ import {
   Post,
   BadRequestException,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {ProjectEnvironmentService} from '@microservices/pmgmt/environment/environment.service';
 import {Prisma, ProjectEnvironment} from '@prisma/client';
 
@@ -49,11 +49,6 @@ export class ProjectEnvironmentController {
   }
 
   @Get(':environmentId')
-  @ApiParam({
-    name: 'environmentId',
-    schema: {type: 'number'},
-    example: '1',
-  })
   async getEnvironment(
     @Param('environmentId') environmentId: number
   ): Promise<ProjectEnvironment> {
@@ -63,11 +58,6 @@ export class ProjectEnvironmentController {
   }
 
   @Patch(':environmentId')
-  @ApiParam({
-    name: 'environmentId',
-    schema: {type: 'number'},
-    example: '1',
-  })
   @ApiBody({
     description: 'Update environment variables.',
     examples: {
@@ -101,11 +91,6 @@ export class ProjectEnvironmentController {
   }
 
   @Delete(':environmentId')
-  @ApiParam({
-    name: 'environmentId',
-    schema: {type: 'number'},
-    example: '1',
-  })
   async deleteEnvironment(
     @Param('environmentId') environmentId: number
   ): Promise<ProjectEnvironment> {
@@ -116,12 +101,6 @@ export class ProjectEnvironmentController {
 
   //* Get cloudformation stacks
   @Get(':environmentId/infrastructure-stacks')
-  @ApiParam({
-    name: 'environmentId',
-    schema: {type: 'number'},
-    description: 'The id of the environment.',
-    example: '1',
-  })
   async getProjectCloudformationStacks(
     @Param('environmentId') environmentId: number
   ): Promise<ProjectEnvironment> {

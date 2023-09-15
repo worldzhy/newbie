@@ -10,13 +10,7 @@ import {
   Query,
   Request,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiBearerAuth,
-  ApiParam,
-  ApiBody,
-  ApiQuery,
-} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {JobApplicationService} from './job-application.service';
 
 import {
@@ -158,8 +152,6 @@ export class JobApplicationController {
 
   @Get('')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.JobApplication)
-  @ApiQuery({name: 'page', type: 'number'})
-  @ApiQuery({name: 'pageSize', type: 'number'})
   async getJobApplications(
     @Request() request: Request,
     @Query('page') page?: number,
@@ -220,8 +212,6 @@ export class JobApplicationController {
 
   @Get('processed')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.JobApplication)
-  @ApiQuery({name: 'page', type: 'number'})
-  @ApiQuery({name: 'pageSize', type: 'number'})
   async getProcessedJobApplications(
     @Request() request: Request,
     @Query('page') page?: number,
@@ -253,9 +243,6 @@ export class JobApplicationController {
 
   @Get('all/count')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.JobApplication)
-  @ApiQuery({name: 'page', type: 'number'})
-  @ApiQuery({name: 'pageSize', type: 'number'})
-  @ApiQuery({name: 'dateRange', type: 'string', isArray: true})
   async getAllJobApplicationsCount(
     @Query() query: {page?: string; pageSize?: string; dateRange: string[]}
   ): Promise<number> {
@@ -275,9 +262,6 @@ export class JobApplicationController {
 
   @Get('all')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.JobApplication)
-  @ApiQuery({name: 'page', type: 'number'})
-  @ApiQuery({name: 'pageSize', type: 'number'})
-  @ApiQuery({name: 'dateRange', type: 'string', isArray: true})
   async getAllJobApplications(
     @Query('dateRange') dateRange?: string[],
     @Query('page') page?: number,
@@ -349,12 +333,6 @@ export class JobApplicationController {
 
   @Get(':jobApplicationId')
   @RequirePermission(PermissionAction.Get, Prisma.ModelName.JobApplication)
-  @ApiParam({
-    name: 'jobApplicationId',
-    schema: {type: 'string'},
-    description: 'The uuid of the jobApplication.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   async getJobApplication(
     @Param('jobApplicationId') jobApplicationId: string
   ): Promise<JobApplication | null> {
@@ -369,12 +347,6 @@ export class JobApplicationController {
 
   @Patch(':jobApplicationId')
   @RequirePermission(PermissionAction.Update, Prisma.ModelName.JobApplication)
-  @ApiParam({
-    name: 'jobApplicationId',
-    schema: {type: 'string'},
-    description: 'The uuid of the jobApplication.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   @ApiBody({
     description: '',
     examples: {
@@ -401,12 +373,6 @@ export class JobApplicationController {
 
   @Delete(':jobApplicationId')
   @RequirePermission(PermissionAction.Delete, Prisma.ModelName.JobApplication)
-  @ApiParam({
-    name: 'jobApplicationId',
-    schema: {type: 'string'},
-    description: 'The uuid of the jobApplication.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   async deleteJobApplication(
     @Param('jobApplicationId') jobApplicationId: string
   ): Promise<JobApplication> {

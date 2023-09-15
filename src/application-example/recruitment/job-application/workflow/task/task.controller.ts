@@ -10,13 +10,7 @@ import {
   BadRequestException,
   Query,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiBearerAuth,
-  ApiParam,
-  ApiBody,
-  ApiQuery,
-} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {
   JobApplicationWorkflowTask,
   JobApplicationWorkflowTaskState,
@@ -99,9 +93,6 @@ export class JobApplicationWorkflowTaskController {
     PermissionAction.List,
     Prisma.ModelName.JobApplicationWorkflowTask
   )
-  @ApiQuery({name: 'page', type: 'number'})
-  @ApiQuery({name: 'pageSize', type: 'number'})
-  @ApiQuery({name: 'assignedToMe', type: 'string'})
   async getJobApplicationWorkflowTasks(
     @Request() request: Request,
     @Query('assignedToMe') assignedToMe?: string,
@@ -130,12 +121,6 @@ export class JobApplicationWorkflowTaskController {
     PermissionAction.Get,
     Prisma.ModelName.JobApplicationWorkflowTask
   )
-  @ApiParam({
-    name: 'taskId',
-    schema: {type: 'number'},
-    description: 'The id of the jobApplicationTest.',
-    example: 1,
-  })
   async getJobApplicationWorkflowTask(
     @Param('taskId') taskId: number
   ): Promise<JobApplicationWorkflowTask | null> {
@@ -149,12 +134,6 @@ export class JobApplicationWorkflowTaskController {
     PermissionAction.Update,
     Prisma.ModelName.JobApplicationWorkflowTask
   )
-  @ApiParam({
-    name: 'taskId',
-    schema: {type: 'number'},
-    description: 'The id of the jobApplicationTest.',
-    example: 1,
-  })
   @ApiBody({
     description: '',
     examples: {
@@ -181,12 +160,6 @@ export class JobApplicationWorkflowTaskController {
     PermissionAction.Delete,
     Prisma.ModelName.JobApplicationWorkflowTask
   )
-  @ApiParam({
-    name: 'taskId',
-    schema: {type: 'number'},
-    description: 'The id of the jobApplicationTest.',
-    example: 1,
-  })
   async deleteJobApplicationWorkflowTask(
     @Param('taskId') taskId: number
   ): Promise<JobApplicationWorkflowTask> {

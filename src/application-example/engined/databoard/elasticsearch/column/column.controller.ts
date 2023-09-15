@@ -7,7 +7,7 @@ import {
   Body,
   Param,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {ElasticsearchDataboardColumnService} from './column.service';
 import {ElasticsearchDataboardColumn, Prisma} from '@prisma/client';
 
@@ -46,12 +46,6 @@ export class ElasticsearchDataboardColumnController {
   }
 
   @Get(':columnId')
-  @ApiParam({
-    name: 'columnId',
-    schema: {type: 'number'},
-    description: 'The id of the column.',
-    example: 1,
-  })
   async getElasticsearchDataboardColumn(
     @Param('columnId') columnId: number
   ): Promise<ElasticsearchDataboardColumn | null> {
@@ -61,11 +55,6 @@ export class ElasticsearchDataboardColumnController {
   }
 
   @Patch(':columnId')
-  @ApiParam({
-    name: 'columnId',
-    schema: {type: 'number'},
-    example: 1,
-  })
   @ApiBody({
     description: 'Update column.',
     examples: {
@@ -88,11 +77,6 @@ export class ElasticsearchDataboardColumnController {
   }
 
   @Delete(':columnId')
-  @ApiParam({
-    name: 'columnId',
-    schema: {type: 'number'},
-    example: 1,
-  })
   async deleteElasticsearchDataboardColumn(
     @Param('columnId') columnId: number
   ): Promise<ElasticsearchDataboardColumn> {

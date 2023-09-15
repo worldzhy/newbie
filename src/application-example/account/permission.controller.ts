@@ -8,13 +8,7 @@ import {
   Param,
   Query,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiBearerAuth,
-  ApiParam,
-  ApiBody,
-  ApiQuery,
-} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {
   Permission,
   PermissionAction,
@@ -64,7 +58,6 @@ export class PermissionController {
   }
 
   @Get('')
-  @ApiQuery({name: 'resource', type: 'string'})
   async getPermissions(
     @Query('resource') resource?: string
   ): Promise<Permission[]> {
@@ -87,12 +80,6 @@ export class PermissionController {
   }
 
   @Get(':permissionId')
-  @ApiParam({
-    name: 'permissionId',
-    schema: {type: 'number'},
-    description: 'The id of the permission.',
-    example: 1,
-  })
   async getPermission(
     @Param('permissionId') permissionId: number
   ): Promise<Permission | null> {
@@ -102,12 +89,6 @@ export class PermissionController {
   }
 
   @Patch(':permissionId')
-  @ApiParam({
-    name: 'permissionId',
-    schema: {type: 'number'},
-    description: 'The id of the permission.',
-    example: 1,
-  })
   @ApiBody({
     description: '',
     examples: {
@@ -134,11 +115,6 @@ export class PermissionController {
   }
 
   @Delete(':permissionId')
-  @ApiParam({
-    name: 'permissionId',
-    schema: {type: 'number'},
-    example: 1,
-  })
   async deletePermission(
     @Param('permissionId') permissionId: number
   ): Promise<Permission> {

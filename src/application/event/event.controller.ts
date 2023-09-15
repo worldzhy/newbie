@@ -8,13 +8,7 @@ import {
   Param,
   Query,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiBearerAuth,
-  ApiParam,
-  ApiBody,
-  ApiQuery,
-} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Prisma, Event} from '@prisma/client';
 import {EventService} from '@microservices/event-scheduling/event.service';
 
@@ -56,9 +50,6 @@ export class EventController {
   }
 
   @Get('')
-  @ApiQuery({name: 'name', type: 'string'})
-  @ApiQuery({name: 'page', type: 'number'})
-  @ApiQuery({name: 'pageSize', type: 'number'})
   async getEvents(
     @Query('name') name?: string,
     @Query('page') page?: number,
@@ -90,12 +81,6 @@ export class EventController {
   }
 
   @Get(':eventId')
-  @ApiParam({
-    name: 'eventId',
-    schema: {type: 'number'},
-    description: 'The uuid of the event.',
-    example: 1,
-  })
   async getEvent(@Param('eventId') eventId: number) {
     return await this.eventService.findUniqueOrThrow({
       where: {id: eventId},
@@ -103,12 +88,6 @@ export class EventController {
   }
 
   @Patch(':eventId')
-  @ApiParam({
-    name: 'eventId',
-    schema: {type: 'number'},
-    description: 'The uuid of the event.',
-    example: 1,
-  })
   @ApiBody({
     description:
       'Set roleIds with an empty array to remove all the roles of the event.',
@@ -143,11 +122,6 @@ export class EventController {
   }
 
   @Delete(':eventId')
-  @ApiParam({
-    name: 'eventId',
-    schema: {type: 'number'},
-    example: 1,
-  })
   async deleteEvent(@Param('eventId') eventId: number): Promise<Event> {
     return await this.eventService.delete({
       where: {id: eventId},

@@ -7,13 +7,7 @@ import {
   Param,
   Query,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiBearerAuth,
-  ApiParam,
-  ApiBody,
-  ApiQuery,
-} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {JobApplicationWorkflowTrailService} from './trail.service';
 import {
   Prisma,
@@ -39,9 +33,6 @@ export class JobApplicationWorkflowTrailController {
     PermissionAction.List,
     Prisma.ModelName.JobApplicationWorkflowTrail
   )
-  @ApiQuery({name: 'workflowId', type: 'string'})
-  @ApiQuery({name: 'page', type: 'number'})
-  @ApiQuery({name: 'pageSize', type: 'number'})
   async getWorkflowTrails(
     @Query('workflowId') workflowId?: string,
     @Query('page') page?: number,
@@ -87,11 +78,6 @@ export class JobApplicationWorkflowTrailController {
     PermissionAction.Get,
     Prisma.ModelName.JobApplicationWorkflowTrail
   )
-  @ApiParam({
-    name: 'trailId',
-    schema: {type: 'number'},
-    example: 1,
-  })
   async getWorkflowTrail(
     @Param('trailId') trailId: number
   ): Promise<JobApplicationWorkflowTrail | null> {
@@ -105,11 +91,6 @@ export class JobApplicationWorkflowTrailController {
     PermissionAction.Update,
     Prisma.ModelName.JobApplicationWorkflowTrail
   )
-  @ApiParam({
-    name: 'trailId',
-    schema: {type: 'number'},
-    example: 1,
-  })
   @ApiBody({
     description: 'Update environment variables.',
     examples: {
@@ -147,11 +128,6 @@ export class JobApplicationWorkflowTrailController {
     PermissionAction.Delete,
     Prisma.ModelName.JobApplicationWorkflowTrail
   )
-  @ApiParam({
-    name: 'trailId',
-    schema: {type: 'number'},
-    example: 1,
-  })
   async deleteWorkflowTrail(
     @Param('trailId') trailId: number
   ): Promise<JobApplicationWorkflowTrail> {

@@ -8,13 +8,7 @@ import {
   Param,
   Query,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiBearerAuth,
-  ApiParam,
-  ApiBody,
-  ApiQuery,
-} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Prisma, User} from '@prisma/client';
 import {UserService} from '@microservices/account/user/user.service';
 
@@ -69,9 +63,6 @@ export class AreaManagerController {
   }
 
   @Get('')
-  @ApiQuery({name: 'name', type: 'string'})
-  @ApiQuery({name: 'page', type: 'number'})
-  @ApiQuery({name: 'pageSize', type: 'number'})
   async getUsers(
     @Query('name') name?: string,
     @Query('page') page?: number,
@@ -118,12 +109,6 @@ export class AreaManagerController {
   }
 
   @Get(':userId')
-  @ApiParam({
-    name: 'userId',
-    schema: {type: 'string'},
-    description: 'The uuid of the user.',
-    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
-  })
   async getUser(@Param('userId') userId: string) {
     const user = await this.userService.findUniqueOrThrow({
       where: {id: userId},
@@ -136,12 +121,6 @@ export class AreaManagerController {
   }
 
   @Patch(':userId')
-  @ApiParam({
-    name: 'userId',
-    schema: {type: 'string'},
-    description: 'The uuid of the user.',
-    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
-  })
   @ApiBody({
     description:
       'Set roleIds with an empty array to remove all the roles of the user.',
@@ -179,11 +158,6 @@ export class AreaManagerController {
   }
 
   @Delete(':userId')
-  @ApiParam({
-    name: 'userId',
-    schema: {type: 'string'},
-    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
-  })
   async deleteUser(@Param('userId') userId: string): Promise<User> {
     return await this.userService.delete({
       where: {id: userId},

@@ -8,13 +8,7 @@ import {
   Param,
   Query,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiBearerAuth,
-  ApiParam,
-  ApiBody,
-  ApiQuery,
-} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {EventType, Prisma} from '@prisma/client';
 import {EventTypeService} from '@microservices/event-scheduling/event-type.service';
 
@@ -49,9 +43,6 @@ export class ClassController {
   }
 
   @Get('')
-  @ApiQuery({name: 'name', type: 'string'})
-  @ApiQuery({name: 'page', type: 'number'})
-  @ApiQuery({name: 'pageSize', type: 'number'})
   async getEventTypes(
     @Query('name') name?: string,
     @Query('page') page?: number,
@@ -69,12 +60,6 @@ export class ClassController {
   }
 
   @Get(':eventTypeId')
-  @ApiParam({
-    name: 'eventTypeId',
-    schema: {type: 'number'},
-    description: 'The id of the event type.',
-    example: 1,
-  })
   async getEventType(
     @Param('eventTypeId') eventTypeId: number
   ): Promise<EventType> {
@@ -84,12 +69,6 @@ export class ClassController {
   }
 
   @Patch(':eventTypeId')
-  @ApiParam({
-    name: 'eventTypeId',
-    schema: {type: 'number'},
-    description: 'The id of the event type.',
-    example: 1,
-  })
   @ApiBody({
     description: '',
     examples: {
@@ -115,11 +94,6 @@ export class ClassController {
   }
 
   @Delete(':eventTypeId')
-  @ApiParam({
-    name: 'eventTypeId',
-    schema: {type: 'number'},
-    example: 1,
-  })
   async deleteEventType(
     @Param('eventTypeId') eventTypeId: number
   ): Promise<EventType> {

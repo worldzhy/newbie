@@ -8,13 +8,7 @@ import {
   Param,
   Query,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiBearerAuth,
-  ApiParam,
-  ApiBody,
-  ApiQuery,
-} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {TagGroup, Prisma} from '@prisma/client';
 import {TagGroupService} from '@microservices/tag/tag-group.service';
 
@@ -46,8 +40,6 @@ export class TagGroupController {
   }
 
   @Get('')
-  @ApiQuery({name: 'page', type: 'number'})
-  @ApiQuery({name: 'pageSize', type: 'number'})
   async getTagGroups(
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number
@@ -59,12 +51,6 @@ export class TagGroupController {
   }
 
   @Get(':tagGroupId')
-  @ApiParam({
-    name: 'tagGroupId',
-    schema: {type: 'number'},
-    description: 'The id of the event type.',
-    example: 1,
-  })
   async getTagGroup(
     @Param('tagGroupId') tagGroupId: number
   ): Promise<TagGroup> {
@@ -74,12 +60,6 @@ export class TagGroupController {
   }
 
   @Patch(':tagGroupId')
-  @ApiParam({
-    name: 'tagGroupId',
-    schema: {type: 'number'},
-    description: 'The id of the event type.',
-    example: 1,
-  })
   @ApiBody({
     description: '',
     examples: {
@@ -104,11 +84,6 @@ export class TagGroupController {
   }
 
   @Delete(':tagGroupId')
-  @ApiParam({
-    name: 'tagGroupId',
-    schema: {type: 'number'},
-    example: 1,
-  })
   async deleteTagGroup(
     @Param('tagGroupId') tagGroupId: number
   ): Promise<TagGroup> {

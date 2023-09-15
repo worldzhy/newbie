@@ -1,5 +1,5 @@
 import {Controller, Patch, Post, Body, Query} from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiBody, ApiQuery} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {AvailabilityExpression, Prisma} from '@prisma/client';
 import {AvailabilityService} from '@microservices/event-scheduling/availability.service';
 
@@ -36,10 +36,6 @@ export class AvailabilityController {
   }
 
   @Patch('expression2timeslots')
-  @ApiQuery({
-    name: 'availabilityExpressionId',
-    type: 'number',
-  })
   @ApiBody({
     description: '',
     examples: {

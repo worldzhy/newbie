@@ -9,14 +9,8 @@ import {
   Query,
   BadRequestException,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiBearerAuth,
-  ApiParam,
-  ApiBody,
-  ApiQuery,
-} from '@nestjs/swagger';
-import {Prisma, EventContainer} from '@prisma/client';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
+import {Prisma, EventContainer, EventContainerStatus} from '@prisma/client';
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
 import {parseDaysOfMonth} from '@toolkit/utilities/date.util';
 
@@ -50,11 +44,6 @@ export class EventContainerController {
   }
 
   @Get('')
-  @ApiQuery({name: 'locationId', type: 'number'})
-  @ApiQuery({name: 'year', type: 'number'})
-  @ApiQuery({name: 'month', type: 'number'})
-  @ApiQuery({name: 'page', type: 'number'})
-  @ApiQuery({name: 'pageSize', type: 'number'})
   async getEventContainers(
     @Query('locationId') locationId?: number,
     @Query('year') year?: number,
@@ -77,12 +66,6 @@ export class EventContainerController {
   }
 
   @Get(':eventContainerId')
-  @ApiParam({
-    name: 'eventContainerId',
-    schema: {type: 'number'},
-    description: 'The uuid of the eventContainer.',
-    example: 1,
-  })
   async getEventContainer(@Param('eventContainerId') eventContainerId: number) {
     const container = await this.eventContainerService.findUniqueOrThrow({
       where: {id: eventContainerId},
@@ -94,12 +77,6 @@ export class EventContainerController {
   }
 
   @Patch(':eventContainerId')
-  @ApiParam({
-    name: 'eventContainerId',
-    schema: {type: 'number'},
-    description: 'The uuid of the eventContainer.',
-    example: 1,
-  })
   @ApiBody({
     description: '',
     examples: {
@@ -133,18 +110,72 @@ export class EventContainerController {
     });
   }
 
+  @Patch(':eventContainerId/publish')
+  async publishEventContainer(
+    @Param('eventContainerId') eventContainerId: number
+  ): Promise<EventContainer> {
+    // [step 1] Get the record.
+    const container = await this.eventContainerService.findUniqueOrThrow({
+      where: {id: eventContainerId},
+      include: {events: true},
+    });
+
+    if (container.status === EventContainerStatus.PUBLISHED) {
+      throw new BadRequestException('This scheduling has been published.');
+    }
+
+    if (container['events'].length > 0) {
+      throw new BadRequestException('There are no classes to publish.');
+    }
+
+    // [step 2] Modify coaches' availability status
+    for (let i = 0; i < container['events'].length; i++) {
+      const element = container['events'][i];
+    }
+
+    return await this.eventContainerService.update({
+      where: {id: eventContainerId},
+      data: {status: EventContainerStatus.PUBLISHED},
+    });
+  }
+
   @Delete(':eventContainerId')
-  @ApiParam({
-    name: 'eventContainerId',
-    schema: {type: 'number'},
-    example: 1,
-  })
   async deleteEventContainer(
     @Param('eventContainerId') eventContainerId: number
   ): Promise<EventContainer> {
     return await this.eventContainerService.delete({
       where: {id: eventContainerId},
     });
+  }
+
+  @Post('import')
+  @ApiBody({
+    description: '',
+    examples: {
+      a: {
+        summary: '1. Import',
+        value: {
+          fromContainerId: 1,
+          toContainerId: 2,
+        },
+      },
+    },
+  })
+  async importEventContainer(
+    @Body()
+    body: {
+      fromContainerId: number;
+      toContainerId: number;
+    }
+  ) {
+    const container = this.eventContainerService.findUniqueOrThrow({
+      where: {id: body.fromContainerId},
+      include: {events: true},
+    });
+
+    if (container['events'].length > 0) {
+      throw new BadRequestException('Delete it and create a new one.');
+    }
   }
 
   /* End */

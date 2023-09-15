@@ -8,13 +8,7 @@ import {
   Param,
   Query,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiBearerAuth,
-  ApiParam,
-  ApiBody,
-  ApiQuery,
-} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Tag, Prisma} from '@prisma/client';
 import {TagService} from '@microservices/tag/tag.service';
 
@@ -44,9 +38,6 @@ export class TagController {
   }
 
   @Get('')
-  @ApiQuery({name: 'groupId', type: 'number'})
-  @ApiQuery({name: 'page', type: 'number'})
-  @ApiQuery({name: 'pageSize', type: 'number'})
   async getTags(
     @Query('groupId') groupId?: number,
     @Query('page') page?: number,
@@ -74,12 +65,6 @@ export class TagController {
   }
 
   @Get(':tagId')
-  @ApiParam({
-    name: 'tagId',
-    schema: {type: 'number'},
-    description: 'The id of the event type.',
-    example: 1,
-  })
   async getTag(@Param('tagId') tagId: number): Promise<Tag> {
     return await this.tagService.findUniqueOrThrow({
       where: {id: tagId},
@@ -87,12 +72,6 @@ export class TagController {
   }
 
   @Patch(':tagId')
-  @ApiParam({
-    name: 'tagId',
-    schema: {type: 'number'},
-    description: 'The id of the event type.',
-    example: 1,
-  })
   @ApiBody({
     description: '',
     examples: {
@@ -117,11 +96,6 @@ export class TagController {
   }
 
   @Delete(':tagId')
-  @ApiParam({
-    name: 'tagId',
-    schema: {type: 'number'},
-    example: 1,
-  })
   async deleteTag(@Param('tagId') tagId: number): Promise<Tag> {
     return await this.tagService.delete({
       where: {id: tagId},

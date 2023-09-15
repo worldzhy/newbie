@@ -9,7 +9,7 @@ import {
   Param,
   BadRequestException,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {
   ElasticsearchDatasourceIndex,
   ElasticsearchDatasourceIndexField,
@@ -59,12 +59,6 @@ export class ElasticsearchDatasourceIndexController {
   }
 
   @Get(':indexId')
-  @ApiParam({
-    name: 'indexId',
-    schema: {type: 'number'},
-    description: 'The id of the index.',
-    example: 1,
-  })
   async getElasticsearchDatasourceIndex(
     @Param('indexId') indexId: number
   ): Promise<ElasticsearchDatasourceIndex | null> {
@@ -74,11 +68,6 @@ export class ElasticsearchDatasourceIndexController {
   }
 
   @Patch(':indexId')
-  @ApiParam({
-    name: 'indexId',
-    schema: {type: 'number'},
-    example: 1,
-  })
   async updateElasticsearchDatasourceIndex(
     @Param('indexId') indexId: number,
     @Body() body: Prisma.ElasticsearchDatasourceIndexUpdateInput
@@ -90,11 +79,6 @@ export class ElasticsearchDatasourceIndexController {
   }
 
   @Delete(':indexId')
-  @ApiParam({
-    name: 'indexId',
-    schema: {type: 'number'},
-    example: 1,
-  })
   async deleteElasticsearchDatasourceIndex(
     @Param('indexId') indexId: number
   ): Promise<ElasticsearchDatasourceIndex> {
@@ -114,12 +98,6 @@ export class ElasticsearchDatasourceIndexController {
   }
 
   @Put(':indexId/mapping')
-  @ApiParam({
-    name: 'indexId',
-    schema: {type: 'number'},
-    description: 'The id of the index.',
-    example: 1,
-  })
   async putElasticsearchDatasourceIndexMapping(
     @Param('indexId') indexId: number
   ): Promise<ElasticsearchDatasourceIndex> {
@@ -154,12 +132,6 @@ export class ElasticsearchDatasourceIndexController {
   }
 
   @Get(':indexId/mapping')
-  @ApiParam({
-    name: 'indexId',
-    schema: {type: 'number'},
-    description: 'The id of the index.',
-    example: 1,
-  })
   async getElasticsearchDatasourceIndexMapping(
     @Param('indexId') indexId: number
   ) {

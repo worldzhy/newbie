@@ -8,13 +8,7 @@ import {
   Param,
   Query,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiBearerAuth,
-  ApiParam,
-  ApiBody,
-  ApiQuery,
-} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {WorkflowRoute, Prisma} from '@prisma/client';
 import {WorkflowRouteService} from '@microservices/workflow/workflow-route.service';
 
@@ -47,7 +41,6 @@ export class WorkflowRouteController {
   }
 
   @Get('')
-  @ApiQuery({name: 'workflowId', type: 'string'})
   async getWorkflowRoutes(
     @Query('workflowId') workflowId: string
   ): Promise<WorkflowRoute[]> {
@@ -58,12 +51,6 @@ export class WorkflowRouteController {
   }
 
   @Patch(':routeId')
-  @ApiParam({
-    name: 'routeId',
-    schema: {type: 'number'},
-    description: 'The id of the workflow route.',
-    example: 11,
-  })
   @ApiBody({
     description: '',
     examples: {
@@ -95,11 +82,6 @@ export class WorkflowRouteController {
   }
 
   @Delete(':routeId')
-  @ApiParam({
-    name: 'routeId',
-    schema: {type: 'number'},
-    example: 11,
-  })
   async deleteWorkflowRoute(
     @Param('routeId') routeId: number
   ): Promise<WorkflowRoute> {

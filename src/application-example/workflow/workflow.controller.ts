@@ -7,7 +7,7 @@ import {
   Body,
   Param,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Workflow, Prisma} from '@prisma/client';
 import {WorkflowService} from '@microservices/workflow/workflow.service';
 
@@ -43,12 +43,6 @@ export class WorkflowController {
   }
 
   @Get(':workflowId')
-  @ApiParam({
-    name: 'workflowId',
-    schema: {type: 'string'},
-    description: 'The id of the workflow.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   async getWorkflow(
     @Param('workflowId') workflowId: string
   ): Promise<Workflow> {
@@ -59,12 +53,6 @@ export class WorkflowController {
   }
 
   @Patch(':workflowId')
-  @ApiParam({
-    name: 'workflowId',
-    schema: {type: 'string'},
-    description: 'The id of the workflow.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   @ApiBody({
     description: '',
     examples: {
@@ -88,11 +76,6 @@ export class WorkflowController {
   }
 
   @Delete(':workflowId')
-  @ApiParam({
-    name: 'workflowId',
-    schema: {type: 'string'},
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   async deleteWorkflow(
     @Param('workflowId') workflowId: string
   ): Promise<Workflow> {

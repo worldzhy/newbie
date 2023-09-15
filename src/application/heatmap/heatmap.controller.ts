@@ -1,5 +1,5 @@
 import {Controller, Get, Query} from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiQuery} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth} from '@nestjs/swagger';
 import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
 import {UserService} from '@microservices/account/user/user.service';
 
@@ -13,22 +13,15 @@ export class HeatmapController {
   ) {}
 
   @Get('coach-availability')
-  @ApiQuery({name: 'venueId', type: 'number'})
-  @ApiQuery({name: 'year', type: 'number'})
-  @ApiQuery({name: 'month', type: 'number'})
-  @ApiQuery({name: 'classId', type: 'number'})
   async getCoachAvailabilityHeatmap(
-    @Query()
-    query: {
-      venueId: number;
-      year: number;
-      month: number;
-      classId: number;
-    }
+    @Query('venueId') venueId: number,
+    @Query('year') year: number,
+    @Query('month') month: number,
+    @Query('classId') classId: number
   ) {
     // [step 1] Get coaches in the location.
     const coaches = await this.coachService.findMany({
-      where: {profile: {venueIds: {has: query.venueId}}},
+      where: {profile: {venueIds: {has: venueId}}},
     });
 
     // [step 2] Get timeslots of the coaches in the month.
@@ -39,8 +32,8 @@ export class HeatmapController {
             return coach.id;
           }),
         },
-        year: query.year,
-        month: query.month,
+        year: year,
+        month: month,
       },
     });
 

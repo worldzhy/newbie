@@ -8,7 +8,7 @@ import {
   Param,
   NotFoundException,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {
   ElasticsearchDatasource,
   ElasticsearchDatasourceState,
@@ -53,12 +53,6 @@ export class ElasticsearchDatasourceController {
   }
 
   @Get(':datasourceId')
-  @ApiParam({
-    name: 'datasourceId',
-    schema: {type: 'string'},
-    description: 'The uuid of the elasticsearch datasource.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   async getElasticsearchDatasource(
     @Param('datasourceId') datasourceId: string
   ): Promise<ElasticsearchDatasource | null> {
@@ -68,11 +62,6 @@ export class ElasticsearchDatasourceController {
   }
 
   @Patch(':datasourceId')
-  @ApiParam({
-    name: 'datasourceId',
-    schema: {type: 'string'},
-    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
-  })
   @ApiBody({
     description: 'Update elasticsearch datasource.',
     examples: {
@@ -95,11 +84,6 @@ export class ElasticsearchDatasourceController {
   }
 
   @Delete(':datasourceId')
-  @ApiParam({
-    name: 'datasourceId',
-    schema: {type: 'string'},
-    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
-  })
   async deleteElasticsearchDatasource(
     @Param('datasourceId') datasourceId: string
   ): Promise<ElasticsearchDatasource> {
@@ -112,12 +96,6 @@ export class ElasticsearchDatasourceController {
    * Load an elasticsearch datasource.
    */
   @Patch(':datasourceId/load')
-  @ApiParam({
-    name: 'datasourceId',
-    schema: {type: 'string'},
-    description: 'The uuid of the datasource.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   async loadElasticsearchDatasource(
     @Param('datasourceId') datasourceId: string
   ): Promise<ElasticsearchDatasource> {
@@ -182,12 +160,6 @@ export class ElasticsearchDatasourceController {
    * Unload an elasticsearch datasource.
    */
   @Patch(':datasourceId/unload')
-  @ApiParam({
-    name: 'datasourceId',
-    schema: {type: 'string'},
-    description: 'The uuid of the elasticsearch datasource.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   async unloadPostgresqlDatasource(
     @Param('datasourceId') datasourceId: string
   ): Promise<ElasticsearchDatasource> {
@@ -212,12 +184,6 @@ export class ElasticsearchDatasourceController {
   }
 
   @Get(':datasourceId/indices')
-  @ApiParam({
-    name: 'datasourceId',
-    schema: {type: 'string'},
-    description: 'The uuid of the datasource.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   async getElasticsearchDatasourceIndices(
     @Param('datasourceId') datasourceId: string
   ): Promise<ElasticsearchDatasource> {
@@ -228,12 +194,6 @@ export class ElasticsearchDatasourceController {
   }
 
   @Post(':datasourceId/search')
-  @ApiParam({
-    name: 'datasourceId',
-    schema: {type: 'string'},
-    description: 'The uuid of the datasource.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   @ApiBody({
     description: 'Search elasticsearch datasource.',
     examples: {
@@ -273,12 +233,6 @@ export class ElasticsearchDatasourceController {
   }
 
   @Post(':datasourceId/search-aggregations')
-  @ApiParam({
-    name: 'datasourceId',
-    schema: {type: 'string'},
-    description: 'The uuid of the datasource.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   @ApiBody({
     description: 'Search aggregations.',
     examples: {

@@ -8,7 +8,7 @@ import {
   Param,
   NotFoundException,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {
   Prisma,
   DatatransTask,
@@ -62,12 +62,6 @@ export class DatatransTaskController {
   }
 
   @Get(':taskId')
-  @ApiParam({
-    name: 'taskId',
-    schema: {type: 'number'},
-    description: 'The id of the datatransTask.',
-    example: 1,
-  })
   async getDatatransTask(
     @Param('taskId') taskId: number
   ): Promise<DatatransTask | null> {
@@ -77,12 +71,6 @@ export class DatatransTaskController {
   }
 
   @Patch(':taskId')
-  @ApiParam({
-    name: 'taskId',
-    schema: {type: 'number'},
-    description: 'The id of the datatrans task.',
-    example: 1,
-  })
   async updateDatatransTask(
     @Param('taskId') taskId: number,
     @Body() body: Prisma.DatatransTaskUpdateInput
@@ -94,12 +82,6 @@ export class DatatransTaskController {
   }
 
   @Delete(':taskId')
-  @ApiParam({
-    name: 'taskId',
-    schema: {type: 'number'},
-    description: 'The id of the datatrans task.',
-    example: 1,
-  })
   async deleteDatatransTask(
     @Param('taskId') taskId: number
   ): Promise<DatatransTask> {
@@ -110,11 +92,6 @@ export class DatatransTaskController {
 
   //* Process the task.
   @Patch(':taskId/process')
-  @ApiParam({
-    name: 'taskId',
-    schema: {type: 'number'},
-    example: 1,
-  })
   async stopDatatransTask(
     @Param('taskId') taskId: number
   ): Promise<DatatransTask> {
@@ -185,10 +162,6 @@ export class DatatransTaskController {
       }
     }
 
-    console.log('@@@@@@@@@@@@@@@@@@');
-    console.log();
-    console.log('##################');
-
     // [step 4] Update task state.
     return await this.datatransTaskService.update({
       where: {id: taskId},
@@ -198,11 +171,6 @@ export class DatatransTaskController {
 
   //* Send to queue, then AWS Lambda will process the task.
   @Patch(':taskId/task2sqs')
-  @ApiParam({
-    name: 'taskId',
-    schema: {type: 'number'},
-    example: 1,
-  })
   async startDatatransTask(
     @Param('taskId') taskId: number
   ): Promise<DatatransTask> {

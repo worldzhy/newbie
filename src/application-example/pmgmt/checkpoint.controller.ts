@@ -1,5 +1,5 @@
 import {Controller, Delete, Get, Patch, Body, Param} from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {ProjectCheckpointService} from '@microservices/pmgmt/checkpoint/checkpoint.service';
 import {Prisma, ProjectCheckpoint, ProjectCheckpointType} from '@prisma/client';
 
@@ -20,11 +20,6 @@ export class ProjectCheckpointController {
   }
 
   @Get(':checkpointId')
-  @ApiParam({
-    name: 'checkpointId',
-    schema: {type: 'number'},
-    example: '1',
-  })
   async getCheckpoint(
     @Param('checkpointId') checkpointId: number
   ): Promise<ProjectCheckpoint | null> {
@@ -34,11 +29,6 @@ export class ProjectCheckpointController {
   }
 
   @Patch(':checkpointId')
-  @ApiParam({
-    name: 'checkpointId',
-    schema: {type: 'number'},
-    example: '1',
-  })
   @ApiBody({
     description: 'Update checkpoint state.',
     examples: {
@@ -61,11 +51,6 @@ export class ProjectCheckpointController {
   }
 
   @Delete(':checkpointId')
-  @ApiParam({
-    name: 'checkpointId',
-    schema: {type: 'number'},
-    example: '1',
-  })
   async deleteCheckpoint(
     @Param('checkpointId') checkpointId: number
   ): Promise<ProjectCheckpoint | null> {

@@ -8,13 +8,7 @@ import {
   Param,
   Query,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiBearerAuth,
-  ApiParam,
-  ApiBody,
-  ApiQuery,
-} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {WorkflowState, Prisma} from '@prisma/client';
 import {WorkflowStateService} from '@microservices/workflow/workflow-state.service';
 
@@ -46,7 +40,6 @@ export class WorkflowStateController {
   }
 
   @Get('')
-  @ApiQuery({name: 'workflowId', type: 'string'})
   async getWorkflowStates(
     @Query('workflowId') workflowId?: string
   ): Promise<WorkflowState[]> {
@@ -54,12 +47,6 @@ export class WorkflowStateController {
   }
 
   @Patch(':stateId')
-  @ApiParam({
-    name: 'stateId',
-    schema: {type: 'number'},
-    description: 'The id of the workflow state.',
-    example: 11,
-  })
   @ApiBody({
     description: '',
     examples: {
@@ -83,11 +70,6 @@ export class WorkflowStateController {
   }
 
   @Delete(':stateId')
-  @ApiParam({
-    name: 'stateId',
-    schema: {type: 'number'},
-    example: 11,
-  })
   async deleteWorkflowState(
     @Param('stateId') stateId: number
   ): Promise<WorkflowState> {

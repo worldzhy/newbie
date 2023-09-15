@@ -9,13 +9,7 @@ import {
   BadRequestException,
   Query,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiBearerAuth,
-  ApiParam,
-  ApiBody,
-  ApiQuery,
-} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {ProjectService} from '@microservices/pmgmt/project/project.service';
 import {verifyProjectName} from '@toolkit/validators/project.validator';
 
@@ -76,9 +70,6 @@ export class ProjectController {
 
   @Get('')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.Project)
-  @ApiQuery({name: 'name', type: 'string'})
-  @ApiQuery({name: 'page', type: 'number'})
-  @ApiQuery({name: 'pageSize', type: 'number'})
   async getProjects(
     @Query('name') name?: string,
     @Query('page') page?: number,
@@ -110,12 +101,6 @@ export class ProjectController {
   }
 
   @Get(':projectId')
-  @ApiParam({
-    name: 'projectId',
-    schema: {type: 'string'},
-    description: 'The uuid of the project.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   async getProject(
     @Param('projectId') projectId: string
   ): Promise<Project | null> {
@@ -125,12 +110,6 @@ export class ProjectController {
   }
 
   @Patch(':projectId')
-  @ApiParam({
-    name: 'projectId',
-    schema: {type: 'string'},
-    description: 'The uuid of the project.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   @ApiBody({
     description: '',
     examples: {
@@ -153,24 +132,12 @@ export class ProjectController {
   }
 
   @Delete(':projectId')
-  @ApiParam({
-    name: 'projectId',
-    schema: {type: 'string'},
-    description: 'The uuid of the project.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   async deleteProject(@Param('projectId') projectId: string): Promise<Project> {
     return await this.projectService.delete({where: {id: projectId}});
   }
 
   //* Get checkpoints
   @Get(':projectId/checkpoints')
-  @ApiParam({
-    name: 'projectId',
-    schema: {type: 'string'},
-    description: 'The uuid of the project.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   async getProjectCheckpoints(
     @Param('projectId') projectId: string
   ): Promise<Project> {
@@ -182,12 +149,6 @@ export class ProjectController {
 
   //* Get environments
   @Get(':projectId/environments')
-  @ApiParam({
-    name: 'projectId',
-    schema: {type: 'string'},
-    description: 'The uuid of the project.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   async getProjectEnvironments(
     @Param('projectId') projectId: string
   ): Promise<Project> {

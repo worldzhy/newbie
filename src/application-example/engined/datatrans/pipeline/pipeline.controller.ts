@@ -8,7 +8,7 @@ import {
   Param,
   NotFoundException,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {DatatransPipelineService} from './pipeline.service';
 import {PostgresqlDatasourceTableService} from '../../datasource/postgresql/table/table.service';
 import {ElasticsearchDatasourceIndexService} from '../../datasource/elasticsearch/index/index.service';
@@ -77,12 +77,6 @@ export class DatatransPipelineController {
   }
 
   @Get(':pipelineId')
-  @ApiParam({
-    name: 'pipelineId',
-    schema: {type: 'string'},
-    description: 'The uuid of the pipeline.',
-    example: '81a37534-915c-4114-96d0-01be815d821b',
-  })
   async getPipeline(
     @Param('pipelineId') pipelineId: string
   ): Promise<DatatransPipeline | null> {
@@ -92,11 +86,6 @@ export class DatatransPipelineController {
   }
 
   @Patch(':pipelineId')
-  @ApiParam({
-    name: 'pipelineId',
-    schema: {type: 'string'},
-    example: '81a37534-915c-4114-96d0-01be815d821b',
-  })
   @ApiBody({
     description: 'Update pipeline.',
     examples: {
@@ -122,11 +111,6 @@ export class DatatransPipelineController {
   }
 
   @Delete(':pipelineId')
-  @ApiParam({
-    name: 'pipelineId',
-    schema: {type: 'string'},
-    example: '81a37534-915c-4114-96d0-01be815d821b',
-  })
   async deletePipeline(
     @Param('pipelineId') pipelineId: string
   ): Promise<DatatransPipeline> {
@@ -134,11 +118,6 @@ export class DatatransPipelineController {
   }
 
   @Get(':pipelineId/overview')
-  @ApiParam({
-    name: 'pipelineId',
-    schema: {type: 'string'},
-    example: '81a37534-915c-4114-96d0-01be815d821b',
-  })
   async overviewPipeline(@Param('pipelineId') pipelineId: string): Promise<{
     table: string;
     numberOfRecords: number;

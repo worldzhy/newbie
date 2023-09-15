@@ -8,13 +8,7 @@ import {
   Param,
   Query,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiBearerAuth,
-  ApiParam,
-  ApiBody,
-  ApiQuery,
-} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {PermissionAction, Prisma, Place} from '@prisma/client';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
 import {PlaceService} from '@microservices/map/place.service';
@@ -60,8 +54,6 @@ export class PlaceController {
 
   @Get('')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.Place)
-  @ApiQuery({name: 'page', type: 'number'})
-  @ApiQuery({name: 'pageSize', type: 'number'})
   async getPlaces(
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number
@@ -74,24 +66,12 @@ export class PlaceController {
 
   @Get(':placeId')
   @RequirePermission(PermissionAction.Get, Prisma.ModelName.Place)
-  @ApiParam({
-    name: 'placeId',
-    schema: {type: 'string'},
-    description: 'The uuid of the location.',
-    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
-  })
   async getPlace(@Param('placeId') placeId: number): Promise<Place | null> {
     return await this.locationService.findUnique({where: {id: placeId}});
   }
 
   @Patch(':placeId')
   @RequirePermission(PermissionAction.Update, Prisma.ModelName.Place)
-  @ApiParam({
-    name: 'placeId',
-    schema: {type: 'string'},
-    description: 'The uuid of the location.',
-    example: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
-  })
   @ApiBody({
     description: 'Update a specific user location.',
     examples: {
@@ -129,11 +109,6 @@ export class PlaceController {
 
   @Delete(':placeId')
   @RequirePermission(PermissionAction.Delete, Prisma.ModelName.Place)
-  @ApiParam({
-    name: 'placeId',
-    schema: {type: 'string'},
-    example: 'b3a27e52-9633-41b8-80e9-ec3633ed8d0a',
-  })
   async deletePlace(@Param('placeId') placeId: number): Promise<Place> {
     return await this.locationService.delete({
       where: {id: placeId},

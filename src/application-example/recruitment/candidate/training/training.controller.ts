@@ -8,7 +8,7 @@ import {
   Param,
   BadRequestException,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {CandidateTrainingService} from './training.service';
 import {CandidateTraining, PermissionAction, Prisma} from '@prisma/client';
 import {CandidateService} from '../candidate.service';
@@ -61,12 +61,6 @@ export class CandidateTrainingController {
 
   @Get(':trainingId')
   @RequirePermission(PermissionAction.Get, Prisma.ModelName.CandidateTraining)
-  @ApiParam({
-    name: 'trainingId',
-    schema: {type: 'number'},
-    description: 'The id of the candidateTraining.',
-    example: 1,
-  })
   async getCandidateTraining(
     @Param('trainingId') trainingId: number
   ): Promise<CandidateTraining | null> {
@@ -80,12 +74,6 @@ export class CandidateTrainingController {
     PermissionAction.Update,
     Prisma.ModelName.CandidateTraining
   )
-  @ApiParam({
-    name: 'trainingId',
-    schema: {type: 'number'},
-    description: 'The id of the candidateTraining.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   @ApiBody({
     description: '',
     examples: {
@@ -112,12 +100,6 @@ export class CandidateTrainingController {
     PermissionAction.Delete,
     Prisma.ModelName.CandidateTraining
   )
-  @ApiParam({
-    name: 'trainingId',
-    schema: {type: 'number'},
-    description: 'The id of the candidateTraining.',
-    example: 'd8141ece-f242-4288-a60a-8675538549cd',
-  })
   async deleteCandidateTraining(
     @Param('trainingId') trainingId: number
   ): Promise<CandidateTraining> {

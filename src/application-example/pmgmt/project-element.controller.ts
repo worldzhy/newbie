@@ -8,7 +8,7 @@ import {
   Post,
   BadRequestException,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiParam, ApiBody} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {ProjectElementService} from '@microservices/pmgmt/project/project-element.service';
 import {Prisma, ProjectElement} from '@prisma/client';
 
@@ -56,11 +56,6 @@ export class ProjectElementController {
 
   //* Get
   @Get(':elementId')
-  @ApiParam({
-    name: 'elementId',
-    schema: {type: 'string'},
-    example: '1',
-  })
   async getElement(
     @Param('elementId') elementId: number
   ): Promise<ProjectElement | null> {
@@ -71,11 +66,6 @@ export class ProjectElementController {
 
   //* Update
   @Patch(':elementId')
-  @ApiParam({
-    name: 'elementId',
-    schema: {type: 'number'},
-    example: '1',
-  })
   @ApiBody({
     description: 'Update element state.',
     examples: {
@@ -99,11 +89,6 @@ export class ProjectElementController {
 
   //* Delete
   @Delete(':elementId')
-  @ApiParam({
-    name: 'elementId',
-    schema: {type: 'string'},
-    example: '1',
-  })
   async deleteElement(
     @Param('elementId') elementId: number
   ): Promise<ProjectElement | null> {
