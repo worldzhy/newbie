@@ -56,8 +56,7 @@ export class AvailabilityService {
   }
 
   parse(expression: AvailabilityExpression) {
-    const timeslots: Prisma.AvailabilityTimeslotCreateManyInput[] = [];
-
+    // [step 1] Construct cron parser options.
     const cronParserOptions = {
       // ! https://unpkg.com/browse/cron-parser@4.8.1/README.md
       tz: expression.timezone,
@@ -68,6 +67,10 @@ export class AvailabilityService {
       iterator: true,
     };
 
+    // [step 2] Parse availability expressions and collect availability timeslots.
+    const availabilityTimeslots: Prisma.AvailabilityTimeslotCreateManyInput[] =
+      [];
+
     for (
       let i = 0;
       i < expression.cronExpressionsOfAvailableTimePoints.length;
@@ -77,35 +80,82 @@ export class AvailabilityService {
       const interval = CronParser.parseExpression(element, cronParserOptions);
 
       while (interval.hasNext()) {
-        const dateStartTime = new Date(interval.next().value.toString());
-        const dateEndTime = datePlusMinutes(
-          dateStartTime,
+        const datetimeOfStart = new Date(interval.next().value.toString());
+        const datetimeOfEnd = datePlusMinutes(
+          datetimeOfStart,
           expression.minutesOfDuration
         );
 
-        const dateStartTimeArr = dateStartTime.toISOString().split('T');
-        const dateEndTimeArr = dateEndTime.toISOString().split('T');
-
-        // Construct event period data.
-        timeslots.push({
-          year: dateStartTime.getFullYear(),
-          month: dateStartTime.getMonth(),
-          dayOfMonth: dateStartTime.getDate(),
-          dayOfWeek: dateStartTime.getDay(),
-          hour: dateStartTime.getHours(),
-          minute: dateStartTime.getMinutes(),
+        availabilityTimeslots.push({
+          year: datetimeOfStart.getFullYear(),
+          month: datetimeOfStart.getMonth() + 1, // 0-11, January gives 0
+          dayOfMonth: datetimeOfStart.getDate(),
+          dayOfWeek: datetimeOfStart.getDay(), //0-6, Sunday gives 0
+          hour: datetimeOfStart.getHours(),
+          minute: datetimeOfStart.getMinutes(),
           minutesOfDuration: expression.minutesOfDuration,
           hostUserId: expression.hostUserId,
-          dateOfStart: dateStartTime, // dateStartTimeArr[0],
-          timeOfStart: dateStartTime, // dateStartTimeArr[1].replace('.000Z', ''),
-          dateOfEnd: dateEndTime, // dateStartTimeArr[0],
-          timeOfEnd: dateEndTime, // dateEndTimeArr[1].replace('.000Z', ''),
+          dateOfStart: datetimeOfStart,
+          timeOfStart: datetimeOfStart,
+          dateOfEnd: datetimeOfEnd,
+          timeOfEnd: datetimeOfEnd,
           expressionId: expression.id,
         });
       }
     }
 
-    return timeslots;
+    // [step 3] Parse unavailability expressions and collect unavailability timeslots.
+    const unavailabilityTimeslots: {
+      datetimeOfStart: Date;
+      datetimeOfEnd: Date;
+    }[] = [];
+
+    for (
+      let j = 0;
+      j < expression.cronExpressionsOfUnavailableTimePoints.length;
+      j++
+    ) {
+      const exp = expression.cronExpressionsOfUnavailableTimePoints[j];
+      const interval = CronParser.parseExpression(exp, cronParserOptions);
+
+      while (interval.hasNext()) {
+        const datetimeOfStart = new Date(interval.next().value.toString());
+
+        unavailabilityTimeslots.push({
+          datetimeOfStart: datetimeOfStart,
+          datetimeOfEnd: datePlusMinutes(
+            datetimeOfStart,
+            expression.minutesOfDuration
+          ),
+        });
+      }
+    }
+
+    // [step 4] Collect final availability timeslots.
+    const finalAvailabilityTimeslots: Prisma.AvailabilityTimeslotCreateManyInput[] =
+      [];
+    for (let m = 0; m < availabilityTimeslots.length; m++) {
+      const availabilityTimeslot = availabilityTimeslots[m];
+      let matched = false;
+      for (let n = 0; n < unavailabilityTimeslots.length; n++) {
+        const unavailabilityTimeslot = unavailabilityTimeslots[n];
+        if (
+          availabilityTimeslot.timeOfStart?.toString() ===
+            unavailabilityTimeslot.datetimeOfStart.toString() &&
+          availabilityTimeslot.timeOfEnd?.toString() ===
+            unavailabilityTimeslot.datetimeOfEnd.toString()
+        ) {
+          matched = true;
+        }
+      }
+
+      if (!matched) {
+        finalAvailabilityTimeslots.push(availabilityTimeslot);
+      }
+    }
+
+    return finalAvailabilityTimeslots;
   }
+
   /* End */
 }

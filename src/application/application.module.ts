@@ -28,7 +28,6 @@ import {ClassController} from './class/class.controller';
 import {CoachController} from './coach/coach.controller';
 import {EventController} from './event/event.controller';
 import {EventContainerController} from './event/event-container.controller';
-import {HeatmapController} from './heatmap/heatmap.controller';
 import {LocationController} from './location/location.controller';
 import {TagController} from './tag/tag.controller';
 import {TagGroupController} from './tag/tag-group.controller';
@@ -65,7 +64,6 @@ import {TagGroupController} from './tag/tag-group.controller';
     CoachController,
     EventController,
     EventContainerController,
-    HeatmapController,
     LocationController,
     TagController,
     TagGroupController,

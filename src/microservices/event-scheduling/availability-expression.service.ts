@@ -1,11 +1,6 @@
 import {Injectable} from '@nestjs/common';
-import {
-  Prisma,
-  AvailabilityExpression,
-  AvailabilityTimeslot,
-} from '@prisma/client';
+import {Prisma, AvailabilityExpression} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {datePlusMinutes, datePlusYears} from '@toolkit/utilities/date.util';
 
 @Injectable()
 export class AvailabilityExpressionService {
