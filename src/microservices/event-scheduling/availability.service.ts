@@ -3,6 +3,7 @@ import {Prisma, AvailabilityExpression} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {datePlusMinutes, datePlusYears} from '@toolkit/utilities/date.util';
 const CronParser = require('cron-parser');
+const MINUTES_OF_TIMESLOT = 5;
 
 @Injectable()
 export class AvailabilityService {
@@ -76,31 +77,38 @@ export class AvailabilityService {
       i < expression.cronExpressionsOfAvailableTimePoints.length;
       i++
     ) {
-      const element = expression.cronExpressionsOfAvailableTimePoints[i];
-      const interval = CronParser.parseExpression(element, cronParserOptions);
+      const exp = expression.cronExpressionsOfAvailableTimePoints[i];
+      const interval = CronParser.parseExpression(exp, cronParserOptions);
 
       while (interval.hasNext()) {
-        const datetimeOfStart = new Date(interval.next().value.toString());
-        const datetimeOfEnd = datePlusMinutes(
-          datetimeOfStart,
-          expression.minutesOfDuration
-        );
+        let datetimeOfStart = new Date(interval.next().value.toString());
+        let datetimeOfEnd: Date;
 
-        availabilityTimeslots.push({
-          year: datetimeOfStart.getFullYear(),
-          month: datetimeOfStart.getMonth() + 1, // 0-11, January gives 0
-          dayOfMonth: datetimeOfStart.getDate(),
-          dayOfWeek: datetimeOfStart.getDay(), //0-6, Sunday gives 0
-          hour: datetimeOfStart.getHours(),
-          minute: datetimeOfStart.getMinutes(),
-          minutesOfDuration: expression.minutesOfDuration,
-          hostUserId: expression.hostUserId,
-          dateOfStart: datetimeOfStart,
-          timeOfStart: datetimeOfStart,
-          dateOfEnd: datetimeOfEnd,
-          timeOfEnd: datetimeOfEnd,
-          expressionId: expression.id,
-        });
+        for (
+          let p = 0;
+          p < expression.minutesOfDuration / MINUTES_OF_TIMESLOT;
+          p++
+        ) {
+          datetimeOfStart = datePlusMinutes(
+            datetimeOfStart,
+            MINUTES_OF_TIMESLOT * p
+          );
+          datetimeOfEnd = datePlusMinutes(datetimeOfStart, MINUTES_OF_TIMESLOT);
+
+          availabilityTimeslots.push({
+            year: datetimeOfStart.getFullYear(),
+            month: datetimeOfStart.getMonth() + 1, // 0-11, January gives 0
+            dayOfMonth: datetimeOfStart.getDate(),
+            dayOfWeek: datetimeOfStart.getDay(), //0-6, Sunday gives 0
+            hour: datetimeOfStart.getHours(),
+            minute: datetimeOfStart.getMinutes(),
+            minutesOfTimeslot: MINUTES_OF_TIMESLOT,
+            hostUserId: expression.hostUserId,
+            datetimeOfStart: datetimeOfStart,
+            datetimeOfEnd: datetimeOfEnd,
+            expressionId: expression.id,
+          });
+        }
       }
     }
 
@@ -119,15 +127,25 @@ export class AvailabilityService {
       const interval = CronParser.parseExpression(exp, cronParserOptions);
 
       while (interval.hasNext()) {
-        const datetimeOfStart = new Date(interval.next().value.toString());
+        let datetimeOfStart = new Date(interval.next().value.toString());
+        let datetimeOfEnd: Date;
 
-        unavailabilityTimeslots.push({
-          datetimeOfStart: datetimeOfStart,
-          datetimeOfEnd: datePlusMinutes(
+        for (
+          let q = 0;
+          q < expression.minutesOfDuration / MINUTES_OF_TIMESLOT;
+          q++
+        ) {
+          datetimeOfStart = datePlusMinutes(
             datetimeOfStart,
-            expression.minutesOfDuration
-          ),
-        });
+            MINUTES_OF_TIMESLOT * q
+          );
+          datetimeOfEnd = datePlusMinutes(datetimeOfStart, MINUTES_OF_TIMESLOT);
+
+          unavailabilityTimeslots.push({
+            datetimeOfStart: datetimeOfStart,
+            datetimeOfEnd: datetimeOfEnd,
+          });
+        }
       }
     }
 
@@ -140,9 +158,9 @@ export class AvailabilityService {
       for (let n = 0; n < unavailabilityTimeslots.length; n++) {
         const unavailabilityTimeslot = unavailabilityTimeslots[n];
         if (
-          availabilityTimeslot.timeOfStart?.toString() ===
+          availabilityTimeslot.datetimeOfStart.toString() ===
             unavailabilityTimeslot.datetimeOfStart.toString() &&
-          availabilityTimeslot.timeOfEnd?.toString() ===
+          availabilityTimeslot.datetimeOfEnd.toString() ===
             unavailabilityTimeslot.datetimeOfEnd.toString()
         ) {
           matched = true;

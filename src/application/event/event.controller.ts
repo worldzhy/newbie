@@ -49,44 +49,6 @@ export class EventController {
     });
   }
 
-  @Get('')
-  async getEvents(
-    @Query('name') name?: string,
-    @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number
-  ) {
-    // [step 1] Construct where argument.
-    let where: Prisma.EventWhereInput | undefined;
-    const whereConditions: object[] = [];
-    if (name) {
-      name = name.trim();
-      if (name.length > 0) {
-        whereConditions.push({name: {contains: name}});
-      }
-    }
-
-    if (whereConditions.length > 1) {
-      where = {OR: whereConditions};
-    } else if (whereConditions.length === 1) {
-      where = whereConditions[0];
-    } else {
-      // where === undefined
-    }
-
-    // [step 2] Get events.
-    return await this.eventService.findManyWithPagination(
-      {where},
-      {page, pageSize}
-    );
-  }
-
-  @Get(':eventId')
-  async getEvent(@Param('eventId') eventId: number) {
-    return await this.eventService.findUniqueOrThrow({
-      where: {id: eventId},
-    });
-  }
-
   @Patch(':eventId')
   @ApiBody({
     description:

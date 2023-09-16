@@ -104,7 +104,7 @@ export class AvailabilityController {
       dayOfWeek: number;
       hour: number;
       minute: number;
-      minutesOfDuration: number;
+      minutesOfTimeslot: number;
       count: number;
     }[] = [];
     for (let i = 0; i < timeslots.length; i++) {
@@ -116,7 +116,7 @@ export class AvailabilityController {
           timeslot.dayOfMonth === heatmapPoints[j].dayOfMonth &&
           timeslot.hour === heatmapPoints[j].hour &&
           timeslot.minute === heatmapPoints[j].minute &&
-          timeslot.minutesOfDuration === heatmapPoints[j].minutesOfDuration
+          timeslot.minutesOfTimeslot === heatmapPoints[j].minutesOfTimeslot
         ) {
           heatmapPoints[j].count += 1;
         }
@@ -128,7 +128,7 @@ export class AvailabilityController {
         dayOfWeek: timeslot.dayOfWeek!,
         hour: timeslot.hour!,
         minute: timeslot.minute!,
-        minutesOfDuration: timeslot.minutesOfDuration!,
+        minutesOfTimeslot: timeslot.minutesOfTimeslot,
         count: 1,
       });
     }

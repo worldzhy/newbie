@@ -10,15 +10,24 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {Prisma, EventContainer, EventContainerStatus} from '@prisma/client';
+import {
+  Prisma,
+  EventContainer,
+  EventContainerStatus,
+  AvailabilityTimeslotStatus,
+} from '@prisma/client';
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
 import {parseDaysOfMonth} from '@toolkit/utilities/date.util';
+import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
 
 @ApiTags('Event Container')
 @ApiBearerAuth()
 @Controller('event-containers')
 export class EventContainerController {
-  constructor(private eventContainerService: EventContainerService) {}
+  constructor(
+    private availabilityTimeslotService: AvailabilityTimeslotService,
+    private eventContainerService: EventContainerService
+  ) {}
 
   @Post('')
   @ApiBody({
@@ -130,7 +139,17 @@ export class EventContainerController {
 
     // [step 2] Modify coaches' availability status
     for (let i = 0; i < container['events'].length; i++) {
-      const element = container['events'][i];
+      const event = container['events'][i];
+      await this.availabilityTimeslotService.updateMany({
+        where: {
+          hostUserId: event.hostUserId,
+          datetimeOfStart: {gte: event.datetimeOfStart},
+          datetimeOfEnd: {lte: event.datetimeOfEnd},
+        },
+        data: {
+          status: AvailabilityTimeslotStatus.USED,
+        },
+      });
     }
 
     return await this.eventContainerService.update({
