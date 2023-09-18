@@ -20,6 +20,7 @@ import {
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
 import {parseDaysOfMonth} from '@toolkit/utilities/date.util';
 import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
+import {Public} from '@microservices/account/security/authentication/public/public.decorator';
 
 @ApiTags('Event Container')
 @ApiBearerAuth()
@@ -53,8 +54,10 @@ export class EventContainerController {
     });
   }
 
+  @Public()
   @Get('')
   async getEventContainers(
+    @Query('name') name?: string,
     @Query('venueId') venueId?: number,
     @Query('year') year?: number,
     @Query('month') month?: number,
@@ -62,11 +65,11 @@ export class EventContainerController {
     @Query('pageSize') pageSize?: number
   ) {
     // [step 1] Construct where argument.
-    const where: Prisma.EventContainerWhereInput = {
-      year,
-      month,
-      venueId,
-    };
+    const where: Prisma.EventContainerWhereInput = {};
+    if (name && name.trim()) where.name = name.trim();
+    if (venueId) where.venueId = venueId;
+    if (year) where.year = year;
+    if (month) where.month = month;
 
     // [step 2] Get eventContainers.
     return await this.eventContainerService.findManyWithPagination(
