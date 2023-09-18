@@ -93,7 +93,7 @@ export class CoachController {
     );
 
     // [step 4] Return users without password.
-    result.records = result.records.map(user => {
+    result.records = (result.records as User[]).map(user => {
       return this.userService.withoutPassword(user);
     });
 

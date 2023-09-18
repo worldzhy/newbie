@@ -53,7 +53,12 @@ export function datePlusYearsForString(dateStr: string, years: number): string {
 export function parseDaysOfMonth(year: number, month: number) {
   const numberOfDays = new Date(year, month, 0).getDate(); // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/Date#syntax
 
-  const daysOfMonth: {dayOfMonth: number; dayOfWeek: number}[][] = [[]];
+  const daysOfMonth: {
+    year: number;
+    month: number;
+    dayOfMonth: number;
+    dayOfWeek: number;
+  }[][] = [[]];
   for (let day = 1, week = 0; day <= numberOfDays; day++) {
     const date = new Date(year, month - 1, day);
     const dayOfMonth = date.getDate();
@@ -65,6 +70,8 @@ export function parseDaysOfMonth(year: number, month: number) {
     }
 
     daysOfMonth[week].push({
+      year,
+      month,
       dayOfMonth,
       dayOfWeek,
     });

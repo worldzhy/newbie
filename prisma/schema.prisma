@@ -277,8 +277,8 @@ model EventContainer {
   status        EventContainerStatus @default(EDITING)
   dateOfOpening DateTime?            @db.Date // Use dateOfOpening and dateOfClosure together
   dateOfClosure DateTime?            @db.Date
-  year          Int? // Use year and month together
-  month         Int?
+  year          Int // Use year and month together
+  month         Int
   timezone      String? // https://www.iplocate.com/en/resources/timezones/list-of-timezones
   createdAt     DateTime             @default(now())
   updatedAt     DateTime             @updatedAt
@@ -346,9 +346,9 @@ model Event {
   type              EventType       @relation(fields: [typeId], references: [id], onDelete: Cascade)
   typeId            Int
   venue             EventVenue?     @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  venueId           Int?
+  venueId           Int
   container         EventContainer? @relation(fields: [containerId], references: [id], onDelete: Cascade)
-  containerId       Int?
+  containerId       Int
   reservations      Reservation[]
 
   @@schema("microservice/event-scheduling")
