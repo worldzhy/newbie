@@ -1,6 +1,6 @@
 import {Controller, Get, Query} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth} from '@nestjs/swagger';
-import {Prisma} from '@prisma/client';
+import {AvailabilityTimeslotStatus, Prisma} from '@prisma/client';
 import {UserService} from '@microservices/account/user/user.service';
 import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
 import {datePlusMinutes} from '@toolkit/utilities/date.util';
@@ -84,6 +84,7 @@ export class CoachForSchedulingController {
           hostUserId: {in: coachIds},
           datetimeOfStart: {gte: newDatetimeOfStart},
           datetimeOfEnd: {lte: newDatetimeOfEnd},
+          status: AvailabilityTimeslotStatus.USABLE,
         },
       });
 
