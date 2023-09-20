@@ -18,7 +18,11 @@ import {
   AvailabilityTimeslotStatus,
 } from '@prisma/client';
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
-import {parseDaysOfMonth} from '@toolkit/utilities/date.util';
+import {
+  dateMinusMinutes,
+  datePlusMinutes,
+  parseDaysOfMonth,
+} from '@toolkit/utilities/date.util';
 import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
 import {Public} from '@microservices/account/security/authentication/public/public.decorator';
 
@@ -26,10 +30,14 @@ import {Public} from '@microservices/account/security/authentication/public/publ
 @ApiBearerAuth()
 @Controller('event-containers')
 export class EventContainerController {
+  private minutesOfTimeslot: number;
+
   constructor(
     private availabilityTimeslotService: AvailabilityTimeslotService,
     private eventContainerService: EventContainerService
-  ) {}
+  ) {
+    this.minutesOfTimeslot = this.availabilityTimeslotService.minutesOfTimeslot;
+  }
 
   @Post('')
   @ApiBody({
@@ -133,32 +141,105 @@ export class EventContainerController {
   }
 
   @Patch(':eventContainerId/import')
-  @ApiQuery({name: 'fromContainerId', type: 'number'})
+  @ApiQuery({name: 'sourceContainerId', type: 'number'})
   async importEventContainer(
     @Param('eventContainerId') eventContainerId: number,
-    @Query('fromContainerId') fromContainerId: number
+    @Query('sourceContainerId') sourceContainerId: number
+  ) {
+    // [step 1] Get the container.
+    const targetContainer = await this.eventContainerService.findUniqueOrThrow({
+      where: {id: eventContainerId},
+    });
+
+    if (targetContainer.status === EventContainerStatus.PUBLISHED) {
+      throw new BadRequestException('Already published.');
+    }
+
+    // [step 2] Get the container we want to use its events.
+    const sourceContainer = await this.eventContainerService.findUniqueOrThrow({
+      where: {id: sourceContainerId},
+      include: {events: true},
+    });
+
+    // [step 3] Generate events.
+    const targetEvents: Prisma.EventUncheckedCreateWithoutContainerInput[] = [];
+    const weeksOfTargetContainer = parseDaysOfMonth(
+      targetContainer.year,
+      targetContainer.month
+    );
+    for (let i = 0; i < weeksOfTargetContainer.length; i++) {
+      targetEvents.concat(
+        this.getCopiedEvents({
+          sourceContainer,
+          targetContainer,
+          sourceWeekNumber: 2,
+          targetWeekNumber: i + 1,
+        })
+      );
+    }
+
+    // [step 4] Create events.
+    await this.eventContainerService.update({
+      where: {id: eventContainerId},
+      data: {
+        events: {
+          deleteMany: {containerId: eventContainerId},
+          create: targetEvents,
+        },
+      },
+    });
+  }
+
+  @Patch(':eventContainerId/overwrite')
+  @ApiQuery({
+    name: 'fromWeekNumber',
+    type: 'number',
+    description: 'The week number is from 1 to 6',
+  })
+  @ApiQuery({name: 'toWeekNumbers', type: 'number', isArray: true})
+  async overwriteEventContainer(
+    @Param('eventContainerId') eventContainerId: number,
+    @Query('fromWeekNumber') fromWeekNumber: number,
+    @Query('toWeekNumbers') toWeekNumbers: number[]
   ) {
     // [step 1] Get the container.
     const container = await this.eventContainerService.findUniqueOrThrow({
       where: {id: eventContainerId},
+      include: {events: true},
     });
 
     if (container.status === EventContainerStatus.PUBLISHED) {
       throw new BadRequestException('Already published.');
     }
 
-    // [step 2] Get the container we want to use its events.
-    const fromContainer = await this.eventContainerService.findUniqueOrThrow({
-      where: {id: fromContainerId},
-      include: {events: true},
+    // [step 2] Generate events.
+    const events: Prisma.EventUncheckedCreateWithoutContainerInput[] = [];
+    for (let i = 0; i < toWeekNumbers.length; i++) {
+      events.concat(
+        this.getCopiedEvents({
+          sourceContainer: container,
+          targetContainer: container,
+          sourceWeekNumber: fromWeekNumber,
+          targetWeekNumber: toWeekNumbers[i],
+        })
+      );
+    }
+
+    // [step 3] Create events.
+    const reservedEventIds = (container['events'] as Event[]).map(event => {
+      return event.id;
     });
 
-    // [step 3] Generate events with strategy
-    const events = this.generateEventsStrategy(container, fromContainer);
     await this.eventContainerService.update({
       where: {id: eventContainerId},
       data: {
-        events: {deleteMany: {containerId: eventContainerId}, create: events},
+        events: {
+          deleteMany: {
+            containerId: eventContainerId,
+            id: {notIn: reservedEventIds},
+          },
+          create: events,
+        },
       },
     });
   }
@@ -181,18 +262,25 @@ export class EventContainerController {
       throw new BadRequestException('This scheduling has been published.');
     }
 
-    if (events.length > 0) {
+    if (events.length === 0) {
       throw new BadRequestException('There are no classes to publish.');
     }
 
     // [step 2] Modify coaches' availability status
     for (let i = 0; i < events.length; i++) {
       const event = events[i];
+      const newDatetimeOfStart =
+        this.availabilityTimeslotService.floorDatetimeOfStart(
+          event.datetimeOfStart
+        );
+      const newDatetimeOfEnd =
+        this.availabilityTimeslotService.ceilDatetimeOfEnd(event.datetimeOfEnd);
+
       await this.availabilityTimeslotService.updateMany({
         where: {
           hostUserId: event.hostUserId,
-          datetimeOfStart: {gte: event.datetimeOfStart},
-          datetimeOfEnd: {lte: event.datetimeOfEnd},
+          datetimeOfStart: {gte: newDatetimeOfStart},
+          datetimeOfEnd: {lte: newDatetimeOfEnd},
         },
         data: {
           status: AvailabilityTimeslotStatus.USED,
@@ -206,68 +294,70 @@ export class EventContainerController {
     });
   }
 
-  private generateEventsStrategy(
-    container: EventContainer,
-    fromContainer: EventContainer
-  ) {
-    const calendarOfContainer = parseDaysOfMonth(
-      container.year,
-      container.month
+  private getCopiedEvents(params: {
+    sourceContainer: EventContainer;
+    targetContainer: EventContainer;
+    sourceWeekNumber: number;
+    targetWeekNumber: number;
+  }) {
+    const calendarOfTargetContainer = parseDaysOfMonth(
+      params.targetContainer.year,
+      params.targetContainer.month
     );
-    const calendarOfFromContainer = parseDaysOfMonth(
-      fromContainer.year,
-      fromContainer.month
+    const calendarOfSourceContainer = parseDaysOfMonth(
+      params.sourceContainer.year,
+      params.sourceContainer.month
     );
-    const fromEvents = fromContainer['events'] as Event[];
-    const events: Prisma.EventUncheckedCreateWithoutContainerInput[] = [];
-    const daysOfThat2ndWeek = calendarOfFromContainer[1];
+    const sourceEvents = params.sourceContainer['events'] as Event[];
+    const targetEvents: Prisma.EventUncheckedCreateWithoutContainerInput[] = [];
+    const daysOfSourceWeek =
+      calendarOfSourceContainer[params.sourceWeekNumber - 1];
+    const daysOfTargetWeek =
+      calendarOfTargetContainer[params.targetWeekNumber - 1];
 
-    for (let i = 0; i < calendarOfContainer.length; i++) {
-      const daysOfThisWeek = calendarOfContainer[i];
-      for (let j = 0; j < daysOfThisWeek.length; j++) {
-        const dayOfThisWeek = daysOfThisWeek[j];
+    for (let j = 0; j < daysOfTargetWeek.length; j++) {
+      const dayOfTargetWeek = daysOfTargetWeek[j];
 
-        for (let m = 0; m < daysOfThat2ndWeek.length; m++) {
-          const dayOfThat2ndWeek = daysOfThat2ndWeek[m];
-          if (dayOfThat2ndWeek.dayOfWeek === dayOfThisWeek.dayOfWeek) {
-            for (let n = 0; n < fromEvents.length; n++) {
-              const event = fromEvents[n];
-              if (
-                dayOfThat2ndWeek.dayOfMonth === event.dayOfMonth &&
-                dayOfThat2ndWeek.dayOfWeek === event.dayOfWeek
-              ) {
-                const datetimeOfStart = event.datetimeOfStart;
-                datetimeOfStart.setFullYear(dayOfThisWeek.year);
-                datetimeOfStart.setMonth(dayOfThisWeek.month);
-                datetimeOfStart.setDate(dayOfThisWeek.dayOfMonth);
+      for (let m = 0; m < daysOfSourceWeek.length; m++) {
+        const dayOfSourceWeek = daysOfSourceWeek[m];
+        if (dayOfSourceWeek.dayOfWeek === dayOfTargetWeek.dayOfWeek) {
+          for (let n = 0; n < sourceEvents.length; n++) {
+            const event = sourceEvents[n];
+            if (
+              dayOfSourceWeek.dayOfMonth === event.dayOfMonth &&
+              dayOfSourceWeek.dayOfWeek === event.dayOfWeek
+            ) {
+              const datetimeOfStart = event.datetimeOfStart;
+              datetimeOfStart.setFullYear(dayOfTargetWeek.year);
+              datetimeOfStart.setMonth(dayOfTargetWeek.month);
+              datetimeOfStart.setDate(dayOfTargetWeek.dayOfMonth);
 
-                const datetimeOfEnd = event.datetimeOfEnd;
-                datetimeOfEnd.setFullYear(dayOfThisWeek.year);
-                datetimeOfEnd.setMonth(dayOfThisWeek.month);
-                datetimeOfEnd.setDate(dayOfThisWeek.dayOfMonth);
+              const datetimeOfEnd = event.datetimeOfEnd;
+              datetimeOfEnd.setFullYear(dayOfTargetWeek.year);
+              datetimeOfEnd.setMonth(dayOfTargetWeek.month);
+              datetimeOfEnd.setDate(dayOfTargetWeek.dayOfMonth);
 
-                events.push({
-                  hostUserId: event.hostUserId,
-                  year: dayOfThisWeek.year,
-                  month: dayOfThisWeek.month,
-                  dayOfMonth: dayOfThisWeek.dayOfMonth,
-                  dayOfWeek: dayOfThisWeek.dayOfWeek,
-                  hour: event.hour,
-                  minute: event.minute,
-                  minutesOfDuration: event.minutesOfDuration,
-                  datetimeOfStart: datetimeOfStart,
-                  datetimeOfEnd: datetimeOfEnd,
-                  typeId: event.typeId,
-                  venueId: event.venueId,
-                });
-              }
+              targetEvents.push({
+                hostUserId: event.hostUserId,
+                year: dayOfTargetWeek.year,
+                month: dayOfTargetWeek.month,
+                dayOfMonth: dayOfTargetWeek.dayOfMonth,
+                dayOfWeek: dayOfTargetWeek.dayOfWeek,
+                hour: event.hour,
+                minute: event.minute,
+                minutesOfDuration: event.minutesOfDuration,
+                datetimeOfStart: datetimeOfStart,
+                datetimeOfEnd: datetimeOfEnd,
+                typeId: event.typeId,
+                venueId: event.venueId,
+              });
             }
           }
         }
       }
     }
 
-    return events;
+    return targetEvents;
   }
 
   /* End */

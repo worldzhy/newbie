@@ -10,7 +10,6 @@ import {verifyEmail, verifyPhone} from '@toolkit/validators/user.validator';
 import {Cookies} from '@_decorator/cookie.decorator';
 import {AccessingRefreshEndpoint} from '@microservices/account/security/authentication/refresh/refresh.decorator';
 import {UserService} from '@microservices/account/user/user.service';
-import {UserProfileService} from '@microservices/account/user/user-profile.service';
 import {UserAccessTokenService} from '@microservices/account/user/user-access-token.service';
 
 @ApiTags('Account')
@@ -19,7 +18,6 @@ export class AccountOthersController {
   constructor(
     private readonly accountService: AccountService,
     private readonly userService: UserService,
-    private readonly profileService: UserProfileService,
     private readonly userAccessTokenService: UserAccessTokenService,
     private readonly accessTokenService: AccessTokenService,
     private readonly refreshTokenService: RefreshTokenService

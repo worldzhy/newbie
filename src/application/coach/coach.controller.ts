@@ -65,22 +65,32 @@ export class CoachController {
   @Get('')
   async getUsers(
     @Query('name') name?: string,
-    @Query('venueId') venueId?: number,
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number
   ) {
     // [step 1] Construct where argument.
-    let where: Prisma.UserWhereInput = {
-      profile: {
-        fullName: name?.trim()
-          ? {contains: name.trim(), mode: 'insensitive'}
-          : undefined,
-        venueIds: venueId ? {has: venueId} : undefined,
-      },
-      roles: {some: {name: ROLE_NAME_COACH}},
-    };
+    let where: Prisma.UserWhereInput | undefined;
+    const whereConditions: object[] = [];
 
-    // [step 2] Get users.
+    whereConditions.push({roles: {some: {name: ROLE_NAME_COACH}}});
+    if (name) {
+      name = name.trim();
+      if (name.length > 0) {
+        whereConditions.push({
+          profile: {fullName: {contains: name, mode: 'insensitive'}},
+        });
+      }
+    }
+
+    if (whereConditions.length > 1) {
+      where = {OR: whereConditions};
+    } else if (whereConditions.length === 1) {
+      where = whereConditions[0];
+    } else {
+      // where === undefined
+    }
+
+    // [step 2] Get coaches.
     const result = await this.userService.findManyWithPagination(
       {
         where: where,
@@ -91,10 +101,11 @@ export class CoachController {
       },
       {page, pageSize}
     );
+    const coaches = result.records as User[];
 
-    // [step 4] Return users without password.
-    result.records = (result.records as User[]).map(user => {
-      return this.userService.withoutPassword(user);
+    // [step 3] Return users without password.
+    result.records = coaches.map(coach => {
+      return this.userService.withoutPassword(coach);
     });
 
     return result;

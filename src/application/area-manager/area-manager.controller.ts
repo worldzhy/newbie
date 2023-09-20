@@ -74,7 +74,9 @@ export class AreaManagerController {
     if (name) {
       name = name.trim();
       if (name.length > 0) {
-        whereConditions.push({name: {contains: name, mode: 'insensitive'}});
+        whereConditions.push({
+          profile: {fullName: {contains: name, mode: 'insensitive'}},
+        });
       }
     }
 

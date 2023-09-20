@@ -1,16 +1,8 @@
-import {
-  Controller,
-  Delete,
-  Get,
-  Patch,
-  Post,
-  Body,
-  Param,
-  Query,
-} from '@nestjs/common';
+import {Controller, Delete, Patch, Post, Body, Param} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Prisma, Event} from '@prisma/client';
 import {EventService} from '@microservices/event-scheduling/event.service';
+import {datePlusMinutes} from '@toolkit/utilities/date.util';
 
 @ApiTags('Event')
 @ApiBearerAuth()
@@ -44,6 +36,18 @@ export class EventController {
     @Body()
     body: Prisma.EventUncheckedCreateInput
   ): Promise<Event> {
+    body.datetimeOfStart = new Date(
+      body.year,
+      body.month - 1,
+      body.dayOfMonth,
+      body.hour,
+      body.minute
+    );
+    body.datetimeOfEnd = datePlusMinutes(
+      body.datetimeOfStart,
+      body.minutesOfDuration
+    );
+
     return await this.eventService.create({
       data: body,
     });

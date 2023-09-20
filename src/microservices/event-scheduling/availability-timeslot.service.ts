@@ -1,10 +1,23 @@
 import {Injectable} from '@nestjs/common';
+import {ConfigService} from '@nestjs/config';
 import {Prisma, AvailabilityTimeslot} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {dateMinusMinutes, datePlusMinutes} from '@toolkit/utilities/date.util';
 
 @Injectable()
 export class AvailabilityTimeslotService {
-  constructor(private readonly prisma: PrismaService) {}
+  public minutesOfTimeslot: number;
+
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly prisma: PrismaService
+  ) {
+    this.minutesOfTimeslot = parseInt(
+      this.configService.getOrThrow<string>(
+        'microservice.eventScheduling.minutesOfTimeslot'
+      )
+    );
+  }
 
   async findUnique(
     params: Prisma.AvailabilityTimeslotFindUniqueArgs
@@ -58,6 +71,25 @@ export class AvailabilityTimeslotService {
     params: Prisma.AvailabilityTimeslotDeleteManyArgs
   ): Promise<Prisma.BatchPayload> {
     return await this.prisma.availabilityTimeslot.deleteMany(params);
+  }
+
+  floorDatetimeOfStart(datetimeOfStart: Date) {
+    return dateMinusMinutes(
+      datetimeOfStart,
+      datetimeOfStart.getMinutes() % this.minutesOfTimeslot
+    );
+  }
+
+  ceilDatetimeOfEnd(datetimeOfEnd: Date) {
+    if (datetimeOfEnd.getMinutes() % this.minutesOfTimeslot === 0) {
+      return datetimeOfEnd;
+    } else {
+      return datePlusMinutes(
+        datetimeOfEnd,
+        this.minutesOfTimeslot -
+          (datetimeOfEnd.getMinutes() % this.minutesOfTimeslot)
+      );
+    }
   }
 
   /* End */

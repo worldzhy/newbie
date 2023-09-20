@@ -165,7 +165,7 @@ export class PrismaService
     page: number | undefined;
     pageSize: number | undefined;
   }) {
-    let take: number, skip: number;
+    let take: number | undefined, skip: number | undefined;
     if (params.page && params.pageSize) {
       if (params.page > 0 && params.pageSize > 0) {
         skip = params.pageSize * (params.page - 1);
@@ -176,8 +176,8 @@ export class PrismaService
         );
       }
     } else {
-      skip = 0;
-      take = 100;
+      skip = undefined;
+      take = undefined;
     }
 
     return {skip, take};

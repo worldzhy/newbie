@@ -18,6 +18,10 @@ export function datePlusMinutes(date: Date, minutes: number): Date {
   return new Date(date.getTime() + minutes * 60000); // 1 min = 60000 ms
 }
 
+export function dateMinusMinutes(date: Date, minutes: number): Date {
+  return new Date(date.getTime() - minutes * 60000); // 1 min = 60000 ms
+}
+
 export function datePlusYears(date: Date, years: number): Date {
   const year = date.getFullYear() + years;
   return new Date(date.setFullYear(year));

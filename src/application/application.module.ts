@@ -26,6 +26,7 @@ import {AreaManagerController} from './area-manager/area-manager.controller';
 import {AvailabilityController} from './availability/availability.controller';
 import {ClassController} from './class/class.controller';
 import {CoachController} from './coach/coach.controller';
+import {CoachForSchedulingController} from './coach/coach-for-scheduling.controller';
 import {EventController} from './scheduling/event.controller';
 import {EventContainerController} from './scheduling/event-container.controller';
 import {LocationController} from './location/location.controller';
@@ -62,6 +63,7 @@ import {TagGroupController} from './tag/tag-group.controller';
     AvailabilityController,
     ClassController,
     CoachController,
+    CoachForSchedulingController,
     EventController,
     EventContainerController,
     LocationController,

@@ -1,13 +1,24 @@
 import {Injectable} from '@nestjs/common';
+import {ConfigService} from '@nestjs/config';
 import {Prisma, AvailabilityExpression} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {datePlusMinutes, datePlusYears} from '@toolkit/utilities/date.util';
 const CronParser = require('cron-parser');
-const MINUTES_OF_TIMESLOT = 5;
 
 @Injectable()
 export class AvailabilityService {
-  constructor(private readonly prisma: PrismaService) {}
+  private minutesOfTimeslot: number;
+
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly prisma: PrismaService
+  ) {
+    this.minutesOfTimeslot = parseInt(
+      this.configService.getOrThrow<string>(
+        'microservice.eventScheduling.minutesOfTimeslot'
+      )
+    );
+  }
 
   async create(
     data: Prisma.AvailabilityExpressionCreateInput
@@ -81,19 +92,21 @@ export class AvailabilityService {
       const interval = CronParser.parseExpression(exp, cronParserOptions);
 
       while (interval.hasNext()) {
-        let datetimeOfStart = new Date(interval.next().value.toString());
-        let datetimeOfEnd: Date;
+        const parsedDatetime = new Date(interval.next().value.toString());
 
         for (
           let p = 0;
-          p < expression.minutesOfDuration / MINUTES_OF_TIMESLOT;
+          p < expression.minutesOfDuration / this.minutesOfTimeslot;
           p++
         ) {
-          datetimeOfStart = datePlusMinutes(
-            datetimeOfStart,
-            MINUTES_OF_TIMESLOT * p
+          const datetimeOfStart = datePlusMinutes(
+            parsedDatetime,
+            this.minutesOfTimeslot * p
           );
-          datetimeOfEnd = datePlusMinutes(datetimeOfStart, MINUTES_OF_TIMESLOT);
+          const datetimeOfEnd = datePlusMinutes(
+            datetimeOfStart,
+            this.minutesOfTimeslot
+          );
 
           availabilityTimeslots.push({
             year: datetimeOfStart.getFullYear(),
@@ -102,7 +115,7 @@ export class AvailabilityService {
             dayOfWeek: datetimeOfStart.getDay(), //0-6, Sunday gives 0
             hour: datetimeOfStart.getHours(),
             minute: datetimeOfStart.getMinutes(),
-            minutesOfTimeslot: MINUTES_OF_TIMESLOT,
+            minutesOfTimeslot: this.minutesOfTimeslot,
             hostUserId: expression.hostUserId,
             datetimeOfStart: datetimeOfStart,
             datetimeOfEnd: datetimeOfEnd,
@@ -132,14 +145,17 @@ export class AvailabilityService {
 
         for (
           let q = 0;
-          q < expression.minutesOfDuration / MINUTES_OF_TIMESLOT;
+          q < expression.minutesOfDuration / this.minutesOfTimeslot;
           q++
         ) {
           datetimeOfStart = datePlusMinutes(
             datetimeOfStart,
-            MINUTES_OF_TIMESLOT * q
+            this.minutesOfTimeslot * q
           );
-          datetimeOfEnd = datePlusMinutes(datetimeOfStart, MINUTES_OF_TIMESLOT);
+          datetimeOfEnd = datePlusMinutes(
+            datetimeOfStart,
+            this.minutesOfTimeslot
+          );
 
           unavailabilityTimeslots.push({
             datetimeOfStart: datetimeOfStart,
