@@ -6,10 +6,12 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 export class ElasticsearchDataboardColumnService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUnique(
+  async findUniqueOrThrow(
     params: Prisma.ElasticsearchDataboardColumnFindUniqueArgs
-  ): Promise<ElasticsearchDataboardColumn | null> {
-    return await this.prisma.elasticsearchDataboardColumn.findUnique(params);
+  ): Promise<ElasticsearchDataboardColumn> {
+    return await this.prisma.elasticsearchDataboardColumn.findUniqueOrThrow(
+      params
+    );
   }
 
   async findMany(

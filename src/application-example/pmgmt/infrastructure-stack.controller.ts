@@ -155,12 +155,10 @@ export class ProjectInfrastructureStackController {
     stackId: string
   ): Promise<InfrastructureStack> {
     // [step 1] Get the infrastructure stack.
-    const stack = await this.infrastructureStackService.findUnique({
+    const stack = await this.infrastructureStackService.findUniqueOrThrow({
       where: {id: stackId},
     });
-    if (!stack) {
-      throw new NotFoundException('Not found the stack.');
-    }
+
     if (
       !(
         stack.state in

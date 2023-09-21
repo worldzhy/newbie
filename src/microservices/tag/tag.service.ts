@@ -6,10 +6,6 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 export class TagService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUnique(params: Prisma.TagFindUniqueArgs): Promise<Tag | null> {
-    return await this.prisma.tag.findUnique(params);
-  }
-
   async findUniqueOrThrow(
     params: Prisma.TagFindUniqueOrThrowArgs
   ): Promise<Tag> {

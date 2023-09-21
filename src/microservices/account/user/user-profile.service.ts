@@ -6,10 +6,10 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 export class UserProfileService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUnique(
-    params: Prisma.UserProfileFindUniqueArgs
-  ): Promise<UserProfile | null> {
-    return await this.prisma.userProfile.findUnique(params);
+  async findUniqueOrThrow(
+    params: Prisma.UserProfileFindUniqueOrThrowArgs
+  ): Promise<UserProfile> {
+    return await this.prisma.userProfile.findUniqueOrThrow(params);
   }
 
   async findMany(

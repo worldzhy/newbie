@@ -56,8 +56,8 @@ export class ElasticsearchDataboardController {
   @Get(':databoardId')
   async getElasticsearchDataboard(
     @Param('databoardId') databoardId: string
-  ): Promise<ElasticsearchDataboard | null> {
-    return await this.elasticsearchDataboardService.findUnique({
+  ): Promise<ElasticsearchDataboard> {
+    return await this.elasticsearchDataboardService.findUniqueOrThrow({
       where: {id: databoardId},
     });
   }
@@ -98,14 +98,11 @@ export class ElasticsearchDataboardController {
     @Param('databoardId') databoardId: string
   ): Promise<ElasticsearchDataboard> {
     // [step 1] Get databoard
-    const databoard = await this.elasticsearchDataboardService.findUnique({
-      where: {id: databoardId},
-      include: {datasourceIndex: {include: {fields: true}}},
-    });
-
-    if (!databoard) {
-      throw new NotFoundException('Not found the databoard.');
-    }
+    const databoard =
+      await this.elasticsearchDataboardService.findUniqueOrThrow({
+        where: {id: databoardId},
+        include: {datasourceIndex: {include: {fields: true}}},
+      });
 
     // [step 2] Load columns
     const datasourceIndexFields: ElasticsearchDatasourceIndexField[] =
@@ -133,13 +130,10 @@ export class ElasticsearchDataboardController {
     @Param('databoardId') databoardId: string
   ): Promise<ElasticsearchDataboard> {
     // [step 1] Get databoard
-    const databoard = await this.elasticsearchDataboardService.findUnique({
-      where: {id: databoardId},
-    });
-
-    if (!databoard) {
-      throw new NotFoundException('Not found the databoard.');
-    }
+    const databoard =
+      await this.elasticsearchDataboardService.findUniqueOrThrow({
+        where: {id: databoardId},
+      });
 
     // [step 2] Unload columns
     await this.elasticsearchDataboardColumnService.deleteMany({

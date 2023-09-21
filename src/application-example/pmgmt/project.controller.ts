@@ -101,10 +101,8 @@ export class ProjectController {
   }
 
   @Get(':projectId')
-  async getProject(
-    @Param('projectId') projectId: string
-  ): Promise<Project | null> {
-    return await this.projectService.findUnique({
+  async getProject(@Param('projectId') projectId: string): Promise<Project> {
+    return await this.projectService.findUniqueOrThrow({
       where: {id: projectId},
     });
   }

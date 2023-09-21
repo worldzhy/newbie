@@ -33,10 +33,10 @@ export class AccessTokenService {
     return await this.prisma.accessToken.findFirstOrThrow(params);
   }
 
-  async findUnique(
-    params: Prisma.AccessTokenFindUniqueArgs
-  ): Promise<AccessToken | null> {
-    return await this.prisma.accessToken.findUnique(params);
+  async findUniqueOrThrow(
+    params: Prisma.AccessTokenFindUniqueOrThrowArgs
+  ): Promise<AccessToken> {
+    return await this.prisma.accessToken.findUniqueOrThrow(params);
   }
 
   async findMany(

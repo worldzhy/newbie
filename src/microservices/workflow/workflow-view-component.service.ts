@@ -6,10 +6,10 @@ import {Prisma, WorkflowViewComponent} from '@prisma/client';
 export class WorkflowViewComponentService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUnique(
-    params: Prisma.WorkflowViewComponentFindUniqueArgs
-  ): Promise<WorkflowViewComponent | null> {
-    return await this.prisma.workflowViewComponent.findUnique(params);
+  async findUniqueOrThrow(
+    params: Prisma.WorkflowViewComponentFindUniqueOrThrowArgs
+  ): Promise<WorkflowViewComponent> {
+    return await this.prisma.workflowViewComponent.findUniqueOrThrow(params);
   }
 
   async findMany(params: Prisma.WorkflowViewComponentFindManyArgs) {

@@ -19,12 +19,6 @@ export class AvailabilityTimeslotService {
     );
   }
 
-  async findUnique(
-    params: Prisma.AvailabilityTimeslotFindUniqueArgs
-  ): Promise<AvailabilityTimeslot | null> {
-    return await this.prisma.availabilityTimeslot.findUnique(params);
-  }
-
   async findUniqueOrThrow(
     params: Prisma.AvailabilityTimeslotFindUniqueOrThrowArgs
   ): Promise<AvailabilityTimeslot> {

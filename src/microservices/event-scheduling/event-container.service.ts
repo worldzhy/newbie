@@ -6,12 +6,6 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 export class EventContainerService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUnique(
-    params: Prisma.EventContainerFindUniqueArgs
-  ): Promise<EventContainer | null> {
-    return await this.prisma.eventContainer.findUnique(params);
-  }
-
   async findUniqueOrThrow(
     params: Prisma.EventContainerFindUniqueOrThrowArgs
   ): Promise<EventContainer> {

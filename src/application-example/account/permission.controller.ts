@@ -82,8 +82,8 @@ export class PermissionController {
   @Get(':permissionId')
   async getPermission(
     @Param('permissionId') permissionId: number
-  ): Promise<Permission | null> {
-    return await this.permissionService.findUnique({
+  ): Promise<Permission> {
+    return await this.permissionService.findUniqueOrThrow({
       where: {id: permissionId},
     });
   }

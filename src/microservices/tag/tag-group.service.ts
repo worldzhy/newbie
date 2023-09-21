@@ -6,12 +6,6 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 export class TagGroupService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUnique(
-    params: Prisma.TagGroupFindUniqueArgs
-  ): Promise<TagGroup | null> {
-    return await this.prisma.tagGroup.findUnique(params);
-  }
-
   async findUniqueOrThrow(
     params: Prisma.TagGroupFindUniqueOrThrowArgs
   ): Promise<TagGroup> {

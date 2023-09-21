@@ -6,10 +6,6 @@ import {Prisma, Role} from '@prisma/client';
 export class RoleService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUnique(params: Prisma.RoleFindUniqueArgs): Promise<Role | null> {
-    return await this.prisma.role.findUnique(params);
-  }
-
   async findUniqueOrThrow(
     params: Prisma.RoleFindUniqueOrThrowArgs
   ): Promise<Role> {

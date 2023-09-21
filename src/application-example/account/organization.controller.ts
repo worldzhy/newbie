@@ -76,8 +76,8 @@ export class OrganizationController {
   @RequirePermission(PermissionAction.Get, Prisma.ModelName.Organization)
   async getOrganization(
     @Param('organizationId') organizationId: string
-  ): Promise<Organization | null> {
-    return await this.organizationService.findUnique({
+  ): Promise<Organization> {
+    return await this.organizationService.findUniqueOrThrow({
       where: {id: organizationId},
     });
   }

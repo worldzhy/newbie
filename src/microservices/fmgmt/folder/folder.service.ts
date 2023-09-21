@@ -6,12 +6,6 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 export class FolderService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUnique(
-    params: Prisma.FolderFindUniqueArgs
-  ): Promise<Folder | null> {
-    return await this.prisma.folder.findUnique(params);
-  }
-
   async findUniqueOrThrow(
     params: Prisma.FolderFindUniqueOrThrowArgs
   ): Promise<Folder> {

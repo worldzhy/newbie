@@ -47,8 +47,8 @@ export class RoleController {
 
   @Get(':roleId')
   @RequirePermission(PermissionAction.Get, Prisma.ModelName.Role)
-  async getRole(@Param('roleId') roleId: string): Promise<Role | null> {
-    return await this.roleService.findUnique({
+  async getRole(@Param('roleId') roleId: string): Promise<Role> {
+    return await this.roleService.findUniqueOrThrow({
       where: {id: roleId},
     });
   }

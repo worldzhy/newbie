@@ -6,12 +6,6 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 export class AvailabilityExpressionService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUnique(
-    params: Prisma.AvailabilityExpressionFindUniqueArgs
-  ): Promise<AvailabilityExpression | null> {
-    return await this.prisma.availabilityExpression.findUnique(params);
-  }
-
   async findUniqueOrThrow(
     params: Prisma.AvailabilityExpressionFindUniqueOrThrowArgs
   ): Promise<AvailabilityExpression> {

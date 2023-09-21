@@ -6,12 +6,6 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 export class WarehouseService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUnique(
-    params: Prisma.WarehouseFindUniqueArgs
-  ): Promise<Warehouse | null> {
-    return await this.prisma.warehouse.findUnique(params);
-  }
-
   async findUniqueOrThrow(
     params: Prisma.WarehouseFindUniqueOrThrowArgs
   ): Promise<Warehouse> {

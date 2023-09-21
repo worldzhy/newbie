@@ -6,10 +6,10 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 export class CustomerService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUnique(
-    params: Prisma.CustomerFindUniqueArgs
-  ): Promise<Customer | null> {
-    return await this.prisma.customer.findUnique(params);
+  async findUniqueOrThrow(
+    params: Prisma.CustomerFindUniqueOrThrowArgs
+  ): Promise<Customer> {
+    return await this.prisma.customer.findUniqueOrThrow(params);
   }
 
   async findMany(params: Prisma.CustomerFindManyArgs): Promise<Customer[]> {

@@ -6,12 +6,6 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 export class ReservationService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUnique(
-    params: Prisma.ReservationFindUniqueArgs
-  ): Promise<Reservation | null> {
-    return await this.prisma.reservation.findUnique(params);
-  }
-
   async findUniqueOrThrow(
     params: Prisma.ReservationFindUniqueOrThrowArgs
   ): Promise<Reservation> {

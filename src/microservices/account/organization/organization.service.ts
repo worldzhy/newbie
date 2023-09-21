@@ -6,10 +6,10 @@ import {Prisma, Organization} from '@prisma/client';
 export class OrganizationService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUnique(
-    params: Prisma.OrganizationFindUniqueArgs
-  ): Promise<Organization | null> {
-    return await this.prisma.organization.findUnique(params);
+  async findUniqueOrThrow(
+    params: Prisma.OrganizationFindUniqueOrThrowArgs
+  ): Promise<Organization> {
+    return await this.prisma.organization.findUniqueOrThrow(params);
   }
 
   async findMany(params: Prisma.OrganizationFindManyArgs) {

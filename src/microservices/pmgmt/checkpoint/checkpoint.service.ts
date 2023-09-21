@@ -6,12 +6,6 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 export class ProjectCheckpointService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUnique(
-    params: Prisma.ProjectCheckpointFindUniqueArgs
-  ): Promise<ProjectCheckpoint | null> {
-    return await this.prisma.projectCheckpoint.findUnique(params);
-  }
-
   async findUniqueOrThrow(
     params: Prisma.ProjectCheckpointFindUniqueOrThrowArgs
   ): Promise<ProjectCheckpoint> {

@@ -6,12 +6,6 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 export class SkuConversionItemService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUnique(
-    params: Prisma.SkuConversionItemFindUniqueArgs
-  ): Promise<SkuConversionItem | null> {
-    return await this.prisma.skuConversionItem.findUnique(params);
-  }
-
   async findUniqueOrThrow(
     params: Prisma.SkuConversionItemFindUniqueOrThrowArgs
   ): Promise<SkuConversionItem> {

@@ -6,12 +6,6 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 export class SkuTrailService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUnique(
-    params: Prisma.SkuTrailFindUniqueArgs
-  ): Promise<SkuTrail | null> {
-    return await this.prisma.skuTrail.findUnique(params);
-  }
-
   async findUniqueOrThrow(
     params: Prisma.SkuTrailFindUniqueOrThrowArgs
   ): Promise<SkuTrail> {

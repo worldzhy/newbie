@@ -64,8 +64,8 @@ export class WorkflowViewComponentController {
   @Get(':componentId')
   async getWorkflowViewComponent(
     @Param('componentId') componentId: number
-  ): Promise<WorkflowViewComponent | null> {
-    return await this.workflowViewComponentService.findUnique({
+  ): Promise<WorkflowViewComponent> {
+    return await this.workflowViewComponentService.findUniqueOrThrow({
       where: {id: componentId},
     });
   }

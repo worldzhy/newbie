@@ -6,12 +6,6 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 export class ProjectService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUnique(
-    params: Prisma.ProjectFindUniqueArgs
-  ): Promise<Project | null> {
-    return await this.prisma.project.findUnique(params);
-  }
-
   async findUniqueOrThrow(
     params: Prisma.ProjectFindUniqueOrThrowArgs
   ): Promise<Project> {

@@ -6,8 +6,10 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 export class PlaceService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUnique(params: Prisma.PlaceFindUniqueArgs): Promise<Place | null> {
-    return await this.prisma.place.findUnique(params);
+  async findUniqueOrThrow(
+    params: Prisma.PlaceFindUniqueOrThrowArgs
+  ): Promise<Place> {
+    return await this.prisma.place.findUniqueOrThrow(params);
   }
 
   async findMany(params: Prisma.PlaceFindManyArgs): Promise<Place[]> {

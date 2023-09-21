@@ -6,10 +6,6 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 export class FileService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUnique(params: Prisma.FileFindUniqueArgs): Promise<File | null> {
-    return await this.prisma.file.findUnique(params);
-  }
-
   async findUniqueOrThrow(
     params: Prisma.FileFindUniqueOrThrowArgs
   ): Promise<File> {

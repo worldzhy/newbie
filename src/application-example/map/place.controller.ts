@@ -66,8 +66,8 @@ export class PlaceController {
 
   @Get(':placeId')
   @RequirePermission(PermissionAction.Get, Prisma.ModelName.Place)
-  async getPlace(@Param('placeId') placeId: number): Promise<Place | null> {
-    return await this.locationService.findUnique({where: {id: placeId}});
+  async getPlace(@Param('placeId') placeId: number): Promise<Place> {
+    return await this.locationService.findUniqueOrThrow({where: {id: placeId}});
   }
 
   @Patch(':placeId')

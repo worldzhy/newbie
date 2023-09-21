@@ -18,10 +18,6 @@ export class TaskService {
     )!;
   }
 
-  async findUnique(params: Prisma.TaskFindUniqueArgs): Promise<Task | null> {
-    return await this.prisma.task.findUnique(params);
-  }
-
   async findUniqueOrThrow(
     params: Prisma.TaskFindUniqueOrThrowArgs
   ): Promise<Task> {

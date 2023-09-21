@@ -58,8 +58,8 @@ export class ProjectElementController {
   @Get(':elementId')
   async getElement(
     @Param('elementId') elementId: number
-  ): Promise<ProjectElement | null> {
-    return await this.elementService.findUnique({
+  ): Promise<ProjectElement> {
+    return await this.elementService.findUniqueOrThrow({
       where: {id: elementId},
     });
   }

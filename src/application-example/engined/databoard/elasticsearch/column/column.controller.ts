@@ -48,8 +48,8 @@ export class ElasticsearchDataboardColumnController {
   @Get(':columnId')
   async getElasticsearchDataboardColumn(
     @Param('columnId') columnId: number
-  ): Promise<ElasticsearchDataboardColumn | null> {
-    return await this.elasticsearchDataboardColumnService.findUnique({
+  ): Promise<ElasticsearchDataboardColumn> {
+    return await this.elasticsearchDataboardColumnService.findUniqueOrThrow({
       where: {id: columnId},
     });
   }

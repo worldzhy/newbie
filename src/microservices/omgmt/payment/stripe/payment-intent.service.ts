@@ -5,16 +5,15 @@ import {Prisma, StripePaymentIntent} from '@prisma/client';
 const stripe = require('stripe')(
   'sk_test_51N1OfRI3hIthhL2mYOBnp4mZLLUv4zL51fdiwfOIYMt0Y5URgrxMrNtT3Hh2WEL7k5XT1aB5m97MPqYTQb7129Hc009YCINgSm'
 );
-const YOUR_DOMAIN = 'http://localhost:4242';
 
 @Injectable()
 export class StripePaymentIntentService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUnique(
-    params: Prisma.StripePaymentIntentFindUniqueArgs
-  ): Promise<StripePaymentIntent | null> {
-    return await this.prisma.stripePaymentIntent.findUnique(params);
+  async findUniqueOrThrow(
+    params: Prisma.StripePaymentIntentFindUniqueOrThrowArgs
+  ): Promise<StripePaymentIntent> {
+    return await this.prisma.stripePaymentIntent.findUniqueOrThrow(params);
   }
 
   async findMany(

@@ -261,10 +261,9 @@ export class UserController {
     }
 
     // [step 3] Verify the current password.
-    const user = await this.userService.findUnique({where: {id: userId}});
-    if (!user) {
-      throw new NotFoundException('Not found the user.');
-    }
+    const user = await this.userService.findUniqueOrThrow({
+      where: {id: userId},
+    });
     const match = await compareHash(body.currentPassword, user.password);
     if (match === false) {
       throw new BadRequestException('The current password is incorrect.');

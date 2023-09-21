@@ -56,8 +56,10 @@ export class UserProfileController {
   @RequirePermission(PermissionAction.Get, Prisma.ModelName.UserProfile)
   async getUserProfile(
     @Param('profileId') profileId: string
-  ): Promise<UserProfile | null> {
-    return await this.userProfileService.findUnique({where: {id: profileId}});
+  ): Promise<UserProfile> {
+    return await this.userProfileService.findUniqueOrThrow({
+      where: {id: profileId},
+    });
   }
 
   @Patch(':profileId')

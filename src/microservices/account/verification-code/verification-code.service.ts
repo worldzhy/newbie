@@ -29,10 +29,10 @@ export class VerificationCodeService {
     )!;
   }
 
-  async findUnique(
+  async findUniqueOrThrow(
     params: Prisma.VerificationCodeFindUniqueArgs
-  ): Promise<VerificationCode | null> {
-    return await this.prisma.verificationCode.findUnique(params);
+  ): Promise<VerificationCode> {
+    return await this.prisma.verificationCode.findUniqueOrThrow(params);
   }
 
   async findMany(

@@ -6,10 +6,10 @@ import {Prisma, Permission} from '@prisma/client';
 export class PermissionService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUnique(
-    params: Prisma.PermissionFindUniqueArgs
-  ): Promise<Permission | null> {
-    return await this.prisma.permission.findUnique(params);
+  async findUniqueOrThrow(
+    params: Prisma.PermissionFindUniqueOrThrowArgs
+  ): Promise<Permission> {
+    return await this.prisma.permission.findUniqueOrThrow(params);
   }
 
   async findMany(params: Prisma.PermissionFindManyArgs): Promise<Permission[]> {

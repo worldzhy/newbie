@@ -6,12 +6,6 @@ import {Prisma, WorkflowRoute} from '@prisma/client';
 export class WorkflowRouteService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUnique(
-    params: Prisma.WorkflowRouteFindUniqueArgs
-  ): Promise<WorkflowRoute | null> {
-    return await this.prisma.workflowRoute.findUnique(params);
-  }
-
   async findUniqueOrThrow(
     params: Prisma.WorkflowRouteFindUniqueOrThrowArgs
   ): Promise<WorkflowRoute> {

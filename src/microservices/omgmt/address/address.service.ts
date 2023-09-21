@@ -6,10 +6,10 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 export class AddressService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUnique(
-    params: Prisma.AddressFindUniqueArgs
-  ): Promise<Address | null> {
-    return await this.prisma.address.findUnique(params);
+  async findUniqueOrThrow(
+    params: Prisma.AddressFindUniqueOrThrowArgs
+  ): Promise<Address> {
+    return await this.prisma.address.findUniqueOrThrow(params);
   }
 
   async findMany(params: Prisma.AddressFindManyArgs): Promise<Address[]> {

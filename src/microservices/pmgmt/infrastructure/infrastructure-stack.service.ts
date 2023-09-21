@@ -6,12 +6,6 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 export class ProjectInfrastructureStackService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUnique(
-    params: Prisma.InfrastructureStackFindUniqueArgs
-  ): Promise<InfrastructureStack | null> {
-    return await this.prisma.infrastructureStack.findUnique(params);
-  }
-
   async findUniqueOrThrow(
     params: Prisma.InfrastructureStackFindUniqueOrThrowArgs
   ): Promise<InfrastructureStack> {

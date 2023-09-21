@@ -6,10 +6,6 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 export class SpuService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUnique(params: Prisma.SpuFindUniqueArgs): Promise<Spu | null> {
-    return await this.prisma.spu.findUnique(params);
-  }
-
   async findUniqueOrThrow(
     params: Prisma.SpuFindUniqueOrThrowArgs
   ): Promise<Spu> {

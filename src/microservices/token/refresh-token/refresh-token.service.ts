@@ -53,10 +53,10 @@ export class RefreshTokenService {
     return await this.prisma.refreshToken.findFirstOrThrow(params);
   }
 
-  async findUnique(
-    params: Prisma.RefreshTokenFindUniqueArgs
-  ): Promise<RefreshToken | null> {
-    return await this.prisma.refreshToken.findUnique(params);
+  async findUniqueOrThrow(
+    params: Prisma.RefreshTokenFindUniqueOrThrowArgs
+  ): Promise<RefreshToken> {
+    return await this.prisma.refreshToken.findUniqueOrThrow(params);
   }
 
   async findMany(

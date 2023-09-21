@@ -6,10 +6,10 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 export class OrderItemService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUnique(
-    params: Prisma.OrderItemFindUniqueArgs
-  ): Promise<OrderItem | null> {
-    return await this.prisma.orderItem.findUnique(params);
+  async findUniqueOrThrow(
+    params: Prisma.OrderItemFindUniqueOrThrowArgs
+  ): Promise<OrderItem> {
+    return await this.prisma.orderItem.findUniqueOrThrow(params);
   }
 
   async findMany(params: Prisma.OrderItemFindManyArgs): Promise<OrderItem[]> {
