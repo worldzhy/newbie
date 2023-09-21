@@ -1,6 +1,6 @@
 /* eslint-disable node/no-unpublished-import */
 import {seedForEngined} from './seed/engined.seed';
-import {seedForPmgmt} from './seed/pmgmt.seed';
+import {seedForPmgmt} from './seed/project-mgmt.seed';
 import {seedForAccount} from './seed/account.seed';
 import {seedForEventScheduling} from './seed/event-scheduling.seed';
 import {seedForWorkflow} from './seed/workflow.seed';

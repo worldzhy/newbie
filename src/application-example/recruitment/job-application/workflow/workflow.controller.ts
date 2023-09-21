@@ -17,7 +17,7 @@ import {RequirePermission} from '@microservices/account/security/authorization/a
 import {RoleService} from '@microservices/account/role/role.service';
 import {UserService} from '@microservices/account/user/user.service';
 import {WorkflowRouteService} from '@microservices/workflow/workflow-route.service';
-import {FileService} from '@microservices/fmgmt/file/file.service';
+import {FileService} from '@microservices/file-mgmt/file/file.service';
 import {AccessTokenService} from '@microservices/token/access-token/access-token.service';
 
 @ApiTags('Recruitment / Job Application / Workflow')

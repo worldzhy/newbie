@@ -17,15 +17,15 @@ import {
   InfrastructureStackState,
   Prisma,
 } from '@prisma/client';
-import {ProjectInfrastructureStackService} from '@microservices/pmgmt/infrastructure/infrastructure-stack.service';
+import {ProjectInfrastructureStackService} from '@microservices/project-mgmt/infrastructure/infrastructure-stack.service';
 import {
   CloudFormationStackService,
   CloudFormationStackType,
-} from '@microservices/pmgmt/infrastructure/cloudformation/cloudformation.service';
+} from '@microservices/project-mgmt/infrastructure/cloudformation/cloudformation.service';
 import {
   PulumiStackService,
   PulumiStackType,
-} from '@microservices/pmgmt/infrastructure/pulumi/pulumi.service';
+} from '@microservices/project-mgmt/infrastructure/pulumi/pulumi.service';
 import {DestroyResult, UpResult} from '@pulumi/pulumi/automation';
 import {
   CreateStackCommandOutput,

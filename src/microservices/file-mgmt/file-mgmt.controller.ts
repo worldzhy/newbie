@@ -19,15 +19,15 @@ import {ConfigService} from '@nestjs/config';
 import {Express} from 'express';
 import {createReadStream} from 'fs';
 import {diskStorage} from 'multer';
-import {FileService} from '@microservices/fmgmt/file/file.service';
+import {FileService} from '@microservices/file-mgmt/file/file.service';
+import {FolderService} from '@microservices/file-mgmt/folder/folder.service';
+import {AccessTokenService} from '@microservices/token/access-token/access-token.service';
 import {S3Service} from '@toolkit/aws/aws.s3.service';
 import {generateRandomLetters} from '@toolkit/utilities/common.util';
-import {FolderService} from '@microservices/fmgmt/folder/folder.service';
-import {AccessTokenService} from '@microservices/token/access-token/access-token.service';
 
 @ApiTags('[Microservice] File Management')
 @ApiBearerAuth()
-@Controller('fmgmt')
+@Controller('file-mgmt')
 export class FileManagementController {
   constructor(
     private readonly accessTokenService: AccessTokenService,
@@ -67,7 +67,7 @@ export class FileManagementController {
     // [step 2] Generate file name and put file to AWS S3.
     const filename = Date.now() + generateRandomLetters(4);
     const bucket = this.configService.getOrThrow<string>(
-      'microservice.fmgmt.awsS3Bucket'
+      'microservice.file-mgmt.awsS3Bucket'
     );
     const s3Key = folder.name + '/' + filename;
     const output = await this.s3Service.putObject({
@@ -150,7 +150,7 @@ export class FileManagementController {
       url:
         'https://' +
         this.configService.getOrThrow<string>(
-          'microservice.fmgmt.awsCloudfrontDomain'
+          'microservice.file-mgmt.awsCloudfrontDomain'
         ) +
         '/' +
         file.s3Key,

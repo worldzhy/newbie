@@ -10,7 +10,7 @@ import {
   Query,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {ProjectService} from '@microservices/pmgmt/project/project.service';
+import {ProjectService} from '@microservices/project-mgmt/project/project.service';
 import {verifyProjectName} from '@toolkit/validators/project.validator';
 
 import {

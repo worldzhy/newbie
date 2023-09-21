@@ -18,7 +18,7 @@ export default registerAs('microservice', () => ({
   eventScheduling: {
     minutesOfTimeslot: process.env.EVENT_SCHEDULING_MINUTES_OF_TIMESLOT,
   },
-  fmgmt: {
+  'file-mgmt': {
     awsS3Bucket: process.env.FILE_MANAGEMENT_AWS_S3_BUCKET,
     awsCloudfrontDomain: process.env.FILE_MANAGEMENT_AWS_CLOUDFRONT_DOMAIN,
     localPath: process.env.FILE_MANAGEMENT_LOCAL_PATH || './uploaded-files',
