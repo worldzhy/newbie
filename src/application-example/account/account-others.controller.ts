@@ -1,17 +1,16 @@
 import {Controller, Get, Body, Post, Req, Res} from '@nestjs/common';
 import {ApiTags, ApiBody, ApiBearerAuth, ApiCookieAuth} from '@nestjs/swagger';
-import {UserAccessToken, VerificationCodeUse} from '@prisma/client';
+import {AccessToken, VerificationCodeUse} from '@prisma/client';
 import {Request, Response} from 'express';
 import {AccountService} from '@microservices/account/account.service';
 import {Public} from '@microservices/account/security/authentication/public/public.decorator';
-import {AccessTokenService} from '@toolkit/token/access-token/access-token.service';
-import {RefreshTokenService} from '@toolkit/token/refresh-token/refresh-token.service';
+import {AccessTokenService} from '@microservices/token/access-token/access-token.service';
+import {RefreshTokenService} from '@microservices/token/refresh-token/refresh-token.service';
 import {verifyEmail, verifyPhone} from '@toolkit/validators/user.validator';
 import {Cookies} from '@_decorator/cookie.decorator';
 import {AccessingRefreshEndpoint} from '@microservices/account/security/authentication/refresh/refresh.decorator';
 import {UserService} from '@microservices/account/user/user.service';
 import {UserProfileService} from '@microservices/account/user/user-profile.service';
-import {UserAccessTokenService} from '@microservices/account/user/user-access-token.service';
 
 @ApiTags('Account')
 @Controller('account')
@@ -20,7 +19,6 @@ export class AccountOthersController {
     private readonly accountService: AccountService,
     private readonly userService: UserService,
     private readonly profileService: UserProfileService,
-    private readonly userAccessTokenService: UserAccessTokenService,
     private readonly accessTokenService: AccessTokenService,
     private readonly refreshTokenService: RefreshTokenService
   ) {}
@@ -33,7 +31,7 @@ export class AccountOthersController {
       this.accessTokenService.getTokenFromHttpRequest(request);
 
     // [step 2] Get UserToken record.
-    const userToken = await this.userAccessTokenService.findFirstOrThrow({
+    const userToken = await this.accessTokenService.findFirstOrThrow({
       where: {AND: [{token: accessToken}]},
     });
 
@@ -169,7 +167,7 @@ export class AccountOthersController {
   async refresh(
     @Cookies('refreshToken') refreshToken: string,
     @Res({passthrough: true}) response: Response
-  ): Promise<UserAccessToken> {
+  ): Promise<AccessToken> {
     // [step 1] Validate refresh token
     const userData = this.refreshTokenService.decodeToken(refreshToken) as {
       userId: string;

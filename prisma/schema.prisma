@@ -21,7 +21,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["microservice/account", "microservice/event-scheduling", "microservice/fmgmt", "microservice/map", "microservice/notification", "microservice/order", "microservice/pmgmt", "microservice/tag", "microservice/task", "microservice/verification-code", "microservice/workflow", "application/engined", "application/recruitment", "application/tc-request"]
+  schemas  = ["microservice/account", "microservice/event-scheduling", "microservice/fmgmt", "microservice/map", "microservice/notification", "microservice/order", "microservice/pmgmt", "microservice/tag", "microservice/task", "microservice/token", "microservice/workflow", "application/engined", "application/recruitment", "application/tc-request"]
 }
 
 // ! ------------------------------------------------------------ //
@@ -37,6 +37,7 @@ datasource db {
 // * ComponentPermission(unused)                                  //
 // * EndpointPermission(unused)                                   //
 // * Permission                                                   //
+// * VerificationCode                                             //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
 model Organization {
@@ -74,26 +75,6 @@ model User {
 enum UserStatus {
   ACTIVE
   INACTIVE
-
-  @@schema("microservice/account")
-}
-
-model UserAccessToken {
-  id        Int      @id @default(autoincrement())
-  userId    String   @db.Uuid
-  token     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@schema("microservice/account")
-}
-
-model UserRefreshToken {
-  id        Int      @id @default(autoincrement())
-  userId    String   @db.Uuid
-  token     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
   @@schema("microservice/account")
 }
@@ -181,35 +162,42 @@ enum TrustedEntityType {
   @@schema("microservice/account")
 }
 
-model EndpointPermission {
-  id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  endpoint          String
-  trustedEntityType TrustedEntityType
-  trustedEntityId   String            @db.Uuid
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+model VerificationCode {
+  id        Int                    @id @default(autoincrement())
+  email     String?
+  phone     String?
+  code      String
+  status    VerificationCodeStatus
+  use       VerificationCodeUse
+  expiredAt DateTime
+  createdAt DateTime               @default(now())
+  updatedAt DateTime               @updatedAt
 
   @@schema("microservice/account")
 }
 
-model ComponentPermission {
-  id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  component         String
-  trustedEntityType TrustedEntityType
-  trustedEntityId   String            @db.Uuid
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+enum VerificationCodeStatus {
+  ACTIVE
+  INACTIVE
 
   @@schema("microservice/account")
 }
 
-model RoutePermission {
-  id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  route             String
-  trustedEntityType TrustedEntityType
-  trustedEntityId   String            @db.Uuid
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+enum VerificationCodeUse {
+  UNKNOWN
+  // For generating JWT.
+  LOGIN_BY_EMAIL
+  LOGIN_BY_PHONE
+  // For closing and recovering account.
+  CLOSE_ACCOUNT_BY_EMAIL
+  CLOSE_ACCOUNT_BY_PHONE
+  RECOVER_ACCOUNT_BY_EMAIL
+  RECOVER_ACCOUNT_BY_PHONE
+  // For other operations
+  BIND_EMAIL
+  BIND_PHONE
+  CHANGE_PASSWORD
+  RESET_PASSWORD
 
   @@schema("microservice/account")
 }
@@ -729,49 +717,30 @@ enum TaskState {
 }
 
 // ! ------------------------------------------------------------ //
-// !           [Microservice] Verification Code models            //
+// !           [Microservice] Token models                        //
 // ! ------------------------------------------------------------ //
-// * VerificationCode                                             //
+// * AccessToken                                                  //
+// * RefreshToken                                                 //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
-model VerificationCode {
-  id        Int                    @id @default(autoincrement())
-  email     String?
-  phone     String?
-  code      String
-  status    VerificationCodeStatus
-  use       VerificationCodeUse
-  expiredAt DateTime
-  createdAt DateTime               @default(now())
-  updatedAt DateTime               @updatedAt
+model AccessToken {
+  id        Int      @id @default(autoincrement())
+  userId    String   @db.Uuid
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@schema("microservice/verification-code")
+  @@schema("microservice/token")
 }
 
-enum VerificationCodeStatus {
-  ACTIVE
-  INACTIVE
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  userId    String   @db.Uuid
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@schema("microservice/verification-code")
-}
-
-enum VerificationCodeUse {
-  UNKNOWN
-  // For generating JWT.
-  LOGIN_BY_EMAIL
-  LOGIN_BY_PHONE
-  // For closing and recovering account.
-  CLOSE_ACCOUNT_BY_EMAIL
-  CLOSE_ACCOUNT_BY_PHONE
-  RECOVER_ACCOUNT_BY_EMAIL
-  RECOVER_ACCOUNT_BY_PHONE
-  // For other operations
-  BIND_EMAIL
-  BIND_PHONE
-  CHANGE_PASSWORD
-  RESET_PASSWORD
-
-  @@schema("microservice/verification-code")
+  @@schema("microservice/token")
 }
 
 // ! ------------------------------------------------------------ //

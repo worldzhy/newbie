@@ -53,6 +53,7 @@ export class CoachForSchedulingController {
     });
 
     // [step 3] Filter coaches.
+    let enabledFilter = false;
     const filteredCoachIds: string[] = [];
     if (
       year &&
@@ -62,6 +63,8 @@ export class CoachForSchedulingController {
       minute !== undefined &&
       minutesOfDuration
     ) {
+      enabledFilter = true;
+
       // [step 3-1] Get availabilities.
       const datetimeOfStart = new Date(
         year,
@@ -105,12 +108,20 @@ export class CoachForSchedulingController {
 
     // [step 4] Return users without password.
     const finalCoaches: object[] = [];
-    coaches.forEach(coach => {
-      if (filteredCoachIds.includes(coach.id)) {
+    if (enabledFilter) {
+      coaches.forEach(coach => {
+        if (filteredCoachIds.includes(coach.id)) {
+          finalCoaches.push(this.userService.withoutPassword(coach));
+        }
+      });
+    } else {
+      coaches.forEach(coach => {
         finalCoaches.push(this.userService.withoutPassword(coach));
-      }
-    });
+      });
+    }
+
     return finalCoaches;
   }
+
   /* End */
 }

@@ -24,7 +24,7 @@ import {
 } from '@prisma/client';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
 import {CandidateService} from 'src/application-example/recruitment/candidate/candidate.service';
-import {AccessTokenService} from '@toolkit/token/access-token/access-token.service';
+import {AccessTokenService} from '@microservices/token/access-token/access-token.service';
 import {WorkflowRouteService} from '@microservices/workflow/workflow-route.service';
 import {JobApplicationWorkflowService} from './workflow/workflow.service';
 import {RoleService} from '@microservices/account/role/role.service';

@@ -3,8 +3,7 @@ import {PassportStrategy} from '@nestjs/passport';
 import {Strategy} from 'passport-custom';
 import {Request} from 'express';
 import {AccountService} from '@microservices/account/account.service';
-import {RefreshTokenService} from '@toolkit/token/refresh-token/refresh-token.service';
-import {UserRefreshTokenService} from '@microservices/account/user/user-refresh-token.service';
+import {RefreshTokenService} from '@microservices/token/refresh-token/refresh-token.service';
 
 @Injectable()
 export class AuthRefreshStrategy extends PassportStrategy(
@@ -13,8 +12,7 @@ export class AuthRefreshStrategy extends PassportStrategy(
 ) {
   constructor(
     private readonly accountService: AccountService,
-    private readonly refreshTokenService: RefreshTokenService,
-    private readonly userRefreshTokenService: UserRefreshTokenService
+    private readonly refreshTokenService: RefreshTokenService
   ) {
     super();
   }
@@ -41,7 +39,7 @@ export class AuthRefreshStrategy extends PassportStrategy(
 
     // [step 2] Verify that refresh token is in db
     try {
-      await this.userRefreshTokenService.findFirstOrThrow({
+      await this.refreshTokenService.findFirstOrThrow({
         where: {token: refreshToken},
       });
     } catch (err: unknown) {

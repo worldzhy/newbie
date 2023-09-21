@@ -1,4 +1,6 @@
+import {APP_GUARD} from '@nestjs/core';
 import {Global, Module} from '@nestjs/common';
+import {ThrottlerGuard, ThrottlerModule} from '@nestjs/throttler';
 import {JwtStrategy} from './security/authentication/jwt/jwt.strategy';
 import {AuthPasswordStrategy} from './security/authentication/password/password.strategy';
 import {AuthProfileStrategy} from './security/authentication/profile/profile.strategy';
@@ -10,8 +12,6 @@ import {PermissionService} from './permission/permission.service';
 import {RoleService} from './role/role.service';
 import {UserService} from './user/user.service';
 import {UserProfileService} from './user/user-profile.service';
-import {UserAccessTokenService} from './user/user-access-token.service';
-import {UserRefreshTokenService} from './user/user-refresh-token.service';
 import {
   IpLoginLimiterService,
   UserLoginLimiterService,
@@ -24,18 +24,18 @@ import {AuthorizationGuard} from './security/authorization/authorization.guard';
 import {IpLoginLimiterGuard} from './security/login-limiter/ip-login-limiter.guard';
 
 import {NotificationModule} from '@microservices/notification/notification.module';
-import {APP_GUARD} from '@nestjs/core';
-import {ThrottlerGuard, ThrottlerModule} from '@nestjs/throttler';
+import {TokenModule} from '@microservices/token/token.module';
 
 @Global()
 @Module({
   imports: [
-    NotificationModule,
     ThrottlerModule.forRoot({
       // Rate Limit (Maximum of 60 requests per 60 seconds)
       limit: 60,
       ttl: 60,
     }),
+    NotificationModule,
+    TokenModule,
   ],
   providers: [
     // Guards
@@ -57,8 +57,6 @@ import {ThrottlerGuard, ThrottlerModule} from '@nestjs/throttler';
     PermissionService,
     RoleService,
     UserProfileService,
-    UserAccessTokenService,
-    UserRefreshTokenService,
     UserService,
     VerificationCodeService,
     AccountService,
@@ -68,8 +66,6 @@ import {ThrottlerGuard, ThrottlerModule} from '@nestjs/throttler';
     PermissionService,
     RoleService,
     UserProfileService,
-    UserAccessTokenService,
-    UserRefreshTokenService,
     UserService,
     VerificationCodeService,
     AccountService,

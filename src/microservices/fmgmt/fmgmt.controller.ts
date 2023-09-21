@@ -23,7 +23,7 @@ import {FileService} from '@microservices/fmgmt/file/file.service';
 import {S3Service} from '@toolkit/aws/aws.s3.service';
 import {generateRandomLetters} from '@toolkit/utilities/common.util';
 import {FolderService} from '@microservices/fmgmt/folder/folder.service';
-import {AccessTokenService} from '@toolkit/token/access-token/access-token.service';
+import {AccessTokenService} from '@microservices/token/access-token/access-token.service';
 
 @ApiTags('[Microservice] File Management')
 @ApiBearerAuth()

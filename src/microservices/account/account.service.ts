@@ -6,20 +6,16 @@ import {
 import {UserStatus, VerificationCodeUse} from '@prisma/client';
 import {VerificationCodeService} from '@microservices/account/verification-code/verification-code.service';
 import {NotificationService} from '@microservices/notification/notification.service';
-import {AccessTokenService} from '@toolkit/token/access-token/access-token.service';
-import {RefreshTokenService} from '@toolkit/token/refresh-token/refresh-token.service';
+import {AccessTokenService} from '@microservices/token/access-token/access-token.service';
+import {RefreshTokenService} from '@microservices/token/refresh-token/refresh-token.service';
 import {getSecondsUntilunixTimestamp} from '@toolkit/utilities/date.util';
 import {UserService} from '@microservices/account/user/user.service';
-import {UserAccessTokenService} from '@microservices/account/user/user-access-token.service';
-import {UserRefreshTokenService} from '@microservices/account/user/user-refresh-token.service';
 
 @Injectable()
 export class AccountService {
   constructor(
     private readonly userService: UserService,
-    private readonly userAccessTokenService: UserAccessTokenService,
     private readonly accessTokenService: AccessTokenService,
-    private readonly userRefreshTokenService: UserRefreshTokenService,
     private readonly refreshTokenService: RefreshTokenService,
     private readonly verificationCodeService: VerificationCodeService,
     private readonly notificationService: NotificationService
@@ -54,10 +50,10 @@ export class AccountService {
 
   async invalidateTokens(userId: string) {
     await Promise.all([
-      this.userAccessTokenService.deleteMany({
+      this.accessTokenService.deleteMany({
         where: {userId},
       }),
-      this.userRefreshTokenService.deleteMany({
+      this.refreshTokenService.deleteMany({
         where: {userId},
       }),
     ]);
@@ -84,13 +80,13 @@ export class AccountService {
 
     // [step 3] Generate tokens
     const [accessToken, refreshToken] = await Promise.all([
-      this.userAccessTokenService.create({
+      this.accessTokenService.create({
         data: {
           userId: userId,
           token: this.accessTokenService.sign(jwtPayload),
         },
       }),
-      this.userRefreshTokenService.create({
+      this.refreshTokenService.create({
         data: {
           userId: userId,
           token: this.refreshTokenService.sign(jwtPayload, refreshTokenOptions),

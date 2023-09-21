@@ -1,6 +1,6 @@
 import {Controller, Post, Body, Res} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {UserAccessToken} from '@prisma/client';
+import {AccessToken} from '@prisma/client';
 import {Response} from 'express';
 import {LoggingInByPassword} from '@microservices/account/security/authentication/password/password.decorator';
 import {LoggingInByProfile} from '@microservices/account/security/authentication/profile/profile.decorator';
@@ -60,7 +60,7 @@ export class AccountLoginController {
     },
     @Res({passthrough: true})
     response: Response
-  ): Promise<UserAccessToken> {
+  ): Promise<AccessToken> {
     // [step 1] Login with password and generate tokens.
     const {accessToken, refreshToken} = await this.accountService.login(
       body.account
@@ -114,7 +114,7 @@ export class AccountLoginController {
     },
     @Res({passthrough: true})
     response: Response
-  ): Promise<UserAccessToken> {
+  ): Promise<AccessToken> {
     // [step 1] It has been confirmed there is only one profile.
     const {firstName, middleName, lastName, suffix, dateOfBirth} = body;
     const profiles = await this.profileService.findMany({
@@ -156,7 +156,7 @@ export class AccountLoginController {
     },
     @Res({passthrough: true})
     response: Response
-  ): Promise<UserAccessToken> {
+  ): Promise<AccessToken> {
     // [step 1] Login with uuid and generate tokens.
     const {accessToken, refreshToken} = await this.accountService.login(
       body.uuid
@@ -207,7 +207,7 @@ export class AccountLoginController {
     },
     @Res({passthrough: true})
     response: Response
-  ): Promise<UserAccessToken> {
+  ): Promise<AccessToken> {
     // [step 1] Login with verification code and generate tokens.
     const {accessToken, refreshToken} = await this.accountService.login(
       body.account
