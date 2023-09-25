@@ -130,31 +130,4 @@ export async function seedForEventScheduling() {
       },
     ],
   });
-
-  console.log('- Creating events...');
-  for (let i = 0; i < 10; i++) {
-    for (let j = 0; j < 10; j++) {
-      await prisma.event.createMany({
-        data: [
-          {
-            datetimeOfStart: '2023-09-01T06:00:00.000Z',
-            datetimeOfEnd: '2023-09-01T06:50:00.000Z',
-            year: 2023,
-            month: 9,
-            dayOfMonth: 1 + i,
-            dayOfWeek: (5 + i) % 7,
-            hour: 6 + j,
-            minute: 0,
-            minutesOfDuration: 50,
-            containerId: 1,
-            typeId: 1,
-            venueId: 1,
-          },
-        ],
-      });
-    }
-  }
-
-  console.log('- Creating availability expression...');
-  await prisma;
 }

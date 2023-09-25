@@ -7,13 +7,13 @@ const CronParser = require('cron-parser');
 
 @Injectable()
 export class AvailabilityExpressionService {
-  private minutesOfTimeslot: number;
+  private MINUTES_Of_TIMESLOT: number;
 
   constructor(
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService
   ) {
-    this.minutesOfTimeslot = parseInt(
+    this.MINUTES_Of_TIMESLOT = parseInt(
       this.configService.getOrThrow<string>(
         'microservice.eventScheduling.minutesOfTimeslot'
       )
@@ -91,7 +91,7 @@ export class AvailabilityExpressionService {
     };
 
     // [step 2] Parse availability expressions and collect availability timeslots.
-    const availabilityTimeslots: Prisma.AvailabilityTimeslotCreateManyInput[] =
+    let availabilityTimeslots: Prisma.AvailabilityTimeslotCreateManyInput[] =
       [];
 
     for (
@@ -100,47 +100,20 @@ export class AvailabilityExpressionService {
       i++
     ) {
       const exp = expression.cronExpressionsOfAvailableTimePoints[i];
-      const interval = CronParser.parseExpression(exp, cronParserOptions);
-
-      while (interval.hasNext()) {
-        const parsedDatetime = new Date(interval.next().value.toString());
-
-        for (
-          let p = 0;
-          p < expression.minutesOfDuration / this.minutesOfTimeslot;
-          p++
-        ) {
-          const datetimeOfStart = datePlusMinutes(
-            parsedDatetime,
-            this.minutesOfTimeslot * p
-          );
-          const datetimeOfEnd = datePlusMinutes(
-            datetimeOfStart,
-            this.minutesOfTimeslot
-          );
-
-          availabilityTimeslots.push({
-            year: datetimeOfStart.getFullYear(),
-            month: datetimeOfStart.getMonth() + 1, // 0-11, January gives 0
-            dayOfMonth: datetimeOfStart.getDate(),
-            dayOfWeek: datetimeOfStart.getDay(), //0-6, Sunday gives 0
-            hour: datetimeOfStart.getHours(),
-            minute: datetimeOfStart.getMinutes(),
-            minutesOfTimeslot: this.minutesOfTimeslot,
-            hostUserId: expression.hostUserId,
-            datetimeOfStart: datetimeOfStart,
-            datetimeOfEnd: datetimeOfEnd,
-            expressionId: expression.id,
-          });
-        }
-      }
+      availabilityTimeslots = availabilityTimeslots.concat(
+        this.parseExpression({
+          expressionId: expression.id,
+          hostUserId: expression.hostUserId,
+          minutesOfDuration: expression.minutesOfDuration,
+          cronExpression: exp,
+          cronParserOptions: cronParserOptions,
+        })
+      );
     }
 
     // [step 3] Parse unavailability expressions and collect unavailability timeslots.
-    const unavailabilityTimeslots: {
-      datetimeOfStart: Date;
-      datetimeOfEnd: Date;
-    }[] = [];
+    let unavailabilityTimeslots: Prisma.AvailabilityTimeslotCreateManyInput[] =
+      [];
 
     for (
       let j = 0;
@@ -148,32 +121,15 @@ export class AvailabilityExpressionService {
       j++
     ) {
       const exp = expression.cronExpressionsOfUnavailableTimePoints[j];
-      const interval = CronParser.parseExpression(exp, cronParserOptions);
-
-      while (interval.hasNext()) {
-        let datetimeOfStart = new Date(interval.next().value.toString());
-        let datetimeOfEnd: Date;
-
-        for (
-          let q = 0;
-          q < expression.minutesOfDuration / this.minutesOfTimeslot;
-          q++
-        ) {
-          datetimeOfStart = datePlusMinutes(
-            datetimeOfStart,
-            this.minutesOfTimeslot * q
-          );
-          datetimeOfEnd = datePlusMinutes(
-            datetimeOfStart,
-            this.minutesOfTimeslot
-          );
-
-          unavailabilityTimeslots.push({
-            datetimeOfStart: datetimeOfStart,
-            datetimeOfEnd: datetimeOfEnd,
-          });
-        }
-      }
+      unavailabilityTimeslots = unavailabilityTimeslots.concat(
+        this.parseExpression({
+          expressionId: expression.id,
+          hostUserId: expression.hostUserId,
+          minutesOfDuration: expression.minutesOfDuration,
+          cronExpression: exp,
+          cronParserOptions: cronParserOptions,
+        })
+      );
     }
 
     // [step 4] Collect final availability timeslots.
@@ -200,6 +156,54 @@ export class AvailabilityExpressionService {
     }
 
     return finalAvailabilityTimeslots;
+  }
+
+  private parseExpression(params: {
+    expressionId: number;
+    hostUserId: string;
+    minutesOfDuration: number;
+    cronExpression: string;
+    cronParserOptions: any;
+  }) {
+    const interval = CronParser.parseExpression(
+      params.cronExpression,
+      params.cronParserOptions
+    );
+    const timeslots: Prisma.AvailabilityTimeslotCreateManyInput[] = [];
+    while (interval.hasNext()) {
+      const parsedDatetime = interval.next().value.toDate();
+
+      for (
+        let i = 0;
+        i < params.minutesOfDuration / this.MINUTES_Of_TIMESLOT;
+        i++
+      ) {
+        const datetimeOfStart = datePlusMinutes(
+          parsedDatetime,
+          this.MINUTES_Of_TIMESLOT * i
+        );
+        const datetimeOfEnd = datePlusMinutes(
+          datetimeOfStart,
+          this.MINUTES_Of_TIMESLOT
+        );
+
+        timeslots.push({
+          hostUserId: params.hostUserId,
+          datetimeOfStart: datetimeOfStart,
+          datetimeOfEnd: datetimeOfEnd,
+          year: datetimeOfStart.getFullYear(),
+          month: datetimeOfStart.getMonth() + 1, // 0-11, January gives 0
+          dayOfMonth: datetimeOfStart.getDate(),
+          dayOfWeek: datetimeOfStart.getDay(), //0-6, Sunday gives 0
+          hour: datetimeOfStart.getHours(),
+          minute: datetimeOfStart.getMinutes(),
+          minutesOfTimeslot: this.MINUTES_Of_TIMESLOT,
+          expressionId: params.expressionId,
+        });
+      }
+    }
+
+    return timeslots;
   }
 
   /* End */

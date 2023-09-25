@@ -80,7 +80,7 @@ export class HeatmapController {
           if (
             element._count.hostUserId ===
             minutesOfTimeslot /
-              this.availabilityTimeslotService.minutesOfTimeslot
+              this.availabilityTimeslotService.MINUTES_Of_TIMESLOT
           ) {
             count++;
           }

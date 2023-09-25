@@ -11,12 +11,13 @@ const ROLE_NAME_COACH = 'Coach';
 @ApiBearerAuth()
 @Controller('coaches-for-scheduling')
 export class CoachForSchedulingController {
-  private minutesOfTimeslot: number;
+  private MINUTES_Of_TIMESLOT: number;
   constructor(
     private userService: UserService,
     private availabilityTimeslotService: AvailabilityTimeslotService
   ) {
-    this.minutesOfTimeslot = this.availabilityTimeslotService.minutesOfTimeslot;
+    this.MINUTES_Of_TIMESLOT =
+      this.availabilityTimeslotService.MINUTES_Of_TIMESLOT;
   }
 
   @Get('')
@@ -99,7 +100,7 @@ export class CoachForSchedulingController {
         });
         if (
           tmpAvailabilities.length >=
-          minutesOfDuration / this.minutesOfTimeslot
+          minutesOfDuration / this.MINUTES_Of_TIMESLOT
         ) {
           filteredCoachIds.push(coachId);
         }

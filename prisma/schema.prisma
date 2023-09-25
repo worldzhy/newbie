@@ -237,7 +237,7 @@ enum EventContainerStatus {
 model AvailabilityExpression {
   id                                     Int                          @id @default(autoincrement())
   status                                 AvailabilityExpressionStatus @default(EDITING)
-  hostUserId                             String?                      @db.Uuid
+  hostUserId                             String                       @db.Uuid
   cronExpressionsOfAvailableTimePoints   String[]
   cronExpressionsOfUnavailableTimePoints String[]
   dateOfOpening                          DateTime                     @db.Date
@@ -254,7 +254,7 @@ model AvailabilityExpression {
 model AvailabilityTimeslot {
   id                Int                        @id @default(autoincrement())
   status            AvailabilityTimeslotStatus @default(USABLE)
-  hostUserId        String?                    @db.Uuid
+  hostUserId        String                     @db.Uuid
   datetimeOfStart   DateTime
   datetimeOfEnd     DateTime
   year              Int
@@ -326,7 +326,7 @@ model EventVenue {
 
 model Event {
   id                Int             @id @default(autoincrement())
-  hostUserId        String?         @db.Uuid
+  hostUserId        String          @db.Uuid
   datetimeOfStart   DateTime
   datetimeOfEnd     DateTime
   year              Int
