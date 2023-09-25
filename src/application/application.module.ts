@@ -23,7 +23,7 @@ import {AccountLogoutController} from './account/account-logout.controller';
 import {AccountSignupController} from './account/account-signup.controller';
 import {AccountOthersController} from './account/account-others.controller';
 import {AreaManagerController} from './area-manager/area-manager.controller';
-import {AvailabilityController} from './coach/availability/availability.controller';
+import {AvailabilityExpressionController} from './coach/availability/availability-expression.controller';
 import {ClassController} from './class/class.controller';
 import {CoachController} from './coach/coach.controller';
 import {CoachForSchedulingController} from './coach/coach-for-scheduling.controller';
@@ -61,7 +61,7 @@ import {TagGroupController} from './tag/tag-group.controller';
     AccountSignupController,
     AccountOthersController,
     AreaManagerController,
-    AvailabilityController,
+    AvailabilityExpressionController,
     ClassController,
     CoachController,
     CoachForSchedulingController,

@@ -3,7 +3,6 @@ import {ApiTags, ApiBearerAuth} from '@nestjs/swagger';
 import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
 import {UserService} from '@microservices/account/user/user.service';
 import {
-  datePlusMinutes,
   generateMonthlyCalendar,
   generateMonthlyTimeslots,
 } from '@toolkit/utilities/datetime.util';

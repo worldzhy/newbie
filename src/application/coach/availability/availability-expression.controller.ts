@@ -9,15 +9,21 @@ import {
   Query,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {Prisma, AvailabilityExpression} from '@prisma/client';
+import {
+  Prisma,
+  AvailabilityExpression,
+  AvailabilityExpressionStatus,
+} from '@prisma/client';
 import {AvailabilityExpressionService} from '@microservices/event-scheduling/availability-expression.service';
+import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
 
 @ApiTags('Availability Expression')
 @ApiBearerAuth()
 @Controller('availability-expressions')
 export class AvailabilityExpressionController {
   constructor(
-    private availabilityExpressionService: AvailabilityExpressionService
+    private availabilityExpressionService: AvailabilityExpressionService,
+    private availabilityTimeslotService: AvailabilityTimeslotService
   ) {}
 
   @Post('')
@@ -54,11 +60,12 @@ export class AvailabilityExpressionController {
 
   @Get('')
   async getAvailabilityExpressions(
+    @Query('hostUserId') hostUserId?: string,
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number
   ) {
     return await this.availabilityExpressionService.findManyWithPagination(
-      {},
+      {where: {hostUserId}},
       {page, pageSize}
     );
   }
@@ -112,6 +119,31 @@ export class AvailabilityExpressionController {
   ): Promise<AvailabilityExpression> {
     return await this.availabilityExpressionService.delete({
       where: {id: availabilityExpressionId},
+    });
+  }
+
+  @Patch(':availabilityExpressionId/parse')
+  async parseAvailabilityExpression(
+    @Param('availabilityExpressionId') availabilityExpressionId: number
+  ) {
+    // [step 1] Parse expression to timeslots.
+    const availabilityTimeslots =
+      await this.availabilityExpressionService.parse(availabilityExpressionId);
+
+    // [step 2] Delete and create timeslots.
+    await this.availabilityTimeslotService.deleteMany({
+      where: {expressionId: availabilityExpressionId},
+    });
+    await this.availabilityTimeslotService.createMany({
+      data: availabilityTimeslots,
+    });
+
+    // [step 3] Update expression status.
+    return this.availabilityExpressionService.update({
+      where: {id: availabilityExpressionId},
+      data: {
+        status: AvailabilityExpressionStatus.PUBLISHED,
+      },
     });
   }
 

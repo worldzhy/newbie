@@ -1,7 +1,6 @@
 import {Global, Module} from '@nestjs/common';
 import {AvailabilityExpressionService} from './availability-expression.service';
 import {AvailabilityTimeslotService} from './availability-timeslot.service';
-import {AvailabilityService} from './availability.service';
 import {EventTypeService} from './event-type.service';
 import {EventContainerService} from './event-container.service';
 import {EventService} from './event.service';
@@ -13,7 +12,6 @@ import {EventVenueService} from './event-venue.service';
   providers: [
     AvailabilityExpressionService,
     AvailabilityTimeslotService,
-    AvailabilityService,
     EventContainerService,
     EventTypeService,
     EventVenueService,
@@ -23,7 +21,6 @@ import {EventVenueService} from './event-venue.service';
   exports: [
     AvailabilityExpressionService,
     AvailabilityTimeslotService,
-    AvailabilityService,
     EventContainerService,
     EventTypeService,
     EventVenueService,

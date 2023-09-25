@@ -213,18 +213,39 @@ enum VerificationCodeUse {
 // * Event                                                         //
 // * Reservation                                                   //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
+enum AvailabilityExpressionStatus {
+  EDITING
+  PUBLISHED
+
+  @@schema("microservice/event-scheduling")
+}
+
+enum AvailabilityTimeslotStatus {
+  USABLE
+  USED
+
+  @@schema("microservice/event-scheduling")
+}
+
+enum EventContainerStatus {
+  EDITING
+  PUBLISHED
+
+  @@schema("microservice/event-scheduling")
+}
 
 model AvailabilityExpression {
-  id                                     Int                    @id @default(autoincrement())
-  hostUserId                             String?                @db.Uuid
+  id                                     Int                          @id @default(autoincrement())
+  status                                 AvailabilityExpressionStatus @default(EDITING)
+  hostUserId                             String?                      @db.Uuid
   cronExpressionsOfAvailableTimePoints   String[]
   cronExpressionsOfUnavailableTimePoints String[]
-  dateOfOpening                          DateTime               @db.Date
-  dateOfClosure                          DateTime?              @db.Date
+  dateOfOpening                          DateTime                     @db.Date
+  dateOfClosure                          DateTime?                    @db.Date
   minutesOfDuration                      Int // Generally it should be 30 or 60
   timezone                               String? // https://www.iplocate.com/en/resources/timezones/list-of-timezones
-  createdAt                              DateTime               @default(now())
-  updatedAt                              DateTime               @updatedAt
+  createdAt                              DateTime                     @default(now())
+  updatedAt                              DateTime                     @updatedAt
   timeslots                              AvailabilityTimeslot[]
 
   @@schema("microservice/event-scheduling")
@@ -252,13 +273,6 @@ model AvailabilityTimeslot {
   @@schema("microservice/event-scheduling")
 }
 
-enum AvailabilityTimeslotStatus {
-  USABLE
-  USED
-
-  @@schema("microservice/event-scheduling")
-}
-
 model EventContainer {
   id            Int                  @id @default(autoincrement())
   name          String?
@@ -273,13 +287,6 @@ model EventContainer {
   venue         EventVenue?          @relation(fields: [venueId], references: [id])
   venueId       Int?
   events        Event[]
-
-  @@schema("microservice/event-scheduling")
-}
-
-enum EventContainerStatus {
-  EDITING
-  PUBLISHED
 
   @@schema("microservice/event-scheduling")
 }
