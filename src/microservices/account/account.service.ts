@@ -8,7 +8,7 @@ import {VerificationCodeService} from '@microservices/account/verification-code/
 import {NotificationService} from '@microservices/notification/notification.service';
 import {AccessTokenService} from '@microservices/token/access-token/access-token.service';
 import {RefreshTokenService} from '@microservices/token/refresh-token/refresh-token.service';
-import {getSecondsUntilunixTimestamp} from '@toolkit/utilities/date.util';
+import {getSecondsUntilunixTimestamp} from '@toolkit/utilities/datetime.util';
 import {UserService} from '@microservices/account/user/user.service';
 
 @Injectable()

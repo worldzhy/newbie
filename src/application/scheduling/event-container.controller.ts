@@ -18,11 +18,7 @@ import {
   AvailabilityTimeslotStatus,
 } from '@prisma/client';
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
-import {
-  dateMinusMinutes,
-  datePlusMinutes,
-  parseDaysOfMonth,
-} from '@toolkit/utilities/date.util';
+import {generateMonthlyCalendar} from '@toolkit/utilities/datetime.util';
 import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
 import {Public} from '@microservices/account/security/authentication/public/public.decorator';
 
@@ -30,14 +26,10 @@ import {Public} from '@microservices/account/security/authentication/public/publ
 @ApiBearerAuth()
 @Controller('event-containers')
 export class EventContainerController {
-  private minutesOfTimeslot: number;
-
   constructor(
     private availabilityTimeslotService: AvailabilityTimeslotService,
     private eventContainerService: EventContainerService
-  ) {
-    this.minutesOfTimeslot = this.availabilityTimeslotService.minutesOfTimeslot;
-  }
+  ) {}
 
   @Post('')
   @ApiBody({
@@ -93,7 +85,10 @@ export class EventContainerController {
       include: {events: true},
     });
 
-    container['calendar'] = parseDaysOfMonth(container.year!, container.month!);
+    container['calendar'] = generateMonthlyCalendar(
+      container.year!,
+      container.month!
+    );
     return container;
   }
 
@@ -163,7 +158,7 @@ export class EventContainerController {
 
     // [step 3] Generate events.
     const targetEvents: Prisma.EventUncheckedCreateWithoutContainerInput[] = [];
-    const weeksOfTargetContainer = parseDaysOfMonth(
+    const weeksOfTargetContainer = generateMonthlyCalendar(
       targetContainer.year,
       targetContainer.month
     );
@@ -300,11 +295,11 @@ export class EventContainerController {
     sourceWeekNumber: number;
     targetWeekNumber: number;
   }) {
-    const calendarOfTargetContainer = parseDaysOfMonth(
+    const calendarOfTargetContainer = generateMonthlyCalendar(
       params.targetContainer.year,
       params.targetContainer.month
     );
-    const calendarOfSourceContainer = parseDaysOfMonth(
+    const calendarOfSourceContainer = generateMonthlyCalendar(
       params.sourceContainer.year,
       params.sourceContainer.month
     );

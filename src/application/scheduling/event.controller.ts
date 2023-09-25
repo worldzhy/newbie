@@ -2,7 +2,7 @@ import {Controller, Delete, Patch, Post, Body, Param} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Prisma, Event} from '@prisma/client';
 import {EventService} from '@microservices/event-scheduling/event.service';
-import {datePlusMinutes} from '@toolkit/utilities/date.util';
+import {datePlusMinutes} from '@toolkit/utilities/datetime.util';
 
 @ApiTags('Event')
 @ApiBearerAuth()

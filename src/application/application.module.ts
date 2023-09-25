@@ -23,12 +23,13 @@ import {AccountLogoutController} from './account/account-logout.controller';
 import {AccountSignupController} from './account/account-signup.controller';
 import {AccountOthersController} from './account/account-others.controller';
 import {AreaManagerController} from './area-manager/area-manager.controller';
-import {AvailabilityController} from './availability/availability.controller';
+import {AvailabilityController} from './coach/availability/availability.controller';
 import {ClassController} from './class/class.controller';
 import {CoachController} from './coach/coach.controller';
 import {CoachForSchedulingController} from './coach/coach-for-scheduling.controller';
 import {EventController} from './scheduling/event.controller';
 import {EventContainerController} from './scheduling/event-container.controller';
+import {HeatmapController} from './heatmap/heatmap.controller';
 import {LocationController} from './location/location.controller';
 import {TagController} from './tag/tag.controller';
 import {TagGroupController} from './tag/tag-group.controller';
@@ -66,6 +67,7 @@ import {TagGroupController} from './tag/tag-group.controller';
     CoachForSchedulingController,
     EventController,
     EventContainerController,
+    HeatmapController,
     LocationController,
     TagController,
     TagGroupController,

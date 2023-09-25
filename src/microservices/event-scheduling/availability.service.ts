@@ -2,7 +2,7 @@ import {Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import {Prisma, AvailabilityExpression} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {datePlusMinutes, datePlusYears} from '@toolkit/utilities/date.util';
+import {datePlusMinutes, datePlusYears} from '@toolkit/utilities/datetime.util';
 const CronParser = require('cron-parser');
 
 @Injectable()

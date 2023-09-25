@@ -2,7 +2,10 @@ import {Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import {Prisma, AvailabilityTimeslot} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {dateMinusMinutes, datePlusMinutes} from '@toolkit/utilities/date.util';
+import {
+  dateMinusMinutes,
+  datePlusMinutes,
+} from '@toolkit/utilities/datetime.util';
 
 @Injectable()
 export class AvailabilityTimeslotService {
@@ -65,6 +68,24 @@ export class AvailabilityTimeslotService {
     params: Prisma.AvailabilityTimeslotDeleteManyArgs
   ): Promise<Prisma.BatchPayload> {
     return await this.prisma.availabilityTimeslot.deleteMany(params);
+  }
+
+  async groupByHostUserId(params: {
+    hostUserIds: string[];
+    datetimeOfStart: Date;
+    datetimeOfEnd: Date;
+  }) {
+    return await this.prisma.availabilityTimeslot.groupBy({
+      by: ['hostUserId'],
+      where: {
+        hostUserId: {
+          in: params.hostUserIds,
+        },
+        datetimeOfStart: {gte: params.datetimeOfStart},
+        datetimeOfEnd: {lte: params.datetimeOfEnd},
+      },
+      _count: {hostUserId: true},
+    });
   }
 
   floorDatetimeOfStart(datetimeOfStart: Date) {

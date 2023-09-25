@@ -3,7 +3,7 @@ import {ApiTags, ApiBearerAuth} from '@nestjs/swagger';
 import {AvailabilityTimeslotStatus, Prisma} from '@prisma/client';
 import {UserService} from '@microservices/account/user/user.service';
 import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
-import {datePlusMinutes} from '@toolkit/utilities/date.util';
+import {datePlusMinutes} from '@toolkit/utilities/datetime.util';
 
 const ROLE_NAME_COACH = 'Coach';
 

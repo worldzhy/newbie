@@ -2,7 +2,7 @@ import {Injectable} from '@nestjs/common';
 import {JwtService, JwtSignOptions} from '@nestjs/jwt';
 import * as express from 'express';
 import {Prisma, RefreshToken} from '@prisma/client';
-import {convertUnixToDate} from '@toolkit/utilities/date.util';
+import {convertUnixToDate} from '@toolkit/utilities/datetime.util';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @Injectable()
