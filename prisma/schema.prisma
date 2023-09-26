@@ -236,6 +236,7 @@ enum EventContainerStatus {
 
 model AvailabilityExpression {
   id                                     Int                          @id @default(autoincrement())
+  name                                   String?
   status                                 AvailabilityExpressionStatus @default(EDITING)
   hostUserId                             String                       @db.Uuid
   cronExpressionsOfAvailableTimePoints   String[]
