@@ -188,9 +188,9 @@ export class LocationController {
     });
 
     // [step 2] Update or create place.
-    if (body.placeId) {
+    if (venue.placeId) {
       await this.placeService.update({
-        where: {id: Number(body.placeId)},
+        where: {id: venue.placeId},
         data: {address, city, state, country},
       });
     } else {
