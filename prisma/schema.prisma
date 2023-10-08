@@ -309,20 +309,21 @@ model EventType {
 }
 
 model EventVenue {
-  id             Int              @id @default(autoincrement())
-  name           String
-  address        String
-  city           String
-  numberOfSeats  Int              @default(1)
-  minutesOfBreak Int?
-  timeOfDayStart DateTime?        @db.Time(0)
-  timeOfDayEnd   DateTime?        @db.Time(0)
-  timezone       String? // https://www.iplocate.com/en/resources/timezones/list-of-timezones
-  tagIds         Int[]
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  containers     EventContainer[]
-  events         Event[]
+  id              Int              @id @default(autoincrement())
+  name            String
+  address         String
+  city            String
+  numberOfSeats   Int              @default(1)
+  minutesOfBreak  Int?
+  timeOfDayStart  DateTime?        @db.Time(0)
+  timeOfDayEnd    DateTime?        @db.Time(0)
+  timezone        String? // https://www.iplocate.com/en/resources/timezones/list-of-timezones
+  relatedVenueIds Int[]
+  tagIds          Int[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  containers      EventContainer[]
+  events          Event[]
 
   @@schema("microservice/event-scheduling")
 }
