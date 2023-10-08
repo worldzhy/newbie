@@ -4,13 +4,17 @@ import {createPool} from 'snowflake-sdk';
 
 @Injectable()
 export class SnowflakeService {
-  private connPool: {use: (arg0: (conn: any) => Promise<void>) => void};
+  private connectionPool: {use: (arg0: (conn: any) => Promise<void>) => void};
 
   constructor(private readonly configService: ConfigService) {
-    if (!this.connPool) {
-      const connectionOptions = this.configService.get('snowflake.connOption');
-      const poolOptions = this.configService.get('snowflake.connOption');
-      this.connPool = createPool(connectionOptions, poolOptions);
+    if (!this.connectionPool) {
+      const connectionOptions = this.configService.get(
+        'toolkit.snowflake.connectionOption'
+      );
+      const poolOptions = this.configService.get(
+        'toolkit.snowflake.poolOption'
+      );
+      this.connectionPool = createPool(connectionOptions, poolOptions);
     }
   }
 
@@ -28,7 +32,7 @@ export class SnowflakeService {
           },
         };
 
-        this.connPool.use(async conn => {
+        this.connectionPool.use(async conn => {
           conn.execute(_executeOpt);
         });
       });

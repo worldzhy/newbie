@@ -36,7 +36,7 @@ export default registerAs('toolkit', () => ({
     awsSqsQueueUrl: process.env.LOGGER_AWS_SQS_QUEUE_URL || 'default',
   },
   snowflake: {
-    connOption: {
+    connectionOption: {
       account: process.env.SNOWFLAKE_ACCOUNT,
       username: process.env.SNOWFLAKE_USERNAME,
       password: process.env.SNOWFLAKE_PASSWORD,
@@ -47,9 +47,9 @@ export default registerAs('toolkit', () => ({
       clientSessionKeepAliveHeartbeatFrequency: 3600,
     },
     poolOption: {
-      max: process.env.SNOWFLAKE_POOL_MAX || 3,
+      max: 3,
       min: 0,
-      acquireTimeoutMillis: 5000,
+      acquireTimeoutMillis: 10000,
       evictionRunIntervalMillis: 60000,
       idleTimeoutMillis: 120000,
     },

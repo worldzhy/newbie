@@ -31,6 +31,7 @@ import {EventController} from './scheduling/event.controller';
 import {EventContainerController} from './scheduling/event-container.controller';
 import {HeatmapController} from './heatmap/heatmap.controller';
 import {LocationController} from './location/location.controller';
+import {SnowflakeController} from './snowflake/snowflake.controller';
 import {TagController} from './tag/tag.controller';
 import {TagGroupController} from './tag/tag-group.controller';
 
@@ -71,6 +72,7 @@ import {TagGroupController} from './tag/tag-group.controller';
     LocationController,
     TagController,
     TagGroupController,
+    SnowflakeController,
   ],
   providers: [
     // Filters
