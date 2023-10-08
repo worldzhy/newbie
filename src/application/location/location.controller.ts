@@ -96,20 +96,52 @@ export class LocationController {
       // where === undefined
     }
 
-    // [step 2] Get users.
-    return await this.eventVenueService.findManyWithPagination(
+    // [step 2] Get event venues.
+    const venues = await this.eventVenueService.findManyWithPagination(
       {where},
       {page, pageSize}
     );
+
+    // [step 3] Attach place information.
+    for (let i = 0; i < venues.records.length; i++) {
+      const venue = venues.records[i] as EventVenue & Place;
+      if (venue.placeId) {
+        const place = await this.placeService.findUnique({
+          where: {id: venue.placeId},
+        });
+        if (place) {
+          venue.address = place.address;
+          venue.city = place.city;
+          venue.state = place.state;
+          venue.country = place.country;
+        }
+      }
+    }
+
+    return venues;
   }
 
   @Get(':eventVenueId')
-  async getEventVenue(
-    @Param('eventVenueId') eventVenueId: number
-  ): Promise<EventVenue> {
-    return await this.eventVenueService.findUniqueOrThrow({
+  async getEventVenue(@Param('eventVenueId') eventVenueId: number) {
+    // [step 1] Get venue.
+    const venue = (await this.eventVenueService.findUniqueOrThrow({
       where: {id: eventVenueId},
-    });
+    })) as EventVenue & Place;
+
+    // [step 2] Attach place information.
+    if (venue.placeId) {
+      const place = await this.placeService.findUnique({
+        where: {id: venue.placeId},
+      });
+      if (place) {
+        venue.address = place.address;
+        venue.city = place.city;
+        venue.state = place.state;
+        venue.country = place.country;
+      }
+    }
+
+    return venue;
   }
 
   @Patch(':eventVenueId')
