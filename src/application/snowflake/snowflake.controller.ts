@@ -15,6 +15,9 @@ export class SnowflakeController {
     select
       s.studioid,
       l.locationid,
+      l.address,
+      l.city,
+      l.country,
       studioname,
       studioshort,
       wstype,
@@ -36,6 +39,9 @@ export class SnowflakeController {
     group by 
       s.studioid,
       l.locationid,
+      l.address,
+      l.city,
+      l.country,
       studioname,
       studioshort,
       wstype,

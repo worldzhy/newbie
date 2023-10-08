@@ -9,14 +9,18 @@ import {
   Query,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {EventVenue, Prisma} from '@prisma/client';
+import {EventVenue, Place, Prisma} from '@prisma/client';
 import {EventVenueService} from '@microservices/event-scheduling/event-venue.service';
+import {PlaceService} from '@microservices/map/place.service';
 
 @ApiTags('Location')
 @ApiBearerAuth()
 @Controller('locations')
 export class LocationController {
-  constructor(private readonly eventVenueService: EventVenueService) {}
+  constructor(
+    private readonly eventVenueService: EventVenueService,
+    private readonly placeService: PlaceService
+  ) {}
 
   @Post('')
   @ApiBody({
@@ -26,24 +30,46 @@ export class LocationController {
         summary: '1. Create',
         value: {
           name: 'CA, West Hollywood',
-          address: '9001 Santa Monica Boulevard suite 103',
-          city: 'West Hollywood',
           numberOfSeats: 20,
           minutesOfBreak: 10,
-          timeOfDayStart: '06:30',
-          timeOfDayEnd: '22:00',
+          hourOfDayStart: 6,
+          hourOfDayEnd: 22,
+          minuteOfDayStart: 30,
+          minuteOfDayEnd: 0,
           tagIds: [1, 2],
-          relatedVenueIds: [1, 2],
+          similarVenueIds: [1, 2],
+          external_studioId: 5723396,
+          external_studioName: '[solidcore] California',
+          external_locationId: 1,
+          // Save in place table of map module.
+          address: '9001 Santa Monica Boulevard suite 103',
+          city: 'West Hollywood',
+          state: 'CA',
+          country: 'US',
         },
       },
     },
   })
   async createEventVenue(
-    @Body() body: Prisma.EventVenueUncheckedCreateInput
-  ): Promise<EventVenue> {
-    return await this.eventVenueService.create({
-      data: body,
+    @Body()
+    body: Prisma.EventVenueUncheckedCreateInput &
+      Prisma.PlaceUncheckedCreateInput
+  ) {
+    const {address, city, state, country, ...dataOfVenue} = body;
+    // [step 1] Create place.
+    if (address || city || state || country) {
+      const place = await this.placeService.create({
+        data: {address, city, state, country},
+      });
+      dataOfVenue.placeId = place.id;
+    }
+
+    // [step 2] Create event venue.
+    const venue = await this.eventVenueService.create({
+      data: dataOfVenue,
     });
+
+    return {...venue, address, city, state, country};
   }
 
   @Get('')
@@ -94,14 +120,22 @@ export class LocationController {
         summary: '1. Update',
         value: {
           name: 'CA, West Hollywood',
-          address: '9001 Santa Monica Boulevard suite 103',
-          city: 'West Hollywood',
           numberOfSeats: 20,
           minutesOfBreak: 10,
-          timeOfDayStart: '06:30',
-          timeOfDayEnd: '22:00',
+          hourOfDayStart: 6,
+          hourOfDayEnd: 22,
+          minuteOfDayStart: 30,
+          minuteOfDayEnd: 0,
           tagIds: [1, 2],
-          relatedVenueIds: [1, 2],
+          similarVenueIds: [1, 2],
+          external_studioId: 5723396,
+          external_studioName: '[solidcore] California',
+          external_locationId: 1,
+          // Save in place table of map module.
+          address: '9001 Santa Monica Boulevard suite 103',
+          city: 'West Hollywood',
+          state: 'CA',
+          country: 'US',
         },
       },
     },
@@ -109,12 +143,31 @@ export class LocationController {
   async updateEventVenue(
     @Param('eventVenueId') eventVenueId: number,
     @Body()
-    body: Prisma.EventVenueUpdateInput
-  ): Promise<EventVenue> {
-    return await this.eventVenueService.update({
+    body: Prisma.EventVenueUpdateInput &
+      Prisma.PlaceUncheckedUpdateInput &
+      Prisma.PlaceUncheckedCreateInput
+  ) {
+    const {address, city, state, country, ...dataOfVenue} = body;
+
+    // [step 1] Update event venue.
+    const venue = await this.eventVenueService.update({
       where: {id: eventVenueId},
-      data: body,
+      data: dataOfVenue,
     });
+
+    // [step 2] Update or create place.
+    if (body.placeId) {
+      await this.placeService.update({
+        where: {id: Number(body.placeId)},
+        data: {address, city, state, country},
+      });
+    } else {
+      await this.placeService.create({
+        data: {address, city, state, country},
+      });
+    }
+
+    return {...venue, address, city, state, country};
   }
 
   @Delete(':eventVenueId')

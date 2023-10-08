@@ -14,6 +14,7 @@ import {HttpMiddleware} from '@_middleware/_http.middleware';
 import {ToolkitModule} from '@toolkit/toolkit.module';
 import {AccountModule} from '@microservices/account/account.module';
 import {EventSchedulingModule} from '@microservices/event-scheduling/event-scheduling.module';
+import {MapModule} from '@microservices/map/map.module';
 import {TagModule} from '@microservices/tag/tag.module';
 
 import {ApplicationController} from './application.controller';
@@ -52,6 +53,7 @@ import {TagGroupController} from './tag/tag-group.controller';
     // Microservices (Global modules)
     AccountModule,
     EventSchedulingModule,
+    MapModule,
     TagModule,
   ],
   controllers: [

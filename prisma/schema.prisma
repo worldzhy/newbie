@@ -309,22 +309,28 @@ model EventType {
 }
 
 model EventVenue {
-  id              Int              @id @default(autoincrement())
-  name            String
-  address         String
-  city            String
-  numberOfSeats   Int              @default(1)
-  minutesOfBreak  Int?
-  timeOfDayStart  DateTime?        @db.Time(0)
-  timeOfDayEnd    DateTime?        @db.Time(0)
-  timezone        String? // https://www.iplocate.com/en/resources/timezones/list-of-timezones
-  relatedVenueIds Int[]
-  tagIds          Int[]
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  containers      EventContainer[]
-  events          Event[]
+  id                  Int              @id @default(autoincrement())
+  name                String
+  numberOfSeats       Int              @default(1)
+  minutesOfBreak      Int              @default(0)
+  hourOfDayStart      Int              @default(6)
+  hourOfDayEnd        Int              @default(22)
+  minuteOfDayStart    Int              @default(0)
+  minuteOfDayEnd      Int              @default(0)
+  timezone            String? // https://www.iplocate.com/en/resources/timezones/list-of-timezones
+  tagIds              Int[]
+  placeId             Int? // Map module
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  containers          EventContainer[]
+  events              Event[]
+  // For solidcore
+  similarVenueIds     Int[]
+  external_studioId   Int // snowflake
+  external_studioName String // snowflake
+  external_locationId Int // snowflake
 
+  @@unique([external_studioId, external_locationId])
   @@schema("microservice/event-scheduling")
 }
 
@@ -413,6 +419,7 @@ model Place {
   address              String?
   city                 String?
   state                String?
+  country              String?
   googleMapPlaceId     String?
   googleMapPlaceResult Json?
   createdAt            DateTime @default(now())
