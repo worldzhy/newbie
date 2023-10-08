@@ -53,7 +53,7 @@ export class HeatmapController {
     if (heatmapTypes.includes(HEATMAP_TYPE_AVAILABILITY)) {
       // [step 2-1] Get coaches in the location.
       const coaches = await this.coachService.findMany({
-        where: {profile: {venueIds: {has: venueId}}},
+        where: {profile: {eventVenueIds: {has: venueId}}},
       });
       const coachIds = coaches.map(coach => {
         return coach.id;
