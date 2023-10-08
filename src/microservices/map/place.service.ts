@@ -39,6 +39,10 @@ export class PlaceService {
     return await this.prisma.place.update(params);
   }
 
+  async upsert(params: Prisma.PlaceUpsertArgs): Promise<Place> {
+    return await this.prisma.place.upsert(params);
+  }
+
   async delete(params: Prisma.PlaceDeleteArgs): Promise<Place> {
     return await this.prisma.place.delete(params);
   }

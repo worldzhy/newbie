@@ -1,5 +1,7 @@
 import {Controller, Get, Query} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiQuery} from '@nestjs/swagger';
+import {EventVenueService} from '@microservices/event-scheduling/event-venue.service';
+import {PlaceService} from '@microservices/map/place.service';
 import {SnowflakeService} from '@toolkit/snowflake/snowflake.service';
 import moment from 'moment';
 
@@ -7,9 +9,13 @@ import moment from 'moment';
 @ApiBearerAuth()
 @Controller('snowflake')
 export class SnowflakeController {
-  constructor(private readonly snowflakeService: SnowflakeService) {}
+  constructor(
+    private readonly snowflakeService: SnowflakeService,
+    private readonly eventVenueService: EventVenueService,
+    private readonly placeService: PlaceService
+  ) {}
 
-  @Get('locations')
+  @Get('sync-locations')
   async getLocations() {
     const sqlText = `
     select
@@ -57,18 +63,44 @@ export class SnowflakeController {
       locationname;
     `;
 
-    const executeOpt = {
+    const options = {
       sqlText,
     };
 
-    const data: any = await this.snowflakeService.executeAsync(executeOpt);
-    return {
-      data,
-      count: data.length,
-    };
+    const locations: any = await this.snowflakeService.execute(options);
+    for (let i = 0; i < locations.length; i++) {
+      const location = locations[i];
+
+      const count = await this.eventVenueService.count({
+        where: {
+          external_studioId: location.STUDIOID,
+          external_locationId: location.LOCATIONID,
+        },
+      });
+
+      if (count === 0) {
+        const place = await this.placeService.create({
+          data: {
+            address: location.ADDRESS,
+            city: location.CITY,
+            state: location.STATEPROVCODE,
+            country: location.COUNTRY,
+          },
+        });
+        await this.eventVenueService.create({
+          data: {
+            name: location.LOCATIONNAME,
+            placeId: place.id,
+            external_studioId: location.STUDIOID,
+            external_studioName: location.STUDIONAME,
+            external_locationId: location.LOCATIONID,
+          },
+        });
+      }
+    }
   }
 
-  @Get('')
+  @Get('scheduling')
   @ApiQuery({name: 'studioId', type: 'number'})
   @ApiQuery({name: 'locationId', type: 'number'})
   @ApiQuery({name: 'datemonth', type: 'number'})
@@ -150,12 +182,12 @@ export class SnowflakeController {
       v.classid;
     `;
     const binds = [studioId, locationId, dateStart, dateEnd];
-    const executeOpt = {
+    const options = {
       sqlText,
       binds,
     };
 
-    const data: any = await this.snowflakeService.executeAsync(executeOpt);
+    const data: any = await this.snowflakeService.execute(options);
 
     return {
       data,

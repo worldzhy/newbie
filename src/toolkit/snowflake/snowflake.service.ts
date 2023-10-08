@@ -18,11 +18,11 @@ export class SnowflakeService {
     }
   }
 
-  async executeAsync(executeOpt: {sqlText: string; binds?: any[]}) {
-    const waitPro = async () => {
+  async execute(options: {sqlText: string; binds?: any[]}) {
+    const f = async () => {
       return new Promise((resolve, reject) => {
-        const _executeOpt = {
-          ...executeOpt,
+        const _options = {
+          ...options,
           complete: (err, statement, _rows: any) => {
             if (err) {
               reject(err);
@@ -33,10 +33,11 @@ export class SnowflakeService {
         };
 
         this.connectionPool.use(async conn => {
-          conn.execute(_executeOpt);
+          conn.execute(_options);
         });
       });
     };
-    return waitPro();
+
+    return f();
   }
 }

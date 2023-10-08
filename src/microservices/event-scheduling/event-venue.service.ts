@@ -51,5 +51,9 @@ export class EventVenueService {
     return await this.prisma.eventVenue.delete(params);
   }
 
+  async count(params: Prisma.EventVenueCountArgs): Promise<number> {
+    return await this.prisma.eventVenue.count(params);
+  }
+
   /* End */
 }
