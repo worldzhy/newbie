@@ -14,6 +14,10 @@ export default registerAs('microservice', () => ({
           process.env.ACCOUNT_SECURITY_USER_LOGIN_LIMITER_DURATION_SECONDS,
       },
     },
+    verificationCode: {
+      timeoutMinutes: process.env.ACCOUNT_VERIFICATION_CODE_TIMEOUT_MINUTES,
+      resendMinutes: process.env.ACCOUNT_VERIFICATION_CODE_RESEND_MINUTES,
+    },
   },
   eventScheduling: {
     minutesOfTimeslot: process.env.EVENT_SCHEDULING_MINUTES_OF_TIMESLOT,
@@ -40,8 +44,14 @@ export default registerAs('microservice', () => ({
   task: {
     awsSqsQueueUrl: process.env.TASK_AWS_SQS_QUEUE_URL || 'default',
   },
-  verificationCode: {
-    timeoutMinutes: process.env.VERIFICATION_CODE_TIMEOUT_MINUTES,
-    resendMinutes: process.env.VERIFICATION_CODE_RESEND_MINUTES,
+  token: {
+    access: {
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN,
+      secret: process.env.ACCESS_TOKEN_SECRET,
+    },
+    refresh: {
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN,
+      secret: process.env.REFRESH_TOKEN_SECRET,
+    },
   },
 }));

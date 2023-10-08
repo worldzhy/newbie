@@ -7,7 +7,7 @@ import {ExtractJwt, Strategy} from 'passport-jwt';
 export class JwtStrategy extends PassportStrategy(Strategy, 'passport-jwt') {
   constructor(readonly configService: ConfigService) {
     const secret = configService.getOrThrow<string>(
-      'toolkit.token.access.secret'
+      'microservice.token.access.secret'
     );
 
     super({

@@ -9,10 +9,12 @@ import {AccessTokenService} from './access-token.service';
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.getOrThrow<string>('toolkit.token.access.secret'),
+        secret: configService.getOrThrow<string>(
+          'microservice.token.access.secret'
+        ),
         signOptions: {
           expiresIn: configService.getOrThrow<string>(
-            'toolkit.token.access.expiresIn'
+            'microservice.token.access.expiresIn'
           ),
         },
       }),

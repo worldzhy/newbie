@@ -24,6 +24,9 @@ export default registerAs('toolkit', () => ({
       region: process.env.AWS_SQS_REGION || 'default',
     },
   },
+  bcrypt: {
+    saltRounds: process.env.BCRYPT_SALT_ROUNDS,
+  },
   elastic: {
     node: process.env.ELASTICSEARCH_NODE || 'http://127.0.0.1',
     username: process.env.ELASTICSEARCH_USERNAME,
@@ -32,17 +35,23 @@ export default registerAs('toolkit', () => ({
   logger: {
     awsSqsQueueUrl: process.env.LOGGER_AWS_SQS_QUEUE_URL || 'default',
   },
-  token: {
-    access: {
-      expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN,
-      secret: process.env.ACCESS_TOKEN_SECRET,
+  snowflake: {
+    connOption: {
+      account: process.env.SNOWFLAKE_ACCOUNT,
+      username: process.env.SNOWFLAKE_USERNAME,
+      password: process.env.SNOWFLAKE_PASSWORD,
+      database: process.env.SNOWFLAKE_DATABASE,
+      schema: process.env.SNOWFLAKE_SCHEMA,
+      warehouse: process.env.SNOWFLAKE_WAREHOUSE,
+      clientSessionKeepAlive: true,
+      clientSessionKeepAliveHeartbeatFrequency: 3600,
     },
-    refresh: {
-      expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN,
-      secret: process.env.REFRESH_TOKEN_SECRET,
+    poolOption: {
+      max: process.env.SNOWFLAKE_POOL_MAX || 3,
+      min: 0,
+      acquireTimeoutMillis: 5000,
+      evictionRunIntervalMillis: 60000,
+      idleTimeoutMillis: 120000,
     },
-  },
-  bcrypt: {
-    saltRounds: process.env.BCRYPT_SALT_ROUNDS,
   },
 }));

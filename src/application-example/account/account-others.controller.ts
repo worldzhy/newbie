@@ -23,7 +23,7 @@ export class AccountOthersController {
     private readonly refreshTokenService: RefreshTokenService
   ) {}
 
-  @Get('current-user')
+  @Get('me')
   @ApiBearerAuth()
   async getCurrentUser(@Req() request: Request) {
     // [step 1] Parse token from http request header.

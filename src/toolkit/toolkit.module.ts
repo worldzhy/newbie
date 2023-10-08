@@ -3,6 +3,7 @@ import {AwsModule} from './aws/aws.module';
 import {ElasticModule} from './elastic/elastic.module';
 import {CustomLoggerModule} from './logger/logger.module';
 import {PrismaModule} from './prisma/prisma.module';
+import {SnowflakeModule} from './snowflake/snowflake.module';
 import {XLSXModule} from './xlsx/xlsx.module';
 
 @Global()
@@ -12,8 +13,9 @@ import {XLSXModule} from './xlsx/xlsx.module';
     ElasticModule,
     CustomLoggerModule,
     PrismaModule,
+    SnowflakeModule,
     XLSXModule,
   ],
-  //   exports: [AwsModule, ElasticModule, PrismaModule, TokenModule, XLSXModule],
+  //   exports: [AwsModule, ElasticModule, CustomLoggerModule, PrismaModule, SnowflakeModule, XLSXModule],
 })
 export class ToolkitModule {}
