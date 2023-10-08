@@ -6,6 +6,12 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 export class EventContainerService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async findFirst(
+    params: Prisma.EventContainerFindFirstArgs
+  ): Promise<EventContainer | null> {
+    return await this.prisma.eventContainer.findFirst(params);
+  }
+
   async findUniqueOrThrow(
     params: Prisma.EventContainerFindUniqueOrThrowArgs
   ): Promise<EventContainer> {
@@ -57,6 +63,10 @@ export class EventContainerService {
     params: Prisma.EventContainerDeleteArgs
   ): Promise<EventContainer> {
     return await this.prisma.eventContainer.delete(params);
+  }
+
+  async count(params: Prisma.EventContainerCountArgs): Promise<number> {
+    return await this.prisma.eventContainer.count(params);
   }
 
   /* End */

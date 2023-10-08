@@ -1,9 +1,11 @@
 import {Controller, Get, Query} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiQuery} from '@nestjs/swagger';
+import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
 import {EventVenueService} from '@microservices/event-scheduling/event-venue.service';
+import {EventService} from '@microservices/event-scheduling/event.service';
 import {PlaceService} from '@microservices/map/place.service';
 import {SnowflakeService} from '@toolkit/snowflake/snowflake.service';
-import moment from 'moment';
+import {EventContainerOrigin, EventContainerStatus} from '@prisma/client';
 
 @ApiTags('Snowflake')
 @ApiBearerAuth()
@@ -11,7 +13,9 @@ import moment from 'moment';
 export class SnowflakeController {
   constructor(
     private readonly snowflakeService: SnowflakeService,
+    private readonly eventContainerService: EventContainerService,
     private readonly eventVenueService: EventVenueService,
+    private readonly eventService: EventService,
     private readonly placeService: PlaceService
   ) {}
 
@@ -100,41 +104,47 @@ export class SnowflakeController {
     }
   }
 
-  @Get('scheduling')
-  @ApiQuery({name: 'studioId', type: 'number'})
-  @ApiQuery({name: 'locationId', type: 'number'})
-  @ApiQuery({name: 'datemonth', type: 'number'})
-  @ApiQuery({name: 'week', type: 'number'})
-  @ApiQuery({name: 'dateStart', type: 'string | undefined'})
-  @ApiQuery({name: 'dateEnd', type: 'string | undefined'})
+  @Get('sync-visit-data')
+  @ApiQuery({name: 'venueId', type: 'number'})
+  @ApiQuery({name: 'year', type: 'number'})
+  @ApiQuery({name: 'month', type: 'number'})
   async getScheduling(
-    @Query('studioId') studioId: number,
-    @Query('locationId') locationId: number,
-    @Query('datemonth') datemonth: number,
-    @Query('week') week: number,
-    @Query('dateStart') dateStart?: string,
-    @Query('dateEnd') dateEnd?: string
+    @Query('venueId') venueId: number,
+    @Query('year') year: number,
+    @Query('month') month: number
   ) {
-    if (datemonth) {
-      dateStart = moment(datemonth, 'YYYY-MM').startOf('month').format();
-      dateEnd = moment(datemonth, 'YYYY-MM').endOf('month').format();
+    // [step 1] Get event venue.
+    const venue = await this.eventVenueService.findUniqueOrThrow({
+      where: {id: venueId},
+    });
+
+    // [step 2] Check if the data has been fetched.
+    let count = await this.eventContainerService.count({
+      where: {
+        origin: EventContainerOrigin.EXTERNAL,
+        year,
+        month,
+        venueId,
+      },
+    });
+    if (count > 0) {
+      return;
     }
 
-    if (week) {
-      dateStart = moment(datemonth, 'YYYY-MM')
-        .startOf('month')
-        .add(7 * (week - 1), 'days')
-        .format();
-      dateEnd = moment(datemonth, 'YYYY-MM')
-        .day(1)
-        .add(7 * (week - 1), 'days')
-        .endOf('week')
-        .format();
-      if (week === 5) {
-        dateEnd = moment(datemonth, 'YYYY-MM').endOf('month').format();
-      }
-    }
+    const eventContainer = await this.eventContainerService.create({
+      data: {
+        name: `[Snowflake data] ${month}/${year} ${venue.name}`,
+        origin: EventContainerOrigin.EXTERNAL,
+        status: EventContainerStatus.EDITING,
+        year,
+        month,
+        venueId,
+      },
+    });
 
+    // [step 3] Fetch visit data.
+    const dateOfStart = new Date(year, month - 1, 1);
+    const dateOfEnd = new Date(year, month, 0);
     const sqlText = `
     select
       v.studioid,
@@ -181,20 +191,109 @@ export class SnowflakeController {
       classdate asc,
       v.classid;
     `;
-    const binds = [studioId, locationId, dateStart, dateEnd];
+    const binds = [
+      venue.external_studioId,
+      venue.external_locationId,
+      dateOfStart,
+      dateOfEnd,
+    ];
     const options = {
       sqlText,
       binds,
     };
 
-    const data: any = await this.snowflakeService.execute(options);
+    const visits: any = await this.snowflakeService.execute(options);
+    /*
+    {
+      "STUDIOID": 5723396,
+      "CLASSNAME": "Beginner50",
+      "CLASSID": 2075,
+      "CLASSDATE": "2023-05-31",
+      "CLASSSTARTTIME": "10:35:00",
+      "CLASSENDTIME": "11:25:00",
+      "TRAINERNAME": "Akilah Walker",
+      "TRAINERID": 100000028,
+      "MAXCAPACITY": 15,
+      "TOTAL_VISITS": 8,
+      "Utilization %": 53
+    }
+    */
 
-    return {
-      data,
-      sqlText,
-      sqlParams: binds,
-      count: data.length,
-    };
+    await this.eventService.createMany({
+      data: visits.map(
+        (visit: {
+          CLASSDATE: string;
+          CLASSSTARTTIME: string;
+          CLASSENDTIME: string;
+          TRAINERID: any;
+        }) => {
+          const dateOfClass = new Date(visit.CLASSDATE)
+            .toISOString()
+            .split('T')[0];
+          const datetimeOfStart = new Date(
+            dateOfClass + 'T' + visit.CLASSSTARTTIME
+          );
+          const datetimeOfEnd = new Date(
+            dateOfClass + 'T' + visit.CLASSENDTIME
+          );
+
+          return {
+            hostUserId: '0e86a56f-57f7-41e6-83ab-40f2c694a28e',
+            datetimeOfStart: datetimeOfStart.toISOString(),
+            datetimeOfEnd: datetimeOfEnd.toISOString(),
+            year,
+            month,
+            dayOfMonth: datetimeOfStart.getDate(),
+            dayOfWeek: datetimeOfStart.getDay(),
+            hour: datetimeOfStart.getHours(),
+            minute: datetimeOfStart.getMinutes(),
+            minutesOfDuration: Number(
+              (datetimeOfEnd.getTime() - datetimeOfStart.getTime()) / 60000
+            ),
+            typeId: 1,
+            venueId,
+            containerId: eventContainer.id,
+          };
+        }
+      ),
+    });
+
+    // for (let i = 0; i < visits.length; i++) {
+    //   const visit = visits[i];
+
+    //   const dateOfClass = new Date(visit.CLASSDATE).toISOString().split('T')[0];
+    //   const datetimeOfStart = new Date(
+    //     dateOfClass + 'T' + visit.CLASSSTARTTIME
+    //   );
+    //   const datetimeOfEnd = new Date(dateOfClass + 'T' + visit.CLASSENDTIME);
+
+    //   await this.eventService.create({
+    //     data: {
+    //       hostUserId: '0e86a56f-57f7-41e6-83ab-40f2c694a28e',
+    //       datetimeOfStart: datetimeOfStart.toISOString(),
+    //       datetimeOfEnd: datetimeOfEnd.toISOString(),
+    //       year,
+    //       month,
+    //       dayOfMonth: datetimeOfStart.getDate(),
+    //       dayOfWeek: datetimeOfStart.getDay(),
+    //       hour: datetimeOfStart.getHours(),
+    //       minute: datetimeOfStart.getMinutes(),
+    //       minutesOfDuration: Number(
+    //         (datetimeOfEnd.getTime() - datetimeOfStart.getTime()) / 60000
+    //       ),
+    //       typeId: 1,
+    //       venueId,
+    //       containerId: eventContainer.id,
+    //     },
+    //   });
+    // }
+
+    await this.eventContainerService.update({
+      where: {id: eventContainer.id},
+      data: {
+        status: EventContainerStatus.PUBLISHED,
+      },
+    });
   }
 
   /* End */
