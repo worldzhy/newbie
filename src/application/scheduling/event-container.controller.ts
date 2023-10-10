@@ -16,10 +16,12 @@ import {
   EventContainer,
   EventContainerStatus,
   AvailabilityTimeslotStatus,
+  EventContainerOrigin,
 } from '@prisma/client';
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
 import {generateMonthlyCalendar} from '@toolkit/utilities/datetime.util';
 import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
+import {RawDataService} from '../raw-data/raw-data.service';
 import {Public} from '@microservices/account/security/authentication/public/public.decorator';
 
 @ApiTags('Event Container')
@@ -27,8 +29,9 @@ import {Public} from '@microservices/account/security/authentication/public/publ
 @Controller('event-containers')
 export class EventContainerController {
   constructor(
-    private availabilityTimeslotService: AvailabilityTimeslotService,
-    private eventContainerService: EventContainerService
+    private readonly availabilityTimeslotService: AvailabilityTimeslotService,
+    private readonly eventContainerService: EventContainerService,
+    private readonly rawDataService: RawDataService
   ) {}
 
   @Post('')
@@ -73,7 +76,8 @@ export class EventContainerController {
 
     // [step 2] Get eventContainers.
     return await this.eventContainerService.findManyWithPagination(
-      {where, orderBy: {year: 'desc', month: 'desc', name: 'asc'}},
+      // {where, orderBy: {year: 'desc', month: 'desc', name: 'asc'}},
+      {where},
       {page, pageSize}
     );
   }
@@ -136,44 +140,53 @@ export class EventContainerController {
   }
 
   @Patch(':eventContainerId/import')
-  @ApiBody({
-    description: '',
-    examples: {
-      a: {
-        summary: '1. Import',
-        value: {
-          year: 2023,
-          month: 8,
-          venueId: 1,
-        },
-      },
-    },
-  })
+  @ApiQuery({name: 'year', type: 'number'})
+  @ApiQuery({name: 'month', type: 'number'})
   async importEventContainer(
     @Param('eventContainerId') eventContainerId: number,
-    @Body() body: {year: number; month: number}
-  ) {}
-
-  @Patch(':eventContainerId/import')
-  @ApiQuery({name: 'sourceContainerId', type: 'number'})
-  async importEventContainer1(
-    @Param('eventContainerId') eventContainerId: number,
-    @Query('sourceContainerId') sourceContainerId: number
+    @Query('year') year: number,
+    @Query('month') month: number
   ) {
-    // [step 1] Get the container.
+    // [step 1] Get target container.
     const targetContainer = await this.eventContainerService.findUniqueOrThrow({
       where: {id: eventContainerId},
     });
-
     if (targetContainer.status === EventContainerStatus.PUBLISHED) {
       throw new BadRequestException('Already published.');
     }
 
     // [step 2] Get the container we want to use its events.
-    const sourceContainer = await this.eventContainerService.findUniqueOrThrow({
-      where: {id: sourceContainerId},
+    let sourceContainer = await this.eventContainerService.findFirst({
+      where: {
+        year,
+        month,
+        venueId: targetContainer.venueId,
+        status: EventContainerStatus.PUBLISHED,
+      },
       include: {events: true},
     });
+
+    if (!sourceContainer) {
+      await this.rawDataService.syncScheduling({
+        venueId: targetContainer.venueId,
+        year,
+        month,
+      });
+
+      sourceContainer = await this.eventContainerService.findFirst({
+        where: {
+          year,
+          month,
+          venueId: targetContainer.venueId,
+          origin: EventContainerOrigin.EXTERNAL,
+          status: EventContainerStatus.PUBLISHED,
+        },
+        include: {events: true},
+      });
+    }
+    if (!sourceContainer) {
+      throw new BadRequestException('The history data we need is not existed.');
+    }
 
     // [step 3] Generate events.
     const targetEvents: Prisma.EventUncheckedCreateWithoutContainerInput[] = [];

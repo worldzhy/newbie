@@ -1,8 +1,8 @@
-import {Controller, Get, Query} from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiQuery} from '@nestjs/swagger';
+import {Injectable} from '@nestjs/common';
 import {UserService} from '@microservices/account/user/user.service';
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
 import {EventVenueService} from '@microservices/event-scheduling/event-venue.service';
+import {EventTypeService} from '@microservices/event-scheduling/event-type.service';
 import {EventService} from '@microservices/event-scheduling/event.service';
 import {PlaceService} from '@microservices/map/place.service';
 import {SnowflakeService} from '@toolkit/snowflake/snowflake.service';
@@ -10,21 +10,19 @@ import {EventContainerOrigin, EventContainerStatus} from '@prisma/client';
 
 const ROLE_NAME_COACH = 'Coach';
 
-@ApiTags('Snowflake')
-@ApiBearerAuth()
-@Controller('snowflake')
-export class SnowflakeController {
+@Injectable()
+export class RawDataService {
   constructor(
     private readonly snowflakeService: SnowflakeService,
     private readonly eventContainerService: EventContainerService,
     private readonly eventVenueService: EventVenueService,
+    private readonly eventTypeService: EventTypeService,
     private readonly eventService: EventService,
     private readonly placeService: PlaceService,
     private readonly userService: UserService
   ) {}
 
-  @Get('sync-coaches')
-  async getCoaches() {
+  async syncCoaches() {
     const sqlText = `
     select distinct lower(tremailname) as tremailname, trfirstname, trlastname 
     from mindbodyorg_mindbody_sldcor_mbo_secure_views.mb.trainers 
@@ -65,8 +63,7 @@ export class SnowflakeController {
     }
   }
 
-  @Get('sync-locations')
-  async getLocations() {
+  async syncLocations() {
     const sqlText = `
     select
       s.studioid,
@@ -150,15 +147,9 @@ export class SnowflakeController {
     }
   }
 
-  @Get('sync-visit-data')
-  @ApiQuery({name: 'venueId', type: 'number'})
-  @ApiQuery({name: 'year', type: 'number'})
-  @ApiQuery({name: 'month', type: 'number'})
-  async getScheduling(
-    @Query('venueId') venueId: number,
-    @Query('year') year: number,
-    @Query('month') month: number
-  ) {
+  async syncScheduling(params: {venueId: number; year: number; month: number}) {
+    const {venueId, year, month} = params;
+
     // [step 1] Get event venue.
     const venue = await this.eventVenueService.findUniqueOrThrow({
       where: {id: venueId},
@@ -199,8 +190,7 @@ export class SnowflakeController {
       TO_DATE(v.classdate) as classdate,
       TO_TIME(c.classstarttime) as classstarttime,
       TO_TIME(c.classendtime) as classendtime,
-      concat(t.trfirstname, ' ', t.trlastname) as trainername,
-      t.trainerId,
+      lower(t.tremailname) as tremailname,
       c.maxcapacity,
       count(1) as total_visits,
       ROUND(100 * total_visits / maxcapacity) as "Utilization %"
@@ -230,8 +220,7 @@ export class SnowflakeController {
       c.maxcapacity,
       classstarttime,
       classendtime,
-      trainername,
-      t.trainerId
+      t.tremailname
     order by
       v.studioid asc,
       classdate asc,
@@ -265,81 +254,105 @@ export class SnowflakeController {
     }
     */
 
-    await this.eventService.createMany({
-      data: visits.map(
-        (visit: {
-          CLASSDATE: string;
-          CLASSSTARTTIME: string;
-          CLASSENDTIME: string;
-          TRAINERID: any;
-        }) => {
-          const dateOfClass = new Date(visit.CLASSDATE)
-            .toISOString()
-            .split('T')[0];
-          const datetimeOfStart = new Date(
-            dateOfClass + 'T' + visit.CLASSSTARTTIME
-          );
-          const datetimeOfEnd = new Date(
-            dateOfClass + 'T' + visit.CLASSENDTIME
-          );
+    if (visits.length > 0) {
+      await this.eventService.createMany({
+        data: await Promise.all(
+          visits.map(
+            async (visit: {
+              CLASSNAME: string;
+              CLASSDATE: string;
+              CLASSSTARTTIME: string;
+              CLASSENDTIME: string;
+              TREMAILNAME: string;
+            }) => {
+              const dateOfClass = new Date(visit.CLASSDATE)
+                .toISOString()
+                .split('T')[0];
+              const datetimeOfStart = new Date(
+                dateOfClass + 'T' + visit.CLASSSTARTTIME
+              );
+              const datetimeOfEnd = new Date(
+                dateOfClass + 'T' + visit.CLASSENDTIME
+              );
 
-          return {
-            hostUserId: '0e86a56f-57f7-41e6-83ab-40f2c694a28e',
-            datetimeOfStart: datetimeOfStart.toISOString(),
-            datetimeOfEnd: datetimeOfEnd.toISOString(),
-            year,
-            month,
-            dayOfMonth: datetimeOfStart.getDate(),
-            dayOfWeek: datetimeOfStart.getDay(),
-            hour: datetimeOfStart.getHours(),
-            minute: datetimeOfStart.getMinutes(),
-            minutesOfDuration: Number(
-              (datetimeOfEnd.getTime() - datetimeOfStart.getTime()) / 60000
-            ),
-            typeId: 1,
-            venueId,
-            containerId: eventContainer.id,
-          };
-        }
-      ),
-    });
+              // Get coach info
+              if (visit.TREMAILNAME.endsWith('.')) {
+                visit.TREMAILNAME = visit.TREMAILNAME.slice(0, -1);
+              }
+              const coach = await this.userService.findUniqueOrThrow({
+                where: {email: visit.TREMAILNAME},
+                select: {id: true},
+              });
 
-    // for (let i = 0; i < visits.length; i++) {
-    //   const visit = visits[i];
+              console.log(visit);
+              // Get class info
+              const eventType = await this.eventTypeService.findUniqueOrThrow({
+                where: {name: visit.CLASSNAME},
+              });
 
-    //   const dateOfClass = new Date(visit.CLASSDATE).toISOString().split('T')[0];
-    //   const datetimeOfStart = new Date(
-    //     dateOfClass + 'T' + visit.CLASSSTARTTIME
-    //   );
-    //   const datetimeOfEnd = new Date(dateOfClass + 'T' + visit.CLASSENDTIME);
+              return {
+                hostUserId: coach.id,
+                datetimeOfStart: datetimeOfStart.toISOString(),
+                datetimeOfEnd: datetimeOfEnd.toISOString(),
+                year,
+                month,
+                dayOfMonth: datetimeOfStart.getDate(),
+                dayOfWeek: datetimeOfStart.getDay(),
+                hour: datetimeOfStart.getHours(),
+                minute: datetimeOfStart.getMinutes(),
+                minutesOfDuration: Number(
+                  (datetimeOfEnd.getTime() - datetimeOfStart.getTime()) / 60000
+                ),
+                typeId: eventType.id,
+                venueId,
+                containerId: eventContainer.id,
+              };
+            }
+          )
+        ),
+      });
 
-    //   await this.eventService.create({
-    //     data: {
-    //       hostUserId: '0e86a56f-57f7-41e6-83ab-40f2c694a28e',
-    //       datetimeOfStart: datetimeOfStart.toISOString(),
-    //       datetimeOfEnd: datetimeOfEnd.toISOString(),
-    //       year,
-    //       month,
-    //       dayOfMonth: datetimeOfStart.getDate(),
-    //       dayOfWeek: datetimeOfStart.getDay(),
-    //       hour: datetimeOfStart.getHours(),
-    //       minute: datetimeOfStart.getMinutes(),
-    //       minutesOfDuration: Number(
-    //         (datetimeOfEnd.getTime() - datetimeOfStart.getTime()) / 60000
-    //       ),
-    //       typeId: 1,
-    //       venueId,
-    //       containerId: eventContainer.id,
-    //     },
-    //   });
-    // }
+      // for (let i = 0; i < visits.length; i++) {
+      //   const visit = visits[i];
 
-    await this.eventContainerService.update({
-      where: {id: eventContainer.id},
-      data: {
-        status: EventContainerStatus.PUBLISHED,
-      },
-    });
+      //   const dateOfClass = new Date(visit.CLASSDATE).toISOString().split('T')[0];
+      //   const datetimeOfStart = new Date(
+      //     dateOfClass + 'T' + visit.CLASSSTARTTIME
+      //   );
+      //   const datetimeOfEnd = new Date(dateOfClass + 'T' + visit.CLASSENDTIME);
+
+      //   await this.eventService.create({
+      //     data: {
+      //       hostUserId: '0e86a56f-57f7-41e6-83ab-40f2c694a28e',
+      //       datetimeOfStart: datetimeOfStart.toISOString(),
+      //       datetimeOfEnd: datetimeOfEnd.toISOString(),
+      //       year,
+      //       month,
+      //       dayOfMonth: datetimeOfStart.getDate(),
+      //       dayOfWeek: datetimeOfStart.getDay(),
+      //       hour: datetimeOfStart.getHours(),
+      //       minute: datetimeOfStart.getMinutes(),
+      //       minutesOfDuration: Number(
+      //         (datetimeOfEnd.getTime() - datetimeOfStart.getTime()) / 60000
+      //       ),
+      //       typeId: 1,
+      //       venueId,
+      //       containerId: eventContainer.id,
+      //     },
+      //   });
+      // }
+
+      await this.eventContainerService.update({
+        where: {id: eventContainer.id},
+        data: {
+          status: EventContainerStatus.PUBLISHED,
+        },
+      });
+    } else {
+      await this.eventContainerService.delete({
+        where: {id: eventContainer.id},
+      });
+    }
   }
 
   /* End */

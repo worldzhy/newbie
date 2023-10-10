@@ -16,6 +16,7 @@ import {AccountModule} from '@microservices/account/account.module';
 import {EventSchedulingModule} from '@microservices/event-scheduling/event-scheduling.module';
 import {MapModule} from '@microservices/map/map.module';
 import {TagModule} from '@microservices/tag/tag.module';
+import {RawDataModule} from './raw-data/raw-data.module';
 
 import {ApplicationController} from './application.controller';
 import {AccountForgotController} from './account/account-password.controller';
@@ -32,9 +33,9 @@ import {EventController} from './scheduling/event.controller';
 import {EventContainerController} from './scheduling/event-container.controller';
 import {HeatmapController} from './heatmap/heatmap.controller';
 import {LocationController} from './location/location.controller';
-import {SnowflakeController} from './snowflake/snowflake.controller';
 import {TagController} from './tag/tag.controller';
 import {TagGroupController} from './tag/tag-group.controller';
+import {RawDataController} from './raw-data/raw-data.controller';
 
 @Module({
   imports: [
@@ -55,6 +56,9 @@ import {TagGroupController} from './tag/tag-group.controller';
     EventSchedulingModule,
     MapModule,
     TagModule,
+
+    // Application
+    RawDataModule,
   ],
   controllers: [
     ApplicationController,
@@ -74,7 +78,7 @@ import {TagGroupController} from './tag/tag-group.controller';
     LocationController,
     TagController,
     TagGroupController,
-    SnowflakeController,
+    RawDataController,
   ],
   providers: [
     // Filters

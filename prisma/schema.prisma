@@ -295,8 +295,8 @@ model EventContainer {
   timezone      String? // https://www.iplocate.com/en/resources/timezones/list-of-timezones
   createdAt     DateTime             @default(now())
   updatedAt     DateTime             @updatedAt
-  venue         EventVenue?          @relation(fields: [venueId], references: [id])
-  venueId       Int?
+  venue         EventVenue           @relation(fields: [venueId], references: [id])
+  venueId       Int
   events        Event[]
 
   @@schema("microservice/event-scheduling")
@@ -304,7 +304,7 @@ model EventContainer {
 
 model EventType {
   id                        Int      @id @default(autoincrement())
-  name                      String
+  name                      String   @unique
   minutesOfDuration         Int
   minutesOfBreak            Int?
   minutesInAdvanceToReserve Int?
