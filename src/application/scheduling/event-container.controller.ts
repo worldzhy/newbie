@@ -75,9 +75,12 @@ export class EventContainerController {
     if (month) where.month = month;
     where.origin = EventContainerOrigin.INTERNAL;
 
+    const orderBy: Prisma.EventContainerOrderByWithRelationAndSearchRelevanceInput =
+      {year: 'desc', month: 'desc', name: 'asc'};
+
     // [step 2] Get eventContainers.
     return await this.eventContainerService.findManyWithPagination(
-      {where},
+      {where, orderBy},
       {page, pageSize}
     );
   }
@@ -139,7 +142,7 @@ export class EventContainerController {
     });
   }
 
-  @Patch(':eventContainerId/import')
+  @Get(':eventContainerId/import')
   @ApiQuery({name: 'year', type: 'number'})
   @ApiQuery({name: 'month', type: 'number'})
   async importEventContainer(
