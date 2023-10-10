@@ -167,8 +167,8 @@ export class PrismaService
   }) {
     let take: number | undefined, skip: number | undefined;
     if (params.page && params.pageSize) {
-      if (params.page > 0 && params.pageSize > 0) {
-        skip = params.pageSize * (params.page - 1);
+      if (params.page >= 0 && params.pageSize > 0) {
+        skip = params.pageSize * params.page;
         take = params.pageSize;
       } else {
         throw new BadRequestException(
