@@ -1,11 +1,14 @@
 import {Controller, Get, Query} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiQuery} from '@nestjs/swagger';
+import {UserService} from '@microservices/account/user/user.service';
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
 import {EventVenueService} from '@microservices/event-scheduling/event-venue.service';
 import {EventService} from '@microservices/event-scheduling/event.service';
 import {PlaceService} from '@microservices/map/place.service';
 import {SnowflakeService} from '@toolkit/snowflake/snowflake.service';
 import {EventContainerOrigin, EventContainerStatus} from '@prisma/client';
+
+const ROLE_NAME_COACH = 'Coach';
 
 @ApiTags('Snowflake')
 @ApiBearerAuth()
@@ -16,8 +19,51 @@ export class SnowflakeController {
     private readonly eventContainerService: EventContainerService,
     private readonly eventVenueService: EventVenueService,
     private readonly eventService: EventService,
-    private readonly placeService: PlaceService
+    private readonly placeService: PlaceService,
+    private readonly userService: UserService
   ) {}
+
+  @Get('sync-coaches')
+  async getCoaches() {
+    const sqlText = `
+    select distinct lower(tremailname) as tremailname, trfirstname, trlastname 
+    from mindbodyorg_mindbody_sldcor_mbo_secure_views.mb.trainers 
+    where active=true and deleted=false and trainerid > 100000000 and studioid > 0 and teacher = true and tremailname is not null;;
+    `;
+
+    const options = {
+      sqlText,
+    };
+
+    const coaches: any = await this.snowflakeService.execute(options);
+    for (let i = 0; i < coaches.length; i++) {
+      const coach = coaches[i];
+      console.log(coach);
+
+      if ((coach.TREMAILNAME as string).endsWith('.')) {
+        coach.TREMAILNAME = coach.TREMAILNAME.slice(0, -1);
+      }
+
+      const count = await this.userService.count({
+        where: {email: coach.TREMAILNAME},
+      });
+
+      if (count === 0) {
+        await this.userService.create({
+          data: {
+            email: coach.TREMAILNAME,
+            roles: {connect: {name: ROLE_NAME_COACH}},
+            profile: {
+              create: {
+                firstName: coach.TRFIRSTNAME,
+                lastName: coach.TRLASTNAME,
+              },
+            },
+          },
+        });
+      }
+    }
+  }
 
   @Get('sync-locations')
   async getLocations() {

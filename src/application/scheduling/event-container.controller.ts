@@ -73,7 +73,7 @@ export class EventContainerController {
 
     // [step 2] Get eventContainers.
     return await this.eventContainerService.findManyWithPagination(
-      {where},
+      {where, orderBy: {year: 'desc', month: 'desc', name: 'asc'}},
       {page, pageSize}
     );
   }
@@ -136,8 +136,27 @@ export class EventContainerController {
   }
 
   @Patch(':eventContainerId/import')
-  @ApiQuery({name: 'sourceContainerId', type: 'number'})
+  @ApiBody({
+    description: '',
+    examples: {
+      a: {
+        summary: '1. Import',
+        value: {
+          year: 2023,
+          month: 8,
+          venueId: 1,
+        },
+      },
+    },
+  })
   async importEventContainer(
+    @Param('eventContainerId') eventContainerId: number,
+    @Body() body: {year: number; month: number}
+  ) {}
+
+  @Patch(':eventContainerId/import')
+  @ApiQuery({name: 'sourceContainerId', type: 'number'})
+  async importEventContainer1(
     @Param('eventContainerId') eventContainerId: number,
     @Query('sourceContainerId') sourceContainerId: number
   ) {

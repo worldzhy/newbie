@@ -36,7 +36,7 @@ export class CoachForSchedulingController {
 
     whereConditions.push({roles: {some: {name: ROLE_NAME_COACH}}});
     if (venueId) {
-      whereConditions.push({profile: {venueIds: {has: venueId}}});
+      whereConditions.push({profile: {eventVenueIds: {has: venueId}}});
     }
 
     if (whereConditions.length > 1) {
