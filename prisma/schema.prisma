@@ -344,7 +344,7 @@ model EventVenue {
 
 model Event {
   id                Int             @id @default(autoincrement())
-  hostUserId        String          @db.Uuid
+  hostUserId        String?         @db.Uuid
   datetimeOfStart   DateTime
   datetimeOfEnd     DateTime
   year              Int

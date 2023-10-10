@@ -9,7 +9,7 @@ export class RawDataController {
   constructor(private readonly rawDataService: RawDataService) {}
 
   @Get('sync-coaches')
-  async getCoaches() {
+  async syncCoaches() {
     await this.rawDataService.syncCoaches();
   }
 

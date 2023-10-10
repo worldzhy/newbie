@@ -73,10 +73,10 @@ export class EventContainerController {
     if (venueId) where.venueId = venueId;
     if (year) where.year = year;
     if (month) where.month = month;
+    where.origin = EventContainerOrigin.INTERNAL;
 
     // [step 2] Get eventContainers.
     return await this.eventContainerService.findManyWithPagination(
-      // {where, orderBy: {year: 'desc', month: 'desc', name: 'asc'}},
       {where},
       {page, pageSize}
     );
@@ -155,7 +155,8 @@ export class EventContainerController {
       throw new BadRequestException('Already published.');
     }
 
-    // [step 2] Get the container we want to use its events.
+    // [step 2] Get the source container we want to copy its events.
+    // [step 2-1] Seach the source container in local database.
     let sourceContainer = await this.eventContainerService.findFirst({
       where: {
         year,
@@ -166,6 +167,7 @@ export class EventContainerController {
       include: {events: true},
     });
 
+    // [step 2-2] Fetch origin data and create the source container.
     if (!sourceContainer) {
       await this.rawDataService.syncScheduling({
         venueId: targetContainer.venueId,
@@ -195,8 +197,8 @@ export class EventContainerController {
       targetContainer.month
     );
     for (let i = 0; i < weeksOfTargetContainer.length; i++) {
-      targetEvents.concat(
-        this.getCopiedEvents({
+      targetEvents.push(
+        ...this.getCopiedEvents({
           sourceContainer,
           targetContainer,
           sourceWeekNumber: 2,
@@ -305,7 +307,7 @@ export class EventContainerController {
 
       await this.availabilityTimeslotService.updateMany({
         where: {
-          hostUserId: event.hostUserId,
+          hostUserId: event.hostUserId ?? undefined,
           datetimeOfStart: {gte: newDatetimeOfStart},
           datetimeOfEnd: {lte: newDatetimeOfEnd},
         },

@@ -185,7 +185,7 @@ export class RawDataService {
     const sqlText = `
     select
       v.studioid,
-      cd.classname,
+      trim(cd.classname) as classname,
       v.classid,
       TO_DATE(v.classdate) as classdate,
       TO_TIME(c.classstarttime) as classstarttime,
@@ -214,13 +214,13 @@ export class RawDataService {
       and v.classdate <= ?
     group by
       v.studioid,
-      cd.classname,
+      classname,
+      tremailname,
       v.classid,
       v.classdate,
       c.maxcapacity,
       classstarttime,
-      classendtime,
-      t.tremailname
+      classendtime
     order by
       v.studioid asc,
       classdate asc,
@@ -238,21 +238,6 @@ export class RawDataService {
     };
 
     const visits: any = await this.snowflakeService.execute(options);
-    /*
-    {
-      "STUDIOID": 5723396,
-      "CLASSNAME": "Beginner50",
-      "CLASSID": 2075,
-      "CLASSDATE": "2023-05-31",
-      "CLASSSTARTTIME": "10:35:00",
-      "CLASSENDTIME": "11:25:00",
-      "TRAINERNAME": "Akilah Walker",
-      "TRAINERID": 100000028,
-      "MAXCAPACITY": 15,
-      "TOTAL_VISITS": 8,
-      "Utilization %": 53
-    }
-    */
 
     if (visits.length > 0) {
       await this.eventService.createMany({
@@ -279,19 +264,18 @@ export class RawDataService {
               if (visit.TREMAILNAME.endsWith('.')) {
                 visit.TREMAILNAME = visit.TREMAILNAME.slice(0, -1);
               }
-              const coach = await this.userService.findUniqueOrThrow({
+              const coach = await this.userService.findUnique({
                 where: {email: visit.TREMAILNAME},
                 select: {id: true},
               });
 
-              console.log(visit);
               // Get class info
-              const eventType = await this.eventTypeService.findUniqueOrThrow({
-                where: {name: visit.CLASSNAME},
-              });
+              // const eventType = await this.eventTypeService.findUniqueOrThrow({
+              //   where: {name: visit.CLASSNAME.trim()},
+              // });
 
               return {
-                hostUserId: coach.id,
+                hostUserId: coach ? coach.id : null,
                 datetimeOfStart: datetimeOfStart.toISOString(),
                 datetimeOfEnd: datetimeOfEnd.toISOString(),
                 year,
@@ -303,7 +287,7 @@ export class RawDataService {
                 minutesOfDuration: Number(
                   (datetimeOfEnd.getTime() - datetimeOfStart.getTime()) / 60000
                 ),
-                typeId: eventType.id,
+                typeId: 1,
                 venueId,
                 containerId: eventContainer.id,
               };
@@ -311,36 +295,6 @@ export class RawDataService {
           )
         ),
       });
-
-      // for (let i = 0; i < visits.length; i++) {
-      //   const visit = visits[i];
-
-      //   const dateOfClass = new Date(visit.CLASSDATE).toISOString().split('T')[0];
-      //   const datetimeOfStart = new Date(
-      //     dateOfClass + 'T' + visit.CLASSSTARTTIME
-      //   );
-      //   const datetimeOfEnd = new Date(dateOfClass + 'T' + visit.CLASSENDTIME);
-
-      //   await this.eventService.create({
-      //     data: {
-      //       hostUserId: '0e86a56f-57f7-41e6-83ab-40f2c694a28e',
-      //       datetimeOfStart: datetimeOfStart.toISOString(),
-      //       datetimeOfEnd: datetimeOfEnd.toISOString(),
-      //       year,
-      //       month,
-      //       dayOfMonth: datetimeOfStart.getDate(),
-      //       dayOfWeek: datetimeOfStart.getDay(),
-      //       hour: datetimeOfStart.getHours(),
-      //       minute: datetimeOfStart.getMinutes(),
-      //       minutesOfDuration: Number(
-      //         (datetimeOfEnd.getTime() - datetimeOfStart.getTime()) / 60000
-      //       ),
-      //       typeId: 1,
-      //       venueId,
-      //       containerId: eventContainer.id,
-      //     },
-      //   });
-      // }
 
       await this.eventContainerService.update({
         where: {id: eventContainer.id},
