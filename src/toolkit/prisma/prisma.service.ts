@@ -166,13 +166,13 @@ export class PrismaService
     pageSize: number | undefined;
   }) {
     let take: number | undefined, skip: number | undefined;
-    if (params.page && params.pageSize) {
+    if (params.page != undefined && params.pageSize != undefined) {
       if (params.page >= 0 && params.pageSize > 0) {
         skip = params.pageSize * params.page;
         take = params.pageSize;
       } else {
         throw new BadRequestException(
-          'The page and pageSize must be larger than 0.'
+          'The minimum page is 0 and the pageSize must be larger than 0.'
         );
       }
     } else {
