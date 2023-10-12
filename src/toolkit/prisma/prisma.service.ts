@@ -133,31 +133,55 @@ export class PrismaService
     });
   }
 
-  async findManyWithPagination(
-    model: Prisma.ModelName,
-    params: any,
-    pagination?: {
-      page: number;
-      pageSize: number;
-    }
-  ) {
+  async findManyInOnePage(params: {
+    model: Prisma.ModelName;
+    findManyArgs?: any;
+  }) {
+    const {model, findManyArgs} = params;
     const modelLowercaseFirstLetter =
       model.charAt(0).toLowerCase() + model.slice(1);
 
-    const {skip, take} = this.getSkipAndTake(
-      pagination ?? {page: DEFAULT_PAGE, pageSize: DEFAULT_PAGESIZE}
-    );
+    const records = await this[modelLowercaseFirstLetter].findMany({
+      ...findManyArgs,
+    });
+
+    return {
+      records,
+      pagination: {
+        page: 0,
+        pageSize: records.length,
+        countOfCurrentPage: records.length,
+        countOfTotal: records.length,
+      },
+    };
+  }
+
+  async findManyInManyPages(params: {
+    model: Prisma.ModelName;
+    pagination: {
+      page: number;
+      pageSize: number;
+    };
+    findManyArgs?: any;
+  }) {
+    const {model, pagination, findManyArgs} = params;
+    const modelLowercaseFirstLetter =
+      model.charAt(0).toLowerCase() + model.slice(1);
+
+    const {skip, take} = this.getSkipAndTake(pagination);
 
     const [records, total] = await this.$transaction([
-      this[modelLowercaseFirstLetter].findMany({...params, take, skip}),
-      this[modelLowercaseFirstLetter].count({where: params.where}),
+      this[modelLowercaseFirstLetter].findMany({...findManyArgs, take, skip}),
+      this[modelLowercaseFirstLetter].count({
+        where: findManyArgs ? findManyArgs.where : undefined,
+      }),
     ]);
 
     return {
       records,
       pagination: {
-        page: pagination ? pagination.page : DEFAULT_PAGE,
-        pageSize: pagination ? pagination.pageSize : DEFAULT_PAGESIZE,
+        page: pagination.page,
+        pageSize: pagination.pageSize,
         countOfCurrentPage: records.length,
         countOfTotal: total,
       },
@@ -167,7 +191,6 @@ export class PrismaService
   private getSkipAndTake(params: {page: number; pageSize: number}) {
     const {page, pageSize} = params;
 
-    // if (!Number.isNaN(page) && !Number.isNaN(pageSize)) {
     if (page >= 0 && pageSize > 0) {
       return {
         skip: pageSize * page,
@@ -179,5 +202,4 @@ export class PrismaService
       );
     }
   }
-  // }
 }

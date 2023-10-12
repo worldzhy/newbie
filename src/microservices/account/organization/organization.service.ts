@@ -7,36 +7,32 @@ export class OrganizationService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findUniqueOrThrow(
-    params: Prisma.OrganizationFindUniqueOrThrowArgs
+    args: Prisma.OrganizationFindUniqueOrThrowArgs
   ): Promise<Organization> {
-    return await this.prisma.organization.findUniqueOrThrow(params);
+    return await this.prisma.organization.findUniqueOrThrow(args);
   }
 
-  async findMany(params: Prisma.OrganizationFindManyArgs) {
-    return await this.prisma.organization.findMany(params);
-  }
-
-  async findManyWithPagination(
-    params: Prisma.OrganizationFindManyArgs,
-    pagination?: {page: number; pageSize: number}
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.OrganizationFindManyArgs
   ) {
-    return await this.prisma.findManyWithPagination(
-      Prisma.ModelName.Organization,
-      params,
-      pagination
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.Organization,
+      pagination,
+      findManyArgs,
+    });
   }
 
-  async create(params: Prisma.OrganizationCreateArgs): Promise<Organization> {
-    return await this.prisma.organization.create(params);
+  async create(args: Prisma.OrganizationCreateArgs): Promise<Organization> {
+    return await this.prisma.organization.create(args);
   }
 
-  async update(params: Prisma.OrganizationUpdateArgs): Promise<Organization> {
-    return await this.prisma.organization.update(params);
+  async update(args: Prisma.OrganizationUpdateArgs): Promise<Organization> {
+    return await this.prisma.organization.update(args);
   }
 
-  async delete(params: Prisma.OrganizationDeleteArgs): Promise<Organization> {
-    return await this.prisma.organization.delete(params);
+  async delete(args: Prisma.OrganizationDeleteArgs): Promise<Organization> {
+    return await this.prisma.organization.delete(args);
   }
 
   /* End */

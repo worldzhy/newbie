@@ -59,8 +59,10 @@ export class PermissionController {
 
   @Get('')
   async getPermissions(
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number,
     @Query('resource') resource?: string
-  ): Promise<Permission[]> {
+  ) {
     // [step 1] Construct where argument.
     let where: Prisma.PermissionWhereInput | undefined;
     const whereConditions: object[] = [];
@@ -76,7 +78,10 @@ export class PermissionController {
     }
 
     // [step 2] Get permissions.
-    return await this.permissionService.findMany({where: where});
+    return await this.permissionService.findManyInManyPages(
+      {page, pageSize},
+      {where}
+    );
   }
 
   @Get(':permissionId')

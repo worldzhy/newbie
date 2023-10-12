@@ -19,48 +19,44 @@ export class TaskService {
   }
 
   async findUniqueOrThrow(
-    params: Prisma.TaskFindUniqueOrThrowArgs
+    args: Prisma.TaskFindUniqueOrThrowArgs
   ): Promise<Task> {
-    return await this.prisma.task.findUniqueOrThrow(params);
+    return await this.prisma.task.findUniqueOrThrow(args);
   }
 
-  async findMany(params: Prisma.TaskFindManyArgs): Promise<Task[]> {
-    return await this.prisma.task.findMany(params);
-  }
-
-  async findManyWithPagination(
-    params: Prisma.TaskFindManyArgs,
-    pagination?: {page: number; pageSize: number}
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.TaskFindManyArgs
   ) {
-    return await this.prisma.findManyWithPagination(
-      Prisma.ModelName.Task,
-      params,
-      pagination
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.Task,
+      pagination,
+      findManyArgs,
+    });
   }
 
-  async create(params: Prisma.TaskCreateArgs): Promise<Task> {
-    return await this.prisma.task.create(params);
+  async create(args: Prisma.TaskCreateArgs): Promise<Task> {
+    return await this.prisma.task.create(args);
   }
 
   async createMany(
-    params: Prisma.TaskCreateManyArgs
+    args: Prisma.TaskCreateManyArgs
   ): Promise<Prisma.BatchPayload> {
-    return await this.prisma.task.createMany(params);
+    return await this.prisma.task.createMany(args);
   }
 
-  async update(params: Prisma.TaskUpdateArgs): Promise<Task> {
-    return await this.prisma.task.update(params);
+  async update(args: Prisma.TaskUpdateArgs): Promise<Task> {
+    return await this.prisma.task.update(args);
   }
 
   async updateMany(
-    params: Prisma.TaskUpdateManyArgs
+    args: Prisma.TaskUpdateManyArgs
   ): Promise<Prisma.BatchPayload> {
-    return await this.prisma.task.updateMany(params);
+    return await this.prisma.task.updateMany(args);
   }
 
-  async delete(params: Prisma.TaskDeleteArgs): Promise<Task> {
-    return await this.prisma.task.delete(params);
+  async delete(args: Prisma.TaskDeleteArgs): Promise<Task> {
+    return await this.prisma.task.delete(args);
   }
 
   async send2queue(taskId: number): Promise<Task> {

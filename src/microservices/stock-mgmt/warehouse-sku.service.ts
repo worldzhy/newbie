@@ -7,38 +7,32 @@ export class WarehouseSkuService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findUniqueOrThrow(
-    params: Prisma.WarehouseSkuFindUniqueOrThrowArgs
+    args: Prisma.WarehouseSkuFindUniqueOrThrowArgs
   ): Promise<WarehouseSku> {
-    return await this.prisma.warehouseSku.findUniqueOrThrow(params);
+    return await this.prisma.warehouseSku.findUniqueOrThrow(args);
   }
 
-  async findMany(
-    params: Prisma.WarehouseSkuFindManyArgs
-  ): Promise<WarehouseSku[]> {
-    return await this.prisma.warehouseSku.findMany(params);
-  }
-
-  async findManyWithPagination(
-    params: Prisma.WarehouseSkuFindManyArgs,
-    pagination?: {page: number; pageSize: number}
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.WarehouseSkuFindManyArgs
   ) {
-    return await this.prisma.findManyWithPagination(
-      Prisma.ModelName.WarehouseSku,
-      params,
-      pagination
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.WarehouseSku,
+      pagination,
+      findManyArgs,
+    });
   }
 
-  async create(params: Prisma.WarehouseSkuCreateArgs): Promise<WarehouseSku> {
-    return await this.prisma.warehouseSku.create(params);
+  async create(args: Prisma.WarehouseSkuCreateArgs): Promise<WarehouseSku> {
+    return await this.prisma.warehouseSku.create(args);
   }
 
-  async update(params: Prisma.WarehouseSkuUpdateArgs): Promise<WarehouseSku> {
-    return await this.prisma.warehouseSku.update(params);
+  async update(args: Prisma.WarehouseSkuUpdateArgs): Promise<WarehouseSku> {
+    return await this.prisma.warehouseSku.update(args);
   }
 
-  async delete(params: Prisma.WarehouseSkuDeleteArgs): Promise<WarehouseSku> {
-    return await this.prisma.warehouseSku.delete(params);
+  async delete(args: Prisma.WarehouseSkuDeleteArgs): Promise<WarehouseSku> {
+    return await this.prisma.warehouseSku.delete(args);
   }
 
   /* End */

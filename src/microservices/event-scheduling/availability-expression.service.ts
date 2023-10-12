@@ -21,56 +21,50 @@ export class AvailabilityExpressionService {
   }
 
   async findUniqueOrThrow(
-    params: Prisma.AvailabilityExpressionFindUniqueOrThrowArgs
+    args: Prisma.AvailabilityExpressionFindUniqueOrThrowArgs
   ): Promise<AvailabilityExpression> {
-    return await this.prisma.availabilityExpression.findUniqueOrThrow(params);
+    return await this.prisma.availabilityExpression.findUniqueOrThrow(args);
   }
 
-  async findMany(
-    params: Prisma.AvailabilityExpressionFindManyArgs
-  ): Promise<AvailabilityExpression[]> {
-    return await this.prisma.availabilityExpression.findMany(params);
-  }
-
-  async findManyWithPagination(
-    params: Prisma.AvailabilityExpressionFindManyArgs,
-    pagination?: {page: number; pageSize: number}
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.AvailabilityExpressionFindManyArgs
   ) {
-    return await this.prisma.findManyWithPagination(
-      Prisma.ModelName.AvailabilityExpression,
-      params,
-      pagination
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.AvailabilityExpression,
+      pagination,
+      findManyArgs,
+    });
   }
 
   async create(
-    params: Prisma.AvailabilityExpressionCreateArgs
+    args: Prisma.AvailabilityExpressionCreateArgs
   ): Promise<AvailabilityExpression> {
-    return await this.prisma.availabilityExpression.create(params);
+    return await this.prisma.availabilityExpression.create(args);
   }
 
   async createMany(
-    params: Prisma.AvailabilityExpressionCreateManyArgs
+    args: Prisma.AvailabilityExpressionCreateManyArgs
   ): Promise<Prisma.BatchPayload> {
-    return await this.prisma.availabilityExpression.createMany(params);
+    return await this.prisma.availabilityExpression.createMany(args);
   }
 
   async update(
-    params: Prisma.AvailabilityExpressionUpdateArgs
+    args: Prisma.AvailabilityExpressionUpdateArgs
   ): Promise<AvailabilityExpression> {
-    return await this.prisma.availabilityExpression.update(params);
+    return await this.prisma.availabilityExpression.update(args);
   }
 
   async updateMany(
-    params: Prisma.AvailabilityExpressionUpdateManyArgs
+    args: Prisma.AvailabilityExpressionUpdateManyArgs
   ): Promise<Prisma.BatchPayload> {
-    return await this.prisma.availabilityExpression.updateMany(params);
+    return await this.prisma.availabilityExpression.updateMany(args);
   }
 
   async delete(
-    params: Prisma.AvailabilityExpressionDeleteArgs
+    args: Prisma.AvailabilityExpressionDeleteArgs
   ): Promise<AvailabilityExpression> {
-    return await this.prisma.availabilityExpression.delete(params);
+    return await this.prisma.availabilityExpression.delete(args);
   }
 
   async parse(id: number) {
@@ -158,7 +152,7 @@ export class AvailabilityExpressionService {
     return finalAvailabilityTimeslots;
   }
 
-  private parseExpression(params: {
+  private parseExpression(args: {
     expressionId: number;
     hostUserId: string;
     minutesOfDuration: number;
@@ -166,8 +160,8 @@ export class AvailabilityExpressionService {
     cronParserOptions: any;
   }) {
     const interval = CronParser.parseExpression(
-      params.cronExpression,
-      params.cronParserOptions
+      args.cronExpression,
+      args.cronParserOptions
     );
     const timeslots: Prisma.AvailabilityTimeslotCreateManyInput[] = [];
     while (interval.hasNext()) {
@@ -175,7 +169,7 @@ export class AvailabilityExpressionService {
 
       for (
         let i = 0;
-        i < params.minutesOfDuration / this.MINUTES_Of_TIMESLOT;
+        i < args.minutesOfDuration / this.MINUTES_Of_TIMESLOT;
         i++
       ) {
         const datetimeOfStart = datePlusMinutes(
@@ -188,7 +182,7 @@ export class AvailabilityExpressionService {
         );
 
         timeslots.push({
-          hostUserId: params.hostUserId,
+          hostUserId: args.hostUserId,
           datetimeOfStart: datetimeOfStart,
           datetimeOfEnd: datetimeOfEnd,
           year: datetimeOfStart.getFullYear(),
@@ -198,7 +192,7 @@ export class AvailabilityExpressionService {
           hour: datetimeOfStart.getHours(),
           minute: datetimeOfStart.getMinutes(),
           minutesOfTimeslot: this.MINUTES_Of_TIMESLOT,
-          expressionId: params.expressionId,
+          expressionId: args.expressionId,
         });
       }
     }

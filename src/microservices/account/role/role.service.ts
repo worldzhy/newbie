@@ -7,25 +7,39 @@ export class RoleService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findUniqueOrThrow(
-    params: Prisma.RoleFindUniqueOrThrowArgs
+    args: Prisma.RoleFindUniqueOrThrowArgs
   ): Promise<Role> {
-    return await this.prisma.role.findUniqueOrThrow(params);
+    return await this.prisma.role.findUniqueOrThrow(args);
   }
 
-  async findMany(params: Prisma.RoleFindManyArgs) {
-    return await this.prisma.role.findMany(params);
+  async findManyInOnePage(findManyArgs?: Prisma.RoleFindManyArgs) {
+    return await this.prisma.findManyInOnePage({
+      model: Prisma.ModelName.Role,
+      findManyArgs,
+    });
   }
 
-  async create(params: Prisma.RoleCreateArgs): Promise<Role> {
-    return await this.prisma.role.create(params);
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.RoleFindManyArgs
+  ) {
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.Role,
+      pagination,
+      findManyArgs,
+    });
   }
 
-  async update(params: Prisma.RoleUpdateArgs): Promise<Role> {
-    return await this.prisma.role.update(params);
+  async create(args: Prisma.RoleCreateArgs): Promise<Role> {
+    return await this.prisma.role.create(args);
   }
 
-  async delete(params: Prisma.RoleDeleteArgs): Promise<Role> {
-    return await this.prisma.role.delete(params);
+  async update(args: Prisma.RoleUpdateArgs): Promise<Role> {
+    return await this.prisma.role.update(args);
+  }
+
+  async delete(args: Prisma.RoleDeleteArgs): Promise<Role> {
+    return await this.prisma.role.delete(args);
   }
 
   /* End */

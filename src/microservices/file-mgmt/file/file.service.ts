@@ -7,25 +7,36 @@ export class FileService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findUniqueOrThrow(
-    params: Prisma.FileFindUniqueOrThrowArgs
+    args: Prisma.FileFindUniqueOrThrowArgs
   ): Promise<File> {
-    return await this.prisma.file.findUniqueOrThrow(params);
+    return await this.prisma.file.findUniqueOrThrow(args);
   }
 
-  async findMany(params: Prisma.FileFindManyArgs): Promise<File[]> {
-    return await this.prisma.file.findMany(params);
+  async findMany(args: Prisma.FileFindManyArgs): Promise<File[]> {
+    return await this.prisma.file.findMany(args);
   }
 
-  async create(params: Prisma.FileCreateArgs): Promise<File> {
-    return await this.prisma.file.create(params);
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.FileFindManyArgs
+  ) {
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.File,
+      pagination,
+      findManyArgs,
+    });
   }
 
-  async update(params: Prisma.FileUpdateArgs): Promise<File> {
-    return await this.prisma.file.update(params);
+  async create(args: Prisma.FileCreateArgs): Promise<File> {
+    return await this.prisma.file.create(args);
   }
 
-  async delete(params: Prisma.FileDeleteArgs): Promise<File> {
-    return await this.prisma.file.delete(params);
+  async update(args: Prisma.FileUpdateArgs): Promise<File> {
+    return await this.prisma.file.update(args);
+  }
+
+  async delete(args: Prisma.FileDeleteArgs): Promise<File> {
+    return await this.prisma.file.delete(args);
   }
 
   async checkExistence(id: string) {

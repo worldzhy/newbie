@@ -92,12 +92,12 @@ export class AreaManagerController {
     }
 
     // [step 2] Get users.
-    const result = await this.userService.findManyWithPagination(
+    const result = await this.userService.findManyInManyPages(
+      {page, pageSize},
       {
-        where: where,
+        where,
         include: {profile: true},
-      },
-      {page, pageSize}
+      }
     );
 
     // [step 4] Return users without password.

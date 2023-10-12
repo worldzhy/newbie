@@ -7,52 +7,52 @@ export class EventVenueService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findUniqueOrThrow(
-    params: Prisma.EventVenueFindUniqueOrThrowArgs
+    args: Prisma.EventVenueFindUniqueOrThrowArgs
   ): Promise<EventVenue> {
-    return await this.prisma.eventVenue.findUniqueOrThrow(params);
+    return await this.prisma.eventVenue.findUniqueOrThrow(args);
   }
 
-  async findMany(params: Prisma.EventVenueFindManyArgs): Promise<EventVenue[]> {
-    return await this.prisma.eventVenue.findMany(params);
+  async findMany(args: Prisma.EventVenueFindManyArgs): Promise<EventVenue[]> {
+    return await this.prisma.eventVenue.findMany(args);
   }
 
-  async findManyWithPagination(
-    params: Prisma.EventVenueFindManyArgs,
-    pagination?: {page: number; pageSize: number}
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.EventVenueFindManyArgs
   ) {
-    return await this.prisma.findManyWithPagination(
-      Prisma.ModelName.EventVenue,
-      params,
-      pagination
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.EventVenue,
+      pagination,
+      findManyArgs,
+    });
   }
 
-  async create(params: Prisma.EventVenueCreateArgs): Promise<EventVenue> {
-    return await this.prisma.eventVenue.create(params);
+  async create(args: Prisma.EventVenueCreateArgs): Promise<EventVenue> {
+    return await this.prisma.eventVenue.create(args);
   }
 
   async createMany(
-    params: Prisma.EventVenueCreateManyArgs
+    args: Prisma.EventVenueCreateManyArgs
   ): Promise<Prisma.BatchPayload> {
-    return await this.prisma.eventVenue.createMany(params);
+    return await this.prisma.eventVenue.createMany(args);
   }
 
-  async update(params: Prisma.EventVenueUpdateArgs): Promise<EventVenue> {
-    return await this.prisma.eventVenue.update(params);
+  async update(args: Prisma.EventVenueUpdateArgs): Promise<EventVenue> {
+    return await this.prisma.eventVenue.update(args);
   }
 
   async updateMany(
-    params: Prisma.EventVenueUpdateManyArgs
+    args: Prisma.EventVenueUpdateManyArgs
   ): Promise<Prisma.BatchPayload> {
-    return await this.prisma.eventVenue.updateMany(params);
+    return await this.prisma.eventVenue.updateMany(args);
   }
 
-  async delete(params: Prisma.EventVenueDeleteArgs): Promise<EventVenue> {
-    return await this.prisma.eventVenue.delete(params);
+  async delete(args: Prisma.EventVenueDeleteArgs): Promise<EventVenue> {
+    return await this.prisma.eventVenue.delete(args);
   }
 
-  async count(params: Prisma.EventVenueCountArgs): Promise<number> {
-    return await this.prisma.eventVenue.count(params);
+  async count(args: Prisma.EventVenueCountArgs): Promise<number> {
+    return await this.prisma.eventVenue.count(args);
   }
 
   /* End */

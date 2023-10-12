@@ -75,9 +75,9 @@ export class UserProfileController {
     }
 
     // [step 2] Get candidate profiles.
-    return await this.userProfileService.findManyWithPagination(
-      {where: where},
-      {page, pageSize}
+    return await this.userProfileService.findManyInManyPages(
+      {page, pageSize},
+      {where}
     );
   }
 

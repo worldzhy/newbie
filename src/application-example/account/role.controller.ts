@@ -41,8 +41,8 @@ export class RoleController {
 
   @Get('')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.Role)
-  async getRoles(): Promise<Role[]> {
-    return await this.roleService.findMany({});
+  async getRoles() {
+    return await this.roleService.findManyInOnePage();
   }
 
   @Get(':roleId')

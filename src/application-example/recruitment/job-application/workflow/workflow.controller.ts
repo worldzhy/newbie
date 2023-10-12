@@ -277,7 +277,7 @@ export class JobApplicationWorkflowController {
       });
       updateInput.files = {
         createMany: {
-          data: files.map(file => {
+          data: files.map((file: {id: string; originalName: string}) => {
             return {
               fileId: file.id,
               originalName: file.originalName,

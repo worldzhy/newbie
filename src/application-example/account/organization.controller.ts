@@ -57,7 +57,8 @@ export class OrganizationController {
     }
 
     // [step 2] Get organizations.
-    return await this.organizationService.findManyWithPagination(
+    return await this.organizationService.findManyInManyPages(
+      {page, pageSize},
       {
         orderBy: {
           _relevance: {
@@ -67,8 +68,7 @@ export class OrganizationController {
           },
         },
         where: where,
-      },
-      {page, pageSize}
+      }
     );
   }
 

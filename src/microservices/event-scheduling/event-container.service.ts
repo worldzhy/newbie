@@ -7,66 +7,54 @@ export class EventContainerService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findFirst(
-    params: Prisma.EventContainerFindFirstArgs
+    args: Prisma.EventContainerFindFirstArgs
   ): Promise<EventContainer | null> {
-    return await this.prisma.eventContainer.findFirst(params);
+    return await this.prisma.eventContainer.findFirst(args);
   }
 
   async findUniqueOrThrow(
-    params: Prisma.EventContainerFindUniqueOrThrowArgs
+    args: Prisma.EventContainerFindUniqueOrThrowArgs
   ): Promise<EventContainer> {
-    return await this.prisma.eventContainer.findUniqueOrThrow(params);
+    return await this.prisma.eventContainer.findUniqueOrThrow(args);
   }
 
-  async findMany(
-    params: Prisma.EventContainerFindManyArgs
-  ): Promise<EventContainer[]> {
-    return await this.prisma.eventContainer.findMany(params);
-  }
-
-  async findManyWithPagination(
-    params: Prisma.EventContainerFindManyArgs,
-    pagination?: {page: number; pageSize: number}
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.EventContainerFindManyArgs
   ) {
-    return await this.prisma.findManyWithPagination(
-      Prisma.ModelName.EventContainer,
-      params,
-      pagination
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.EventContainer,
+      pagination,
+      findManyArgs,
+    });
   }
 
-  async create(
-    params: Prisma.EventContainerCreateArgs
-  ): Promise<EventContainer> {
-    return await this.prisma.eventContainer.create(params);
+  async create(args: Prisma.EventContainerCreateArgs): Promise<EventContainer> {
+    return await this.prisma.eventContainer.create(args);
   }
 
   async createMany(
-    params: Prisma.EventContainerCreateManyArgs
+    args: Prisma.EventContainerCreateManyArgs
   ): Promise<Prisma.BatchPayload> {
-    return await this.prisma.eventContainer.createMany(params);
+    return await this.prisma.eventContainer.createMany(args);
   }
 
-  async update(
-    params: Prisma.EventContainerUpdateArgs
-  ): Promise<EventContainer> {
-    return await this.prisma.eventContainer.update(params);
+  async update(args: Prisma.EventContainerUpdateArgs): Promise<EventContainer> {
+    return await this.prisma.eventContainer.update(args);
   }
 
   async updateMany(
-    params: Prisma.EventContainerUpdateManyArgs
+    args: Prisma.EventContainerUpdateManyArgs
   ): Promise<Prisma.BatchPayload> {
-    return await this.prisma.eventContainer.updateMany(params);
+    return await this.prisma.eventContainer.updateMany(args);
   }
 
-  async delete(
-    params: Prisma.EventContainerDeleteArgs
-  ): Promise<EventContainer> {
-    return await this.prisma.eventContainer.delete(params);
+  async delete(args: Prisma.EventContainerDeleteArgs): Promise<EventContainer> {
+    return await this.prisma.eventContainer.delete(args);
   }
 
-  async count(params: Prisma.EventContainerCountArgs): Promise<number> {
-    return await this.prisma.eventContainer.count(params);
+  async count(args: Prisma.EventContainerCountArgs): Promise<number> {
+    return await this.prisma.eventContainer.count(args);
   }
 
   /* End */

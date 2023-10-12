@@ -43,20 +43,8 @@ export class ClassController {
   }
 
   @Get('')
-  async getEventTypes(
-    @Query('page') page: number,
-    @Query('pageSize') pageSize: number,
-    @Query('name') name?: string
-  ) {
-    const where: Prisma.EventTypeWhereInput = {};
-    if (name && name.trim()) {
-      where.name = {contains: name, mode: 'insensitive'};
-    }
-
-    return await this.eventTypeService.findManyWithPagination(
-      {where},
-      {page, pageSize}
-    );
+  async getEventTypes() {
+    return await this.eventTypeService.findManyInOnePage();
   }
 
   @Get(':eventTypeId')

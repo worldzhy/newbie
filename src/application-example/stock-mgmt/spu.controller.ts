@@ -40,7 +40,7 @@ export class SpuController {
     @Query('page') page: number,
     @Query('pageSize') pageSize: number
   ) {
-    return await this.spuService.findManyWithPagination({}, {page, pageSize});
+    return await this.spuService.findManyInManyPages({page, pageSize});
   }
 
   @Get(':spuId')

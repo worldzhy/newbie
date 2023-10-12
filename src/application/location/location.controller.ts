@@ -97,9 +97,9 @@ export class LocationController {
     }
 
     // [step 2] Get event venues.
-    const venues = await this.eventVenueService.findManyWithPagination(
-      {where},
-      {page, pageSize}
+    const venues = await this.eventVenueService.findManyInManyPages(
+      {page, pageSize},
+      {where}
     );
 
     // [step 3] Attach place information.

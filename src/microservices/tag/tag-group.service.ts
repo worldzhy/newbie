@@ -7,48 +7,44 @@ export class TagGroupService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findUniqueOrThrow(
-    params: Prisma.TagGroupFindUniqueOrThrowArgs
+    args: Prisma.TagGroupFindUniqueOrThrowArgs
   ): Promise<TagGroup> {
-    return await this.prisma.tagGroup.findUniqueOrThrow(params);
+    return await this.prisma.tagGroup.findUniqueOrThrow(args);
   }
 
-  async findMany(params: Prisma.TagGroupFindManyArgs): Promise<TagGroup[]> {
-    return await this.prisma.tagGroup.findMany(params);
-  }
-
-  async findManyWithPagination(
-    params: Prisma.TagGroupFindManyArgs,
-    pagination?: {page: number; pageSize: number}
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.TagGroupFindManyArgs
   ) {
-    return await this.prisma.findManyWithPagination(
-      Prisma.ModelName.TagGroup,
-      params,
-      pagination
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.TagGroup,
+      pagination,
+      findManyArgs,
+    });
   }
 
-  async create(params: Prisma.TagGroupCreateArgs): Promise<TagGroup> {
-    return await this.prisma.tagGroup.create(params);
+  async create(args: Prisma.TagGroupCreateArgs): Promise<TagGroup> {
+    return await this.prisma.tagGroup.create(args);
   }
 
   async createMany(
-    params: Prisma.TagGroupCreateManyArgs
+    args: Prisma.TagGroupCreateManyArgs
   ): Promise<Prisma.BatchPayload> {
-    return await this.prisma.tagGroup.createMany(params);
+    return await this.prisma.tagGroup.createMany(args);
   }
 
-  async update(params: Prisma.TagGroupUpdateArgs): Promise<TagGroup> {
-    return await this.prisma.tagGroup.update(params);
+  async update(args: Prisma.TagGroupUpdateArgs): Promise<TagGroup> {
+    return await this.prisma.tagGroup.update(args);
   }
 
   async updateMany(
-    params: Prisma.TagGroupUpdateManyArgs
+    args: Prisma.TagGroupUpdateManyArgs
   ): Promise<Prisma.BatchPayload> {
-    return await this.prisma.tagGroup.updateMany(params);
+    return await this.prisma.tagGroup.updateMany(args);
   }
 
-  async delete(params: Prisma.TagGroupDeleteArgs): Promise<TagGroup> {
-    return await this.prisma.tagGroup.delete(params);
+  async delete(args: Prisma.TagGroupDeleteArgs): Promise<TagGroup> {
+    return await this.prisma.tagGroup.delete(args);
   }
 
   /* End */

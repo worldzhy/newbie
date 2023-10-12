@@ -7,33 +7,38 @@ export class ElasticsearchDataboardService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findUniqueOrThrow(
-    params: Prisma.ElasticsearchDataboardFindUniqueOrThrowArgs
+    args: Prisma.ElasticsearchDataboardFindUniqueOrThrowArgs
   ): Promise<ElasticsearchDataboard> {
-    return await this.prisma.elasticsearchDataboard.findUniqueOrThrow(params);
+    return await this.prisma.elasticsearchDataboard.findUniqueOrThrow(args);
   }
 
-  async findMany(
-    params: Prisma.ElasticsearchDataboardFindManyArgs
-  ): Promise<ElasticsearchDataboard[]> {
-    return await this.prisma.elasticsearchDataboard.findMany(params);
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.ElasticsearchDataboardFindManyArgs
+  ) {
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.ElasticsearchDataboard,
+      pagination,
+      findManyArgs,
+    });
   }
 
   async create(
-    params: Prisma.ElasticsearchDataboardCreateArgs
+    args: Prisma.ElasticsearchDataboardCreateArgs
   ): Promise<ElasticsearchDataboard> {
-    return await this.prisma.elasticsearchDataboard.create(params);
+    return await this.prisma.elasticsearchDataboard.create(args);
   }
 
   async update(
-    params: Prisma.ElasticsearchDataboardUpdateArgs
+    args: Prisma.ElasticsearchDataboardUpdateArgs
   ): Promise<ElasticsearchDataboard> {
-    return await this.prisma.elasticsearchDataboard.update(params);
+    return await this.prisma.elasticsearchDataboard.update(args);
   }
 
   async delete(
-    params: Prisma.ElasticsearchDataboardDeleteArgs
+    args: Prisma.ElasticsearchDataboardDeleteArgs
   ): Promise<ElasticsearchDataboard> {
-    return await this.prisma.elasticsearchDataboard.delete(params);
+    return await this.prisma.elasticsearchDataboard.delete(args);
   }
 
   async checkExistence(id: string) {

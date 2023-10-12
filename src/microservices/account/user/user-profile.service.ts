@@ -7,38 +7,36 @@ export class UserProfileService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findUniqueOrThrow(
-    params: Prisma.UserProfileFindUniqueOrThrowArgs
+    args: Prisma.UserProfileFindUniqueOrThrowArgs
   ): Promise<UserProfile> {
-    return await this.prisma.userProfile.findUniqueOrThrow(params);
+    return await this.prisma.userProfile.findUniqueOrThrow(args);
   }
 
-  async findMany(
-    params: Prisma.UserProfileFindManyArgs
-  ): Promise<UserProfile[]> {
-    return await this.prisma.userProfile.findMany(params);
+  async findMany(args: Prisma.UserProfileFindManyArgs): Promise<UserProfile[]> {
+    return await this.prisma.userProfile.findMany(args);
   }
 
-  async findManyWithPagination(
-    params: Prisma.UserProfileFindManyArgs,
-    pagination?: {page: number; pageSize: number}
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.UserProfileFindManyArgs
   ) {
-    return await this.prisma.findManyWithPagination(
-      Prisma.ModelName.UserProfile,
-      params,
-      pagination
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.UserProfile,
+      pagination,
+      findManyArgs,
+    });
   }
 
-  async create(params: Prisma.UserProfileCreateArgs): Promise<UserProfile> {
-    return await this.prisma.userProfile.create(params);
+  async create(args: Prisma.UserProfileCreateArgs): Promise<UserProfile> {
+    return await this.prisma.userProfile.create(args);
   }
 
-  async update(params: Prisma.UserProfileUpdateArgs): Promise<UserProfile> {
-    return await this.prisma.userProfile.update(params);
+  async update(args: Prisma.UserProfileUpdateArgs): Promise<UserProfile> {
+    return await this.prisma.userProfile.update(args);
   }
 
-  async delete(params: Prisma.UserProfileDeleteArgs): Promise<UserProfile> {
-    return await this.prisma.userProfile.delete(params);
+  async delete(args: Prisma.UserProfileDeleteArgs): Promise<UserProfile> {
+    return await this.prisma.userProfile.delete(args);
   }
 
   /* End */

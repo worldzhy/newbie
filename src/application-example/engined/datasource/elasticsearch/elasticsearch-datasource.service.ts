@@ -13,39 +13,44 @@ export class ElasticsearchDatasourceService {
   ) {}
 
   async findUnique(
-    params: Prisma.ElasticsearchDatasourceFindUniqueArgs
+    args: Prisma.ElasticsearchDatasourceFindUniqueArgs
   ): Promise<ElasticsearchDatasource | null> {
-    return await this.prisma.elasticsearchDatasource.findUnique(params);
+    return await this.prisma.elasticsearchDatasource.findUnique(args);
   }
 
   async findUniqueOrThrow(
-    params: Prisma.ElasticsearchDatasourceFindUniqueOrThrowArgs
+    args: Prisma.ElasticsearchDatasourceFindUniqueOrThrowArgs
   ): Promise<ElasticsearchDatasource> {
-    return await this.prisma.elasticsearchDatasource.findUniqueOrThrow(params);
+    return await this.prisma.elasticsearchDatasource.findUniqueOrThrow(args);
   }
 
-  async findMany(
-    params: Prisma.ElasticsearchDatasourceFindManyArgs
-  ): Promise<ElasticsearchDatasource[]> {
-    return await this.prisma.elasticsearchDatasource.findMany(params);
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.ElasticsearchDatasourceFindManyArgs
+  ) {
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.ElasticsearchDatasource,
+      pagination,
+      findManyArgs,
+    });
   }
 
   async create(
-    params: Prisma.ElasticsearchDatasourceCreateArgs
+    args: Prisma.ElasticsearchDatasourceCreateArgs
   ): Promise<ElasticsearchDatasource> {
-    return await this.prisma.elasticsearchDatasource.create(params);
+    return await this.prisma.elasticsearchDatasource.create(args);
   }
 
   async update(
-    params: Prisma.ElasticsearchDatasourceUpdateArgs
+    args: Prisma.ElasticsearchDatasourceUpdateArgs
   ): Promise<ElasticsearchDatasource> {
-    return await this.prisma.elasticsearchDatasource.update(params);
+    return await this.prisma.elasticsearchDatasource.update(args);
   }
 
   async delete(
-    params: Prisma.ElasticsearchDatasourceDeleteArgs
+    args: Prisma.ElasticsearchDatasourceDeleteArgs
   ): Promise<ElasticsearchDatasource> {
-    return await this.prisma.elasticsearchDatasource.delete(params);
+    return await this.prisma.elasticsearchDatasource.delete(args);
   }
 
   // ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //

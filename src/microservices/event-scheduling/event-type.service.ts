@@ -7,48 +7,51 @@ export class EventTypeService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findUniqueOrThrow(
-    params: Prisma.EventTypeFindUniqueOrThrowArgs
+    args: Prisma.EventTypeFindUniqueOrThrowArgs
   ): Promise<EventType> {
-    return await this.prisma.eventType.findUniqueOrThrow(params);
+    return await this.prisma.eventType.findUniqueOrThrow(args);
   }
 
-  async findMany(params: Prisma.EventTypeFindManyArgs): Promise<EventType[]> {
-    return await this.prisma.eventType.findMany(params);
+  async findManyInOnePage(findManyArgs?: Prisma.EventTypeFindManyArgs) {
+    return await this.prisma.findManyInOnePage({
+      model: Prisma.ModelName.EventType,
+      findManyArgs,
+    });
   }
 
-  async findManyWithPagination(
-    params: Prisma.EventTypeFindManyArgs,
-    pagination?: {page: number; pageSize: number}
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.EventTypeFindManyArgs
   ) {
-    return await this.prisma.findManyWithPagination(
-      Prisma.ModelName.EventType,
-      params,
-      pagination
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.EventType,
+      pagination,
+      findManyArgs,
+    });
   }
 
-  async create(params: Prisma.EventTypeCreateArgs): Promise<EventType> {
-    return await this.prisma.eventType.create(params);
+  async create(args: Prisma.EventTypeCreateArgs): Promise<EventType> {
+    return await this.prisma.eventType.create(args);
   }
 
   async createMany(
-    params: Prisma.EventTypeCreateManyArgs
+    args: Prisma.EventTypeCreateManyArgs
   ): Promise<Prisma.BatchPayload> {
-    return await this.prisma.eventType.createMany(params);
+    return await this.prisma.eventType.createMany(args);
   }
 
-  async update(params: Prisma.EventTypeUpdateArgs): Promise<EventType> {
-    return await this.prisma.eventType.update(params);
+  async update(args: Prisma.EventTypeUpdateArgs): Promise<EventType> {
+    return await this.prisma.eventType.update(args);
   }
 
   async updateMany(
-    params: Prisma.EventTypeUpdateManyArgs
+    args: Prisma.EventTypeUpdateManyArgs
   ): Promise<Prisma.BatchPayload> {
-    return await this.prisma.eventType.updateMany(params);
+    return await this.prisma.eventType.updateMany(args);
   }
 
-  async delete(params: Prisma.EventTypeDeleteArgs): Promise<EventType> {
-    return await this.prisma.eventType.delete(params);
+  async delete(args: Prisma.EventTypeDeleteArgs): Promise<EventType> {
+    return await this.prisma.eventType.delete(args);
   }
 
   /* End */

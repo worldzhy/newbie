@@ -94,9 +94,9 @@ export class ProjectController {
     }
 
     // [step 2] Get records.
-    return await this.projectService.findManyWithPagination(
-      {where},
-      {page, pageSize}
+    return await this.projectService.findManyInManyPages(
+      {page, pageSize},
+      {where}
     );
   }
 

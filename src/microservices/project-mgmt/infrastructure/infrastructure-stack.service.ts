@@ -7,43 +7,43 @@ export class ProjectInfrastructureStackService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findUniqueOrThrow(
-    params: Prisma.InfrastructureStackFindUniqueOrThrowArgs
+    args: Prisma.InfrastructureStackFindUniqueOrThrowArgs
   ): Promise<InfrastructureStack> {
-    return await this.prisma.infrastructureStack.findUniqueOrThrow(params);
+    return await this.prisma.infrastructureStack.findUniqueOrThrow(args);
   }
 
   async findMany(
-    params: Prisma.InfrastructureStackFindManyArgs
+    args: Prisma.InfrastructureStackFindManyArgs
   ): Promise<InfrastructureStack[]> {
-    return await this.prisma.infrastructureStack.findMany(params);
+    return await this.prisma.infrastructureStack.findMany(args);
   }
 
-  async findManyWithPagination(
-    params: Prisma.InfrastructureStackFindManyArgs,
-    pagination?: {page: number; pageSize: number}
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.InfrastructureStackFindManyArgs
   ) {
-    return await this.prisma.findManyWithPagination(
-      Prisma.ModelName.InfrastructureStack,
-      params,
-      pagination
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.InfrastructureStack,
+      pagination,
+      findManyArgs,
+    });
   }
 
   async create(
-    params: Prisma.InfrastructureStackCreateArgs
+    args: Prisma.InfrastructureStackCreateArgs
   ): Promise<InfrastructureStack> {
-    return await this.prisma.infrastructureStack.create(params);
+    return await this.prisma.infrastructureStack.create(args);
   }
 
   async update(
-    params: Prisma.InfrastructureStackUpdateArgs
+    args: Prisma.InfrastructureStackUpdateArgs
   ): Promise<InfrastructureStack> {
-    return await this.prisma.infrastructureStack.update(params);
+    return await this.prisma.infrastructureStack.update(args);
   }
 
   async delete(
-    params: Prisma.InfrastructureStackDeleteArgs
+    args: Prisma.InfrastructureStackDeleteArgs
   ): Promise<InfrastructureStack> {
-    return await this.prisma.infrastructureStack.delete(params);
+    return await this.prisma.infrastructureStack.delete(args);
   }
 }

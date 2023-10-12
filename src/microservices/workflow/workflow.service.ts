@@ -7,36 +7,32 @@ export class WorkflowService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findUniqueOrThrow(
-    params: Prisma.WorkflowFindUniqueOrThrowArgs
+    args: Prisma.WorkflowFindUniqueOrThrowArgs
   ): Promise<Workflow> {
-    return await this.prisma.workflow.findUniqueOrThrow(params);
+    return await this.prisma.workflow.findUniqueOrThrow(args);
   }
 
-  async findMany(params: Prisma.WorkflowFindManyArgs) {
-    return await this.prisma.workflow.findMany(params);
-  }
-
-  async findManyWithPagination(
-    params: Prisma.WorkflowFindManyArgs,
-    pagination?: {page: number; pageSize: number}
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.WorkflowFindManyArgs
   ) {
-    return await this.prisma.findManyWithPagination(
-      Prisma.ModelName.Workflow,
-      params,
-      pagination
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.Workflow,
+      pagination,
+      findManyArgs,
+    });
   }
 
-  async create(params: Prisma.WorkflowCreateArgs): Promise<Workflow> {
-    return await this.prisma.workflow.create(params);
+  async create(args: Prisma.WorkflowCreateArgs): Promise<Workflow> {
+    return await this.prisma.workflow.create(args);
   }
 
-  async update(params: Prisma.WorkflowUpdateArgs): Promise<Workflow> {
-    return await this.prisma.workflow.update(params);
+  async update(args: Prisma.WorkflowUpdateArgs): Promise<Workflow> {
+    return await this.prisma.workflow.update(args);
   }
 
-  async delete(params: Prisma.WorkflowDeleteArgs): Promise<Workflow> {
-    return await this.prisma.workflow.delete(params);
+  async delete(args: Prisma.WorkflowDeleteArgs): Promise<Workflow> {
+    return await this.prisma.workflow.delete(args);
   }
 
   /* End */

@@ -61,6 +61,21 @@ export async function prismaMiddleware(
       default:
         return next(params);
     }
+  } else if (
+    params.model === Prisma.ModelName.ElasticsearchDatasourceIndexField
+  ) {
+    // [middleware] The indexId from HTTP request is string type. Convert it to number type.
+    if (params.action === 'create') {
+      if (
+        params.args['data']['indexId'] &&
+        typeof params.args['data']['indexId'] === 'string'
+      ) {
+        params.args['data']['indexId'] = parseInt(
+          params.args['data']['indexId']
+        );
+      }
+    }
+    return next(params);
   } else if (params.model === Prisma.ModelName.InfrastructureStack) {
     // [middleware] Set the default stack name. AWS Infrastructure stack name must satisfy regular expression pattern: "[a-zA-Z][-a-zA-Z0-9]*".
     if (params.action === 'create') {

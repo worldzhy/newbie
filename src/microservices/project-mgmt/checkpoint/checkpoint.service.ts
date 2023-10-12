@@ -7,44 +7,44 @@ export class ProjectCheckpointService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findUniqueOrThrow(
-    params: Prisma.ProjectCheckpointFindUniqueOrThrowArgs
+    args: Prisma.ProjectCheckpointFindUniqueOrThrowArgs
   ): Promise<ProjectCheckpoint> {
-    return await this.prisma.projectCheckpoint.findUniqueOrThrow(params);
+    return await this.prisma.projectCheckpoint.findUniqueOrThrow(args);
   }
 
   async findMany(
-    params: Prisma.ProjectCheckpointFindManyArgs
+    args: Prisma.ProjectCheckpointFindManyArgs
   ): Promise<ProjectCheckpoint[]> {
-    return await this.prisma.projectCheckpoint.findMany(params);
+    return await this.prisma.projectCheckpoint.findMany(args);
   }
 
-  async findManyWithPagination(
-    params: Prisma.ProjectCheckpointFindManyArgs,
-    pagination?: {page: number; pageSize: number}
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.ProjectCheckpointFindManyArgs
   ) {
-    return await this.prisma.findManyWithPagination(
-      Prisma.ModelName.ProjectCheckpoint,
-      params,
-      pagination
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.ProjectCheckpoint,
+      pagination,
+      findManyArgs,
+    });
   }
 
   async create(
-    params: Prisma.ProjectCheckpointCreateArgs
+    args: Prisma.ProjectCheckpointCreateArgs
   ): Promise<ProjectCheckpoint> {
-    return await this.prisma.projectCheckpoint.create(params);
+    return await this.prisma.projectCheckpoint.create(args);
   }
 
   async update(
-    params: Prisma.ProjectCheckpointUpdateArgs
+    args: Prisma.ProjectCheckpointUpdateArgs
   ): Promise<ProjectCheckpoint> {
-    return await this.prisma.projectCheckpoint.update(params);
+    return await this.prisma.projectCheckpoint.update(args);
   }
 
   async delete(
-    params: Prisma.ProjectCheckpointDeleteArgs
+    args: Prisma.ProjectCheckpointDeleteArgs
   ): Promise<ProjectCheckpoint> {
-    return await this.prisma.projectCheckpoint.delete(params);
+    return await this.prisma.projectCheckpoint.delete(args);
   }
 
   /* End */

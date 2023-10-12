@@ -6,7 +6,7 @@ import {
   Post,
   Body,
   Param,
-  NotFoundException,
+  Query,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {
@@ -49,8 +49,14 @@ export class ElasticsearchDataboardController {
   }
 
   @Get('')
-  async getElasticsearchDataboards(): Promise<ElasticsearchDataboard[]> {
-    return await this.elasticsearchDataboardService.findMany({});
+  async getElasticsearchDataboards(
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number
+  ) {
+    return await this.elasticsearchDataboardService.findManyInManyPages({
+      page,
+      pageSize,
+    });
   }
 
   @Get(':databoardId')

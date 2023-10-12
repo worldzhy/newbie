@@ -40,10 +40,10 @@ export class WorkflowStateController {
   }
 
   @Get('')
-  async getWorkflowStates(
-    @Query('workflowId') workflowId?: string
-  ): Promise<WorkflowState[]> {
-    return await this.workflowStateService.findMany({where: {workflowId}});
+  async getWorkflowStates(@Query('workflowId') workflowId?: string) {
+    return await this.workflowStateService.findManyInOnePage({
+      where: {workflowId},
+    });
   }
 
   @Patch(':stateId')

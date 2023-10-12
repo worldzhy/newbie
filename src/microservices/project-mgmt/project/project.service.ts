@@ -7,36 +7,36 @@ export class ProjectService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findUniqueOrThrow(
-    params: Prisma.ProjectFindUniqueOrThrowArgs
+    args: Prisma.ProjectFindUniqueOrThrowArgs
   ): Promise<Project> {
-    return await this.prisma.project.findUniqueOrThrow(params);
+    return await this.prisma.project.findUniqueOrThrow(args);
   }
 
-  async findMany(params: Prisma.ProjectFindManyArgs): Promise<Project[]> {
-    return await this.prisma.project.findMany(params);
+  async findMany(args: Prisma.ProjectFindManyArgs): Promise<Project[]> {
+    return await this.prisma.project.findMany(args);
   }
 
-  async findManyWithPagination(
-    params: Prisma.ProjectFindManyArgs,
-    pagination?: {page: number; pageSize: number}
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.ProjectFindManyArgs
   ) {
-    return await this.prisma.findManyWithPagination(
-      Prisma.ModelName.Project,
-      params,
-      pagination
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.Project,
+      pagination,
+      findManyArgs,
+    });
   }
 
-  async create(params: Prisma.ProjectCreateArgs): Promise<Project> {
-    return await this.prisma.project.create(params);
+  async create(args: Prisma.ProjectCreateArgs): Promise<Project> {
+    return await this.prisma.project.create(args);
   }
 
-  async update(params: Prisma.ProjectUpdateArgs): Promise<Project> {
-    return await this.prisma.project.update(params);
+  async update(args: Prisma.ProjectUpdateArgs): Promise<Project> {
+    return await this.prisma.project.update(args);
   }
 
-  async delete(params: Prisma.ProjectDeleteArgs): Promise<Project> {
-    return await this.prisma.project.delete(params);
+  async delete(args: Prisma.ProjectDeleteArgs): Promise<Project> {
+    return await this.prisma.project.delete(args);
   }
 
   async checkExistence(id: string) {

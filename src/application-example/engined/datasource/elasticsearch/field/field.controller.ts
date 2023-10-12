@@ -6,6 +6,7 @@ import {
   Post,
   Body,
   Param,
+  Query,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {ElasticsearchDatasourceIndexField, Prisma} from '@prisma/client';
@@ -41,10 +42,13 @@ export class ElasticsearchDatasourceIndexFieldController {
   }
 
   @Get('')
-  async getElasticsearchDatasourceIndexFields(): Promise<
-    ElasticsearchDatasourceIndexField[]
-  > {
-    return await this.elasticsearchDatasourceIndexFieldService.findMany({});
+  async getElasticsearchDatasourceIndexFields(
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number
+  ) {
+    return await this.elasticsearchDatasourceIndexFieldService.findManyInManyPages(
+      {page, pageSize}
+    );
   }
 
   @Get(':indexId')

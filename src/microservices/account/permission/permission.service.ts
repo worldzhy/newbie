@@ -7,25 +7,36 @@ export class PermissionService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findUniqueOrThrow(
-    params: Prisma.PermissionFindUniqueOrThrowArgs
+    args: Prisma.PermissionFindUniqueOrThrowArgs
   ): Promise<Permission> {
-    return await this.prisma.permission.findUniqueOrThrow(params);
+    return await this.prisma.permission.findUniqueOrThrow(args);
   }
 
-  async findMany(params: Prisma.PermissionFindManyArgs): Promise<Permission[]> {
-    return await this.prisma.permission.findMany(params);
+  async findMany(args: Prisma.PermissionFindManyArgs): Promise<Permission[]> {
+    return await this.prisma.permission.findMany(args);
   }
 
-  async create(params: Prisma.PermissionCreateArgs): Promise<Permission> {
-    return await this.prisma.permission.create(params);
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.PermissionFindManyArgs
+  ) {
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.Permission,
+      pagination,
+      findManyArgs,
+    });
   }
 
-  async update(params: Prisma.PermissionUpdateArgs): Promise<Permission> {
-    return await this.prisma.permission.update(params);
+  async create(args: Prisma.PermissionCreateArgs): Promise<Permission> {
+    return await this.prisma.permission.create(args);
   }
 
-  async delete(params: Prisma.PermissionDeleteArgs): Promise<Permission> {
-    return await this.prisma.permission.delete(params);
+  async update(args: Prisma.PermissionUpdateArgs): Promise<Permission> {
+    return await this.prisma.permission.update(args);
+  }
+
+  async delete(args: Prisma.PermissionDeleteArgs): Promise<Permission> {
+    return await this.prisma.permission.delete(args);
   }
 
   /* End */

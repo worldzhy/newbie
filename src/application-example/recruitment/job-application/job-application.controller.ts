@@ -174,7 +174,8 @@ export class JobApplicationController {
       where = {AND: whereConditions};
     }
 
-    return await this.jobApplicationService.findManyWithPagination(
+    return await this.jobApplicationService.findManyInManyPages(
+      {page, pageSize},
       {
         where: where,
         orderBy: {updatedAt: 'desc'},
@@ -185,8 +186,7 @@ export class JobApplicationController {
             include: {payload: true},
           },
         },
-      },
-      {page, pageSize}
+      }
     );
   }
 
@@ -221,7 +221,8 @@ export class JobApplicationController {
     ) as {userId: string};
 
     // [step 2] Return job applications.
-    return await this.jobApplicationService.findManyWithPagination(
+    return await this.jobApplicationService.findManyInManyPages(
+      {page, pageSize},
       {
         where: {
           workflows: {some: {processedByUserIds: {has: userId}}},
@@ -234,8 +235,7 @@ export class JobApplicationController {
             include: {payload: true},
           },
         },
-      },
-      {page, pageSize}
+      }
     );
   }
 
@@ -275,7 +275,8 @@ export class JobApplicationController {
 
     // [step 2] Get job applications.
     const jobApplications =
-      await this.jobApplicationService.findManyWithPagination(
+      await this.jobApplicationService.findManyInManyPages(
+        {page, pageSize},
         {
           where: where,
           orderBy: {updatedAt: 'desc'},
@@ -288,8 +289,7 @@ export class JobApplicationController {
               },
             },
           },
-        },
-        {page, pageSize}
+        }
       );
 
     // [step 3] Process before return.

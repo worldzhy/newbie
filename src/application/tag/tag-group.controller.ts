@@ -40,8 +40,11 @@ export class TagGroupController {
   }
 
   @Get('')
-  async getTagGroups() {
-    return await this.tagGroupService.findManyWithPagination({});
+  async getTagGroups(
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number
+  ) {
+    return await this.tagGroupService.findManyInManyPages({page, pageSize});
   }
 
   @Get(':tagGroupId')

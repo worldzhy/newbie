@@ -42,10 +42,10 @@ export class WarehouseSkuController {
     @Query('page') page: number,
     @Query('pageSize') pageSize: number
   ) {
-    return await this.warehouseSkuService.findManyWithPagination(
-      {},
-      {page, pageSize}
-    );
+    return await this.warehouseSkuService.findManyInManyPages({
+      page,
+      pageSize,
+    });
   }
 
   @Get(':warehouseWarehouseSkuId')

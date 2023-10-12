@@ -12,12 +12,6 @@ export class ReservationService {
     return await this.prisma.reservation.findUniqueOrThrow(params);
   }
 
-  async findMany(
-    params: Prisma.ReservationFindManyArgs
-  ): Promise<Reservation[]> {
-    return await this.prisma.reservation.findMany(params);
-  }
-
   async create(params: Prisma.ReservationCreateArgs): Promise<Reservation> {
     return await this.prisma.reservation.create(params);
   }

@@ -476,8 +476,6 @@ model SmsNotification {
 // !! ------------------------------------------------------------ //
 // * Order                                                         //
 // * OrderItem                                                     //
-// * Customer                                                      //
-// * Address                                                       //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
 
 model Order {
@@ -491,8 +489,6 @@ model Order {
   stripePaymentIntent StripePaymentIntent[]
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
-  customer            Customer?             @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  customerId          String?
 
   @@schema("microservice/order-mgmt")
 }
@@ -507,36 +503,6 @@ model OrderItem {
   updatedAt  DateTime @updatedAt
   order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId    String
-
-  @@schema("microservice/order-mgmt")
-}
-
-model Customer {
-  id                      String    @id @default(cuid())
-  name                    String?
-  phone                   String?
-  email                   String?
-  identificationNumber    String?
-  taxIdentificationNumber String?
-  addresses               Address[]
-  orders                  Order[]
-  createdAt               DateTime  @default(now())
-  updatedAt               DateTime  @updatedAt
-
-  @@schema("microservice/order-mgmt")
-}
-
-model Address {
-  id         String   @id @default(cuid())
-  address    String
-  city       String
-  state      String?
-  zipcode    String?
-  isPrimary  Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  customerId String
 
   @@schema("microservice/order-mgmt")
 }

@@ -7,54 +7,54 @@ export class WorkflowRouteService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findUniqueOrThrow(
-    params: Prisma.WorkflowRouteFindUniqueOrThrowArgs
+    args: Prisma.WorkflowRouteFindUniqueOrThrowArgs
   ): Promise<WorkflowRoute> {
-    return await this.prisma.workflowRoute.findUniqueOrThrow(params);
+    return await this.prisma.workflowRoute.findUniqueOrThrow(args);
   }
 
   async findFirstOrThrow(
-    params: Prisma.WorkflowRouteFindFirstOrThrowArgs
+    args: Prisma.WorkflowRouteFindFirstOrThrowArgs
   ): Promise<WorkflowRoute> {
-    return await this.prisma.workflowRoute.findFirstOrThrow(params);
+    return await this.prisma.workflowRoute.findFirstOrThrow(args);
   }
 
-  async findMany(params: Prisma.WorkflowRouteFindManyArgs) {
-    return await this.prisma.workflowRoute.findMany(params);
+  async findMany(args: Prisma.WorkflowRouteFindManyArgs) {
+    return await this.prisma.workflowRoute.findMany(args);
   }
 
-  async findManyWithPagination(
-    params: Prisma.WorkflowRouteFindManyArgs,
-    pagination?: {page: number; pageSize: number}
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.WorkflowRouteFindManyArgs
   ) {
-    return await this.prisma.findManyWithPagination(
-      Prisma.ModelName.WorkflowRoute,
-      params,
-      pagination
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.WorkflowRoute,
+      pagination,
+      findManyArgs,
+    });
   }
 
-  async create(params: Prisma.WorkflowRouteCreateArgs): Promise<WorkflowRoute> {
-    return await this.prisma.workflowRoute.create(params);
+  async create(args: Prisma.WorkflowRouteCreateArgs): Promise<WorkflowRoute> {
+    return await this.prisma.workflowRoute.create(args);
   }
 
   async createMany(
-    params: Prisma.WorkflowRouteCreateManyArgs
+    args: Prisma.WorkflowRouteCreateManyArgs
   ): Promise<Prisma.BatchPayload> {
-    return await this.prisma.workflowRoute.createMany(params);
+    return await this.prisma.workflowRoute.createMany(args);
   }
 
-  async update(params: Prisma.WorkflowRouteUpdateArgs): Promise<WorkflowRoute> {
-    return await this.prisma.workflowRoute.update(params);
+  async update(args: Prisma.WorkflowRouteUpdateArgs): Promise<WorkflowRoute> {
+    return await this.prisma.workflowRoute.update(args);
   }
 
   async updateMany(
-    params: Prisma.WorkflowRouteUpdateManyArgs
+    args: Prisma.WorkflowRouteUpdateManyArgs
   ): Promise<Prisma.BatchPayload> {
-    return await this.prisma.workflowRoute.updateMany(params);
+    return await this.prisma.workflowRoute.updateMany(args);
   }
 
-  async delete(params: Prisma.WorkflowRouteDeleteArgs): Promise<WorkflowRoute> {
-    return await this.prisma.workflowRoute.delete(params);
+  async delete(args: Prisma.WorkflowRouteDeleteArgs): Promise<WorkflowRoute> {
+    return await this.prisma.workflowRoute.delete(args);
   }
 
   /* End */

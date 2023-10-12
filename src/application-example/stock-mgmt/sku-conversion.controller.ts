@@ -42,10 +42,10 @@ export class SkuConversionController {
     @Query('page') page: number,
     @Query('pageSize') pageSize: number
   ) {
-    return await this.skuConversionService.findManyWithPagination(
-      {},
-      {page, pageSize}
-    );
+    return await this.skuConversionService.findManyInManyPages({
+      page,
+      pageSize,
+    });
   }
 
   @Get(':skuConversionId')

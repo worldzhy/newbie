@@ -7,52 +7,50 @@ export class JobApplicationWorkflowTaskService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findUnique(
-    params: Prisma.JobApplicationWorkflowTaskFindUniqueArgs
+    args: Prisma.JobApplicationWorkflowTaskFindUniqueArgs
   ): Promise<JobApplicationWorkflowTask | null> {
-    return await this.prisma.jobApplicationWorkflowTask.findUnique(params);
+    return await this.prisma.jobApplicationWorkflowTask.findUnique(args);
   }
 
   async findUniqueOrThrow(
-    params: Prisma.JobApplicationWorkflowTaskFindUniqueOrThrowArgs
+    args: Prisma.JobApplicationWorkflowTaskFindUniqueOrThrowArgs
   ): Promise<JobApplicationWorkflowTask> {
-    return await this.prisma.jobApplicationWorkflowTask.findUniqueOrThrow(
-      params
-    );
+    return await this.prisma.jobApplicationWorkflowTask.findUniqueOrThrow(args);
   }
 
   async findMany(
-    params: Prisma.JobApplicationWorkflowTaskFindManyArgs
+    args: Prisma.JobApplicationWorkflowTaskFindManyArgs
   ): Promise<JobApplicationWorkflowTask[]> {
-    return await this.prisma.jobApplicationWorkflowTask.findMany(params);
+    return await this.prisma.jobApplicationWorkflowTask.findMany(args);
   }
 
-  async findManyWithPagination(
-    params: Prisma.JobApplicationWorkflowTaskFindManyArgs,
-    pagination?: {page: number; pageSize: number}
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.JobApplicationWorkflowTaskFindManyArgs
   ) {
-    return await this.prisma.findManyWithPagination(
-      Prisma.ModelName.JobApplicationWorkflowTask,
-      params,
-      pagination
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.JobApplicationWorkflowTask,
+      pagination,
+      findManyArgs,
+    });
   }
 
   async create(
-    params: Prisma.JobApplicationWorkflowTaskCreateArgs
+    args: Prisma.JobApplicationWorkflowTaskCreateArgs
   ): Promise<JobApplicationWorkflowTask> {
-    return await this.prisma.jobApplicationWorkflowTask.create(params);
+    return await this.prisma.jobApplicationWorkflowTask.create(args);
   }
 
   async update(
-    params: Prisma.JobApplicationWorkflowTaskUpdateArgs
+    args: Prisma.JobApplicationWorkflowTaskUpdateArgs
   ): Promise<JobApplicationWorkflowTask> {
-    return await this.prisma.jobApplicationWorkflowTask.update(params);
+    return await this.prisma.jobApplicationWorkflowTask.update(args);
   }
 
   async delete(
-    params: Prisma.JobApplicationWorkflowTaskDeleteArgs
+    args: Prisma.JobApplicationWorkflowTaskDeleteArgs
   ): Promise<JobApplicationWorkflowTask> {
-    return await this.prisma.jobApplicationWorkflowTask.delete(params);
+    return await this.prisma.jobApplicationWorkflowTask.delete(args);
   }
 
   /* End */

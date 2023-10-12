@@ -79,9 +79,9 @@ export class EventContainerController {
     //   {year: 'desc', month: 'desc', name: 'asc'};
 
     // [step 2] Get eventContainers.
-    return await this.eventContainerService.findManyWithPagination(
-      {where},
-      {page, pageSize}
+    return await this.eventContainerService.findManyInManyPages(
+      {page, pageSize},
+      {where}
     );
   }
 

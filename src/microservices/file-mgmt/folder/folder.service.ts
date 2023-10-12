@@ -7,25 +7,36 @@ export class FolderService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findUniqueOrThrow(
-    params: Prisma.FolderFindUniqueOrThrowArgs
+    args: Prisma.FolderFindUniqueOrThrowArgs
   ): Promise<Folder> {
-    return await this.prisma.folder.findUniqueOrThrow(params);
+    return await this.prisma.folder.findUniqueOrThrow(args);
   }
 
-  async findMany(params: Prisma.FolderFindManyArgs): Promise<Folder[]> {
-    return await this.prisma.folder.findMany(params);
+  async findMany(args: Prisma.FolderFindManyArgs): Promise<Folder[]> {
+    return await this.prisma.folder.findMany(args);
   }
 
-  async create(params: Prisma.FolderCreateArgs): Promise<Folder> {
-    return await this.prisma.folder.create(params);
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.FolderFindManyArgs
+  ) {
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.Folder,
+      pagination,
+      findManyArgs,
+    });
   }
 
-  async update(params: Prisma.FolderUpdateArgs): Promise<Folder> {
-    return await this.prisma.folder.update(params);
+  async create(args: Prisma.FolderCreateArgs): Promise<Folder> {
+    return await this.prisma.folder.create(args);
   }
 
-  async delete(params: Prisma.FolderDeleteArgs): Promise<Folder> {
-    return await this.prisma.folder.delete(params);
+  async update(args: Prisma.FolderUpdateArgs): Promise<Folder> {
+    return await this.prisma.folder.update(args);
+  }
+
+  async delete(args: Prisma.FolderDeleteArgs): Promise<Folder> {
+    return await this.prisma.folder.delete(args);
   }
 
   async checkExistence(id: number) {

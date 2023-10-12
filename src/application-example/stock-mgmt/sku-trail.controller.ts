@@ -42,10 +42,7 @@ export class SkuTrailController {
     @Query('page') page: number,
     @Query('pageSize') pageSize: number
   ) {
-    return await this.skuTrailService.findManyWithPagination(
-      {},
-      {page, pageSize}
-    );
+    return await this.skuTrailService.findManyInManyPages({page, pageSize});
   }
 
   @Get(':skuTrailId')

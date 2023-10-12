@@ -6,45 +6,41 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 export class PlaceService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUnique(params: Prisma.PlaceFindUniqueArgs): Promise<Place | null> {
-    return await this.prisma.place.findUnique(params);
+  async findUnique(args: Prisma.PlaceFindUniqueArgs): Promise<Place | null> {
+    return await this.prisma.place.findUnique(args);
   }
 
   async findUniqueOrThrow(
-    params: Prisma.PlaceFindUniqueOrThrowArgs
+    args: Prisma.PlaceFindUniqueOrThrowArgs
   ): Promise<Place> {
-    return await this.prisma.place.findUniqueOrThrow(params);
+    return await this.prisma.place.findUniqueOrThrow(args);
   }
 
-  async findMany(params: Prisma.PlaceFindManyArgs): Promise<Place[]> {
-    return await this.prisma.place.findMany(params);
-  }
-
-  async findManyWithPagination(
-    params: Prisma.PlaceFindManyArgs,
-    pagination?: {page: number; pageSize: number}
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.PlaceFindManyArgs
   ) {
-    return await this.prisma.findManyWithPagination(
-      Prisma.ModelName.Place,
-      params,
-      pagination
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.Place,
+      pagination,
+      findManyArgs,
+    });
   }
 
-  async create(params: Prisma.PlaceCreateArgs): Promise<Place> {
-    return await this.prisma.place.create(params);
+  async create(args: Prisma.PlaceCreateArgs): Promise<Place> {
+    return await this.prisma.place.create(args);
   }
 
-  async update(params: Prisma.PlaceUpdateArgs): Promise<Place> {
-    return await this.prisma.place.update(params);
+  async update(args: Prisma.PlaceUpdateArgs): Promise<Place> {
+    return await this.prisma.place.update(args);
   }
 
-  async upsert(params: Prisma.PlaceUpsertArgs): Promise<Place> {
-    return await this.prisma.place.upsert(params);
+  async upsert(args: Prisma.PlaceUpsertArgs): Promise<Place> {
+    return await this.prisma.place.upsert(args);
   }
 
-  async delete(params: Prisma.PlaceDeleteArgs): Promise<Place> {
-    return await this.prisma.place.delete(params);
+  async delete(args: Prisma.PlaceDeleteArgs): Promise<Place> {
+    return await this.prisma.place.delete(args);
   }
 
   /* End */

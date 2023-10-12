@@ -7,44 +7,38 @@ export class ProjectElementService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findUniqueOrThrow(
-    params: Prisma.ProjectElementFindUniqueOrThrowArgs
+    args: Prisma.ProjectElementFindUniqueOrThrowArgs
   ): Promise<ProjectElement> {
-    return await this.prisma.projectElement.findUniqueOrThrow(params);
+    return await this.prisma.projectElement.findUniqueOrThrow(args);
   }
 
   async findMany(
-    params: Prisma.ProjectElementFindManyArgs
+    args: Prisma.ProjectElementFindManyArgs
   ): Promise<ProjectElement[]> {
-    return await this.prisma.projectElement.findMany(params);
+    return await this.prisma.projectElement.findMany(args);
   }
 
-  async findManyWithPagination(
-    params: Prisma.ProjectElementFindManyArgs,
-    pagination?: {page: number; pageSize: number}
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.ProjectElementFindManyArgs
   ) {
-    return await this.prisma.findManyWithPagination(
-      Prisma.ModelName.ProjectElement,
-      params,
-      pagination
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.ProjectElement,
+      pagination,
+      findManyArgs,
+    });
   }
 
-  async create(
-    params: Prisma.ProjectElementCreateArgs
-  ): Promise<ProjectElement> {
-    return await this.prisma.projectElement.create(params);
+  async create(args: Prisma.ProjectElementCreateArgs): Promise<ProjectElement> {
+    return await this.prisma.projectElement.create(args);
   }
 
-  async update(
-    params: Prisma.ProjectElementUpdateArgs
-  ): Promise<ProjectElement> {
-    return await this.prisma.projectElement.update(params);
+  async update(args: Prisma.ProjectElementUpdateArgs): Promise<ProjectElement> {
+    return await this.prisma.projectElement.update(args);
   }
 
-  async delete(
-    params: Prisma.ProjectElementDeleteArgs
-  ): Promise<ProjectElement> {
-    return await this.prisma.projectElement.delete(params);
+  async delete(args: Prisma.ProjectElementDeleteArgs): Promise<ProjectElement> {
+    return await this.prisma.projectElement.delete(args);
   }
 
   /* End */

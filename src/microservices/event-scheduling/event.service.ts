@@ -7,48 +7,43 @@ export class EventService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findUniqueOrThrow(
-    params: Prisma.EventFindUniqueOrThrowArgs
+    args: Prisma.EventFindUniqueOrThrowArgs
   ): Promise<Event> {
-    return await this.prisma.event.findUniqueOrThrow(params);
+    return await this.prisma.event.findUniqueOrThrow(args);
   }
 
-  async findMany(params: Prisma.EventFindManyArgs): Promise<Event[]> {
-    return await this.prisma.event.findMany(params);
-  }
-
-  async findManyWithPagination(
-    params: Prisma.EventFindManyArgs,
-    pagination?: {page: number; pageSize: number}
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.EventFindManyArgs
   ) {
-    return await this.prisma.findManyWithPagination(
-      Prisma.ModelName.Event,
-      params,
-      pagination
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.Event,
+      pagination,
+      findManyArgs,
+    });
   }
-
-  async create(params: Prisma.EventCreateArgs): Promise<Event> {
-    return await this.prisma.event.create(params);
+  async create(args: Prisma.EventCreateArgs): Promise<Event> {
+    return await this.prisma.event.create(args);
   }
 
   async createMany(
-    params: Prisma.EventCreateManyArgs
+    args: Prisma.EventCreateManyArgs
   ): Promise<Prisma.BatchPayload> {
-    return await this.prisma.event.createMany(params);
+    return await this.prisma.event.createMany(args);
   }
 
-  async update(params: Prisma.EventUpdateArgs): Promise<Event> {
-    return await this.prisma.event.update(params);
+  async update(args: Prisma.EventUpdateArgs): Promise<Event> {
+    return await this.prisma.event.update(args);
   }
 
   async updateMany(
-    params: Prisma.EventUpdateManyArgs
+    args: Prisma.EventUpdateManyArgs
   ): Promise<Prisma.BatchPayload> {
-    return await this.prisma.event.updateMany(params);
+    return await this.prisma.event.updateMany(args);
   }
 
-  async delete(params: Prisma.EventDeleteArgs): Promise<Event> {
-    return await this.prisma.event.delete(params);
+  async delete(args: Prisma.EventDeleteArgs): Promise<Event> {
+    return await this.prisma.event.delete(args);
   }
 
   /* End */

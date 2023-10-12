@@ -14,32 +14,20 @@ export class ElasticsearchDatasourceIndexFieldService {
     );
   }
 
-  async findMany(
-    params: Prisma.ElasticsearchDatasourceIndexFieldFindManyArgs
-  ): Promise<ElasticsearchDatasourceIndexField[]> {
-    return await this.prisma.elasticsearchDatasourceIndexField.findMany(params);
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.ElasticsearchDatasourceIndexFieldFindManyArgs
+  ) {
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.ElasticsearchDatasourceIndexField,
+      pagination,
+      findManyArgs,
+    });
   }
 
   async create(
     params: Prisma.ElasticsearchDatasourceIndexFieldCreateArgs
   ): Promise<ElasticsearchDatasourceIndexField> {
-    // [middleware] The indexId from HTTP request is string type. Convert it to number type.
-    this.prisma.$use(async (params, next) => {
-      if (params.model === 'ElasticsearchDatasourceIndexField') {
-        if (params.action === 'create') {
-          if (
-            params.args['data']['indexId'] &&
-            typeof params.args['data']['indexId'] === 'string'
-          ) {
-            params.args['data']['indexId'] = parseInt(
-              params.args['data']['indexId']
-            );
-          }
-        }
-      }
-      return next(params);
-    });
-
     return await this.prisma.elasticsearchDatasourceIndexField.create(params);
   }
 

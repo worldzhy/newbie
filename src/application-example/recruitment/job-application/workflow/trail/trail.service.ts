@@ -7,53 +7,53 @@ export class JobApplicationWorkflowTrailService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findUnique(
-    params: Prisma.JobApplicationWorkflowTrailFindUniqueArgs
+    args: Prisma.JobApplicationWorkflowTrailFindUniqueArgs
   ): Promise<JobApplicationWorkflowTrail | null> {
-    return await this.prisma.jobApplicationWorkflowTrail.findUnique(params);
+    return await this.prisma.jobApplicationWorkflowTrail.findUnique(args);
   }
 
   async findMany(
-    params: Prisma.JobApplicationWorkflowTrailFindManyArgs
+    args: Prisma.JobApplicationWorkflowTrailFindManyArgs
   ): Promise<JobApplicationWorkflowTrail[]> {
-    return await this.prisma.jobApplicationWorkflowTrail.findMany(params);
+    return await this.prisma.jobApplicationWorkflowTrail.findMany(args);
   }
 
-  async findManyWithPagination(
-    params: Prisma.JobApplicationWorkflowTrailFindManyArgs,
-    pagination?: {
+  async findManyInManyPages(
+    pagination: {
       page: number;
       pageSize: number;
-    }
+    },
+    findManyArgs: Prisma.JobApplicationWorkflowTrailFindManyArgs
   ) {
-    return await this.prisma.findManyWithPagination(
-      Prisma.ModelName.JobApplicationWorkflowTrail,
-      params,
-      pagination
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.JobApplicationWorkflowTrail,
+      pagination,
+      findManyArgs,
+    });
   }
 
   async create(
-    params: Prisma.JobApplicationWorkflowTrailCreateArgs
+    args: Prisma.JobApplicationWorkflowTrailCreateArgs
   ): Promise<JobApplicationWorkflowTrail> {
-    return await this.prisma.jobApplicationWorkflowTrail.create(params);
+    return await this.prisma.jobApplicationWorkflowTrail.create(args);
   }
 
   async update(
-    params: Prisma.JobApplicationWorkflowTrailUpdateArgs
+    args: Prisma.JobApplicationWorkflowTrailUpdateArgs
   ): Promise<JobApplicationWorkflowTrail> {
-    return await this.prisma.jobApplicationWorkflowTrail.update(params);
+    return await this.prisma.jobApplicationWorkflowTrail.update(args);
   }
 
   async delete(
-    params: Prisma.JobApplicationWorkflowTrailDeleteArgs
+    args: Prisma.JobApplicationWorkflowTrailDeleteArgs
   ): Promise<JobApplicationWorkflowTrail> {
-    return await this.prisma.jobApplicationWorkflowTrail.delete(params);
+    return await this.prisma.jobApplicationWorkflowTrail.delete(args);
   }
 
   async count(
-    params: Prisma.JobApplicationWorkflowTrailCountArgs
+    args: Prisma.JobApplicationWorkflowTrailCountArgs
   ): Promise<number> {
-    return await this.prisma.jobApplicationWorkflowTrail.count(params);
+    return await this.prisma.jobApplicationWorkflowTrail.count(args);
   }
 
   /* End */

@@ -45,9 +45,9 @@ export class JobApplicationWorkflowTrailController {
     }
 
     // [step 2] Get workflow steps.
-    const result = await this.workflowTrailService.findManyWithPagination(
-      {where: where, orderBy: {createdAt: 'desc'}},
-      {page, pageSize}
+    const result = await this.workflowTrailService.findManyInManyPages(
+      {page, pageSize},
+      {where: where, orderBy: {createdAt: 'desc'}}
     );
 
     // [step 4] Process before return.

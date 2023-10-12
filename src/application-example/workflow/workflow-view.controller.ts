@@ -41,8 +41,11 @@ export class WorkflowViewController {
 
   @Get('start-views')
   async getWorkflowStartViews(@Query('workflowId') workflowId?: string) {
-    return await this.workflowViewService.findMany({
-      where: {workflowId: workflowId, inboundRoutes: {some: {startSign: true}}},
+    return await this.workflowViewService.findManyInOnePage({
+      where: {
+        workflowId: workflowId,
+        inboundRoutes: {some: {startSign: true}},
+      },
       include: {
         components: {orderBy: {sort: 'asc'}},
         inboundRoutes: {include: {state: true}},

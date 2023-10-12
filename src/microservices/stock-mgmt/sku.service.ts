@@ -6,37 +6,30 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 export class SkuService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUniqueOrThrow(
-    params: Prisma.SkuFindUniqueOrThrowArgs
-  ): Promise<Sku> {
-    return await this.prisma.sku.findUniqueOrThrow(params);
+  async findUniqueOrThrow(args: Prisma.SkuFindUniqueOrThrowArgs): Promise<Sku> {
+    return await this.prisma.sku.findUniqueOrThrow(args);
   }
 
-  async findMany(params: Prisma.SkuFindManyArgs): Promise<Sku[]> {
-    return await this.prisma.sku.findMany(params);
-  }
-
-  async findManyWithPagination(
-    params: Prisma.SkuFindManyArgs,
-    pagination?: {page: number; pageSize: number}
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.SkuFindManyArgs
   ) {
-    return await this.prisma.findManyWithPagination(
-      Prisma.ModelName.Sku,
-      params,
-      pagination
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.Sku,
+      pagination,
+      findManyArgs,
+    });
+  }
+  async create(args: Prisma.SkuCreateArgs): Promise<Sku> {
+    return await this.prisma.sku.create(args);
   }
 
-  async create(params: Prisma.SkuCreateArgs): Promise<Sku> {
-    return await this.prisma.sku.create(params);
+  async update(args: Prisma.SkuUpdateArgs): Promise<Sku> {
+    return await this.prisma.sku.update(args);
   }
 
-  async update(params: Prisma.SkuUpdateArgs): Promise<Sku> {
-    return await this.prisma.sku.update(params);
-  }
-
-  async delete(params: Prisma.SkuDeleteArgs): Promise<Sku> {
-    return await this.prisma.sku.delete(params);
+  async delete(args: Prisma.SkuDeleteArgs): Promise<Sku> {
+    return await this.prisma.sku.delete(args);
   }
 
   creat;

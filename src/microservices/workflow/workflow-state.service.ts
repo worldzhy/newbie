@@ -7,42 +7,45 @@ export class WorkflowStateService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findUniqueOrThrow(
-    params: Prisma.WorkflowStateFindUniqueOrThrowArgs
+    args: Prisma.WorkflowStateFindUniqueOrThrowArgs
   ): Promise<WorkflowState> {
-    return await this.prisma.workflowState.findUniqueOrThrow(params);
+    return await this.prisma.workflowState.findUniqueOrThrow(args);
   }
 
-  async findMany(params: Prisma.WorkflowStateFindManyArgs) {
-    return await this.prisma.workflowState.findMany(params);
+  async findManyInOnePage(findManyArgs?: Prisma.WorkflowStateFindManyArgs) {
+    return await this.prisma.findManyInOnePage({
+      model: Prisma.ModelName.WorkflowState,
+      findManyArgs,
+    });
   }
 
-  async findManyWithPagination(
-    params: Prisma.WorkflowStateFindManyArgs,
-    pagination?: {page: number; pageSize: number}
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.WorkflowStateFindManyArgs
   ) {
-    return await this.prisma.findManyWithPagination(
-      Prisma.ModelName.WorkflowState,
-      params,
-      pagination
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.WorkflowState,
+      pagination,
+      findManyArgs,
+    });
   }
 
-  async create(params: Prisma.WorkflowStateCreateArgs): Promise<WorkflowState> {
-    return await this.prisma.workflowState.create(params);
+  async create(args: Prisma.WorkflowStateCreateArgs): Promise<WorkflowState> {
+    return await this.prisma.workflowState.create(args);
   }
 
   async createMany(
-    params: Prisma.WorkflowStateCreateManyArgs
+    args: Prisma.WorkflowStateCreateManyArgs
   ): Promise<Prisma.BatchPayload> {
-    return await this.prisma.workflowState.createMany(params);
+    return await this.prisma.workflowState.createMany(args);
   }
 
-  async update(params: Prisma.WorkflowStateUpdateArgs): Promise<WorkflowState> {
-    return await this.prisma.workflowState.update(params);
+  async update(args: Prisma.WorkflowStateUpdateArgs): Promise<WorkflowState> {
+    return await this.prisma.workflowState.update(args);
   }
 
-  async delete(params: Prisma.WorkflowStateDeleteArgs): Promise<WorkflowState> {
-    return await this.prisma.workflowState.delete(params);
+  async delete(args: Prisma.WorkflowStateDeleteArgs): Promise<WorkflowState> {
+    return await this.prisma.workflowState.delete(args);
   }
 
   /* End */

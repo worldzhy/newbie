@@ -38,13 +38,6 @@ export class ElasticsearchDataboardColumnController {
     return await this.elasticsearchDataboardColumnService.create({data: body});
   }
 
-  @Get('')
-  async getElasticsearchDataboardColumns(): Promise<
-    ElasticsearchDataboardColumn[]
-  > {
-    return await this.elasticsearchDataboardColumnService.findMany({});
-  }
-
   @Get(':columnId')
   async getElasticsearchDataboardColumn(
     @Param('columnId') columnId: number

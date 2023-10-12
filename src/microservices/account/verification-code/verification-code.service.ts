@@ -30,33 +30,44 @@ export class VerificationCodeService {
   }
 
   async findUniqueOrThrow(
-    params: Prisma.VerificationCodeFindUniqueArgs
+    args: Prisma.VerificationCodeFindUniqueArgs
   ): Promise<VerificationCode> {
-    return await this.prisma.verificationCode.findUniqueOrThrow(params);
+    return await this.prisma.verificationCode.findUniqueOrThrow(args);
   }
 
   async findMany(
-    params: Prisma.VerificationCodeFindManyArgs
+    args: Prisma.VerificationCodeFindManyArgs
   ): Promise<VerificationCode[]> {
-    return await this.prisma.verificationCode.findMany(params);
+    return await this.prisma.verificationCode.findMany(args);
+  }
+
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.VerificationCodeFindManyArgs
+  ) {
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.VerificationCode,
+      pagination,
+      findManyArgs,
+    });
   }
 
   async create(
-    params: Prisma.VerificationCodeCreateArgs
+    args: Prisma.VerificationCodeCreateArgs
   ): Promise<VerificationCode> {
-    return await this.prisma.verificationCode.create(params);
+    return await this.prisma.verificationCode.create(args);
   }
 
   async update(
-    params: Prisma.VerificationCodeUpdateArgs
+    args: Prisma.VerificationCodeUpdateArgs
   ): Promise<VerificationCode> {
-    return await this.prisma.verificationCode.update(params);
+    return await this.prisma.verificationCode.update(args);
   }
 
   async delete(
-    params: Prisma.VerificationCodeDeleteArgs
+    args: Prisma.VerificationCodeDeleteArgs
   ): Promise<VerificationCode> {
-    return await this.prisma.verificationCode.delete(params);
+    return await this.prisma.verificationCode.delete(args);
   }
 
   async generateForEmail(

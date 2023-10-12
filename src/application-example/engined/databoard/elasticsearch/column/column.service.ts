@@ -7,47 +7,52 @@ export class ElasticsearchDataboardColumnService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findUniqueOrThrow(
-    params: Prisma.ElasticsearchDataboardColumnFindUniqueArgs
+    args: Prisma.ElasticsearchDataboardColumnFindUniqueArgs
   ): Promise<ElasticsearchDataboardColumn> {
     return await this.prisma.elasticsearchDataboardColumn.findUniqueOrThrow(
-      params
+      args
     );
   }
 
-  async findMany(
-    params: Prisma.ElasticsearchDataboardColumnFindManyArgs
-  ): Promise<ElasticsearchDataboardColumn[]> {
-    return await this.prisma.elasticsearchDataboardColumn.findMany(params);
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.ElasticsearchDataboardColumnFindManyArgs
+  ) {
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.ElasticsearchDataboardColumn,
+      pagination,
+      findManyArgs,
+    });
   }
 
   async create(
-    params: Prisma.ElasticsearchDataboardColumnCreateArgs
+    args: Prisma.ElasticsearchDataboardColumnCreateArgs
   ): Promise<ElasticsearchDataboardColumn> {
-    return await this.prisma.elasticsearchDataboardColumn.create(params);
+    return await this.prisma.elasticsearchDataboardColumn.create(args);
   }
 
   async createMany(
-    params: Prisma.ElasticsearchDataboardColumnCreateManyArgs
+    args: Prisma.ElasticsearchDataboardColumnCreateManyArgs
   ): Promise<Prisma.BatchPayload> {
-    return await this.prisma.elasticsearchDataboardColumn.createMany(params);
+    return await this.prisma.elasticsearchDataboardColumn.createMany(args);
   }
 
   async update(
-    params: Prisma.ElasticsearchDataboardColumnUpdateArgs
+    args: Prisma.ElasticsearchDataboardColumnUpdateArgs
   ): Promise<ElasticsearchDataboardColumn> {
-    return await this.prisma.elasticsearchDataboardColumn.update(params);
+    return await this.prisma.elasticsearchDataboardColumn.update(args);
   }
 
   async delete(
-    params: Prisma.ElasticsearchDataboardColumnDeleteArgs
+    args: Prisma.ElasticsearchDataboardColumnDeleteArgs
   ): Promise<ElasticsearchDataboardColumn> {
-    return await this.prisma.elasticsearchDataboardColumn.delete(params);
+    return await this.prisma.elasticsearchDataboardColumn.delete(args);
   }
 
   async deleteMany(
-    params: Prisma.ElasticsearchDataboardColumnDeleteManyArgs
+    args: Prisma.ElasticsearchDataboardColumnDeleteManyArgs
   ): Promise<Prisma.BatchPayload> {
-    return await this.prisma.elasticsearchDataboardColumn.deleteMany(params);
+    return await this.prisma.elasticsearchDataboardColumn.deleteMany(args);
   }
 
   /* End */

@@ -7,38 +7,32 @@ export class SkuConversionService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findUniqueOrThrow(
-    params: Prisma.SkuConversionFindUniqueOrThrowArgs
+    args: Prisma.SkuConversionFindUniqueOrThrowArgs
   ): Promise<SkuConversion> {
-    return await this.prisma.skuConversion.findUniqueOrThrow(params);
+    return await this.prisma.skuConversion.findUniqueOrThrow(args);
   }
 
-  async findMany(
-    params: Prisma.SkuConversionFindManyArgs
-  ): Promise<SkuConversion[]> {
-    return await this.prisma.skuConversion.findMany(params);
-  }
-
-  async findManyWithPagination(
-    params: Prisma.SkuConversionFindManyArgs,
-    pagination?: {page: number; pageSize: number}
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.SkuConversionFindManyArgs
   ) {
-    return await this.prisma.findManyWithPagination(
-      Prisma.ModelName.SkuConversion,
-      params,
-      pagination
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.SkuConversion,
+      pagination,
+      findManyArgs,
+    });
   }
 
-  async create(params: Prisma.SkuConversionCreateArgs): Promise<SkuConversion> {
-    return await this.prisma.skuConversion.create(params);
+  async create(args: Prisma.SkuConversionCreateArgs): Promise<SkuConversion> {
+    return await this.prisma.skuConversion.create(args);
   }
 
-  async update(params: Prisma.SkuConversionUpdateArgs): Promise<SkuConversion> {
-    return await this.prisma.skuConversion.update(params);
+  async update(args: Prisma.SkuConversionUpdateArgs): Promise<SkuConversion> {
+    return await this.prisma.skuConversion.update(args);
   }
 
-  async delete(params: Prisma.SkuConversionDeleteArgs): Promise<SkuConversion> {
-    return await this.prisma.skuConversion.delete(params);
+  async delete(args: Prisma.SkuConversionDeleteArgs): Promise<SkuConversion> {
+    return await this.prisma.skuConversion.delete(args);
   }
 
   /* End */

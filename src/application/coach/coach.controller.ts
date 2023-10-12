@@ -93,12 +93,12 @@ export class CoachController {
     }
 
     // [step 2] Get coaches.
-    const result = await this.userService.findManyWithPagination(
+    const result = await this.userService.findManyInManyPages(
+      {page, pageSize},
       {
-        where: where,
+        where,
         include: {profile: true},
-      },
-      {page, pageSize}
+      }
     );
     const coaches = result.records as User[];
 

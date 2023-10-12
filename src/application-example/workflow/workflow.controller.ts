@@ -6,6 +6,7 @@ import {
   Post,
   Body,
   Param,
+  Query,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Workflow, Prisma} from '@prisma/client';
@@ -38,8 +39,11 @@ export class WorkflowController {
   }
 
   @Get('')
-  async getWorkflows(): Promise<Workflow[]> {
-    return await this.workflowService.findMany({});
+  async getWorkflows(
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number
+  ) {
+    return await this.workflowService.findManyInManyPages({page, pageSize});
   }
 
   @Get(':workflowId')

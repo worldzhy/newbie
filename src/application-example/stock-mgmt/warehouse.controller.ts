@@ -42,10 +42,7 @@ export class WarehouseController {
     @Query('page') page: number,
     @Query('pageSize') pageSize: number
   ) {
-    return await this.warehouseService.findManyWithPagination(
-      {},
-      {page, pageSize}
-    );
+    return await this.warehouseService.findManyInManyPages({page, pageSize});
   }
 
   @Get(':warehouseWarehouseId')

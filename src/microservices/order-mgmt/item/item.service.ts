@@ -7,25 +7,32 @@ export class OrderItemService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findUniqueOrThrow(
-    params: Prisma.OrderItemFindUniqueOrThrowArgs
+    args: Prisma.OrderItemFindUniqueOrThrowArgs
   ): Promise<OrderItem> {
-    return await this.prisma.orderItem.findUniqueOrThrow(params);
+    return await this.prisma.orderItem.findUniqueOrThrow(args);
   }
 
-  async findMany(params: Prisma.OrderItemFindManyArgs): Promise<OrderItem[]> {
-    return await this.prisma.orderItem.findMany(params);
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.OrderItemFindManyArgs
+  ) {
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.OrderItem,
+      pagination,
+      findManyArgs,
+    });
   }
 
-  async create(params: Prisma.OrderItemCreateArgs): Promise<OrderItem> {
-    return await this.prisma.orderItem.create(params);
+  async create(args: Prisma.OrderItemCreateArgs): Promise<OrderItem> {
+    return await this.prisma.orderItem.create(args);
   }
 
-  async update(params: Prisma.OrderItemUpdateArgs): Promise<OrderItem> {
-    return await this.prisma.orderItem.update(params);
+  async update(args: Prisma.OrderItemUpdateArgs): Promise<OrderItem> {
+    return await this.prisma.orderItem.update(args);
   }
 
-  async delete(params: Prisma.OrderItemDeleteArgs): Promise<OrderItem> {
-    return await this.prisma.orderItem.delete(params);
+  async delete(args: Prisma.OrderItemDeleteArgs): Promise<OrderItem> {
+    return await this.prisma.orderItem.delete(args);
   }
 
   /* End */

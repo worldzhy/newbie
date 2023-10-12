@@ -7,45 +7,45 @@ import {verifyUuid} from '@toolkit/validators/user.validator';
 export class UserService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUnique(params: Prisma.UserFindUniqueArgs): Promise<User | null> {
-    return await this.prisma.user.findUnique(params);
+  async findUnique(args: Prisma.UserFindUniqueArgs): Promise<User | null> {
+    return await this.prisma.user.findUnique(args);
   }
 
   async findUniqueOrThrow(
-    params: Prisma.UserFindUniqueOrThrowArgs
+    args: Prisma.UserFindUniqueOrThrowArgs
   ): Promise<User> {
-    return await this.prisma.user.findUniqueOrThrow(params);
+    return await this.prisma.user.findUniqueOrThrow(args);
   }
 
-  async findMany(params: Prisma.UserFindManyArgs): Promise<User[]> {
-    return await this.prisma.user.findMany(params);
+  async findMany(args: Prisma.UserFindManyArgs): Promise<User[]> {
+    return await this.prisma.user.findMany(args);
   }
 
-  async findManyWithPagination(
-    params: Prisma.UserFindManyArgs,
-    pagination?: {page: number; pageSize: number}
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.UserFindManyArgs
   ) {
-    return await this.prisma.findManyWithPagination(
-      Prisma.ModelName.User,
-      params,
-      pagination
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.User,
+      pagination,
+      findManyArgs,
+    });
   }
 
-  async create(params: Prisma.UserCreateArgs): Promise<User> {
-    return await this.prisma.user.create(params);
+  async create(args: Prisma.UserCreateArgs): Promise<User> {
+    return await this.prisma.user.create(args);
   }
 
-  async update(params: Prisma.UserUpdateArgs): Promise<User> {
-    return await this.prisma.user.update(params);
+  async update(args: Prisma.UserUpdateArgs): Promise<User> {
+    return await this.prisma.user.update(args);
   }
 
-  async delete(params: Prisma.UserDeleteArgs): Promise<User> {
-    return await this.prisma.user.delete(params);
+  async delete(args: Prisma.UserDeleteArgs): Promise<User> {
+    return await this.prisma.user.delete(args);
   }
 
-  async count(params: Prisma.UserCountArgs): Promise<number> {
-    return await this.prisma.user.count(params);
+  async count(args: Prisma.UserCountArgs): Promise<number> {
+    return await this.prisma.user.count(args);
   }
 
   /**

@@ -110,9 +110,9 @@ export class JobApplicationWorkflowTaskController {
     }
 
     // [step 2] Get records.
-    return await this.jobApplicationWorkflowTaskService.findManyWithPagination(
-      {where: where},
-      {page, pageSize}
+    return await this.jobApplicationWorkflowTaskService.findManyInManyPages(
+      {page, pageSize},
+      {where}
     );
   }
 

@@ -58,10 +58,7 @@ export class PlaceController {
     @Query('page') page: number,
     @Query('pageSize') pageSize: number
   ) {
-    return await this.locationService.findManyWithPagination(
-      {},
-      {page, pageSize}
-    );
+    return await this.locationService.findManyInManyPages({page, pageSize});
   }
 
   @Get(':placeId')

@@ -7,44 +7,43 @@ export class ProjectEnvironmentService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findUniqueOrThrow(
-    params: Prisma.ProjectEnvironmentFindUniqueOrThrowArgs
+    args: Prisma.ProjectEnvironmentFindUniqueOrThrowArgs
   ): Promise<ProjectEnvironment> {
-    return await this.prisma.projectEnvironment.findUniqueOrThrow(params);
+    return await this.prisma.projectEnvironment.findUniqueOrThrow(args);
   }
 
   async findMany(
-    params: Prisma.ProjectEnvironmentFindManyArgs
+    args: Prisma.ProjectEnvironmentFindManyArgs
   ): Promise<ProjectEnvironment[]> {
-    return await this.prisma.projectEnvironment.findMany(params);
+    return await this.prisma.projectEnvironment.findMany(args);
   }
 
-  async findManyWithPagination(
-    params: Prisma.ProjectEnvironmentFindManyArgs,
-    pagination?: {page: number; pageSize: number}
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.ProjectEnvironmentFindManyArgs
   ) {
-    return await this.prisma.findManyWithPagination(
-      Prisma.ModelName.ProjectEnvironment,
-      params,
-      pagination
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.ProjectEnvironment,
+      pagination,
+      findManyArgs,
+    });
   }
-
   async create(
-    params: Prisma.ProjectEnvironmentCreateArgs
+    args: Prisma.ProjectEnvironmentCreateArgs
   ): Promise<ProjectEnvironment> {
-    return await this.prisma.projectEnvironment.create(params);
+    return await this.prisma.projectEnvironment.create(args);
   }
 
   async update(
-    params: Prisma.ProjectEnvironmentUpdateArgs
+    args: Prisma.ProjectEnvironmentUpdateArgs
   ): Promise<ProjectEnvironment> {
-    return await this.prisma.projectEnvironment.update(params);
+    return await this.prisma.projectEnvironment.update(args);
   }
 
   async delete(
-    params: Prisma.ProjectEnvironmentDeleteArgs
+    args: Prisma.ProjectEnvironmentDeleteArgs
   ): Promise<ProjectEnvironment> {
-    return await this.prisma.projectEnvironment.delete(params);
+    return await this.prisma.projectEnvironment.delete(args);
   }
 
   /* End */

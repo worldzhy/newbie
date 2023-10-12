@@ -7,42 +7,45 @@ export class WorkflowViewService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findUniqueOrThrow(
-    params: Prisma.WorkflowViewFindUniqueOrThrowArgs
+    args: Prisma.WorkflowViewFindUniqueOrThrowArgs
   ): Promise<WorkflowView> {
-    return await this.prisma.workflowView.findUniqueOrThrow(params);
+    return await this.prisma.workflowView.findUniqueOrThrow(args);
   }
 
-  async findMany(params: Prisma.WorkflowViewFindManyArgs) {
-    return await this.prisma.workflowView.findMany(params);
+  async findManyInOnePage(findManyArgs?: Prisma.WorkflowViewFindManyArgs) {
+    return await this.prisma.findManyInOnePage({
+      model: Prisma.ModelName.WorkflowView,
+      findManyArgs,
+    });
   }
 
-  async findManyWithPagination(
-    params: Prisma.WorkflowViewFindManyArgs,
-    pagination?: {page: number; pageSize: number}
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.WorkflowViewFindManyArgs
   ) {
-    return await this.prisma.findManyWithPagination(
-      Prisma.ModelName.WorkflowView,
-      params,
-      pagination
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.WorkflowView,
+      pagination,
+      findManyArgs,
+    });
   }
 
-  async create(params: Prisma.WorkflowViewCreateArgs): Promise<WorkflowView> {
-    return await this.prisma.workflowView.create(params);
+  async create(args: Prisma.WorkflowViewCreateArgs): Promise<WorkflowView> {
+    return await this.prisma.workflowView.create(args);
   }
 
   async createMany(
-    params: Prisma.WorkflowViewCreateManyArgs
+    args: Prisma.WorkflowViewCreateManyArgs
   ): Promise<Prisma.BatchPayload> {
-    return await this.prisma.workflowView.createMany(params);
+    return await this.prisma.workflowView.createMany(args);
   }
 
-  async update(params: Prisma.WorkflowViewUpdateArgs): Promise<WorkflowView> {
-    return await this.prisma.workflowView.update(params);
+  async update(args: Prisma.WorkflowViewUpdateArgs): Promise<WorkflowView> {
+    return await this.prisma.workflowView.update(args);
   }
 
-  async delete(params: Prisma.WorkflowViewDeleteArgs): Promise<WorkflowView> {
-    return await this.prisma.workflowView.delete(params);
+  async delete(args: Prisma.WorkflowViewDeleteArgs): Promise<WorkflowView> {
+    return await this.prisma.workflowView.delete(args);
   }
 
   /* End */

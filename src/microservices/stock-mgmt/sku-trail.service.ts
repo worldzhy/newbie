@@ -7,36 +7,32 @@ export class SkuTrailService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findUniqueOrThrow(
-    params: Prisma.SkuTrailFindUniqueOrThrowArgs
+    args: Prisma.SkuTrailFindUniqueOrThrowArgs
   ): Promise<SkuTrail> {
-    return await this.prisma.skuTrail.findUniqueOrThrow(params);
+    return await this.prisma.skuTrail.findUniqueOrThrow(args);
   }
 
-  async findMany(params: Prisma.SkuTrailFindManyArgs): Promise<SkuTrail[]> {
-    return await this.prisma.skuTrail.findMany(params);
-  }
-
-  async findManyWithPagination(
-    params: Prisma.SkuTrailFindManyArgs,
-    pagination?: {page: number; pageSize: number}
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.SkuTrailFindManyArgs
   ) {
-    return await this.prisma.findManyWithPagination(
-      Prisma.ModelName.SkuTrail,
-      params,
-      pagination
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.SkuTrail,
+      pagination,
+      findManyArgs,
+    });
   }
 
-  async create(params: Prisma.SkuTrailCreateArgs): Promise<SkuTrail> {
-    return await this.prisma.skuTrail.create(params);
+  async create(args: Prisma.SkuTrailCreateArgs): Promise<SkuTrail> {
+    return await this.prisma.skuTrail.create(args);
   }
 
-  async update(params: Prisma.SkuTrailUpdateArgs): Promise<SkuTrail> {
-    return await this.prisma.skuTrail.update(params);
+  async update(args: Prisma.SkuTrailUpdateArgs): Promise<SkuTrail> {
+    return await this.prisma.skuTrail.update(args);
   }
 
-  async delete(params: Prisma.SkuTrailDeleteArgs): Promise<SkuTrail> {
-    return await this.prisma.skuTrail.delete(params);
+  async delete(args: Prisma.SkuTrailDeleteArgs): Promise<SkuTrail> {
+    return await this.prisma.skuTrail.delete(args);
   }
 
   /* End */

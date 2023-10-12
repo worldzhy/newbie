@@ -64,9 +64,9 @@ export class AvailabilityExpressionController {
     @Query('pageSize') pageSize: number,
     @Query('hostUserId') hostUserId?: string
   ) {
-    return await this.availabilityExpressionService.findManyWithPagination(
-      {where: {hostUserId}},
-      {page, pageSize}
+    return await this.availabilityExpressionService.findManyInManyPages(
+      {page, pageSize},
+      {where: {hostUserId}}
     );
   }
 

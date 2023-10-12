@@ -7,44 +7,44 @@ export class SkuConversionItemService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findUniqueOrThrow(
-    params: Prisma.SkuConversionItemFindUniqueOrThrowArgs
+    args: Prisma.SkuConversionItemFindUniqueOrThrowArgs
   ): Promise<SkuConversionItem> {
-    return await this.prisma.skuConversionItem.findUniqueOrThrow(params);
+    return await this.prisma.skuConversionItem.findUniqueOrThrow(args);
   }
 
   async findMany(
-    params: Prisma.SkuConversionItemFindManyArgs
+    args: Prisma.SkuConversionItemFindManyArgs
   ): Promise<SkuConversionItem[]> {
-    return await this.prisma.skuConversionItem.findMany(params);
+    return await this.prisma.skuConversionItem.findMany(args);
   }
 
-  async findManyWithPagination(
-    params: Prisma.SkuConversionItemFindManyArgs,
-    pagination?: {page: number; pageSize: number}
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.SkuConversionItemFindManyArgs
   ) {
-    return await this.prisma.findManyWithPagination(
-      Prisma.ModelName.SkuConversionItem,
-      params,
-      pagination
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.SkuConversionItem,
+      pagination,
+      findManyArgs,
+    });
   }
 
   async create(
-    params: Prisma.SkuConversionItemCreateArgs
+    args: Prisma.SkuConversionItemCreateArgs
   ): Promise<SkuConversionItem> {
-    return await this.prisma.skuConversionItem.create(params);
+    return await this.prisma.skuConversionItem.create(args);
   }
 
   async update(
-    params: Prisma.SkuConversionItemUpdateArgs
+    args: Prisma.SkuConversionItemUpdateArgs
   ): Promise<SkuConversionItem> {
-    return await this.prisma.skuConversionItem.update(params);
+    return await this.prisma.skuConversionItem.update(args);
   }
 
   async delete(
-    params: Prisma.SkuConversionItemDeleteArgs
+    args: Prisma.SkuConversionItemDeleteArgs
   ): Promise<SkuConversionItem> {
-    return await this.prisma.skuConversionItem.delete(params);
+    return await this.prisma.skuConversionItem.delete(args);
   }
 
   /* End */

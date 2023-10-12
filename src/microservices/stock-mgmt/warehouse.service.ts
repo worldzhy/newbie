@@ -7,36 +7,39 @@ export class WarehouseService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findUniqueOrThrow(
-    params: Prisma.WarehouseFindUniqueOrThrowArgs
+    args: Prisma.WarehouseFindUniqueOrThrowArgs
   ): Promise<Warehouse> {
-    return await this.prisma.warehouse.findUniqueOrThrow(params);
+    return await this.prisma.warehouse.findUniqueOrThrow(args);
   }
 
-  async findMany(params: Prisma.WarehouseFindManyArgs): Promise<Warehouse[]> {
-    return await this.prisma.warehouse.findMany(params);
+  async findManyInOnePage(findManyArgs?: Prisma.WarehouseFindManyArgs) {
+    return await this.prisma.findManyInOnePage({
+      model: Prisma.ModelName.Warehouse,
+      findManyArgs,
+    });
   }
 
-  async findManyWithPagination(
-    params: Prisma.WarehouseFindManyArgs,
-    pagination?: {page: number; pageSize: number}
+  async findManyInManyPages(
+    pagination: {page: number; pageSize: number},
+    findManyArgs?: Prisma.WarehouseFindManyArgs
   ) {
-    return await this.prisma.findManyWithPagination(
-      Prisma.ModelName.Warehouse,
-      params,
-      pagination
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.Warehouse,
+      pagination,
+      findManyArgs,
+    });
   }
 
-  async create(params: Prisma.WarehouseCreateArgs): Promise<Warehouse> {
-    return await this.prisma.warehouse.create(params);
+  async create(args: Prisma.WarehouseCreateArgs): Promise<Warehouse> {
+    return await this.prisma.warehouse.create(args);
   }
 
-  async update(params: Prisma.WarehouseUpdateArgs): Promise<Warehouse> {
-    return await this.prisma.warehouse.update(params);
+  async update(args: Prisma.WarehouseUpdateArgs): Promise<Warehouse> {
+    return await this.prisma.warehouse.update(args);
   }
 
-  async delete(params: Prisma.WarehouseDeleteArgs): Promise<Warehouse> {
-    return await this.prisma.warehouse.delete(params);
+  async delete(args: Prisma.WarehouseDeleteArgs): Promise<Warehouse> {
+    return await this.prisma.warehouse.delete(args);
   }
 
   /* End */
