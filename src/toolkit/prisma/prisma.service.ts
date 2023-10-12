@@ -8,6 +8,9 @@ import {Prisma, PrismaClient} from '@prisma/client';
 import {prismaMiddleware} from '@toolkit/prisma/prisma.middleware';
 import {CustomLoggerService} from '@toolkit/logger/logger.service';
 
+const DEFAULT_PAGE = 0;
+const DEFAULT_PAGESIZE = 100;
+
 @Injectable()
 export class PrismaService
   extends PrismaClient<
@@ -133,17 +136,17 @@ export class PrismaService
   async findManyWithPagination(
     model: Prisma.ModelName,
     params: any,
-    pagination: {
-      page?: number;
-      pageSize?: number;
+    pagination?: {
+      page: number;
+      pageSize: number;
     }
   ) {
     const modelLowercaseFirstLetter =
       model.charAt(0).toLowerCase() + model.slice(1);
-    const {skip, take} = this.getSkipAndTake({
-      page: pagination.page,
-      pageSize: pagination.pageSize,
-    });
+
+    const {skip, take} = this.getSkipAndTake(
+      pagination ?? {page: DEFAULT_PAGE, pageSize: DEFAULT_PAGESIZE}
+    );
 
     const [records, total] = await this.$transaction([
       this[modelLowercaseFirstLetter].findMany({...params, take, skip}),
@@ -153,33 +156,28 @@ export class PrismaService
     return {
       records,
       pagination: {
-        page: pagination.page,
-        pageSize: pagination.pageSize,
+        page: pagination ? pagination.page : DEFAULT_PAGE,
+        pageSize: pagination ? pagination.pageSize : DEFAULT_PAGESIZE,
         countOfCurrentPage: records.length,
         countOfTotal: total,
       },
     };
   }
 
-  private getSkipAndTake(params: {
-    page: number | undefined;
-    pageSize: number | undefined;
-  }) {
-    let take: number | undefined, skip: number | undefined;
-    if (params.page != undefined && params.pageSize != undefined) {
-      if (params.page >= 0 && params.pageSize > 0) {
-        skip = params.pageSize * params.page;
-        take = params.pageSize;
-      } else {
-        throw new BadRequestException(
-          'The minimum page is 0 and the pageSize must be larger than 0.'
-        );
-      }
-    } else {
-      skip = undefined;
-      take = undefined;
-    }
+  private getSkipAndTake(params: {page: number; pageSize: number}) {
+    const {page, pageSize} = params;
 
-    return {skip, take};
+    // if (!Number.isNaN(page) && !Number.isNaN(pageSize)) {
+    if (page >= 0 && pageSize > 0) {
+      return {
+        skip: pageSize * page,
+        take: pageSize,
+      };
+    } else {
+      throw new BadRequestException(
+        'The minimum page is 0 and the pageSize must be larger than 0.'
+      );
+    }
   }
+  // }
 }

@@ -18,7 +18,7 @@ export class TagService {
 
   async findManyWithPagination(
     params: Prisma.TagFindManyArgs,
-    pagination: {page?: number; pageSize?: number}
+    pagination?: {page: number; pageSize: number}
   ) {
     return await this.prisma.findManyWithPagination(
       Prisma.ModelName.Tag,

@@ -18,7 +18,7 @@ export class OrganizationService {
 
   async findManyWithPagination(
     params: Prisma.OrganizationFindManyArgs,
-    pagination: {page?: number; pageSize?: number}
+    pagination?: {page: number; pageSize: number}
   ) {
     return await this.prisma.findManyWithPagination(
       Prisma.ModelName.Organization,

@@ -18,7 +18,7 @@ export class SkuTrailService {
 
   async findManyWithPagination(
     params: Prisma.SkuTrailFindManyArgs,
-    pagination: {page?: number; pageSize?: number}
+    pagination?: {page: number; pageSize: number}
   ) {
     return await this.prisma.findManyWithPagination(
       Prisma.ModelName.SkuTrail,

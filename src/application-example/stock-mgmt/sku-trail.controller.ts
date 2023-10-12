@@ -39,8 +39,8 @@ export class SkuTrailController {
   @Get('')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.SkuTrail)
   async getSkuTrails(
-    @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number
   ) {
     return await this.skuTrailService.findManyWithPagination(
       {},

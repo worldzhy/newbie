@@ -20,7 +20,7 @@ export class SkuConversionItemService {
 
   async findManyWithPagination(
     params: Prisma.SkuConversionItemFindManyArgs,
-    pagination: {page?: number; pageSize?: number}
+    pagination?: {page: number; pageSize: number}
   ) {
     return await this.prisma.findManyWithPagination(
       Prisma.ModelName.SkuConversionItem,

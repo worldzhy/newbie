@@ -23,7 +23,7 @@ export class UserService {
 
   async findManyWithPagination(
     params: Prisma.UserFindManyArgs,
-    pagination: {page?: number; pageSize?: number}
+    pagination?: {page: number; pageSize: number}
   ) {
     return await this.prisma.findManyWithPagination(
       Prisma.ModelName.User,
@@ -65,6 +65,13 @@ export class UserService {
       });
       return users.length > 0 ? (users[0] as User) : null;
     }
+  }
+
+  async checkExistence(id: string) {
+    const count = await this.prisma.user.count({
+      where: {id},
+    });
+    return count > 0 ? true : false;
   }
 
   withoutPassword(user: User) {

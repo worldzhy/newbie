@@ -23,7 +23,6 @@ import {
   TrustedEntityType,
 } from '@prisma/client';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
-import {CandidateService} from 'src/application-example/recruitment/candidate/candidate.service';
 import {AccessTokenService} from '@microservices/token/access-token/access-token.service';
 import {WorkflowRouteService} from '@microservices/workflow/workflow-route.service';
 import {JobApplicationWorkflowService} from './workflow/workflow.service';
@@ -41,7 +40,6 @@ export class JobApplicationController {
     private readonly accessTokenService: AccessTokenService,
     private readonly permissionService: PermissionService,
     private readonly workflowRouteService: WorkflowRouteService,
-    private readonly candidateService: CandidateService,
     private readonly roleService: RoleService,
     private readonly jobApplicationService: JobApplicationService,
     private readonly jobApplicationWorkflowService: JobApplicationWorkflowService,
@@ -56,7 +54,7 @@ export class JobApplicationController {
       a: {
         summary: '1. Create',
         value: {
-          candidateId: 'd8141ece-f242-4288-a60a-8675538549cd',
+          candidateUserId: 'd8141ece-f242-4288-a60a-8675538549cd',
           jobSite: 'Harley-Davidson Motor Co. - York-Hourly Only',
           jobType: 'Hourly',
           jobCode: 'MED/DS CLR',
@@ -74,7 +72,7 @@ export class JobApplicationController {
     body: Prisma.JobApplicationUncheckedCreateInput
   ): Promise<JobApplication> {
     // [step 1] Guard statement.
-    if (!(await this.candidateService.checkExistence(body.candidateId))) {
+    if (!(await this.userService.checkExistence(body.candidateUserId))) {
       throw new BadRequestException('Invalid candidateId in the request body.');
     }
 
@@ -154,8 +152,8 @@ export class JobApplicationController {
   @RequirePermission(PermissionAction.List, Prisma.ModelName.JobApplication)
   async getJobApplications(
     @Request() request: Request,
-    @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number
   ) {
     // [step 1] Construct where arguments.
     let where: Prisma.JobApplicationWhereInput | undefined;
@@ -181,7 +179,7 @@ export class JobApplicationController {
         where: where,
         orderBy: {updatedAt: 'desc'},
         include: {
-          candidate: {include: {profile: true}},
+          candidateUser: {include: {profile: true}},
           workflows: {
             where: {nextRoleId: {in: roleIds}},
             include: {payload: true},
@@ -214,8 +212,8 @@ export class JobApplicationController {
   @RequirePermission(PermissionAction.List, Prisma.ModelName.JobApplication)
   async getProcessedJobApplications(
     @Request() request: Request,
-    @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number
   ) {
     // [step 1] Get userId from http request header.
     const {userId} = this.accessTokenService.decodeToken(
@@ -230,7 +228,7 @@ export class JobApplicationController {
         },
         orderBy: {updatedAt: 'desc'},
         include: {
-          candidate: {include: {profile: true}},
+          candidateUser: {include: {profile: true}},
           workflows: {
             where: {processedByUserIds: {has: userId}},
             include: {payload: true},
@@ -263,9 +261,9 @@ export class JobApplicationController {
   @Get('all')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.JobApplication)
   async getAllJobApplications(
-    @Query('dateRange') dateRange?: string[],
-    @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number,
+    @Query('dateRange') dateRange?: string[]
   ) {
     // [step 1] Construct where arguments.
     let where: Prisma.JobApplicationWhereInput | undefined;
@@ -282,7 +280,7 @@ export class JobApplicationController {
           where: where,
           orderBy: {updatedAt: 'desc'},
           include: {
-            candidate: {include: {profile: true}},
+            candidateUser: {include: {profile: true}},
             workflows: {
               include: {
                 payload: true,
@@ -339,7 +337,7 @@ export class JobApplicationController {
     return await this.jobApplicationService.findUnique({
       where: {id: jobApplicationId},
       include: {
-        candidate: {include: {profile: true}},
+        candidateUser: {include: {profile: true}},
         workflows: true,
       },
     });

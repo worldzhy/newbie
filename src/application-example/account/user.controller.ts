@@ -8,7 +8,6 @@ import {
   Param,
   Query,
   BadRequestException,
-  NotFoundException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {PermissionAction, Prisma, Role, User, UserStatus} from '@prisma/client';
@@ -75,10 +74,10 @@ export class UserController {
   @Get('')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.User)
   async getUsers(
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number,
     @Query('name') name?: string,
-    @Query('roleId') roleId?: string,
-    @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number
+    @Query('roleId') roleId?: string
   ) {
     // [step 1] Construct where argument.
     let where: Prisma.UserWhereInput | undefined;

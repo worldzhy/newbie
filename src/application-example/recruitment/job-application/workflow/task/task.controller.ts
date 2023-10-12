@@ -94,10 +94,10 @@ export class JobApplicationWorkflowTaskController {
     Prisma.ModelName.JobApplicationWorkflowTask
   )
   async getJobApplicationWorkflowTasks(
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number,
     @Request() request: Request,
-    @Query('assignedToMe') assignedToMe?: string,
-    @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number
+    @Query('assignedToMe') assignedToMe?: string
   ) {
     // [step 1] Construct where argument.
     let where: Prisma.JobApplicationWorkflowTaskWhereInput | undefined =

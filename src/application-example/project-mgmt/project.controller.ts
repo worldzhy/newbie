@@ -71,9 +71,9 @@ export class ProjectController {
   @Get('')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.Project)
   async getProjects(
-    @Query('name') name?: string,
-    @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number,
+    @Query('name') name?: string
   ) {
     // [step 1] Construct where argument.
     let where: Prisma.ProjectWhereInput | undefined;

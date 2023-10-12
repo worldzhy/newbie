@@ -22,7 +22,7 @@ export class PlaceService {
 
   async findManyWithPagination(
     params: Prisma.PlaceFindManyArgs,
-    pagination: {page?: number; pageSize?: number}
+    pagination?: {page: number; pageSize: number}
   ) {
     return await this.prisma.findManyWithPagination(
       Prisma.ModelName.Place,

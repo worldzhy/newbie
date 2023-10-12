@@ -122,7 +122,7 @@ export class JobApplicationWorkflowController {
         where: {id: workflowId},
         include: {
           jobApplication: {
-            include: {candidate: {include: {profile: true}}},
+            include: {candidateUser: {include: {profile: true}}},
           },
           payload: true,
           trails: {orderBy: {createdAt: 'desc'}},

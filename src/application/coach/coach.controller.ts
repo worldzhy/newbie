@@ -37,6 +37,7 @@ export class CoachController {
               eventVenueIds: [1, 2],
               eventTypeIds: [1, 2],
               tagIds: [1, 2],
+              coachingTenure: 2,
             },
           },
         },
@@ -65,9 +66,9 @@ export class CoachController {
 
   @Get('')
   async getUsers(
-    @Query('name') name?: string,
-    @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number,
+    @Query('name') name?: string
   ) {
     // [step 1] Construct where argument.
     let where: Prisma.UserWhereInput | undefined;
@@ -95,10 +96,7 @@ export class CoachController {
     const result = await this.userService.findManyWithPagination(
       {
         where: where,
-        include: {
-          roles: true,
-          profile: true,
-        },
+        include: {profile: true},
       },
       {page, pageSize}
     );
@@ -143,6 +141,7 @@ export class CoachController {
               eventVenueIds: [1, 2],
               eventTypeIds: [1, 2],
               tagIds: [1, 2],
+              coachingTenure: 3,
             },
           },
         },

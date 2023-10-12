@@ -18,7 +18,7 @@ export class EventService {
 
   async findManyWithPagination(
     params: Prisma.EventFindManyArgs,
-    pagination: {page?: number; pageSize?: number}
+    pagination?: {page: number; pageSize: number}
   ) {
     return await this.prisma.findManyWithPagination(
       Prisma.ModelName.Event,

@@ -20,7 +20,7 @@ export class WarehouseSkuService {
 
   async findManyWithPagination(
     params: Prisma.WarehouseSkuFindManyArgs,
-    pagination: {page?: number; pageSize?: number}
+    pagination?: {page: number; pageSize: number}
   ) {
     return await this.prisma.findManyWithPagination(
       Prisma.ModelName.WarehouseSku,

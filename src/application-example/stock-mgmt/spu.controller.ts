@@ -37,8 +37,8 @@ export class SpuController {
   @Get('')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.Spu)
   async getSpus(
-    @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number
   ) {
     return await this.spuService.findManyWithPagination({}, {page, pageSize});
   }

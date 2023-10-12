@@ -55,8 +55,8 @@ export class PlaceController {
   @Get('')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.Place)
   async getPlaces(
-    @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number
   ) {
     return await this.locationService.findManyWithPagination(
       {},

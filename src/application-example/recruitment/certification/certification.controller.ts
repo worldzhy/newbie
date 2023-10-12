@@ -9,27 +9,24 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {CandidateCertificationService} from './certification.service';
+import {CertificationService} from './certification.service';
 
-import {CandidateCertification, PermissionAction, Prisma} from '@prisma/client';
-import {CandidateService} from '../candidate.service';
+import {Certification, PermissionAction, Prisma} from '@prisma/client';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
+import {UserService} from '@microservices/account/user/user.service';
 
 @ApiTags('Recruitment / Candidate / Certification')
 @ApiBearerAuth()
 @Controller('recruitment-candidate-certifications')
-export class CandidateCertificationController {
+export class CertificationController {
   constructor(
-    private readonly candidateCertificationService: CandidateCertificationService,
-    private readonly candidateService: CandidateService
+    private readonly candidateCertificationService: CertificationService,
+    private readonly userService: UserService
   ) {}
 
   //* Create
   @Post('')
-  @RequirePermission(
-    PermissionAction.Create,
-    Prisma.ModelName.CandidateCertification
-  )
+  @RequirePermission(PermissionAction.Create, Prisma.ModelName.Certification)
   @ApiBody({
     description: '',
     examples: {
@@ -37,17 +34,17 @@ export class CandidateCertificationController {
         summary: '1. Create',
         value: {
           name: 'XCertification',
-          candidateId: 'e58e87c6-94b5-4da8-91d7-8373b029c12e',
+          candidateUserId: 'e58e87c6-94b5-4da8-91d7-8373b029c12e',
         },
       },
     },
   })
-  async createCandidateCertification(
+  async createCertification(
     @Body()
-    body: Prisma.CandidateCertificationUncheckedCreateInput
-  ): Promise<CandidateCertification> {
+    body: Prisma.CertificationUncheckedCreateInput
+  ): Promise<Certification> {
     // [step 1] Guard statement.
-    if (!(await this.candidateService.checkExistence(body.candidateId))) {
+    if (!(await this.userService.checkExistence(body.candidateUserId))) {
       throw new BadRequestException('Invalid candidateId in the request body.');
     }
 
@@ -57,23 +54,17 @@ export class CandidateCertificationController {
 
   //* Get many
   @Get('')
-  @RequirePermission(
-    PermissionAction.List,
-    Prisma.ModelName.CandidateCertification
-  )
-  async getCandidateCertifications(): Promise<CandidateCertification[]> {
+  @RequirePermission(PermissionAction.List, Prisma.ModelName.Certification)
+  async getCertifications(): Promise<Certification[]> {
     return await this.candidateCertificationService.findMany({});
   }
 
   //* Get
   @Get(':certificationId')
-  @RequirePermission(
-    PermissionAction.Get,
-    Prisma.ModelName.CandidateCertification
-  )
-  async getCandidateCertification(
+  @RequirePermission(PermissionAction.Get, Prisma.ModelName.Certification)
+  async getCertification(
     @Param('certificationId') certificationId: number
-  ): Promise<CandidateCertification | null> {
+  ): Promise<Certification | null> {
     return await this.candidateCertificationService.findUnique({
       where: {id: certificationId},
     });
@@ -81,10 +72,7 @@ export class CandidateCertificationController {
 
   //* Update
   @Patch(':certificationId')
-  @RequirePermission(
-    PermissionAction.Update,
-    Prisma.ModelName.CandidateCertification
-  )
+  @RequirePermission(PermissionAction.Update, Prisma.ModelName.Certification)
   @ApiBody({
     description: '',
     examples: {
@@ -96,10 +84,10 @@ export class CandidateCertificationController {
       },
     },
   })
-  async updateCandidateCertification(
+  async updateCertification(
     @Param('certificationId') certificationId: number,
-    @Body() body: Prisma.CandidateCertificationUpdateInput
-  ): Promise<CandidateCertification> {
+    @Body() body: Prisma.CertificationUpdateInput
+  ): Promise<Certification> {
     return await this.candidateCertificationService.update({
       where: {id: certificationId},
       data: body,
@@ -108,13 +96,10 @@ export class CandidateCertificationController {
 
   //* Delete
   @Delete(':certificationId')
-  @RequirePermission(
-    PermissionAction.Delete,
-    Prisma.ModelName.CandidateCertification
-  )
-  async deleteCandidateCertification(
+  @RequirePermission(PermissionAction.Delete, Prisma.ModelName.Certification)
+  async deleteCertification(
     @Param('certificationId') certificationId: number
-  ): Promise<CandidateCertification> {
+  ): Promise<Certification> {
     return await this.candidateCertificationService.delete({
       where: {id: certificationId},
     });

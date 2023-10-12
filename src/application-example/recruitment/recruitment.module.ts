@@ -1,8 +1,5 @@
 import {Module} from '@nestjs/common';
-import {CandidateController} from './candidate/candidate.controller';
-import {CandidateProfileController} from './candidate/profile/profile.controller';
-import {CandidateCertificationController} from './candidate/certification/certification.controller';
-import {CandidateTrainingController} from './candidate/training/training.controller';
+import {CertificationController} from './certification/certification.controller';
 import {JobController} from './job/job.controller';
 import {JobApplicationController} from './job-application/job-application.controller';
 import {JobApplicationWorkflowController} from './job-application/workflow/workflow.controller';
@@ -10,12 +7,9 @@ import {JobApplicationWorkflowFileController} from './job-application/workflow/f
 import {JobApplicationWorkflowNoteController} from './job-application/workflow/note/note.controller';
 import {JobApplicationWorkflowTaskController} from './job-application/workflow/task/task.controller';
 import {JobApplicationWorkflowTrailController} from './job-application/workflow/trail/trail.controller';
-import {CandidateService} from './candidate/candidate.service';
 import {JobService} from './job/job.service';
 import {JobApplicationService} from './job-application/job-application.service';
-import {CandidateProfileService} from './candidate/profile/profile.service';
-import {CandidateCertificationService} from './candidate/certification/certification.service';
-import {CandidateTrainingService} from './candidate/training/training.service';
+import {CertificationService} from './certification/certification.service';
 import {JobApplicationWorkflowService} from './job-application/workflow/workflow.service';
 import {JobApplicationWorkflowFileService} from './job-application/workflow/file/file.service';
 import {JobApplicationWorkflowNoteService} from './job-application/workflow/note/note.service';
@@ -24,10 +18,7 @@ import {JobApplicationWorkflowTrailService} from './job-application/workflow/tra
 
 @Module({
   controllers: [
-    CandidateController,
-    CandidateProfileController,
-    CandidateCertificationController,
-    CandidateTrainingController,
+    CertificationController,
     JobController,
     JobApplicationController,
     JobApplicationWorkflowController,
@@ -37,10 +28,7 @@ import {JobApplicationWorkflowTrailService} from './job-application/workflow/tra
     JobApplicationWorkflowTrailController,
   ],
   providers: [
-    CandidateService,
-    CandidateProfileService,
-    CandidateCertificationService,
-    CandidateTrainingService,
+    CertificationService,
     JobService,
     JobApplicationService,
     JobApplicationWorkflowService,
@@ -50,10 +38,7 @@ import {JobApplicationWorkflowTrailService} from './job-application/workflow/tra
     JobApplicationWorkflowTrailService,
   ],
   exports: [
-    CandidateService,
-    CandidateProfileService,
-    CandidateCertificationService,
-    CandidateTrainingService,
+    CertificationService,
     JobService,
     JobApplicationService,
     JobApplicationWorkflowService,

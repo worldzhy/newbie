@@ -67,7 +67,10 @@ model User {
   organizationId   String?                  @db.Uuid
   profile          UserProfile?
   roles            Role[]
+  // For recruitment application
+  jobApplications  JobApplication[]
   holdingWorkflows JobApplicationWorkflow[]
+  certifications   Certification[]
 
   @@schema("microservice/account")
 }
@@ -81,27 +84,28 @@ enum UserStatus {
 
 model UserProfile {
   // !!! Customize this model for your specific application.
-  id            String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  prefix        String?
-  fullName      String?
-  firstName     String?
-  middleName    String?
-  lastName      String?
-  suffix        String?
-  dateOfBirth   DateTime?          @db.Date
-  gender        UserProfileGender?
-  emails        Json[]
-  phones        Json[]
-  websites      Json? // {'facebook': 'https://www.facebook.com/elonmusk', 'twitter': 'https://twitter.com/elonmusk'}
-  picture       String?
-  tagIds        Int[]
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
-  user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId        String             @unique @db.Uuid
-  // For solidcore
-  eventVenueIds Int[] // event venue ids
-  eventTypeIds  Int[] // event type ids
+  id             String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  prefix         String?
+  fullName       String?
+  firstName      String?
+  middleName     String?
+  lastName       String?
+  suffix         String?
+  dateOfBirth    DateTime?          @db.Date
+  gender         UserProfileGender?
+  emails         Json[]
+  phones         Json[]
+  websites       Json? // {'facebook': 'https://www.facebook.com/elonmusk', 'twitter': 'https://twitter.com/elonmusk'}
+  picture        String?
+  tagIds         Int[]
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String             @unique @db.Uuid
+  // For fitness application
+  eventVenueIds  Int[] // event venue ids
+  eventTypeIds   Int[] // event type ids
+  coachingTenure Int?
 
   @@schema("microservice/account")
 }
@@ -1268,11 +1272,7 @@ enum ElasticsearchDataboardColumnFormatter {
 // ! ------------------------------------------------------------ //
 // !             [Application] Recruitment models                 //
 // ! ------------------------------------------------------------ //
-// * Candidate                                                    //
-// * CandidateLocation                                            //
-// * CandidateProfile                                             //
-// * CandidateCertification                                       //
-// * CandidateTraining                                            //
+// * Certification                                                //
 // * Job                                                          //
 // * JobApplication                                               //
 // * JobApplicationNote                                           //
@@ -1282,71 +1282,14 @@ enum ElasticsearchDataboardColumnFormatter {
 // * JobApplicationTestingLog                                     //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
-model Candidate {
-  id              String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  status          CandidateStatus          @default(ACTIVE)
-  createdAt       DateTime                 @default(now())
-  updatedAt       DateTime                 @updatedAt
-  profile         CandidateProfile?
-  locationId      String?                  @db.Uuid
-  certifications  CandidateCertification[]
-  trainings       CandidateTraining[]
-  jobApplications JobApplication[]
-
-  @@schema("application/recruitment")
-}
-
-enum CandidateStatus {
-  ACTIVE
-  INACTIVE
-
-  @@schema("application/recruitment")
-}
-
-model CandidateProfile {
-  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  uniqueNumber      String
-  firstName         String
-  middleName        String?
-  lastName          String
-  fullName          String?
-  dateOfBirth       DateTime? @db.Date
-  gender            String?
-  email             String?
-  primaryPhone      String
-  primaryPhoneExt   String?
-  alternatePhone    String?
-  alternatePhoneExt String?
-  websites          Json? // {'facebook': 'https://www.facebook.com/grace', 'twitter': 'https://twitter.com/elonmusk'}
-  picture           String?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  candidate         Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  candidateId       String    @unique @db.Uuid
-
-  @@schema("application/recruitment")
-}
-
-model CandidateCertification {
-  id          Int       @id @default(autoincrement())
-  name        String
-  description String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  candidateId String    @db.Uuid
-
-  @@schema("application/recruitment")
-}
-
-model CandidateTraining {
-  id          Int       @id @default(autoincrement())
-  name        String
-  description String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  candidateId String    @db.Uuid
+model Certification {
+  id              Int      @id @default(autoincrement())
+  name            String
+  description     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  candidateUser   User     @relation(fields: [candidateUserId], references: [id])
+  candidateUserId String   @db.Uuid
 
   @@schema("application/recruitment")
 }
@@ -1359,7 +1302,7 @@ model Job {
   description String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  locationId  String?  @db.Uuid
+  placeId     Int?
 
   @@schema("application/recruitment")
 }
@@ -1372,18 +1315,18 @@ enum JobType {
 }
 
 model JobApplication {
-  id          String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  state       String?
-  jobType     JobType
-  jobCode     String? // Only available when jobType is Hourly.
-  jobSite     String
-  testTypes   String[]
-  referredBy  String // This field should user.name or user.id
-  createdAt   DateTime                 @default(now())
-  updatedAt   DateTime                 @updatedAt
-  candidate   Candidate                @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  candidateId String                   @db.Uuid
-  workflows   JobApplicationWorkflow[]
+  id              String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  state           String?
+  jobType         JobType
+  jobCode         String? // Only available when jobType is Hourly.
+  jobSite         String
+  testTypes       String[]
+  referredBy      String // This field should user.name or user.id
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+  workflows       JobApplicationWorkflow[]
+  candidateUser   User                     @relation(fields: [candidateUserId], references: [id])
+  candidateUserId String                   @db.Uuid
 
   @@schema("application/recruitment")
 }

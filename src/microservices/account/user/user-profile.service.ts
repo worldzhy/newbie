@@ -18,6 +18,17 @@ export class UserProfileService {
     return await this.prisma.userProfile.findMany(params);
   }
 
+  async findManyWithPagination(
+    params: Prisma.UserProfileFindManyArgs,
+    pagination?: {page: number; pageSize: number}
+  ) {
+    return await this.prisma.findManyWithPagination(
+      Prisma.ModelName.UserProfile,
+      params,
+      pagination
+    );
+  }
+
   async create(params: Prisma.UserProfileCreateArgs): Promise<UserProfile> {
     return await this.prisma.userProfile.create(params);
   }

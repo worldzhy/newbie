@@ -24,7 +24,7 @@ export class WorkflowRouteService {
 
   async findManyWithPagination(
     params: Prisma.WorkflowRouteFindManyArgs,
-    pagination: {page?: number; pageSize?: number}
+    pagination?: {page: number; pageSize: number}
   ) {
     return await this.prisma.findManyWithPagination(
       Prisma.ModelName.WorkflowRoute,

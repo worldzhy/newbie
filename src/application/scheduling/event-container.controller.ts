@@ -60,12 +60,12 @@ export class EventContainerController {
   @Public()
   @Get('')
   async getEventContainers(
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number,
     @Query('name') name?: string,
     @Query('venueId') venueId?: number,
     @Query('year') year?: number,
-    @Query('month') month?: number,
-    @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number
+    @Query('month') month?: number
   ) {
     // [step 1] Construct where argument.
     const where: Prisma.EventContainerWhereInput = {};

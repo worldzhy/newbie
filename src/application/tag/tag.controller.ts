@@ -38,11 +38,7 @@ export class TagController {
   }
 
   @Get('')
-  async getTags(
-    @Query('groupId') groupId?: number,
-    @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number
-  ) {
+  async getTags(@Query('groupId') groupId?: number) {
     // [step 1] Construct where argument.
     let where: Prisma.TagWhereInput | undefined;
     const whereConditions: object[] = [];
@@ -58,10 +54,7 @@ export class TagController {
       // where === undefined
     }
 
-    return await this.tagService.findManyWithPagination(
-      {where},
-      {page, pageSize}
-    );
+    return await this.tagService.findManyWithPagination({where});
   }
 
   @Get(':tagId')

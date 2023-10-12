@@ -39,8 +39,8 @@ export class WarehouseSkuController {
   @Get('')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.WarehouseSku)
   async getWarehouseSkus(
-    @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number
   ) {
     return await this.warehouseSkuService.findManyWithPagination(
       {},

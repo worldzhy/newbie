@@ -26,7 +26,7 @@ export class EventContainerService {
 
   async findManyWithPagination(
     params: Prisma.EventContainerFindManyArgs,
-    pagination: {page?: number; pageSize?: number}
+    pagination?: {page: number; pageSize: number}
   ) {
     return await this.prisma.findManyWithPagination(
       Prisma.ModelName.EventContainer,

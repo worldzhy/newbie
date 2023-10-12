@@ -6,6 +6,7 @@ import {
   Post,
   Body,
   Param,
+  Query,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {PermissionAction, Prisma, UserProfile} from '@prisma/client';
@@ -52,6 +53,34 @@ export class UserProfileController {
     return await this.userProfileService.create({data: body});
   }
 
+  @Get('')
+  @RequirePermission(PermissionAction.List, Prisma.ModelName.UserProfile)
+  async getCandidateProfiles(
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number,
+    @Query('name') name?: string
+  ) {
+    // [step 1] Construct where argument.
+    let where: Prisma.UserProfileWhereInput | undefined;
+    if (name && name.trim().length > 0) {
+      where = {
+        fullName: {
+          search: name
+            .trim()
+            .split(' ')
+            .filter(word => word !== '')
+            .join('|'),
+        },
+      };
+    }
+
+    // [step 2] Get candidate profiles.
+    return await this.userProfileService.findManyWithPagination(
+      {where: where},
+      {page, pageSize}
+    );
+  }
+
   @Get(':profileId')
   @RequirePermission(PermissionAction.Get, Prisma.ModelName.UserProfile)
   async getUserProfile(
@@ -77,7 +106,11 @@ export class UserProfileController {
           suffix: 'PhD',
           dateOfBirth: '2019-05-27',
           gender: 'Female',
-          hasPCP: true,
+          emails: [{email: 'mary@hd.com'}],
+          phones: [
+            {phone: '121289182', extention: '232'},
+            {phone: '7236782462', extention: '897'},
+          ],
           address: '456 White Finch St. North Augusta, SC 29860',
           zipcode: '21000',
           geoJSON: {

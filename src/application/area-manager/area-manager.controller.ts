@@ -34,8 +34,9 @@ export class AreaManagerController {
               firstName: '',
               middleName: '',
               lastName: '',
-              locationIds: [1, 2],
               tagIds: [1, 2],
+              eventVenueIds: [1, 2],
+              coachingTenure: 2,
             },
           },
         },
@@ -64,9 +65,9 @@ export class AreaManagerController {
 
   @Get('')
   async getUsers(
-    @Query('name') name?: string,
-    @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number,
+    @Query('name') name?: string
   ) {
     // [step 1] Construct where argument.
     let where: Prisma.UserWhereInput | undefined;
@@ -94,10 +95,7 @@ export class AreaManagerController {
     const result = await this.userService.findManyWithPagination(
       {
         where: where,
-        include: {
-          roles: true,
-          profile: true,
-        },
+        include: {profile: true},
       },
       {page, pageSize}
     );
@@ -137,8 +135,9 @@ export class AreaManagerController {
               firstName: '',
               middleName: '',
               lastName: '',
-              locations: ['', ''],
               tags: ['experienced', 'patient'],
+              eventVenueIds: [1, 2],
+              coachingTenure: 2,
             },
           },
         },

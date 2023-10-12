@@ -39,8 +39,8 @@ export class WarehouseController {
   @Get('')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.Warehouse)
   async getWarehouses(
-    @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number
   ) {
     return await this.warehouseService.findManyWithPagination(
       {},

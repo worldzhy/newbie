@@ -44,9 +44,9 @@ export class ClassController {
 
   @Get('')
   async getEventTypes(
-    @Query('name') name?: string,
-    @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number,
+    @Query('name') name?: string
   ) {
     const where: Prisma.EventTypeWhereInput = {};
     if (name && name.trim()) {

@@ -34,7 +34,7 @@ export class AvailabilityExpressionService {
 
   async findManyWithPagination(
     params: Prisma.AvailabilityExpressionFindManyArgs,
-    pagination: {page?: number; pageSize?: number}
+    pagination?: {page: number; pageSize: number}
   ) {
     return await this.prisma.findManyWithPagination(
       Prisma.ModelName.AvailabilityExpression,

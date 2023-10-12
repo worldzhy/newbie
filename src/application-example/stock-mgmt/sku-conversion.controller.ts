@@ -39,8 +39,8 @@ export class SkuConversionController {
   @Get('')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.SkuConversion)
   async getSkuConversions(
-    @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number
   ) {
     return await this.skuConversionService.findManyWithPagination(
       {},

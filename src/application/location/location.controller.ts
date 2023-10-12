@@ -74,9 +74,9 @@ export class LocationController {
 
   @Get('')
   async getEventVenues(
-    @Query('name') name?: string,
-    @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number,
+    @Query('name') name?: string
   ) {
     // [step 1] Construct where argument.
     let where: Prisma.EventVenueWhereInput | undefined;

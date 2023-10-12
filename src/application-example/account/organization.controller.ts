@@ -43,9 +43,9 @@ export class OrganizationController {
   @Get('')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.Organization)
   async getOrganizations(
-    @Query('name') name?: string,
-    @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number,
+    @Query('name') name?: string
   ) {
     // [step 1] Construct where argument.
     let where: Prisma.OrganizationWhereInput | undefined;

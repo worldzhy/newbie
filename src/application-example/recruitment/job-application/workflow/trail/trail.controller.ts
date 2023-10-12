@@ -34,9 +34,9 @@ export class JobApplicationWorkflowTrailController {
     Prisma.ModelName.JobApplicationWorkflowTrail
   )
   async getWorkflowTrails(
-    @Query('workflowId') workflowId?: string,
-    @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number,
+    @Query('workflowId') workflowId?: string
   ) {
     // [step 1] Construct where argument.
     let where: Prisma.JobApplicationWorkflowTrailWhereInput | undefined;

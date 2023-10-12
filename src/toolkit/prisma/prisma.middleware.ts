@@ -73,31 +73,6 @@ export async function prismaMiddleware(
       }
     }
     return next(params);
-  } else if (params.model === Prisma.ModelName.Candidate) {
-    switch (params.action) {
-      case 'create':
-      case 'update':
-        params.args['data']['profile'][params.action]['fullName'] =
-          params.args['data']['profile'][params.action]['firstName'] +
-          ' ' +
-          (params.args['data']['profile'][params.action]['middleName']
-            ? params.args['data']['profile'][params.action]['middleName'] + ' '
-            : '') +
-          params.args['data']['profile'][params.action]['lastName'];
-
-        if (params.args['data']['profile'][params.action]['dateOfBirth']) {
-          params.args['data']['profile'][params.action]['dateOfBirth'] =
-            new Date(
-              params.args['data']['profile'][params.action][
-                'dateOfBirth'
-              ].toString()
-            );
-        }
-
-        return next(params);
-      default:
-        return next(params);
-    }
   } else if (params.model === Prisma.ModelName.EventContainer) {
     switch (params.action) {
       case 'create':
