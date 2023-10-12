@@ -26,7 +26,7 @@ export class RawDataService {
     const sqlText = `
     select distinct lower(tremailname) as tremailname, trfirstname, trlastname 
     from mindbodyorg_mindbody_sldcor_mbo_secure_views.mb.trainers 
-    where active=true and deleted=false and trainerid > 100000000 and studioid > 0 and teacher = true and tremailname is not null;;
+    where active=true and deleted=false and trainerid > 100000000 and studioid > 0 and teacher = true and tremailname is not null;
     `;
 
     const options = {
@@ -77,9 +77,8 @@ export class RawDataService {
     from
       studios as s
       left join location as l on l.studioid = s.studioid and l.stateprovcode = s.stateprovcode
-      left join visit_data as v on v.studioid = l.studioid and v.location = l.locationid
     where 
-      l.active = true and l.softdeleted = false and v.trainerid > 0 and v.visittype > 0
+      l.active = true and l.softdeleted = false
     group by 
       s.studioid,
       s.studioname,
