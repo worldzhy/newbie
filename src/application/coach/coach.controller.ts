@@ -85,7 +85,7 @@ export class CoachController {
     }
 
     if (whereConditions.length > 1) {
-      where = {OR: whereConditions};
+      where = {AND: whereConditions};
     } else if (whereConditions.length === 1) {
       where = whereConditions[0];
     } else {

@@ -72,6 +72,8 @@ export class AreaManagerController {
     // [step 1] Construct where argument.
     let where: Prisma.UserWhereInput | undefined;
     const whereConditions: object[] = [];
+
+    whereConditions.push({roles: {some: {name: ROLE_NAME_AREA_MANAGER}}});
     if (name) {
       name = name.trim();
       if (name.length > 0) {
@@ -81,10 +83,8 @@ export class AreaManagerController {
       }
     }
 
-    whereConditions.push({roles: {some: {name: ROLE_NAME_AREA_MANAGER}}});
-
     if (whereConditions.length > 1) {
-      where = {OR: whereConditions};
+      where = {AND: whereConditions};
     } else if (whereConditions.length === 1) {
       where = whereConditions[0];
     } else {
