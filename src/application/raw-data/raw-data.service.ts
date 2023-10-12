@@ -1,8 +1,8 @@
 import {Injectable} from '@nestjs/common';
 import {UserService} from '@microservices/account/user/user.service';
+import {UserProfileService} from '@microservices/account/user/user-profile.service';
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
 import {EventVenueService} from '@microservices/event-scheduling/event-venue.service';
-import {EventTypeService} from '@microservices/event-scheduling/event-type.service';
 import {EventService} from '@microservices/event-scheduling/event.service';
 import {PlaceService} from '@microservices/map/place.service';
 import {SnowflakeService} from '@toolkit/snowflake/snowflake.service';
@@ -16,10 +16,10 @@ export class RawDataService {
     private readonly snowflakeService: SnowflakeService,
     private readonly eventContainerService: EventContainerService,
     private readonly eventVenueService: EventVenueService,
-    private readonly eventTypeService: EventTypeService,
     private readonly eventService: EventService,
     private readonly placeService: PlaceService,
-    private readonly userService: UserService
+    private readonly userService: UserService,
+    private readonly userProfileService: UserProfileService
   ) {}
 
   async syncCoaches() {
@@ -292,6 +292,99 @@ export class RawDataService {
       });
     }
   }
+
+  async linkCoachAndLocations() {
+    const sqlText = `
+    select 
+      lower(t.tremailname) as tremailname, 
+      l.studioid, 
+      l.locationid
+    from 
+      trainers as t
+      left join location as l on t.studioid = l.studioid and t.location = l.locationid
+    where 
+      l.active = true and l.softdeleted = false and l.studioid > 0 and t.studioid > 0 and t.active=true and t.deleted=false and t.softdeleted = false and teacher = true and t.trainerid > 100000000 and t.tremailname is not null
+    group by 
+      t.tremailname, l.studioid, l.locationid
+    order by 
+      t.tremailname asc, l.studioid asc, l.locationid asc
+    `;
+
+    const options = {
+      sqlText,
+    };
+
+    // [step 1] Fetch raw data.
+    const coachAndLocations: any = await this.snowflakeService.execute(options);
+
+    // [step 2] Get all the coaches. The total count of coaches is about x thousands.
+    const coaches = await this.userService.findMany({
+      where: {email: {not: null}, roles: {some: {name: ROLE_NAME_COACH}}},
+      select: {
+        email: true,
+        profile: {select: {id: true, eventVenueIds: true}},
+      },
+      orderBy: {email: 'asc'},
+    });
+
+    // https://stackoverflow.com/questions/19874555/how-do-i-convert-array-of-objects-into-one-object-in-javascript
+    const emailAndLocationIdsMapping = coaches.reduce(
+      (obj, item) =>
+        Object.assign(obj, {[item.email!]: item['profile']['eventVenueIds']}),
+      {}
+    );
+    const emailAndProfileIdMapping = coaches.reduce(
+      (obj, item) => Object.assign(obj, {[item.email!]: item['profile']['id']}),
+      {}
+    );
+
+    // [step 3] Get all the locations. The total count of locations is about x hundreds.
+    const locations = await this.eventVenueService.findMany({
+      select: {
+        id: true,
+        external_locationId: true,
+        external_studioId: true,
+      },
+    });
+
+    // [step 4] Link coach and locations.
+    for (let i = 0; i < coachAndLocations.length; i++) {
+      const coachAndLocation = coachAndLocations[i];
+
+      if ((coachAndLocation.TREMAILNAME as string).endsWith('.')) {
+        coachAndLocation.TREMAILNAME = coachAndLocation.TREMAILNAME.slice(
+          0,
+          -1
+        );
+      }
+
+      for (let j = 0; j < locations.length; j++) {
+        const location = locations[j];
+        if (
+          location.external_studioId === coachAndLocation.STUDIOID &&
+          location.external_locationId === coachAndLocation.LOCATIONID
+        ) {
+          if (coachAndLocation.TREMAILNAME in emailAndLocationIdsMapping) {
+            emailAndLocationIdsMapping[coachAndLocation.TREMAILNAME].push(
+              location.id
+            );
+          }
+        }
+      }
+    }
+
+    // [step 5] Update coach eventVenueIds.
+    for (const email in emailAndLocationIdsMapping) {
+      if (emailAndLocationIdsMapping[email].length > 0) {
+        await this.userProfileService.update({
+          where: {id: emailAndProfileIdMapping[email]},
+          data: {eventVenueIds: emailAndLocationIdsMapping[email]},
+        });
+      }
+    }
+  }
+
+  async linkCoachAndClassTypes() {}
 
   /* End */
 }

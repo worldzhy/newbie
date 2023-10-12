@@ -30,5 +30,15 @@ export class RawDataController {
     await this.rawDataService.syncScheduling({venueId, year, month});
   }
 
+  @Get('link-coach-and-locations')
+  async linkCoachAndLocations() {
+    await this.rawDataService.linkCoachAndLocations();
+  }
+
+  @Get('link-coach-and-classtypes')
+  async linkCoachAndClassTypes() {
+    await this.rawDataService.linkCoachAndClassTypes();
+  }
+
   /* End */
 }

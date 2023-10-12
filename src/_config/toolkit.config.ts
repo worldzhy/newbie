@@ -47,7 +47,7 @@ export default registerAs('toolkit', () => ({
       clientSessionKeepAliveHeartbeatFrequency: 3600,
     },
     poolOption: {
-      max: 3,
+      max: 10,
       min: 0,
       acquireTimeoutMillis: 60000,
       evictionRunIntervalMillis: 60000,
