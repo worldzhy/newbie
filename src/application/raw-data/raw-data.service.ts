@@ -67,47 +67,32 @@ export class RawDataService {
     const sqlText = `
     select
       s.studioid,
+      s.studioname,
+      s.stateprovcode,
       l.locationid,
+      l.locationname,
       l.address,
       l.city,
-      l.country,
-      studioname,
-      studioshort,
-      wstype,
-      swtype,
-      s.stateprovcode,
-      locationname,
-      active,
-      invactive,
-      l.softdeleted,
-      TO_DATE(min(v.classdate)) as firstclassdate
+      l.country
     from
       studios as s
-      left join location as l on l.studioid = s.studioid
-      and s.stateprovcode = l.stateprovcode
-      left join visit_data as v on v.studioid = s.studioid and v.location = l.locationid
-    where active = true
-    and v.trainerid > 0 
-    and v.visittype > 0
+      left join location as l on l.studioid = s.studioid and l.stateprovcode = s.stateprovcode
+      left join visit_data as v on v.studioid = l.studioid and v.location = l.locationid
+    where 
+      l.active = true and l.softdeleted = false and v.trainerid > 0 and v.visittype > 0
     group by 
       s.studioid,
+      s.studioname,
+      s.stateprovcode,
       l.locationid,
+      l.locationname,
       l.address,
       l.city,
-      l.country,
-      studioname,
-      studioshort,
-      wstype,
-      swtype,
-      s.stateprovcode,
-      locationname,
-      active,
-      invactive,
-      l.softdeleted
+      l.country
     order by
       s.stateprovcode,
       s.studioid,
-      locationname;
+      l.locationname;
     `;
 
     const options = {
