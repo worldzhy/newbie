@@ -41,13 +41,16 @@ export class TagController {
   async getTags(
     @Query('page') page: number,
     @Query('pageSize') pageSize: number,
-    @Query('groupId') groupId?: number
+    @Query('name') name?: string
   ) {
     // [step 1] Construct where argument.
     let where: Prisma.TagWhereInput | undefined;
     const whereConditions: object[] = [];
-    if (groupId) {
-      whereConditions.push({groupId});
+    if (name) {
+      name = name.trim();
+      if (name.length > 0) {
+        whereConditions.push({name: {contains: name, mode: 'insensitive'}});
+      }
     }
 
     if (whereConditions.length > 1) {
