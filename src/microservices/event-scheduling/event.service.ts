@@ -1,6 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {Prisma, Event} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {generateMonthlyCalendar} from '@toolkit/utilities/datetime.util';
 
 @Injectable()
 export class EventService {
@@ -46,5 +47,76 @@ export class EventService {
     return await this.prisma.event.delete(args);
   }
 
+  copyMany(params: {
+    events: Event[];
+    from: {
+      year: number;
+      month: number;
+      week: number; // The number of week in a month, 1~6.
+    };
+    to: {
+      year: number;
+      month: number;
+      week: number; // The number of week in a month, 1~6.
+    };
+  }) {
+    const calendarOfSourceContainer = generateMonthlyCalendar(
+      params.from.year,
+      params.from.month
+    );
+    const calendarOfTargetContainer = generateMonthlyCalendar(
+      params.to.year,
+      params.to.month
+    );
+    const daysOfSourceWeek = calendarOfSourceContainer[params.from.week - 1];
+    const daysOfTargetWeek = calendarOfTargetContainer[params.to.week - 1];
+    const targetEvents: Prisma.EventUncheckedCreateWithoutContainerInput[] = [];
+
+    for (let j = 0; j < daysOfTargetWeek.length; j++) {
+      const dayOfTargetWeek = daysOfTargetWeek[j];
+
+      for (let m = 0; m < daysOfSourceWeek.length; m++) {
+        const dayOfSourceWeek = daysOfSourceWeek[m];
+        if (dayOfSourceWeek.dayOfWeek === dayOfTargetWeek.dayOfWeek) {
+          for (let n = 0; n < params.events.length; n++) {
+            const event = params.events[n];
+            if (
+              dayOfSourceWeek.year === event.year &&
+              dayOfSourceWeek.month === event.month &&
+              dayOfSourceWeek.dayOfMonth === event.dayOfMonth &&
+              dayOfSourceWeek.dayOfWeek === event.dayOfWeek
+            ) {
+              const datetimeOfStart = event.datetimeOfStart;
+              datetimeOfStart.setFullYear(dayOfTargetWeek.year);
+              datetimeOfStart.setMonth(dayOfTargetWeek.month - 1);
+              datetimeOfStart.setDate(dayOfTargetWeek.dayOfMonth);
+
+              const datetimeOfEnd = event.datetimeOfEnd;
+              datetimeOfEnd.setFullYear(dayOfTargetWeek.year);
+              datetimeOfEnd.setMonth(dayOfTargetWeek.month - 1);
+              datetimeOfEnd.setDate(dayOfTargetWeek.dayOfMonth);
+
+              targetEvents.push({
+                hostUserId: event.hostUserId,
+                year: dayOfTargetWeek.year,
+                month: dayOfTargetWeek.month,
+                dayOfMonth: dayOfTargetWeek.dayOfMonth,
+                dayOfWeek: dayOfTargetWeek.dayOfWeek,
+                hour: event.hour,
+                minute: event.minute,
+                minutesOfDuration: event.minutesOfDuration,
+                datetimeOfStart: datetimeOfStart,
+                datetimeOfEnd: datetimeOfEnd,
+                typeId: event.typeId,
+                venueId: event.venueId,
+              });
+            }
+          }
+        }
+      }
+    }
+
+    return targetEvents;
+  }
   /* End */
 }

@@ -31,6 +31,7 @@ import {CoachController} from './coach/coach.controller';
 import {CoachForSchedulingController} from './coach/coach-for-scheduling.controller';
 import {EventController} from './scheduling/event.controller';
 import {EventContainerController} from './scheduling/event-container.controller';
+import {EventCopyController} from './scheduling/event-copy.controller';
 import {HeatmapController} from './heatmap/heatmap.controller';
 import {LocationController} from './location/location.controller';
 import {TagController} from './tag/tag.controller';
@@ -74,6 +75,7 @@ import {RawDataController} from './raw-data/raw-data.controller';
     CoachForSchedulingController,
     EventController,
     EventContainerController,
+    EventCopyController,
     HeatmapController,
     LocationController,
     TagController,
