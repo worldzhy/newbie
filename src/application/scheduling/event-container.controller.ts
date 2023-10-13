@@ -223,17 +223,24 @@ export class EventContainerController {
   }
 
   @Patch(':eventContainerId/overwrite')
-  @ApiQuery({
-    name: 'fromWeekNumber',
-    type: 'number',
+  @ApiBody({
     description: 'The week number is from 1 to 6',
+    examples: {
+      a: {
+        summary: '1. Overwrite',
+        value: {
+          fromWeekNumber: 1,
+          toWeekNumbers: [2, 3],
+        },
+      },
+    },
   })
-  @ApiQuery({name: 'toWeekNumbers', type: 'number', isArray: true})
   async overwriteEventContainer(
     @Param('eventContainerId') eventContainerId: number,
-    @Query('fromWeekNumber') fromWeekNumber: number,
-    @Query('toWeekNumbers') toWeekNumbers: number[]
+    @Body() body: {fromWeekNumber: number; toWeekNumbers: number[]}
   ) {
+    const {fromWeekNumber, toWeekNumbers} = body;
+
     // [step 1] Get the container.
     const container = await this.eventContainerService.findUniqueOrThrow({
       where: {id: eventContainerId},
