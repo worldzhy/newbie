@@ -148,8 +148,8 @@ export class EventCopyController {
     // [step 2] Generate events.
     const events: Prisma.EventUncheckedCreateWithoutContainerInput[] = [];
     for (let i = 0; i < toWeekNumbers.length; i++) {
-      events.concat(
-        this.eventService.copyMany({
+      events.push(
+        ...this.eventService.copyMany({
           events: container['events'],
           from: {
             year: container.year,

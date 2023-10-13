@@ -86,12 +86,17 @@ export class EventService {
               dayOfSourceWeek.dayOfMonth === event.dayOfMonth &&
               dayOfSourceWeek.dayOfWeek === event.dayOfWeek
             ) {
-              const datetimeOfStart = event.datetimeOfStart;
+              /*
+               * With `const datetimeOfStart = event.datetimeOfStart;`,
+               ! when you set datetimeOfStart with new FullYear, Month and Date, 
+               ! the original event.datetimeOfStart will be changed.
+              */
+              const datetimeOfStart = new Date(event.datetimeOfStart);
               datetimeOfStart.setFullYear(dayOfTargetWeek.year);
               datetimeOfStart.setMonth(dayOfTargetWeek.month - 1);
               datetimeOfStart.setDate(dayOfTargetWeek.dayOfMonth);
 
-              const datetimeOfEnd = event.datetimeOfEnd;
+              const datetimeOfEnd = new Date(event.datetimeOfEnd);
               datetimeOfEnd.setFullYear(dayOfTargetWeek.year);
               datetimeOfEnd.setMonth(dayOfTargetWeek.month - 1);
               datetimeOfEnd.setDate(dayOfTargetWeek.dayOfMonth);
