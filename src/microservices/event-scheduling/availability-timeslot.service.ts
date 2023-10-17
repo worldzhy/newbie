@@ -70,6 +70,10 @@ export class AvailabilityTimeslotService {
     return await this.prisma.availabilityTimeslot.deleteMany(params);
   }
 
+  async count(params: Prisma.AvailabilityTimeslotCountArgs): Promise<number> {
+    return await this.prisma.availabilityTimeslot.count(params);
+  }
+
   async groupByHostUserId(params: {
     hostUserIds: string[];
     datetimeOfStart: Date;
