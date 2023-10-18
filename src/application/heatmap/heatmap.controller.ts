@@ -61,9 +61,9 @@ export class HeatmapController {
             select: {
               fullName: true,
               coachingTenure: true,
-              coachingQuota: true,
-              coachingQuotaOfMinPerference: true,
-              coachingQuotaOfMaxPerference: true,
+              quotaOfWeek: true,
+              quotaOfWeekMinPreference: true,
+              quotaOfWeekMaxPreference: true,
             },
           },
         },

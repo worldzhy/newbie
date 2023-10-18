@@ -72,6 +72,7 @@ export function generateMonthlyCalendar(year: number, month: number) {
   const daysOfMonth: {
     year: number;
     month: number;
+    week: number;
     dayOfMonth: number;
     dayOfWeek: number;
   }[][] = [[]];
@@ -88,6 +89,7 @@ export function generateMonthlyCalendar(year: number, month: number) {
     daysOfMonth[week].push({
       year,
       month,
+      week: week + 1,
       dayOfMonth,
       dayOfWeek,
     });

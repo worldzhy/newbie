@@ -16,8 +16,8 @@ import {AccountModule} from '@microservices/account/account.module';
 import {EventSchedulingModule} from '@microservices/event-scheduling/event-scheduling.module';
 import {MapModule} from '@microservices/map/map.module';
 import {TagModule} from '@microservices/tag/tag.module';
+import {CoachModule} from './coach/coach.module';
 import {RawDataModule} from './raw-data/raw-data.module';
-
 import {ApplicationController} from './application.controller';
 import {AccountForgotController} from './account/account-password.controller';
 import {AccountLoginController} from './account/account-login.controller';
@@ -27,11 +27,12 @@ import {AccountOthersController} from './account/account-others.controller';
 import {AreaManagerController} from './area-manager/area-manager.controller';
 import {AvailabilityExpressionController} from './coach/availability/availability-expression.controller';
 import {ClassController} from './class/class.controller';
-import {CoachController} from './coach/coach.controller';
-import {CoachForSchedulingController} from './coach/coach-for-scheduling.controller';
+import {EventCoachController} from './coach/event-coach.controller';
 import {EventController} from './scheduling/event.controller';
 import {EventContainerController} from './scheduling/event-container.controller';
 import {EventCopyController} from './scheduling/event-copy.controller';
+import {EventCheckController} from './scheduling/event-check.controller';
+import {EventFixController} from './scheduling/event-fix.controller';
 import {HeatmapController} from './heatmap/heatmap.controller';
 import {LocationController} from './location/location.controller';
 import {TagController} from './tag/tag.controller';
@@ -59,6 +60,7 @@ import {RawDataController} from './raw-data/raw-data.controller';
     TagModule,
 
     // Application
+    CoachModule,
     RawDataModule,
   ],
   controllers: [
@@ -71,11 +73,13 @@ import {RawDataController} from './raw-data/raw-data.controller';
     AreaManagerController,
     AvailabilityExpressionController,
     ClassController,
-    CoachController,
-    CoachForSchedulingController,
+    EventCoachController,
     EventController,
     EventContainerController,
     EventCopyController,
+    EventCheckController,
+    EventCoachController,
+    EventFixController,
     HeatmapController,
     LocationController,
     TagController,

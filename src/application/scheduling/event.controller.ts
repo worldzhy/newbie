@@ -2,7 +2,7 @@ import {Controller, Delete, Patch, Post, Body, Param} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Prisma, Event} from '@prisma/client';
 import {EventService} from '@microservices/event-scheduling/event.service';
-import {datePlusMinutes} from '@toolkit/utilities/datetime.util';
+import {datePlusMinutes, getWeekNumber} from '@toolkit/utilities/datetime.util';
 
 @ApiTags('Event')
 @ApiBearerAuth()
@@ -36,8 +36,9 @@ export class EventController {
               hostUserId: body.hostUserId,
               datetimeOfStart: '2023-09-01T06:00:00.000Z',
               datetimeOfEnd: '2023-09-01T06:50:00.000Z',
-              year: 2023,
+              year: body.year,
               month: body.month,
+              week: getWeekNumber(body.year, body.month, 1 + i),
               dayOfMonth: 1 + i,
               dayOfWeek: (5 + i) % 7,
               hour: 6 + j,
@@ -90,6 +91,7 @@ export class EventController {
       body.datetimeOfStart,
       body.minutesOfDuration
     );
+    body.week = getWeekNumber(body.year, body.month, body.dayOfMonth);
 
     return await this.eventService.create({
       data: body,

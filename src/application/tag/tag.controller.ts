@@ -64,6 +64,13 @@ export class TagController {
     return await this.tagService.findManyInManyPages({page, pageSize}, {where});
   }
 
+  @Get('class-installments')
+  async getClassInstallments() {
+    return await this.tagService.findManyInOnePage({
+      where: {group: {name: {contains: 'installment', mode: 'insensitive'}}},
+    });
+  }
+
   @Get(':tagId')
   async getTag(@Param('tagId') tagId: number): Promise<Tag> {
     return await this.tagService.findUniqueOrThrow({

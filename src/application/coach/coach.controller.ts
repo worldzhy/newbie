@@ -38,9 +38,9 @@ export class CoachController {
               eventTypeIds: [1, 2],
               tagIds: [1, 2],
               coachingTenure: 2,
-              coachingQuota: 4,
-              coachingQuotaOfMinPerference: 5,
-              coachingQuotaOfMaxPerference: 6,
+              quotaOfWeek: 4,
+              quotaOfWeekMinPreference: 6,
+              quotaOfWeekMaxPreference: 8,
             },
           },
         },
@@ -101,6 +101,7 @@ export class CoachController {
       {
         where,
         include: {profile: true},
+        orderBy: {profile: {fullName: 'asc'}},
       }
     );
     const coaches = result.records as User[];
@@ -145,9 +146,9 @@ export class CoachController {
               eventTypeIds: [1, 2],
               tagIds: [1, 2],
               coachingTenure: 3,
-              coachingQuota: 4,
-              coachingQuotaOfMinPerference: 5,
-              coachingQuotaOfMaxPerference: 6,
+              quotaOfWeek: 4,
+              quotaOfWeekMinPreference: 8,
+              quotaOfWeekMaxPreference: 10,
             },
           },
         },

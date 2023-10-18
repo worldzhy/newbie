@@ -43,8 +43,9 @@ export class ClassController {
   }
 
   @Get('')
-  async getEventTypes() {
+  async getEventTypes(@Query('tagId') tagId?: number) {
     return await this.eventTypeService.findManyInOnePage({
+      where: {tagId},
       orderBy: {name: 'asc'},
     });
   }

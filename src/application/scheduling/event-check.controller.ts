@@ -1,19 +1,22 @@
 import {Controller, Get, Param} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth} from '@nestjs/swagger';
-import {Event, AvailabilityTimeslotStatus} from '@prisma/client';
+import {
+  Event,
+  AvailabilityTimeslotStatus,
+  EventIssueType,
+  EventIssue,
+} from '@prisma/client';
+import {EventService} from '@microservices/event-scheduling/event.service';
+import {EventIssueService} from '@microservices/event-scheduling/event-issue.service';
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
 import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
 import {UserService} from '@microservices/account/user/user.service';
 
-enum CheckEventResultType {
-  Warning,
-  Suggestion,
-}
-enum CheckEventResultMessage {
-  Warning_CoachNotSelected = 'The coach has not been selected.',
-  Warning_CoachNotExisted = 'The coach is not existed.',
-  Warning_WrongClassType = 'The coach is not able to teach this type of class.',
-  Warning_CoachNotAvailale = 'The coach is not available.',
+enum EventIssueDescription {
+  Error_CoachNotSelected = 'The coach has not been selected.',
+  Error_CoachNotExisted = 'The coach is not existed.',
+  Error_WrongClassType = 'The coach is not able to teach this type of class.',
+  Error_CoachNotAvailale = 'The coach is not available.',
 }
 
 @ApiTags('Event Container')
@@ -22,6 +25,8 @@ enum CheckEventResultMessage {
 export class EventCheckController {
   constructor(
     private readonly availabilityTimeslotService: AvailabilityTimeslotService,
+    private readonly eventService: EventService,
+    private readonly eventIssueService: EventIssueService,
     private readonly eventContainerService: EventContainerService,
     private readonly userService: UserService
   ) {}
@@ -30,52 +35,42 @@ export class EventCheckController {
   async checkEventContainer(
     @Param('eventContainerId') eventContainerId: number
   ) {
-    const eventCheckResults: {
-      eventId: number;
-      checkResults: {type: CheckEventResultType; message: string}[];
-    }[] = [];
-
     // Get event container.
     const container = await this.eventContainerService.findUniqueOrThrow({
       where: {id: eventContainerId},
       include: {events: true},
     });
 
+    // Check each issue.
     for (let i = 0; i < container['events'].length; i++) {
       const event = container['events'][i];
-      const checkResults = await this.checkEvent(event);
-      eventCheckResults.push({eventId: event.id, checkResults});
+      await this.checkEventIssues(event);
     }
 
-    return eventCheckResults;
-  }
-
-  @Get(':eventContainerId/fix')
-  async fixEventContainer(@Param('eventContainerId') eventContainerId: number) {
-    // Get event container.
-    const container = await this.eventContainerService.findUniqueOrThrow({
-      where: {id: eventContainerId},
-      include: {events: true},
+    const events = await this.eventService.findMany({
+      where: {containerId: eventContainerId},
+      select: {
+        id: true,
+        issues: true,
+      },
     });
 
-    for (let i = 0; i < container['events'].length; i++) {
-      const event = container['events'][i];
-      const checkResults = await this.checkEvent(event);
-    }
+    return events.filter(event => {
+      return event['issues'].length > 0;
+    });
   }
 
-  async checkEvent(
-    event: Event
-  ): Promise<{type: CheckEventResultType; message: string}[]> {
-    const checkResults: {type: CheckEventResultType; message: string}[] = [];
-
+  async checkEventIssues(event: Event) {
     // [step 1] Check coach id.
     if (!event.hostUserId) {
-      checkResults.push({
-        type: CheckEventResultType.Warning,
-        message: CheckEventResultMessage.Warning_CoachNotSelected,
+      await this.eventIssueService.create({
+        data: {
+          type: EventIssueType.ERROR_COACH_NOT_EXISTED,
+          description: EventIssueDescription.Error_CoachNotExisted,
+          eventId: event.id,
+        },
       });
-      return checkResults;
+      return;
     }
 
     // [step 2] Get the coach.
@@ -84,18 +79,24 @@ export class EventCheckController {
       include: {profile: true},
     });
     if (!user) {
-      checkResults.push({
-        type: CheckEventResultType.Warning,
-        message: CheckEventResultMessage.Warning_CoachNotExisted,
+      await this.eventIssueService.create({
+        data: {
+          type: EventIssueType.ERROR_COACH_NOT_EXISTED,
+          description: EventIssueDescription.Error_CoachNotExisted,
+          eventId: event.id,
+        },
       });
-      return checkResults;
+      return;
     }
 
     // [step 3] Check class type.
     if (!user['profile']['eventTypeIds'].includes(event.typeId)) {
-      checkResults.push({
-        type: CheckEventResultType.Warning,
-        message: CheckEventResultMessage.Warning_WrongClassType,
+      await this.eventIssueService.create({
+        data: {
+          type: EventIssueType.ERROR_COACH_NOT_AVAILABLE,
+          description: EventIssueDescription.Error_WrongClassType,
+          eventId: event.id,
+        },
       });
     }
 
@@ -121,13 +122,14 @@ export class EventCheckController {
       event.minutesOfDuration /
         this.availabilityTimeslotService.MINUTES_Of_TIMESLOT
     ) {
-      checkResults.push({
-        type: CheckEventResultType.Warning,
-        message: CheckEventResultMessage.Warning_CoachNotAvailale,
+      await this.eventIssueService.create({
+        data: {
+          type: EventIssueType.ERROR_COACH_NOT_AVAILABLE,
+          description: EventIssueDescription.Error_CoachNotAvailale,
+          eventId: event.id,
+        },
       });
     }
-
-    return checkResults;
   }
 
   /* End */

@@ -10,6 +10,13 @@ export class TagService {
     return await this.prisma.tag.findUniqueOrThrow(args);
   }
 
+  async findManyInOnePage(findManyArgs?: Prisma.TagFindManyArgs) {
+    return await this.prisma.findManyInOnePage({
+      model: Prisma.ModelName.Tag,
+      findManyArgs,
+    });
+  }
+
   async findManyInManyPages(
     pagination: {page: number; pageSize: number},
     findManyArgs?: Prisma.TagFindManyArgs

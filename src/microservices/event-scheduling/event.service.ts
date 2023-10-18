@@ -52,6 +52,10 @@ export class EventService {
     return await this.prisma.event.delete(args);
   }
 
+  async count(args: Prisma.EventCountArgs): Promise<number> {
+    return await this.prisma.event.count(args);
+  }
+
   copyMany(params: {
     events: Event[];
     from: {
@@ -110,6 +114,7 @@ export class EventService {
                 hostUserId: event.hostUserId,
                 year: dayOfTargetWeek.year,
                 month: dayOfTargetWeek.month,
+                week: dayOfTargetWeek.week,
                 dayOfMonth: dayOfTargetWeek.dayOfMonth,
                 dayOfWeek: dayOfTargetWeek.dayOfWeek,
                 hour: event.hour,

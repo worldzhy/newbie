@@ -84,31 +84,31 @@ enum UserStatus {
 
 model UserProfile {
   // !!! Customize this model for your specific application.
-  id                           String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  prefix                       String?
-  fullName                     String?
-  firstName                    String?
-  middleName                   String?
-  lastName                     String?
-  suffix                       String?
-  dateOfBirth                  DateTime?          @db.Date
-  gender                       UserProfileGender?
-  emails                       Json[]
-  phones                       Json[]
-  websites                     Json? // {'facebook': 'https://www.facebook.com/elonmusk', 'twitter': 'https://twitter.com/elonmusk'}
-  picture                      String?
-  tagIds                       Int[]
-  createdAt                    DateTime           @default(now())
-  updatedAt                    DateTime           @updatedAt
-  user                         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId                       String             @unique @db.Uuid
+  id                       String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  prefix                   String?
+  fullName                 String?
+  firstName                String?
+  middleName               String?
+  lastName                 String?
+  suffix                   String?
+  dateOfBirth              DateTime?          @db.Date
+  gender                   UserProfileGender?
+  emails                   Json[]
+  phones                   Json[]
+  websites                 Json? // {'facebook': 'https://www.facebook.com/elonmusk', 'twitter': 'https://twitter.com/elonmusk'}
+  picture                  String?
+  tagIds                   Int[]
+  createdAt                DateTime           @default(now())
+  updatedAt                DateTime           @updatedAt
+  user                     User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                   String             @unique @db.Uuid
   // For fitness application
-  eventVenueIds                Int[] // event venue ids
-  eventTypeIds                 Int[] // event type ids
-  coachingTenure               Int? // 5:Senior Master Coach, 4:Pro, 3:Senior, 2:Standard, 1:New
-  coachingQuotaOfMinPerference Int?
-  coachingQuotaOfMaxPerference Int?
-  coachingQuota                Int?
+  eventVenueIds            Int[] // event venue ids
+  eventTypeIds             Int[] // event type ids
+  coachingTenure           Int? // 5:Senior Master Coach, 4:Pro, 3:Senior, 2:Standard, 1:New
+  quotaOfWeekMinPreference Int?
+  quotaOfWeekMaxPreference Int?
+  quotaOfWeek              Int? // The number of classes a coach should teach at least in a week.
 
   @@schema("microservice/account")
 }
@@ -236,6 +236,21 @@ enum AvailabilityTimeslotStatus {
   @@schema("microservice/event-scheduling")
 }
 
+enum EventIssueType {
+  ERROR_COACH_NOT_AVAILABLE
+  ERROR_COACH_NOT_EXISTED
+  WARNING_COACH_BETTER_CHOICE
+
+  @@schema("microservice/event-scheduling")
+}
+
+enum EventIssueStatus {
+  UNREPAIRED
+  REPAIRED
+
+  @@schema("microservice/event-scheduling")
+}
+
 enum EventContainerOrigin {
   EXTERNAL
   INTERNAL
@@ -290,21 +305,40 @@ model AvailabilityTimeslot {
   @@schema("microservice/event-scheduling")
 }
 
-model EventContainer {
-  id            Int                  @id @default(autoincrement())
-  name          String?
-  origin        EventContainerOrigin @default(INTERNAL)
-  status        EventContainerStatus @default(EDITING)
-  dateOfOpening DateTime?            @db.Date // Use dateOfOpening and dateOfClosure together
-  dateOfClosure DateTime?            @db.Date
-  year          Int // Use year and month together
-  month         Int
-  timezone      String? // https://www.iplocate.com/en/resources/timezones/list-of-timezones
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
-  venue         EventVenue           @relation(fields: [venueId], references: [id])
-  venueId       Int
-  events        Event[]
+model Event {
+  id                Int            @id @default(autoincrement())
+  hostUserId        String?        @db.Uuid
+  datetimeOfStart   DateTime
+  datetimeOfEnd     DateTime
+  year              Int
+  month             Int
+  week              Int // The number of week, 1~6
+  dayOfMonth        Int
+  dayOfWeek         Int
+  hour              Int
+  minute            Int
+  minutesOfDuration Int
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  issues            EventIssue[]
+  type              EventType      @relation(fields: [typeId], references: [id], onDelete: Cascade)
+  typeId            Int
+  venue             EventVenue     @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  venueId           Int
+  container         EventContainer @relation(fields: [containerId], references: [id], onDelete: Cascade)
+  containerId       Int
+  reservations      Reservation[]
+
+  @@schema("microservice/event-scheduling")
+}
+
+model EventIssue {
+  id          Int              @id @default(autoincrement())
+  type        EventIssueType
+  status      EventIssueStatus @default(UNREPAIRED)
+  description String?
+  event       Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId     Int
 
   @@schema("microservice/event-scheduling")
 }
@@ -316,7 +350,7 @@ model EventType {
   minutesOfBreak            Int?
   minutesInAdvanceToReserve Int?
   minutesInAdvanceToCancel  Int?
-  installment               Int?
+  tagId                     Int?
   createdAt                 DateTime @default(now())
   updatedAt                 DateTime @updatedAt
   events                    Event[]
@@ -350,27 +384,21 @@ model EventVenue {
   @@schema("microservice/event-scheduling")
 }
 
-model Event {
-  id                Int             @id @default(autoincrement())
-  hostUserId        String?         @db.Uuid
-  datetimeOfStart   DateTime
-  datetimeOfEnd     DateTime
-  year              Int
-  month             Int
-  dayOfMonth        Int
-  dayOfWeek         Int
-  hour              Int
-  minute            Int
-  minutesOfDuration Int
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-  type              EventType       @relation(fields: [typeId], references: [id], onDelete: Cascade)
-  typeId            Int
-  venue             EventVenue?     @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  venueId           Int
-  container         EventContainer? @relation(fields: [containerId], references: [id], onDelete: Cascade)
-  containerId       Int
-  reservations      Reservation[]
+model EventContainer {
+  id            Int                  @id @default(autoincrement())
+  name          String?
+  origin        EventContainerOrigin @default(INTERNAL)
+  status        EventContainerStatus @default(EDITING)
+  dateOfOpening DateTime?            @db.Date // Use dateOfOpening and dateOfClosure together
+  dateOfClosure DateTime?            @db.Date
+  year          Int // Use year and month together
+  month         Int
+  timezone      String? // https://www.iplocate.com/en/resources/timezones/list-of-timezones
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  venue         EventVenue           @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  venueId       Int
+  events        Event[]
 
   @@schema("microservice/event-scheduling")
 }
