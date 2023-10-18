@@ -44,7 +44,9 @@ export class ClassController {
 
   @Get('')
   async getEventTypes() {
-    return await this.eventTypeService.findManyInOnePage();
+    return await this.eventTypeService.findManyInOnePage({
+      orderBy: {name: 'asc'},
+    });
   }
 
   @Get(':eventTypeId')

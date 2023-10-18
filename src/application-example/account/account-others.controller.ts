@@ -32,7 +32,7 @@ export class AccountOthersController {
 
     // [step 2] Get UserToken record.
     const userToken = await this.accessTokenService.findFirstOrThrow({
-      where: {AND: [{token: accessToken}]},
+      where: {token: accessToken},
     });
 
     // [step 3] Get user.
@@ -162,7 +162,7 @@ export class AccountOthersController {
   }
 
   @AccessingRefreshEndpoint()
-  @Post('refresh')
+  @Get('refresh')
   @ApiCookieAuth()
   async refresh(
     @Cookies('refreshToken') refreshToken: string,

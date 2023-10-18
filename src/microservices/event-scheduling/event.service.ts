@@ -13,6 +13,10 @@ export class EventService {
     return await this.prisma.event.findUniqueOrThrow(args);
   }
 
+  async findMany(args: Prisma.EventFindManyArgs): Promise<Event[]> {
+    return await this.prisma.event.findMany(args);
+  }
+
   async findManyInManyPages(
     pagination: {page: number; pageSize: number},
     findManyArgs?: Prisma.EventFindManyArgs
@@ -23,6 +27,7 @@ export class EventService {
       findManyArgs,
     });
   }
+
   async create(args: Prisma.EventCreateArgs): Promise<Event> {
     return await this.prisma.event.create(args);
   }

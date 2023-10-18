@@ -105,7 +105,7 @@ model UserProfile {
   // For fitness application
   eventVenueIds                Int[] // event venue ids
   eventTypeIds                 Int[] // event type ids
-  coachingTenure               Int? // 1:Pro 2:Senior 3:Standard 4:HCCM
+  coachingTenure               Int? // 5:Senior Master Coach, 4:Pro, 3:Senior, 2:Standard, 1:New
   coachingQuotaOfMinPerference Int?
   coachingQuotaOfMaxPerference Int?
   coachingQuota                Int?
@@ -316,6 +316,7 @@ model EventType {
   minutesOfBreak            Int?
   minutesInAdvanceToReserve Int?
   minutesInAdvanceToCancel  Int?
+  installment               Int?
   createdAt                 DateTime @default(now())
   updatedAt                 DateTime @updatedAt
   events                    Event[]

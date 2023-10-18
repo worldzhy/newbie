@@ -23,6 +23,7 @@ export class CoachForSchedulingController {
   @Get('')
   async getUsersForScheduling(
     @Query('venueId') venueId?: number,
+    @Query('typeId') typeId?: number,
     @Query('year') year?: number,
     @Query('month') month?: number,
     @Query('dayOfMonth') dayOfMonth?: number,
@@ -35,12 +36,18 @@ export class CoachForSchedulingController {
     const whereConditions: object[] = [];
 
     whereConditions.push({roles: {some: {name: ROLE_NAME_COACH}}});
-    if (venueId) {
+    if (venueId && typeId) {
+      whereConditions.push({
+        profile: {eventVenueIds: {has: venueId}, eventTypeIds: {has: typeId}},
+      });
+    } else if (venueId) {
       whereConditions.push({profile: {eventVenueIds: {has: venueId}}});
+    } else if (venueId) {
+      whereConditions.push({profile: {eventTypeIds: {has: typeId}}});
     }
 
     if (whereConditions.length > 1) {
-      where = {OR: whereConditions};
+      where = {AND: whereConditions};
     } else if (whereConditions.length === 1) {
       where = whereConditions[0];
     } else {
@@ -50,7 +57,17 @@ export class CoachForSchedulingController {
     // [step 2] Get coaches for the specific venue.
     const coaches = await this.userService.findMany({
       where: where,
-      include: {profile: true},
+      select: {
+        profile: {
+          select: {
+            fullName: true,
+            coachingTenure: true,
+            coachingQuota: true,
+            coachingQuotaOfMinPerference: true,
+            coachingQuotaOfMaxPerference: true,
+          },
+        },
+      },
     });
 
     // [step 3] Filter coaches.
