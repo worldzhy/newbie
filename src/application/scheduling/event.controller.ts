@@ -87,6 +87,7 @@ export class EventController {
       where: {id: body.typeId},
     });
     body.minutesOfDuration = eventType.minutesOfDuration;
+
     body.datetimeOfStart = new Date(
       body.year,
       body.month - 1,
@@ -133,6 +134,13 @@ export class EventController {
     @Body()
     body: Prisma.EventUncheckedUpdateInput
   ): Promise<Event> {
+    if (body.typeId) {
+      const eventType = await this.eventTypeService.findUniqueOrThrow({
+        where: {id: body.typeId as number},
+      });
+      body.minutesOfDuration = eventType.minutesOfDuration;
+    }
+
     return await this.eventService.update({
       where: {id: eventId},
       data: body,
