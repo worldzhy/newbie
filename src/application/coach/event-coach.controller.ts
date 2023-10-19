@@ -66,32 +66,20 @@ export class EventCoachController {
     }
 
     // [step 2] There are enough conditions to get sorted coaches.
-    let where: Prisma.UserWhereInput | undefined;
-    const whereConditions: object[] = [];
-    whereConditions.push({
-      roles: {some: {name: ROLE_NAME_COACH}},
-    });
-    if (venueId && typeId) {
-      whereConditions.push({
-        profile: {eventVenueIds: {has: venueId}, eventTypeIds: {has: typeId}},
-      });
-    } else if (venueId) {
-      whereConditions.push({profile: {eventVenueIds: {has: venueId}}});
-    } else if (venueId) {
-      whereConditions.push({profile: {eventTypeIds: {has: typeId}}});
-    }
-
-    if (whereConditions.length > 1) {
-      where = {AND: whereConditions};
-    } else if (whereConditions.length === 1) {
-      where = whereConditions[0];
+    const where: Prisma.UserWhereInput = {};
+    where.roles = {some: {name: ROLE_NAME_COACH}};
+    if (typeId) {
+      where.profile = {
+        eventVenueIds: {has: venueId},
+        eventTypeIds: {has: typeId},
+      };
     } else {
-      // where === undefined
+      where.profile = {eventVenueIds: {has: venueId}};
     }
 
     // [step 2] Get coaches for the specific venue.
     return await this.userService.findMany({
-      where: where,
+      where,
       select: {
         id: true,
         profile: {
