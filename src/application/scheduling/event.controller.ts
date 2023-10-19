@@ -3,12 +3,16 @@ import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Prisma, Event} from '@prisma/client';
 import {EventService} from '@microservices/event-scheduling/event.service';
 import {datePlusMinutes, getWeekNumber} from '@toolkit/utilities/datetime.util';
+import {EventTypeService} from '@microservices/event-scheduling/event-type.service';
 
 @ApiTags('Event')
 @ApiBearerAuth()
 @Controller('events')
 export class EventController {
-  constructor(private eventService: EventService) {}
+  constructor(
+    private readonly eventService: EventService,
+    private readonly eventTypeService: EventTypeService
+  ) {}
 
   @Post('mock-data')
   @ApiBody({
@@ -68,7 +72,6 @@ export class EventController {
           dayOfWeek: 5,
           hour: 6,
           minute: 0,
-          minutesOfDuration: 50,
           typeId: 1,
           venueId: 1,
           containerId: 1,
@@ -80,6 +83,10 @@ export class EventController {
     @Body()
     body: Prisma.EventUncheckedCreateInput
   ): Promise<Event> {
+    const eventType = await this.eventTypeService.findUniqueOrThrow({
+      where: {id: body.typeId},
+    });
+    body.minutesOfDuration = eventType.minutesOfDuration;
     body.datetimeOfStart = new Date(
       body.year,
       body.month - 1,

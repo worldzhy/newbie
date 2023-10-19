@@ -77,7 +77,6 @@ export class EventCoachController {
       where.profile = {eventVenueIds: {has: venueId}};
     }
 
-    // [step 2] Get coaches for the specific venue.
     return await this.userService.findMany({
       where,
       select: {
