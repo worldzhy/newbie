@@ -30,6 +30,7 @@ import {ClassController} from './class/class.controller';
 import {EventCoachController} from './coach/event-coach.controller';
 import {EventController} from './scheduling/event.controller';
 import {EventContainerController} from './scheduling/event-container.controller';
+import {EventContainerNoteController} from './scheduling/event-container-note.controller';
 import {EventCopyController} from './scheduling/event-copy.controller';
 import {EventCheckController} from './scheduling/event-check.controller';
 import {EventFixController} from './scheduling/event-fix.controller';
@@ -76,6 +77,7 @@ import {RawDataController} from './raw-data/raw-data.controller';
     EventCoachController,
     EventController,
     EventContainerController,
+    EventContainerNoteController,
     EventCopyController,
     EventCheckController,
     EventCoachController,

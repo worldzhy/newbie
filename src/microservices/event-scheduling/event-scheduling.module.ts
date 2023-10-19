@@ -6,6 +6,7 @@ import {EventIssueService} from './event-issue.service';
 import {EventTypeService} from './event-type.service';
 import {EventVenueService} from './event-venue.service';
 import {EventContainerService} from './event-container.service';
+import {EventContainerNoteService} from './event-container-note.service';
 import {ReservationService} from './reservation.service';
 
 @Global()
@@ -18,6 +19,7 @@ import {ReservationService} from './reservation.service';
     EventTypeService,
     EventVenueService,
     EventContainerService,
+    EventContainerNoteService,
     ReservationService,
   ],
   exports: [
@@ -28,6 +30,7 @@ import {ReservationService} from './reservation.service';
     EventTypeService,
     EventVenueService,
     EventContainerService,
+    EventContainerNoteService,
     ReservationService,
   ],
 })

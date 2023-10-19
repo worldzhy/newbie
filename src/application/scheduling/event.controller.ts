@@ -121,7 +121,6 @@ export class EventController {
           dayOfWeek: 5,
           hour: 6,
           minute: 0,
-          minutesOfDuration: 50,
           typeId: 1,
           venueId: 1,
           containerId: 1,

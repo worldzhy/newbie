@@ -265,6 +265,13 @@ enum EventContainerStatus {
   @@schema("microservice/event-scheduling")
 }
 
+enum EventContainerNoteType {
+  SYSTEM
+  USER
+
+  @@schema("microservice/event-scheduling")
+}
+
 model AvailabilityExpression {
   id                                     Int                          @id @default(autoincrement())
   name                                   String?
@@ -307,6 +314,7 @@ model AvailabilityTimeslot {
   @@schema("microservice/event-scheduling")
 }
 
+// todo: datetimeOfStart, datetimeOfEnd, week, dayOfWeek should be generated in prisma middleware.
 model Event {
   id                Int            @id @default(autoincrement())
   hostUserId        String?        @db.Uuid
@@ -403,6 +411,20 @@ model EventContainer {
   venue         EventVenue           @relation(fields: [venueId], references: [id], onDelete: Cascade)
   venueId       Int
   events        Event[]
+  notes         EventContainerNote[]
+
+  @@schema("microservice/event-scheduling")
+}
+
+model EventContainerNote {
+  id          Int                    @id @default(autoincrement())
+  type        EventContainerNoteType @default(USER)
+  description String
+  userId      String?                @db.Uuid
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+  container   EventContainer         @relation(fields: [containerId], references: [id], onDelete: Cascade)
+  containerId Int
 
   @@schema("microservice/event-scheduling")
 }
