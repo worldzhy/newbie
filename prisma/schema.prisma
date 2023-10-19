@@ -270,6 +270,7 @@ model AvailabilityExpression {
   name                                   String?
   status                                 AvailabilityExpressionStatus @default(EDITING)
   hostUserId                             String                       @db.Uuid
+  venueIds                               Int
   cronExpressionsOfAvailableTimePoints   String[]
   cronExpressionsOfUnavailableTimePoints String[]
   dateOfOpening                          DateTime                     @db.Date
@@ -287,6 +288,7 @@ model AvailabilityTimeslot {
   id                Int                        @id @default(autoincrement())
   status            AvailabilityTimeslotStatus @default(USABLE)
   hostUserId        String                     @db.Uuid
+  venueIds          Int[]
   datetimeOfStart   DateTime
   datetimeOfEnd     DateTime
   year              Int

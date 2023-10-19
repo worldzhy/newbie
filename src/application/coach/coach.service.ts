@@ -78,7 +78,10 @@ export class CoachService {
     const sortedAvailableCoaches: {
       hostUserId: string;
       remainingQuota: number;
+      remainingQuotaOfMinPreference: number;
       remainingQuotaOfMaxPreference: number;
+      quotaOfWeek: number;
+      quotaOfWeekMinPerference: number;
       quotaOfWeekMaxPerference: number;
     }[] = [];
     for (let i = 0; i < coaches.length; i++) {
@@ -104,8 +107,12 @@ export class CoachService {
           sortedAvailableCoaches.push({
             hostUserId: coach.id,
             remainingQuota: coach['profile'].quotaOfWeek - countOfEvents,
+            remainingQuotaOfMinPreference:
+              coach['profile'].quotaOfWeekMinPerference - countOfEvents,
             remainingQuotaOfMaxPreference:
               coach['profile'].quotaOfWeekMaxPerference - countOfEvents,
+            quotaOfWeek: coach['profile'].quotaOfWeek,
+            quotaOfWeekMinPerference: coach['profile'].quotaOfWeekMinPerference,
             quotaOfWeekMaxPerference: coach['profile'].quotaOfWeekMaxPerference,
           });
 
@@ -116,22 +123,50 @@ export class CoachService {
 
     // [step 3] Sort available coaches by quota.
     sortedAvailableCoaches.sort((a, b) => {
-      if (
-        (a.remainingQuota > 0 && b.remainingQuota > 0) ||
-        (a.remainingQuota <= 0 && b.remainingQuota <= 0)
-      ) {
+      if (a.remainingQuota > 0 && b.remainingQuota > 0) {
         if (
-          a.remainingQuotaOfMaxPreference / a.quotaOfWeekMaxPerference >=
-          b.remainingQuotaOfMaxPreference / b.quotaOfWeekMaxPerference
+          a.remainingQuota / a.quotaOfWeek >=
+          b.remainingQuota / b.quotaOfWeek
         ) {
           return -1; // a is in front of b
+        } else {
+          return 1; // b is in front of a
+        }
+      } else if (a.remainingQuota <= 0 && b.remainingQuota <= 0) {
+        if (
+          a.remainingQuotaOfMinPreference > 0 &&
+          b.remainingQuotaOfMinPreference > 0
+        ) {
+          if (
+            a.remainingQuotaOfMinPreference / a.quotaOfWeekMinPerference >=
+            b.remainingQuotaOfMinPreference / b.quotaOfWeekMinPerference
+          ) {
+            return -1;
+          } else {
+            return 1;
+          }
+        } else if (
+          a.remainingQuotaOfMinPreference <= 0 &&
+          b.remainingQuotaOfMinPreference <= 0
+        ) {
+          // ! The remainingQuotaOfMaxPreference must be larger than 0.
+          if (
+            a.remainingQuotaOfMaxPreference / a.quotaOfWeekMaxPerference >=
+            b.remainingQuotaOfMaxPreference / b.quotaOfWeekMaxPerference
+          ) {
+            return -1;
+          } else {
+            return 1;
+          }
+        } else if (a.remainingQuotaOfMinPreference > 0) {
+          return -1;
         } else {
           return 1;
         }
       } else if (a.remainingQuota > 0) {
-        return -1; // a is in front of b
+        return -1;
       } else {
-        return 1; // b is in front of a
+        return 1;
       }
     });
 
