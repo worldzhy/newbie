@@ -85,7 +85,7 @@ export class AvailabilityExpressionService {
     };
 
     // [step 2] Parse availability expressions and collect availability timeslots.
-    let availabilityTimeslots: Prisma.AvailabilityTimeslotCreateManyInput[] =
+    let availabilityTimeslots: Prisma.AvailabilityTimeslotUncheckedUpdateInput[] =
       [];
 
     for (
@@ -96,17 +96,15 @@ export class AvailabilityExpressionService {
       const exp = expression.cronExpressionsOfAvailableTimePoints[i];
       availabilityTimeslots = availabilityTimeslots.concat(
         this.parseExpression({
-          expressionId: expression.id,
-          hostUserId: expression.hostUserId,
-          minutesOfDuration: expression.minutesOfDuration,
           cronExpression: exp,
           cronParserOptions: cronParserOptions,
+          minutesOfDuration: expression.minutesOfDuration,
         })
       );
     }
 
     // [step 3] Parse unavailability expressions and collect unavailability timeslots.
-    let unavailabilityTimeslots: Prisma.AvailabilityTimeslotCreateManyInput[] =
+    let unavailabilityTimeslots: Prisma.AvailabilityTimeslotUncheckedUpdateInput[] =
       [];
 
     for (
@@ -117,17 +115,15 @@ export class AvailabilityExpressionService {
       const exp = expression.cronExpressionsOfUnavailableTimePoints[j];
       unavailabilityTimeslots = unavailabilityTimeslots.concat(
         this.parseExpression({
-          expressionId: expression.id,
-          hostUserId: expression.hostUserId,
-          minutesOfDuration: expression.minutesOfDuration,
           cronExpression: exp,
           cronParserOptions: cronParserOptions,
+          minutesOfDuration: expression.minutesOfDuration,
         })
       );
     }
 
     // [step 4] Collect final availability timeslots.
-    const finalAvailabilityTimeslots: Prisma.AvailabilityTimeslotCreateManyInput[] =
+    const finalAvailabilityTimeslots: Prisma.AvailabilityTimeslotUncheckedUpdateInput[] =
       [];
     for (let m = 0; m < availabilityTimeslots.length; m++) {
       const availabilityTimeslot = availabilityTimeslots[m];
@@ -135,10 +131,10 @@ export class AvailabilityExpressionService {
       for (let n = 0; n < unavailabilityTimeslots.length; n++) {
         const unavailabilityTimeslot = unavailabilityTimeslots[n];
         if (
-          availabilityTimeslot.datetimeOfStart.toString() ===
-            unavailabilityTimeslot.datetimeOfStart.toString() &&
-          availabilityTimeslot.datetimeOfEnd.toString() ===
-            unavailabilityTimeslot.datetimeOfEnd.toString()
+          availabilityTimeslot.datetimeOfStart!.toString() ===
+            unavailabilityTimeslot.datetimeOfStart!.toString() &&
+          availabilityTimeslot.datetimeOfEnd!.toString() ===
+            unavailabilityTimeslot.datetimeOfEnd!.toString()
         ) {
           matched = true;
         }
@@ -149,21 +145,24 @@ export class AvailabilityExpressionService {
       }
     }
 
-    return finalAvailabilityTimeslots;
+    return finalAvailabilityTimeslots.map(timeslot => {
+      timeslot.expressionId = expression.id;
+      timeslot.hostUserId = expression.hostUserId;
+      timeslot.venueIds = expression.venueIds;
+      return timeslot as Prisma.AvailabilityTimeslotCreateManyInput;
+    });
   }
 
   private parseExpression(args: {
-    expressionId: number;
-    hostUserId: string;
-    minutesOfDuration: number;
     cronExpression: string;
     cronParserOptions: any;
+    minutesOfDuration: number;
   }) {
     const interval = CronParser.parseExpression(
       args.cronExpression,
       args.cronParserOptions
     );
-    const timeslots: Prisma.AvailabilityTimeslotCreateManyInput[] = [];
+    const timeslots: Prisma.AvailabilityTimeslotUncheckedUpdateInput[] = [];
     while (interval.hasNext()) {
       const parsedDatetime = interval.next().value.toDate();
 
@@ -182,7 +181,6 @@ export class AvailabilityExpressionService {
         );
 
         timeslots.push({
-          hostUserId: args.hostUserId,
           datetimeOfStart: datetimeOfStart,
           datetimeOfEnd: datetimeOfEnd,
           year: datetimeOfStart.getFullYear(),
@@ -192,7 +190,6 @@ export class AvailabilityExpressionService {
           hour: datetimeOfStart.getHours(),
           minute: datetimeOfStart.getMinutes(),
           minutesOfTimeslot: this.MINUTES_Of_TIMESLOT,
-          expressionId: args.expressionId,
         });
       }
     }

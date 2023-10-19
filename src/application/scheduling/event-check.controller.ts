@@ -4,7 +4,6 @@ import {
   Event,
   AvailabilityTimeslotStatus,
   EventIssueType,
-  EventIssue,
 } from '@prisma/client';
 import {EventService} from '@microservices/event-scheduling/event.service';
 import {EventIssueService} from '@microservices/event-scheduling/event-issue.service';
@@ -15,8 +14,9 @@ import {UserService} from '@microservices/account/user/user.service';
 enum EventIssueDescription {
   Error_CoachNotSelected = 'The coach has not been selected.',
   Error_CoachNotExisted = 'The coach is not existed.',
-  Error_WrongClassType = 'The coach is not able to teach this type of class.',
   Error_CoachNotAvailale = 'The coach is not available.',
+  Error_WrongClassType = 'The coach is not able to teach this type of class.',
+  Error_WrongLocation = 'The coach is not able to teach in this location.',
 }
 
 @ApiTags('Event Container')
@@ -100,7 +100,18 @@ export class EventCheckController {
       });
     }
 
-    // [step 4] Check availability
+    // [step 4] Check location.
+    if (!user['profile']['eventVenueIds'].includes(event.venueId)) {
+      await this.eventIssueService.create({
+        data: {
+          type: EventIssueType.ERROR_COACH_NOT_AVAILABLE,
+          description: EventIssueDescription.Error_WrongLocation,
+          eventId: event.id,
+        },
+      });
+    }
+
+    // [step 5] Check availability
     const newDatetimeOfStart =
       this.availabilityTimeslotService.floorDatetimeOfStart(
         event.datetimeOfStart
@@ -112,6 +123,7 @@ export class EventCheckController {
     const count = await this.availabilityTimeslotService.count({
       where: {
         hostUserId: event.hostUserId,
+        venueIds: {has: event.venueId},
         datetimeOfStart: {gte: newDatetimeOfStart},
         datetimeOfEnd: {lte: newDatetimeOfEnd},
         status: AvailabilityTimeslotStatus.USABLE,

@@ -68,6 +68,7 @@ export class CoachService {
     const availabilities = await this.availabilityTimeslotService.findMany({
       where: {
         hostUserId: {in: coachIds},
+        venueIds: {has: event.venueId},
         datetimeOfStart: {gte: newDatetimeOfStart},
         datetimeOfEnd: {lte: newDatetimeOfEnd},
         status: AvailabilityTimeslotStatus.USABLE,

@@ -29,7 +29,6 @@ export class ClassController {
           minutesOfDuration: 60,
           minutesInAdvanceToReserve: 120,
           minutesInAdvanceToCancel: 120,
-          numberOfSeats: 10,
         },
       },
     },

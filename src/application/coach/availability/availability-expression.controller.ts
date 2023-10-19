@@ -34,6 +34,7 @@ export class AvailabilityExpressionController {
         summary: '1. Create',
         value: {
           hostUserId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
+          venueIds: [1, 2],
           cronExpressionsOfAvailableTimePoints: [
             '0,30 11-14 * 7-9 1,3,5',
             '0,30 11-14 * 7-9 2,4,6',
@@ -87,6 +88,7 @@ export class AvailabilityExpressionController {
         summary: '1. Update',
         value: {
           hostUserId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
+          venueIds: [1, 2],
           cronExpressionsOfAvailableTimePoints: [
             '0,30 11-14 * 7-9 1,3,5',
             '0,30 11-14 * 7-9 2,4,6',

@@ -2,6 +2,7 @@ import {Controller, Get, Param} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth} from '@nestjs/swagger';
 import {
   Event,
+  EventContainerNoteType,
   EventIssue,
   EventIssueStatus,
   EventIssueType,
@@ -9,6 +10,7 @@ import {
 import {EventService} from '@microservices/event-scheduling/event.service';
 import {EventIssueService} from '@microservices/event-scheduling/event-issue.service';
 import {CoachService} from '../coach/coach.service';
+import {EventContainerNoteService} from '@microservices/event-scheduling/event-container-note.service';
 
 @ApiTags('Event Container')
 @ApiBearerAuth()
@@ -17,6 +19,7 @@ export class EventFixController {
   constructor(
     private readonly eventService: EventService,
     private readonly eventIssueService: EventIssueService,
+    private readonly eventContainerNoteService: EventContainerNoteService,
     private readonly coachService: CoachService
   ) {}
 
@@ -51,6 +54,15 @@ export class EventFixController {
       await this.eventIssueService.update({
         where: {id: issue.id},
         data: {status: EventIssueStatus.REPAIRED},
+      });
+
+      await this.eventContainerNoteService.create({
+        data: {
+          type: EventContainerNoteType.SYSTEM,
+          description:
+            'Coach changed: ' + event.hostUserId + ' -> ' + coaches[0].email,
+          containerId: event.containerId,
+        },
       });
     }
   }

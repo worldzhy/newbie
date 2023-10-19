@@ -76,6 +76,7 @@ export class AvailabilityTimeslotService {
 
   async groupByHostUserId(params: {
     hostUserIds: string[];
+    venueId: number;
     datetimeOfStart: Date;
     datetimeOfEnd: Date;
   }) {
@@ -85,6 +86,7 @@ export class AvailabilityTimeslotService {
         hostUserId: {
           in: params.hostUserIds,
         },
+        venueIds: {has: params.venueId},
         datetimeOfStart: {gte: params.datetimeOfStart},
         datetimeOfEnd: {lte: params.datetimeOfEnd},
       },

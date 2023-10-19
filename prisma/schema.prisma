@@ -277,7 +277,7 @@ model AvailabilityExpression {
   name                                   String?
   status                                 AvailabilityExpressionStatus @default(EDITING)
   hostUserId                             String                       @db.Uuid
-  venueIds                               Int
+  venueIds                               Int[]
   cronExpressionsOfAvailableTimePoints   String[]
   cronExpressionsOfUnavailableTimePoints String[]
   dateOfOpening                          DateTime                     @db.Date

@@ -81,6 +81,7 @@ export class HeatmapController {
         const groupedAvailabilityTimeslots =
           await this.availabilityTimeslotService.groupByHostUserId({
             hostUserIds: coachIds,
+            venueId: venueId,
             datetimeOfStart: heatmapTimeslot.datetimeOfStart,
             datetimeOfEnd: heatmapTimeslot.datetimeOfEnd,
           });
