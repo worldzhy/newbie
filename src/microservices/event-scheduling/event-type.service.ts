@@ -54,5 +54,31 @@ export class EventTypeService {
     return await this.prisma.eventType.delete(args);
   }
 
+  async match(name: string): Promise<EventType> {
+    // [step 1] Get matched event type.
+    const eventTypes = await this.prisma.eventType.findMany();
+    for (let i = 0; i < eventTypes.length; i++) {
+      const eventType = eventTypes[i];
+      if (name.toLowerCase().includes(eventType.name.toLowerCase())) {
+        return eventType;
+      }
+    }
+
+    // [step 2] Create Not Found event type.
+    let notFoundEventType = await this.prisma.eventType.findFirst({
+      where: {name: {contains: 'not found', mode: 'insensitive'}},
+    });
+    if (!notFoundEventType) {
+      notFoundEventType = await this.prisma.eventType.create({
+        data: {
+          name: 'Not Found',
+          minutesOfDuration: 0,
+        },
+      });
+    }
+
+    return notFoundEventType;
+  }
+
   /* End */
 }

@@ -1,9 +1,10 @@
 import {Injectable} from '@nestjs/common';
 import {UserService} from '@microservices/account/user/user.service';
 import {UserProfileService} from '@microservices/account/user/user-profile.service';
-import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
-import {EventVenueService} from '@microservices/event-scheduling/event-venue.service';
 import {EventService} from '@microservices/event-scheduling/event.service';
+import {EventTypeService} from '@microservices/event-scheduling/event-type.service';
+import {EventVenueService} from '@microservices/event-scheduling/event-venue.service';
+import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
 import {PlaceService} from '@microservices/map/place.service';
 import {SnowflakeService} from '@toolkit/snowflake/snowflake.service';
 import {EventContainerOrigin, EventContainerStatus} from '@prisma/client';
@@ -14,9 +15,10 @@ const ROLE_NAME_COACH = 'Coach';
 export class RawDataService {
   constructor(
     private readonly snowflakeService: SnowflakeService,
-    private readonly eventContainerService: EventContainerService,
-    private readonly eventVenueService: EventVenueService,
     private readonly eventService: EventService,
+    private readonly eventTypeService: EventTypeService,
+    private readonly eventVenueService: EventVenueService,
+    private readonly eventContainerService: EventContainerService,
     private readonly placeService: PlaceService,
     private readonly userService: UserService,
     private readonly userProfileService: UserProfileService
@@ -254,9 +256,9 @@ export class RawDataService {
               });
 
               // Get class info
-              // const eventType = await this.eventTypeService.findUniqueOrThrow({
-              //   where: {name: visit.CLASSNAME.trim()},
-              // });
+              const eventType = await this.eventTypeService.match(
+                visit.CLASSNAME.trim()
+              );
 
               return {
                 hostUserId: coach ? coach.id : null,
@@ -271,7 +273,7 @@ export class RawDataService {
                 minutesOfDuration: Number(
                   (datetimeOfEnd.getTime() - datetimeOfStart.getTime()) / 60000
                 ),
-                typeId: 1,
+                typeId: eventType.id,
                 venueId,
                 containerId: eventContainer.id,
               };

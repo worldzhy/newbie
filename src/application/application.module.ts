@@ -39,6 +39,7 @@ import {LocationController} from './location/location.controller';
 import {TagController} from './tag/tag.controller';
 import {TagGroupController} from './tag/tag-group.controller';
 import {RawDataController} from './raw-data/raw-data.controller';
+import {AnalysisController} from './analysis/analysis.controller';
 
 @Module({
   imports: [
@@ -87,6 +88,7 @@ import {RawDataController} from './raw-data/raw-data.controller';
     TagController,
     TagGroupController,
     RawDataController,
+    AnalysisController,
   ],
   providers: [
     // Filters
