@@ -1,15 +1,18 @@
 import {Controller, Query, Get} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth} from '@nestjs/swagger';
-import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
+import {User} from '@prisma/client';
 import {UserService} from '@microservices/account/user/user.service';
+import {RawDataForecastService} from '../raw-data/raw-data-forecast.service';
+import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
 import {
   generateMonthlyCalendar,
   generateMonthlyTimeslots,
 } from '@toolkit/utilities/datetime.util';
-import {User} from '@prisma/client';
 
-const HEATMAP_TYPE_AVAILABILITY = 'Availability';
-const HEATMAP_TYPE_DEMAND = 'Demand';
+enum HEATMAP_TYPE {
+  Availability = 1,
+  Demand = 2,
+}
 
 @ApiTags('Heatmap')
 @ApiBearerAuth()
@@ -17,19 +20,29 @@ const HEATMAP_TYPE_DEMAND = 'Demand';
 export class HeatmapController {
   constructor(
     private readonly availabilityTimeslotService: AvailabilityTimeslotService,
-    private readonly coachService: UserService
+    private readonly coachService: UserService,
+    private readonly rawDataForecastService: RawDataForecastService
   ) {}
+
+  @Get('forecast')
+  async getForecast(
+    @Query('venueId') venueId: number,
+    @Query('year') year: number,
+    @Query('month') month: number
+  ) {
+    return await this.rawDataForecastService.forecast({venueId, year, month});
+  }
 
   @Get('')
   async getHeatmap(
     @Query('venueId') venueId: number,
     @Query('year') year: number,
-    @Query('month') month: number
+    @Query('month') month: number,
+    @Query('types') types: number[]
   ) {
     const hourOfOpening = 5;
     const hourOfClosure = 22;
     const minutesOfTimeslot = 30;
-    const heatmapTypes = [HEATMAP_TYPE_AVAILABILITY];
     const heatmapInfoTimeslots: {
       year: number;
       month: number;
@@ -38,7 +51,7 @@ export class HeatmapController {
       hour: number;
       minute: number;
       minutesOfTimeslot: number;
-      info: {type: string; coaches: User[]}[];
+      info: {type: HEATMAP_TYPE; coaches: User[]}[];
     }[] = [];
 
     // [step 1] Generate monthly timeslots.
@@ -51,7 +64,7 @@ export class HeatmapController {
     });
 
     // [step 2] Get coach availability heatmap.
-    if (heatmapTypes.includes(HEATMAP_TYPE_AVAILABILITY)) {
+    if (types.includes(HEATMAP_TYPE.Availability)) {
       // [step 2-1] Get coaches in the location.
       const coaches = await this.coachService.findMany({
         where: {profile: {eventVenueIds: {has: venueId}}},
@@ -115,7 +128,7 @@ export class HeatmapController {
           minutesOfTimeslot: heatmapTimeslot.minutesOfTimeslot,
           info: [
             {
-              type: HEATMAP_TYPE_AVAILABILITY,
+              type: HEATMAP_TYPE.Availability,
               coaches: availableCoaches,
             },
           ],

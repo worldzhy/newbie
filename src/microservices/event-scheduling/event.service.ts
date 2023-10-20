@@ -114,7 +114,7 @@ export class EventService {
                 hostUserId: event.hostUserId,
                 year: dayOfTargetWeek.year,
                 month: dayOfTargetWeek.month,
-                week: dayOfTargetWeek.week,
+                weekOfMonth: dayOfTargetWeek.weekOfMonth,
                 dayOfMonth: dayOfTargetWeek.dayOfMonth,
                 dayOfWeek: dayOfTargetWeek.dayOfWeek,
                 hour: event.hour,

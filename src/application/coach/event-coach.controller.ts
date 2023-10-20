@@ -1,7 +1,10 @@
 import {Controller, Get, Query} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth} from '@nestjs/swagger';
 import {Prisma} from '@prisma/client';
-import {datePlusMinutes, getWeekNumber} from '@toolkit/utilities/datetime.util';
+import {
+  datePlusMinutes,
+  getWeekOfMonth,
+} from '@toolkit/utilities/datetime.util';
 import {UserService} from '@microservices/account/user/user.service';
 import {EventTypeService} from '@microservices/event-scheduling/event-type.service';
 import {CoachService} from './coach.service';
@@ -59,7 +62,7 @@ export class EventCoachController {
         datetimeOfEnd,
         year,
         month,
-        week: getWeekNumber(year, month, dayOfMonth),
+        weekOfMonth: getWeekOfMonth(year, month, dayOfMonth),
         minutesOfDuration: classType.minutesOfDuration,
       };
       return await this.coachService.getSortedCoachesForEvent(event);

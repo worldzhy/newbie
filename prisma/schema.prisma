@@ -322,9 +322,9 @@ model Event {
   datetimeOfEnd     DateTime
   year              Int
   month             Int
-  week              Int // The number of week, 1~6
   dayOfMonth        Int
   dayOfWeek         Int
+  weekOfMonth       Int // The number of week in a month, it will be 1 to 6.
   hour              Int
   minute            Int
   minutesOfDuration Int

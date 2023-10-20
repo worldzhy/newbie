@@ -17,7 +17,7 @@ import {
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
 import {EventService} from '@microservices/event-scheduling/event.service';
 import {generateMonthlyCalendar} from '@toolkit/utilities/datetime.util';
-import {RawDataService} from '../raw-data/raw-data.service';
+import {RawDataSchedulingService} from '../raw-data/raw-data-scheduling.service';
 
 @ApiTags('Event Container')
 @ApiBearerAuth()
@@ -26,7 +26,7 @@ export class EventCopyController {
   constructor(
     private readonly eventContainerService: EventContainerService,
     private readonly eventService: EventService,
-    private readonly rawDataService: RawDataService
+    private readonly rawDataSchedulingService: RawDataSchedulingService
   ) {}
 
   @Get(':eventContainerId/import')
@@ -59,7 +59,7 @@ export class EventCopyController {
 
     // [step 2-2] Fetch origin data and create the source container.
     if (!sourceContainer) {
-      await this.rawDataService.syncScheduling({
+      await this.rawDataSchedulingService.synchronize({
         venueId: targetContainer.venueId,
         year,
         month,

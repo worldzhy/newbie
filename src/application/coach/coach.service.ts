@@ -25,7 +25,7 @@ export class CoachService {
     datetimeOfEnd: Date;
     year: number;
     month: number;
-    week: number;
+    weekOfMonth: number;
     minutesOfDuration: number;
   }) {
     // [step 1] Get coaches for the specific venue.
@@ -99,7 +99,7 @@ export class CoachService {
             hostUserId: coach.id,
             year: event.year,
             month: event.month,
-            week: event.week,
+            weekOfMonth: event.weekOfMonth,
           },
         });
 

@@ -1,21 +1,25 @@
 import {Controller, Get, Query} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiQuery} from '@nestjs/swagger';
-import {RawDataService} from './raw-data.service';
+import {RawDataSchedulingService} from './raw-data-scheduling.service';
+import {RawDataBasicService} from './raw-data-basic.service';
 
 @ApiTags('Raw Data')
 @ApiBearerAuth()
 @Controller('raw-data')
 export class RawDataController {
-  constructor(private readonly rawDataService: RawDataService) {}
+  constructor(
+    private readonly rawDataBasicService: RawDataBasicService,
+    private readonly rawDataSchedulingService: RawDataSchedulingService
+  ) {}
 
   @Get('sync-coaches')
   async syncCoaches() {
-    await this.rawDataService.syncCoaches();
+    await this.rawDataBasicService.syncCoaches();
   }
 
   @Get('sync-locations')
   async syncLocations() {
-    await this.rawDataService.syncLocations();
+    await this.rawDataBasicService.syncLocations();
   }
 
   @Get('sync-visit-data')
@@ -27,17 +31,17 @@ export class RawDataController {
     @Query('year') year: number,
     @Query('month') month: number
   ) {
-    await this.rawDataService.syncScheduling({venueId, year, month});
+    await this.rawDataSchedulingService.synchronize({venueId, year, month});
   }
 
   @Get('link-coach-and-locations')
   async linkCoachAndLocations() {
-    await this.rawDataService.linkCoachAndLocations();
+    await this.rawDataBasicService.linkCoachAndLocations();
   }
 
   @Get('link-coach-and-classtypes')
   async linkCoachAndClassTypes() {
-    await this.rawDataService.linkCoachAndClassTypes();
+    await this.rawDataBasicService.linkCoachAndClassTypes();
   }
 
   /* End */

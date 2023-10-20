@@ -24,10 +24,7 @@ export class TagGroupController {
     examples: {
       a: {
         summary: '1. Create',
-        value: {
-          name: 'well-experienced',
-          group: 'Coach',
-        },
+        value: {name: 'well-experienced'},
       },
     },
   })
@@ -62,10 +59,7 @@ export class TagGroupController {
     examples: {
       a: {
         summary: '1. Update',
-        value: {
-          name: 'non-experienced',
-          group: 'Coach',
-        },
+        value: {name: 'non-experienced'},
       },
     },
   })
