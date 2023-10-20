@@ -10,8 +10,8 @@ import {
 } from '@toolkit/utilities/datetime.util';
 
 enum HEATMAP_TYPE {
-  Availability = 1,
-  Demand = 2,
+  Availability = '1',
+  Demand = '2',
 }
 
 const HOUR_OF_OPENING = 5;
@@ -28,21 +28,12 @@ export class HeatmapController {
     private readonly rawDataForecastService: RawDataForecastService
   ) {}
 
-  @Get('forecast')
-  async getForecast(
-    @Query('venueId') venueId: number,
-    @Query('year') year: number,
-    @Query('month') month: number
-  ) {
-    return await this.rawDataForecastService.forecast({venueId, year, month});
-  }
-
   @Get('')
   async getHeatmap(
     @Query('venueId') venueId: number,
     @Query('year') year: number,
     @Query('month') month: number,
-    @Query('types') types: number[]
+    @Query('types') types: string[]
   ) {
     const heatmapInfoTimeslots: {
       year: number;
@@ -52,7 +43,7 @@ export class HeatmapController {
       hour: number;
       minute: number;
       minutesOfTimeslot: number;
-      info: {type: HEATMAP_TYPE; coaches: User[]}[];
+      info: {type: HEATMAP_TYPE; data: User[] | number}[];
     }[] = [];
 
     // [step 1] Generate monthly timeslots.
@@ -64,10 +55,15 @@ export class HeatmapController {
       minutesOfTimeslot: MINUTES_OF_TIMESLOT,
     });
 
-    // [step 2] Get coach availability heatmap.
-    if (types.includes(HEATMAP_TYPE.Availability)) {
-      // [step 2-1] Get coaches in the location.
-      const coaches = await this.coachService.findMany({
+    // [step 2] Prepare data for heatmap.
+    const flagCoachHeatmap = types.includes(HEATMAP_TYPE.Availability);
+    const flagDemandHeatmap = types.includes(HEATMAP_TYPE.Demand);
+    let coaches, coachIds;
+    let demands;
+
+    // [step 2-1] Get coaches in the location.
+    if (flagCoachHeatmap) {
+      coaches = await this.coachService.findMany({
         where: {profile: {eventVenueIds: {has: venueId}}},
         select: {
           id: true,
@@ -82,15 +78,28 @@ export class HeatmapController {
           },
         },
       });
-      const coachIds = coaches.map(coach => {
+      coachIds = coaches.map(coach => {
         return coach.id;
       });
+    }
 
-      // [step 2-2] Count available coaches in each heatmap timeslot.
-      for (let i = 0; i < heatmapTimeslots.length; i++) {
-        const heatmapTimeslot = heatmapTimeslots[i];
-        const availableCoaches: User[] = [];
+    // [step 2-2] Get data of demand forecasting.
+    if (flagDemandHeatmap) {
+      demands = await this.rawDataForecastService.forecast({
+        venueId,
+        year,
+        month,
+      });
+    }
 
+    // [step 3] Gather data in each heatmap timeslot.
+    for (let i = 0; i < heatmapTimeslots.length; i++) {
+      const heatmapTimeslot = heatmapTimeslots[i];
+
+      const availableCoaches: User[] = [];
+      let utilization = 0;
+
+      if (flagCoachHeatmap) {
         // Get {hostUserId:string, _count:{}}[]
         const groupedAvailabilityTimeslots =
           await this.availabilityTimeslotService.groupByHostUserId({
@@ -100,9 +109,8 @@ export class HeatmapController {
             datetimeOfEnd: heatmapTimeslot.datetimeOfEnd,
           });
 
-        // Count available coaches in this heatmap timeslot.
-        for (let j = 0; j < groupedAvailabilityTimeslots.length; j++) {
-          const element = groupedAvailabilityTimeslots[j];
+        for (let p = 0; p < groupedAvailabilityTimeslots.length; p++) {
+          const element = groupedAvailabilityTimeslots[p];
           // Check if it is seamless in the heatmap timeslot.
           // If it is seamless, then the coach is available for the heatmap timeslot.
           if (
@@ -118,7 +126,32 @@ export class HeatmapController {
             }
           }
         }
+      }
 
+      if (flagDemandHeatmap) {
+        for (let q = 0; q < demands.length; q++) {
+          const demandsForOneWeek = demands[q];
+          for (let qq = 0; qq < demandsForOneWeek.length; qq++) {
+            const demand = demandsForOneWeek[qq];
+            const dataArr = demand.CLASSDATE.split('-');
+            const year = parseInt(dataArr[0]);
+            const month = parseInt(dataArr[1]);
+            const dayOfMonth = parseInt(dataArr[2]);
+
+            if (
+              heatmapTimeslot.year === year &&
+              heatmapTimeslot.month === month &&
+              heatmapTimeslot.dayOfMonth === dayOfMonth &&
+              heatmapTimeslot.hour === demand.startHour
+            ) {
+              utilization = demand.util;
+            }
+          }
+        }
+      }
+
+      // Gather heatmap data.
+      if (flagCoachHeatmap && flagDemandHeatmap) {
         heatmapInfoTimeslots.push({
           year: heatmapTimeslot.year,
           month: heatmapTimeslot.month,
@@ -128,11 +161,31 @@ export class HeatmapController {
           minute: heatmapTimeslot.minute,
           minutesOfTimeslot: heatmapTimeslot.minutesOfTimeslot,
           info: [
-            {
-              type: HEATMAP_TYPE.Availability,
-              coaches: availableCoaches,
-            },
+            {type: HEATMAP_TYPE.Availability, data: availableCoaches},
+            {type: HEATMAP_TYPE.Demand, data: utilization},
           ],
+        });
+      } else if (flagCoachHeatmap) {
+        heatmapInfoTimeslots.push({
+          year: heatmapTimeslot.year,
+          month: heatmapTimeslot.month,
+          dayOfMonth: heatmapTimeslot.dayOfMonth,
+          dayOfWeek: heatmapTimeslot.dayOfWeek,
+          hour: heatmapTimeslot.hour,
+          minute: heatmapTimeslot.minute,
+          minutesOfTimeslot: heatmapTimeslot.minutesOfTimeslot,
+          info: [{type: HEATMAP_TYPE.Availability, data: availableCoaches}],
+        });
+      } else {
+        heatmapInfoTimeslots.push({
+          year: heatmapTimeslot.year,
+          month: heatmapTimeslot.month,
+          dayOfMonth: heatmapTimeslot.dayOfMonth,
+          dayOfWeek: heatmapTimeslot.dayOfWeek,
+          hour: heatmapTimeslot.hour,
+          minute: heatmapTimeslot.minute,
+          minutesOfTimeslot: heatmapTimeslot.minutesOfTimeslot,
+          info: [{type: HEATMAP_TYPE.Demand, data: utilization}],
         });
       }
     }
