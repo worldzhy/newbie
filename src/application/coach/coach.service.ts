@@ -8,14 +8,14 @@ const ROLE_NAME_COACH = 'Coach';
 
 @Injectable()
 export class CoachService {
-  private MINUTES_Of_TIMESLOT: number;
+  private MINUTES_Of_TIMESLOT_UNIT: number;
   constructor(
     private readonly availabilityTimeslotService: AvailabilityTimeslotService,
     private readonly eventService: EventService,
     private readonly userService: UserService
   ) {
-    this.MINUTES_Of_TIMESLOT =
-      this.availabilityTimeslotService.MINUTES_Of_TIMESLOT;
+    this.MINUTES_Of_TIMESLOT_UNIT =
+      this.availabilityTimeslotService.MINUTES_Of_TIMESLOT_UNIT;
   }
 
   async getSortedCoachesForEvent(event: {
@@ -92,7 +92,7 @@ export class CoachService {
       });
       if (
         availabilitiesOfOneCoach.length >=
-        event.minutesOfDuration / this.MINUTES_Of_TIMESLOT
+        event.minutesOfDuration / this.MINUTES_Of_TIMESLOT_UNIT
       ) {
         const countOfEvents = await this.eventService.count({
           where: {

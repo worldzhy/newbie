@@ -20,7 +20,8 @@ export default registerAs('microservice', () => ({
     },
   },
   eventScheduling: {
-    minutesOfTimeslot: process.env.EVENT_SCHEDULING_MINUTES_OF_TIMESLOT,
+    minutesOfTimeslotUnit:
+      process.env.EVENT_SCHEDULING_MINUTES_OF_TIMESLOT_UNIT,
   },
   'file-mgmt': {
     awsS3Bucket: process.env.FILE_MANAGEMENT_AWS_S3_BUCKET,

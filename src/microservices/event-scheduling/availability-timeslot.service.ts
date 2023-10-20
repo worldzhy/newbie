@@ -9,15 +9,15 @@ import {
 
 @Injectable()
 export class AvailabilityTimeslotService {
-  public MINUTES_Of_TIMESLOT: number;
+  public MINUTES_Of_TIMESLOT_UNIT: number;
 
   constructor(
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService
   ) {
-    this.MINUTES_Of_TIMESLOT = parseInt(
+    this.MINUTES_Of_TIMESLOT_UNIT = parseInt(
       this.configService.getOrThrow<string>(
-        'microservice.eventScheduling.minutesOfTimeslot'
+        'microservice.eventScheduling.minutesOfTimeslotUnit'
       )
     );
   }
@@ -97,18 +97,18 @@ export class AvailabilityTimeslotService {
   floorDatetimeOfStart(datetimeOfStart: Date) {
     return dateMinusMinutes(
       datetimeOfStart,
-      datetimeOfStart.getMinutes() % this.MINUTES_Of_TIMESLOT
+      datetimeOfStart.getMinutes() % this.MINUTES_Of_TIMESLOT_UNIT
     );
   }
 
   ceilDatetimeOfEnd(datetimeOfEnd: Date) {
-    if (datetimeOfEnd.getMinutes() % this.MINUTES_Of_TIMESLOT === 0) {
+    if (datetimeOfEnd.getMinutes() % this.MINUTES_Of_TIMESLOT_UNIT === 0) {
       return datetimeOfEnd;
     } else {
       return datePlusMinutes(
         datetimeOfEnd,
-        this.MINUTES_Of_TIMESLOT -
-          (datetimeOfEnd.getMinutes() % this.MINUTES_Of_TIMESLOT)
+        this.MINUTES_Of_TIMESLOT_UNIT -
+          (datetimeOfEnd.getMinutes() % this.MINUTES_Of_TIMESLOT_UNIT)
       );
     }
   }

@@ -132,7 +132,7 @@ export class EventCheckController {
     if (
       count <
       event.minutesOfDuration /
-        this.availabilityTimeslotService.MINUTES_Of_TIMESLOT
+        this.availabilityTimeslotService.MINUTES_Of_TIMESLOT_UNIT
     ) {
       await this.eventIssueService.create({
         data: {

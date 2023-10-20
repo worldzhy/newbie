@@ -14,6 +14,10 @@ enum HEATMAP_TYPE {
   Demand = 2,
 }
 
+const HOUR_OF_OPENING = 5;
+const HOUR_OF_CLOSURE = 22;
+const MINUTES_OF_TIMESLOT = 60;
+
 @ApiTags('Heatmap')
 @ApiBearerAuth()
 @Controller('heatmap')
@@ -40,9 +44,6 @@ export class HeatmapController {
     @Query('month') month: number,
     @Query('types') types: number[]
   ) {
-    const hourOfOpening = 5;
-    const hourOfClosure = 22;
-    const minutesOfTimeslot = 30;
     const heatmapInfoTimeslots: {
       year: number;
       month: number;
@@ -58,9 +59,9 @@ export class HeatmapController {
     const heatmapTimeslots = generateMonthlyTimeslots({
       year,
       month,
-      hourOfOpening,
-      hourOfClosure,
-      minutesOfTimeslot,
+      hourOfOpening: HOUR_OF_OPENING,
+      hourOfClosure: HOUR_OF_CLOSURE,
+      minutesOfTimeslot: MINUTES_OF_TIMESLOT,
     });
 
     // [step 2] Get coach availability heatmap.
@@ -106,8 +107,8 @@ export class HeatmapController {
           // If it is seamless, then the coach is available for the heatmap timeslot.
           if (
             element._count.hostUserId ===
-            minutesOfTimeslot /
-              this.availabilityTimeslotService.MINUTES_Of_TIMESLOT
+            MINUTES_OF_TIMESLOT /
+              this.availabilityTimeslotService.MINUTES_Of_TIMESLOT_UNIT
           ) {
             for (let p = 0; p < coaches.length; p++) {
               const coach = coaches[p];

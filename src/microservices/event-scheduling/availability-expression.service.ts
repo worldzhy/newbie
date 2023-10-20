@@ -15,7 +15,7 @@ export class AvailabilityExpressionService {
   ) {
     this.MINUTES_Of_TIMESLOT = parseInt(
       this.configService.getOrThrow<string>(
-        'microservice.eventScheduling.minutesOfTimeslot'
+        'microservice.eventScheduling.minutesOfTimeslotUnit'
       )
     );
   }
