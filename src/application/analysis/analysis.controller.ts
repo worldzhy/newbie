@@ -2,62 +2,142 @@ import {Controller, Query, Get} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth} from '@nestjs/swagger';
 import {UserService} from '@microservices/account/user/user.service';
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
+import {EventService} from '@microservices/event-scheduling/event.service';
+import {generateMonthlyCalendar} from '@toolkit/utilities/datetime.util';
+import {User} from '@prisma/client';
+
+const ROLE_NAME_COACH = 'Coach';
 
 @ApiTags('Analysis')
 @ApiBearerAuth()
 @Controller('analysis')
 export class AnalysisController {
   constructor(
+    private readonly eventService: EventService,
     private readonly eventContainerService: EventContainerService,
-    private readonly coachService: UserService
+    private readonly userService: UserService
   ) {}
 
-  @Get('coaches-under-quota')
+  @Get('coaches')
   async getCoachesUnderQuota(@Query('containerId') containerId: number) {
-    const container = await this.eventContainerService.findUniqueOrThrow({
-      where: {id: containerId},
-    });
-  }
+    const resultOfAnalysis: {
+      id: number;
+      description: string;
+      data: object[];
+    }[] = [];
 
-  @Get('coaches-under-preferred-class-count')
-  async getCoachesUnderPreferred(@Query('containerId') containerId: number) {
+    // [step 1] Get container and coaches.
     const container = await this.eventContainerService.findUniqueOrThrow({
       where: {id: containerId},
     });
-  }
+    const coaches = await this.userService.findMany({
+      where: {
+        roles: {some: {name: ROLE_NAME_COACH}},
+        profile: {eventVenueIds: {has: container.venueId}},
+      },
+      select: {
+        id: true,
+        profile: {
+          select: {
+            fullName: true,
+            quotaOfWeek: true,
+            quotaOfWeekMaxPreference: true,
+            quotaOfWeekMinPreference: true,
+          },
+        },
+      },
+    });
 
-  @Get('coaches-over-preferred-class-count')
-  async getCoachesOverPreferredClassCount(
-    @Query('containerId') containerId: number
-  ) {
-    const container = await this.eventContainerService.findUniqueOrThrow({
-      where: {id: containerId},
-    });
-  }
+    if (coaches.length === 0) {
+      return resultOfAnalysis;
+    }
 
-  @Get('coach-with-highest-class-count')
-  async getCoachWithHighestClassCount(
-    @Query('containerId') containerId: number
-  ) {
-    const container = await this.eventContainerService.findUniqueOrThrow({
-      where: {id: containerId},
-    });
-  }
+    // [step 2] Analyse coaches.
+    const calendar = generateMonthlyCalendar(container.year, container.month);
+    const coachesUnderQuota: User[] = [];
+    const coachesUnderPreferredQuota: User[] = [];
+    const coachesOverPreferredQuota: User[] = [];
+    const coachScheduledMost: {
+      coach: User;
+      countOfScheduledClass: number;
+    } = {coach: coaches[0], countOfScheduledClass: 0};
+    const coachScheduledLeast: {
+      coach: User;
+      countOfScheduledClass: number;
+    } = {coach: coaches[0], countOfScheduledClass: 0};
 
-  @Get('coach-with-lowest-class-count')
-  async getCoachWithLowestClassCount(
-    @Query('containerId') containerId: number
-  ) {
-    const container = await this.eventContainerService.findUniqueOrThrow({
-      where: {id: containerId},
-    });
-  }
+    for (let i = 0; i < coaches.length; i++) {
+      const coach = coaches[i];
+      const quotaOfWeek = coach['profile'].quotaOfWeek;
+      const quotaOfWeekMinPerference =
+        coach['profile'].quotaOfWeekMinPerference;
+      const quotaOfWeekMaxPerference =
+        coach['profile'].quotaOfWeekMaxPerference;
 
-  @Get('count-of-class-changes')
-  async getCountOfClassChanges(@Query('containerId') containerId: number) {
-    const container = await this.eventContainerService.findUniqueOrThrow({
-      where: {id: containerId},
-    });
+      for (let indexOfWeek = 0; indexOfWeek < calendar.length; indexOfWeek++) {
+        if (calendar[indexOfWeek].length === 7) {
+          const countOfScheduledClass = await this.eventService.count({
+            where: {
+              hostUserId: coach.id,
+              venueId: container.venueId,
+              weekOfMonth: indexOfWeek + 1,
+            },
+          });
+          coach['profile']['countOfScheduledClass'] = countOfScheduledClass;
+
+          if (countOfScheduledClass < quotaOfWeek) {
+            coachesUnderQuota.push(coach);
+          }
+          if (countOfScheduledClass < quotaOfWeekMinPerference) {
+            coachesUnderPreferredQuota.push(coach);
+          }
+          if (countOfScheduledClass > quotaOfWeekMaxPerference) {
+            coachesOverPreferredQuota.push(coach);
+          }
+          if (
+            countOfScheduledClass > coachScheduledMost.countOfScheduledClass
+          ) {
+            coachScheduledMost.coach = coach;
+            coachScheduledMost.countOfScheduledClass = countOfScheduledClass;
+          }
+          if (
+            countOfScheduledClass < coachScheduledLeast.countOfScheduledClass
+          ) {
+            coachScheduledLeast.coach = coach;
+            coachScheduledLeast.countOfScheduledClass = countOfScheduledClass;
+          }
+        }
+      }
+    }
+
+    // [step 3] Return result of Analysis.
+    return resultOfAnalysis.concat([
+      {
+        id: 1,
+        description: 'The coaches under quota',
+        data: coachesUnderQuota,
+      },
+      {
+        id: 2,
+        description: 'The coaches under preferred minimum quota',
+        data: coachesUnderPreferredQuota,
+      },
+      {
+        id: 3,
+        description: 'The coaches over preferred maximum quota',
+        data: coachesOverPreferredQuota,
+      },
+      {
+        id: 4,
+        description: 'The coach scheduled most classes',
+        data: [coachScheduledMost.coach],
+      },
+      {
+        id: 5,
+        description: 'The coach scheduled least classes',
+        data: [coachScheduledLeast.coach],
+      },
+    ]);
   }
 
   /* End */

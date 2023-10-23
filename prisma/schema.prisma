@@ -417,14 +417,14 @@ model EventContainer {
 }
 
 model EventContainerNote {
-  id          Int                    @id @default(autoincrement())
-  type        EventContainerNoteType @default(USER)
-  description String
-  userId      String?                @db.Uuid
-  createdAt   DateTime               @default(now())
-  updatedAt   DateTime               @updatedAt
-  container   EventContainer         @relation(fields: [containerId], references: [id], onDelete: Cascade)
-  containerId Int
+  id            Int                    @id @default(autoincrement())
+  type          EventContainerNoteType @default(USER)
+  description   String
+  notedByUserId String?                @db.Uuid
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+  container     EventContainer         @relation(fields: [containerId], references: [id], onDelete: Cascade)
+  containerId   Int
 
   @@schema("microservice/event-scheduling")
 }

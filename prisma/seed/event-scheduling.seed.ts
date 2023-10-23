@@ -13,32 +13,50 @@ export async function seedForEventScheduling() {
       {
         name: 'Full Body',
         minutesOfDuration: 50,
-        minutesInAdvanceToReserve: 120,
-        minutesInAdvanceToCancel: 120,
-      },
-      {
-        name: 'Arms + Abs',
-        minutesOfDuration: 50,
-        minutesInAdvanceToReserve: 120,
-        minutesInAdvanceToCancel: 120,
-      },
-      {
-        name: 'Beginner50',
-        minutesOfDuration: 50,
-        minutesInAdvanceToReserve: 120,
-        minutesInAdvanceToCancel: 120,
       },
       {
         name: 'Buns + Guns',
         minutesOfDuration: 50,
-        minutesInAdvanceToReserve: 120,
-        minutesInAdvanceToCancel: 120,
       },
       {
-        name: 'Coach-in-Training',
+        name: 'Arms + Abs',
         minutesOfDuration: 50,
-        minutesInAdvanceToReserve: 120,
-        minutesInAdvanceToCancel: 120,
+      },
+      {
+        name: 'Buns + Abs',
+        minutesOfDuration: 50,
+      },
+      {
+        name: 'Foundations',
+        minutesOfDuration: 50,
+      },
+      {
+        name: 'Beginner50',
+        minutesOfDuration: 50,
+      },
+      {
+        name: '30min Express: Core + Lower Body',
+        minutesOfDuration: 30,
+      },
+      {
+        name: '30min Express: Core + Obliques',
+        minutesOfDuration: 30,
+      },
+      {
+        name: '30min Express: Core + Upper Body',
+        minutesOfDuration: 30,
+      },
+      {
+        name: 'coach-in-training',
+        minutesOfDuration: 50,
+      },
+      {
+        name: '30min Express: Core + Upper Body',
+        minutesOfDuration: 30,
+      },
+      {
+        name: 'Advanced Full Body',
+        minutesOfDuration: 65,
       },
     ],
   });

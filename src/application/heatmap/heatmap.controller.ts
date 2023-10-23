@@ -176,7 +176,7 @@ export class HeatmapController {
           minutesOfTimeslot: heatmapTimeslot.minutesOfTimeslot,
           info: [{type: HEATMAP_TYPE.Availability, data: availableCoaches}],
         });
-      } else {
+      } else if (flagDemandHeatmap) {
         heatmapInfoTimeslots.push({
           year: heatmapTimeslot.year,
           month: heatmapTimeslot.month,
