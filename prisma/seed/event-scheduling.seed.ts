@@ -51,8 +51,8 @@ export async function seedForEventScheduling() {
         minutesOfDuration: 50,
       },
       {
-        name: '30min Express: Core + Upper Body',
-        minutesOfDuration: 30,
+        name: 'Advanced Supersolid 65min',
+        minutesOfDuration: 65,
       },
       {
         name: 'Advanced Full Body',

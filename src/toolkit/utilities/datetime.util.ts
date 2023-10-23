@@ -37,6 +37,11 @@ export function datePlusYearsForString(dateStr: string, years: number): string {
   return newDate.toISOString().split('T')[0];
 }
 
+export function getDayOfWeek(year: number, month: number, day: number) {
+  const date = new Date(year, month - 1, day);
+  return date.getDay();
+}
+
 /**
  * Get the number of week for a specific day in a month. It will return 1 to 6.
  */
@@ -50,24 +55,12 @@ export function getWeekOfMonth(year: number, month: number, day: number) {
   return Math.ceil(days / 7);
 }
 
+/**
+ * Get the number of week for a specific day in a year. It will return 1 to 53.
+ */
 export function getWeekOfYear(year: number, month: number, day: number) {
   const date = new Date(year, month - 1, day);
-  date.setHours(0, 0, 0, 0);
-
-  // Thursday in current week decides the year.
-  date.setDate(date.getDate() + 3 - ((date.getDay() + 6) % 7));
-  // January 4 is always in week 1.
-  var week1 = new Date(date.getFullYear(), 0, 4);
-  // Adjust to Thursday in week 1 and count number of weeks from date to week1.
-  return (
-    1 +
-    Math.round(
-      ((date.getTime() - week1.getTime()) / 86400000 -
-        3 +
-        ((week1.getDay() + 6) % 7)) /
-        7
-    )
-  );
+  return parseInt(moment(date).format('W'));
 }
 
 /**
