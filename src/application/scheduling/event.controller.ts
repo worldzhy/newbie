@@ -1,12 +1,14 @@
 import {Controller, Delete, Patch, Post, Body, Param} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {Prisma, Event} from '@prisma/client';
+import {Prisma, Event, EventContainerNoteType} from '@prisma/client';
 import {EventService} from '@microservices/event-scheduling/event.service';
 import {
   datePlusMinutes,
   getWeekOfMonth,
+  getWeekOfYear,
 } from '@toolkit/utilities/datetime.util';
 import {EventTypeService} from '@microservices/event-scheduling/event-type.service';
+import {EventContainerNoteService} from '@microservices/event-scheduling/event-container-note.service';
 
 @ApiTags('Event')
 @ApiBearerAuth()
@@ -14,7 +16,8 @@ import {EventTypeService} from '@microservices/event-scheduling/event-type.servi
 export class EventController {
   constructor(
     private readonly eventService: EventService,
-    private readonly eventTypeService: EventTypeService
+    private readonly eventTypeService: EventTypeService,
+    private readonly eventContainerNoteService: EventContainerNoteService
   ) {}
 
   @Post('mock-data')
@@ -46,6 +49,7 @@ export class EventController {
               year: body.year,
               month: body.month,
               weekOfMonth: getWeekOfMonth(body.year, body.month, 1 + i),
+              weekOfYear: getWeekOfYear(body.year, body.month, 1 + i),
               dayOfMonth: 1 + i,
               dayOfWeek: (5 + i) % 7,
               hour: 6 + j,
@@ -86,11 +90,11 @@ export class EventController {
     @Body()
     body: Prisma.EventUncheckedCreateInput
   ): Promise<Event> {
+    // [step 1] Create event.
     const eventType = await this.eventTypeService.findUniqueOrThrow({
       where: {id: body.typeId},
     });
     body.minutesOfDuration = eventType.minutesOfDuration;
-
     body.datetimeOfStart = new Date(
       body.year,
       body.month - 1,
@@ -104,9 +108,21 @@ export class EventController {
     );
     body.weekOfMonth = getWeekOfMonth(body.year, body.month, body.dayOfMonth);
 
-    return await this.eventService.create({
+    const event = await this.eventService.create({
       data: body,
     });
+
+    // [step 2] Note add event.
+    await this.eventContainerNoteService.create({
+      data: {
+        type: EventContainerNoteType.SYSTEM,
+        description:
+          'New class: ' + eventType.name + ' at ' + body.datetimeOfStart,
+        containerId: body.containerId,
+      },
+    });
+
+    return event;
   }
 
   @Patch(':eventId')
@@ -151,9 +167,26 @@ export class EventController {
 
   @Delete(':eventId')
   async deleteEvent(@Param('eventId') eventId: number): Promise<Event> {
-    return await this.eventService.delete({
+    // [step 1] Delete event.
+    const event = await this.eventService.delete({
       where: {id: eventId},
+      include: {type: true},
     });
+
+    // [step 2] Note delete event.
+    await this.eventContainerNoteService.create({
+      data: {
+        type: EventContainerNoteType.SYSTEM,
+        description:
+          'Remove class: ' +
+          event['type'].name +
+          ' at ' +
+          event.datetimeOfStart,
+        containerId: event.containerId,
+      },
+    });
+
+    return event;
   }
 
   /* End */

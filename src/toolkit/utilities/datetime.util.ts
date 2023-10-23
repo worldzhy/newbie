@@ -50,6 +50,26 @@ export function getWeekOfMonth(year: number, month: number, day: number) {
   return Math.ceil(days / 7);
 }
 
+export function getWeekOfYear(year: number, month: number, day: number) {
+  const date = new Date(year, month - 1, day);
+  date.setHours(0, 0, 0, 0);
+
+  // Thursday in current week decides the year.
+  date.setDate(date.getDate() + 3 - ((date.getDay() + 6) % 7));
+  // January 4 is always in week 1.
+  var week1 = new Date(date.getFullYear(), 0, 4);
+  // Adjust to Thursday in week 1 and count number of weeks from date to week1.
+  return (
+    1 +
+    Math.round(
+      ((date.getTime() - week1.getTime()) / 86400000 -
+        3 +
+        ((week1.getDay() + 6) % 7)) /
+        7
+    )
+  );
+}
+
 /**
  * Example: September, 2023
  * generateMonthlyCalendar(2023, 9) =>
@@ -78,6 +98,7 @@ export function generateMonthlyCalendar(year: number, month: number) {
     dayOfMonth: number;
     dayOfWeek: number;
     weekOfMonth: number;
+    weekOfYear: number;
   }[][] = [[]];
   for (let day = 1, week = 0; day <= numberOfDays; day++) {
     const date = new Date(year, month - 1, day);
@@ -95,6 +116,7 @@ export function generateMonthlyCalendar(year: number, month: number) {
       dayOfMonth,
       dayOfWeek,
       weekOfMonth: week + 1,
+      weekOfYear: getWeekOfYear(year, month, dayOfMonth),
     });
   }
   return daysOfMonth;

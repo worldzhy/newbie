@@ -325,6 +325,7 @@ model Event {
   dayOfMonth        Int
   dayOfWeek         Int
   weekOfMonth       Int // The number of week in a month, it will be 1 to 6.
+  weekOfYear        Int // The number of week in a month, it will be 1 to 53.
   hour              Int
   minute            Int
   minutesOfDuration Int
