@@ -54,6 +54,20 @@ export async function seedForAccount() {
           roles: {connect: [{id: role.id}]},
         },
       });
+      await prisma.user.create({
+        data: {
+          password: 'Abc1234!',
+          email: 'tan@inceptionpad.com',
+          roles: {connect: [{id: role.id}]},
+        },
+      });
+      await prisma.user.create({
+        data: {
+          password: 'Abc1234!',
+          email: 'chuck@inceptionpad.com',
+          roles: {connect: [{id: role.id}]},
+        },
+      });
 
       // Create permissions.
       for (const permission of permissions.Admin) {
