@@ -27,8 +27,7 @@ export class ClassController {
         value: {
           name: 'Speaking EventType',
           minutesOfDuration: 60,
-          minutesInAdvanceToReserve: 120,
-          minutesInAdvanceToCancel: 120,
+          tagId: 1,
         },
       },
     },
@@ -66,8 +65,7 @@ export class ClassController {
         summary: '1. Update',
         value: {
           name: 'Speaking EventType',
-          minutesInAdvanceToReserve: 120,
-          minutesInAdvanceToCancel: 120,
+          tagId: 2,
         },
       },
     },
