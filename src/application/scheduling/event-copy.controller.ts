@@ -76,44 +76,43 @@ export class EventCopyController {
         include: {events: true},
       });
     }
-    if (!sourceContainer) {
-      throw new BadRequestException('The history data we need is not existed.');
-    }
 
-    // [step 3] Generate events.
-    const targetEvents: Prisma.EventUncheckedCreateWithoutContainerInput[] = [];
-    const weeksOfTargetContainer = generateMonthlyCalendar(
-      targetContainer.year,
-      targetContainer.month
-    );
-    for (let i = 0; i < weeksOfTargetContainer.length; i++) {
-      targetEvents.push(
-        ...this.eventService.copyMany({
-          events: sourceContainer['events'],
-          from: {
-            year: sourceContainer.year,
-            month: sourceContainer.month,
-            week: 2, // The first week may be a semi week but the 2nd week must be a full week.
-          },
-          to: {
-            year: targetContainer.year,
-            month: targetContainer.month,
-            week: i + 1,
-          },
-        })
+    // [step 3] Generate and update events.
+    if (sourceContainer) {
+      const targetEvents: Prisma.EventUncheckedCreateWithoutContainerInput[] =
+        [];
+      const weeksOfTargetContainer = generateMonthlyCalendar(
+        targetContainer.year,
+        targetContainer.month
       );
-    }
+      for (let i = 0; i < weeksOfTargetContainer.length; i++) {
+        targetEvents.push(
+          ...this.eventService.copyMany({
+            events: sourceContainer['events'],
+            from: {
+              year: sourceContainer.year,
+              month: sourceContainer.month,
+              week: 2, // The first week may be a semi week but the 2nd week must be a full week.
+            },
+            to: {
+              year: targetContainer.year,
+              month: targetContainer.month,
+              week: i + 1,
+            },
+          })
+        );
+      }
 
-    // [step 4] Create events.
-    await this.eventContainerService.update({
-      where: {id: eventContainerId},
-      data: {
-        events: {
-          deleteMany: {containerId: eventContainerId},
-          create: targetEvents,
+      await this.eventContainerService.update({
+        where: {id: eventContainerId},
+        data: {
+          events: {
+            deleteMany: {containerId: eventContainerId},
+            create: targetEvents,
+          },
         },
-      },
-    });
+      });
+    }
   }
 
   @Patch(':eventContainerId/overwrite')

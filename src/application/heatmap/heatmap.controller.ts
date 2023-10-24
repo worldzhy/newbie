@@ -10,8 +10,8 @@ import {
 } from '@toolkit/utilities/datetime.util';
 
 enum HEATMAP_TYPE {
-  Availability = '1',
-  Demand = '2',
+  Availability = 1,
+  Demand = 2,
 }
 
 const HOUR_OF_OPENING = 5;
@@ -33,7 +33,7 @@ export class HeatmapController {
     @Query('venueId') venueId: number,
     @Query('year') year: number,
     @Query('month') month: number,
-    @Query('types') types: string[]
+    @Query('types') types: (number | string)[]
   ) {
     const heatmapInfoTimeslots: {
       year: number;
@@ -56,8 +56,12 @@ export class HeatmapController {
     });
 
     // [step 2] Prepare data for heatmap.
-    const flagCoachHeatmap = types.includes(HEATMAP_TYPE.Availability);
-    const flagDemandHeatmap = types.includes(HEATMAP_TYPE.Demand);
+    const flagCoachHeatmap =
+      types.includes(HEATMAP_TYPE.Availability) ||
+      types.includes(HEATMAP_TYPE.Availability.toString());
+    const flagDemandHeatmap =
+      types.includes(HEATMAP_TYPE.Demand) ||
+      types.includes(HEATMAP_TYPE.Demand.toString());
     let coaches, coachIds;
     let demands;
 
