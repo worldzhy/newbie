@@ -86,13 +86,40 @@ export class AnalysisController {
           coach['profile']['countOfScheduledClass'] = countOfScheduledClass;
 
           if (countOfScheduledClass < quotaOfWeek) {
-            coachesUnderQuota.push(coach);
+            let existed = false;
+            for (let r = 0; r < coachesUnderQuota.length; r++) {
+              const element = coachesUnderQuota[r];
+              if (element.id === coach.id) {
+                existed = true;
+              }
+            }
+            if (!existed) {
+              coachesUnderQuota.push(coach);
+            }
           }
           if (countOfScheduledClass < quotaOfWeekMinPerference) {
-            coachesUnderPreferredQuota.push(coach);
+            let existed = false;
+            for (let s = 0; s < coachesUnderPreferredQuota.length; s++) {
+              const element = coachesUnderPreferredQuota[s];
+              if (element.id === coach.id) {
+                existed = true;
+              }
+            }
+            if (!existed) {
+              coachesUnderPreferredQuota.push(coach);
+            }
           }
           if (countOfScheduledClass > quotaOfWeekMaxPerference) {
-            coachesOverPreferredQuota.push(coach);
+            let existed = false;
+            for (let s = 0; s < coachesOverPreferredQuota.length; s++) {
+              const element = coachesOverPreferredQuota[s];
+              if (element.id === coach.id) {
+                existed = true;
+              }
+            }
+            if (!existed) {
+              coachesOverPreferredQuota.push(coach);
+            }
           }
           if (
             countOfScheduledClass > coachScheduledMost.countOfScheduledClass
