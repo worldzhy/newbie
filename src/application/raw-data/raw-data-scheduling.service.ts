@@ -6,6 +6,7 @@ import {EventVenueService} from '@microservices/event-scheduling/event-venue.ser
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
 import {SnowflakeService} from '@toolkit/snowflake/snowflake.service';
 import {EventContainerOrigin, EventContainerStatus} from '@prisma/client';
+import {getWeekOfMonth, getWeekOfYear} from '@toolkit/utilities/datetime.util';
 
 @Injectable()
 export class RawDataSchedulingService {
@@ -153,6 +154,16 @@ export class RawDataSchedulingService {
                 month,
                 dayOfMonth: datetimeOfStart.getDate(),
                 dayOfWeek: datetimeOfStart.getDay(),
+                weekOfMonth: getWeekOfMonth(
+                  year,
+                  month,
+                  datetimeOfStart.getDate()
+                ),
+                weekOfYear: getWeekOfYear(
+                  year,
+                  month,
+                  datetimeOfStart.getDate()
+                ),
                 hour: datetimeOfStart.getHours(),
                 minute: datetimeOfStart.getMinutes(),
                 minutesOfDuration: Number(
