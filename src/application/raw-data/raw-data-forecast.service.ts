@@ -103,13 +103,14 @@ export class RawDataForecastService {
       const _date = moment(targetMonth, 'YYYY-MM').set('date', i);
       const _week = _date.weekday();
 
-      const dayData = _.cloneDeep(this.gWeekSch[_week]).map((d: any) => {
-        d.CLASSDATE = _date.format('YYYY-MM-DD');
-        d.week = _date.week();
-        return d;
-      });
-
-      forecastSch.push(dayData);
+      if (this.gWeekSch[_week]) {
+        const dayData = _.cloneDeep(this.gWeekSch[_week]).map((d: any) => {
+          d.CLASSDATE = _date.format('YYYY-MM-DD');
+          d.week = _date.week();
+          return d;
+        });
+        forecastSch.push(dayData);
+      }
     }
 
     this.forecastSch = forecastSch;
