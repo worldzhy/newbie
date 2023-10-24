@@ -41,10 +41,14 @@ export class ClassController {
   }
 
   @Get('')
-  async getEventTypes() {
-    return await this.eventTypeService.findManyInOnePage({
-      orderBy: {name: 'asc'},
-    });
+  async getEventTypes(
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number
+  ) {
+    return await this.eventTypeService.findManyInManyPages(
+      {page, pageSize},
+      {orderBy: {name: 'asc'}}
+    );
   }
 
   @Get(':eventTypeId')
