@@ -47,7 +47,7 @@ export class FileManagementController {
       },
     },
   })
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('file')) // Receive file
   async uploadFile(
     @Body() body: {folderId: string},
     @UploadedFile(

@@ -26,6 +26,12 @@ export class AvailabilityExpressionService {
     return await this.prisma.availabilityExpression.findUniqueOrThrow(args);
   }
 
+  async findMany(
+    args: Prisma.AvailabilityExpressionFindManyArgs
+  ): Promise<AvailabilityExpression[]> {
+    return await this.prisma.availabilityExpression.findMany(args);
+  }
+
   async findManyInManyPages(
     pagination: {page: number; pageSize: number},
     findManyArgs?: Prisma.AvailabilityExpressionFindManyArgs

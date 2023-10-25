@@ -41,7 +41,7 @@ export class XLSXService {
     return columns;
   }
 
-  getDataRows(sheetName: string) {
+  getDataRows(sheetName: string): object[] {
     const sheet = this.workbook.Sheets[sheetName];
     return XLSX.utils.sheet_to_json(sheet);
   }
