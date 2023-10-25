@@ -65,19 +65,9 @@ export class EventTypeService {
     }
 
     // [step 2] Create Not Found event type.
-    let notFoundEventType = await this.prisma.eventType.findFirst({
-      where: {name: {contains: 'not found', mode: 'insensitive'}},
+    return await this.prisma.eventType.create({
+      data: {name, minutesOfDuration: 0},
     });
-    if (!notFoundEventType) {
-      notFoundEventType = await this.prisma.eventType.create({
-        data: {
-          name: 'Not Found',
-          minutesOfDuration: 0,
-        },
-      });
-    }
-
-    return notFoundEventType;
   }
 
   /* End */

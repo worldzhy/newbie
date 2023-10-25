@@ -31,6 +31,7 @@ export class RawDataSchedulingService {
     let count = await this.eventContainerService.count({
       where: {
         origin: EventContainerOrigin.EXTERNAL,
+        status: EventContainerStatus.PUBLISHED,
         year,
         month,
         venueId,
@@ -142,8 +143,14 @@ export class RawDataSchedulingService {
               });
 
               // Get class info
+              visit.CLASSNAME = visit.CLASSNAME.replace('  ', ' ').trim();
+              if (visit.CLASSNAME.includes('+')) {
+                const splittedName = visit.CLASSNAME.split('+');
+                visit.CLASSNAME =
+                  splittedName[0].trim() + ' + ' + splittedName[1].trim();
+              }
               const eventType = await this.eventTypeService.match(
-                visit.CLASSNAME.trim()
+                visit.CLASSNAME
               );
 
               return {
