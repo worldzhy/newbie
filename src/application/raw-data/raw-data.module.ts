@@ -1,16 +1,19 @@
 import {Module} from '@nestjs/common';
-import {RawDataBasicService} from './raw-data-basic.service';
+import {RawDataCoachService} from './raw-data-coach.service';
+import {RawDataLocationService} from './raw-data-location.service';
 import {RawDataSchedulingService} from './raw-data-scheduling.service';
 import {RawDataForecastService} from './raw-data-forecast.service';
 
 @Module({
   providers: [
-    RawDataBasicService,
+    RawDataCoachService,
+    RawDataLocationService,
     RawDataSchedulingService,
     RawDataForecastService,
   ],
   exports: [
-    RawDataBasicService,
+    RawDataCoachService,
+    RawDataLocationService,
     RawDataSchedulingService,
     RawDataForecastService,
   ],
