@@ -25,6 +25,7 @@ import {AccountLogoutController} from './account/account-logout.controller';
 import {AccountSignupController} from './account/account-signup.controller';
 import {AccountOthersController} from './account/account-others.controller';
 import {AreaManagerController} from './area-manager/area-manager.controller';
+import {AvailabilityController} from './coach/availability/availability.controller';
 import {AvailabilityExpressionController} from './coach/availability/availability-expression.controller';
 import {ClassController} from './class/class.controller';
 import {EventCoachController} from './coach/event-coach.controller';
@@ -73,6 +74,7 @@ import {AnalysisController} from './analysis/analysis.controller';
     AccountSignupController,
     AccountOthersController,
     AreaManagerController,
+    AvailabilityController,
     AvailabilityExpressionController,
     ClassController,
     EventCoachController,

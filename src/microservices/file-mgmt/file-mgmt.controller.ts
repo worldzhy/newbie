@@ -52,9 +52,7 @@ export class FileManagementController {
     @Body() body: {folderId: string},
     @UploadedFile(
       new ParseFilePipeBuilder()
-        .addFileTypeValidator({
-          fileType: 'pdf|doc|png|jpg|jpeg',
-        })
+        .addFileTypeValidator({fileType: 'pdf|doc|png|jpg|jpeg'})
         .build()
     )
     file: Express.Multer.File
