@@ -9,7 +9,7 @@ import {XLSXModule} from './xlsx/xlsx.module';
 @Global()
 @Module({
   imports: [
-    // AwsModule,
+    AwsModule,
     ElasticModule,
     CustomLoggerModule,
     PrismaModule,
