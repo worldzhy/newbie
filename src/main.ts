@@ -87,7 +87,10 @@ async function bootstrap() {
   );
 
   // Listen port
-  await app.listen(port, '0.0.0.0');
+  const server = await app.listen(port, '0.0.0.0');
+  server.timeout = configService.getOrThrow<number>(
+    'application.httpRequestTimeout'
+  );
 
   console.log(`Application is running on: ${await app.getUrl()}`);
 }
