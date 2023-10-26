@@ -9,13 +9,12 @@ import {XLSXModule} from './xlsx/xlsx.module';
 @Global()
 @Module({
   imports: [
-    AwsModule,
+    // AwsModule,
     ElasticModule,
     CustomLoggerModule,
     PrismaModule,
     SnowflakeModule,
     XLSXModule,
   ],
-  //   exports: [AwsModule, ElasticModule, CustomLoggerModule, PrismaModule, SnowflakeModule, XLSXModule],
 })
 export class ToolkitModule {}

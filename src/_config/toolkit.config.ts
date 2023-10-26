@@ -49,7 +49,7 @@ export default registerAs('toolkit', () => ({
     poolOption: {
       max: 10,
       min: 0,
-      acquireTimeoutMillis: 60000,
+      acquireTimeoutMillis: 120000,
       evictionRunIntervalMillis: 60000,
       idleTimeoutMillis: 120000,
     },
