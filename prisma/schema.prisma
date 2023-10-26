@@ -389,9 +389,9 @@ model EventVenue {
   events              Event[]
   // For solidcore
   similarVenueIds     Int[]
-  external_studioId   Int // snowflake
-  external_studioName String // snowflake
-  external_locationId Int // snowflake
+  external_studioName String? // snowflake
+  external_studioId   Int? // snowflake
+  external_locationId Int? // snowflake
 
   @@unique([external_studioId, external_locationId])
   @@schema("microservice/event-scheduling")

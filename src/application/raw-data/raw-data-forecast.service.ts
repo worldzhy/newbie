@@ -23,11 +23,12 @@ export class RawDataForecastService {
     });
     const studioId = location.external_studioId;
     const locationId = location.external_locationId;
-
-    await this.getLastMonthData({studioId, locationId});
-    await this.getForcastSch({year: params.year, month: params.month});
-    await this.getFixRate();
-    await this.fixByHistory();
+    if (studioId && locationId) {
+      await this.getLastMonthData({studioId, locationId});
+      await this.getForcastSch({year: params.year, month: params.month});
+      await this.getFixRate();
+      await this.fixByHistory();
+    }
 
     return this.forecastSch;
   }
