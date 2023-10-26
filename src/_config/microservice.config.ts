@@ -42,6 +42,12 @@ export default registerAs('microservice', () => ({
         process.env.NOTIFICATION_SMS_AWS_PINPOINT_SENDER_ID || 'default',
     },
   },
+  'project-mgmt': {
+    pulumi: {
+      awsVersion: process.env.PULUMI_AWS_VERSION,
+      accessToken: process.env.PULUMI_ACCESS_TOKEN,
+    },
+  },
   task: {
     awsSqsQueueUrl: process.env.TASK_AWS_SQS_QUEUE_URL || 'default',
   },

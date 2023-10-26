@@ -40,10 +40,10 @@ async function bootstrap() {
   checkEnvVars(configService);
 
   // Get environment variables.
-  const port = configService.getOrThrow<number>('application.port');
-  const env = configService.getOrThrow<string>('application.environment');
+  const port = configService.getOrThrow<number>('server.port');
+  const env = configService.getOrThrow<string>('server.environment');
   const nodeFramework = configService.getOrThrow<string>(
-    'application.nodeFramework'
+    'server.nodeFramework'
   );
 
   // Enable functions according to different env.
@@ -88,9 +88,7 @@ async function bootstrap() {
 
   // Listen port
   const server = await app.listen(port, '0.0.0.0');
-  server.timeout = configService.getOrThrow<number>(
-    'application.httpRequestTimeout'
-  );
+  server.timeout = configService.getOrThrow<number>('server.httpTimeout');
 
   console.log(`Application is running on: ${await app.getUrl()}`);
 }

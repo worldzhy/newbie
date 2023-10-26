@@ -1,9 +1,6 @@
 import {APP_FILTER} from '@nestjs/core';
 import {Module, MiddlewareConsumer} from '@nestjs/common';
-import {ConfigModule} from '@nestjs/config';
-import ApplicationConfiguration from '@_config/application.config';
-import MicroservicesConfiguration from '@_config/microservice.config';
-import ToolkitConfiguration from '@_config/toolkit.config';
+
 import {AllExceptionFilter} from '@_filter/_all-exception.filter';
 import {HttpExceptionFilter} from '@_filter/_http-exception.filter';
 import {PrismaExceptionFilter} from '@_filter/_prisma-exception.filter';
@@ -51,15 +48,6 @@ import {WorkflowRouteController} from './workflow/workflow-route.controller';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      load: [
-        ApplicationConfiguration,
-        MicroservicesConfiguration,
-        ToolkitConfiguration,
-      ],
-      isGlobal: true,
-    }),
-
     // Toolkit (Global modules)
     ToolkitModule,
 

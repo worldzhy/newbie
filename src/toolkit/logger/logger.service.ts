@@ -21,8 +21,7 @@ export class CustomLoggerService extends ConsoleLogger {
     super();
 
     this.environment =
-      this.configService.getOrThrow<string>('application.environment') ||
-      'development';
+      this.configService.getOrThrow<string>('server.environment');
   }
 
   // stdout

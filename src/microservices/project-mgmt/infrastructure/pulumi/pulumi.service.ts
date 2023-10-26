@@ -83,7 +83,9 @@ export class PulumiStackService {
     // [step 2] Configure pulumi stack.
     await pulumiStack.workspace.installPlugin(
       'aws',
-      this.configService.getOrThrow<string>('application.pulumi.awsVersion')
+      this.configService.getOrThrow<string>(
+        'microservice.project-mgmt.pulumi.awsVersion'
+      )
     );
     if (environment.awsProfile && environment.awsRegion) {
       await pulumiStack.setAllConfig({
@@ -147,7 +149,7 @@ export class PulumiStackService {
         Authorization:
           'token ' +
           this.configService.getOrThrow<string>(
-            'application.pulumi.accessToken'
+            'microservice.project-mgmt.pulumi.accessToken'
           ),
       },
       params: {
@@ -168,7 +170,7 @@ export class PulumiStackService {
         Authorization:
           'token ' +
           this.configService.getOrThrow<string>(
-            'application.pulumi.accessToken'
+            'microservice.project-mgmt.pulumi.accessToken'
           ),
       },
     });

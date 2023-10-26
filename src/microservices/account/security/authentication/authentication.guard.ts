@@ -25,7 +25,7 @@ export class AuthenticationGuard extends AuthGuard('global-guard') {
   ) {
     super();
     this.allowedOrigins = this.configService.getOrThrow<string[]>(
-      'application.allowedOrigins'
+      'server.allowedOrigins'
     );
   }
 

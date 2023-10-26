@@ -14,7 +14,7 @@ export class IpLoginLimiterGuard {
     private reflector: Reflector
   ) {
     this.allowedOrigins = this.configService.getOrThrow<string[]>(
-      'application.allowedOrigins'
+      'server.allowedOrigins'
     );
   }
 
