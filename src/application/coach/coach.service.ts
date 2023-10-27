@@ -27,7 +27,7 @@ export class CoachService {
     month: number;
     weekOfMonth: number;
     minutesOfDuration: number;
-    // containerId?: number;
+    containerId: number;
   }) {
     // [step 1] Get coaches for the specific venue.
     const coaches = await this.userService.findMany({
@@ -102,7 +102,7 @@ export class CoachService {
             year: event.year,
             month: event.month,
             weekOfMonth: event.weekOfMonth,
-            // containerId: event.containerId,
+            containerId: event.containerId,
           },
         });
 
