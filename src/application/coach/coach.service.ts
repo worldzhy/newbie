@@ -83,7 +83,7 @@ export class CoachService {
       remainingQuotaOfMaxPreference: number;
       quotaOfWeek: number;
       quotaOfWeekMinPerference: number;
-      quotaOfWeekMaxPerference: number;
+      quotaOfWeekMaxPreference: number;
     }[] = [];
     for (let i = 0; i < coaches.length; i++) {
       const coach = coaches[i];
@@ -104,17 +104,17 @@ export class CoachService {
         });
 
         // ! A coach can not be dispatched more classes than his/her max preference.
-        if (coach['profile'].quotaOfWeekMaxPerference - countOfEvents > 0) {
+        if (coach['profile'].quotaOfWeekMaxPreference - countOfEvents > 0) {
           sortedAvailableCoaches.push({
             hostUserId: coach.id,
             remainingQuota: coach['profile'].quotaOfWeek - countOfEvents,
             remainingQuotaOfMinPreference:
               coach['profile'].quotaOfWeekMinPerference - countOfEvents,
             remainingQuotaOfMaxPreference:
-              coach['profile'].quotaOfWeekMaxPerference - countOfEvents,
+              coach['profile'].quotaOfWeekMaxPreference - countOfEvents,
             quotaOfWeek: coach['profile'].quotaOfWeek,
             quotaOfWeekMinPerference: coach['profile'].quotaOfWeekMinPerference,
-            quotaOfWeekMaxPerference: coach['profile'].quotaOfWeekMaxPerference,
+            quotaOfWeekMaxPreference: coach['profile'].quotaOfWeekMaxPreference,
           });
 
           availableCoaches.push(coach);
@@ -152,8 +152,8 @@ export class CoachService {
         ) {
           // ! The remainingQuotaOfMaxPreference must be larger than 0.
           if (
-            a.remainingQuotaOfMaxPreference / a.quotaOfWeekMaxPerference >=
-            b.remainingQuotaOfMaxPreference / b.quotaOfWeekMaxPerference
+            a.remainingQuotaOfMaxPreference / a.quotaOfWeekMaxPreference >=
+            b.remainingQuotaOfMaxPreference / b.quotaOfWeekMaxPreference
           ) {
             return -1;
           } else {
