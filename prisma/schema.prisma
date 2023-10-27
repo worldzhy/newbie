@@ -108,7 +108,7 @@ model UserProfile {
   coachingTenure           Int? // 5:Senior Master Coach, 4:Pro, 3:Senior, 2:Standard, 1:New
   quotaOfWeekMinPreference Int?
   quotaOfWeekMaxPreference Int?
-  quotaOfWeek              Int                @default(0) // The number of classes a coach should teach at least in a week.
+  quotaOfWeek              Int? // The number of classes a coach should teach at least in a week.
 
   @@schema("microservice/account")
 }
