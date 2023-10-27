@@ -54,13 +54,10 @@ export function lastDayOfMonth(year: number, month: number) {
  * Get the number of week for a specific day in a month. It will return 1 to 6.
  */
 export function weekOfMonth(year: number, month: number, day: number) {
-  const startDate = new Date(year, 0, 1);
-  const currentDate = new Date(year, month - 1, day);
-  var days = Math.floor(
-    (currentDate.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000)
-  );
-
-  return Math.ceil(days / 7);
+  const date = new Date(year, month - 1, day);
+  const dayOfWeek = date.getDay();
+  const dayOfMonth = date.getDate();
+  return Math.ceil((dayOfMonth + (dayOfWeek == 0 ? 0 : 6 - dayOfWeek)) / 7);
 }
 
 /**

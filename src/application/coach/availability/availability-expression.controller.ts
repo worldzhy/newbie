@@ -108,6 +108,8 @@ export class AvailabilityExpressionController {
   ): Promise<AvailabilityExpression> {
     const availabilityExpressionUpdateInput: Prisma.AvailabilityExpressionUpdateInput =
       body;
+    availabilityExpressionUpdateInput.status =
+      AvailabilityExpressionStatus.EDITING;
 
     return await this.availabilityExpressionService.update({
       where: {id: availabilityExpressionId},

@@ -26,10 +26,12 @@ export class EventCoachController {
     @Query('dayOfMonth') dayOfMonth?: number,
     @Query('hour') hour?: number,
     @Query('minute') minute?: number,
-    @Query('typeId') typeId?: number
+    @Query('typeId') typeId?: number,
+    @Query('containerId') containerId?: number
   ) {
     // [step 1] There are enough conditions to get sorted coaches.
     if (
+      containerId &&
       venueId &&
       typeId &&
       year &&
@@ -61,6 +63,7 @@ export class EventCoachController {
         month,
         weekOfMonth: weekOfMonth(year, month, dayOfMonth),
         minutesOfDuration: classType.minutesOfDuration,
+        containerId,
       };
       return await this.coachService.getSortedCoachesForEvent(event);
     }

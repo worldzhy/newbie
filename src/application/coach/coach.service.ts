@@ -27,6 +27,7 @@ export class CoachService {
     month: number;
     weekOfMonth: number;
     minutesOfDuration: number;
+    containerId: number;
   }) {
     // [step 1] Get coaches for the specific venue.
     const coaches = await this.userService.findMany({
@@ -82,7 +83,7 @@ export class CoachService {
       remainingQuotaOfMinPreference: number;
       remainingQuotaOfMaxPreference: number;
       quotaOfWeek: number;
-      quotaOfWeekMinPerference: number;
+      quotaOfWeekMinPreference: number;
       quotaOfWeekMaxPreference: number;
     }[] = [];
     for (let i = 0; i < coaches.length; i++) {
@@ -97,9 +98,11 @@ export class CoachService {
         const countOfEvents = await this.eventService.count({
           where: {
             hostUserId: coach.id,
+            venueId: event.venueId,
             year: event.year,
             month: event.month,
             weekOfMonth: event.weekOfMonth,
+            containerId: event.containerId,
           },
         });
 
@@ -109,11 +112,11 @@ export class CoachService {
             hostUserId: coach.id,
             remainingQuota: coach['profile'].quotaOfWeek - countOfEvents,
             remainingQuotaOfMinPreference:
-              coach['profile'].quotaOfWeekMinPerference - countOfEvents,
+              coach['profile'].quotaOfWeekMinPreference - countOfEvents,
             remainingQuotaOfMaxPreference:
               coach['profile'].quotaOfWeekMaxPreference - countOfEvents,
             quotaOfWeek: coach['profile'].quotaOfWeek,
-            quotaOfWeekMinPerference: coach['profile'].quotaOfWeekMinPerference,
+            quotaOfWeekMinPreference: coach['profile'].quotaOfWeekMinPreference,
             quotaOfWeekMaxPreference: coach['profile'].quotaOfWeekMaxPreference,
           });
 
@@ -139,8 +142,8 @@ export class CoachService {
           b.remainingQuotaOfMinPreference > 0
         ) {
           if (
-            a.remainingQuotaOfMinPreference / a.quotaOfWeekMinPerference >=
-            b.remainingQuotaOfMinPreference / b.quotaOfWeekMinPerference
+            a.remainingQuotaOfMinPreference / a.quotaOfWeekMinPreference >=
+            b.remainingQuotaOfMinPreference / b.quotaOfWeekMinPreference
           ) {
             return -1;
           } else {

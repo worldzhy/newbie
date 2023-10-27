@@ -117,6 +117,9 @@ export class HeatmapController {
           const element = groupedAvailabilityTimeslots[p];
           // Check if it is seamless in the heatmap timeslot.
           // If it is seamless, then the coach is available for the heatmap timeslot.
+          // ! If different availability expressions include same timeslots,
+          // ! element._count.hostUserId will be larger than (MINUTES_OF_TIMESLOT / this.availabilityTimeslotService.MINUTES_Of_TIMESLOT_UNIT)
+          // ! It will cause some available coaches not appear on the heatmap.
           if (
             element._count.hostUserId ===
             MINUTES_OF_TIMESLOT /
