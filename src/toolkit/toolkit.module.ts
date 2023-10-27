@@ -1,6 +1,5 @@
 import {Global, Module} from '@nestjs/common';
-import {HttpModule} from '@nestjs/axios';
-import {ConfigModule, ConfigService} from '@nestjs/config';
+import {ConfigModule} from '@nestjs/config';
 import ServerConfiguration from '@_config/server.config';
 import MicroservicesConfiguration from '@_config/microservice.config';
 import ToolkitConfiguration from '@_config/toolkit.config';
@@ -21,14 +20,6 @@ import {XLSXModule} from './xlsx/xlsx.module';
         ToolkitConfiguration,
       ],
       isGlobal: true,
-    }),
-    HttpModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        timeout: configService.get('HTTP_TIMEOUT'),
-        maxRedirects: configService.get('HTTP_MAX_REDIRECTS'),
-      }),
-      inject: [ConfigService],
     }),
     AwsModule,
     ElasticModule,

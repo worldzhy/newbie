@@ -1,10 +1,7 @@
 import {Controller, Get, Query} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth} from '@nestjs/swagger';
 import {Prisma} from '@prisma/client';
-import {
-  datePlusMinutes,
-  getWeekOfMonth,
-} from '@toolkit/utilities/datetime.util';
+import {datePlusMinutes, weekOfMonth} from '@toolkit/utilities/datetime.util';
 import {UserService} from '@microservices/account/user/user.service';
 import {EventTypeService} from '@microservices/event-scheduling/event-type.service';
 import {CoachService} from './coach.service';
@@ -62,7 +59,7 @@ export class EventCoachController {
         datetimeOfEnd,
         year,
         month,
-        weekOfMonth: getWeekOfMonth(year, month, dayOfMonth),
+        weekOfMonth: weekOfMonth(year, month, dayOfMonth),
         minutesOfDuration: classType.minutesOfDuration,
       };
       return await this.coachService.getSortedCoachesForEvent(event);
@@ -71,13 +68,15 @@ export class EventCoachController {
     // [step 2] There are enough conditions to get sorted coaches.
     const where: Prisma.UserWhereInput = {};
     where.roles = {some: {name: ROLE_NAME_COACH}};
-    if (typeId) {
+    if (venueId && typeId) {
       where.profile = {
         eventVenueIds: {has: venueId},
         eventTypeIds: {has: typeId},
       };
-    } else {
+    } else if (venueId) {
       where.profile = {eventVenueIds: {has: venueId}};
+    } else if (typeId) {
+      where.profile = {eventTypeIds: {has: typeId}};
     }
 
     return await this.userService.findMany({
@@ -87,6 +86,8 @@ export class EventCoachController {
         profile: {
           select: {
             fullName: true,
+            eventVenueIds: true,
+            eventTypeIds: true,
             coachingTenure: true,
             quotaOfWeek: true,
             quotaOfWeekMinPreference: true,

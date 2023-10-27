@@ -37,15 +37,23 @@ export function datePlusYearsForString(dateStr: string, years: number): string {
   return newDate.toISOString().split('T')[0];
 }
 
-export function getDayOfWeek(year: number, month: number, day: number) {
+export function dayOfWeek(year: number, month: number, day: number) {
   const date = new Date(year, month - 1, day);
   return date.getDay();
+}
+
+export function firstDayOfMonth(year: number, month: number) {
+  return new Date(year, month - 1, 1);
+}
+
+export function lastDayOfMonth(year: number, month: number) {
+  return new Date(year, month, 0);
 }
 
 /**
  * Get the number of week for a specific day in a month. It will return 1 to 6.
  */
-export function getWeekOfMonth(year: number, month: number, day: number) {
+export function weekOfMonth(year: number, month: number, day: number) {
   const startDate = new Date(year, 0, 1);
   const currentDate = new Date(year, month - 1, day);
   var days = Math.floor(
@@ -58,7 +66,7 @@ export function getWeekOfMonth(year: number, month: number, day: number) {
 /**
  * Get the number of week for a specific day in a year. It will return 1 to 53.
  */
-export function getWeekOfYear(year: number, month: number, day: number) {
+export function weekOfYear(year: number, month: number, day: number) {
   const date = new Date(year, month - 1, day);
   return parseInt(moment(date).format('W'));
 }
@@ -109,7 +117,7 @@ export function generateMonthlyCalendar(year: number, month: number) {
       dayOfMonth,
       dayOfWeek,
       weekOfMonth: week + 1,
-      weekOfYear: getWeekOfYear(year, month, dayOfMonth),
+      weekOfYear: weekOfYear(year, month, dayOfMonth),
     });
   }
   return daysOfMonth;

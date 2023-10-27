@@ -280,8 +280,8 @@ model AvailabilityExpression {
   venueIds                               Int[]
   cronExpressionsOfAvailableTimePoints   String[]
   cronExpressionsOfUnavailableTimePoints String[]
-  dateOfOpening                          DateTime                     @db.Date
-  dateOfClosure                          DateTime?                    @db.Date
+  dateOfOpening                          DateTime
+  dateOfClosure                          DateTime?
   minutesOfDuration                      Int // Generally it should be 30 or 60
   timezone                               String? // https://www.iplocate.com/en/resources/timezones/list-of-timezones
   createdAt                              DateTime                     @default(now())
@@ -402,8 +402,8 @@ model EventContainer {
   name          String?
   origin        EventContainerOrigin @default(INTERNAL)
   status        EventContainerStatus @default(EDITING)
-  dateOfOpening DateTime?            @db.Date // Use dateOfOpening and dateOfClosure together
-  dateOfClosure DateTime?            @db.Date
+  dateOfOpening DateTime? // Use dateOfOpening and dateOfClosure together
+  dateOfClosure DateTime?
   year          Int // Use year and month together
   month         Int
   timezone      String? // https://www.iplocate.com/en/resources/timezones/list-of-timezones

@@ -1,5 +1,7 @@
 import {APP_FILTER} from '@nestjs/core';
 import {Module, MiddlewareConsumer} from '@nestjs/common';
+import {ConfigModule, ConfigService} from '@nestjs/config';
+import {HttpModule} from '@nestjs/axios';
 
 import {AllExceptionFilter} from '@_filter/_all-exception.filter';
 import {HttpExceptionFilter} from '@_filter/_http-exception.filter';
@@ -40,6 +42,15 @@ import {AnalysisController} from './analysis/analysis.controller';
 
 @Module({
   imports: [
+    HttpModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        timeout: configService.get('HTTP_TIMEOUT'),
+        maxRedirects: configService.get('HTTP_MAX_REDIRECTS'),
+      }),
+      inject: [ConfigService],
+    }),
+
     // Toolkit (Global modules)
     ToolkitModule,
 

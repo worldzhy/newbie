@@ -4,9 +4,9 @@ import {Prisma, Event, EventContainerNoteType} from '@prisma/client';
 import {EventService} from '@microservices/event-scheduling/event.service';
 import {
   datePlusMinutes,
-  getDayOfWeek,
-  getWeekOfMonth,
-  getWeekOfYear,
+  dayOfWeek,
+  weekOfMonth,
+  weekOfYear,
 } from '@toolkit/utilities/datetime.util';
 import {EventTypeService} from '@microservices/event-scheduling/event-type.service';
 import {EventContainerNoteService} from '@microservices/event-scheduling/event-container-note.service';
@@ -49,8 +49,8 @@ export class EventController {
               datetimeOfEnd: '2023-09-01T06:50:00.000Z',
               year: body.year,
               month: body.month,
-              weekOfMonth: getWeekOfMonth(body.year, body.month, 1 + i),
-              weekOfYear: getWeekOfYear(body.year, body.month, 1 + i),
+              weekOfMonth: weekOfMonth(body.year, body.month, 1 + i),
+              weekOfYear: weekOfYear(body.year, body.month, 1 + i),
               dayOfMonth: 1 + i,
               dayOfWeek: (5 + i) % 7,
               hour: 6 + j,
@@ -106,9 +106,9 @@ export class EventController {
       body.datetimeOfStart,
       body.minutesOfDuration
     );
-    body.dayOfWeek = getDayOfWeek(body.year, body.month, body.dayOfMonth);
-    body.weekOfMonth = getWeekOfMonth(body.year, body.month, body.dayOfMonth);
-    body.weekOfYear = getWeekOfYear(body.year, body.month, body.dayOfMonth);
+    body.dayOfWeek = dayOfWeek(body.year, body.month, body.dayOfMonth);
+    body.weekOfMonth = weekOfMonth(body.year, body.month, body.dayOfMonth);
+    body.weekOfYear = weekOfYear(body.year, body.month, body.dayOfMonth);
 
     const event = await this.eventService.create({
       data: body,
