@@ -16,7 +16,7 @@ export class RawDataController {
 
   @Get('sync-coaches')
   async syncCoaches() {
-    await this.rawDataCoachService.syncCoachesAndLinkLocations();
+    await this.rawDataCoachService.syncCoaches();
   }
 
   @Get('sync-locations')

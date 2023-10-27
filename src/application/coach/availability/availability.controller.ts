@@ -61,29 +61,30 @@ export class AvailabilityController {
         .build()
     )
     file: Express.Multer.File,
-    @Body() body: {year: number; quarter: QUARTER}
+    @Body() body: {year: string; quarter: QUARTER}
   ) {
     // [step 1] Process quarter.
+    const year = parseInt(body.year);
     let stringMonths = '1';
     let dateOfOpening = new Date();
     let dateOfClosure = new Date();
     switch (body.quarter) {
       case QUARTER.Q1:
         stringMonths = '1-3';
-        dateOfOpening = firstDayOfMonth(body.year, 1);
-        dateOfClosure = lastDayOfMonth(body.year, 3);
+        dateOfOpening = firstDayOfMonth(year, 1);
+        dateOfClosure = lastDayOfMonth(year, 3);
       case QUARTER.Q2:
         stringMonths = '4-6';
-        dateOfOpening = firstDayOfMonth(body.year, 4);
-        dateOfClosure = lastDayOfMonth(body.year, 6);
+        dateOfOpening = firstDayOfMonth(year, 4);
+        dateOfClosure = lastDayOfMonth(year, 6);
       case QUARTER.Q3:
         stringMonths = '7-9';
-        dateOfOpening = firstDayOfMonth(body.year, 7);
-        dateOfClosure = lastDayOfMonth(body.year, 9);
+        dateOfOpening = firstDayOfMonth(year, 7);
+        dateOfClosure = lastDayOfMonth(year, 9);
       case QUARTER.Q4:
         stringMonths = '10-12';
-        dateOfOpening = firstDayOfMonth(body.year, 10);
-        dateOfClosure = lastDayOfMonth(body.year, 12);
+        dateOfOpening = firstDayOfMonth(year, 10);
+        dateOfClosure = lastDayOfMonth(year, 12);
     }
 
     // [step 2] Process excel data.
@@ -108,20 +109,9 @@ export class AvailabilityController {
         continue;
       }
 
-      // [step 2-2] Update coach profile.
-      await this.userProfileService.update({
-        where: {userId: coach.id},
-        data: {
-          quotaOfWeekMinPreference:
-            row['Select minimum # of preferred classes:'],
-          quotaOfWeekMaxPreference:
-            row['Select maximum # of preferred classes:'],
-        },
-      });
-
-      // [step 2-3] Generate coach availability expression.
+      // [step 2-2] Generate coach availability expression.
       const cronExpressions: string[] = [];
-      const coachLocationIds: number[] = [];
+      const coachLocationNames: string[] = [];
       for (const key in row) {
         // 1) Process weekday availability
         let isTimeKey = false;
@@ -191,32 +181,34 @@ export class AvailabilityController {
         }
 
         // 3) Process coach locations.
-        const coachLocations: string[] = [];
         if (key.startsWith('Select your home studio')) {
-          if (!coachLocations.includes(row[key].trim())) {
-            coachLocations.push(row[key].trim());
+          const location = row[key]
+            .replace(' -', ',')
+            .replace(' & ', '&')
+            .trim();
+          if (!coachLocationNames.includes(location)) {
+            coachLocationNames.push(location);
           }
         }
         if (key.startsWith('Select additional studios')) {
           row[key].split(';').map((location: string) => {
             location = location.replace(' -', ',').replace(' & ', '&').trim();
-            if (!coachLocations.includes(location)) {
-              coachLocations.push(location);
+            if (!coachLocationNames.includes(location)) {
+              coachLocationNames.push(location);
             }
           });
         }
-        const venues = await this.eventVenueService.findMany({
-          where: {name: {in: coachLocations}},
-          select: {id: true},
-        });
-        coachLocationIds.push(
-          ...venues.map(venue => {
-            return venue.id;
-          })
-        );
       }
 
-      // [step 2-4] Create or overwrite coach availability expression.
+      // [step 2-3] Create or overwrite coach availability expression.
+      const venues = await this.eventVenueService.findMany({
+        where: {name: {in: coachLocationNames}},
+        select: {id: true},
+      });
+      const coachLocationIds = venues.map(venue => {
+        return venue.id;
+      });
+
       await this.availabilityExpressionService.deleteMany({
         where: {
           name: {contains: body.year + ' ' + body.quarter, mode: 'insensitive'},
@@ -241,7 +233,7 @@ export class AvailabilityController {
           },
         });
 
-      // [step 2-5] Parse expression to timeslots.
+      // [step 2-4] Parse expression to timeslots.
       const availabilityTimeslots =
         await this.availabilityExpressionService.parse(
           availabilityExpression.id
@@ -256,6 +248,18 @@ export class AvailabilityController {
         where: {id: availabilityExpression.id},
         data: {
           status: AvailabilityExpressionStatus.PUBLISHED,
+        },
+      });
+
+      // [step 2-5] Update coach profile.
+      await this.userProfileService.update({
+        where: {userId: coach.id},
+        data: {
+          eventVenueIds: coachLocationIds,
+          quotaOfWeekMinPreference:
+            row['Select minimum # of preferred classes:'],
+          quotaOfWeekMaxPreference:
+            row['Select maximum # of preferred classes:'],
         },
       });
     }

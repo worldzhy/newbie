@@ -2,7 +2,6 @@ import {Injectable} from '@nestjs/common';
 import {UserService} from '@microservices/account/user/user.service';
 import {UserProfileService} from '@microservices/account/user/user-profile.service';
 import {EventVenueService} from '@microservices/event-scheduling/event-venue.service';
-import {PlaceService} from '@microservices/map/place.service';
 import {SnowflakeService} from '@toolkit/snowflake/snowflake.service';
 
 const ROLE_NAME_COACH = 'Coach';
@@ -12,14 +11,13 @@ export class RawDataCoachService {
   constructor(
     private readonly snowflakeService: SnowflakeService,
     private readonly eventVenueService: EventVenueService,
-    private readonly placeService: PlaceService,
     private readonly userService: UserService,
     private readonly userProfileService: UserProfileService
   ) {}
 
   async syncCoachesAndLinkLocations() {
     await this.syncCoaches();
-    await this.linkCoachAndLocations();
+    await this.linkLocations();
   }
 
   async syncCoaches() {
@@ -63,7 +61,7 @@ export class RawDataCoachService {
     }
   }
 
-  async linkCoachAndLocations() {
+  async linkLocations() {
     const sqlText = `
     select 
       lower(t.tremailname) as tremailname, 
