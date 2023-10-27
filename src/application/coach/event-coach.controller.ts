@@ -31,7 +31,6 @@ export class EventCoachController {
   ) {
     // [step 1] There are enough conditions to get sorted coaches.
     if (
-      containerId &&
       venueId &&
       typeId &&
       year &&
