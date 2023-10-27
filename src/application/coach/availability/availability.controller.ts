@@ -47,7 +47,7 @@ export class AvailabilityController {
   @ApiBody({
     description: '',
     examples: {
-      a: {value: {quarter: 'Q4'}},
+      a: {value: {year: 2023, quarter: 'Q4'}},
     },
   })
   @UseInterceptors(FileInterceptor('file'))

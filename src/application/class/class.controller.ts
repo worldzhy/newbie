@@ -43,11 +43,16 @@ export class ClassController {
   @Get('')
   async getEventTypes(
     @Query('page') page: number,
-    @Query('pageSize') pageSize: number
+    @Query('pageSize') pageSize: number,
+    @Query('name') name?: string
   ) {
+    let where: Prisma.EventTypeWhereInput | undefined = undefined;
+    if (name && name.trim()) {
+      where = {name: {contains: name.trim(), mode: 'insensitive'}};
+    }
     return await this.eventTypeService.findManyInManyPages(
       {page, pageSize},
-      {orderBy: {name: 'asc'}}
+      {where, orderBy: {name: 'asc'}}
     );
   }
 
