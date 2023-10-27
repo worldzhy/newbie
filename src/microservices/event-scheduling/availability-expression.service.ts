@@ -73,6 +73,12 @@ export class AvailabilityExpressionService {
     return await this.prisma.availabilityExpression.delete(args);
   }
 
+  async deleteMany(
+    args: Prisma.AvailabilityExpressionDeleteManyArgs
+  ): Promise<Prisma.BatchPayload> {
+    return await this.prisma.availabilityExpression.deleteMany(args);
+  }
+
   async parse(id: number) {
     const expression =
       await this.prisma.availabilityExpression.findUniqueOrThrow({

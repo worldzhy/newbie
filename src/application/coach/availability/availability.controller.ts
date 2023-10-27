@@ -92,6 +92,7 @@ export class AvailabilityController {
     const sheet = sheets[0];
     const rows = xlsx.getDataRows(sheet);
     for (let i = 0; i < rows.length; i++) {
+      // [step 2-1] Get the coach.
       const row = rows[i];
       if (!row['Email'].trim()) {
         continue;
@@ -99,12 +100,13 @@ export class AvailabilityController {
 
       const coach = await this.userService.findUnique({
         where: {email: row['Email'].trim().toLowerCase()},
+        select: {id: true, profile: {select: {fullName: true}}},
       });
       if (!coach) {
         continue;
       }
 
-      // Update coach profile.
+      // [step 2-2] Update coach profile.
       await this.userProfileService.update({
         where: {userId: coach.id},
         data: {
@@ -115,10 +117,10 @@ export class AvailabilityController {
         },
       });
 
-      // Create coach availabilities
+      // [step 2-3] Generate coach availability expression.
       const cronExpressions: string[] = [];
       for (const key in row) {
-        // [1] Process weekday availability
+        // 1) Process weekday availability
         let isTimeKey = false;
         let hour: number = 0;
         let minute: number = 0;
@@ -167,7 +169,7 @@ export class AvailabilityController {
           );
         }
 
-        // [2] Process weekend availability
+        // 2) Process weekend availability
         if (key.startsWith('Select your weekend day of availability')) {
           const weekdays = row[key].split(';');
           const stringWeekdays = weekdays
@@ -186,14 +188,40 @@ export class AvailabilityController {
         }
       }
 
-      await this.availabilityExpressionService.create({
-        data: {
+      // [step 2-4] Create or overwrite coach availability expression.
+      await this.availabilityExpressionService.deleteMany({
+        where: {
           hostUserId: coach.id,
-          cronExpressionsOfAvailableTimePoints: cronExpressions,
-          dateOfOpening,
-          dateOfClosure,
-          minutesOfDuration: COACH_AVAILABILITY_DURATION_GOOGLE_FORM,
+          status: AvailabilityExpressionStatus.EDITING,
         },
+      });
+      const availabilityExpression =
+        await this.availabilityExpressionService.create({
+          data: {
+            name:
+              coach['profile'].fullName +
+              ' - ' +
+              body.year +
+              ' ' +
+              body.quarter,
+            hostUserId: coach.id,
+            cronExpressionsOfAvailableTimePoints: cronExpressions,
+            dateOfOpening,
+            dateOfClosure,
+            minutesOfDuration: COACH_AVAILABILITY_DURATION_GOOGLE_FORM,
+          },
+        });
+
+      // [step 2-5] Parse expression to timeslots.
+      const availabilityTimeslots =
+        await this.availabilityExpressionService.parse(
+          availabilityExpression.id
+        );
+      await this.availabilityTimeslotService.deleteMany({
+        where: {expressionId: availabilityExpression.id},
+      });
+      await this.availabilityTimeslotService.createMany({
+        data: availabilityTimeslots,
       });
     }
   }
@@ -208,21 +236,6 @@ export class AvailabilityController {
     for (let i = 0; i < availabilityExpressions.length; i++) {
       const availabilityExpression = availabilityExpressions[i];
 
-      // [step 1] Parse expression to timeslots.
-      const availabilityTimeslots =
-        await this.availabilityExpressionService.parse(
-          availabilityExpression.id
-        );
-
-      // [step 2] Delete and create timeslots.
-      await this.availabilityTimeslotService.deleteMany({
-        where: {expressionId: availabilityExpression.id},
-      });
-      await this.availabilityTimeslotService.createMany({
-        data: availabilityTimeslots,
-      });
-
-      // [step 3] Update expression status.
       await this.availabilityExpressionService.update({
         where: {id: availabilityExpression.id},
         data: {
