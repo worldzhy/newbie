@@ -97,7 +97,7 @@ export class AvailabilityController {
     for (let i = 0; i < rows.length; i++) {
       // [step 2-1] Get the coach.
       const row = rows[i];
-      if (!row['Email'].trim()) {
+      if (!row['Email'] || !row['Email'].trim()) {
         continue;
       }
 
