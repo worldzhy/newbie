@@ -15,6 +15,7 @@ import {UserProfileService} from '@microservices/account/user/user-profile.servi
 import {AvailabilityExpressionService} from '@microservices/event-scheduling/availability-expression.service';
 import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
 import {AvailabilityExpressionStatus} from '@prisma/client';
+import {EventVenueService} from '@microservices/event-scheduling/event-venue.service';
 import {
   firstDayOfMonth,
   lastDayOfMonth,
@@ -38,7 +39,8 @@ export class AvailabilityController {
     private readonly userService: UserService,
     private readonly userProfileService: UserProfileService,
     private readonly availabilityExpressionService: AvailabilityExpressionService,
-    private readonly availabilityTimeslotService: AvailabilityTimeslotService
+    private readonly availabilityTimeslotService: AvailabilityTimeslotService,
+    private readonly eventVenueService: EventVenueService
   ) {}
 
   @Post('load')
@@ -119,6 +121,7 @@ export class AvailabilityController {
 
       // [step 2-3] Generate coach availability expression.
       const cronExpressions: string[] = [];
+      const coachLocationIds: number[] = [];
       for (const key in row) {
         // 1) Process weekday availability
         let isTimeKey = false;
@@ -169,7 +172,7 @@ export class AvailabilityController {
           );
         }
 
-        // 2) Process weekend availability
+        // 2) Process weekend availability.
         if (key.startsWith('Select your weekend day of availability')) {
           const weekdays = row[key].split(';');
           const stringWeekdays = weekdays
@@ -186,6 +189,30 @@ export class AvailabilityController {
             `0 ${HOUR_OF_DAY_START}-${HOUR_OF_DAY_END} * ${stringMonths} ${stringWeekdays}`
           );
         }
+
+        // 3) Process coach locations.
+        const coachLocations: string[] = [];
+        if (key.startsWith('Select your home studio')) {
+          if (!coachLocations.includes(row[key].trim())) {
+            coachLocations.push(row[key].trim());
+          }
+        }
+        if (key.startsWith('Select additional studios')) {
+          row[key].split(';').map((location: string) => {
+            if (!coachLocations.includes(location.trim())) {
+              coachLocations.push(location.trim());
+            }
+          });
+        }
+        const venues = await this.eventVenueService.findMany({
+          where: {name: {in: coachLocations}},
+          select: {id: true},
+        });
+        coachLocationIds.push(
+          ...venues.map(venue => {
+            return venue.id;
+          })
+        );
       }
 
       // [step 2-4] Create or overwrite coach availability expression.
@@ -205,6 +232,7 @@ export class AvailabilityController {
               ' ' +
               body.quarter,
             hostUserId: coach.id,
+            venueIds: coachLocationIds,
             cronExpressionsOfAvailableTimePoints: cronExpressions,
             dateOfOpening,
             dateOfClosure,
