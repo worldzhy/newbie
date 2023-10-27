@@ -199,8 +199,9 @@ export class AvailabilityController {
         }
         if (key.startsWith('Select additional studios')) {
           row[key].split(';').map((location: string) => {
-            if (!coachLocations.includes(location.trim())) {
-              coachLocations.push(location.trim());
+            location = location.replace(' -', ',').replace(' & ', '&').trim();
+            if (!coachLocations.includes(location)) {
+              coachLocations.push(location);
             }
           });
         }
@@ -218,8 +219,8 @@ export class AvailabilityController {
       // [step 2-4] Create or overwrite coach availability expression.
       await this.availabilityExpressionService.deleteMany({
         where: {
+          name: {contains: body.year + ' ' + body.quarter, mode: 'insensitive'},
           hostUserId: coach.id,
-          status: AvailabilityExpressionStatus.EDITING,
         },
       });
       const availabilityExpression =
@@ -251,19 +252,6 @@ export class AvailabilityController {
       await this.availabilityTimeslotService.createMany({
         data: availabilityTimeslots,
       });
-    }
-  }
-
-  @Post('publish')
-  async publishAvailabilityExpressions() {
-    const availabilityExpressions =
-      await this.availabilityExpressionService.findMany({
-        where: {status: AvailabilityExpressionStatus.EDITING},
-      });
-
-    for (let i = 0; i < availabilityExpressions.length; i++) {
-      const availabilityExpression = availabilityExpressions[i];
-
       await this.availabilityExpressionService.update({
         where: {id: availabilityExpression.id},
         data: {
@@ -272,4 +260,6 @@ export class AvailabilityController {
       });
     }
   }
+
+  // End
 }
