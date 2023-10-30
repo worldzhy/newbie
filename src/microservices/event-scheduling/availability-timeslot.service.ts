@@ -5,6 +5,7 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {
   dateMinusMinutes,
   datePlusMinutes,
+  daysOfWeek,
 } from '@toolkit/utilities/datetime.util';
 
 @Injectable()
@@ -111,6 +112,125 @@ export class AvailabilityTimeslotService {
           (datetimeOfEnd.getMinutes() % this.MINUTES_Of_TIMESLOT_UNIT)
       );
     }
+  }
+
+  timeslotsOfMonth(params: {
+    year: number;
+    month: number;
+    hourOfOpening: number;
+    hourOfClosure: number;
+    minutesOfTimeslot: number;
+  }) {
+    const parser = require('cron-parser');
+    const timeslots: {
+      datetimeOfStart: Date;
+      datetimeOfEnd: Date;
+      year: number;
+      month: number;
+      dayOfMonth: number;
+      dayOfWeek: number;
+      hour: number;
+      minute: number;
+      minutesOfTimeslot: number;
+    }[] = [];
+
+    const cronParserOptions = {
+      // ! https://unpkg.com/browse/cron-parser@4.8.1/README.md
+      currentDate: new Date(params.year, params.month - 1, 1),
+      endDate: new Date(params.year, params.month, 1),
+      iterator: true,
+    };
+
+    const interval = parser.parseExpression(
+      `0/${params.minutesOfTimeslot} ${params.hourOfOpening}-${
+        params.hourOfClosure - 1
+      } * ${params.month} *`,
+      cronParserOptions
+    );
+
+    while (interval.hasNext()) {
+      const parsedDatetime = interval.next().value.toDate();
+
+      timeslots.push({
+        datetimeOfStart: parsedDatetime,
+        datetimeOfEnd: datePlusMinutes(
+          parsedDatetime,
+          params.minutesOfTimeslot
+        ),
+        year: parsedDatetime.getFullYear(),
+        month: parsedDatetime.getMonth() + 1,
+        dayOfMonth: parsedDatetime.getDate(),
+        dayOfWeek: parsedDatetime.getDay(),
+        hour: parsedDatetime.getHours(),
+        minute: parsedDatetime.getMinutes(),
+        minutesOfTimeslot: params.minutesOfTimeslot,
+      });
+    }
+
+    return timeslots;
+  }
+
+  timeslotsOfWeek(params: {
+    year: number;
+    month: number;
+    weekOfMonth: number;
+    hourOfOpening: number;
+    hourOfClosure: number;
+    minutesOfTimeslot: number;
+  }) {
+    const parser = require('cron-parser');
+    const timeslots: {
+      datetimeOfStart: Date;
+      datetimeOfEnd: Date;
+      year: number;
+      month: number;
+      dayOfMonth: number;
+      dayOfWeek: number;
+      hour: number;
+      minute: number;
+      minutesOfTimeslot: number;
+    }[] = [];
+
+    const days = daysOfWeek(params.year, params.month, params.weekOfMonth);
+
+    const cronParserOptions = {
+      // ! https://unpkg.com/browse/cron-parser@4.8.1/README.md
+      currentDate: new Date(params.year, params.month - 1, days[0].dayOfMonth),
+      endDate: new Date(
+        params.year,
+        params.month - 1,
+        days[days.length - 1].dayOfMonth + 1
+      ),
+      iterator: true,
+    };
+
+    const interval = parser.parseExpression(
+      `0/${params.minutesOfTimeslot} ${params.hourOfOpening}-${
+        params.hourOfClosure - 1
+      } * ${params.month} *`,
+      cronParserOptions
+    );
+
+    while (interval.hasNext()) {
+      const parsedDatetime = interval.next().value.toDate();
+
+      timeslots.push({
+        datetimeOfStart: parsedDatetime,
+        datetimeOfEnd: datePlusMinutes(
+          parsedDatetime,
+          params.minutesOfTimeslot
+        ),
+        year: parsedDatetime.getFullYear(),
+        month: parsedDatetime.getMonth() + 1,
+        dayOfMonth: parsedDatetime.getDate(),
+        dayOfWeek: parsedDatetime.getDay(),
+        hour: parsedDatetime.getHours(),
+        minute: parsedDatetime.getMinutes(),
+        minutesOfTimeslot: params.minutesOfTimeslot,
+      });
+    }
+
+    return timeslots;
   }
 
   /* End */

@@ -16,7 +16,7 @@ import {
 } from '@prisma/client';
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
 import {EventService} from '@microservices/event-scheduling/event.service';
-import {generateMonthlyCalendar} from '@toolkit/utilities/datetime.util';
+import {daysOfMonth} from '@toolkit/utilities/datetime.util';
 import {RawDataSchedulingService} from '../raw-data/raw-data-scheduling.service';
 
 @ApiTags('Event Container')
@@ -81,7 +81,7 @@ export class EventCopyController {
     if (sourceContainer) {
       const targetEvents: Prisma.EventUncheckedCreateWithoutContainerInput[] =
         [];
-      const weeksOfTargetContainer = generateMonthlyCalendar(
+      const weeksOfTargetContainer = daysOfMonth(
         targetContainer.year,
         targetContainer.month
       );

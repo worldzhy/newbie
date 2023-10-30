@@ -3,7 +3,7 @@ import {ApiTags, ApiBearerAuth} from '@nestjs/swagger';
 import {UserService} from '@microservices/account/user/user.service';
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
 import {EventService} from '@microservices/event-scheduling/event.service';
-import {generateMonthlyCalendar} from '@toolkit/utilities/datetime.util';
+import {daysOfMonth} from '@toolkit/utilities/datetime.util';
 import {User} from '@prisma/client';
 
 const ROLE_NAME_COACH = 'Coach';
@@ -53,7 +53,7 @@ export class AnalysisController {
     }
 
     // [step 2] Analyse coaches.
-    const calendar = generateMonthlyCalendar(container.year, container.month);
+    const calendar = daysOfMonth(container.year, container.month);
     const coachesUnderQuota: User[] = [];
     const coachesUnderPreferredQuota: User[] = [];
     const coachesOverPreferredQuota: User[] = [];

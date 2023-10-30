@@ -4,10 +4,7 @@ import {User} from '@prisma/client';
 import {UserService} from '@microservices/account/user/user.service';
 import {RawDataForecastService} from '../raw-data/raw-data-forecast.service';
 import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
-import {
-  generateMonthlyCalendar,
-  generateMonthlyTimeslots,
-} from '@toolkit/utilities/datetime.util';
+import {daysOfMonth} from '@toolkit/utilities/datetime.util';
 
 enum HEATMAP_TYPE {
   Availability = 1,
@@ -28,11 +25,17 @@ export class HeatmapController {
     private readonly rawDataForecastService: RawDataForecastService
   ) {}
 
+  @Get('days-of-month')
+  getDaysOfMonth(@Query('year') year: number, @Query('month') month: number) {
+    return daysOfMonth(year, month);
+  }
+
   @Get('')
   async getHeatmap(
     @Query('venueId') venueId: number,
     @Query('year') year: number,
     @Query('month') month: number,
+    @Query('weekOfMonth') weekOfMonth: number,
     @Query('types') types: (number | string)[]
   ) {
     const heatmapInfoTimeslots: {
@@ -47,9 +50,10 @@ export class HeatmapController {
     }[] = [];
 
     // [step 1] Generate monthly timeslots.
-    const heatmapTimeslots = generateMonthlyTimeslots({
+    const heatmapTimeslots = this.availabilityTimeslotService.timeslotsOfWeek({
       year,
       month,
+      weekOfMonth,
       hourOfOpening: HOUR_OF_OPENING,
       hourOfClosure: HOUR_OF_CLOSURE,
       minutesOfTimeslot: MINUTES_OF_TIMESLOT,
@@ -197,10 +201,7 @@ export class HeatmapController {
       }
     }
 
-    return {
-      calendar: generateMonthlyCalendar(year, month),
-      heatmap: heatmapInfoTimeslots,
-    };
+    return heatmapInfoTimeslots;
   }
 
   /* End */

@@ -15,14 +15,12 @@ import {
   Event,
   EventContainer,
   EventContainerStatus,
-  AvailabilityTimeslotStatus,
   EventContainerOrigin,
 } from '@prisma/client';
 import {HttpService} from '@nestjs/axios';
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
-import {generateMonthlyCalendar} from '@toolkit/utilities/datetime.util';
+import {daysOfMonth} from '@toolkit/utilities/datetime.util';
 import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
-import {lastValueFrom} from 'rxjs';
 
 @ApiTags('Event Container')
 @ApiBearerAuth()
@@ -30,9 +28,13 @@ import {lastValueFrom} from 'rxjs';
 export class EventContainerController {
   constructor(
     private readonly httpService: HttpService,
-    private readonly availabilityTimeslotService: AvailabilityTimeslotService,
     private readonly eventContainerService: EventContainerService
   ) {}
+
+  @Get('days-of-month')
+  getDaysOfMonth(@Query('year') year: number, @Query('month') month: number) {
+    return daysOfMonth(year, month);
+  }
 
   @Post('')
   @ApiBody({
@@ -91,10 +93,7 @@ export class EventContainerController {
       include: {events: true},
     });
 
-    container['calendar'] = generateMonthlyCalendar(
-      container.year!,
-      container.month!
-    );
+    container['calendar'] = daysOfMonth(container.year!, container.month!);
     return container;
   }
 

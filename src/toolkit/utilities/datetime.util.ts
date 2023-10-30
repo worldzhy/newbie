@@ -87,7 +87,7 @@ export function weekOfYear(year: number, month: number, day: number) {
     ...
   ]
  */
-export function generateMonthlyCalendar(year: number, month: number) {
+export function daysOfMonth(year: number, month: number) {
   const numberOfDays = new Date(year, month, 0).getDate(); // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/Date#syntax
 
   const daysOfMonth: {
@@ -120,55 +120,39 @@ export function generateMonthlyCalendar(year: number, month: number) {
   return daysOfMonth;
 }
 
-export function generateMonthlyTimeslots(params: {
-  year: number;
-  month: number;
-  hourOfOpening: number;
-  hourOfClosure: number;
-  minutesOfTimeslot: number;
-}) {
-  const parser = require('cron-parser');
-  const timeslots: {
-    datetimeOfStart: Date;
-    datetimeOfEnd: Date;
+export function daysOfWeek(
+  year: number,
+  month: number,
+  weekOfMonth: number // 1~6
+) {
+  const numberOfDays = new Date(year, month, 0).getDate(); // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/Date#syntax
+
+  const daysOfWeek: {
     year: number;
     month: number;
     dayOfMonth: number;
     dayOfWeek: number;
-    hour: number;
-    minute: number;
-    minutesOfTimeslot: number;
+    weekOfMonth: number;
+    weekOfYear: number;
   }[] = [];
+  for (let day = 1, week = 0; day <= numberOfDays; day++) {
+    const date = new Date(year, month - 1, day);
+    const dayOfMonth = date.getDate();
+    const dayOfWeek = date.getDay();
 
-  const cronParserOptions = {
-    // ! https://unpkg.com/browse/cron-parser@4.8.1/README.md
-    currentDate: new Date(params.year, params.month - 1, 1),
-    endDate: new Date(params.year, params.month, 1),
-    iterator: true,
-  };
-
-  const interval = parser.parseExpression(
-    `0/${params.minutesOfTimeslot} ${params.hourOfOpening}-${
-      params.hourOfClosure - 1
-    } * ${params.month} *`,
-    cronParserOptions
-  );
-
-  while (interval.hasNext()) {
-    const parsedDatetime = interval.next().value.toDate();
-
-    timeslots.push({
-      datetimeOfStart: parsedDatetime,
-      datetimeOfEnd: datePlusMinutes(parsedDatetime, params.minutesOfTimeslot),
-      year: parsedDatetime.getFullYear(),
-      month: parsedDatetime.getMonth() + 1,
-      dayOfMonth: parsedDatetime.getDate(),
-      dayOfWeek: parsedDatetime.getDay(),
-      hour: parsedDatetime.getHours(),
-      minute: parsedDatetime.getMinutes(),
-      minutesOfTimeslot: params.minutesOfTimeslot,
-    });
+    if (dayOfWeek === 0 && day !== 1) {
+      week += 1;
+    }
+    if (week === weekOfMonth - 1) {
+      daysOfWeek.push({
+        year,
+        month,
+        dayOfMonth,
+        dayOfWeek,
+        weekOfMonth: week + 1,
+        weekOfYear: weekOfYear(year, month, dayOfMonth),
+      });
+    }
   }
-
-  return timeslots;
+  return daysOfWeek;
 }

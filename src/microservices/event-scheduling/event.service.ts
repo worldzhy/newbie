@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {Prisma, Event} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {generateMonthlyCalendar} from '@toolkit/utilities/datetime.util';
+import {daysOfMonth} from '@toolkit/utilities/datetime.util';
 
 @Injectable()
 export class EventService {
@@ -69,11 +69,11 @@ export class EventService {
       week: number; // The number of week in a month, 1~6.
     };
   }) {
-    const calendarOfSourceContainer = generateMonthlyCalendar(
+    const calendarOfSourceContainer = daysOfMonth(
       params.from.year,
       params.from.month
     );
-    const calendarOfTargetContainer = generateMonthlyCalendar(
+    const calendarOfTargetContainer = daysOfMonth(
       params.to.year,
       params.to.month
     );
