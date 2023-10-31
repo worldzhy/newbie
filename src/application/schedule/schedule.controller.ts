@@ -18,6 +18,7 @@ import {
   EventContainerOrigin,
 } from '@prisma/client';
 import {HttpService} from '@nestjs/axios';
+import {EventTypeService} from '@microservices/event-scheduling/event-type.service';
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
 import {UserProfileService} from '@microservices/account/user/user-profile.service';
 import {daysOfMonth} from '@toolkit/utilities/datetime.util';
@@ -29,6 +30,7 @@ export class EventContainerController {
   constructor(
     private readonly httpService: HttpService,
     private readonly eventContainerService: EventContainerService,
+    private readonly eventTypeService: EventTypeService,
     private readonly userProfileService: UserProfileService
   ) {}
 
@@ -94,6 +96,7 @@ export class EventContainerController {
       include: {events: true},
     });
 
+    // Get all the coaches information
     const coachProfiles = await this.userProfileService.findMany({
       select: {userId: true, fullName: true, coachingTenure: true},
     });
@@ -105,13 +108,28 @@ export class EventContainerController {
       {}
     );
 
+    // Get all the event types
+    const eventTypes = await this.eventTypeService.findMany({});
+    const eventTypesMapping = eventTypes.reduce(
+      (obj, item) => ({...obj, [item.id]: item.name}),
+      {}
+    );
+
     const events = container['events'] as Event[];
     for (let i = 0; i < events.length; i++) {
       const event = events[i];
+      // Attach coach information
       if (event.hostUserId) {
         event['hostUser'] = coachProfilesMapping[event.hostUserId];
       } else {
         event['hostUser'] = {};
+      }
+
+      // Attach class type information
+      if (event.typeId) {
+        event['type'] = eventTypesMapping[event.typeId];
+      } else {
+        event['type'] = '';
       }
     }
 

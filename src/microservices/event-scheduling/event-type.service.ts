@@ -12,6 +12,10 @@ export class EventTypeService {
     return await this.prisma.eventType.findUniqueOrThrow(args);
   }
 
+  async findMany(args: Prisma.EventTypeFindManyArgs): Promise<EventType[]> {
+    return await this.prisma.eventType.findMany(args);
+  }
+
   async findManyInOnePage(findManyArgs?: Prisma.EventTypeFindManyArgs) {
     return await this.prisma.findManyInOnePage({
       model: Prisma.ModelName.EventType,
