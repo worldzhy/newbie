@@ -91,49 +91,48 @@ export class EventContainerController {
 
   @Get(':eventContainerId')
   async getEventContainer(@Param('eventContainerId') eventContainerId: number) {
-    const container = await this.eventContainerService.findUniqueOrThrow({
+    return await this.eventContainerService.findUniqueOrThrow({
       where: {id: eventContainerId},
-      include: {events: true},
     });
 
     // Get all the coaches information
-    const coachProfiles = await this.userProfileService.findMany({
-      select: {userId: true, fullName: true, coachingTenure: true},
-    });
-    const coachProfilesMapping = coachProfiles.reduce(
-      (obj, item) => ({
-        ...obj,
-        [item.userId]: item,
-      }),
-      {}
-    );
+    // const coachProfiles = await this.userProfileService.findMany({
+    //   select: {userId: true, fullName: true, coachingTenure: true},
+    // });
+    // const coachProfilesMapping = coachProfiles.reduce(
+    //   (obj, item) => ({
+    //     ...obj,
+    //     [item.userId]: item,
+    //   }),
+    //   {}
+    // );
 
-    // Get all the event types
-    const eventTypes = await this.eventTypeService.findMany({});
-    const eventTypesMapping = eventTypes.reduce(
-      (obj, item) => ({...obj, [item.id]: item.name}),
-      {}
-    );
+    // // Get all the event types
+    // const eventTypes = await this.eventTypeService.findMany({});
+    // const eventTypesMapping = eventTypes.reduce(
+    //   (obj, item) => ({...obj, [item.id]: item.name}),
+    //   {}
+    // );
 
-    const events = container['events'] as Event[];
-    for (let i = 0; i < events.length; i++) {
-      const event = events[i];
-      // Attach coach information
-      if (event.hostUserId) {
-        event['hostUser'] = coachProfilesMapping[event.hostUserId];
-      } else {
-        event['hostUser'] = {};
-      }
+    // const events = container['events'] as Event[];
+    // for (let i = 0; i < events.length; i++) {
+    //   const event = events[i];
+    //   // Attach coach information
+    //   if (event.hostUserId) {
+    //     event['hostUser'] = coachProfilesMapping[event.hostUserId];
+    //   } else {
+    //     event['hostUser'] = {};
+    //   }
 
-      // Attach class type information
-      if (event.typeId) {
-        event['type'] = eventTypesMapping[event.typeId];
-      } else {
-        event['type'] = '';
-      }
-    }
+    //   // Attach class type information
+    //   if (event.typeId) {
+    //     event['type'] = eventTypesMapping[event.typeId];
+    //   } else {
+    //     event['type'] = '';
+    //   }
+    // }
 
-    return container;
+    // return container;
   }
 
   @Patch(':eventContainerId')

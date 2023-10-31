@@ -1,15 +1,27 @@
-import {Controller, Delete, Patch, Post, Body, Param} from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Patch,
+  Post,
+  Body,
+  Param,
+  Query,
+  Get,
+} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Prisma, Event, EventContainerNoteType} from '@prisma/client';
 import {EventService} from '@microservices/event-scheduling/event.service';
 import {
   datePlusMinutes,
   dayOfWeek,
+  daysOfWeek,
   weekOfMonth,
   weekOfYear,
 } from '@toolkit/utilities/datetime.util';
 import {EventTypeService} from '@microservices/event-scheduling/event-type.service';
 import {EventContainerNoteService} from '@microservices/event-scheduling/event-container-note.service';
+import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
+import {UserProfileService} from '@microservices/account/user/user-profile.service';
 
 @ApiTags('Event')
 @ApiBearerAuth()
@@ -18,7 +30,9 @@ export class EventController {
   constructor(
     private readonly eventService: EventService,
     private readonly eventTypeService: EventTypeService,
-    private readonly eventContainerNoteService: EventContainerNoteService
+    private readonly eventContainerService: EventContainerService,
+    private readonly eventContainerNoteService: EventContainerNoteService,
+    private readonly userProfileService: UserProfileService
   ) {}
 
   @Post('mock-data')
@@ -125,6 +139,63 @@ export class EventController {
     });
 
     return event;
+  }
+
+  @Get('')
+  async getEvents(
+    @Query('eventContainerId') eventContainerId: number,
+    @Query('weekOfMonth') weekOfMonth: number
+  ) {
+    const container = await this.eventContainerService.findUniqueOrThrow({
+      where: {id: eventContainerId},
+    });
+
+    const events = await this.eventService.findMany({
+      where: {
+        containerId: eventContainerId,
+        year: container.year,
+        month: container.month,
+        weekOfMonth,
+      },
+    });
+
+    // Get all the coaches information
+    const coachProfiles = await this.userProfileService.findMany({
+      select: {userId: true, fullName: true, coachingTenure: true},
+    });
+    const coachProfilesMapping = coachProfiles.reduce(
+      (obj, item) => ({
+        ...obj,
+        [item.userId]: item,
+      }),
+      {}
+    );
+
+    // Get all the event types
+    const eventTypes = await this.eventTypeService.findMany({});
+    const eventTypesMapping = eventTypes.reduce(
+      (obj, item) => ({...obj, [item.id]: item.name}),
+      {}
+    );
+
+    for (let i = 0; i < events.length; i++) {
+      const event = events[i];
+      // Attach coach information
+      if (event.hostUserId) {
+        event['hostUser'] = coachProfilesMapping[event.hostUserId];
+      } else {
+        event['hostUser'] = {};
+      }
+
+      // Attach class type information
+      if (event.typeId) {
+        event['type'] = eventTypesMapping[event.typeId];
+      } else {
+        event['type'] = '';
+      }
+    }
+
+    return events;
   }
 
   @Patch(':eventId')
