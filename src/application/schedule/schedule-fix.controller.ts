@@ -12,6 +12,7 @@ import {EventIssueService} from '@microservices/event-scheduling/event-issue.ser
 import {CoachService} from '../coach/coach.service';
 import {EventContainerNoteService} from '@microservices/event-scheduling/event-container-note.service';
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
+import {UserProfileService} from '@microservices/account/user/user-profile.service';
 
 @ApiTags('Event Container')
 @ApiBearerAuth()
@@ -22,7 +23,8 @@ export class EventFixController {
     private readonly eventIssueService: EventIssueService,
     private readonly eventContainerService: EventContainerService,
     private readonly eventContainerNoteService: EventContainerNoteService,
-    private readonly coachService: CoachService
+    private readonly coachService: CoachService,
+    private readonly userProfileService: UserProfileService
   ) {}
 
   @Get(':eventContainerId/fix')
@@ -60,6 +62,7 @@ export class EventFixController {
   }
 
   async fixIssue(event: Event, issue: EventIssue) {
+    // [step 1] Get and set suitable coach.
     const coaches = await this.coachService.getSortedCoachesForEvent(event);
     if (coaches.length > 0) {
       await this.eventService.update({
@@ -67,16 +70,40 @@ export class EventFixController {
         data: {hostUserId: coaches[0].id},
       });
 
+      // [step 2] Mark the issue is repaired.
       await this.eventIssueService.update({
         where: {id: issue.id},
         data: {status: EventIssueStatus.REPAIRED},
       });
 
+      // [step 3] Write change note.
+      let description = 'Coach changed:';
+      switch (issue.type) {
+        case EventIssueType.ERROR_COACH_NOT_EXISTED:
+          description =
+            'Coach changed: No coach' + ' -> ' + coaches[0]['profile'].fullName;
+        case EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_TIME:
+        case EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_TYPE:
+        case EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_VENUE: {
+          if (event.hostUserId) {
+            const userProfile = await this.userProfileService.findUniqueOrThrow(
+              {
+                where: {userId: event.hostUserId},
+                select: {fullName: true},
+              }
+            );
+            description =
+              'Coach changed: ' +
+              userProfile.fullName +
+              ' -> ' +
+              coaches[0]['profile'].fullName;
+          }
+        }
+      }
       await this.eventContainerNoteService.create({
         data: {
           type: EventContainerNoteType.SYSTEM,
-          description:
-            'Coach changed: ' + event.hostUserId + ' -> ' + coaches[0].email,
+          description,
           containerId: event.containerId,
         },
       });
