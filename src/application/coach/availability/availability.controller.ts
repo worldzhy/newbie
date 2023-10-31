@@ -143,7 +143,7 @@ export class AvailabilityController {
           const weekdays = row[key].split(';');
           const stringWeekdays = weekdays
             .map((weekday: string) => {
-              switch (weekday) {
+              switch (weekday.trim()) {
                 case 'Monday':
                   return 1;
                 case 'Tuesday':
@@ -164,10 +164,10 @@ export class AvailabilityController {
 
         // 2) Process weekend availability.
         if (key.startsWith('Select your weekend day of availability')) {
-          const weekdays = row[key].split(';');
-          const stringWeekdays = weekdays
-            .map((weekday: string) => {
-              switch (weekday) {
+          const weekends = row[key].split(';');
+          const stringWeekends = weekends
+            .map((weekend: string) => {
+              switch (weekend.trim()) {
                 case 'Saturday':
                   return 6;
                 case 'Sunday':
@@ -176,7 +176,7 @@ export class AvailabilityController {
             })
             .toString(); // Return '6,0'
           cronExpressions.push(
-            `0 ${HOUR_OF_DAY_START}-${HOUR_OF_DAY_END} * ${stringMonths} ${stringWeekdays}`
+            `0 ${HOUR_OF_DAY_START}-${HOUR_OF_DAY_END} * ${stringMonths} ${stringWeekends}`
           );
         }
 
