@@ -19,8 +19,8 @@ import {
 } from '@prisma/client';
 import {HttpService} from '@nestjs/axios';
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
+import {UserProfileService} from '@microservices/account/user/user-profile.service';
 import {daysOfMonth} from '@toolkit/utilities/datetime.util';
-import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
 
 @ApiTags('Event Container')
 @ApiBearerAuth()
@@ -28,7 +28,8 @@ import {AvailabilityTimeslotService} from '@microservices/event-scheduling/avail
 export class EventContainerController {
   constructor(
     private readonly httpService: HttpService,
-    private readonly eventContainerService: EventContainerService
+    private readonly eventContainerService: EventContainerService,
+    private readonly userProfileService: UserProfileService
   ) {}
 
   @Get('days-of-month')
@@ -93,7 +94,27 @@ export class EventContainerController {
       include: {events: true},
     });
 
-    container['calendar'] = daysOfMonth(container.year!, container.month!);
+    const coachProfiles = await this.userProfileService.findMany({
+      select: {userId: true, fullName: true, coachingTenure: true},
+    });
+    const coachProfilesMapping = coachProfiles.reduce(
+      (obj, item) => ({
+        ...obj,
+        [item.userId]: item,
+      }),
+      {}
+    );
+
+    const events = container['events'] as Event[];
+    for (let i = 0; i < events.length; i++) {
+      const event = events[i];
+      if (event.hostUserId) {
+        event['hostUser'] = coachProfilesMapping[event.hostUserId];
+      } else {
+        event['hostUser'] = {};
+      }
+    }
+
     return container;
   }
 
