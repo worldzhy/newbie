@@ -11,14 +11,20 @@ import {
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Prisma, User} from '@prisma/client';
 import {UserService} from '@microservices/account/user/user.service';
+import {RoleService} from '@microservices/account/role/role.service';
 
 const ROLE_NAME_COACH = 'Coach';
+const ROLE_NAME_AREA_MANAGER = 'Area Manager';
+const DEFAULT_PASSWORD = 'x8nwFP814HIk!';
 
 @ApiTags('Coach')
 @ApiBearerAuth()
 @Controller('coaches')
 export class CoachController {
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private roleService: RoleService
+  ) {}
 
   @Post('')
   @ApiBody({
@@ -151,6 +157,7 @@ export class CoachController {
               quotaOfWeekMaxPreference: 10,
             },
           },
+          roles: {connect: {id: 'fd5c948e-d15d-48d6-a458-7798e4d9921c'}},
         },
       },
     },
@@ -178,6 +185,27 @@ export class CoachController {
   async deleteUser(@Param('userId') userId: string): Promise<User> {
     return await this.userService.delete({
       where: {id: userId},
+    });
+  }
+
+  @Patch(':userId/role-area-manager')
+  async addAreaManagerRole(@Param('userId') userId: string): Promise<User> {
+    const role = await this.roleService.findUniqueOrThrow({
+      where: {name: ROLE_NAME_AREA_MANAGER},
+    });
+
+    return await this.userService.update({
+      where: {id: userId},
+      data: {
+        password: DEFAULT_PASSWORD,
+        roles: {connect: {id: role.id}},
+      },
+      select: {
+        id: true,
+        email: true,
+        phone: true,
+        profile: true,
+      },
     });
   }
 

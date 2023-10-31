@@ -36,7 +36,9 @@ export class EventFixController {
       for (let j = 0; j < event['issues'].length; j++) {
         const issue = event['issues'][j];
         switch (issue.type) {
-          case EventIssueType.ERROR_COACH_NOT_AVAILABLE:
+          case EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_TIME:
+          case EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_TYPE:
+          case EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_VENUE:
             await this.fix_ERROR_COACH_NOT_AVAILABLE(event, issue);
         }
       }
