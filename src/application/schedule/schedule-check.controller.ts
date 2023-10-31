@@ -1,4 +1,4 @@
-import {Controller, Get, Param} from '@nestjs/common';
+import {Controller, Get, Param, Query} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth} from '@nestjs/swagger';
 import {
   Event,
@@ -35,17 +35,26 @@ export class EventCheckController {
 
   @Get(':eventContainerId/check')
   async checkEventContainer(
-    @Param('eventContainerId') eventContainerId: number
+    @Param('eventContainerId') eventContainerId: number,
+    @Query('weekOfMonth') weekOfMonth: number
   ) {
     // Get event container.
     const container = await this.eventContainerService.findUniqueOrThrow({
       where: {id: eventContainerId},
-      include: {events: true},
+    });
+
+    const events = await this.eventService.findMany({
+      where: {
+        containerId: eventContainerId,
+        year: container.year,
+        month: container.month,
+        weekOfMonth,
+      },
     });
 
     // Check each issue.
-    for (let i = 0; i < container['events'].length; i++) {
-      const event = container['events'][i];
+    for (let i = 0; i < events.length; i++) {
+      const event = events[i];
       await this.checkEventIssues(event);
     }
 
