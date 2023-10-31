@@ -1,4 +1,4 @@
-import {Controller, Get, Param} from '@nestjs/common';
+import {Controller, Get, Param, Query} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth} from '@nestjs/swagger';
 import {
   Event,
@@ -11,6 +11,7 @@ import {EventService} from '@microservices/event-scheduling/event.service';
 import {EventIssueService} from '@microservices/event-scheduling/event-issue.service';
 import {CoachService} from '../coach/coach.service';
 import {EventContainerNoteService} from '@microservices/event-scheduling/event-container-note.service';
+import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
 
 @ApiTags('Event Container')
 @ApiBearerAuth()
@@ -19,15 +20,27 @@ export class EventFixController {
   constructor(
     private readonly eventService: EventService,
     private readonly eventIssueService: EventIssueService,
+    private readonly eventContainerService: EventContainerService,
     private readonly eventContainerNoteService: EventContainerNoteService,
     private readonly coachService: CoachService
   ) {}
 
   @Get(':eventContainerId/fix')
-  async fixEventContainer(@Param('eventContainerId') eventContainerId: number) {
+  async fixEventContainer(
+    @Param('eventContainerId') eventContainerId: number,
+    @Query('weekOfMonth') weekOfMonth: number
+  ) {
+    const container = await this.eventContainerService.findUniqueOrThrow({
+      where: {id: eventContainerId},
+    });
     // Get events.
     const events = await this.eventService.findMany({
-      where: {containerId: eventContainerId},
+      where: {
+        containerId: eventContainerId,
+        year: container.year,
+        month: container.month,
+        weekOfMonth,
+      },
       include: {issues: {where: {status: EventIssueStatus.UNREPAIRED}}},
     });
 
