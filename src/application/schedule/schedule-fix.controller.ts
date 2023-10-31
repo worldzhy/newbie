@@ -49,16 +49,17 @@ export class EventFixController {
       for (let j = 0; j < event['issues'].length; j++) {
         const issue = event['issues'][j];
         switch (issue.type) {
+          case EventIssueType.ERROR_COACH_NOT_EXISTED:
           case EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_TIME:
           case EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_TYPE:
           case EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_VENUE:
-            await this.fix_ERROR_COACH_NOT_AVAILABLE(event, issue);
+            await this.fixIssue(event, issue);
         }
       }
     }
   }
 
-  async fix_ERROR_COACH_NOT_AVAILABLE(event: Event, issue: EventIssue) {
+  async fixIssue(event: Event, issue: EventIssue) {
     const coaches = await this.coachService.getSortedCoachesForEvent(event);
     if (coaches.length > 0) {
       await this.eventService.update({
