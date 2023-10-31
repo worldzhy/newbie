@@ -61,7 +61,12 @@ export class EventCheckController {
     return await this.eventIssueService.findMany({
       where: {
         status: EventIssueStatus.UNREPAIRED,
-        event: {containerId: eventContainerId},
+        event: {
+          containerId: eventContainerId,
+          year: container.year,
+          month: container.month,
+          weekOfMonth,
+        },
       },
     });
   }
