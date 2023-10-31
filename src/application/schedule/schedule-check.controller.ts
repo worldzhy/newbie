@@ -4,6 +4,8 @@ import {
   Event,
   AvailabilityTimeslotStatus,
   EventIssueType,
+  EventIssueStatus,
+  User,
 } from '@prisma/client';
 import {EventService} from '@microservices/event-scheduling/event.service';
 import {EventIssueService} from '@microservices/event-scheduling/event-issue.service';
@@ -47,71 +49,79 @@ export class EventCheckController {
       await this.checkEventIssues(event);
     }
 
-    const events = await this.eventService.findMany({
-      where: {containerId: eventContainerId},
-      select: {
-        id: true,
-        issues: true,
+    return await this.eventIssueService.findMany({
+      where: {
+        status: EventIssueStatus.UNREPAIRED,
+        event: {containerId: eventContainerId},
       },
-    });
-
-    return events.filter(event => {
-      return event['issues'].length > 0;
     });
   }
 
-  async checkEventIssues(event: Event) {
-    // [step 1] Check coach id.
-    if (!event.hostUserId) {
-      await this.eventIssueService.create({
-        data: {
+  private async checkEventIssues(event: Event) {
+    // [step 1] Check and get the coach.
+    let coach: User | null = null;
+    if (event.hostUserId) {
+      coach = await this.userService.findUnique({
+        where: {id: event.hostUserId},
+        include: {profile: true},
+      });
+    }
+
+    if (!coach) {
+      await this.eventIssueService.upsert({
+        where: {
+          type_eventId: {
+            eventId: event.id,
+            type: EventIssueType.ERROR_COACH_NOT_EXISTED,
+          },
+        },
+        create: {
           type: EventIssueType.ERROR_COACH_NOT_EXISTED,
           description: EventIssueDescription.Error_CoachNotExisted,
           eventId: event.id,
         },
+        update: {},
       });
       return;
     }
 
-    // [step 2] Get the coach.
-    const user = await this.userService.findUnique({
-      where: {id: event.hostUserId},
-      include: {profile: true},
-    });
-    if (!user) {
-      await this.eventIssueService.create({
-        data: {
-          type: EventIssueType.ERROR_COACH_NOT_EXISTED,
-          description: EventIssueDescription.Error_CoachNotExisted,
-          eventId: event.id,
+    // [step 2] Check class type.
+    if (!coach['profile']['eventTypeIds'].includes(event.typeId)) {
+      await this.eventIssueService.upsert({
+        where: {
+          type_eventId: {
+            eventId: event.id,
+            type: EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_TYPE,
+          },
         },
-      });
-      return;
-    }
-
-    // [step 3] Check class type.
-    if (!user['profile']['eventTypeIds'].includes(event.typeId)) {
-      await this.eventIssueService.create({
-        data: {
-          type: EventIssueType.ERROR_COACH_NOT_AVAILABLE,
+        create: {
+          type: EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_TYPE,
           description: EventIssueDescription.Error_WrongClassType,
           eventId: event.id,
         },
+        update: {},
       });
     }
 
-    // [step 4] Check location.
-    if (!user['profile']['eventVenueIds'].includes(event.venueId)) {
-      await this.eventIssueService.create({
-        data: {
-          type: EventIssueType.ERROR_COACH_NOT_AVAILABLE,
+    // [step 3] Check location.
+    if (!coach['profile']['eventVenueIds'].includes(event.venueId)) {
+      await this.eventIssueService.upsert({
+        where: {
+          type_eventId: {
+            eventId: event.id,
+            type: EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_VENUE,
+          },
+        },
+        create: {
+          type: EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_VENUE,
           description: EventIssueDescription.Error_WrongLocation,
           eventId: event.id,
         },
+        update: {},
       });
     }
 
-    // [step 5] Check availability
+    // [step 4] Check availability
     const newDatetimeOfStart =
       this.availabilityTimeslotService.floorDatetimeOfStart(
         event.datetimeOfStart
@@ -122,7 +132,7 @@ export class EventCheckController {
 
     const count = await this.availabilityTimeslotService.count({
       where: {
-        hostUserId: event.hostUserId,
+        hostUserId: coach.id,
         venueIds: {has: event.venueId},
         datetimeOfStart: {gte: newDatetimeOfStart},
         datetimeOfEnd: {lte: newDatetimeOfEnd},
@@ -134,12 +144,19 @@ export class EventCheckController {
       event.minutesOfDuration /
         this.availabilityTimeslotService.MINUTES_Of_TIMESLOT_UNIT
     ) {
-      await this.eventIssueService.create({
-        data: {
-          type: EventIssueType.ERROR_COACH_NOT_AVAILABLE,
+      await this.eventIssueService.upsert({
+        where: {
+          type_eventId: {
+            eventId: event.id,
+            type: EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_TIME,
+          },
+        },
+        create: {
+          type: EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_TIME,
           description: EventIssueDescription.Error_CoachNotAvailale,
           eventId: event.id,
         },
+        update: {},
       });
     }
   }

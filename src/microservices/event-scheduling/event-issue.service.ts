@@ -12,6 +12,10 @@ export class EventIssueService {
     return await this.prisma.eventIssue.findUniqueOrThrow(args);
   }
 
+  async findMany(args: Prisma.EventIssueFindManyArgs): Promise<EventIssue[]> {
+    return await this.prisma.eventIssue.findMany(args);
+  }
+
   async findManyInOnePage(findManyArgs?: Prisma.EventIssueFindManyArgs) {
     return await this.prisma.findManyInOnePage({
       model: Prisma.ModelName.EventIssue,
@@ -48,6 +52,10 @@ export class EventIssueService {
     args: Prisma.EventIssueUpdateManyArgs
   ): Promise<Prisma.BatchPayload> {
     return await this.prisma.eventIssue.updateMany(args);
+  }
+
+  async upsert(args: Prisma.EventIssueUpsertArgs): Promise<EventIssue> {
+    return await this.prisma.eventIssue.upsert(args);
   }
 
   async delete(args: Prisma.EventIssueDeleteArgs): Promise<EventIssue> {
