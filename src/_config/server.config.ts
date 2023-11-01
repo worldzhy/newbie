@@ -7,5 +7,4 @@ export default registerAs('server', () => ({
   allowedOrigins: (process.env.ALLOWED_ORIGINS ?? '').split(','),
   httpTimeout: 60000, // milliseconds
   httpMaxRedirects: 5,
-  database: {url: process.env.DATABASE_URL},
 }));

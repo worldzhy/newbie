@@ -48,6 +48,7 @@ async function bootstrap() {
 
   // Enable functions according to different env.
   if (env === 'production') {
+    1;
     // helmet is only available in production environment.
     if (nodeFramework === 'express') {
       app.use(helmet());
