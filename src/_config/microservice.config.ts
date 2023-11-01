@@ -4,25 +4,22 @@ export default registerAs('microservice', () => ({
   account: {
     security: {
       ipLoginLimiter: {
-        points: process.env.ACCOUNT_SECURITY_IP_LOGIN_LIMITER_POINTS,
-        durationSeconds:
-          process.env.ACCOUNT_SECURITY_IP_LOGIN_LIMITER_DURATION_SECONDS,
+        // Each IP has a maximum of 10 attempts per 3600 seconds
+        points: 10,
+        durationSeconds: 3600,
       },
       userLoginLimiter: {
-        points: process.env.ACCOUNT_SECURITY_USER_LOGIN_LIMITER_POINTS,
-        durationSeconds:
-          process.env.ACCOUNT_SECURITY_USER_LOGIN_LIMITER_DURATION_SECONDS,
+        // Each user has a maximum of 5 attempts per 3600 seconds
+        points: 5,
+        durationSeconds: 3600,
       },
     },
     verificationCode: {
-      timeoutMinutes: process.env.ACCOUNT_VERIFICATION_CODE_TIMEOUT_MINUTES,
-      resendMinutes: process.env.ACCOUNT_VERIFICATION_CODE_RESEND_MINUTES,
+      timeoutMinutes: 10, // The verification code will be invalid after 10 minutes.
+      resendMinutes: 1, // The verification code can be resend after 1 minute.
     },
   },
-  eventScheduling: {
-    minutesOfTimeslotUnit:
-      process.env.EVENT_SCHEDULING_MINUTES_OF_TIMESLOT_UNIT,
-  },
+  eventScheduling: {minutesOfTimeslotUnit: 5},
   'file-mgmt': {
     awsS3Bucket: process.env.FILE_MANAGEMENT_AWS_S3_BUCKET,
     awsCloudfrontDomain: process.env.FILE_MANAGEMENT_AWS_CLOUDFRONT_DOMAIN,
@@ -53,11 +50,11 @@ export default registerAs('microservice', () => ({
   },
   token: {
     access: {
-      expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN,
+      expiresIn: '6000s',
       secret: process.env.ACCESS_TOKEN_SECRET,
     },
     refresh: {
-      expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN,
+      expiresIn: '86400s',
       secret: process.env.REFRESH_TOKEN_SECRET,
     },
   },

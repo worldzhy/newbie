@@ -13,10 +13,8 @@ export class AvailabilityExpressionService {
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService
   ) {
-    this.MINUTES_Of_TIMESLOT = parseInt(
-      this.configService.getOrThrow<string>(
-        'microservice.eventScheduling.minutesOfTimeslotUnit'
-      )
+    this.MINUTES_Of_TIMESLOT = this.configService.getOrThrow<number>(
+      'microservice.eventScheduling.minutesOfTimeslotUnit'
     );
   }
 

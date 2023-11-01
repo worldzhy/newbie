@@ -23,10 +23,10 @@ export class VerificationCodeService {
   ) {
     this.timeoutMinutes = this.configService.getOrThrow<number>(
       'microservice.account.verificationCode.timeoutMinutes'
-    )!;
+    );
     this.resendMinutes = this.configService.getOrThrow<number>(
       'microservice.account.verificationCode.resendMinutes'
-    )!;
+    );
   }
 
   async findUniqueOrThrow(

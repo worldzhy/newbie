@@ -27,10 +27,8 @@ export class EventIssueService {
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService
   ) {
-    this.MINUTES_Of_TIMESLOT_UNIT = parseInt(
-      this.configService.getOrThrow<string>(
-        'microservice.eventScheduling.minutesOfTimeslotUnit'
-      )
+    this.MINUTES_Of_TIMESLOT_UNIT = this.configService.getOrThrow<number>(
+      'microservice.eventScheduling.minutesOfTimeslotUnit'
     );
   }
 
