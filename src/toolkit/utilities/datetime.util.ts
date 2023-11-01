@@ -160,3 +160,21 @@ export function daysOfWeek(
   }
   return daysOfWeek;
 }
+
+export function floorByMinutes(datetimeOfStart: Date, minutes: number) {
+  return dateMinusMinutes(
+    datetimeOfStart,
+    datetimeOfStart.getMinutes() % minutes
+  );
+}
+
+export function ceilByMinutes(datetimeOfEnd: Date, minutes: number) {
+  if (datetimeOfEnd.getMinutes() % minutes === 0) {
+    return datetimeOfEnd;
+  } else {
+    return datePlusMinutes(
+      datetimeOfEnd,
+      minutes - (datetimeOfEnd.getMinutes() % minutes)
+    );
+  }
+}

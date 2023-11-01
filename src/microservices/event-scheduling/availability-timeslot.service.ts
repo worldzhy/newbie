@@ -2,11 +2,7 @@ import {Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import {Prisma, AvailabilityTimeslot} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {
-  dateMinusMinutes,
-  datePlusMinutes,
-  daysOfWeek,
-} from '@toolkit/utilities/datetime.util';
+import {datePlusMinutes, daysOfWeek} from '@toolkit/utilities/datetime.util';
 
 @Injectable()
 export class AvailabilityTimeslotService {
@@ -93,25 +89,6 @@ export class AvailabilityTimeslotService {
       },
       _count: {hostUserId: true},
     });
-  }
-
-  floorDatetimeOfStart(datetimeOfStart: Date) {
-    return dateMinusMinutes(
-      datetimeOfStart,
-      datetimeOfStart.getMinutes() % this.MINUTES_Of_TIMESLOT_UNIT
-    );
-  }
-
-  ceilDatetimeOfEnd(datetimeOfEnd: Date) {
-    if (datetimeOfEnd.getMinutes() % this.MINUTES_Of_TIMESLOT_UNIT === 0) {
-      return datetimeOfEnd;
-    } else {
-      return datePlusMinutes(
-        datetimeOfEnd,
-        this.MINUTES_Of_TIMESLOT_UNIT -
-          (datetimeOfEnd.getMinutes() % this.MINUTES_Of_TIMESLOT_UNIT)
-      );
-    }
   }
 
   timeslotsOfMonth(params: {

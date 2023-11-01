@@ -3,6 +3,7 @@ import {AvailabilityTimeslotStatus, User} from '@prisma/client';
 import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
 import {UserService} from '@microservices/account/user/user.service';
 import {EventService} from '@microservices/event-scheduling/event.service';
+import {ceilByMinutes, floorByMinutes} from '@toolkit/utilities/datetime.util';
 
 const ROLE_NAME_COACH = 'Coach';
 
@@ -59,12 +60,13 @@ export class CoachService {
     const availableCoaches: User[] = [];
 
     // [step 2-1] Get availabilities.
-    const newDatetimeOfStart =
-      this.availabilityTimeslotService.floorDatetimeOfStart(
-        event.datetimeOfStart
-      );
-    const newDatetimeOfEnd = this.availabilityTimeslotService.ceilDatetimeOfEnd(
-      event.datetimeOfEnd
+    const newDatetimeOfStart = floorByMinutes(
+      event.datetimeOfStart,
+      this.MINUTES_Of_TIMESLOT_UNIT
+    );
+    const newDatetimeOfEnd = ceilByMinutes(
+      event.datetimeOfEnd,
+      this.MINUTES_Of_TIMESLOT_UNIT
     );
     const availabilities = await this.availabilityTimeslotService.findMany({
       where: {

@@ -14,10 +14,10 @@ import {EventService} from '@microservices/event-scheduling/event.service';
 import {
   datePlusMinutes,
   dayOfWeek,
-  daysOfWeek,
   weekOfMonth,
   weekOfYear,
 } from '@toolkit/utilities/datetime.util';
+import {EventIssueService} from '@microservices/event-scheduling/event-issue.service';
 import {EventTypeService} from '@microservices/event-scheduling/event-type.service';
 import {EventContainerNoteService} from '@microservices/event-scheduling/event-container-note.service';
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
@@ -29,6 +29,7 @@ import {UserProfileService} from '@microservices/account/user/user-profile.servi
 export class EventController {
   constructor(
     private readonly eventService: EventService,
+    private readonly eventIssueService: EventIssueService,
     private readonly eventTypeService: EventTypeService,
     private readonly eventContainerService: EventContainerService,
     private readonly eventContainerNoteService: EventContainerNoteService,
@@ -138,7 +139,13 @@ export class EventController {
       },
     });
 
-    return event;
+    // [step 3] Check event issues.
+    await this.eventIssueService.checkEvent(event);
+
+    return await this.eventService.findUniqueOrThrow({
+      where: {id: event.id},
+      include: {issues: true},
+    });
   }
 
   @Get('')
@@ -232,9 +239,19 @@ export class EventController {
       body.minutesOfDuration = eventType.minutesOfDuration;
     }
 
-    return await this.eventService.update({
+    // [step 1] Update event.
+    const event = await this.eventService.update({
       where: {id: eventId},
       data: body,
+    });
+
+    // [step 2] Check event issues.
+    await this.eventIssueService.checkEvent(event);
+
+    // [step 3] Return event.
+    return this.eventService.findUniqueOrThrow({
+      where: {id: eventId},
+      include: {issues: true},
     });
   }
 
