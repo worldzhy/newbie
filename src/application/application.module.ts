@@ -31,10 +31,10 @@ import {EventController} from './schedule/schedule-class.controller';
 import {EventContainerController} from './schedule/schedule.controller';
 import {EventContainerNoteController} from './schedule/schedule-note.controller';
 import {EventCopyController} from './schedule/schedule-import.controller';
-import {EventCheckController} from './schedule/schedule-check.controller';
 import {EventFixController} from './schedule/schedule-fix.controller';
 import {HeatmapController} from './heatmap/heatmap.controller';
 import {LocationController} from './location/location.controller';
+import {MindbodyController} from './mindbody/mindbody.controller';
 import {TagController} from './tag/tag.controller';
 import {TagGroupController} from './tag/tag-group.controller';
 import {RawDataController} from './raw-data/raw-data.controller';
@@ -80,11 +80,11 @@ import {AnalysisController} from './analysis/analysis.controller';
     EventContainerController,
     EventContainerNoteController,
     EventCopyController,
-    EventCheckController,
     EventCoachController,
     EventFixController,
     HeatmapController,
     LocationController,
+    MindbodyController,
     TagController,
     TagGroupController,
     RawDataController,

@@ -16,22 +16,28 @@ import {
   EventContainer,
   EventContainerStatus,
   EventContainerOrigin,
+  EventIssueStatus,
+  AvailabilityTimeslotStatus,
 } from '@prisma/client';
-import {HttpService} from '@nestjs/axios';
-import {EventTypeService} from '@microservices/event-scheduling/event-type.service';
+import {EventService} from '@microservices/event-scheduling/event.service';
+import {EventIssueService} from '@microservices/event-scheduling/event-issue.service';
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
-import {UserProfileService} from '@microservices/account/user/user-profile.service';
-import {daysOfMonth} from '@toolkit/utilities/datetime.util';
+import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
+import {
+  ceilByMinutes,
+  daysOfMonth,
+  floorByMinutes,
+} from '@toolkit/utilities/datetime.util';
 
 @ApiTags('Event Container')
 @ApiBearerAuth()
 @Controller('event-containers')
 export class EventContainerController {
   constructor(
-    private readonly httpService: HttpService,
-    private readonly eventContainerService: EventContainerService,
-    private readonly eventTypeService: EventTypeService,
-    private readonly userProfileService: UserProfileService
+    private readonly availabilityTimeslotService: AvailabilityTimeslotService,
+    private readonly eventService: EventService,
+    private readonly eventIssueService: EventIssueService,
+    private readonly eventContainerService: EventContainerService
   ) {}
 
   @Get('days-of-month')
@@ -94,45 +100,6 @@ export class EventContainerController {
     return await this.eventContainerService.findUniqueOrThrow({
       where: {id: eventContainerId},
     });
-
-    // Get all the coaches information
-    // const coachProfiles = await this.userProfileService.findMany({
-    //   select: {userId: true, fullName: true, coachingTenure: true},
-    // });
-    // const coachProfilesMapping = coachProfiles.reduce(
-    //   (obj, item) => ({
-    //     ...obj,
-    //     [item.userId]: item,
-    //   }),
-    //   {}
-    // );
-
-    // // Get all the event types
-    // const eventTypes = await this.eventTypeService.findMany({});
-    // const eventTypesMapping = eventTypes.reduce(
-    //   (obj, item) => ({...obj, [item.id]: item.name}),
-    //   {}
-    // );
-
-    // const events = container['events'] as Event[];
-    // for (let i = 0; i < events.length; i++) {
-    //   const event = events[i];
-    //   // Attach coach information
-    //   if (event.hostUserId) {
-    //     event['hostUser'] = coachProfilesMapping[event.hostUserId];
-    //   } else {
-    //     event['hostUser'] = {};
-    //   }
-
-    //   // Attach class type information
-    //   if (event.typeId) {
-    //     event['type'] = eventTypesMapping[event.typeId];
-    //   } else {
-    //     event['type'] = '';
-    //   }
-    // }
-
-    // return container;
   }
 
   @Patch(':eventContainerId')
@@ -178,6 +145,44 @@ export class EventContainerController {
     });
   }
 
+  @Get(':eventContainerId/check')
+  async checkEventContainer(
+    @Param('eventContainerId') eventContainerId: number,
+    @Query('weekOfMonth') weekOfMonth: number
+  ) {
+    // Get event container.
+    const container = await this.eventContainerService.findUniqueOrThrow({
+      where: {id: eventContainerId},
+    });
+
+    const events = await this.eventService.findMany({
+      where: {
+        containerId: eventContainerId,
+        year: container.year,
+        month: container.month,
+        weekOfMonth,
+      },
+    });
+
+    // Check each issue.
+    for (let i = 0; i < events.length; i++) {
+      const event = events[i];
+      await this.eventIssueService.checkEvent(event);
+    }
+
+    return await this.eventIssueService.findMany({
+      where: {
+        status: EventIssueStatus.UNREPAIRED,
+        event: {
+          containerId: eventContainerId,
+          year: container.year,
+          month: container.month,
+          weekOfMonth,
+        },
+      },
+    });
+  }
+
   @Patch(':eventContainerId/publish')
   async publishEventContainer(
     @Param('eventContainerId') eventContainerId: number
@@ -198,73 +203,33 @@ export class EventContainerController {
     }
 
     // [step 2] Post schedule to Mindbody.
-    const mindbodyResponse = await this.httpService.axiosRef.post(
-      'https://api.mindbodyonline.com/public/v6/class/addclassschedule',
-      {
-        ClassDescriptionId: 66,
-        LocationId: 238,
-        StartDate: '2016-03-13T12:52:32.123Z',
-        EndDate: '2016-03-13T12:52:32.123Z',
-        StartTime: '2016-03-13T12:52:32.123Z',
-        DaySunday: true,
-        DayMonday: true,
-        DayTuesday: true,
-        DayWednesday: true,
-        DayThursday: true,
-        DaySaturday: true,
-        StaffId: -99,
-        StaffPayRate: 1,
-        ResourceId: 20,
-        MaxCapacity: 20,
-        PricingOptionsProductIds: [1],
-        AllowDateForwardEnrollment: true,
-        AllowOpenEnrollment: true,
-        BookingStatus: 'Free',
-        WaitlistCapacity: 1,
-        WebCapacity: 1,
-        DayFriday: true,
-        EndTime: '2016-03-13T17:00:15Z',
-      },
-      {
-        headers: {
-          'API-Key': '479cf5d50b9642d2b5bb4f69d7ab1ec4',
-          Accept: 'application/json',
-          siteId: '-99',
-          'Content-Type': 'application/json',
-          authorization: 'authorization6',
-        },
-      }
-    );
-
-    console.log('$$$$$$$');
-    console.log(mindbodyResponse.status);
 
     // [step 3] Modify coaches' availability status
-    // for (let i = 0; i < events.length; i++) {
-    //   const event = events[i];
-    //   const newDatetimeOfStart =
-    //     this.availabilityTimeslotService.floorDatetimeOfStart(
-    //       event.datetimeOfStart
-    //     );
-    //   const newDatetimeOfEnd =
-    //     this.availabilityTimeslotService.ceilDatetimeOfEnd(event.datetimeOfEnd);
+    for (let i = 0; i < events.length; i++) {
+      const event = events[i];
+      const newDatetimeOfStart = floorByMinutes(
+        event.datetimeOfStart,
+        this.availabilityTimeslotService.MINUTES_Of_TIMESLOT_UNIT
+      );
+      const newDatetimeOfEnd = ceilByMinutes(
+        event.datetimeOfEnd,
+        this.availabilityTimeslotService.MINUTES_Of_TIMESLOT_UNIT
+      );
 
-    //   await this.availabilityTimeslotService.updateMany({
-    //     where: {
-    //       hostUserId: event.hostUserId ?? undefined,
-    //       datetimeOfStart: {gte: newDatetimeOfStart},
-    //       datetimeOfEnd: {lte: newDatetimeOfEnd},
-    //     },
-    //     data: {
-    //       status: AvailabilityTimeslotStatus.USED,
-    //     },
-    //   });
-    // }
+      await this.availabilityTimeslotService.updateMany({
+        where: {
+          hostUserId: event.hostUserId ?? undefined,
+          datetimeOfStart: {gte: newDatetimeOfStart},
+          datetimeOfEnd: {lte: newDatetimeOfEnd},
+        },
+        data: {status: AvailabilityTimeslotStatus.USED},
+      });
+    }
 
-    // return await this.eventContainerService.update({
-    //   where: {id: eventContainerId},
-    //   data: {status: EventContainerStatus.PUBLISHED},
-    // });
+    return await this.eventContainerService.update({
+      where: {id: eventContainerId},
+      data: {status: EventContainerStatus.PUBLISHED},
+    });
   }
 
   /* End */
