@@ -10,6 +10,7 @@ import {AccessTokenService} from '@microservices/token/access-token/access-token
 import {RefreshTokenService} from '@microservices/token/refresh-token/refresh-token.service';
 import {getSecondsUntilunixTimestamp} from '@toolkit/utilities/datetime.util';
 import {UserService} from '@microservices/account/user/user.service';
+import {Request} from 'express';
 
 @Injectable()
 export class AccountService {
@@ -20,6 +21,25 @@ export class AccountService {
     private readonly verificationCodeService: VerificationCodeService,
     private readonly notificationService: NotificationService
   ) {}
+
+  async me(request: Request) {
+    // [step 1] Parse token from http request header.
+    const accessToken =
+      this.accessTokenService.getTokenFromHttpRequest(request);
+
+    // [step 2] Get UserToken record.
+    const userToken = await this.accessTokenService.findFirstOrThrow({
+      where: {token: accessToken},
+    });
+
+    // [step 3] Get user.
+    const user = await this.userService.findUniqueOrThrow({
+      where: {id: userToken.userId},
+      include: {roles: true, profile: true},
+    });
+
+    return this.userService.withoutPassword(user);
+  }
 
   async login(account: string) {
     // [step 1] Get user.

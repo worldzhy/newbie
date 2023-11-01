@@ -7,6 +7,7 @@ import {
   Body,
   Param,
   Query,
+  Req,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {
@@ -16,6 +17,15 @@ import {
 } from '@prisma/client';
 import {AvailabilityExpressionService} from '@microservices/event-scheduling/availability-expression.service';
 import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
+import {Request} from 'express';
+import {AccountService} from '@microservices/account/account.service';
+
+enum QUARTER {
+  Q1 = 'Q1',
+  Q2 = 'Q2',
+  Q3 = 'Q3',
+  Q4 = 'Q4',
+}
 
 @ApiTags('Availability Expression')
 @ApiBearerAuth()
@@ -23,7 +33,8 @@ import {AvailabilityTimeslotService} from '@microservices/event-scheduling/avail
 export class AvailabilityExpressionController {
   constructor(
     private availabilityExpressionService: AvailabilityExpressionService,
-    private availabilityTimeslotService: AvailabilityTimeslotService
+    private availabilityTimeslotService: AvailabilityTimeslotService,
+    private readonly accountService: AccountService
   ) {}
 
   @Post('')
@@ -61,14 +72,45 @@ export class AvailabilityExpressionController {
 
   @Get('')
   async getAvailabilityExpressions(
+    @Req() request: Request,
     @Query('page') page: number,
     @Query('pageSize') pageSize: number,
-    @Query('hostUserId') hostUserId?: string
+    @Query('hostUserId') hostUserId?: string,
+    @Query('name') name?: string,
+    @Query('year') year?: number,
+    @Query('quarter') quarter?: QUARTER
   ) {
-    return await this.availabilityExpressionService.findManyInManyPages(
-      {page, pageSize},
-      {where: {hostUserId}}
-    );
+    if (hostUserId) {
+      // called on coach setting page.
+      return await this.availabilityExpressionService.findManyInManyPages(
+        {page, pageSize},
+        {where: {hostUserId}}
+      );
+    } else if (name) {
+      // called on upload availability page.
+      const user = await this.accountService.me(request);
+      return await this.availabilityExpressionService.findManyInManyPages(
+        {page, pageSize},
+        {
+          where: {
+            name: {contains: name.trim(), mode: 'insensitive'},
+            venueIds: {hasSome: user['profile'].eventVenueIds},
+          },
+        }
+      );
+    } else if (year && quarter) {
+      // called on upload availability page.
+      const user = await this.accountService.me(request);
+      return await this.availabilityExpressionService.findManyInManyPages(
+        {page, pageSize},
+        {
+          where: {
+            name: {contains: year + ' ' + quarter, mode: 'insensitive'},
+            venueIds: {hasSome: user['profile'].eventVenueIds},
+          },
+        }
+      );
+    }
   }
 
   @Get(':availabilityExpressionId')

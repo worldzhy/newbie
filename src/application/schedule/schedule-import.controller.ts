@@ -30,12 +30,11 @@ export class EventCopyController {
   ) {}
 
   @Get(':eventContainerId/import')
-  @ApiQuery({name: 'year', type: 'number'})
-  @ApiQuery({name: 'month', type: 'number'})
   async importEventContainer(
     @Param('eventContainerId') eventContainerId: number,
     @Query('year') year: number,
-    @Query('month') month: number
+    @Query('month') month: number,
+    @Query('type') type: number
   ) {
     // [step 1] Get target container.
     const targetContainer = await this.eventContainerService.findUniqueOrThrow({

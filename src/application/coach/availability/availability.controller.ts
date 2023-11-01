@@ -14,7 +14,6 @@ import {UserService} from '@microservices/account/user/user.service';
 import {UserProfileService} from '@microservices/account/user/user-profile.service';
 import {AvailabilityExpressionService} from '@microservices/event-scheduling/availability-expression.service';
 import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
-import {AvailabilityExpressionStatus} from '@prisma/client';
 import {EventVenueService} from '@microservices/event-scheduling/event-venue.service';
 import {
   firstDayOfMonth,
@@ -39,7 +38,6 @@ export class AvailabilityController {
     private readonly userService: UserService,
     private readonly userProfileService: UserProfileService,
     private readonly availabilityExpressionService: AvailabilityExpressionService,
-    private readonly availabilityTimeslotService: AvailabilityTimeslotService,
     private readonly eventVenueService: EventVenueService
   ) {}
 
@@ -215,43 +213,21 @@ export class AvailabilityController {
           hostUserId: coach.id,
         },
       });
-      const availabilityExpression =
-        await this.availabilityExpressionService.create({
-          data: {
-            name:
-              coach['profile'].fullName +
-              ' - ' +
-              body.year +
-              ' ' +
-              body.quarter,
-            hostUserId: coach.id,
-            venueIds: coachLocationIds,
-            cronExpressionsOfAvailableTimePoints: cronExpressions,
-            dateOfOpening,
-            dateOfClosure,
-            minutesOfDuration: COACH_AVAILABILITY_DURATION_GOOGLE_FORM,
-          },
-        });
 
-      // [step 2-4] Parse expression to timeslots.
-      const availabilityTimeslots =
-        await this.availabilityExpressionService.parse(
-          availabilityExpression.id
-        );
-      await this.availabilityTimeslotService.deleteMany({
-        where: {expressionId: availabilityExpression.id},
-      });
-      await this.availabilityTimeslotService.createMany({
-        data: availabilityTimeslots,
-      });
-      await this.availabilityExpressionService.update({
-        where: {id: availabilityExpression.id},
+      await this.availabilityExpressionService.create({
         data: {
-          status: AvailabilityExpressionStatus.PUBLISHED,
+          name:
+            coach['profile'].fullName + ' - ' + body.year + ' ' + body.quarter,
+          hostUserId: coach.id,
+          venueIds: coachLocationIds,
+          cronExpressionsOfAvailableTimePoints: cronExpressions,
+          dateOfOpening,
+          dateOfClosure,
+          minutesOfDuration: COACH_AVAILABILITY_DURATION_GOOGLE_FORM,
         },
       });
 
-      // [step 2-5] Update coach profile.
+      // [step 2-4] Update coach profile.
       await this.userProfileService.update({
         where: {userId: coach.id},
         data: {

@@ -103,7 +103,9 @@ export function daysOfMonth(year: number, month: number) {
     const dayOfMonth = date.getDate();
     const dayOfWeek = date.getDay();
 
-    if (dayOfWeek === 0 && day !== 1) {
+    // * Monday is the first day => if (dayOfWeek === 1 && day !== 1)
+    // * Sunday is the first day => if (dayOfWeek === 0 && day !== 1)
+    if (dayOfWeek === 1 && day !== 1) {
       week += 1;
       daysOfMonth[week] = [];
     }
@@ -140,7 +142,9 @@ export function daysOfWeek(
     const dayOfMonth = date.getDate();
     const dayOfWeek = date.getDay();
 
-    if (dayOfWeek === 0 && day !== 1) {
+    // * Monday is the first day => if (dayOfWeek === 1 && day !== 1)
+    // * Sunday is the first day => if (dayOfWeek === 0 && day !== 1)
+    if (dayOfWeek === 1 && day !== 1) {
       week += 1;
     }
     if (week === weekOfMonth - 1) {
