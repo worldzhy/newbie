@@ -1,5 +1,5 @@
 import {Global, Module} from '@nestjs/common';
-import {ConfigModule} from '@nestjs/config';
+import {ConfigModule, ConfigService} from '@nestjs/config';
 import ServerConfiguration from '@_config/server.config';
 import MicroservicesConfiguration from '@_config/microservice.config';
 import ToolkitConfiguration from '@_config/toolkit.config';
@@ -9,6 +9,7 @@ import {CustomLoggerModule} from './logger/logger.module';
 import {PrismaModule} from './prisma/prisma.module';
 import {SnowflakeModule} from './snowflake/snowflake.module';
 import {XLSXModule} from './xlsx/xlsx.module';
+import {HttpModule} from '@nestjs/axios';
 
 @Global()
 @Module({
@@ -21,12 +22,30 @@ import {XLSXModule} from './xlsx/xlsx.module';
       ],
       isGlobal: true,
     }),
+    HttpModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        timeout: configService.get('HTTP_TIMEOUT'),
+        maxRedirects: configService.get('HTTP_MAX_REDIRECTS'),
+      }),
+      inject: [ConfigService],
+    }),
     AwsModule,
     ElasticModule,
     CustomLoggerModule,
     PrismaModule,
     SnowflakeModule,
     XLSXModule,
+  ],
+  exports: [
+    HttpModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        timeout: configService.get('HTTP_TIMEOUT'),
+        maxRedirects: configService.get('HTTP_MAX_REDIRECTS'),
+      }),
+      inject: [ConfigService],
+    }),
   ],
 })
 export class ToolkitModule {}

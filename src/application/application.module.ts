@@ -13,6 +13,7 @@ import {ToolkitModule} from '@toolkit/toolkit.module';
 import {AccountModule} from '@microservices/account/account.module';
 import {EventSchedulingModule} from '@microservices/event-scheduling/event-scheduling.module';
 import {MapModule} from '@microservices/map/map.module';
+import {MindbodyModule} from '@microservices/mindbody/mindbody.module';
 import {TagModule} from '@microservices/tag/tag.module';
 import {CoachModule} from './coach/coach.module';
 import {RawDataModule} from './raw-data/raw-data.module';
@@ -42,15 +43,6 @@ import {AnalysisController} from './analysis/analysis.controller';
 
 @Module({
   imports: [
-    HttpModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        timeout: configService.get('HTTP_TIMEOUT'),
-        maxRedirects: configService.get('HTTP_MAX_REDIRECTS'),
-      }),
-      inject: [ConfigService],
-    }),
-
     // Toolkit (Global modules)
     ToolkitModule,
 
@@ -58,6 +50,7 @@ import {AnalysisController} from './analysis/analysis.controller';
     AccountModule,
     EventSchedulingModule,
     MapModule,
+    MindbodyModule,
     TagModule,
 
     // Application

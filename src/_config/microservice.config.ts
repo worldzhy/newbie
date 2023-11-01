@@ -25,6 +25,10 @@ export default registerAs('microservice', () => ({
     awsCloudfrontDomain: process.env.FILE_MANAGEMENT_AWS_CLOUDFRONT_DOMAIN,
     localPath: process.env.FILE_MANAGEMENT_LOCAL_PATH || './uploaded-files',
   },
+  mindbody: {
+    apiKey: process.env.MINDBODY_API_KEY,
+    siteId: -99,
+  },
   notification: {
     email: {
       awsPinpointApplicationId:
