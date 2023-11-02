@@ -80,69 +80,46 @@ export class AvailabilityExpressionController {
     @Query('year') year?: number,
     @Query('quarter') quarter?: QUARTER
   ) {
+    // [step 1] Construct where argument.
+    let where: Prisma.AvailabilityExpressionWhereInput | undefined;
+    const whereConditions: object[] = [];
+
     if (hostUserId) {
-      // called on coach setting page.
-      return await this.availabilityExpressionService.findManyInManyPages(
-        {page, pageSize},
-        {where: {hostUserId}}
-      );
-    } else if (name) {
-      // called on upload availability page.
-      const user = await this.accountService.me(request);
-      if (user['profile'] && user['profile'].eventVenueIds) {
-        return await this.availabilityExpressionService.findManyInManyPages(
-          {page, pageSize},
-          {
-            where: {
-              name: {contains: name.trim(), mode: 'insensitive'},
-              venueIds: {hasSome: user['profile'].eventVenueIds},
-            },
-          }
-        );
-      } else {
-        return await this.availabilityExpressionService.findManyInManyPages(
-          {page, pageSize},
-          {where: {name: {contains: name.trim(), mode: 'insensitive'}}}
-        );
-      }
-    } else if (year && quarter) {
-      // called on upload availability page.
-      const user = await this.accountService.me(request);
-      if (user['profile'] && user['profile'].eventVenueIds) {
-        return await this.availabilityExpressionService.findManyInManyPages(
-          {page, pageSize},
-          {
-            where: {
-              name: {contains: year + ' ' + quarter, mode: 'insensitive'},
-              venueIds: {hasSome: user['profile'].eventVenueIds},
-            },
-          }
-        );
-      } else {
-        return await this.availabilityExpressionService.findManyInManyPages(
-          {page, pageSize},
-          {
-            where: {
-              name: {contains: year + ' ' + quarter, mode: 'insensitive'},
-            },
-          }
-        );
-      }
+      // [use case 1] called on coach setting page.
+      whereConditions.push({hostUserId});
     } else {
-      // called on upload availability page.
+      // [use case 2] called on upload availability page.
+      if (name && name.trim()) {
+        whereConditions.push({
+          name: {contains: name.trim(), mode: 'insensitive'},
+        });
+      }
+      if (year && quarter) {
+        whereConditions.push({
+          name: {contains: year + ' ' + quarter, mode: 'insensitive'},
+        });
+      }
       const user = await this.accountService.me(request);
       if (user['profile'] && user['profile'].eventVenueIds) {
-        return await this.availabilityExpressionService.findManyInManyPages(
-          {page, pageSize},
-          {where: {venueIds: {hasSome: user['profile'].eventVenueIds}}}
-        );
-      } else {
-        return await this.availabilityExpressionService.findManyInManyPages({
-          page,
-          pageSize,
+        whereConditions.push({
+          venueIds: {hasSome: user['profile'].eventVenueIds},
         });
       }
     }
+
+    if (whereConditions.length > 1) {
+      where = {AND: whereConditions};
+    } else if (whereConditions.length === 1) {
+      where = whereConditions[0];
+    } else {
+      // where === undefined
+    }
+
+    // [step 2] Get records.
+    return await this.availabilityExpressionService.findManyInManyPages(
+      {page, pageSize},
+      {where}
+    );
   }
 
   @Get(':availabilityExpressionId')
