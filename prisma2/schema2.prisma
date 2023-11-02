@@ -17,6 +17,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL2")
+  schemas  = ["microservice/inception"]
 }
 
 // ! ------------------------------------------------------------ //
@@ -25,10 +26,14 @@ datasource db {
 // * CriminalRecord                                               //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
-model ExampleModel1 {
+model Inception1 {
   id String @id @default(uuid()) @db.Uuid
+
+  @@schema("microservice/inception")
 }
 
-model ExampleModel2 {
+model Inception2 {
   id String @id @default(uuid()) @db.Uuid
+
+  @@schema("microservice/inception")
 }

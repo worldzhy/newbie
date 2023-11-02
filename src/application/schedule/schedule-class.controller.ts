@@ -139,13 +139,7 @@ export class EventController {
       },
     });
 
-    // [step 3] Check event issues.
-    await this.eventIssueService.checkEvent(event);
-
-    return await this.eventService.findUniqueOrThrow({
-      where: {id: event.id},
-      include: {issues: true},
-    });
+    return event;
   }
 
   @Get('')
@@ -239,19 +233,9 @@ export class EventController {
       body.minutesOfDuration = eventType.minutesOfDuration;
     }
 
-    // [step 1] Update event.
-    const event = await this.eventService.update({
+    return await this.eventService.update({
       where: {id: eventId},
       data: body,
-    });
-
-    // [step 2] Check event issues.
-    await this.eventIssueService.checkEvent(event);
-
-    // [step 3] Return event.
-    return this.eventService.findUniqueOrThrow({
-      where: {id: eventId},
-      include: {issues: true},
     });
   }
 
