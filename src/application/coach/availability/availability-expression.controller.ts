@@ -89,27 +89,45 @@ export class AvailabilityExpressionController {
     } else if (name) {
       // called on upload availability page.
       const user = await this.accountService.me(request);
-      return await this.availabilityExpressionService.findManyInManyPages(
-        {page, pageSize},
-        {
-          where: {
-            name: {contains: name.trim(), mode: 'insensitive'},
-            venueIds: {hasSome: user['profile'].eventVenueIds},
-          },
-        }
-      );
+      if (user['profile'].eventVenueIds) {
+        return await this.availabilityExpressionService.findManyInManyPages(
+          {page, pageSize},
+          {
+            where: {
+              name: {contains: name.trim(), mode: 'insensitive'},
+              venueIds: {hasSome: user['profile'].eventVenueIds},
+            },
+          }
+        );
+      } else {
+        return await this.availabilityExpressionService.findManyInManyPages(
+          {page, pageSize},
+          {where: {name: {contains: name.trim(), mode: 'insensitive'}}}
+        );
+      }
     } else if (year && quarter) {
       // called on upload availability page.
       const user = await this.accountService.me(request);
-      return await this.availabilityExpressionService.findManyInManyPages(
-        {page, pageSize},
-        {
-          where: {
-            name: {contains: year + ' ' + quarter, mode: 'insensitive'},
-            venueIds: {hasSome: user['profile'].eventVenueIds},
-          },
-        }
-      );
+      if (user['profile'].eventVenueIds) {
+        return await this.availabilityExpressionService.findManyInManyPages(
+          {page, pageSize},
+          {
+            where: {
+              name: {contains: year + ' ' + quarter, mode: 'insensitive'},
+              venueIds: {hasSome: user['profile'].eventVenueIds},
+            },
+          }
+        );
+      } else {
+        return await this.availabilityExpressionService.findManyInManyPages(
+          {page, pageSize},
+          {
+            where: {
+              name: {contains: year + ' ' + quarter, mode: 'insensitive'},
+            },
+          }
+        );
+      }
     }
   }
 
