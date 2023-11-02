@@ -89,7 +89,7 @@ export class AvailabilityExpressionController {
     } else if (name) {
       // called on upload availability page.
       const user = await this.accountService.me(request);
-      if (user['profile'].eventVenueIds) {
+      if (user['profile'] && user['profile'].eventVenueIds) {
         return await this.availabilityExpressionService.findManyInManyPages(
           {page, pageSize},
           {
@@ -108,7 +108,7 @@ export class AvailabilityExpressionController {
     } else if (year && quarter) {
       // called on upload availability page.
       const user = await this.accountService.me(request);
-      if (user['profile'].eventVenueIds) {
+      if (user['profile'] && user['profile'].eventVenueIds) {
         return await this.availabilityExpressionService.findManyInManyPages(
           {page, pageSize},
           {
@@ -128,6 +128,8 @@ export class AvailabilityExpressionController {
           }
         );
       }
+    } else {
+      return [];
     }
   }
 
