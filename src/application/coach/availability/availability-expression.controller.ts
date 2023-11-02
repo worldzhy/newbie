@@ -129,7 +129,19 @@ export class AvailabilityExpressionController {
         );
       }
     } else {
-      return [];
+      // called on upload availability page.
+      const user = await this.accountService.me(request);
+      if (user['profile'] && user['profile'].eventVenueIds) {
+        return await this.availabilityExpressionService.findManyInManyPages(
+          {page, pageSize},
+          {where: {venueIds: {hasSome: user['profile'].eventVenueIds}}}
+        );
+      } else {
+        return await this.availabilityExpressionService.findManyInManyPages({
+          page,
+          pageSize,
+        });
+      }
     }
   }
 
