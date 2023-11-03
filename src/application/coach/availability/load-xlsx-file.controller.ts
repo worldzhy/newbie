@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   ParseFilePipeBuilder,
@@ -70,18 +71,24 @@ export class LoadXlsxFileController {
         stringMonths = '1-3';
         dateOfOpening = firstDayOfMonth(year, 1);
         dateOfClosure = lastDayOfMonth(year, 3);
+        break;
       case QUARTER.Q2:
         stringMonths = '4-6';
         dateOfOpening = firstDayOfMonth(year, 4);
         dateOfClosure = lastDayOfMonth(year, 6);
+        break;
       case QUARTER.Q3:
         stringMonths = '7-9';
         dateOfOpening = firstDayOfMonth(year, 7);
         dateOfClosure = lastDayOfMonth(year, 9);
+        break;
       case QUARTER.Q4:
         stringMonths = '10-12';
         dateOfOpening = firstDayOfMonth(year, 10);
         dateOfClosure = lastDayOfMonth(year, 12);
+        break;
+      default:
+        throw new BadRequestException('Bad parameter: quarter');
     }
 
     // [step 2] Process excel data.
