@@ -1,6 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import {
+  AddressConfiguration,
   PinpointClient,
   SendMessagesCommand,
   SendMessagesCommandInput,
@@ -41,7 +42,7 @@ export class PinpointService {
     const subject = params.body.subject;
     const plainText = params.body.plainText;
     const html = params.body.html;
-    const addresses: {[email: string]: {ChannelType: string}} = {};
+    const addresses: Record<string, AddressConfiguration> = {};
     emails.map(email => {
       addresses[email] = {
         ChannelType: 'EMAIL',
@@ -89,7 +90,7 @@ export class PinpointService {
     const text = params.body.text;
     const keyword = undefined;
     const messageType = 'TRANSACTIONAL'; // 'TRANSACTIONAL' or 'PROMOTIONAL'
-    const addresses: {[phone: string]: {ChannelType: string}} = {};
+    const addresses: Record<string, AddressConfiguration> = {};
     phones.map(phone => {
       addresses[phone] = {
         ChannelType: 'SMS',

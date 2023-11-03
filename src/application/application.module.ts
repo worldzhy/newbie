@@ -12,6 +12,7 @@ import {HttpMiddleware} from '@_middleware/_http.middleware';
 import {ToolkitModule} from '@toolkit/toolkit.module';
 import {AccountModule} from '@microservices/account/account.module';
 import {EventSchedulingModule} from '@microservices/event-scheduling/event-scheduling.module';
+import {GoogleFormModule} from '@microservices/google-form/google-form.module';
 import {MapModule} from '@microservices/map/map.module';
 import {MindbodyModule} from '@microservices/mindbody/mindbody.module';
 import {TagModule} from '@microservices/tag/tag.module';
@@ -24,8 +25,9 @@ import {AccountLogoutController} from './account/account-logout.controller';
 import {AccountSignupController} from './account/account-signup.controller';
 import {AccountOthersController} from './account/account-others.controller';
 import {AreaManagerController} from './area-manager/area-manager.controller';
-import {AvailabilityController} from './coach/availability/availability.controller';
 import {AvailabilityExpressionController} from './coach/availability/availability-expression.controller';
+import {LoadAvailabilityFileController} from './coach/availability/load-availability-file.controller';
+import {FetchGoogleFormController} from './coach/availability/fetch-google-form.controller';
 import {ClassController} from './class/class.controller';
 import {EventCoachController} from './coach/event-coach.controller';
 import {EventController} from './schedule/schedule-class.controller';
@@ -49,6 +51,7 @@ import {AnalysisController} from './analysis/analysis.controller';
     // Microservices (Global modules)
     AccountModule,
     EventSchedulingModule,
+    GoogleFormModule,
     MapModule,
     MindbodyModule,
     TagModule,
@@ -65,8 +68,9 @@ import {AnalysisController} from './analysis/analysis.controller';
     AccountSignupController,
     AccountOthersController,
     AreaManagerController,
-    AvailabilityController,
     AvailabilityExpressionController,
+    LoadAvailabilityFileController,
+    FetchGoogleFormController,
     ClassController,
     EventCoachController,
     EventController,

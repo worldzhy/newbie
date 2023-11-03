@@ -13,7 +13,6 @@ import {XLSXService} from '@toolkit/xlsx/xlsx.service';
 import {UserService} from '@microservices/account/user/user.service';
 import {UserProfileService} from '@microservices/account/user/user-profile.service';
 import {AvailabilityExpressionService} from '@microservices/event-scheduling/availability-expression.service';
-import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
 import {EventVenueService} from '@microservices/event-scheduling/event-venue.service';
 import {
   firstDayOfMonth,
@@ -33,7 +32,7 @@ enum QUARTER {
 @ApiTags('Availability')
 @ApiBearerAuth()
 @Controller('availability')
-export class AvailabilityController {
+export class LoadAvailabilityFileController {
   constructor(
     private readonly userService: UserService,
     private readonly userProfileService: UserProfileService,
