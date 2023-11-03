@@ -114,71 +114,83 @@ export class RawDataSchedulingService {
 
     if (visits.length > 0) {
       await this.eventService.createMany({
-        data: await Promise.all(
-          visits.map(
-            async (visit: {
-              CLASSNAME: string;
-              CLASSDATE: string;
-              CLASSSTARTTIME: string;
-              CLASSENDTIME: string;
-              TREMAILNAME: string;
-            }) => {
-              const dateOfClass = new Date(visit.CLASSDATE)
-                .toISOString()
-                .split('T')[0];
-              const datetimeOfStart = new Date(
-                dateOfClass + 'T' + visit.CLASSSTARTTIME
-              );
-              const datetimeOfEnd = new Date(
-                dateOfClass + 'T' + visit.CLASSENDTIME
-              );
+        data: (
+          await Promise.all(
+            visits.map(
+              async (visit: {
+                CLASSNAME: string;
+                CLASSDATE: string;
+                CLASSSTARTTIME: string;
+                CLASSENDTIME: string;
+                TREMAILNAME: string;
+              }) => {
+                const dateOfClass = new Date(visit.CLASSDATE)
+                  .toISOString()
+                  .split('T')[0];
+                const datetimeOfStart = new Date(
+                  dateOfClass + 'T' + visit.CLASSSTARTTIME
+                );
+                const datetimeOfEnd = new Date(
+                  dateOfClass + 'T' + visit.CLASSENDTIME
+                );
 
-              // Get coach info
-              if (visit.TREMAILNAME.endsWith('.')) {
-                visit.TREMAILNAME = visit.TREMAILNAME.slice(0, -1);
-              }
-              const coach = await this.userService.findUnique({
-                where: {email: visit.TREMAILNAME},
-                select: {id: true},
-              });
+                // Get coach info
+                if (!visit.TREMAILNAME) {
+                  return;
+                }
+                if (visit.TREMAILNAME.endsWith('.')) {
+                  visit.TREMAILNAME = visit.TREMAILNAME.slice(0, -1);
+                }
+                const coach = await this.userService.findUnique({
+                  where: {email: visit.TREMAILNAME},
+                  select: {id: true},
+                });
 
-              // Get class info
-              visit.CLASSNAME = visit.CLASSNAME.replace('  ', ' ').trim();
-              if (visit.CLASSNAME.includes('+')) {
-                const splittedName = visit.CLASSNAME.split('+');
-                visit.CLASSNAME =
-                  splittedName[0].trim() + ' + ' + splittedName[1].trim();
-              }
-              const eventType = await this.eventTypeService.match(
-                visit.CLASSNAME
-              );
+                // Get class info
+                visit.CLASSNAME = visit.CLASSNAME.replace('  ', ' ').trim();
+                if (visit.CLASSNAME.includes('+')) {
+                  const splittedName = visit.CLASSNAME.split('+');
+                  visit.CLASSNAME =
+                    splittedName[0].trim() + ' + ' + splittedName[1].trim();
+                }
+                const eventType = await this.eventTypeService.match(
+                  visit.CLASSNAME
+                );
 
-              return {
-                hostUserId: coach ? coach.id : null,
-                datetimeOfStart: datetimeOfStart.toISOString(),
-                datetimeOfEnd: datetimeOfEnd.toISOString(),
-                year,
-                month,
-                dayOfMonth: datetimeOfStart.getDate(),
-                dayOfWeek: datetimeOfStart.getDay(),
-                weekOfMonth: weekOfMonth(
+                return {
+                  hostUserId: coach ? coach.id : null,
+                  datetimeOfStart: datetimeOfStart.toISOString(),
+                  datetimeOfEnd: datetimeOfEnd.toISOString(),
                   year,
                   month,
-                  datetimeOfStart.getDate()
-                ),
-                weekOfYear: weekOfYear(year, month, datetimeOfStart.getDate()),
-                hour: datetimeOfStart.getHours(),
-                minute: datetimeOfStart.getMinutes(),
-                minutesOfDuration: Number(
-                  (datetimeOfEnd.getTime() - datetimeOfStart.getTime()) / 60000
-                ),
-                typeId: eventType.id,
-                venueId,
-                containerId: eventContainer.id,
-              };
-            }
+                  dayOfMonth: datetimeOfStart.getDate(),
+                  dayOfWeek: datetimeOfStart.getDay(),
+                  weekOfMonth: weekOfMonth(
+                    year,
+                    month,
+                    datetimeOfStart.getDate()
+                  ),
+                  weekOfYear: weekOfYear(
+                    year,
+                    month,
+                    datetimeOfStart.getDate()
+                  ),
+                  hour: datetimeOfStart.getHours(),
+                  minute: datetimeOfStart.getMinutes(),
+                  minutesOfDuration: Number(
+                    (datetimeOfEnd.getTime() - datetimeOfStart.getTime()) /
+                      60000
+                  ),
+                  typeId: eventType.id,
+                  venueId,
+                  containerId: eventContainer.id,
+                };
+              }
+            )
           )
-        ),
+        ).filter(element => {
+          return element !== null && element !== undefined;
+        }),
       });
 
       await this.eventContainerService.update({
