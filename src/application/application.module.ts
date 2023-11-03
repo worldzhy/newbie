@@ -26,7 +26,7 @@ import {AccountSignupController} from './account/account-signup.controller';
 import {AccountOthersController} from './account/account-others.controller';
 import {AreaManagerController} from './area-manager/area-manager.controller';
 import {AvailabilityExpressionController} from './coach/availability/availability-expression.controller';
-import {LoadAvailabilityFileController} from './coach/availability/load-availability-file.controller';
+import {LoadXlsxFileController} from './coach/availability/load-xlsx-file.controller';
 import {FetchGoogleFormController} from './coach/availability/fetch-google-form.controller';
 import {ClassController} from './class/class.controller';
 import {EventCoachController} from './coach/event-coach.controller';
@@ -69,7 +69,7 @@ import {AnalysisController} from './analysis/analysis.controller';
     AccountOthersController,
     AreaManagerController,
     AvailabilityExpressionController,
-    LoadAvailabilityFileController,
+    LoadXlsxFileController,
     FetchGoogleFormController,
     ClassController,
     EventCoachController,

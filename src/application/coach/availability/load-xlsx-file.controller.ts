@@ -32,7 +32,7 @@ enum QUARTER {
 @ApiTags('Availability')
 @ApiBearerAuth()
 @Controller('availability')
-export class LoadAvailabilityFileController {
+export class LoadXlsxFileController {
   constructor(
     private readonly userService: UserService,
     private readonly userProfileService: UserProfileService,
@@ -40,7 +40,7 @@ export class LoadAvailabilityFileController {
     private readonly eventVenueService: EventVenueService
   ) {}
 
-  @Post('load')
+  @Post('load-xlsx-file')
   @ApiBody({
     description: '',
     examples: {
