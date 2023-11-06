@@ -21,7 +21,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["microservice/account", "microservice/event-scheduling", "microservice/file-mgmt", "microservice/map", "microservice/notification", "microservice/order-mgmt", "microservice/project-mgmt", "microservice/stock-mgmt", "microservice/tag", "microservice/task", "microservice/token", "microservice/workflow", "application/engined", "application/recruitment", "application/tc-request"]
+  schemas  = ["microservice/account", "microservice/cron", "microservice/event-scheduling", "microservice/file-mgmt", "microservice/map", "microservice/notification", "microservice/order-mgmt", "microservice/project-mgmt", "microservice/queue", "microservice/stock-mgmt", "microservice/tag", "microservice/token", "microservice/workflow", "application/engined", "application/recruitment", "application/tc-request"]
 }
 
 // ! ------------------------------------------------------------ //
@@ -209,6 +209,23 @@ enum VerificationCodeUse {
   RESET_PASSWORD
 
   @@schema("microservice/account")
+}
+
+// ! ------------------------------------------------------------ //
+// !           [Microservice] Cron models                         //
+// ! ------------------------------------------------------------ //
+// * CronTask (This is an example model.)                             //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
+
+model CronTask {
+  id         Int      @id @default(autoincrement())
+  name       String   @unique
+  expression String
+  command    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@schema("microservice/cron")
 }
 
 // !! ------------------------------------------------------------ //
@@ -721,6 +738,34 @@ enum InfrastructureStackState {
   @@schema("microservice/project-mgmt")
 }
 
+// ! ------------------------------------------------------------ //
+// !           [Microservice] Queue models                        //
+// ! ------------------------------------------------------------ //
+// * Task (This is an example model.)                             //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
+
+enum QueueTaskState {
+  PENDING
+  DONE
+
+  @@schema("microservice/queue")
+}
+
+model QueueTask {
+  id           Int            @id @default(autoincrement())
+  name         String
+  state        QueueTaskState @default(PENDING)
+  group        String? // Provided by task microservice's client.
+  data         Json // Task content
+  bullJobId    String?
+  sqsMessageId String?
+  sqsResponse  Json?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@schema("microservice/queue")
+}
+
 // !! ------------------------------------------------------------ //
 // !!            [Microservice] Stock Management models        //
 // !! ------------------------------------------------------------ //
@@ -882,32 +927,6 @@ model TagGroup {
   tags      Tag[]
 
   @@schema("microservice/tag")
-}
-
-// ! ------------------------------------------------------------ //
-// !           [Microservice] Task Management models              //
-// ! ------------------------------------------------------------ //
-// * Task (This is an example model.)                             //
-// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
-
-model Task {
-  id           Int       @id @default(autoincrement())
-  state        TaskState @default(PENDING)
-  group        String? // Provided by task microservice's client.
-  payload      Json // Task content
-  sqsMessageId String?
-  sqsResponse  Json?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-
-  @@schema("microservice/task")
-}
-
-enum TaskState {
-  PENDING
-  DONE
-
-  @@schema("microservice/task")
 }
 
 // ! ------------------------------------------------------------ //

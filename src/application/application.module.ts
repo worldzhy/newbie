@@ -1,7 +1,5 @@
 import {APP_FILTER} from '@nestjs/core';
 import {Module, MiddlewareConsumer} from '@nestjs/common';
-import {ConfigModule, ConfigService} from '@nestjs/config';
-import {HttpModule} from '@nestjs/axios';
 
 import {AllExceptionFilter} from '@_filter/_all-exception.filter';
 import {HttpExceptionFilter} from '@_filter/_http-exception.filter';
@@ -15,6 +13,7 @@ import {EventSchedulingModule} from '@microservices/event-scheduling/event-sched
 import {GoogleFormModule} from '@microservices/google-form/google-form.module';
 import {MapModule} from '@microservices/map/map.module';
 import {MindbodyModule} from '@microservices/mindbody/mindbody.module';
+import {QueueModule} from '@microservices/queue/queue.module';
 import {TagModule} from '@microservices/tag/tag.module';
 import {CoachModule} from './coach/coach.module';
 import {RawDataModule} from './raw-data/raw-data.module';
@@ -54,6 +53,7 @@ import {AnalysisController} from './analysis/analysis.controller';
     GoogleFormModule,
     MapModule,
     MindbodyModule,
+    QueueModule,
     TagModule,
 
     // Application

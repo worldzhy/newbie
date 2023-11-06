@@ -15,9 +15,8 @@ import {MapModule} from '@microservices/map/map.module';
 import {NotificationModule} from '@microservices/notification/notification.module';
 import {OrderManagementModule} from '@microservices/order-mgmt/order-mgmt.module';
 import {ProjectManagementModule} from '@microservices/project-mgmt/project-mgmt.module';
+import {QueueModule} from '@microservices/queue/queue.module';
 import {TagModule} from '@microservices/tag/tag.module';
-import {TaskModule} from '@microservices/task/task.module';
-import {TaskSchedulingModule} from '@microservices/task-scheduling/task-scheduling.module';
 import {WorkflowModule} from '@microservices/workflow/workflow.module';
 
 import {EnginedModule} from './engined/engined.module';
@@ -59,9 +58,8 @@ import {WorkflowRouteController} from './workflow/workflow-route.controller';
     NotificationModule,
     OrderManagementModule,
     ProjectManagementModule,
+    QueueModule,
     TagModule,
-    TaskModule,
-    TaskSchedulingModule,
     WorkflowModule,
 
     // Application
