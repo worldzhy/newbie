@@ -1,19 +1,21 @@
-import {Controller, Get, Body, Post, Req, Res} from '@nestjs/common';
-import {ApiTags, ApiBody, ApiBearerAuth, ApiCookieAuth} from '@nestjs/swagger';
-import {AccessToken, VerificationCodeUse} from '@prisma/client';
+import {Body, Controller, Get, Patch, Req, Res} from '@nestjs/common';
+import {ApiTags, ApiBearerAuth, ApiCookieAuth, ApiBody} from '@nestjs/swagger';
+import {AccessToken, Prisma, User} from '@prisma/client';
 import {Request, Response} from 'express';
 import {AccountService} from '@microservices/account/account.service';
-import {Public} from '@microservices/account/security/authentication/public/public.decorator';
+import {UserService} from '@microservices/account/user/user.service';
 import {RefreshTokenService} from '@microservices/token/refresh-token/refresh-token.service';
-import {verifyEmail, verifyPhone} from '@toolkit/validators/user.validator';
 import {Cookies} from '@_decorator/cookie.decorator';
 import {AccessingRefreshEndpoint} from '@microservices/account/security/authentication/refresh/refresh.decorator';
+import {UserProfileService} from '@microservices/account/user/user-profile.service';
 
 @ApiTags('Account')
 @Controller('account')
 export class AccountOthersController {
   constructor(
     private readonly accountService: AccountService,
+    private readonly userService: UserService,
+    private readonly userProfileService: UserProfileService,
     private readonly refreshTokenService: RefreshTokenService
   ) {}
 
@@ -23,43 +25,63 @@ export class AccountOthersController {
     return await this.accountService.me(request);
   }
 
-  @Public()
-  @Post('send-verification-code')
+  @Patch('profile')
+  @ApiBearerAuth()
   @ApiBody({
-    description: '',
+    description:
+      'Set roleIds with an empty array to remove all the roles of the user.',
     examples: {
       a: {
-        summary: 'Send to email',
+        summary: '1. Update',
         value: {
-          email: 'henry@inceptionpad.com',
-          use: VerificationCodeUse.RESET_PASSWORD,
-        },
-      },
-      b: {
-        summary: 'Send to phone',
-        value: {
-          phone: '13260000789',
-          use: VerificationCodeUse.LOGIN_BY_PHONE,
+          email: '',
+          phone: '',
+          profile: {
+            update: {
+              firstName: '',
+              middleName: '',
+              lastName: '',
+            },
+          },
         },
       },
     },
   })
-  async sendVerificationCode(
-    @Body() body: {email?: string; phone?: string; use: VerificationCodeUse}
-  ): Promise<boolean> {
-    if (body.email && verifyEmail(body.email)) {
-      return await this.accountService.sendVerificationCode({
-        email: body.email,
-        use: body.use,
+  async editProfile(
+    @Req() request: Request,
+    @Body()
+    body: Prisma.UserUpdateInput
+  ): Promise<User> {
+    const user = await this.accountService.me(request);
+
+    if (!user['profile'] && body.profile) {
+      await this.userProfileService.create({
+        data: {
+          userId: user.id,
+          firstName: body.profile.update?.firstName as
+            | string
+            | null
+            | undefined,
+          middleName: body.profile.update?.middleName as
+            | string
+            | null
+            | undefined,
+          lastName: body.profile.update?.lastName as string | null | undefined,
+        },
       });
-    } else if (body.phone && verifyPhone(body.phone)) {
-      return await this.accountService.sendVerificationCode({
-        phone: body.phone,
-        use: body.use,
-      });
-    } else {
-      return false;
+      delete body.profile;
     }
+
+    return await this.userService.update({
+      where: {id: user.id},
+      data: body,
+      select: {
+        id: true,
+        email: true,
+        phone: true,
+        profile: true,
+      },
+    });
   }
 
   @AccessingRefreshEndpoint()
