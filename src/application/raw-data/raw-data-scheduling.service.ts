@@ -63,10 +63,7 @@ export class RawDataSchedulingService {
       TO_DATE(v.classdate) as classdate,
       TO_TIME(c.classstarttime) as classstarttime,
       TO_TIME(c.classendtime) as classendtime,
-      lower(t.tremailname) as tremailname,
-      c.maxcapacity,
-      count(1) as total_visits,
-      ROUND(100 * total_visits / maxcapacity) as "Utilization %"
+      lower(t.tremailname) as tremailname
     from
       mb.visit_data as v
       left join mb.studios as s on s.studioid = v.studioid
@@ -91,7 +88,6 @@ export class RawDataSchedulingService {
       tremailname,
       v.classid,
       v.classdate,
-      c.maxcapacity,
       classstarttime,
       classendtime
     order by
