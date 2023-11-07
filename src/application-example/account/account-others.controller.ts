@@ -4,7 +4,6 @@ import {AccessToken, VerificationCodeUse} from '@prisma/client';
 import {Request, Response} from 'express';
 import {AccountService} from '@microservices/account/account.service';
 import {Public} from '@microservices/account/security/authentication/public/public.decorator';
-import {AccessTokenService} from '@microservices/token/access-token/access-token.service';
 import {RefreshTokenService} from '@microservices/token/refresh-token/refresh-token.service';
 import {verifyEmail, verifyPhone} from '@toolkit/validators/user.validator';
 import {Cookies} from '@_decorator/cookie.decorator';
@@ -19,29 +18,13 @@ export class AccountOthersController {
     private readonly accountService: AccountService,
     private readonly userService: UserService,
     private readonly profileService: UserProfileService,
-    private readonly accessTokenService: AccessTokenService,
     private readonly refreshTokenService: RefreshTokenService
   ) {}
 
   @Get('me')
   @ApiBearerAuth()
   async getCurrentUser(@Req() request: Request) {
-    // [step 1] Parse token from http request header.
-    const accessToken =
-      this.accessTokenService.getTokenFromHttpRequest(request);
-
-    // [step 2] Get UserToken record.
-    const userToken = await this.accessTokenService.findFirstOrThrow({
-      where: {token: accessToken},
-    });
-
-    // [step 3] Get user.
-    const user = await this.userService.findUniqueOrThrow({
-      where: {id: userToken.userId},
-      include: {roles: true},
-    });
-
-    return this.userService.withoutPassword(user);
+    return await this.accountService.me(request);
   }
 
   @Public()

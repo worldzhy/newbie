@@ -7,11 +7,14 @@ import {
   Body,
   Param,
   Query,
+  Req,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {EventVenue, Place, Prisma} from '@prisma/client';
 import {EventVenueService} from '@microservices/event-scheduling/event-venue.service';
 import {PlaceService} from '@microservices/map/place.service';
+import {AccountService} from '@microservices/account/account.service';
+import {Request} from 'express';
 
 @ApiTags('Location')
 @ApiBearerAuth()
@@ -19,7 +22,8 @@ import {PlaceService} from '@microservices/map/place.service';
 export class LocationController {
   constructor(
     private readonly eventVenueService: EventVenueService,
-    private readonly placeService: PlaceService
+    private readonly placeService: PlaceService,
+    private readonly accountService: AccountService
   ) {}
 
   @Post('')
@@ -105,6 +109,57 @@ export class LocationController {
     // [step 3] Attach place information.
     for (let i = 0; i < venues.records.length; i++) {
       const venue = venues.records[i] as EventVenue & Place;
+      if (venue.placeId) {
+        const place = await this.placeService.findUnique({
+          where: {id: venue.placeId},
+        });
+        if (place) {
+          venue.address = place.address;
+          venue.city = place.city;
+          venue.state = place.state;
+          venue.country = place.country;
+        }
+      }
+    }
+
+    return venues;
+  }
+
+  @Get('/personal')
+  async getPersonalEventVenues(
+    @Req() request: Request,
+    @Query('name') name?: string
+  ) {
+    // [step 1] Construct where argument.
+    let where: Prisma.EventVenueWhereInput | undefined;
+    const whereConditions: object[] = [];
+
+    const user = await this.accountService.me(request);
+    if (user['profile'] && user['profile'].eventVenueIds) {
+      whereConditions.push({id: {in: user['profile'].eventVenueIds}});
+    }
+
+    if (name) {
+      name = name.trim();
+      if (name.length > 0) {
+        whereConditions.push({name: {contains: name, mode: 'insensitive'}});
+      }
+    }
+
+    if (whereConditions.length > 1) {
+      where = {AND: whereConditions};
+    } else if (whereConditions.length === 1) {
+      where = whereConditions[0];
+    } else {
+      // where === undefined
+    }
+
+    // [step 2] Get event venues.
+    const venues = await this.eventVenueService.findMany({where});
+
+    // [step 3] Attach place information.
+    for (let i = 0; i < venues.length; i++) {
+      const venue = venues[i] as EventVenue & Place;
       if (venue.placeId) {
         const place = await this.placeService.findUnique({
           where: {id: venue.placeId},

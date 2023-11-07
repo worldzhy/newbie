@@ -98,7 +98,7 @@ export function daysOfMonth(year: number, month: number) {
     weekOfMonth: number;
     weekOfYear: number;
   }[][] = [[]];
-  for (let day = 1, week = 0; day <= numberOfDays; day++) {
+  for (let day = 1, week = 1; day <= numberOfDays; day++) {
     const date = new Date(year, month - 1, day);
     const dayOfMonth = date.getDate();
     const dayOfWeek = date.getDay();
@@ -107,15 +107,15 @@ export function daysOfMonth(year: number, month: number) {
     // * Sunday is the first day => if (dayOfWeek === 0 && day !== 1)
     if (dayOfWeek === 1 && day !== 1) {
       week += 1;
-      daysOfMonth[week] = [];
+      daysOfMonth[week - 1] = [];
     }
 
-    daysOfMonth[week].push({
+    daysOfMonth[week - 1].push({
       year,
       month,
       dayOfMonth,
       dayOfWeek,
-      weekOfMonth: week + 1,
+      weekOfMonth: week,
       weekOfYear: weekOfYear(year, month, dayOfMonth),
     });
   }
@@ -137,7 +137,7 @@ export function daysOfWeek(
     weekOfMonth: number;
     weekOfYear: number;
   }[] = [];
-  for (let day = 1, week = 0; day <= numberOfDays; day++) {
+  for (let day = 1, week = 1; day <= numberOfDays; day++) {
     const date = new Date(year, month - 1, day);
     const dayOfMonth = date.getDate();
     const dayOfWeek = date.getDay();
@@ -147,13 +147,13 @@ export function daysOfWeek(
     if (dayOfWeek === 1 && day !== 1) {
       week += 1;
     }
-    if (week === weekOfMonth - 1) {
+    if (week === weekOfMonth) {
       daysOfWeek.push({
         year,
         month,
         dayOfMonth,
         dayOfWeek,
-        weekOfMonth: week + 1,
+        weekOfMonth: week,
         weekOfYear: weekOfYear(year, month, dayOfMonth),
       });
     }

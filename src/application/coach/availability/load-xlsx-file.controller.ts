@@ -167,6 +167,11 @@ export class LoadXlsxFileController {
         }
 
         // 2) Process weekend availability.
+        const minutes: number[] = [];
+        for (let i = 0; i < 60 / COACH_AVAILABILITY_DURATION_GOOGLE_FORM; i++) {
+          minutes.push(i * COACH_AVAILABILITY_DURATION_GOOGLE_FORM);
+        }
+        const stringMinutes = minutes.toString();
         if (key.startsWith('Select your weekend day of availability')) {
           const weekends = row[key].split(';');
           const stringWeekends = weekends
@@ -180,7 +185,7 @@ export class LoadXlsxFileController {
             })
             .toString(); // Return '6,0'
           cronExpressions.push(
-            `0 ${HOUR_OF_DAY_START}-${HOUR_OF_DAY_END} * ${stringMonths} ${stringWeekends}`
+            `${stringMinutes} ${HOUR_OF_DAY_START}-${HOUR_OF_DAY_END} * ${stringMonths} ${stringWeekends}`
           );
         }
 
