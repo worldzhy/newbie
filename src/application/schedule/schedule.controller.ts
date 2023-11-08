@@ -167,7 +167,7 @@ export class EventContainerController {
     // Check each issue.
     for (let i = 0; i < events.length; i++) {
       const event = events[i];
-      await this.eventIssueService.checkEvent(event);
+      await this.eventIssueService.check(event);
     }
 
     return await this.eventIssueService.findMany({
@@ -206,24 +206,7 @@ export class EventContainerController {
 
     // [step 3] Modify coaches' availability status
     for (let i = 0; i < events.length; i++) {
-      const event = events[i];
-      const newDatetimeOfStart = floorByMinutes(
-        event.datetimeOfStart,
-        this.availabilityTimeslotService.MINUTES_Of_TIMESLOT_UNIT
-      );
-      const newDatetimeOfEnd = ceilByMinutes(
-        event.datetimeOfEnd,
-        this.availabilityTimeslotService.MINUTES_Of_TIMESLOT_UNIT
-      );
-
-      await this.availabilityTimeslotService.updateMany({
-        where: {
-          hostUserId: event.hostUserId ?? undefined,
-          datetimeOfStart: {gte: newDatetimeOfStart},
-          datetimeOfEnd: {lte: newDatetimeOfEnd},
-        },
-        data: {status: AvailabilityTimeslotStatus.USED},
-      });
+      await this.availabilityTimeslotService.checkin(events[i]);
     }
 
     return await this.eventContainerService.update({

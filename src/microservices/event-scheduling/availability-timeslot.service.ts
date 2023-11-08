@@ -1,8 +1,18 @@
 import {Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
-import {Prisma, AvailabilityTimeslot} from '@prisma/client';
+import {
+  Prisma,
+  AvailabilityTimeslot,
+  Event,
+  AvailabilityTimeslotStatus,
+} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {datePlusMinutes, daysOfWeek} from '@toolkit/utilities/datetime.util';
+import {
+  ceilByMinutes,
+  datePlusMinutes,
+  daysOfWeek,
+  floorByMinutes,
+} from '@toolkit/utilities/datetime.util';
 
 @Injectable()
 export class AvailabilityTimeslotService {
@@ -67,6 +77,56 @@ export class AvailabilityTimeslotService {
 
   async count(params: Prisma.AvailabilityTimeslotCountArgs): Promise<number> {
     return await this.prisma.availabilityTimeslot.count(params);
+  }
+
+  async checkin(event: Event) {
+    if (!event.hostUserId) {
+      return;
+    }
+
+    // The start time and end time should cover an integer number of timeslots.
+    const newDatetimeOfStart = floorByMinutes(
+      event.datetimeOfStart,
+      this.MINUTES_Of_TIMESLOT_UNIT
+    );
+    const newDatetimeOfEnd = ceilByMinutes(
+      event.datetimeOfEnd,
+      this.MINUTES_Of_TIMESLOT_UNIT
+    );
+
+    await this.prisma.availabilityTimeslot.updateMany({
+      where: {
+        hostUserId: event.hostUserId,
+        datetimeOfStart: {gte: newDatetimeOfStart},
+        datetimeOfEnd: {lte: newDatetimeOfEnd},
+      },
+      data: {status: AvailabilityTimeslotStatus.USED},
+    });
+  }
+
+  async undoCheckin(event: Event) {
+    if (!event.hostUserId) {
+      return;
+    }
+
+    // The start time and end time should cover an integer number of timeslots.
+    const newDatetimeOfStart = floorByMinutes(
+      event.datetimeOfStart,
+      this.MINUTES_Of_TIMESLOT_UNIT
+    );
+    const newDatetimeOfEnd = ceilByMinutes(
+      event.datetimeOfEnd,
+      this.MINUTES_Of_TIMESLOT_UNIT
+    );
+
+    await this.prisma.availabilityTimeslot.updateMany({
+      where: {
+        hostUserId: event.hostUserId,
+        datetimeOfStart: {gte: newDatetimeOfStart},
+        datetimeOfEnd: {lte: newDatetimeOfEnd},
+      },
+      data: {status: AvailabilityTimeslotStatus.USABLE},
+    });
   }
 
   async groupByHostUserId(params: {

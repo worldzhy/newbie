@@ -15,6 +15,7 @@ import {EventVenueService} from '@microservices/event-scheduling/event-venue.ser
 import {PlaceService} from '@microservices/map/place.service';
 import {AccountService} from '@microservices/account/account.service';
 import {Request} from 'express';
+import {RoleService} from '@microservices/account/role/role.service';
 
 @ApiTags('Location')
 @ApiBearerAuth()
@@ -23,7 +24,8 @@ export class LocationController {
   constructor(
     private readonly eventVenueService: EventVenueService,
     private readonly placeService: PlaceService,
-    private readonly accountService: AccountService
+    private readonly accountService: AccountService,
+    private readonly roleService: RoleService
   ) {}
 
   @Post('')
@@ -135,8 +137,12 @@ export class LocationController {
     const whereConditions: object[] = [];
 
     const user = await this.accountService.me(request);
-    if (user['profile'] && user['profile'].eventVenueIds) {
+    if (await this.roleService.isAdmin(user.id)) {
+      // Get all the locations.
+    } else if (user['profile'] && user['profile'].eventVenueIds) {
       whereConditions.push({id: {in: user['profile'].eventVenueIds}});
+    } else {
+      return [];
     }
 
     if (name) {
@@ -155,7 +161,10 @@ export class LocationController {
     }
 
     // [step 2] Get event venues.
-    const venues = await this.eventVenueService.findMany({where});
+    const venues = await this.eventVenueService.findMany({
+      where,
+      select: {id: true, name: true, placeId: true},
+    });
 
     // [step 3] Attach place information.
     for (let i = 0; i < venues.length; i++) {

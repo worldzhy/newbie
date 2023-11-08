@@ -11,8 +11,7 @@ import {
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Prisma, User} from '@prisma/client';
 import {UserService} from '@microservices/account/user/user.service';
-
-const ROLE_NAME_AREA_MANAGER = 'Area Manager';
+import {RoleService} from '@microservices/account/role/role.service';
 
 @ApiTags('Area Manager')
 @ApiBearerAuth()
@@ -49,7 +48,7 @@ export class AreaManagerController {
   ): Promise<User> {
     const userCreateInput: Prisma.UserCreateInput = body;
     // Construct roles.
-    userCreateInput.roles = {connect: {name: ROLE_NAME_AREA_MANAGER}};
+    userCreateInput.roles = {connect: {name: RoleService.names.AREA_MANAGER}};
 
     return await this.userService.create({
       data: userCreateInput,
@@ -73,7 +72,9 @@ export class AreaManagerController {
     let where: Prisma.UserWhereInput | undefined;
     const whereConditions: object[] = [];
 
-    whereConditions.push({roles: {some: {name: ROLE_NAME_AREA_MANAGER}}});
+    whereConditions.push({
+      roles: {some: {name: RoleService.names.AREA_MANAGER}},
+    });
     if (name) {
       name = name.trim();
       if (name.length > 0) {

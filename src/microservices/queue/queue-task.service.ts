@@ -37,42 +37,20 @@ export class QueueTaskService {
     });
   }
 
-  async create(args: Prisma.QueueTaskCreateArgs): Promise<QueueTask> {
-    return await this.prisma.queueTask.create(args);
-  }
-
-  async createMany(
-    args: Prisma.QueueTaskCreateManyArgs
-  ): Promise<Prisma.BatchPayload> {
-    return await this.prisma.queueTask.createMany(args);
-  }
-
-  async update(args: Prisma.QueueTaskUpdateArgs): Promise<QueueTask> {
-    return await this.prisma.queueTask.update(args);
-  }
-
-  async updateMany(
-    args: Prisma.QueueTaskUpdateManyArgs
-  ): Promise<Prisma.BatchPayload> {
-    return await this.prisma.queueTask.updateMany(args);
-  }
-
   async delete(args: Prisma.QueueTaskDeleteArgs): Promise<QueueTask> {
     return await this.prisma.queueTask.delete(args);
   }
 
-  async add2bull(task: QueueTask): Promise<QueueTask> {
+  async add2queue(args: Prisma.QueueTaskCreateArgs): Promise<QueueTask> {
     // [step 1] Add to queue.
     const output = await this.queueService.add({
-      name: task.name,
-      data: task.data,
+      name: args.data.name,
+      data: args.data.data,
     });
+    args.data.bullJobId = output.id as string;
 
-    // [step 2] Update task record.
-    return await this.prisma.queueTask.update({
-      where: {id: task.id},
-      data: {bullJobId: output.id as string},
-    });
+    // [step 2] Create task record.
+    return await this.prisma.queueTask.create(args);
   }
 
   async send2aws(task: QueueTask): Promise<QueueTask> {

@@ -13,8 +13,6 @@ import {Prisma, User} from '@prisma/client';
 import {UserService} from '@microservices/account/user/user.service';
 import {RoleService} from '@microservices/account/role/role.service';
 
-const ROLE_NAME_COACH = 'Coach';
-const ROLE_NAME_AREA_MANAGER = 'Area Manager';
 const DEFAULT_PASSWORD = 'x8nwFP814HIk!';
 
 @ApiTags('Coach')
@@ -60,7 +58,7 @@ export class CoachController {
     const userCreateInput: Prisma.UserCreateInput = body;
 
     // Construct roles.
-    userCreateInput.roles = {connect: {name: ROLE_NAME_COACH}};
+    userCreateInput.roles = {connect: {name: RoleService.names.COACH}};
 
     return await this.userService.create({
       data: userCreateInput,
@@ -83,7 +81,7 @@ export class CoachController {
     let where: Prisma.UserWhereInput | undefined;
     const whereConditions: object[] = [];
 
-    whereConditions.push({roles: {some: {name: ROLE_NAME_COACH}}});
+    whereConditions.push({roles: {some: {name: RoleService.names.COACH}}});
     if (name) {
       name = name.trim();
       if (name.length > 0) {
@@ -191,7 +189,7 @@ export class CoachController {
   @Patch(':userId/role-area-manager')
   async addAreaManagerRole(@Param('userId') userId: string): Promise<User> {
     const role = await this.roleService.findUniqueOrThrow({
-      where: {name: ROLE_NAME_AREA_MANAGER},
+      where: {name: RoleService.names.AREA_MANAGER},
     });
 
     return await this.userService.update({

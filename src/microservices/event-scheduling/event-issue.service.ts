@@ -7,13 +7,14 @@ import {
   Event,
   User,
   AvailabilityTimeslotStatus,
+  EventIssueStatus,
 } from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {ceilByMinutes, floorByMinutes} from '@toolkit/utilities/datetime.util';
 
 enum EventIssueDescription {
-  Error_CoachNotSelected = 'The coach has not been selected.',
   Error_CoachNotExisted = 'The coach is not existed.',
+  Error_CoachNotConfigured = 'The coach has not been configured.',
   Error_CoachNotAvailale = 'The coach is not available.',
   Error_WrongClassType = 'The coach is not able to teach this type of class.',
   Error_WrongLocation = 'The coach is not able to teach in this location.',
@@ -88,8 +89,8 @@ export class EventIssueService {
     return await this.prisma.eventIssue.delete(args);
   }
 
-  async checkEvent(event: Event) {
-    // [step 1] Check and get the coach.
+  async check(event: Event) {
+    // [step 1] Get the coach.
     let hostUser: User | null = null;
     if (event.hostUserId) {
       hostUser = await this.prisma.user.findUnique({
@@ -98,7 +99,9 @@ export class EventIssueService {
       });
     }
 
+    // [step 2] Check issues.
     if (!hostUser) {
+      // [step 2-1] Check exist.
       await this.prisma.eventIssue.upsert({
         where: {
           type_eventId: {
@@ -113,80 +116,99 @@ export class EventIssueService {
         },
         update: {},
       });
-      return;
-    }
-
-    // [step 2] Check class type.
-    if (!hostUser['profile']['eventTypeIds'].includes(event.typeId)) {
+    } else if (!hostUser['profile']) {
+      // [step 2-2] Check coach profile.
       await this.prisma.eventIssue.upsert({
         where: {
           type_eventId: {
             eventId: event.id,
+            type: EventIssueType.ERROR_COACH_NOT_CONFIGURED,
+          },
+        },
+        create: {
+          type: EventIssueType.ERROR_COACH_NOT_CONFIGURED,
+          description: EventIssueDescription.Error_CoachNotConfigured,
+          eventId: event.id,
+        },
+        update: {},
+      });
+    } else {
+      // [step 2-3] Check class type.
+      if (!hostUser['profile']['eventTypeIds'].includes(event.typeId)) {
+        await this.prisma.eventIssue.upsert({
+          where: {
+            type_eventId: {
+              eventId: event.id,
+              type: EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_TYPE,
+            },
+          },
+          create: {
             type: EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_TYPE,
-          },
-        },
-        create: {
-          type: EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_TYPE,
-          description: EventIssueDescription.Error_WrongClassType,
-          eventId: event.id,
-        },
-        update: {},
-      });
-    }
-
-    // [step 3] Check location.
-    if (!hostUser['profile']['eventVenueIds'].includes(event.venueId)) {
-      await this.prisma.eventIssue.upsert({
-        where: {
-          type_eventId: {
+            description: EventIssueDescription.Error_WrongClassType,
             eventId: event.id,
+          },
+          update: {},
+        });
+      }
+
+      // [step 2-4] Check location.
+      if (!hostUser['profile']['eventVenueIds'].includes(event.venueId)) {
+        await this.prisma.eventIssue.upsert({
+          where: {
+            type_eventId: {
+              eventId: event.id,
+              type: EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_VENUE,
+            },
+          },
+          create: {
             type: EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_VENUE,
-          },
-        },
-        create: {
-          type: EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_VENUE,
-          description: EventIssueDescription.Error_WrongLocation,
-          eventId: event.id,
-        },
-        update: {},
-      });
-    }
-
-    // [step 4] Check availability
-    const newDatetimeOfStart = floorByMinutes(
-      event.datetimeOfStart,
-      this.MINUTES_Of_TIMESLOT_UNIT
-    );
-    const newDatetimeOfEnd = ceilByMinutes(
-      event.datetimeOfEnd,
-      this.MINUTES_Of_TIMESLOT_UNIT
-    );
-
-    const count = await this.prisma.availabilityTimeslot.count({
-      where: {
-        hostUserId: hostUser.id,
-        venueIds: {has: event.venueId},
-        datetimeOfStart: {gte: newDatetimeOfStart},
-        datetimeOfEnd: {lte: newDatetimeOfEnd},
-        status: AvailabilityTimeslotStatus.USABLE,
-      },
-    });
-    if (count < event.minutesOfDuration / this.MINUTES_Of_TIMESLOT_UNIT) {
-      await this.prisma.eventIssue.upsert({
-        where: {
-          type_eventId: {
+            description: EventIssueDescription.Error_WrongLocation,
             eventId: event.id,
-            type: EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_TIME,
           },
+          update: {},
+        });
+      }
+
+      // [step 2-5] Check availability
+      const newDatetimeOfStart = floorByMinutes(
+        event.datetimeOfStart,
+        this.MINUTES_Of_TIMESLOT_UNIT
+      );
+      const newDatetimeOfEnd = ceilByMinutes(
+        event.datetimeOfEnd,
+        this.MINUTES_Of_TIMESLOT_UNIT
+      );
+
+      const count = await this.prisma.availabilityTimeslot.count({
+        where: {
+          hostUserId: hostUser.id,
+          venueIds: {has: event.venueId},
+          datetimeOfStart: {gte: newDatetimeOfStart},
+          datetimeOfEnd: {lte: newDatetimeOfEnd},
+          status: AvailabilityTimeslotStatus.USABLE,
         },
-        create: {
-          type: EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_TIME,
-          description: EventIssueDescription.Error_CoachNotAvailale,
-          eventId: event.id,
-        },
-        update: {},
       });
+      if (count < event.minutesOfDuration / this.MINUTES_Of_TIMESLOT_UNIT) {
+        await this.prisma.eventIssue.upsert({
+          where: {
+            type_eventId: {
+              eventId: event.id,
+              type: EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_TIME,
+            },
+          },
+          create: {
+            type: EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_TIME,
+            description: EventIssueDescription.Error_CoachNotAvailale,
+            eventId: event.id,
+          },
+          update: {},
+        });
+      }
     }
+
+    return await this.prisma.eventIssue.findMany({
+      where: {status: EventIssueStatus.UNREPAIRED, eventId: event.id},
+    });
   }
 
   /* End */

@@ -7,13 +7,14 @@ import {
   Query,
   BadRequestException,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiBody, ApiQuery} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {
   Prisma,
   Event,
   EventContainerStatus,
   EventContainerOrigin,
 } from '@prisma/client';
+import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
 import {EventService} from '@microservices/event-scheduling/event.service';
 import {daysOfMonth} from '@toolkit/utilities/datetime.util';
@@ -24,6 +25,7 @@ import {RawDataSchedulingService} from '../raw-data/raw-data-scheduling.service'
 @Controller('event-containers')
 export class EventCopyController {
   constructor(
+    private readonly availabilityTimeslotService: AvailabilityTimeslotService,
     private readonly eventContainerService: EventContainerService,
     private readonly eventService: EventService,
     private readonly rawDataSchedulingService: RawDataSchedulingService
@@ -33,11 +35,10 @@ export class EventCopyController {
   async importEventContainer(
     @Param('eventContainerId') eventContainerId: number,
     @Query('year') year: number,
-    @Query('month') month: number,
-    @Query('type') type: number
+    @Query('month') month: number
   ) {
     // [step 1] Get target container.
-    const targetContainer = await this.eventContainerService.findUniqueOrThrow({
+    let targetContainer = await this.eventContainerService.findUniqueOrThrow({
       where: {id: eventContainerId},
     });
     if (targetContainer.status === EventContainerStatus.PUBLISHED) {
@@ -75,42 +76,66 @@ export class EventCopyController {
         include: {events: true},
       });
     }
+    if (!sourceContainer) {
+      return;
+    }
 
-    // [step 3] Generate and update events.
-    if (sourceContainer) {
-      const targetEvents: Prisma.EventUncheckedCreateWithoutContainerInput[] =
-        [];
-      const weeksOfTargetContainer = daysOfMonth(
-        targetContainer.year,
-        targetContainer.month
-      );
-      for (let i = 0; i < weeksOfTargetContainer.length; i++) {
-        targetEvents.push(
-          ...this.eventService.copyMany({
-            events: sourceContainer['events'],
-            from: {
-              year: sourceContainer.year,
-              month: sourceContainer.month,
-              week: 2, // The first week may be a semi week but the 2nd week must be a full week.
-            },
-            to: {
-              year: targetContainer.year,
-              month: targetContainer.month,
-              week: i + 1,
-            },
-          })
-        );
-      }
-
-      await this.eventContainerService.update({
-        where: {id: eventContainerId},
-        data: {
-          events: {
-            deleteMany: {containerId: eventContainerId},
-            create: targetEvents,
+    // [step 3] Generate events for target container.
+    const targetEvents: Prisma.EventUncheckedCreateWithoutContainerInput[] = [];
+    const weeksOfTargetContainer = daysOfMonth(
+      targetContainer.year,
+      targetContainer.month
+    );
+    for (let i = 0; i < weeksOfTargetContainer.length; i++) {
+      targetEvents.push(
+        ...this.eventService.copyMany({
+          events: sourceContainer['events'],
+          from: {
+            year: sourceContainer.year,
+            month: sourceContainer.month,
+            week: 2, // The first week may be a semi week but the 2nd week must be a full week.
           },
+          to: {
+            year: targetContainer.year,
+            month: targetContainer.month,
+            week: i + 1,
+          },
+        })
+      );
+    }
+
+    // [step 4] Add events to target container.
+    // [step 4-1] Undo coaches' availability checkins.
+    const oldEvents = await this.eventService.findMany({
+      where: {containerId: eventContainerId},
+      select: {
+        id: true,
+        hostUserId: true,
+        datetimeOfStart: true,
+        datetimeOfEnd: true,
+      },
+    });
+    for (let j = 0; j < oldEvents.length; j++) {
+      const event = oldEvents[j];
+      await this.availabilityTimeslotService.undoCheckin(event);
+    }
+
+    // [step 4-2] Delete old events and create new events.
+    targetContainer = await this.eventContainerService.update({
+      where: {id: eventContainerId},
+      data: {
+        events: {
+          deleteMany: {containerId: eventContainerId},
+          create: targetEvents,
         },
-      });
+      },
+      select: {events: true},
+    });
+
+    // [step 4-3] Checkin coaches' availability.
+    for (let j = 0; j < targetContainer['events'].length; j++) {
+      const event = targetContainer['events'][j];
+      await this.availabilityTimeslotService.checkin(event);
     }
   }
 

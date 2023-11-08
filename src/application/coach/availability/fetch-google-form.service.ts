@@ -4,6 +4,7 @@ import {UserService} from '@microservices/account/user/user.service';
 import {AvailabilityExpressionService} from '@microservices/event-scheduling/availability-expression.service';
 import {EventVenueService} from '@microservices/event-scheduling/event-venue.service';
 import {GoogleFormService} from '@microservices/google-form/google-form.service';
+import {QueueTaskService} from '@microservices/queue/queue-task.service';
 import {Injectable} from '@nestjs/common';
 import {Cron, CronExpression} from '@nestjs/schedule';
 import {User} from '@prisma/client';
@@ -42,7 +43,8 @@ export class FetchGoogleFormService {
     private readonly userService: UserService,
     private readonly userProfileService: UserProfileService,
     private readonly availabilityExpressionService: AvailabilityExpressionService,
-    private readonly eventVenueService: EventVenueService
+    private readonly eventVenueService: EventVenueService,
+    private readonly queueTaskService: QueueTaskService
   ) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_10AM)
@@ -328,6 +330,16 @@ export class FetchGoogleFormService {
       for (let questionId in mappingQuestion_AvailableWeekendsItem) {
         const answer = answers[questionId];
         if (answer.textAnswers && answer.textAnswers.answers) {
+          const minutes: number[] = [];
+          for (
+            let i = 0;
+            i < 60 / COACH_AVAILABILITY_DURATION_GOOGLE_FORM;
+            i++
+          ) {
+            minutes.push(i * COACH_AVAILABILITY_DURATION_GOOGLE_FORM);
+          }
+          const stringMinutes = minutes.toString();
+
           const stringWeekends = answer.textAnswers.answers
             .map(obj => {
               if (obj.value && obj.value.trim()) {
@@ -342,7 +354,7 @@ export class FetchGoogleFormService {
             .toString(); // Return '6,0'
 
           cronExpressions.push(
-            `0 ${HOUR_OF_DAY_START}-${HOUR_OF_DAY_END} * ${stringMonths} ${stringWeekends}`
+            `${stringMinutes} ${HOUR_OF_DAY_START}-${HOUR_OF_DAY_END} * ${stringMonths} ${stringWeekends}`
           );
         }
       }
@@ -384,7 +396,7 @@ export class FetchGoogleFormService {
         },
       });
 
-      await this.availabilityExpressionService.create({
+      const exp = await this.availabilityExpressionService.create({
         data: {
           name:
             coach['profile'].fullName + ' - ' + body.year + ' ' + body.quarter,
@@ -394,6 +406,14 @@ export class FetchGoogleFormService {
           dateOfOpening,
           dateOfClosure,
           minutesOfDuration: COACH_AVAILABILITY_DURATION_GOOGLE_FORM,
+        },
+      });
+
+      // [step 3-7] Add it to task queue.
+      await this.queueTaskService.add2queue({
+        data: {
+          name: 'test',
+          data: {availabilityExpressionId: exp.id},
         },
       });
     }

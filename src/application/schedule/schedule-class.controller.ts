@@ -22,12 +22,14 @@ import {EventTypeService} from '@microservices/event-scheduling/event-type.servi
 import {EventContainerNoteService} from '@microservices/event-scheduling/event-container-note.service';
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
 import {UserProfileService} from '@microservices/account/user/user-profile.service';
+import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
 
 @ApiTags('Event')
 @ApiBearerAuth()
 @Controller('events')
 export class EventController {
   constructor(
+    private readonly availabilityTimeslotService: AvailabilityTimeslotService,
     private readonly eventService: EventService,
     private readonly eventIssueService: EventIssueService,
     private readonly eventTypeService: EventTypeService,
@@ -35,51 +37,6 @@ export class EventController {
     private readonly eventContainerNoteService: EventContainerNoteService,
     private readonly userProfileService: UserProfileService
   ) {}
-
-  @Post('mock-data')
-  @ApiBody({
-    description: '',
-    examples: {
-      a: {
-        summary: '1. Create mock data',
-        value: {
-          hostUserId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
-          year: 2023,
-          month: 9,
-        },
-      },
-    },
-  })
-  async createMockData(
-    @Body() body: {hostUserId: string; year: number; month: number}
-  ) {
-    console.log('- Creating events...');
-    for (let i = 0; i < 20; i++) {
-      for (let j = 0; j < 10; j++) {
-        await this.eventService.createMany({
-          data: [
-            {
-              hostUserId: body.hostUserId,
-              datetimeOfStart: '2023-09-01T06:00:00.000Z',
-              datetimeOfEnd: '2023-09-01T06:50:00.000Z',
-              year: body.year,
-              month: body.month,
-              weekOfMonth: weekOfMonth(body.year, body.month, 1 + i),
-              weekOfYear: weekOfYear(body.year, body.month, 1 + i),
-              dayOfMonth: 1 + i,
-              dayOfWeek: (5 + i) % 7,
-              hour: 6 + j,
-              minute: 0,
-              minutesOfDuration: 50,
-              containerId: 1,
-              typeId: 1,
-              venueId: 1,
-            },
-          ],
-        });
-      }
-    }
-  }
 
   @Post('')
   @ApiBody({
@@ -138,6 +95,9 @@ export class EventController {
         containerId: body.containerId,
       },
     });
+
+    // [step 3] Checkin coach availability timeslots.
+    await this.availabilityTimeslotService.checkin(event);
 
     return event;
   }
@@ -233,21 +193,43 @@ export class EventController {
       body.minutesOfDuration = eventType.minutesOfDuration;
     }
 
-    return await this.eventService.update({
+    // [step 1] Undo the checkin of coach availability timeslots.
+    const oldEvent = await this.eventService.findUniqueOrThrow({
+      where: {id: eventId},
+    });
+    await this.availabilityTimeslotService.undoCheckin(oldEvent);
+
+    // [step 2] Update event.
+    const newEvent = await this.eventService.update({
       where: {id: eventId},
       data: body,
     });
+
+    // [step 3] Checkin coach availability timeslots.
+    await this.availabilityTimeslotService.checkin(newEvent);
+
+    // [step 4] Check event issues.
+    newEvent['issues'] = await this.eventIssueService.check(newEvent);
+
+    return newEvent;
   }
 
   @Delete(':eventId')
   async deleteEvent(@Param('eventId') eventId: number): Promise<Event> {
-    // [step 1] Delete event.
-    const event = await this.eventService.delete({
+    const event = await this.eventService.findUniqueOrThrow({
+      where: {id: eventId},
+    });
+
+    // [step 1] Undo the checkin of coach availability timeslots.
+    await this.availabilityTimeslotService.undoCheckin(event);
+
+    // [step 2] Delete the event.
+    await this.eventService.delete({
       where: {id: eventId},
       include: {type: true},
     });
 
-    // [step 2] Note delete event.
+    // [step 3] Note the deletion.
     await this.eventContainerNoteService.create({
       data: {
         type: EventContainerNoteType.SYSTEM,

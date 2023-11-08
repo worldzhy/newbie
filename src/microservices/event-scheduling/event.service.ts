@@ -52,6 +52,12 @@ export class EventService {
     return await this.prisma.event.delete(args);
   }
 
+  async deleteMany(
+    args: Prisma.EventDeleteManyArgs
+  ): Promise<Prisma.BatchPayload> {
+    return await this.prisma.event.deleteMany(args);
+  }
+
   async count(args: Prisma.EventCountArgs): Promise<number> {
     return await this.prisma.event.count(args);
   }

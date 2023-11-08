@@ -144,6 +144,7 @@ or
 
 ```bash
 $ pm2 start ./dist/src/main.js --name newbie
+$ pm2 start --name newbie-web yarn -- start
 ```
 
 ## Stay in touch

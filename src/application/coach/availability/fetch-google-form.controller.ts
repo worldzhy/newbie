@@ -336,6 +336,16 @@ export class FetchGoogleFormController {
       for (let questionId in mappingQuestion_AvailableWeekendsItem) {
         const answer = answers[questionId];
         if (answer.textAnswers && answer.textAnswers.answers) {
+          const minutes: number[] = [];
+          for (
+            let i = 0;
+            i < 60 / COACH_AVAILABILITY_DURATION_GOOGLE_FORM;
+            i++
+          ) {
+            minutes.push(i * COACH_AVAILABILITY_DURATION_GOOGLE_FORM);
+          }
+          const stringMinutes = minutes.toString();
+
           const stringWeekends = answer.textAnswers.answers
             .map(obj => {
               if (obj.value && obj.value.trim()) {
@@ -350,7 +360,7 @@ export class FetchGoogleFormController {
             .toString(); // Return '6,0'
 
           cronExpressions.push(
-            `0 ${HOUR_OF_DAY_START}-${HOUR_OF_DAY_END} * ${stringMonths} ${stringWeekends}`
+            `${stringMinutes} ${HOUR_OF_DAY_START}-${HOUR_OF_DAY_END} * ${stringMonths} ${stringWeekends}`
           );
         }
       }
