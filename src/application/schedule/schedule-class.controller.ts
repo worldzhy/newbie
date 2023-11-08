@@ -7,6 +7,7 @@ import {
   Param,
   Query,
   Get,
+  BadRequestException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Prisma, Event, EventContainerNoteType} from '@prisma/client';
@@ -62,6 +63,10 @@ export class EventController {
     @Body()
     body: Prisma.EventUncheckedCreateInput
   ): Promise<Event> {
+    if (!body.hostUserId) {
+      throw new BadRequestException('hostUserId is required.');
+    }
+
     // [step 1] Create event.
     const eventType = await this.eventTypeService.findUniqueOrThrow({
       where: {id: body.typeId},
@@ -98,6 +103,17 @@ export class EventController {
 
     // [step 3] Checkin coach availability timeslots.
     await this.availabilityTimeslotService.checkin(event);
+
+    // [step 4] Attach information.
+    event['hostUser'] = await this.userProfileService.findUniqueOrThrow({
+      where: {userId: body.hostUserId},
+      select: {userId: true, fullName: true, coachingTenure: true},
+    });
+    event['type'] = (
+      await this.eventTypeService.findUniqueOrThrow({
+        where: {id: body.typeId},
+      })
+    ).name;
 
     return event;
   }
@@ -210,6 +226,19 @@ export class EventController {
 
     // [step 4] Check event issues.
     newEvent['issues'] = await this.eventIssueService.check(newEvent);
+
+    // [step 5] Attach information.
+    if (newEvent.hostUserId) {
+      newEvent['hostUser'] = await this.userProfileService.findUniqueOrThrow({
+        where: {userId: newEvent.hostUserId},
+        select: {userId: true, fullName: true, coachingTenure: true},
+      });
+    }
+    newEvent['type'] = (
+      await this.eventTypeService.findUniqueOrThrow({
+        where: {id: newEvent.typeId},
+      })
+    ).name;
 
     return newEvent;
   }
