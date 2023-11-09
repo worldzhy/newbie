@@ -47,8 +47,12 @@ export class FetchGoogleFormService {
     private readonly queueTaskService: QueueTaskService
   ) {}
 
-  @Cron(CronExpression.EVERY_DAY_AT_10AM)
-  async handleCron(body: {year: string; quarter: string}) {
+  @Cron(CronExpression.EVERY_12_HOURS)
+  async handleCron() {
+    const body = {year: '2023', quarter: 'Q4'};
+    console.log('Cingo');
+    console.log('Cingo');
+    console.log('Cingo');
     // [step 1] Process quarter.
     const year = parseInt(body.year);
     let stringMonths = '1';
@@ -408,6 +412,7 @@ export class FetchGoogleFormService {
           minutesOfDuration: COACH_AVAILABILITY_DURATION_GOOGLE_FORM,
         },
       });
+      console.log('Bingo');
 
       // [step 3-7] Add it to task queue.
       await this.queueTaskService.add2queue({
@@ -416,6 +421,7 @@ export class FetchGoogleFormService {
           data: {availabilityExpressionId: exp.id},
         },
       });
+      console.log('Yingo');
     }
   }
 }

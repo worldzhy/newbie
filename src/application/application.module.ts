@@ -15,6 +15,7 @@ import {MapModule} from '@microservices/map/map.module';
 import {MindbodyModule} from '@microservices/mindbody/mindbody.module';
 import {QueueModule} from '@microservices/queue/queue.module';
 import {TagModule} from '@microservices/tag/tag.module';
+import {AvailabilityModule} from './availability/availability.module';
 import {CoachModule} from './coach/coach.module';
 import {RawDataModule} from './raw-data/raw-data.module';
 import {ApplicationController} from './application.controller';
@@ -24,9 +25,6 @@ import {AccountLogoutController} from './account/account-logout.controller';
 import {AccountSignupController} from './account/account-signup.controller';
 import {AccountOthersController} from './account/account-others.controller';
 import {AreaManagerController} from './area-manager/area-manager.controller';
-import {AvailabilityExpressionController} from './coach/availability/availability-expression.controller';
-import {LoadXlsxFileController} from './coach/availability/load-xlsx-file.controller';
-import {FetchGoogleFormController} from './coach/availability/fetch-google-form.controller';
 import {ClassController} from './class/class.controller';
 import {EventCoachController} from './coach/event-coach.controller';
 import {EventController} from './schedule/schedule-class.controller';
@@ -57,6 +55,7 @@ import {AnalysisController} from './analysis/analysis.controller';
     TagModule,
 
     // Application
+    AvailabilityModule,
     CoachModule,
     RawDataModule,
   ],
@@ -68,9 +67,6 @@ import {AnalysisController} from './analysis/analysis.controller';
     AccountSignupController,
     AccountOthersController,
     AreaManagerController,
-    AvailabilityExpressionController,
-    LoadXlsxFileController,
-    FetchGoogleFormController,
     ClassController,
     EventCoachController,
     EventController,

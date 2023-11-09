@@ -1,5 +1,6 @@
 import * as moment from 'moment';
 
+// !>>> Unix date
 export function getSecondsUntilunixTimestamp(unixTimestamp: number): number {
   const unixNow = moment().unix();
   return unixTimestamp - unixNow;
@@ -9,6 +10,7 @@ export function convertUnixToDate(unixTimestamp: number): Date {
   return moment.unix(unixTimestamp).toDate();
 }
 
+// !>>> Calculate date
 export function currentPlusMinutes(minutes: number): Date {
   const currentTime = new Date();
   return new Date(currentTime.getTime() + minutes * 60000); // 1 min = 60000 ms
@@ -37,6 +39,7 @@ export function datePlusYearsForString(dateStr: string, years: number): string {
   return newDate.toISOString().split('T')[0];
 }
 
+// !>>> Get date
 export function dayOfWeek(year: number, month: number, day: number) {
   const date = new Date(year, month - 1, day);
   return date.getDay();
@@ -48,6 +51,38 @@ export function firstDayOfMonth(year: number, month: number) {
 
 export function lastDayOfMonth(year: number, month: number) {
   return new Date(year, month, 0);
+}
+
+export function currentQuarter(): number {
+  return moment().quarter();
+}
+
+export function firstDayOfQuarter(year: number, quarter: number) {
+  let month = 0;
+  if (quarter === 1) {
+    month = 1;
+  } else if (quarter === 2) {
+    month = 4;
+  } else if (quarter === 3) {
+    month = 7;
+  } else if (quarter === 4) {
+    month = 10;
+  }
+  return new Date(year, month - 1, 1);
+}
+
+export function quarterOfMonth(month: number): number {
+  if (month === 1 || month === 2 || month === 3) {
+    return 1;
+  } else if (month === 4 || month === 5 || month === 6) {
+    return 2;
+  } else if (month === 7 || month === 8 || month === 9) {
+    return 3;
+  } else if (month === 10 || month === 11 || month === 12) {
+    return 4;
+  } else {
+    return -1;
+  }
 }
 
 /**
@@ -66,6 +101,24 @@ export function weekOfMonth(year: number, month: number, day: number) {
 export function weekOfYear(year: number, month: number, day: number) {
   const date = new Date(year, month - 1, day);
   return parseInt(moment(date).format('W'));
+}
+
+export function floorByMinutes(datetimeOfStart: Date, minutes: number) {
+  return dateMinusMinutes(
+    datetimeOfStart,
+    datetimeOfStart.getMinutes() % minutes
+  );
+}
+
+export function ceilByMinutes(datetimeOfEnd: Date, minutes: number) {
+  if (datetimeOfEnd.getMinutes() % minutes === 0) {
+    return datetimeOfEnd;
+  } else {
+    return datePlusMinutes(
+      datetimeOfEnd,
+      minutes - (datetimeOfEnd.getMinutes() % minutes)
+    );
+  }
 }
 
 /**
@@ -159,22 +212,4 @@ export function daysOfWeek(
     }
   }
   return daysOfWeek;
-}
-
-export function floorByMinutes(datetimeOfStart: Date, minutes: number) {
-  return dateMinusMinutes(
-    datetimeOfStart,
-    datetimeOfStart.getMinutes() % minutes
-  );
-}
-
-export function ceilByMinutes(datetimeOfEnd: Date, minutes: number) {
-  if (datetimeOfEnd.getMinutes() % minutes === 0) {
-    return datetimeOfEnd;
-  } else {
-    return datePlusMinutes(
-      datetimeOfEnd,
-      minutes - (datetimeOfEnd.getMinutes() % minutes)
-    );
-  }
 }

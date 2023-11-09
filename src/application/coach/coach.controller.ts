@@ -12,6 +12,12 @@ import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Prisma, User} from '@prisma/client';
 import {UserService} from '@microservices/account/user/user.service';
 import {RoleService} from '@microservices/account/role/role.service';
+import {AvailabilityExpressionService} from '@microservices/event-scheduling/availability-expression.service';
+import {
+  currentQuarter,
+  firstDayOfMonth,
+  firstDayOfQuarter,
+} from '@toolkit/utilities/datetime.util';
 
 const DEFAULT_PASSWORD = 'x8nwFP814HIk!';
 
@@ -21,7 +27,8 @@ const DEFAULT_PASSWORD = 'x8nwFP814HIk!';
 export class CoachController {
   constructor(
     private userService: UserService,
-    private roleService: RoleService
+    private roleService: RoleService,
+    private availabilityExpressionService: AvailabilityExpressionService
   ) {}
 
   @Post('')
@@ -110,7 +117,46 @@ export class CoachController {
     );
     const coaches = result.records as User[];
 
-    // [step 3] Return users without password.
+    // [step 3] Attach availability information.
+    let year = new Date().getFullYear();
+    let quarter = currentQuarter();
+    for (let i = 0; i < coaches.length; i++) {
+      const coach = coaches[i];
+      // Attach current quarter availability status.
+      const expOfCurrentQuarter =
+        await this.availabilityExpressionService.findFirst({
+          where: {
+            hostUserId: coach.id,
+            dateOfOpening: firstDayOfQuarter(year, quarter),
+          },
+        });
+      coach['profile']['availabilityOfCurrentQuarter'] = 'None';
+      if (expOfCurrentQuarter) {
+        coach['profile']['availabilityOfCurrentQuarter'] =
+          expOfCurrentQuarter.status;
+      }
+
+      // Attach next quarter availability status.
+      if (quarter === 4) {
+        year += 1;
+        quarter = 1;
+      } else {
+        quarter += 1;
+      }
+      const expOfNextQuarter =
+        await this.availabilityExpressionService.findFirst({
+          where: {
+            hostUserId: coach.id,
+            dateOfOpening: firstDayOfQuarter(year, quarter),
+          },
+        });
+      coach['profile']['availabilityOfNextQuarter'] = 'None';
+      if (expOfNextQuarter) {
+        coach['profile']['availabilityOfNextQuarter'] = expOfNextQuarter.status;
+      }
+    }
+
+    // [step 4] Return users without password.
     result.records = coaches.map(coach => {
       return this.userService.withoutPassword(coach);
     });

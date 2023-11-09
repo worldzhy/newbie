@@ -18,6 +18,12 @@ export class AvailabilityExpressionService {
     );
   }
 
+  async findFirst(
+    args: Prisma.AvailabilityExpressionFindFirstArgs
+  ): Promise<AvailabilityExpression | null> {
+    return await this.prisma.availabilityExpression.findFirst(args);
+  }
+
   async findUniqueOrThrow(
     args: Prisma.AvailabilityExpressionFindUniqueOrThrowArgs
   ): Promise<AvailabilityExpression> {
