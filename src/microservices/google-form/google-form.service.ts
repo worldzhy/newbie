@@ -11,7 +11,7 @@ export class GoogleFormService {
     this.auth = new google.auth.GoogleAuth({
       keyFile: path.join(
         '/home/worldzhy/src/newbie',
-        'gc-basic-fe9258c35519.json'
+        'solidcore-90323-53ba5e40dbef.json'
       ),
       scopes: [
         'https://www.googleapis.com/auth/forms.body.readonly',
@@ -24,14 +24,7 @@ export class GoogleFormService {
     const forms = google.forms({version: 'v1', auth: this.auth});
     const result = await forms.forms.get({formId});
 
-    const items = result.data.items;
-    if (items) {
-      for (let i = 0; i < items.length; i++) {
-        const item = items[i];
-      }
-    }
-
-    return items || [];
+    return result.data.items || [];
   }
 
   async getFormResponses(formId: string) {

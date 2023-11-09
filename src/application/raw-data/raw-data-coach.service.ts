@@ -34,7 +34,6 @@ export class RawDataCoachService {
     const coaches: any = await this.snowflakeService.execute(options);
     for (let i = 0; i < coaches.length; i++) {
       const coach = coaches[i];
-      console.log(coach);
 
       if ((coach.TREMAILNAME as string).endsWith('.')) {
         coach.TREMAILNAME = coach.TREMAILNAME.slice(0, -1);
@@ -45,18 +44,22 @@ export class RawDataCoachService {
       });
 
       if (count === 0) {
-        await this.userService.create({
-          data: {
-            email: coach.TREMAILNAME,
-            roles: {connect: {name: ROLE_NAME_COACH}},
-            profile: {
-              create: {
-                firstName: coach.TRFIRSTNAME,
-                lastName: coach.TRLASTNAME,
+        try {
+          await this.userService.create({
+            data: {
+              email: coach.TREMAILNAME,
+              roles: {connect: {name: ROLE_NAME_COACH}},
+              profile: {
+                create: {
+                  firstName: coach.TRFIRSTNAME,
+                  lastName: coach.TRLASTNAME,
+                },
               },
             },
-          },
-        });
+          });
+        } catch (error) {
+          // todo: log the error.
+        }
       }
     }
   }

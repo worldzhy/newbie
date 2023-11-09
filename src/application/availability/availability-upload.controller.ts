@@ -33,7 +33,7 @@ enum QUARTER {
 @ApiTags('Availability')
 @ApiBearerAuth()
 @Controller('availability')
-export class LoadXlsxFileController {
+export class AvailabilityUploadController {
   constructor(
     private readonly userService: UserService,
     private readonly userProfileService: UserProfileService,

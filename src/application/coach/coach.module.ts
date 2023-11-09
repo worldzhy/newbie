@@ -1,11 +1,11 @@
 import {Module} from '@nestjs/common';
 import {CoachController} from './coach.controller';
+import {EventCoachController} from './event-coach.controller';
 import {CoachService} from './coach.service';
-import {FetchGoogleFormService} from '../availability/fetch-google-form.service';
 
 @Module({
-  controllers: [CoachController],
-  providers: [CoachService, FetchGoogleFormService],
-  exports: [CoachService, FetchGoogleFormService],
+  controllers: [CoachController, EventCoachController],
+  providers: [CoachService],
+  exports: [CoachService],
 })
 export class CoachModule {}

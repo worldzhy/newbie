@@ -84,10 +84,13 @@ export class AvailabilityExpressionService {
   }
 
   async parse(id: number) {
-    const expression =
-      await this.prisma.availabilityExpression.findUniqueOrThrow({
-        where: {id},
-      });
+    const expression = await this.prisma.availabilityExpression.findUnique({
+      where: {id},
+    });
+
+    if (!expression) {
+      return [];
+    }
 
     // [step 1] Construct cron parser options.
     const cronParserOptions = {

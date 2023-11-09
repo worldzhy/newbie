@@ -1,28 +1,26 @@
-import {Body, Controller, Post} from '@nestjs/common';
-import {ApiBearerAuth, ApiBody, ApiTags} from '@nestjs/swagger';
-import {UserService} from '@microservices/account/user/user.service';
+import {forms_v1} from '@googleapis/forms';
 import {UserProfileService} from '@microservices/account/user/user-profile.service';
+import {UserService} from '@microservices/account/user/user.service';
 import {AvailabilityExpressionService} from '@microservices/event-scheduling/availability-expression.service';
 import {EventVenueService} from '@microservices/event-scheduling/event-venue.service';
+import {GoogleFormService} from '@microservices/google-form/google-form.service';
+import {QueueService} from '@microservices/queue/queue.service';
+import {Injectable} from '@nestjs/common';
+import {Cron, CronExpression} from '@nestjs/schedule';
+import {User} from '@prisma/client';
 import {
+  currentQuarter,
   firstDayOfMonth,
   lastDayOfMonth,
 } from '@toolkit/utilities/datetime.util';
-import {GoogleFormService} from '@microservices/google-form/google-form.service';
-import {forms_v1} from '@googleapis/forms';
-import {User} from '@prisma/client';
 
 const HOUR_OF_DAY_START = 5;
 const HOUR_OF_DAY_END = 22;
 const COACH_AVAILABILITY_DURATION_GOOGLE_FORM = 15;
-enum QUARTER {
-  Q1 = 'Q1',
-  Q2 = 'Q2',
-  Q3 = 'Q3',
-  Q4 = 'Q4',
-}
 
-const FORM_ID = '1ZmhzTfL3ZtQ0eLS2NCAGjkc97GDUAnFxet6oEa_RYSc';
+// const FORM_ID = '1ZmhzTfL3ZtQ0eLS2NCAGjkc97GDUAnFxet6oEa_RYSc';
+const FORM_ID = '1xB_y800-DRU5EtAI_AAHrQHdlfstRpikVJy6rYlBnMk';
+
 enum FormItemTitle {
   Email = 'Email',
   HomeLocation = 'Select your home studio',
@@ -35,45 +33,46 @@ enum FormItemTitle {
   PreferredWeekendAvailability = 'Select your preferred weekend times',
 }
 
-@ApiTags('Availability')
-@ApiBearerAuth()
-@Controller('availability')
-export class FetchGoogleFormController {
+@Injectable()
+export class AvailabilityTaskProducer {
   constructor(
     private readonly googleFormService: GoogleFormService,
     private readonly userService: UserService,
     private readonly userProfileService: UserProfileService,
     private readonly availabilityExpressionService: AvailabilityExpressionService,
-    private readonly eventVenueService: EventVenueService
+    private readonly eventVenueService: EventVenueService,
+    private readonly queueService: QueueService
   ) {}
 
-  @Post('fetch-google-form')
-  @ApiBody({
-    description: '',
-    examples: {
-      a: {value: {year: 2023, quarter: 'Q4'}},
-    },
-  })
-  async fetchAvailabilityForm(@Body() body: {year: string; quarter: QUARTER}) {
+  @Cron('52 * * * *')
+  async handleCron() {
+    let year = new Date().getFullYear();
+    let quarter = currentQuarter();
+    if (quarter === 4) {
+      year += 1;
+      quarter = 1;
+    } else {
+      quarter += 1;
+    }
+
     // [step 1] Process quarter.
-    const year = parseInt(body.year);
     let stringMonths = '1';
     let dateOfOpening = new Date();
     let dateOfClosure = new Date();
-    switch (body.quarter) {
-      case QUARTER.Q1:
+    switch (quarter) {
+      case 1:
         stringMonths = '1-3';
         dateOfOpening = firstDayOfMonth(year, 1);
         dateOfClosure = lastDayOfMonth(year, 3);
-      case QUARTER.Q2:
+      case 2:
         stringMonths = '4-6';
         dateOfOpening = firstDayOfMonth(year, 4);
         dateOfClosure = lastDayOfMonth(year, 6);
-      case QUARTER.Q3:
+      case 3:
         stringMonths = '7-9';
         dateOfOpening = firstDayOfMonth(year, 7);
         dateOfClosure = lastDayOfMonth(year, 9);
-      case QUARTER.Q4:
+      case 4:
         stringMonths = '10-12';
         dateOfOpening = firstDayOfMonth(year, 10);
         dateOfClosure = lastDayOfMonth(year, 12);
@@ -397,15 +396,14 @@ export class FetchGoogleFormController {
 
       await this.availabilityExpressionService.deleteMany({
         where: {
-          name: {contains: body.year + ' ' + body.quarter, mode: 'insensitive'},
+          name: {contains: year + ' Q' + quarter, mode: 'insensitive'},
           hostUserId: coach.id,
         },
       });
 
-      await this.availabilityExpressionService.create({
+      const exp = await this.availabilityExpressionService.create({
         data: {
-          name:
-            coach['profile'].fullName + ' - ' + body.year + ' ' + body.quarter,
+          name: coach['profile'].fullName + ' - ' + year + ' Q' + quarter,
           hostUserId: coach.id,
           venueIds: coachLocationIds,
           cronExpressionsOfAvailableTimePoints: cronExpressions,
@@ -414,8 +412,14 @@ export class FetchGoogleFormController {
           minutesOfDuration: COACH_AVAILABILITY_DURATION_GOOGLE_FORM,
         },
       });
+
+      // [step 3-7] Add it to task queue.
+      await this.queueService.addTask({
+        data: {
+          name: 'ParseAvailability',
+          payload: {availabilityExpressionId: exp.id},
+        },
+      });
     }
   }
-
-  // End
 }

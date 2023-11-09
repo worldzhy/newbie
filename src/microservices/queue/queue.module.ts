@@ -2,7 +2,6 @@ import {Global, Module} from '@nestjs/common';
 import {ConfigModule, ConfigService} from '@nestjs/config';
 import {BullModule} from '@nestjs/bull';
 import {ScheduleModule} from '@nestjs/schedule';
-import {QueueTaskService} from './queue-task.service';
 import {QueueName, QueueService} from './queue.service';
 
 @Global()
@@ -22,7 +21,7 @@ import {QueueName, QueueService} from './queue.service';
     BullModule.registerQueue({name: QueueName.DEFAULT}),
     ScheduleModule.forRoot(),
   ],
-  providers: [QueueTaskService, QueueService],
-  exports: [QueueTaskService, QueueService],
+  providers: [QueueService],
+  exports: [QueueService],
 })
 export class QueueModule {}

@@ -757,7 +757,7 @@ model QueueTask {
   name         String
   state        QueueTaskState @default(PENDING)
   group        String? // Provided by task microservice's client.
-  data         Json // Task content
+  payload      Json // Task content
   bullJobId    String?
   sqsMessageId String?
   sqsResponse  Json?

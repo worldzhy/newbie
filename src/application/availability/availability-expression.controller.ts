@@ -185,6 +185,10 @@ export class AvailabilityExpressionController {
     const availabilityTimeslots =
       await this.availabilityExpressionService.parse(availabilityExpressionId);
 
+    if (availabilityTimeslots.length === 0) {
+      return;
+    }
+
     // [step 2] Delete and create timeslots.
     await this.availabilityTimeslotService.deleteMany({
       where: {expressionId: availabilityExpressionId},
@@ -194,7 +198,7 @@ export class AvailabilityExpressionController {
     });
 
     // [step 3] Update expression status.
-    return this.availabilityExpressionService.update({
+    return await this.availabilityExpressionService.update({
       where: {id: availabilityExpressionId},
       data: {
         status: AvailabilityExpressionStatus.PUBLISHED,

@@ -1,16 +1,12 @@
 import {Module} from '@nestjs/common';
 import {AvailabilityExpressionController} from './availability-expression.controller';
-import {FetchGoogleFormController} from './fetch-google-form.controller';
-import {LoadXlsxFileController} from './load-xlsx-file.controller';
-import {FetchGoogleFormService} from './fetch-google-form.service';
+import {AvailabilityUploadController} from './availability-upload.controller';
+import {AvailabilityTaskProducer} from './availability-task.producer';
+import {AvailabilityTaskConsumer} from './availability-task.consumer';
 
 @Module({
-  controllers: [
-    AvailabilityExpressionController,
-    FetchGoogleFormController,
-    LoadXlsxFileController,
-  ],
-  providers: [FetchGoogleFormService],
-  exports: [FetchGoogleFormService],
+  controllers: [AvailabilityExpressionController, AvailabilityUploadController],
+  providers: [AvailabilityTaskProducer, AvailabilityTaskConsumer],
+  exports: [AvailabilityTaskProducer, AvailabilityTaskConsumer],
 })
 export class AvailabilityModule {}

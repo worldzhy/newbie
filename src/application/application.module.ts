@@ -26,7 +26,6 @@ import {AccountSignupController} from './account/account-signup.controller';
 import {AccountOthersController} from './account/account-others.controller';
 import {AreaManagerController} from './area-manager/area-manager.controller';
 import {ClassController} from './class/class.controller';
-import {EventCoachController} from './coach/event-coach.controller';
 import {EventController} from './schedule/schedule-class.controller';
 import {EventContainerController} from './schedule/schedule.controller';
 import {EventContainerNoteController} from './schedule/schedule-note.controller';
@@ -68,12 +67,10 @@ import {AnalysisController} from './analysis/analysis.controller';
     AccountOthersController,
     AreaManagerController,
     ClassController,
-    EventCoachController,
     EventController,
     EventContainerController,
     EventContainerNoteController,
     EventCopyController,
-    EventCoachController,
     EventFixController,
     HeatmapController,
     LocationController,
