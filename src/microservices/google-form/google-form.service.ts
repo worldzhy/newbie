@@ -9,10 +9,7 @@ export class GoogleFormService {
   constructor() {
     // Create a new JWT client using the key file downloaded from the Google Developer Console.
     this.auth = new google.auth.GoogleAuth({
-      keyFile: path.join(
-        '/home/worldzhy/src/newbie',
-        'solidcore-90323-53ba5e40dbef.json'
-      ),
+      keyFile: path.join(__dirname, 'solidcore-90323-53ba5e40dbef.json'),
       scopes: [
         'https://www.googleapis.com/auth/forms.body.readonly',
         'https://www.googleapis.com/auth/forms.responses.readonly',
