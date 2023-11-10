@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "solidcore-90323",
+  "private_key_id": "53ba5e40dbefe19c73fcc7d18aeab8ed4aba2225",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCjvECSnu/E7qXV\nyOVj2isiCvG2mZ0jxF0sLpzNrp5duvFo9/P/vZgnRM4fnLCBG0HVrv0RzyCR8aQl\neos0kId0uZ8HY11Nwj2mEYCZqP7n2gFn/AJeJA1LPSPROw0O06EKs9evPcKBzH6j\nwg0kbsMbIFMJ5iwTncC6ZoFDaS7J2r+HO/xw6ksu1kXGSgxeTsGisfT73tg4tHTR\nRoYsAEOnzqp3VQ463DbRA2sDtCFqqPHFvBkVqHbfAHS95i21JGRlMW/1O0OU11cp\ntMCYnfmRtLiA7SBi0t+1C+UPLXkIDcElk3HwtDdSANQ00ypKaVjtFfSTXbISvumP\nMKX4PXetAgMBAAECggEADT1bA1VyvJEyO604+fAEQ4ZwW9GOu/uphQ8Sgtc3MGET\ncDzMhXDGmDZKFz2g+sTszTiPIhzbh1xAvP8XDohj9kj5gQFvOVXBjRImkfDxBmfB\nwVocCZIPY8wX1K1aYEk14RsAZR0wrd+Om0iaWMh+t6Ik1MzAjP2D6LlX2SRCMkmA\nEVn868i6Vu20aMqmaLmjaWlBTDjgp/Q97H62aAGz+d9vD+vK9Egn3dY1owAYcAK0\nSZkvHYeIuCqtjtE3TO6m5eTEGNGfG7Mz7jcQr/UQsipuQVTELgmuH6qSgFVagZWx\nqUGn+3JNuAKLBZvrpVxL4tpv82eS5Skh5i1YvTFyiQKBgQDaYhMrJitaWHfQxGis\nDuz6rMqwf4NUmKkx4d4gulLbD9PSBge210QOdKRe68XbNnkpnXVKrEv/JNCkfUFw\nHqkviiquuAoztjnENbNa239l60yWUCyLGPKKRbRtQITZnqNxfvbrVxz/AlgNZqcw\nacI9ThW4jCZwldKTwEvqD9BZKwKBgQC/8GeKUo53Pym0XQjdx6qedcIqO0MXof9R\ntsrWKPwWQ+Na10FJWAsfmfG0FRPSEP7Y/HBAk76FVRdZyydDVE05uXPVrWBXyNym\nXm2YiqIrFZboVDmy4O0MCdRBZqR9+DQ133RezisM6lxmcJHgoZC6uWTF16OtNiJ0\nDNQaoT5WhwKBgQCPAiy1VACN4GNOBmDZU8jie2ccX9R8AKDD9rqEyh9aLyoyXhqN\nJLj/kmjVdCaUYD7F/sQBi4UU52HuZcwFhT6b0CoVUpXzuUBo+hWiyRzLfGQiBwy0\nZjjmTbFS3i5haF52A4PlJ53obPuGgxO3Q3qctNbKjJTbo3FLqmDMPWDeEwKBgGO/\nwV+OdgGc7sSQUQpJOO9vDYA7GiwPAYxq7dEMra24jFBqa8B9JBLBQ26uQYW7VWZZ\nEtFMtwe96Au/W2FPT27/ZSaYGuikN5+ylUxgR9USPEHze6Tt5eOKvCdc+4GH20Jg\nJa8bgB4PMgP+3qEZ9ghETw3Oen6LEq6y+Av63lXDAoGBAIt/Dh0Va+gg/XHsLYha\nhE4eHONeZ65qGvYY+QOI7qWgUsHmQX67cqzAwaTUN2nx++SsSSLPt2p0ooHEmYEO\n+D410gzYxipKErE2EZfEvYsFsZ+ai9M1SB2hLSz8TxG5DhaErEGqSKj4aoGzlfY6\n/DvbOIPmGn3HrF+v5CVHqMYb\n-----END PRIVATE KEY-----\n",
+  "client_email": "google-forms-api@solidcore-90323.iam.gserviceaccount.com",
+  "client_id": "110180776195102628920",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/google-forms-api%40solidcore-90323.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

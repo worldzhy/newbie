@@ -12,10 +12,8 @@ export class AvailabilityTaskConsumer {
     private availabilityTimeslotService: AvailabilityTimeslotService
   ) {}
 
-  @Process()
+  @Process({concurrency: 10})
   async parseAvailability(job: Job) {
-    console.log(job.data);
-
     let availabilityExpressionId = (job.data as any)
       .availabilityExpressionId as number;
 
@@ -48,6 +46,6 @@ export class AvailabilityTaskConsumer {
 
   @OnQueueCompleted()
   onCompleted(job: Job, result: any) {
-    console.log('completed.');
+    console.log('Job ' + job.id + ' is completed.');
   }
 }

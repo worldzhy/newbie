@@ -745,9 +745,28 @@ enum InfrastructureStackState {
 // * Task (This is an example model.)                             //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
+enum QueueKeyType {
+  STRING
+  HASH
+  LIST
+
+  @@schema("microservice/queue")
+}
+
 enum QueueTaskState {
   PENDING
   DONE
+
+  @@schema("microservice/queue")
+}
+
+model Queue {
+  id        String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  keyName   String
+  keyType   QueueKeyType
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
 
   @@schema("microservice/queue")
 }

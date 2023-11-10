@@ -32,6 +32,5 @@ export class SkuService {
     return await this.prisma.sku.delete(args);
   }
 
-  creat;
   /* End */
 }
