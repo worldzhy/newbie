@@ -11,7 +11,7 @@ export class GoogleFormService {
     this.auth = new google.auth.GoogleAuth({
       keyFile: path.join(
         '/home/ec2-user/newbie',
-        'solidcore-90323-53ba5e40dbef.json'
+        'solidcore-90323-6889f2864714.json'
       ),
       scopes: [
         'https://www.googleapis.com/auth/forms.body.readonly',
