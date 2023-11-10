@@ -5,7 +5,7 @@ import {AvailabilityExpressionService} from '@microservices/event-scheduling/ava
 import {EventVenueService} from '@microservices/event-scheduling/event-venue.service';
 import {GoogleFormService} from '@microservices/google-form/google-form.service';
 import {QueueService} from '@microservices/queue/queue.service';
-import {Injectable} from '@nestjs/common';
+import {BadRequestException, Injectable} from '@nestjs/common';
 import {Cron} from '@nestjs/schedule';
 import {User} from '@prisma/client';
 import {
@@ -65,18 +65,24 @@ export class AvailabilityTaskProducer {
         stringMonths = '1-3';
         dateOfOpening = firstDayOfMonth(year, 1);
         dateOfClosure = lastDayOfMonth(year, 3);
+        break;
       case 2:
         stringMonths = '4-6';
         dateOfOpening = firstDayOfMonth(year, 4);
         dateOfClosure = lastDayOfMonth(year, 6);
+        break;
       case 3:
         stringMonths = '7-9';
         dateOfOpening = firstDayOfMonth(year, 7);
         dateOfClosure = lastDayOfMonth(year, 9);
+        break;
       case 4:
         stringMonths = '10-12';
         dateOfOpening = firstDayOfMonth(year, 10);
         dateOfClosure = lastDayOfMonth(year, 12);
+        break;
+      default:
+        throw new BadRequestException('Bad parameter: quarter');
     }
 
     // [step 2] Parse google form.
