@@ -90,6 +90,11 @@ export class EventIssueService {
   }
 
   async check(event: Event) {
+    // [step 0] Delete old unrepaired issues.
+    await this.prisma.eventIssue.deleteMany({
+      where: {eventId: event.id, status: EventIssueStatus.UNREPAIRED},
+    });
+
     // [step 1] Get the coach.
     let hostUser: User | null = null;
     if (event.hostUserId) {
@@ -102,70 +107,42 @@ export class EventIssueService {
     // [step 2] Check issues.
     if (!hostUser) {
       // [step 2-1] Check exist.
-      await this.prisma.eventIssue.upsert({
-        where: {
-          type_eventId: {
-            eventId: event.id,
-            type: EventIssueType.ERROR_COACH_NOT_EXISTED,
-          },
-        },
-        create: {
+      await this.prisma.eventIssue.create({
+        data: {
           type: EventIssueType.ERROR_COACH_NOT_EXISTED,
           description: EventIssueDescription.Error_CoachNotExisted,
           eventId: event.id,
         },
-        update: {},
       });
     } else if (!hostUser['profile']) {
       // [step 2-2] Check coach profile.
-      await this.prisma.eventIssue.upsert({
-        where: {
-          type_eventId: {
-            eventId: event.id,
-            type: EventIssueType.ERROR_COACH_NOT_CONFIGURED,
-          },
-        },
-        create: {
+      await this.prisma.eventIssue.create({
+        data: {
           type: EventIssueType.ERROR_COACH_NOT_CONFIGURED,
           description: EventIssueDescription.Error_CoachNotConfigured,
           eventId: event.id,
         },
-        update: {},
       });
     } else {
       // [step 2-3] Check class type.
       if (!hostUser['profile']['eventTypeIds'].includes(event.typeId)) {
-        await this.prisma.eventIssue.upsert({
-          where: {
-            type_eventId: {
-              eventId: event.id,
-              type: EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_TYPE,
-            },
-          },
-          create: {
+        await this.prisma.eventIssue.create({
+          data: {
             type: EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_TYPE,
             description: EventIssueDescription.Error_WrongClassType,
             eventId: event.id,
           },
-          update: {},
         });
       }
 
       // [step 2-4] Check location.
       if (!hostUser['profile']['eventVenueIds'].includes(event.venueId)) {
-        await this.prisma.eventIssue.upsert({
-          where: {
-            type_eventId: {
-              eventId: event.id,
-              type: EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_VENUE,
-            },
-          },
-          create: {
+        await this.prisma.eventIssue.create({
+          data: {
             type: EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_VENUE,
             description: EventIssueDescription.Error_WrongLocation,
             eventId: event.id,
           },
-          update: {},
         });
       }
 
@@ -189,19 +166,12 @@ export class EventIssueService {
         },
       });
       if (count < event.minutesOfDuration / this.MINUTES_Of_TIMESLOT_UNIT) {
-        await this.prisma.eventIssue.upsert({
-          where: {
-            type_eventId: {
-              eventId: event.id,
-              type: EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_TIME,
-            },
-          },
-          create: {
+        await this.prisma.eventIssue.create({
+          data: {
             type: EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_TIME,
             description: EventIssueDescription.Error_CoachNotAvailale,
             eventId: event.id,
           },
-          update: {},
         });
       }
     }

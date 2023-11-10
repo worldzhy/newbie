@@ -44,7 +44,7 @@ export class AvailabilityTaskProducer {
     private readonly queueService: QueueService
   ) {}
 
-  @Cron('52 * * * *')
+  @Cron('0 0 1 * *')
   async handleCron() {
     let year = new Date().getFullYear();
     let quarter = currentQuarter();
