@@ -373,7 +373,6 @@ model EventIssue {
   event       Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
   eventId     Int
 
-  @@unique([type, eventId])
   @@schema("microservice/event-scheduling")
 }
 
