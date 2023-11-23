@@ -5,7 +5,7 @@ import * as moment from 'moment';
 import * as _ from 'lodash';
 import {datetimeToDaySec, groupClassesByDate} from './util';
 import {UserService} from '@microservices/account/user/user.service';
-import {StaffSfService} from '@toolkit/snowflake/staffSf.service';
+import {SnowflakeService} from '@toolkit/snowflake/snowflake.service';
 
 enum ClassHandle {
   None = 'None',
@@ -26,7 +26,7 @@ export class ScToMbService {
   constructor(
     private mindbodyService: MindbodyService,
     private userService: UserService,
-    private staffSfService: StaffSfService
+    private snowflakeService: SnowflakeService
   ) {}
 
   init() {
@@ -90,9 +90,8 @@ export class ScToMbService {
 
       udpateClassParams.schedule.ClassId = this.updateScheduleId;
 
-      const resp = await this.mindbodyService.updateClassSchedule(
-        udpateClassParams
-      );
+      const resp =
+        await this.mindbodyService.updateClassSchedule(udpateClassParams);
 
       if (!resp.success) {
         this.checkResult.success = false;
@@ -302,9 +301,8 @@ export class ScToMbService {
     };
     // const resources = await this.mindbodyService.getResources(params);
     // console.log(resources);
-    const classDessResp = await this.mindbodyService.getClassDescriptions(
-      params
-    );
+    const classDessResp =
+      await this.mindbodyService.getClassDescriptions(params);
 
     const classDess = _.get(classDessResp, 'data.ClassDescriptions');
 
@@ -339,14 +337,33 @@ export class ScToMbService {
 
     const {email} = staff;
 
-
     const staff_params = {
       studioId,
-      locationId:LocationId,
-      email
-    }
+      locationId: LocationId,
+      email,
+    };
 
-    const sf_staff = await this.staffSfService.queryStaff(staff_params);
+    // Query staff
+    const sqlText = `
+        select clientid,studioid,location
+        from clients
+        where emailname = ?
+        and studioid = ?
+        and location = ?    
+      `;
+    const executeOpt = {
+      sqlText,
+      binds: [
+        staff_params.email,
+        staff_params.studioId,
+        staff_params.locationId,
+      ],
+    };
+    const data: any = await this.snowflakeService.execute(executeOpt);
+    const sf_staff = {
+      data,
+      count: data.length,
+    };
 
     console.log(sf_staff);
 

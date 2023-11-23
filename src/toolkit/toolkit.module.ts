@@ -81,5 +81,6 @@ function getModules() {
       })
     );
   }
+
   return modules;
 }
