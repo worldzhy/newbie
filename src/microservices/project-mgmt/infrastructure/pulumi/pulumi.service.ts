@@ -13,7 +13,6 @@ import {AwsRds_Stack} from './stack/aws-rds.stack';
 import {AwsS3_Stack} from './stack/aws-s3.stack';
 import {AwsSqs_Stack} from './stack/aws-sqs.stack';
 import {AwsVpc_Stack} from './stack/aws-vpc.stack';
-import {AwsWaf_Stack} from './stack/aws-waf.stack';
 import {Pulumi_Null_Stack} from './stack/null.stack';
 import {ConfigService} from '@nestjs/config';
 
@@ -214,8 +213,6 @@ export class PulumiStackService {
         return AwsSqs_Stack;
       case PulumiStackType.AWS_VPC:
         return AwsVpc_Stack;
-      case PulumiStackType.AWS_WAF:
-        return AwsWaf_Stack;
       case PulumiStackType.COMPUTING_FARGATE:
         return Pulumi_Null_Stack;
       default:

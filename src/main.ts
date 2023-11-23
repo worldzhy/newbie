@@ -10,6 +10,7 @@ import {
   SwaggerCustomOptions,
 } from '@nestjs/swagger';
 import {ApplicationModule} from './application/application.module';
+import {ClusterService} from './cluster';
 // import {ApplicationExampleModule as ApplicationModule} from './application-example/application-example.module';
 
 function checkEnvVars(configService: ConfigService) {
@@ -48,7 +49,6 @@ async function bootstrap() {
 
   // Enable functions according to different env.
   if (env === 'production') {
-    1;
     // helmet is only available in production environment.
     if (nodeFramework === 'express') {
       app.use(helmet());
@@ -74,7 +74,10 @@ async function bootstrap() {
   }
 
   // Enable CORS
-  app.enableCors();
+  app.enableCors({
+    credentials: true,
+    origin: configService.getOrThrow<string[]>('server.allowedOrigins'),
+  });
 
   /**
    * By default, every path parameter and query parameter comes over the network as a string.
@@ -93,4 +96,4 @@ async function bootstrap() {
 
   console.log(`Application is running on: ${await app.getUrl()}`);
 }
-bootstrap();
+ClusterService.clusterize(bootstrap);

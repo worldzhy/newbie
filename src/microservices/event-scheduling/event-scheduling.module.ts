@@ -6,7 +6,7 @@ import {EventIssueService} from './event-issue.service';
 import {EventTypeService} from './event-type.service';
 import {EventVenueService} from './event-venue.service';
 import {EventContainerService} from './event-container.service';
-import {EventContainerNoteService} from './event-container-note.service';
+import {EventChangeLogService} from './event-change-log.service';
 import {ReservationService} from './reservation.service';
 
 @Global()
@@ -15,22 +15,22 @@ import {ReservationService} from './reservation.service';
     AvailabilityExpressionService,
     AvailabilityTimeslotService,
     EventService,
+    EventChangeLogService,
     EventIssueService,
     EventTypeService,
     EventVenueService,
     EventContainerService,
-    EventContainerNoteService,
     ReservationService,
   ],
   exports: [
     AvailabilityExpressionService,
     AvailabilityTimeslotService,
     EventService,
+    EventChangeLogService,
     EventIssueService,
     EventTypeService,
     EventVenueService,
     EventContainerService,
-    EventContainerNoteService,
     ReservationService,
   ],
 })

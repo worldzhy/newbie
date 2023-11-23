@@ -39,5 +39,9 @@ export class UserProfileService {
     return await this.prisma.userProfile.delete(args);
   }
 
+  async count(args: Prisma.UserProfileCountArgs): Promise<number> {
+    return await this.prisma.userProfile.count(args);
+  }
+
   /* End */
 }

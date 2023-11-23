@@ -32,7 +32,7 @@ export class QueueService {
   }
 
   async addJob(data: object): Promise<Job> {
-    return await this.defaultQueue.add(data);
+    return await this.defaultQueue.add(data, {delay: 1000}); // Delay the start of a job for 1 second.
   }
 
   async getJobs(types: JobStatus[]) {

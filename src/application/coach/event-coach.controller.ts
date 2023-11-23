@@ -26,12 +26,10 @@ export class EventCoachController {
     @Query('dayOfMonth') dayOfMonth?: number,
     @Query('hour') hour?: number,
     @Query('minute') minute?: number,
-    @Query('typeId') typeId?: number,
-    @Query('containerId') containerId?: number
+    @Query('typeId') typeId?: number
   ) {
     // [step 1] There are enough conditions to get sorted coaches.
     if (
-      containerId &&
       venueId &&
       typeId &&
       year &&
@@ -63,12 +61,11 @@ export class EventCoachController {
         month,
         weekOfMonth: weekOfMonth(year, month, dayOfMonth),
         minutesOfDuration: classType.minutesOfDuration,
-        containerId,
       };
-      return await this.coachService.getSortedCoachesForEvent(event);
+      return await this.coachService.sortCoachesForEvent(event);
     }
 
-    // [step 2] There are enough conditions to get sorted coaches.
+    // [step 2] There are not enough conditions to get sorted coaches.
     const where: Prisma.UserWhereInput = {};
     where.roles = {some: {name: ROLE_NAME_COACH}};
     if (venueId && typeId) {

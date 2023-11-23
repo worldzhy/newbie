@@ -2,9 +2,14 @@ import {Module} from '@nestjs/common';
 import {CoachController} from './coach.controller';
 import {EventCoachController} from './event-coach.controller';
 import {CoachService} from './coach.service';
+import {CoachInfoUploadController} from './coach-info-upload.controller';
 
 @Module({
-  controllers: [CoachController, EventCoachController],
+  controllers: [
+    CoachController,
+    EventCoachController,
+    CoachInfoUploadController,
+  ],
   providers: [CoachService],
   exports: [CoachService],
 })

@@ -1,4 +1,6 @@
 import {Global, Module} from '@nestjs/common';
+import {CacheModule} from '@nestjs/cache-manager';
+import * as redisStore from 'cache-manager-redis-store';
 import {ConfigModule, ConfigService} from '@nestjs/config';
 import ServerConfiguration from '@_config/server.config';
 import MicroservicesConfiguration from '@_config/microservice.config';
@@ -13,7 +15,22 @@ import {HttpModule} from '@nestjs/axios';
 
 @Global()
 @Module({
-  imports: [
+  imports: getModules(),
+  exports: [
+    HttpModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        timeout: configService.get('server.httpTimeout'),
+        maxRedirects: configService.get('server.httpMaxRedirects'),
+      }),
+      inject: [ConfigService],
+    }),
+  ],
+})
+export class ToolkitModule {}
+
+function getModules() {
+  const modules = [
     ConfigModule.forRoot({
       load: [
         ServerConfiguration,
@@ -25,8 +42,8 @@ import {HttpModule} from '@nestjs/axios';
     HttpModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        timeout: configService.get('HTTP_TIMEOUT'),
-        maxRedirects: configService.get('HTTP_MAX_REDIRECTS'),
+        timeout: configService.get('server.httpTimeout'),
+        maxRedirects: configService.get('server.httpMaxRedirects'),
       }),
       inject: [ConfigService],
     }),
@@ -36,16 +53,33 @@ import {HttpModule} from '@nestjs/axios';
     PrismaModule,
     SnowflakeModule,
     XLSXModule,
-  ],
-  exports: [
-    HttpModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        timeout: configService.get('HTTP_TIMEOUT'),
-        maxRedirects: configService.get('HTTP_MAX_REDIRECTS'),
-      }),
-      inject: [ConfigService],
-    }),
-  ],
-})
-export class ToolkitModule {}
+  ];
+  if (process.env.REDIS_HOST) {
+    modules.push(
+      CacheModule.registerAsync({
+        imports: [ConfigModule],
+        useFactory: async (configService: ConfigService) => ({
+          store: redisStore,
+          host: configService.get('toolkit.cache.redis.host'),
+          port: configService.get('toolkit.cache.redis.port'),
+          ttl: configService.get('toolkit.cache.redis.ttl'), // cache-manamger v4 => seconds, v5 => milliseconds
+        }),
+        inject: [ConfigService],
+        isGlobal: true,
+      })
+    );
+  } else {
+    modules.push(
+      CacheModule.registerAsync({
+        imports: [ConfigModule],
+        useFactory: async (configService: ConfigService) => ({
+          ttl: configService.get('toolkit.cache.memory.ttl'), // cache-manamger v4 => seconds, v5 => milliseconds
+          max: configService.get('toolkit.cache.memory.max'),
+        }),
+        inject: [ConfigService],
+        isGlobal: true,
+      })
+    );
+  }
+  return modules;
+}

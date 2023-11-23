@@ -6,19 +6,26 @@ import {
   EventIssueType,
   Event,
   User,
-  AvailabilityTimeslotStatus,
   EventIssueStatus,
 } from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {ceilByMinutes, floorByMinutes} from '@toolkit/utilities/datetime.util';
+import {
+  ceilByMinutes,
+  dateMinusMinutes,
+  datePlusMinutes,
+  floorByMinutes,
+} from '@toolkit/utilities/datetime.util';
 
 enum EventIssueDescription {
   Error_CoachNotExisted = 'The coach is not existed.',
   Error_CoachNotConfigured = 'The coach has not been configured.',
-  Error_CoachNotAvailale = 'The coach is not available.',
-  Error_WrongClassType = 'The coach is not able to teach this type of class.',
-  Error_WrongLocation = 'The coach is not able to teach in this location.',
+  Error_TimeUnavailale = 'The coach is not available at this time.',
+  Error_TimeConflict = 'The coach was scheduled at another location at this period of time.',
+  Error_ClassUnavailable = 'The coach is not able to teach this type of class.',
+  Error_LocationUnavailable = 'The coach is not able to teach in this location.',
 }
+
+const MINUTES_OF_CONFLICT_DISTANCE = 30;
 
 @Injectable()
 export class EventIssueService {
@@ -90,6 +97,23 @@ export class EventIssueService {
   }
 
   async check(event: Event) {
+    // [solidcore only, 2023-11-20] Do not check locked event or event with TBD coach.
+    if (event.isLocked) {
+      return;
+    }
+    const tag = await this.prisma.tag.findFirst({
+      where: {name: 'TBD', group: {name: 'Coach'}},
+    });
+    if (tag && event.hostUserId) {
+      if (
+        (await this.prisma.userProfile.count({
+          where: {userId: event.hostUserId, tagIds: {has: tag.id}},
+        })) > 0
+      ) {
+        return;
+      }
+    }
+
     // [step 0] Delete old unrepaired issues.
     await this.prisma.eventIssue.deleteMany({
       where: {eventId: event.id, status: EventIssueStatus.UNREPAIRED},
@@ -105,44 +129,37 @@ export class EventIssueService {
     }
 
     // [step 2] Check issues.
+    const issueCreateManyInput: Prisma.EventIssueCreateManyInput[] = [];
     if (!hostUser) {
       // [step 2-1] Check exist.
-      await this.prisma.eventIssue.create({
-        data: {
-          type: EventIssueType.ERROR_COACH_NOT_EXISTED,
-          description: EventIssueDescription.Error_CoachNotExisted,
-          eventId: event.id,
-        },
+      issueCreateManyInput.push({
+        type: EventIssueType.ERROR_NONEXISTENT_COACH,
+        description: EventIssueDescription.Error_CoachNotExisted,
+        eventId: event.id,
       });
     } else if (!hostUser['profile']) {
       // [step 2-2] Check coach profile.
-      await this.prisma.eventIssue.create({
-        data: {
-          type: EventIssueType.ERROR_COACH_NOT_CONFIGURED,
-          description: EventIssueDescription.Error_CoachNotConfigured,
-          eventId: event.id,
-        },
+      issueCreateManyInput.push({
+        type: EventIssueType.ERROR_UNCONFIGURED_COACH,
+        description: EventIssueDescription.Error_CoachNotConfigured,
+        eventId: event.id,
       });
     } else {
       // [step 2-3] Check class type.
       if (!hostUser['profile']['eventTypeIds'].includes(event.typeId)) {
-        await this.prisma.eventIssue.create({
-          data: {
-            type: EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_TYPE,
-            description: EventIssueDescription.Error_WrongClassType,
-            eventId: event.id,
-          },
+        issueCreateManyInput.push({
+          type: EventIssueType.ERROR_UNAVAILABLE_EVENT_TYPE,
+          description: EventIssueDescription.Error_ClassUnavailable,
+          eventId: event.id,
         });
       }
 
       // [step 2-4] Check location.
       if (!hostUser['profile']['eventVenueIds'].includes(event.venueId)) {
-        await this.prisma.eventIssue.create({
-          data: {
-            type: EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_VENUE,
-            description: EventIssueDescription.Error_WrongLocation,
-            eventId: event.id,
-          },
+        issueCreateManyInput.push({
+          type: EventIssueType.ERROR_UNAVAILABLE_EVENT_VENUE,
+          description: EventIssueDescription.Error_LocationUnavailable,
+          eventId: event.id,
         });
       }
 
@@ -162,23 +179,55 @@ export class EventIssueService {
           venueIds: {has: event.venueId},
           datetimeOfStart: {gte: newDatetimeOfStart},
           datetimeOfEnd: {lte: newDatetimeOfEnd},
-          status: AvailabilityTimeslotStatus.USABLE,
         },
       });
       if (count < event.minutesOfDuration / this.MINUTES_Of_TIMESLOT_UNIT) {
-        await this.prisma.eventIssue.create({
-          data: {
-            type: EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_TIME,
-            description: EventIssueDescription.Error_CoachNotAvailale,
-            eventId: event.id,
+        issueCreateManyInput.push({
+          type: EventIssueType.ERROR_UNAVAILABLE_EVENT_TIME,
+          description: EventIssueDescription.Error_TimeUnavailale,
+          eventId: event.id,
+        });
+      }
+
+      // [step 2-6] Check time conflict among different venues.
+      const conflictingEvents = await this.prisma.event.findMany({
+        where: {
+          hostUserId: hostUser.id,
+          venueId: {not: event.venueId},
+          datetimeOfStart: {
+            lt: datePlusMinutes(
+              event.datetimeOfEnd,
+              MINUTES_OF_CONFLICT_DISTANCE
+            ),
           },
+          datetimeOfEnd: {
+            gt: dateMinusMinutes(
+              event.datetimeOfStart,
+              MINUTES_OF_CONFLICT_DISTANCE
+            ),
+          },
+          deletedAt: null,
+        },
+        select: {venue: {select: {name: true}}},
+      });
+      if (conflictingEvents.length > 0) {
+        const stringVenues = conflictingEvents
+          .map(event => {
+            return event['venue'].name;
+          })
+          .toString();
+        issueCreateManyInput.push({
+          type: EventIssueType.ERROR_CONFLICTING_EVENT_TIME,
+          description:
+            EventIssueDescription.Error_TimeConflict + '(' + stringVenues + ')',
+          eventId: event.id,
         });
       }
     }
 
-    return await this.prisma.eventIssue.findMany({
-      where: {status: EventIssueStatus.UNREPAIRED, eventId: event.id},
-    });
+    if (issueCreateManyInput.length > 0) {
+      await this.prisma.eventIssue.createMany({data: issueCreateManyInput});
+    }
   }
 
   /* End */

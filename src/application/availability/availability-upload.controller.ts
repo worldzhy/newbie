@@ -101,7 +101,7 @@ export class AvailabilityUploadController {
     for (let i = 0; i < rows.length; i++) {
       // [step 2-1] Get the coach.
       const row = rows[i];
-      if (!row['Email'] || !row['Email'].trim()) {
+      if (!row['Email'] || !row['Email'].trim() || !row['Timestamp']) {
         continue;
       }
 
@@ -113,7 +113,18 @@ export class AvailabilityUploadController {
         continue;
       }
 
-      // [step 2-2] Generate coach availability expression.
+      // [step 2-2] Only process the new response from a coach.
+      const count = await this.availabilityExpressionService.count({
+        where: {
+          hostUserId: coach.id,
+          reportedAt: {gte: new Date(row['Timestamp'])},
+        },
+      });
+      if (count > 0) {
+        continue;
+      }
+
+      // [step 2-3] Generate coach availability expression.
       const cronExpressions: string[] = [];
       const coachLocationNames: string[] = [];
       for (const key in row) {
@@ -209,7 +220,7 @@ export class AvailabilityUploadController {
         }
       }
 
-      // [step 2-3] Create or overwrite coach availability expression.
+      // [step 2-4] Create or overwrite coach availability expression.
       const venues = await this.eventVenueService.findMany({
         where: {name: {in: coachLocationNames}},
         select: {id: true},
@@ -235,10 +246,11 @@ export class AvailabilityUploadController {
           dateOfOpening,
           dateOfClosure,
           minutesOfDuration: COACH_AVAILABILITY_DURATION_GOOGLE_FORM,
+          reportedAt: new Date(row['Timestamp']),
         },
       });
 
-      // [step 2-4] Update coach profile.
+      // [step 2-5] Update coach profile.
       await this.userProfileService.update({
         where: {userId: coach.id},
         data: {

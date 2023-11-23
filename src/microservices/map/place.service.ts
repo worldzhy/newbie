@@ -16,6 +16,10 @@ export class PlaceService {
     return await this.prisma.place.findUniqueOrThrow(args);
   }
 
+  async findMany(args: Prisma.PlaceFindManyArgs): Promise<Place[]> {
+    return await this.prisma.place.findMany(args);
+  }
+
   async findManyInManyPages(
     pagination: {page: number; pageSize: number},
     findManyArgs?: Prisma.PlaceFindManyArgs

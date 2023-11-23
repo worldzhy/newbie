@@ -2,7 +2,6 @@ import {Injectable} from '@nestjs/common';
 import {SchedulerRegistry} from '@nestjs/schedule';
 import {Prisma, CronTask} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {CronJob} from 'cron';
 
 @Injectable()
 export class CronTaskService {
@@ -26,14 +25,6 @@ export class CronTaskService {
       pagination,
       findManyArgs,
     });
-  }
-
-  async create(args: Prisma.CronTaskCreateArgs): Promise<CronTask> {
-    const cronTask = await this.prisma.cronTask.create(args);
-    const job = new CronJob(cronTask.expression, cronTask.command);
-    this.schedulerRegistry.addCronJob(cronTask.name, job);
-
-    return cronTask;
   }
 
   async delete(args: Prisma.CronTaskDeleteArgs): Promise<CronTask> {

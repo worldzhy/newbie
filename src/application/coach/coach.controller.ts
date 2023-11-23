@@ -15,9 +15,9 @@ import {RoleService} from '@microservices/account/role/role.service';
 import {AvailabilityExpressionService} from '@microservices/event-scheduling/availability-expression.service';
 import {
   currentQuarter,
-  firstDayOfMonth,
   firstDayOfQuarter,
 } from '@toolkit/utilities/datetime.util';
+import {verifyEmail} from '@toolkit/validators/user.validator';
 
 const DEFAULT_PASSWORD = 'x8nwFP814HIk!';
 
@@ -92,9 +92,13 @@ export class CoachController {
     if (name) {
       name = name.trim();
       if (name.length > 0) {
-        whereConditions.push({
-          profile: {fullName: {contains: name, mode: 'insensitive'}},
-        });
+        if (verifyEmail(name)) {
+          whereConditions.push({email: name});
+        } else {
+          whereConditions.push({
+            profile: {fullName: {contains: name, mode: 'insensitive'}},
+          });
+        }
       }
     }
 
@@ -118,8 +122,8 @@ export class CoachController {
     const coaches = result.records as User[];
 
     // [step 3] Attach availability information.
-    let year = new Date().getFullYear();
-    let quarter = currentQuarter();
+    const thisYear = new Date().getFullYear();
+    const thisQuarter = currentQuarter();
     for (let i = 0; i < coaches.length; i++) {
       const coach = coaches[i];
       // Attach current quarter availability status.
@@ -127,7 +131,7 @@ export class CoachController {
         await this.availabilityExpressionService.findFirst({
           where: {
             hostUserId: coach.id,
-            dateOfOpening: firstDayOfQuarter(year, quarter),
+            dateOfOpening: firstDayOfQuarter(thisYear, thisQuarter),
           },
         });
       coach['profile']['availabilityOfCurrentQuarter'] = 'None';
@@ -137,17 +141,19 @@ export class CoachController {
       }
 
       // Attach next quarter availability status.
-      if (quarter === 4) {
-        year += 1;
-        quarter = 1;
+      let nextYear = thisYear;
+      let nextQuarter = thisQuarter;
+      if (thisQuarter === 4) {
+        nextYear += 1;
+        nextQuarter = 1;
       } else {
-        quarter += 1;
+        nextQuarter += 1;
       }
       const expOfNextQuarter =
         await this.availabilityExpressionService.findFirst({
           where: {
             hostUserId: coach.id,
-            dateOfOpening: firstDayOfQuarter(year, quarter),
+            dateOfOpening: firstDayOfQuarter(nextYear, nextQuarter),
           },
         });
       coach['profile']['availabilityOfNextQuarter'] = 'None';

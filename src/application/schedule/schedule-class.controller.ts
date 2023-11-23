@@ -10,7 +10,12 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {Prisma, Event, EventContainerNoteType} from '@prisma/client';
+import {
+  Prisma,
+  Event,
+  EventChangeLogType,
+  EventIssueStatus,
+} from '@prisma/client';
 import {EventService} from '@microservices/event-scheduling/event.service';
 import {
   datePlusMinutes,
@@ -20,10 +25,11 @@ import {
 } from '@toolkit/utilities/datetime.util';
 import {EventIssueService} from '@microservices/event-scheduling/event-issue.service';
 import {EventTypeService} from '@microservices/event-scheduling/event-type.service';
-import {EventContainerNoteService} from '@microservices/event-scheduling/event-container-note.service';
+import {EventChangeLogService} from '@microservices/event-scheduling/event-change-log.service';
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
 import {UserProfileService} from '@microservices/account/user/user-profile.service';
 import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
+import {ScToMbService} from '@microservices/mindbody/scToMb.service';
 
 @ApiTags('Event')
 @ApiBearerAuth()
@@ -35,8 +41,9 @@ export class EventController {
     private readonly eventIssueService: EventIssueService,
     private readonly eventTypeService: EventTypeService,
     private readonly eventContainerService: EventContainerService,
-    private readonly eventContainerNoteService: EventContainerNoteService,
-    private readonly userProfileService: UserProfileService
+    private readonly eventChangeLogService: EventChangeLogService,
+    private readonly userProfileService: UserProfileService,
+    private readonly scToMbService: ScToMbService
   ) {}
 
   @Post('')
@@ -89,31 +96,35 @@ export class EventController {
 
     const event = await this.eventService.create({
       data: body,
+      include: {type: true},
     });
 
     // [step 2] Note add event.
-    await this.eventContainerNoteService.create({
+    await this.eventChangeLogService.create({
       data: {
-        type: EventContainerNoteType.SYSTEM,
+        type: EventChangeLogType.USER,
         description:
           'New class: ' + eventType.name + ' at ' + body.datetimeOfStart,
-        containerId: body.containerId,
+        eventContainerId: body.containerId,
+        eventId: event.id,
       },
     });
 
     // [step 3] Checkin coach availability timeslots.
     await this.availabilityTimeslotService.checkin(event);
 
-    // [step 4] Attach information.
+    // [step 4] Check event issues.
+    await this.eventIssueService.check(event);
+
+    // [step 5] Attach information.
+    event['issues'] = await this.eventIssueService.findMany({
+      where: {status: EventIssueStatus.UNREPAIRED, eventId: event.id},
+    });
+
     event['hostUser'] = await this.userProfileService.findUniqueOrThrow({
       where: {userId: body.hostUserId},
       select: {userId: true, fullName: true, coachingTenure: true},
     });
-    event['type'] = (
-      await this.eventTypeService.findUniqueOrThrow({
-        where: {id: body.typeId},
-      })
-    ).name;
 
     return event;
   }
@@ -133,11 +144,19 @@ export class EventController {
         year: container.year,
         month: container.month,
         weekOfMonth,
+        deletedAt: null,
       },
+      include: {type: true},
     });
 
     // Get all the coaches information
+    const coachIds = events
+      .map(event => {
+        return event.hostUserId;
+      })
+      .filter(coachId => coachId !== null) as string[];
     const coachProfiles = await this.userProfileService.findMany({
+      where: {userId: {in: coachIds}},
       select: {userId: true, fullName: true, coachingTenure: true},
     });
     const coachProfilesMapping = coachProfiles.reduce(
@@ -148,13 +167,6 @@ export class EventController {
       {}
     );
 
-    // Get all the event types
-    const eventTypes = await this.eventTypeService.findMany({});
-    const eventTypesMapping = eventTypes.reduce(
-      (obj, item) => ({...obj, [item.id]: item.name}),
-      {}
-    );
-
     for (let i = 0; i < events.length; i++) {
       const event = events[i];
       // Attach coach information
@@ -162,13 +174,6 @@ export class EventController {
         event['hostUser'] = coachProfilesMapping[event.hostUserId];
       } else {
         event['hostUser'] = {};
-      }
-
-      // Attach class type information
-      if (event.typeId) {
-        event['type'] = eventTypesMapping[event.typeId];
-      } else {
-        event['type'] = '';
       }
     }
 
@@ -219,34 +224,85 @@ export class EventController {
     const newEvent = await this.eventService.update({
       where: {id: eventId},
       data: body,
+      include: {type: true},
     });
 
-    // [step 3] Checkin coach availability timeslots.
+    // [step 3] Note the update.
+    await this.eventChangeLogService.create({
+      data: {
+        type: EventChangeLogType.USER,
+        description:
+          'Update class: ' +
+          newEvent['type'].name +
+          ' at ' +
+          newEvent.datetimeOfStart,
+        eventContainerId: newEvent.containerId,
+        eventId: eventId,
+      },
+    });
+
+    // [step 4] Checkin coach availability timeslots.
     await this.availabilityTimeslotService.checkin(newEvent);
 
-    // [step 4] Check event issues.
-    newEvent['issues'] = await this.eventIssueService.check(newEvent);
+    // [step 5] Check event issues.
+    await this.eventIssueService.check(newEvent);
 
-    // [step 5] Attach information.
+    // [step 6] Attach information.
+    newEvent['issues'] = await this.eventIssueService.findMany({
+      where: {status: EventIssueStatus.UNREPAIRED, eventId: newEvent.id},
+    });
+
     if (newEvent.hostUserId) {
       newEvent['hostUser'] = await this.userProfileService.findUniqueOrThrow({
         where: {userId: newEvent.hostUserId},
         select: {userId: true, fullName: true, coachingTenure: true},
       });
     }
-    newEvent['type'] = (
-      await this.eventTypeService.findUniqueOrThrow({
-        where: {id: newEvent.typeId},
-      })
-    ).name;
 
     return newEvent;
+  }
+
+  @Patch(':eventId/lock')
+  @ApiBody({
+    description: 'Lock the event.',
+    examples: {
+      a: {
+        summary: '1. Lock',
+        value: {
+          isLocked: true,
+        },
+      },
+      b: {
+        summary: '1. Unlock',
+        value: {
+          isLocked: false,
+        },
+      },
+    },
+  })
+  async lockEvent(
+    @Param('eventId') eventId: number,
+    @Body()
+    body: Prisma.EventUncheckedUpdateInput
+  ): Promise<Event> {
+    if (body.isLocked) {
+      return await this.eventService.update({
+        where: {id: eventId},
+        data: {isLocked: true},
+      });
+    } else {
+      return await this.eventService.update({
+        where: {id: eventId},
+        data: {isLocked: false},
+      });
+    }
   }
 
   @Delete(':eventId')
   async deleteEvent(@Param('eventId') eventId: number): Promise<Event> {
     const event = await this.eventService.findUniqueOrThrow({
       where: {id: eventId},
+      include: {type: true},
     });
 
     // [step 1] Undo the checkin of coach availability timeslots.
@@ -259,18 +315,46 @@ export class EventController {
     });
 
     // [step 3] Note the deletion.
-    await this.eventContainerNoteService.create({
+    await this.eventChangeLogService.create({
       data: {
-        type: EventContainerNoteType.SYSTEM,
+        type: EventChangeLogType.USER,
         description:
           'Remove class: ' +
           event['type'].name +
           ' at ' +
           event.datetimeOfStart,
-        containerId: event.containerId,
+        eventContainerId: event.containerId,
+        eventId: eventId,
       },
     });
 
+    return event;
+  }
+
+  @Patch(':eventId/publish')
+  async publishEvent(@Param('eventId') eventId: number) {
+    // [step 1] Get the record.
+    // const event = await this.eventService.findUniqueOrThrow({
+    //   where: {id: eventId},
+    // });
+    const event = await this.eventService.findUniqueOrThrow({
+      where: {id: eventId},
+      include: {type: true, venue: true, changeLogs: true},
+    });
+
+    await this.scToMbService.eventPublish(event);
+    const resp = this.scToMbService.getResult();
+
+    return resp;
+
+    // [step 2] Modify coaches' availability status
+    // await this.availabilityTimeslotService.checkin(event);
+
+    // [step 2] Update event status.
+    // return await this.eventService.update({
+    //   where: {id: eventId},
+    //   data: {isPublished: true},
+    // });
     return event;
   }
 

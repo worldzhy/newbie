@@ -107,7 +107,7 @@ export class EventCopyController {
     // [step 4] Add events to target container.
     // [step 4-1] Undo coaches' availability checkins.
     const oldEvents = await this.eventService.findMany({
-      where: {containerId: eventContainerId},
+      where: {containerId: eventContainerId, deletedAt: null},
       select: {
         id: true,
         hostUserId: true,

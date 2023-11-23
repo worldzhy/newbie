@@ -14,7 +14,7 @@ export class RefreshTokenService {
     private readonly prisma: PrismaService
   ) {}
 
-  sign(payload: string | Buffer | object, options?: JwtSignOptions): string {
+  sign(payload: Buffer | object, options?: JwtSignOptions): string {
     return this.jwtService.sign(payload, options);
   }
 
@@ -31,7 +31,6 @@ export class RefreshTokenService {
       sameSite: 'strict',
       secure: true,
       httpOnly: true,
-      path: '/account/refresh',
     };
 
     if (refreshToken) {

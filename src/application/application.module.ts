@@ -28,7 +28,7 @@ import {AreaManagerController} from './area-manager/area-manager.controller';
 import {ClassController} from './class/class.controller';
 import {EventController} from './schedule/schedule-class.controller';
 import {EventContainerController} from './schedule/schedule.controller';
-import {EventContainerNoteController} from './schedule/schedule-note.controller';
+import {EventChangeLogController} from './schedule/schedule-class-changelog.controller';
 import {EventCopyController} from './schedule/schedule-import.controller';
 import {EventFixController} from './schedule/schedule-fix.controller';
 import {HeatmapController} from './heatmap/heatmap.controller';
@@ -69,7 +69,7 @@ import {AnalysisController} from './analysis/analysis.controller';
     ClassController,
     EventController,
     EventContainerController,
-    EventContainerNoteController,
+    EventChangeLogController,
     EventCopyController,
     EventFixController,
     HeatmapController,

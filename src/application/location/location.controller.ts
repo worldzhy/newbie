@@ -16,6 +16,7 @@ import {PlaceService} from '@microservices/map/place.service';
 import {AccountService} from '@microservices/account/account.service';
 import {Request} from 'express';
 import {RoleService} from '@microservices/account/role/role.service';
+import * as _ from 'lodash';
 
 @ApiTags('Location')
 @ApiBearerAuth()
@@ -109,20 +110,24 @@ export class LocationController {
     );
 
     // [step 3] Attach place information.
-    for (let i = 0; i < venues.records.length; i++) {
-      const venue = venues.records[i] as EventVenue & Place;
-      if (venue.placeId) {
-        const place = await this.placeService.findUnique({
-          where: {id: venue.placeId},
-        });
-        if (place) {
-          venue.address = place.address;
-          venue.city = place.city;
-          venue.state = place.state;
-          venue.country = place.country;
-        }
+    const venuePlaceIds = venues.records.map((d: any) => d.placeId);
+    const places = await this.placeService.findMany({
+      where: {id: {in: venuePlaceIds}},
+      select: {id: true, address: true, state: true, city: true, country: true},
+    });
+
+    venues.records.map((venue: EventVenue & Place) => {
+      const place: any = _.find(places, (p: Place) => {
+        return p.id === (venue.placeId as number);
+      });
+
+      if (place) {
+        venue.address = place.address;
+        venue.city = place.city;
+        venue.state = place.state;
+        venue.country = place.country;
       }
-    }
+    });
 
     return venues;
   }

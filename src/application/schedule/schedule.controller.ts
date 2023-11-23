@@ -17,17 +17,12 @@ import {
   EventContainerStatus,
   EventContainerOrigin,
   EventIssueStatus,
-  AvailabilityTimeslotStatus,
 } from '@prisma/client';
 import {EventService} from '@microservices/event-scheduling/event.service';
 import {EventIssueService} from '@microservices/event-scheduling/event-issue.service';
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
 import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
-import {
-  ceilByMinutes,
-  daysOfMonth,
-  floorByMinutes,
-} from '@toolkit/utilities/datetime.util';
+import {datePlusMinutes, daysOfMonth} from '@toolkit/utilities/datetime.util';
 
 @ApiTags('Event Container')
 @ApiBearerAuth()
@@ -161,13 +156,13 @@ export class EventContainerController {
         year: container.year,
         month: container.month,
         weekOfMonth,
+        deletedAt: null,
       },
     });
 
     // Check each issue.
     for (let i = 0; i < events.length; i++) {
-      const event = events[i];
-      await this.eventIssueService.check(event);
+      await this.eventIssueService.check(events[i]);
     }
 
     return await this.eventIssueService.findMany({
@@ -181,6 +176,46 @@ export class EventContainerController {
         },
       },
     });
+  }
+
+  @Patch(':eventContainerId/bulk-move')
+  @ApiBody({
+    description: 'Bulk move events in the container.',
+    examples: {
+      a: {summary: '1. Move forward', value: {minutesOfMove: 15}},
+      b: {summary: '1. Move backward', value: {minutesOfMove: -15}},
+    },
+  })
+  async bulkMove(
+    @Param('eventContainerId') eventContainerId: number,
+    @Body()
+    body: {minutesOfMove: number}
+  ) {
+    const events = await this.eventService.findMany({
+      where: {containerId: eventContainerId, deletedAt: null},
+    });
+
+    for (let i = 0; i < events.length; i++) {
+      const event = events[i];
+      const newDatetimeOfStart = datePlusMinutes(
+        event.datetimeOfStart,
+        body.minutesOfMove
+      );
+      const newDatetimeOfEnd = datePlusMinutes(
+        event.datetimeOfEnd,
+        body.minutesOfMove
+      );
+
+      await this.eventService.update({
+        where: {id: event.id},
+        data: {
+          datetimeOfStart: newDatetimeOfStart,
+          datetimeOfEnd: newDatetimeOfEnd,
+          hour: newDatetimeOfStart.getHours(),
+          minute: newDatetimeOfStart.getMinutes(),
+        },
+      });
+    }
   }
 
   @Patch(':eventContainerId/publish')

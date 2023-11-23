@@ -54,4 +54,16 @@ export default registerAs('toolkit', () => ({
       idleTimeoutMillis: 120000,
     },
   },
+  cache:{
+    memory:{
+      ttl: 3600, // cache-manamger v4 => seconds, v5 => milliseconds
+      max: 1000, // maximum number of items in cache
+    },
+    redis: {
+      host: process.env.REDIS_HOST,
+      port: parseInt(process.env.REDIS_PORT ?? '6379'),
+      password: process.env.REDIS_PASSWORD,
+      ttl: 86400, // cache-manamger v4 => seconds, v5 => milliseconds
+    },
+  }
 }));

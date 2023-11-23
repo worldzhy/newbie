@@ -1,17 +1,24 @@
-import {Injectable} from '@nestjs/common';
+import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
 import {HttpService} from '@nestjs/axios';
 import {ConfigService} from '@nestjs/config';
+import {toMbParams, parseHeaders} from './util';
+import {AddClassScheduleDto, endClassScheduleDto} from './mindbody.dto';
+import * as _ from 'lodash';
+import * as moment from 'moment';
 
 @Injectable()
 export class MindbodyService {
   private apiKey: string;
+  private username;
+  private password;
+  private mbUrl;
+  private accessToken;
   private siteId: number;
-  private userId: string;
-  private userToken: string;
+  private headers: any;
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly httpService: HttpService
+    private readonly httpService: HttpService,
   ) {
     this.apiKey = this.configService.getOrThrow<string>(
       'microservice.mindbody.apiKey'
@@ -19,115 +26,294 @@ export class MindbodyService {
     this.siteId = this.configService.getOrThrow<number>(
       'microservice.mindbody.siteId'
     );
+    this.username = this.configService.get('microservice.mindbody.username');
+    this.password = this.configService.get('microservice.mindbody.password');
+
+    const SiteId = this.siteId;
+
+    this.headers = {
+      'Content-Type': 'application/json',
+      'API-Key': this.apiKey,
+      SiteId,
+    };
+    this.mbUrl = this.configService.get('microservice.mindbody.mbUrl');
   }
 
-  async login() {
-    const response = await this.httpService.axiosRef.post(
-      'https://api.mindbodyonline.com/public/v6/usertoken/issue',
-      {Username: 'Siteowner', Password: 'apitest1234'},
-      {
-        headers: {
-          'API-Key': this.apiKey,
-          'Content-Type': 'application/json',
-          siteId: this.siteId,
-        },
-      }
-    );
-
-    this.userId = response.data['User']['Id'];
-    this.userToken = response.data['AccessToken'];
-  }
-
-  async getClassDescriptions() {
-    try {
-      const response = await this.httpService.axiosRef.get(
-        'https://api.mindbodyonline.com/public/v6/class/classdescriptions',
-        {
-          headers: {
-            'API-Key': this.apiKey,
-            Accept: 'application/json',
-            siteId: this.siteId,
-            authorization: this.userToken,
-          },
-          data: {
-            StaffId: 1,
-            LocationId: 1,
-            // StartClassDateTime: '2023-05-13T12:52:32.123Z',
-            // EndClassDateTime: '2023-10-13T12:52:32.123Z',
-          },
-        }
-      );
-
-      return response.data.ClassDescriptions;
-    } catch (error) {
-      console.log(error.response.data['Error']);
-    }
-  }
-
-  async getLocations() {
-    try {
-      const response = await this.httpService.axiosRef.get(
-        'https://api.mindbodyonline.com/public/v6/site/locations',
-        {
-          headers: {
-            'API-Key': this.apiKey,
-            Accept: 'application/json',
-            siteId: this.siteId,
-            authorization: this.userToken,
-          },
-        }
-      );
-
-      return response.data.Locations;
-    } catch (error) {
-      console.log(error.response.data['Error']);
-    }
-  }
-
-  async addClassSchedule() {
+  async getUserToken() {
+    const data = {username: this.username, password: this.password};
     try {
       const response = await this.httpService.axiosRef.post(
-        'https://api.mindbodyonline.com/public/v6/class/addclassschedule',
+        `${this.mbUrl}usertoken/issue`,
+        data,
         {
-          ClassDescriptionId: 4,
-          LocationId: 1,
-          StartDate: '2023-03-13T12:52:32.123Z',
-          EndDate: '2023-03-13T12:52:32.123Z',
-          StartTime: '2023-03-13T20:00:32.123Z',
-          DaySunday: true,
-          DayMonday: true,
-          DayTuesday: true,
-          DayWednesday: true,
-          DayThursday: true,
-          DaySaturday: true,
-          StaffId: this.userId,
-          StaffPayRate: 1,
-          ResourceId: 20,
-          MaxCapacity: 20,
-          PricingOptionsProductIds: [1],
-          AllowDateForwardEnrollment: true,
-          AllowOpenEnrollment: true,
-          BookingStatus: 'Free',
-          WaitlistCapacity: 1,
-          WebCapacity: 1,
-          DayFriday: true,
-          EndTime: '2023-03-13T21:00:15Z',
-        },
-        {
-          headers: {
-            'API-Key': this.apiKey,
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-            siteId: this.siteId,
-            authorization: this.userToken,
-          },
+          headers: this.headers,
         }
       );
 
-      return response.data;
+      if (response.status === 200) {
+        this.accessToken = _.get(response, 'data.AccessToken');
+        this.headers.Authorization = this.accessToken;
+      }
     } catch (error) {
-      console.log(error.response.data['Error']);
+      return this.errorHandle(error);
     }
   }
+
+  async getClassDescriptions(query) {
+    const params = toMbParams(query);
+    const headers = parseHeaders(this.headers, query);
+
+    try {
+      const response = await this.httpService.axiosRef.get(
+        `${this.mbUrl}class/classdescriptions`,
+        {
+          headers,
+          params,
+        }
+      );
+
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return this.errorHandle(error);
+    }
+  }
+
+  async getClasses(query) {
+    const params = toMbParams(query);
+    const headers = parseHeaders(this.headers, query);
+
+    params.startDateTime = query.startDateTime;
+    params.endDateTime = query.endDateTime;
+
+    try {
+      const response = await this.httpService.axiosRef.get(
+        `${this.mbUrl}class/classes`,
+        {
+          headers,
+          params,
+        }
+      );
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return this.errorHandle(error);
+    }
+  }
+
+  async getClassVisits(query) {
+    const params = toMbParams(query);
+    const headers = parseHeaders(this.headers, query);
+
+    try {
+      const response = await this.httpService.axiosRef.get(
+        `${this.mbUrl}class/classvisits`,
+        {
+          headers,
+          params,
+        }
+      );
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return this.errorHandle(error);
+    }
+  }
+
+  async getStaff(query) {
+    const params = toMbParams(query);
+    const headers = parseHeaders(this.headers, query);
+
+    try {
+      const response = await this.httpService.axiosRef.get(
+        `${this.mbUrl}Staff/Staff`,
+        {
+          headers,
+          params,
+        }
+      );
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return this.errorHandle(error);
+    }
+  }
+
+  async getClassSchduleById(schduleId) {
+    try {
+      const response = await this.httpService.axiosRef.get(
+        `${this.mbUrl}class/classschedules`,
+        {
+          headers: this.headers,
+          params: {classScheduleIds: schduleId},
+        }
+      );
+
+      if (response.data.ClassSchedules.length > 0) {
+        return {
+          success: true,
+          data: response.data.ClassSchedules[0],
+        };
+      } else {
+        return {
+          success: false,
+        };
+      }
+    } catch (error) {
+      return this.errorHandle(error);
+    }
+  }
+
+  async getClassSchedules(query) {
+    const params = toMbParams(query);
+    const headers = parseHeaders(this.headers, query);
+
+    try {
+      const response = await this.httpService.axiosRef.get(
+        `${this.mbUrl}class/classschedules`,
+        {
+          headers,
+          params,
+        }
+      );
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return this.errorHandle(error);
+    }
+  }
+
+  async getLocations(query) {
+    const params = toMbParams(query);
+    const headers = parseHeaders(this.headers, query);
+    try {
+      const response = await this.httpService.axiosRef.get(
+        `${this.mbUrl}site/locations`,
+        {
+          headers,
+          params,
+        }
+      );
+
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return this.errorHandle(error);
+    }
+  }
+
+  async getResources(query) {
+    const params = toMbParams(query);
+    const headers = parseHeaders(this.headers, query);
+    try {
+      const response = await this.httpService.axiosRef.get(
+        `${this.mbUrl}site/resources`,
+        {
+          headers,
+          params,
+        }
+      );
+
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return this.errorHandle(error);
+    }
+  }
+
+  errorHandle(error) {
+    if (error.response.status === 400) {
+      return {
+        success: false,
+        data: error.response.data['Error'],
+      };
+    }
+    throw new HttpException(
+      JSON.stringify(error.response.data['Error']),
+      HttpStatus.INTERNAL_SERVER_ERROR
+    );
+  }
+
+  async addClassSchedule(data: AddClassScheduleDto) {
+    await this.getUserToken();
+    let {schedule} = data;
+    const headers = parseHeaders(this.headers, data);
+
+    try {
+      const response = await this.httpService.axiosRef.post(
+        `${this.mbUrl}class/addclassschedule`,
+        schedule,
+        {
+          headers,
+        }
+      );
+
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return this.errorHandle(error);
+    }
+  }
+
+  async endClassSchduleById(data: endClassScheduleDto) {
+    await this.getUserToken();
+    const headers = parseHeaders(this.headers, data);
+
+    const schedule = {
+      ClassId: data.scheduleId,
+      DaySunday: false,
+      DayMonday: false,
+      DayTuesday: false,
+      DayWednesday: false,
+      DayThursday: false,
+      DayFriday: false,
+      DaySaturday: false,
+    };
+    const params = {...data, schedule};
+
+    console.log(params);
+
+    return this.updateClassSchedule(params);
+  }
+
+  async updateClassSchedule(data: AddClassScheduleDto) {
+    await this.getUserToken();
+    const headers = parseHeaders(this.headers, data);
+    const {schedule} = data;
+
+    try {
+      const response = await this.httpService.axiosRef.post(
+        `${this.mbUrl}class/updateclassschedule`,
+        schedule,
+        {
+          headers,
+        }
+      );
+
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return this.errorHandle(error);
+    }
+  }
+
   /* End */
 }

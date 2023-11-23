@@ -79,7 +79,8 @@ export class AnalysisController {
           const countOfScheduledClass = await this.eventService.count({
             where: {
               hostUserId: coach.id,
-              venueId: container.venueId,
+              year: container.year,
+              month: container.month,
               weekOfMonth: indexOfWeek + 1,
             },
           });

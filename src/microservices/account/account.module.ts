@@ -31,8 +31,9 @@ import {TokenModule} from '@microservices/token/token.module';
   imports: [
     ThrottlerModule.forRoot({
       // Rate Limit (Maximum of 60 requests per 60 seconds)
-      limit: 60,
-      ttl: 60,
+      throttlers: [{
+        limit: 60,
+        ttl: 60}]
     }),
     NotificationModule,
     TokenModule,

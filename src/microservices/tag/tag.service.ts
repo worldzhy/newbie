@@ -6,8 +6,16 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 export class TagService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async findFirst(args: Prisma.TagFindFirstArgs): Promise<Tag | null> {
+    return await this.prisma.tag.findFirst(args);
+  }
+
   async findUniqueOrThrow(args: Prisma.TagFindUniqueOrThrowArgs): Promise<Tag> {
     return await this.prisma.tag.findUniqueOrThrow(args);
+  }
+
+  async findMany(args: Prisma.TagFindManyArgs): Promise<Tag[]> {
+    return await this.prisma.tag.findMany(args);
   }
 
   async findManyInOnePage(findManyArgs?: Prisma.TagFindManyArgs) {

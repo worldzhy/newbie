@@ -83,6 +83,10 @@ export class AvailabilityExpressionService {
     return await this.prisma.availabilityExpression.deleteMany(args);
   }
 
+  async count(args: Prisma.AvailabilityExpressionCountArgs): Promise<number> {
+    return await this.prisma.availabilityExpression.count(args);
+  }
+
   async parse(id: number) {
     const expression = await this.prisma.availabilityExpression.findUnique({
       where: {id},

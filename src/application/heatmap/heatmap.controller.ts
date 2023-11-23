@@ -1,4 +1,5 @@
-import {Controller, Query, Get} from '@nestjs/common';
+import {Controller, Query, Get, UseInterceptors} from '@nestjs/common';
+import {CacheInterceptor} from '@nestjs/cache-manager';
 import {ApiTags, ApiBearerAuth} from '@nestjs/swagger';
 import {User} from '@prisma/client';
 import {UserService} from '@microservices/account/user/user.service';
@@ -18,6 +19,7 @@ const MINUTES_OF_TIMESLOT = 60;
 @ApiTags('Heatmap')
 @ApiBearerAuth()
 @Controller('heatmap')
+@UseInterceptors(CacheInterceptor)
 export class HeatmapController {
   constructor(
     private readonly availabilityTimeslotService: AvailabilityTimeslotService,

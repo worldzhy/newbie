@@ -29,6 +29,10 @@
 #### Nodejs
 
 > https://nodejs.org/en/download/package-manager/
+* Do not update these node packages:
+- "@elastic/elasticsearch": "^7.13.0"
+- "cache-manager": "^4.1.0"
+- "cache-manager-redis-store": "^2.0.0"
 
 #### pm2
 
@@ -72,7 +76,6 @@ $ cp .env.example .env
 $ npx prisma generate
 $ npx prisma migrate dev
 $ npx prisma db seed
-$ npx prisma migrate deploy
 
 $ npx prisma generate --schema ./prisma2/schema2.prisma
 ```
@@ -130,7 +133,6 @@ $ cp .env.example .env
 $ npx prisma generate
 $ npx prisma migrate dev
 $ npx prisma db seed
-$ npx prisma migrate deploy
 ```
 
 ### Start the app

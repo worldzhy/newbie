@@ -11,7 +11,7 @@ export class AccessTokenService {
     private readonly prisma: PrismaService
   ) {}
 
-  sign(payload: string | Buffer | object, options?: JwtSignOptions): string {
+  sign(payload: Buffer | object, options?: JwtSignOptions): string {
     return this.jwtService.sign(payload, options);
   }
 

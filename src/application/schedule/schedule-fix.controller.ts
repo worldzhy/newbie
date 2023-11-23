@@ -2,7 +2,7 @@ import {Controller, Get, Param, Query} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth} from '@nestjs/swagger';
 import {
   Event,
-  EventContainerNoteType,
+  EventChangeLogType,
   EventIssue,
   EventIssueStatus,
   EventIssueType,
@@ -10,7 +10,7 @@ import {
 import {EventService} from '@microservices/event-scheduling/event.service';
 import {EventIssueService} from '@microservices/event-scheduling/event-issue.service';
 import {CoachService} from '../coach/coach.service';
-import {EventContainerNoteService} from '@microservices/event-scheduling/event-container-note.service';
+import {EventChangeLogService} from '@microservices/event-scheduling/event-change-log.service';
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
 import {UserProfileService} from '@microservices/account/user/user-profile.service';
 import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
@@ -24,7 +24,7 @@ export class EventFixController {
     private readonly eventService: EventService,
     private readonly eventIssueService: EventIssueService,
     private readonly eventContainerService: EventContainerService,
-    private readonly eventContainerNoteService: EventContainerNoteService,
+    private readonly eventContainerNoteService: EventChangeLogService,
     private readonly coachService: CoachService,
     private readonly userProfileService: UserProfileService
   ) {}
@@ -44,6 +44,7 @@ export class EventFixController {
         year: container.year,
         month: container.month,
         weekOfMonth,
+        deletedAt: null,
       },
       include: {issues: {where: {status: EventIssueStatus.UNREPAIRED}}},
     });
@@ -57,14 +58,7 @@ export class EventFixController {
       // [step 2-2] Fix issues.
       for (let j = 0; j < event['issues'].length; j++) {
         const issue = event['issues'][j];
-        switch (issue.type) {
-          case EventIssueType.ERROR_COACH_NOT_EXISTED:
-          case EventIssueType.ERROR_COACH_NOT_CONFIGURED:
-          case EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_TIME:
-          case EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_TYPE:
-          case EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_VENUE:
-            await this.fixIssue(event, issue);
-        }
+        await this.fixIssue(event, issue);
       }
 
       // [step 2-3] Checkin coach availability timeslots.
@@ -77,7 +71,7 @@ export class EventFixController {
 
   async fixIssue(event: Event, issue: EventIssue) {
     // [step 1] Get and set suitable coach.
-    const coaches = await this.coachService.getSortedCoachesForEvent(event);
+    const coaches = await this.coachService.sortAvailableCoachesForEvent(event);
     if (coaches.length > 0) {
       await this.eventService.update({
         where: {id: event.id},
@@ -93,12 +87,13 @@ export class EventFixController {
       // [step 3] Write change note.
       let description = 'Coach changed:';
       switch (issue.type) {
-        case EventIssueType.ERROR_COACH_NOT_EXISTED:
+        case EventIssueType.ERROR_NONEXISTENT_COACH:
           description =
             'Coach changed: No coach' + ' -> ' + coaches[0]['profile'].fullName;
-        case EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_TIME:
-        case EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_TYPE:
-        case EventIssueType.ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_VENUE: {
+        case EventIssueType.ERROR_CONFLICTING_EVENT_TIME:
+        case EventIssueType.ERROR_UNAVAILABLE_EVENT_TIME:
+        case EventIssueType.ERROR_UNAVAILABLE_EVENT_TYPE:
+        case EventIssueType.ERROR_UNAVAILABLE_EVENT_VENUE: {
           if (event.hostUserId) {
             const userProfile = await this.userProfileService.findUniqueOrThrow(
               {
@@ -116,9 +111,10 @@ export class EventFixController {
       }
       await this.eventContainerNoteService.create({
         data: {
-          type: EventContainerNoteType.SYSTEM,
+          type: EventChangeLogType.SYSTEM,
           description,
-          containerId: event.containerId,
+          eventContainerId: event.containerId,
+          eventId: event.id,
         },
       });
     }

@@ -6,6 +6,7 @@ import {EventVenueService} from '@microservices/event-scheduling/event-venue.ser
 import {GoogleFormService} from '@microservices/google-form/google-form.service';
 import {QueueService} from '@microservices/queue/queue.service';
 import {BadRequestException, Injectable} from '@nestjs/common';
+import {ConfigService} from '@nestjs/config';
 import {Cron} from '@nestjs/schedule';
 import {User} from '@prisma/client';
 import {
@@ -14,15 +15,15 @@ import {
   lastDayOfMonth,
 } from '@toolkit/utilities/datetime.util';
 
+const cluster = require('node:cluster');
+
 const HOUR_OF_DAY_START = 5;
 const HOUR_OF_DAY_END = 22;
 const COACH_AVAILABILITY_DURATION_GOOGLE_FORM = 15;
 
-// const FORM_ID = '1ZmhzTfL3ZtQ0eLS2NCAGjkc97GDUAnFxet6oEa_RYSc';
 const FORM_ID = '1xB_y800-DRU5EtAI_AAHrQHdlfstRpikVJy6rYlBnMk';
 
 enum FormItemTitle {
-  Timestamp = 'Timestamp',
   Email = 'Email',
   HomeLocation = 'Select your home studio',
   AdditionalLocations = 'Select additional studios',
@@ -37,6 +38,7 @@ enum FormItemTitle {
 @Injectable()
 export class AvailabilityTaskProducer {
   constructor(
+    private readonly configService: ConfigService,
     private readonly googleFormService: GoogleFormService,
     private readonly userService: UserService,
     private readonly userProfileService: UserProfileService,
@@ -45,8 +47,15 @@ export class AvailabilityTaskProducer {
     private readonly queueService: QueueService
   ) {}
 
-  @Cron('0 0 1 1 *')
+  @Cron('36 1 10 * *')
   async handleCron() {
+    if (
+      !this.configService.getOrThrow<boolean>('server.isPrimary') ||
+      cluster.worker.id !== 1
+    ) {
+      return; // Only the first worker process of the primary server execute the cronjob.
+    }
+
     let year = new Date().getFullYear();
     let quarter = currentQuarter();
     if (quarter === 4) {
@@ -86,7 +95,6 @@ export class AvailabilityTaskProducer {
     }
 
     // [step 2] Parse google form.
-    let timestampQuestionId: string = '';
     let emailItemQuestionId: string = '';
     const locationItemQuestionIds: string[] = [];
     const mappingQuestion_NumberItem: Record<string, forms_v1.Schema$Item> = {};
@@ -105,16 +113,7 @@ export class AvailabilityTaskProducer {
     for (let i = 0; i < formItems.length; i++) {
       const formItem = formItems[i];
       const title = formItem.title;
-      //
-      if (title?.startsWith(FormItemTitle.Timestamp)) {
-        if (
-          formItem.questionItem &&
-          formItem.questionItem.question &&
-          formItem.questionItem.question.questionId
-        ) {
-          timestampQuestionId = formItem.questionItem.question.questionId;
-        }
-      }
+
       //
       if (title?.startsWith(FormItemTitle.Email)) {
         if (
@@ -221,43 +220,20 @@ export class AvailabilityTaskProducer {
     const formResponses = await this.googleFormService.getFormResponses(
       FORM_ID
     );
-    // const sortedFormResponses = formResponses.sort((a, b) => {
-    //   if (
-    //     a.answers &&
-    //     a.answers[timestampQuestionId] &&
-    //     b.answers &&
-    //     b.answers[timestampQuestionId]
-    //   ) {
-    //     const answerOfA = a.answers[timestampQuestionId];
-    //     const answerOfB = b.answers[timestampQuestionId];
-
-    //     if (
-    //       answerOfA.textAnswers &&
-    //       answerOfA.textAnswers.answers &&
-    //       answerOfA.textAnswers.answers[0].value &&
-    //       answerOfB.textAnswers &&
-    //       answerOfB.textAnswers.answers &&
-    //       answerOfB.textAnswers.answers[0].value
-    //     ) {
-    //       const dateOfA = new Date(answerOfA.textAnswers.answers[0].value);
-    //       const dateOfB = new Date(answerOfB.textAnswers.answers[0].value);
-    //       if (dateOfA > dateOfB) {
-    //         return -1;
-    //       } else if (dateOfA < dateOfB) {
-    //         return 1;
-    //       } else {
-    //         return 0;
-    //       }
-    //     }
-    //   }
-    //   return 0;
-    // });
 
     for (let i = 0; i < formResponses.length; i++) {
       const formResponse = formResponses[i];
+      // ! The timestamp is required in a coach's response.
+      let reportedAt: Date | null = null;
+      if (formResponse.lastSubmittedTime) {
+        reportedAt = new Date(formResponse.lastSubmittedTime);
+      }
+      if (!reportedAt) {
+        continue;
+      }
+
       const answers = formResponse.answers;
       if (!answers) {
-        console.log('Answers is empty' + i);
         continue;
       }
 
@@ -282,7 +258,6 @@ export class AvailabilityTaskProducer {
           });
         }
       } else {
-        console.log('Answer is not found: ' + i);
         console.log(formResponse.answers);
       }
       if (!coach) {
@@ -465,6 +440,7 @@ export class AvailabilityTaskProducer {
           dateOfOpening,
           dateOfClosure,
           minutesOfDuration: COACH_AVAILABILITY_DURATION_GOOGLE_FORM,
+          reportedAt: reportedAt,
         },
       });
 

@@ -26,6 +26,9 @@ export default registerAs('microservice', () => ({
     localPath: process.env.FILE_MANAGEMENT_LOCAL_PATH || './uploaded-files',
   },
   mindbody: {
+    mbUrl: process.env.MINDBODY_URL,
+    username: process.env.MINDBODY_USER,
+    password: process.env.MINDBODY_PWD,
     apiKey: process.env.MINDBODY_API_KEY,
     siteId: -99,
   },
@@ -54,7 +57,7 @@ export default registerAs('microservice', () => ({
   },
   token: {
     access: {
-      expiresIn: '6000s',
+      expiresIn: '600s',
       secret: process.env.ACCESS_TOKEN_SECRET,
     },
     refresh: {

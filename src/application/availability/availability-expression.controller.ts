@@ -64,6 +64,7 @@ export class AvailabilityExpressionController {
   ): Promise<AvailabilityExpression> {
     const availabilityExpressionCreateInput: Prisma.AvailabilityExpressionCreateInput =
       body;
+    availabilityExpressionCreateInput.reportedAt = new Date();
 
     return await this.availabilityExpressionService.create({
       data: availabilityExpressionCreateInput,

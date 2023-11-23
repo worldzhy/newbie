@@ -254,12 +254,13 @@ enum AvailabilityTimeslotStatus {
 }
 
 enum EventIssueType {
-  ERROR_COACH_NOT_EXISTED
-  ERROR_COACH_NOT_CONFIGURED
-  ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_TIME
-  ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_TYPE
-  ERROR_COACH_NOT_AVAILABLE_FOR_EVENT_VENUE
-  WARNING_COACH_HAS_BETTER_CHOICE
+  ERROR_NONEXISTENT_COACH
+  ERROR_UNCONFIGURED_COACH
+  ERROR_UNAVAILABLE_EVENT_TIME
+  ERROR_CONFLICTING_EVENT_TIME
+  ERROR_UNAVAILABLE_EVENT_TYPE
+  ERROR_UNAVAILABLE_EVENT_VENUE
+  WARNING_HAS_MORE_SUITABLE_COACH
 
   @@schema("microservice/event-scheduling")
 }
@@ -285,7 +286,7 @@ enum EventContainerStatus {
   @@schema("microservice/event-scheduling")
 }
 
-enum EventContainerNoteType {
+enum EventChangeLogType {
   SYSTEM
   USER
 
@@ -304,6 +305,7 @@ model AvailabilityExpression {
   dateOfClosure                          DateTime?
   minutesOfDuration                      Int // Generally it should be 30 or 60
   timezone                               String? // https://www.iplocate.com/en/resources/timezones/list-of-timezones
+  reportedAt                             DateTime
   createdAt                              DateTime                     @default(now())
   updatedAt                              DateTime                     @updatedAt
   timeslots                              AvailabilityTimeslot[]
@@ -336,8 +338,10 @@ model AvailabilityTimeslot {
 
 // todo: datetimeOfStart, datetimeOfEnd, week, dayOfWeek should be generated in prisma middleware.
 model Event {
-  id                Int            @id @default(autoincrement())
-  hostUserId        String?        @db.Uuid
+  id                Int              @id @default(autoincrement())
+  isLocked          Boolean          @default(false)
+  isPublished       Boolean          @default(false)
+  hostUserId        String?          @db.Uuid
   datetimeOfStart   DateTime
   datetimeOfEnd     DateTime
   year              Int
@@ -349,14 +353,16 @@ model Event {
   hour              Int
   minute            Int
   minutesOfDuration Int
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  deletedAt         DateTime? // Support soft deletion
+  changeLogs        EventChangeLog[]
   issues            EventIssue[]
-  type              EventType      @relation(fields: [typeId], references: [id], onDelete: Cascade)
+  type              EventType        @relation(fields: [typeId], references: [id], onDelete: Cascade)
   typeId            Int
-  venue             EventVenue     @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  venue             EventVenue       @relation(fields: [venueId], references: [id], onDelete: Cascade)
   venueId           Int
-  container         EventContainer @relation(fields: [containerId], references: [id], onDelete: Cascade)
+  container         EventContainer   @relation(fields: [containerId], references: [id], onDelete: Cascade)
   containerId       Int
   reservations      Reservation[]
 
@@ -432,20 +438,20 @@ model EventContainer {
   venue         EventVenue           @relation(fields: [venueId], references: [id], onDelete: Cascade)
   venueId       Int
   events        Event[]
-  notes         EventContainerNote[]
 
   @@schema("microservice/event-scheduling")
 }
 
-model EventContainerNote {
-  id            Int                    @id @default(autoincrement())
-  type          EventContainerNoteType @default(USER)
-  description   String
-  notedByUserId String?                @db.Uuid
-  createdAt     DateTime               @default(now())
-  updatedAt     DateTime               @updatedAt
-  container     EventContainer         @relation(fields: [containerId], references: [id], onDelete: Cascade)
-  containerId   Int
+model EventChangeLog {
+  id               Int                @id @default(autoincrement())
+  type             EventChangeLogType @default(USER)
+  description      String
+  notedByUserId    String?            @db.Uuid
+  eventContainerId Int
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  event            Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId          Int
 
   @@schema("microservice/event-scheduling")
 }
