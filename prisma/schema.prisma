@@ -43,8 +43,8 @@ datasource db {
 model Organization {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz()
+  updatedAt DateTime @updatedAt @db.Timestamptz()
   roles     Role[]
   users     User[]
 
@@ -60,9 +60,9 @@ model User {
   phone            String?                  @unique
   password         String? // automatic hashing
   status           UserStatus               @default(ACTIVE)
-  lastLoginAt      DateTime?
-  createdAt        DateTime                 @default(now())
-  updatedAt        DateTime                 @updatedAt
+  lastLoginAt      DateTime?                @db.Timestamptz()
+  createdAt        DateTime                 @default(now()) @db.Timestamptz()
+  updatedAt        DateTime                 @updatedAt @db.Timestamptz()
   organization     Organization?            @relation(fields: [organizationId], references: [id])
   organizationId   String?                  @db.Uuid
   profile          UserProfile?
@@ -98,8 +98,8 @@ model UserProfile {
   websites                 Json? // {'facebook': 'https://www.facebook.com/elonmusk', 'twitter': 'https://twitter.com/elonmusk'}
   picture                  String?
   tagIds                   Int[]
-  createdAt                DateTime           @default(now())
-  updatedAt                DateTime           @updatedAt
+  createdAt                DateTime           @default(now()) @db.Timestamptz()
+  updatedAt                DateTime           @updatedAt @db.Timestamptz()
   user                     User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId                   String             @unique @db.Uuid
   // For fitness application
@@ -126,8 +126,8 @@ model Role {
   id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name           String        @unique
   description    String?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  createdAt      DateTime      @default(now()) @db.Timestamptz()
+  updatedAt      DateTime      @updatedAt @db.Timestamptz()
   organization   Organization? @relation(fields: [organizationId], references: [id])
   organizationId String?       @db.Uuid
   users          User[]
@@ -146,8 +146,8 @@ model Permission {
   reason            String? // message which explains why rule is forbidden
   trustedEntityType TrustedEntityType
   trustedEntityId   String            @db.Uuid
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+  createdAt         DateTime          @default(now()) @db.Timestamptz()
+  updatedAt         DateTime          @updatedAt @db.Timestamptz()
 
   @@schema("microservice/account")
 }
@@ -178,9 +178,9 @@ model VerificationCode {
   code      String
   status    VerificationCodeStatus
   use       VerificationCodeUse
-  expiredAt DateTime
-  createdAt DateTime               @default(now())
-  updatedAt DateTime               @updatedAt
+  expiredAt DateTime               @db.Timestamptz()
+  createdAt DateTime               @default(now()) @db.Timestamptz()
+  updatedAt DateTime               @updatedAt @db.Timestamptz()
 
   @@schema("microservice/account")
 }
@@ -222,8 +222,8 @@ model CronTask {
   name       String   @unique
   expression String
   command    String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt  DateTime @default(now()) @db.Timestamptz()
+  updatedAt  DateTime @updatedAt @db.Timestamptz()
 
   @@schema("microservice/cron")
 }
@@ -305,9 +305,9 @@ model AvailabilityExpression {
   dateOfClosure                          DateTime?
   minutesOfDuration                      Int // Generally it should be 30 or 60
   timezone                               String? // https://www.iplocate.com/en/resources/timezones/list-of-timezones
-  reportedAt                             DateTime
-  createdAt                              DateTime                     @default(now())
-  updatedAt                              DateTime                     @updatedAt
+  reportedAt                             DateTime                     @db.Timestamptz()
+  createdAt                              DateTime                     @default(now()) @db.Timestamptz()
+  updatedAt                              DateTime                     @updatedAt @db.Timestamptz()
   timeslots                              AvailabilityTimeslot[]
 
   @@schema("microservice/event-scheduling")
@@ -318,8 +318,8 @@ model AvailabilityTimeslot {
   status            AvailabilityTimeslotStatus @default(USABLE)
   hostUserId        String                     @db.Uuid
   venueIds          Int[]
-  datetimeOfStart   DateTime
-  datetimeOfEnd     DateTime
+  datetimeOfStart   DateTime                   @db.Timestamptz()
+  datetimeOfEnd     DateTime                   @db.Timestamptz()
   year              Int
   month             Int
   dayOfMonth        Int
@@ -328,8 +328,8 @@ model AvailabilityTimeslot {
   minute            Int
   minutesOfTimeslot Int                        @default(5)
   timezone          String? // https://www.iplocate.com/en/resources/timezones/list-of-timezones
-  createdAt         DateTime                   @default(now())
-  updatedAt         DateTime                   @updatedAt
+  createdAt         DateTime                   @default(now()) @db.Timestamptz()
+  updatedAt         DateTime                   @updatedAt @db.Timestamptz()
   expression        AvailabilityExpression     @relation(fields: [expressionId], references: [id], onDelete: Cascade)
   expressionId      Int
 
@@ -342,8 +342,8 @@ model Event {
   isLocked          Boolean          @default(false)
   isPublished       Boolean          @default(false)
   hostUserId        String?          @db.Uuid
-  datetimeOfStart   DateTime
-  datetimeOfEnd     DateTime
+  datetimeOfStart   DateTime         @db.Timestamptz()
+  datetimeOfEnd     DateTime         @db.Timestamptz()
   year              Int
   month             Int
   dayOfMonth        Int
@@ -353,8 +353,8 @@ model Event {
   hour              Int
   minute            Int
   minutesOfDuration Int
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
+  createdAt         DateTime         @default(now()) @db.Timestamptz()
+  updatedAt         DateTime         @updatedAt @db.Timestamptz()
   deletedAt         DateTime? // Support soft deletion
   changeLogs        EventChangeLog[]
   issues            EventIssue[]
@@ -374,8 +374,8 @@ model EventIssue {
   type        EventIssueType
   status      EventIssueStatus @default(UNREPAIRED)
   description String?
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  createdAt   DateTime         @default(now()) @db.Timestamptz()
+  updatedAt   DateTime         @updatedAt @db.Timestamptz()
   event       Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
   eventId     Int
 
@@ -390,8 +390,8 @@ model EventType {
   minutesInAdvanceToReserve Int?
   minutesInAdvanceToCancel  Int?
   tagId                     Int?
-  createdAt                 DateTime @default(now())
-  updatedAt                 DateTime @updatedAt
+  createdAt                 DateTime @default(now()) @db.Timestamptz()
+  updatedAt                 DateTime @updatedAt @db.Timestamptz()
   events                    Event[]
 
   @@schema("microservice/event-scheduling")
@@ -428,13 +428,13 @@ model EventContainer {
   name          String?
   origin        EventContainerOrigin @default(INTERNAL)
   status        EventContainerStatus @default(EDITING)
-  dateOfOpening DateTime? // Use dateOfOpening and dateOfClosure together
-  dateOfClosure DateTime?
+  dateOfOpening DateTime?            @db.Timestamptz() // Use dateOfOpening and dateOfClosure together
+  dateOfClosure DateTime?            @db.Timestamptz()
   year          Int // Use year and month together
   month         Int
   timezone      String? // https://www.iplocate.com/en/resources/timezones/list-of-timezones
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
+  createdAt     DateTime             @default(now()) @db.Timestamptz()
+  updatedAt     DateTime             @updatedAt @db.Timestamptz()
   venue         EventVenue           @relation(fields: [venueId], references: [id], onDelete: Cascade)
   venueId       Int
   events        Event[]
@@ -448,8 +448,8 @@ model EventChangeLog {
   description      String
   notedByUserId    String?            @db.Uuid
   eventContainerId Int
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
+  createdAt        DateTime           @default(now()) @db.Timestamptz()
+  updatedAt        DateTime           @updatedAt @db.Timestamptz()
   event            Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
   eventId          Int
 
@@ -459,8 +459,8 @@ model EventChangeLog {
 model Reservation {
   id           Int      @id @default(autoincrement())
   clientUserId String   @db.Uuid
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime @default(now()) @db.Timestamptz()
+  updatedAt    DateTime @updatedAt @db.Timestamptz()
   event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
   eventId      Int
 
@@ -484,8 +484,8 @@ model File {
   s3Bucket     String
   s3Key        String // File name in S3 bucket.
   s3Response   Json
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime @default(now()) @db.Timestamptz()
+  updatedAt    DateTime @updatedAt @db.Timestamptz()
   folder       Folder?  @relation(fields: [folderId], references: [id])
   folderId     Int?
 
@@ -496,8 +496,8 @@ model Folder {
   id        Int      @id @default(autoincrement())
   name      String
   parentId  String?  @db.Uuid
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz()
+  updatedAt DateTime @updatedAt @db.Timestamptz()
   files     File[]
 
   @@unique([name, parentId])
@@ -519,8 +519,8 @@ model Place {
   country              String?
   googleMapPlaceId     String?
   googleMapPlaceResult Json?
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  createdAt            DateTime @default(now()) @db.Timestamptz()
+  updatedAt            DateTime @updatedAt @db.Timestamptz()
 
   @@schema("microservice/map")
 }
@@ -538,8 +538,8 @@ model EmailNotification {
   pinpointRequestId String? // RequestId is the Pinpoint request id. One request can contain multiple text messages.
   pinpointMessageId String? // MessageId is the email message id.
   pinpointResponse  Json?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt         DateTime @default(now()) @db.Timestamptz()
+  updatedAt         DateTime @updatedAt @db.Timestamptz()
 
   @@schema("microservice/notification")
 }
@@ -550,8 +550,8 @@ model SmsNotification {
   pinpointRequestId String? // RequestId is the Pinpoint request id. One request can contain multiple text messages.
   pinpointMessageId String? // MessageId is the text message id.
   pinpointResponse  Json?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt         DateTime @default(now()) @db.Timestamptz()
+  updatedAt         DateTime @updatedAt @db.Timestamptz()
 
   @@schema("microservice/notification")
 }
@@ -572,8 +572,8 @@ model Order {
   note                String?
   items               OrderItem[]
   stripePaymentIntent StripePaymentIntent[]
-  createdAt           DateTime              @default(now())
-  updatedAt           DateTime              @updatedAt
+  createdAt           DateTime              @default(now()) @db.Timestamptz()
+  updatedAt           DateTime              @updatedAt @db.Timestamptz()
 
   @@schema("microservice/order-mgmt")
 }
@@ -584,8 +584,8 @@ model OrderItem {
   totalPrice Float
   totalTax   Float?
   pieces     Int?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt  DateTime @default(now()) @db.Timestamptz()
+  updatedAt  DateTime @updatedAt @db.Timestamptz()
   order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId    String
 
@@ -597,8 +597,8 @@ model StripePaymentIntent {
   status       String
   amount       Float
   clientSecret String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime @default(now()) @db.Timestamptz()
+  updatedAt    DateTime @updatedAt @db.Timestamptz()
   order        Order?   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId      String?
 
@@ -619,8 +619,8 @@ model Project {
   id           String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name         String               @unique
   state        ProjectState         @default(PLANNING)
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
+  createdAt    DateTime             @default(now()) @db.Timestamptz()
+  updatedAt    DateTime             @updatedAt @db.Timestamptz()
   elements     ProjectElement[]
   checkpoints  ProjectCheckpoint[]
   environments ProjectEnvironment[]
@@ -642,8 +642,8 @@ model ProjectElement {
   section   String?
   label     String
   content   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz()
+  updatedAt DateTime @updatedAt @db.Timestamptz()
   project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId String?  @db.Uuid
 
@@ -654,8 +654,8 @@ model ProjectCheckpoint {
   id        Int                    @id @default(autoincrement())
   type      ProjectCheckpointType
   state     ProjectCheckpointState @default(TODO)
-  createdAt DateTime               @default(now())
-  updatedAt DateTime               @updatedAt
+  createdAt DateTime               @default(now()) @db.Timestamptz()
+  updatedAt DateTime               @updatedAt @db.Timestamptz()
   Project   Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId String                 @db.Uuid
 
@@ -698,8 +698,8 @@ model ProjectEnvironment {
   awsSecretAccessKey   String? // automatic hashing
   awsRegion            String?
   s3ForCloudformation  String?
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
+  createdAt            DateTime              @default(now()) @db.Timestamptz()
+  updatedAt            DateTime              @updatedAt @db.Timestamptz()
   project              Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId            String                @db.Uuid
   infrastructureStacks InfrastructureStack[]
@@ -717,8 +717,8 @@ model InfrastructureStack {
   createStackOutput   Json?
   describeStackOutput Json?
   deleteStackOutput   Json?
-  createdAt           DateTime                   @default(now())
-  updatedAt           DateTime                   @updatedAt
+  createdAt           DateTime                   @default(now()) @db.Timestamptz()
+  updatedAt           DateTime                   @updatedAt @db.Timestamptz()
   environment         ProjectEnvironment         @relation(fields: [environmentId], references: [id], onDelete: Cascade)
   environmentId       Int
 
@@ -770,8 +770,8 @@ model Queue {
   name      String
   keyName   String
   keyType   QueueKeyType
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  createdAt DateTime     @default(now()) @db.Timestamptz()
+  updatedAt DateTime     @updatedAt @db.Timestamptz()
 
   @@schema("microservice/queue")
 }
@@ -785,8 +785,8 @@ model QueueTask {
   bullJobId    String?
   sqsMessageId String?
   sqsResponse  Json?
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  createdAt    DateTime       @default(now()) @db.Timestamptz()
+  updatedAt    DateTime       @updatedAt @db.Timestamptz()
 
   @@schema("microservice/queue")
 }
@@ -801,8 +801,8 @@ model QueueTask {
 model Spu {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz()
+  updatedAt DateTime @updatedAt @db.Timestamptz()
   skus      Sku[]
 
   @@schema("microservice/stock-mgmt")
@@ -812,8 +812,8 @@ model Sku {
   id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name              String
   unitOfMeasurement UnitOfMeasurement
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+  createdAt         DateTime          @default(now()) @db.Timestamptz()
+  updatedAt         DateTime          @updatedAt @db.Timestamptz()
   spu               Spu?              @relation(fields: [spuId], references: [id])
   spuId             String?           @db.Uuid
   warehouseSkus     WarehouseSku[]
@@ -827,8 +827,8 @@ model Warehouse {
   name           String
   placeId        Int?
   tagIds         Int[]
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  createdAt      DateTime        @default(now()) @db.Timestamptz()
+  updatedAt      DateTime        @updatedAt @db.Timestamptz()
   skus           WarehouseSku[]
   skuConversions SkuConversion[]
   skuTrails      SkuTrail[]
@@ -838,8 +838,8 @@ model Warehouse {
 
 model WarehouseSku {
   id          Int       @id @default(autoincrement())
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime  @default(now()) @db.Timestamptz()
+  updatedAt   DateTime  @updatedAt @db.Timestamptz()
   warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
   warehouseId String    @db.Uuid
   sku         Sku       @relation(fields: [skuId], references: [id])
@@ -853,8 +853,8 @@ model SkuConversion {
   id          Int                 @id @default(autoincrement())
   name        String
   tagIds      Int[]
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
+  createdAt   DateTime            @default(now()) @db.Timestamptz()
+  updatedAt   DateTime            @updatedAt @db.Timestamptz()
   items       SkuConversionItem[]
   warehouse   Warehouse           @relation(fields: [warehouseId], references: [id])
   warehouseId String              @db.Uuid
@@ -868,8 +868,8 @@ model SkuConversionItem {
   warehouseSkuId     Int
   unitOfMeasurement  UnitOfMeasurement
   valueOfMeasurement Float
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
+  createdAt          DateTime          @default(now()) @db.Timestamptz()
+  updatedAt          DateTime          @updatedAt @db.Timestamptz()
   skuConversion      SkuConversion     @relation(fields: [skuConversionId], references: [id])
   skuConversionId    Int
 
@@ -885,8 +885,8 @@ model SkuTrail {
   valueOfMeasurement Float
   priceOfUnit        Float
   priceOfTotal       Float
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
+  createdAt          DateTime          @default(now()) @db.Timestamptz()
+  updatedAt          DateTime          @updatedAt @db.Timestamptz()
   warehouse          Warehouse         @relation(fields: [warehouseId], references: [id])
   warehouseId        String            @db.Uuid
 
@@ -936,8 +936,8 @@ enum TransactionType {
 model Tag {
   id        Int       @id @default(autoincrement())
   name      String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime  @default(now()) @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @db.Timestamptz()
   group     TagGroup? @relation(fields: [groupId], references: [id], onDelete: Cascade)
   groupId   Int?
 
@@ -947,8 +947,8 @@ model Tag {
 model TagGroup {
   id        Int      @id @default(autoincrement())
   name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz()
+  updatedAt DateTime @updatedAt @db.Timestamptz()
   tags      Tag[]
 
   @@schema("microservice/tag")
@@ -965,8 +965,8 @@ model AccessToken {
   id        Int      @id @default(autoincrement())
   userId    String   @db.Uuid
   token     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz()
+  updatedAt DateTime @updatedAt @db.Timestamptz()
 
   @@schema("microservice/token")
 }
@@ -975,8 +975,8 @@ model RefreshToken {
   id        Int      @id @default(autoincrement())
   userId    String   @db.Uuid
   token     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz()
+  updatedAt DateTime @updatedAt @db.Timestamptz()
 
   @@schema("microservice/token")
 }
@@ -994,8 +994,8 @@ model Workflow {
   id          String          @id @default(uuid())
   name        String          @unique
   description String?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  createdAt   DateTime        @default(now()) @db.Timestamptz()
+  updatedAt   DateTime        @updatedAt @db.Timestamptz()
   views       WorkflowView[]
   states      WorkflowState[]
 
@@ -1006,8 +1006,8 @@ model WorkflowView {
   id             Int                     @id @default(autoincrement())
   name           String
   description    String?
-  createdAt      DateTime                @default(now())
-  updatedAt      DateTime                @updatedAt
+  createdAt      DateTime                @default(now()) @db.Timestamptz()
+  updatedAt      DateTime                @updatedAt @db.Timestamptz()
   components     WorkflowViewComponent[]
   outboundRoutes WorkflowRoute[]         @relation("outboundRoutes")
   inboundRoutes  WorkflowRoute[]         @relation("inboundRoutes")
@@ -1022,8 +1022,8 @@ model WorkflowViewComponent {
   type       WorkflowViewComponentType
   sort       Int
   properties Json
-  createdAt  DateTime                  @default(now())
-  updatedAt  DateTime                  @updatedAt
+  createdAt  DateTime                  @default(now()) @db.Timestamptz()
+  updatedAt  DateTime                  @updatedAt @db.Timestamptz()
   view       WorkflowView              @relation(fields: [viewId], references: [id], onDelete: Cascade)
   viewId     Int
 
@@ -1053,8 +1053,8 @@ model WorkflowState {
   id          Int             @id @default(autoincrement())
   name        String
   description String?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  createdAt   DateTime        @default(now()) @db.Timestamptz()
+  updatedAt   DateTime        @updatedAt @db.Timestamptz()
   routes      WorkflowRoute[]
   workflow    Workflow        @relation(fields: [workflowId], references: [id], onDelete: Cascade)
   workflowId  String
@@ -1073,8 +1073,8 @@ model WorkflowRoute {
   nextViewId Int
   nextRoleId String?       @db.Uuid // The next role to take over the next step.
   nextUserId String?       @db.Uuid // The next user to take over the next step.
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
+  createdAt  DateTime      @default(now()) @db.Timestamptz()
+  updatedAt  DateTime      @updatedAt @db.Timestamptz()
 
   @@unique([viewId, stateId])
   @@schema("microservice/workflow")
@@ -1106,8 +1106,8 @@ model PostgresqlDatasource {
   database    String
   schema      String
   state       PostgresqlDatasourceState        @default(NOT_LOADED)
-  createdAt   DateTime                         @default(now())
-  updatedAt   DateTime                         @updatedAt
+  createdAt   DateTime                         @default(now()) @db.Timestamptz()
+  updatedAt   DateTime                         @updatedAt @db.Timestamptz()
   tables      PostgresqlDatasourceTable[]
   constraints PostgresqlDatasourceConstraint[]
 
@@ -1128,8 +1128,8 @@ model PostgresqlDatasourceConstraint {
   keyColumn    String // The table's primary key column or foreign key column.
   keyType      PostgresqlDatasourceConstraintKeyType
   foreignTable String? // Has value when the type is FOREIGN_KEY. 
-  createdAt    DateTime                              @default(now())
-  updatedAt    DateTime                              @updatedAt
+  createdAt    DateTime                              @default(now()) @db.Timestamptz()
+  updatedAt    DateTime                              @updatedAt @db.Timestamptz()
   datasource   PostgresqlDatasource                  @relation(fields: [datasourceId], references: [id], onDelete: Cascade)
   datasourceId String                                @db.Uuid
 
@@ -1147,8 +1147,8 @@ model PostgresqlDatasourceTable {
   id                 Int                               @id @default(autoincrement())
   name               String
   schema             String
-  createdAt          DateTime                          @default(now())
-  updatedAt          DateTime                          @updatedAt
+  createdAt          DateTime                          @default(now()) @db.Timestamptz()
+  updatedAt          DateTime                          @updatedAt @db.Timestamptz()
   datasource         PostgresqlDatasource              @relation(fields: [datasourceId], references: [id], onDelete: Cascade)
   datasourceId       String                            @db.Uuid
   columns            PostgresqlDatasourceTableColumn[]
@@ -1163,8 +1163,8 @@ model PostgresqlDatasourceTableColumn {
   type            String
   constraint      String?
   ordinalPosition Int? // The sort number of the column in the table.
-  createdAt       DateTime                  @default(now())
-  updatedAt       DateTime                  @updatedAt
+  createdAt       DateTime                  @default(now()) @db.Timestamptz()
+  updatedAt       DateTime                  @updatedAt @db.Timestamptz()
   table           PostgresqlDatasourceTable @relation(fields: [tableId], references: [id], onDelete: Cascade)
   tableId         Int
 
@@ -1175,8 +1175,8 @@ model ElasticsearchDatasource {
   id        String                         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   node      String
   state     ElasticsearchDatasourceState   @default(NOT_LOADED)
-  createdAt DateTime                       @default(now())
-  updatedAt DateTime                       @updatedAt
+  createdAt DateTime                       @default(now()) @db.Timestamptz()
+  updatedAt DateTime                       @updatedAt @db.Timestamptz()
   indices   ElasticsearchDatasourceIndex[]
 
   @@schema("application/engined")
@@ -1193,8 +1193,8 @@ model ElasticsearchDatasourceIndex {
   id                 Int                                 @id @default(autoincrement())
   name               String
   state              ElasticsearchDatasourceIndexState   @default(NO_MAPPING)
-  createdAt          DateTime                            @default(now())
-  updatedAt          DateTime                            @updatedAt
+  createdAt          DateTime                            @default(now()) @db.Timestamptz()
+  updatedAt          DateTime                            @updatedAt @db.Timestamptz()
   datasource         ElasticsearchDatasource             @relation(fields: [datasourceId], references: [id], onDelete: Cascade)
   datasourceId       String                              @db.Uuid
   fields             ElasticsearchDatasourceIndexField[]
@@ -1217,8 +1217,8 @@ model ElasticsearchDatasourceIndexField {
   type             String?
   fields           Json?
   properties       Json?
-  createdAt        DateTime                       @default(now())
-  updatedAt        DateTime                       @updatedAt
+  createdAt        DateTime                       @default(now()) @db.Timestamptz()
+  updatedAt        DateTime                       @updatedAt @db.Timestamptz()
   index            ElasticsearchDatasourceIndex   @relation(fields: [indexId], references: [id], onDelete: Cascade)
   indexId          Int
   databoardColumns ElasticsearchDataboardColumn[]
@@ -1231,8 +1231,8 @@ model DatatransPipeline {
   name              String
   hasManyTables     String[] // The child tables should be loaded into the payload to be transported.
   belongsToTables   String[] // The parent tables should be loaded into the payload to be transported.
-  createdAt         DateTime                     @default(now())
-  updatedAt         DateTime                     @updatedAt
+  createdAt         DateTime                     @default(now()) @db.Timestamptz()
+  updatedAt         DateTime                     @updatedAt @db.Timestamptz()
   fromTable         PostgresqlDatasourceTable    @relation(fields: [fromTableId], references: [id], onDelete: Cascade)
   fromTableId       Int
   toIndex           ElasticsearchDatasourceIndex @relation(fields: [toIndexId], references: [id])
@@ -1247,8 +1247,8 @@ model DatatransMission {
   state               DatatransMissionState @default(PENDING)
   numberOfRecords     Int // Number of records that will be sent from datasource table
   numberOfBatches     Int
-  createdAt           DateTime              @default(now())
-  updatedAt           DateTime              @updatedAt
+  createdAt           DateTime              @default(now()) @db.Timestamptz()
+  updatedAt           DateTime              @updatedAt @db.Timestamptz()
   datatransPipeline   DatatransPipeline     @relation(fields: [datatransPipelineId], references: [id])
   datatransPipelineId String                @db.Uuid
   tasks               DatatransTask[]
@@ -1272,8 +1272,8 @@ model DatatransTask {
   skip         Int
   sqsMessageId String?
   sqsResponse  Json?
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
+  createdAt    DateTime           @default(now()) @db.Timestamptz()
+  updatedAt    DateTime           @updatedAt @db.Timestamptz()
   mission      DatatransMission   @relation(fields: [missionId], references: [id], onDelete: Cascade)
   missionId    String             @db.Uuid
 
@@ -1293,8 +1293,8 @@ model ElasticsearchDataboard {
   name              String
   state             ElasticsearchDataboardState    @default(NOT_LOADED)
   description       String?
-  createdAt         DateTime                       @default(now())
-  updatedAt         DateTime                       @updatedAt
+  createdAt         DateTime                       @default(now()) @db.Timestamptz()
+  updatedAt         DateTime                       @updatedAt @db.Timestamptz()
   datasourceIndex   ElasticsearchDatasourceIndex   @relation(fields: [datasourceIndexId], references: [id])
   datasourceIndexId Int
   columns           ElasticsearchDataboardColumn[]
@@ -1320,8 +1320,8 @@ model ElasticsearchDataboardColumn {
   sortable               Boolean?
   tooltip                String?
   formatter              ElasticsearchDataboardColumnFormatter @default(NONE)
-  createdAt              DateTime                              @default(now())
-  updatedAt              DateTime                              @updatedAt
+  createdAt              DateTime                              @default(now()) @db.Timestamptz()
+  updatedAt              DateTime                              @updatedAt @db.Timestamptz()
   databoard              ElasticsearchDataboard                @relation(fields: [databoardId], references: [id], onDelete: Cascade)
   databoardId            String                                @db.Uuid
   datasourceIndexField   ElasticsearchDatasourceIndexField     @relation(fields: [datasourceIndexFieldId], references: [id])
@@ -1358,8 +1358,8 @@ model Certification {
   id              Int      @id @default(autoincrement())
   name            String
   description     String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime @default(now()) @db.Timestamptz()
+  updatedAt       DateTime @updatedAt @db.Timestamptz()
   candidateUser   User     @relation(fields: [candidateUserId], references: [id])
   candidateUserId String   @db.Uuid
 
@@ -1372,8 +1372,8 @@ model Job {
   type        JobType
   position    String
   description String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now()) @db.Timestamptz()
+  updatedAt   DateTime @updatedAt @db.Timestamptz()
   placeId     Int?
 
   @@schema("application/recruitment")
@@ -1394,8 +1394,8 @@ model JobApplication {
   jobSite         String
   testTypes       String[]
   referredBy      String // This field should user.name or user.id
-  createdAt       DateTime                 @default(now())
-  updatedAt       DateTime                 @updatedAt
+  createdAt       DateTime                 @default(now()) @db.Timestamptz()
+  updatedAt       DateTime                 @updatedAt @db.Timestamptz()
   workflows       JobApplicationWorkflow[]
   candidateUser   User                     @relation(fields: [candidateUserId], references: [id])
   candidateUserId String                   @db.Uuid
@@ -1405,8 +1405,8 @@ model JobApplication {
 
 model JobApplicationWorkflow {
   id                 String                         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  createdAt          DateTime                       @default(now())
-  updatedAt          DateTime                       @updatedAt
+  createdAt          DateTime                       @default(now()) @db.Timestamptz()
+  updatedAt          DateTime                       @updatedAt @db.Timestamptz()
   jobApplication     JobApplication                 @relation(fields: [jobApplicationId], references: [id], onDelete: Cascade)
   jobApplicationId   String                         @db.Uuid
   beingHeldByUser    User?                          @relation(fields: [beingHeldByUserId], references: [id])
@@ -1445,10 +1445,10 @@ model JobApplicationWorkflowPayload {
   id                  Int                    @id @default(autoincrement())
   testType            String?
   testSite            String?
-  appointmentStartsAt DateTime?
-  appointmentEndsAt   DateTime?
-  createdAt           DateTime               @default(now())
-  updatedAt           DateTime               @updatedAt
+  appointmentStartsAt DateTime?              @db.Timestamptz()
+  appointmentEndsAt   DateTime?              @db.Timestamptz()
+  createdAt           DateTime               @default(now()) @db.Timestamptz()
+  updatedAt           DateTime               @updatedAt @db.Timestamptz()
   workflow            JobApplicationWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
   workflowId          String                 @unique @db.Uuid
 
@@ -1459,8 +1459,8 @@ model JobApplicationWorkflowFile {
   id             Int                    @id @default(autoincrement())
   fileId         String                 @db.Uuid
   originalName   String
-  createdAt      DateTime               @default(now())
-  updatedAt      DateTime               @updatedAt
+  createdAt      DateTime               @default(now()) @db.Timestamptz()
+  updatedAt      DateTime               @updatedAt @db.Timestamptz()
   workflow       JobApplicationWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
   workflowId     String                 @db.Uuid
   workflowStepId Int
@@ -1489,8 +1489,8 @@ model JobApplicationWorkflowTask {
   assignee        String?
   assigneeUserId  String                          @db.Uuid
   state           JobApplicationWorkflowTaskState @default(PENDING)
-  createdAt       DateTime                        @default(now())
-  updatedAt       DateTime                        @updatedAt
+  createdAt       DateTime                        @default(now()) @db.Timestamptz()
+  updatedAt       DateTime                        @updatedAt @db.Timestamptz()
   workflow        JobApplicationWorkflow          @relation(fields: [workflowId], references: [id], onDelete: Cascade)
   workflowId      String                          @db.Uuid
 
@@ -1582,8 +1582,8 @@ model TcWorkflow {
   statusCardNumber           String?
   dateOfStatusCardIssue      DateTime?         @db.Date
   dateOfRequest              DateTime          @default(now()) @db.Date
-  createdAt                  DateTime          @default(now())
-  updatedAt                  DateTime          @updatedAt
+  createdAt                  DateTime          @default(now()) @db.Timestamptz()
+  updatedAt                  DateTime          @updatedAt @db.Timestamptz()
   // Below fields copy from latest workflow trail.
   view                       String
   state                      String
@@ -1603,8 +1603,8 @@ model TcWorkflowTrail {
   nextView          String
   nextRoleId        String?    @db.Uuid // The role who will process the next step.
   processedByUserId String?    @db.Uuid // The user who processed this step.
-  createdAt         DateTime   @default(now())
-  updatedAt         DateTime   @updatedAt
+  createdAt         DateTime   @default(now()) @db.Timestamptz()
+  updatedAt         DateTime   @updatedAt @db.Timestamptz()
   workflow          TcWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
   workflowId        String     @db.Uuid
 
