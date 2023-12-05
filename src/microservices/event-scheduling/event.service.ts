@@ -118,6 +118,7 @@ export class EventService {
 
               targetEvents.push({
                 hostUserId: event.hostUserId,
+                timeZone: event.timeZone,
                 year: dayOfTargetWeek.year,
                 month: dayOfTargetWeek.month,
                 dayOfMonth: dayOfTargetWeek.dayOfMonth,

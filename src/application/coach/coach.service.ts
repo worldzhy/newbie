@@ -19,7 +19,7 @@ export class CoachService {
       this.availabilityTimeslotService.MINUTES_Of_TIMESLOT_UNIT;
   }
 
-  async sortAvailableCoachesForEvent(event: {
+  async getSortedCoachesWithQuotaLimit(event: {
     venueId: number;
     typeId: number;
     datetimeOfStart: Date;
@@ -73,7 +73,7 @@ export class CoachService {
         venueIds: {has: event.venueId},
         datetimeOfStart: {gte: newDatetimeOfStart},
         datetimeOfEnd: {lte: newDatetimeOfEnd},
-        status: AvailabilityTimeslotStatus.USABLE,
+        // status: AvailabilityTimeslotStatus.USABLE,
       },
     });
 
@@ -191,7 +191,7 @@ export class CoachService {
     return finalCoaches;
   }
 
-  async sortCoachesForEvent(event: {
+  async getSortedCoachesWithoutQuotaLimit(event: {
     venueId: number;
     typeId: number;
     datetimeOfStart: Date;
@@ -242,7 +242,7 @@ export class CoachService {
         venueIds: {has: event.venueId},
         datetimeOfStart: {gte: newDatetimeOfStart},
         datetimeOfEnd: {lte: newDatetimeOfEnd},
-        status: AvailabilityTimeslotStatus.USABLE,
+        // status: AvailabilityTimeslotStatus.USABLE,
       },
     });
 

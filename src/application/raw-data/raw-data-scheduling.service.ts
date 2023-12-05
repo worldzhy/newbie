@@ -6,7 +6,12 @@ import {EventVenueService} from '@microservices/event-scheduling/event-venue.ser
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
 import {SnowflakeService} from '@toolkit/snowflake/snowflake.service';
 import {EventContainerOrigin, EventContainerStatus} from '@prisma/client';
-import {weekOfMonth, weekOfYear} from '@toolkit/utilities/datetime.util';
+import {
+  getTimeZoneOffset,
+  weekOfMonth,
+  weekOfYear,
+} from '@toolkit/utilities/datetime.util';
+import {PlaceService} from '@microservices/map/place.service';
 
 @Injectable()
 export class RawDataSchedulingService {
@@ -15,6 +20,7 @@ export class RawDataSchedulingService {
     private readonly eventService: EventService,
     private readonly eventTypeService: EventTypeService,
     private readonly eventVenueService: EventVenueService,
+    private readonly placeService: PlaceService,
     private readonly eventContainerService: EventContainerService,
     private readonly userService: UserService
   ) {}
@@ -26,6 +32,12 @@ export class RawDataSchedulingService {
     const venue = await this.eventVenueService.findUniqueOrThrow({
       where: {id: venueId},
     });
+    const timeZone = (
+      await this.placeService.findUniqueOrThrow({
+        where: {id: venue.placeId!},
+        select: {timeZone: true},
+      })
+    ).timeZone;
 
     // [step 2] Check if the data has been fetched.
     let count = await this.eventContainerService.count({
@@ -123,11 +135,15 @@ export class RawDataSchedulingService {
                 const dateOfClass = new Date(visit.CLASSDATE)
                   .toISOString()
                   .split('T')[0];
+                const timeZoneOffset = getTimeZoneOffset(
+                  new Date(dateOfClass),
+                  timeZone ?? undefined
+                );
                 const datetimeOfStart = new Date(
-                  dateOfClass + 'T' + visit.CLASSSTARTTIME
+                  dateOfClass + ' ' + visit.CLASSSTARTTIME + timeZoneOffset
                 );
                 const datetimeOfEnd = new Date(
-                  dateOfClass + 'T' + visit.CLASSENDTIME
+                  dateOfClass + ' ' + visit.CLASSENDTIME + timeZoneOffset
                 );
 
                 // Get coach info
@@ -157,6 +173,7 @@ export class RawDataSchedulingService {
                   hostUserId: coach ? coach.id : null,
                   datetimeOfStart: datetimeOfStart.toISOString(),
                   datetimeOfEnd: datetimeOfEnd.toISOString(),
+                  timeZone,
                   year,
                   month,
                   dayOfMonth: datetimeOfStart.getDate(),

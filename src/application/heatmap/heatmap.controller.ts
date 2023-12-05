@@ -1,16 +1,17 @@
 import {Controller, Query, Get, UseInterceptors} from '@nestjs/common';
 import {CacheInterceptor} from '@nestjs/cache-manager';
 import {ApiTags, ApiBearerAuth} from '@nestjs/swagger';
-import {User} from '@prisma/client';
+import {Prisma, User} from '@prisma/client';
 import {UserService} from '@microservices/account/user/user.service';
 import {RawDataForecastService} from '../raw-data/raw-data-forecast.service';
 import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
-import {daysOfMonth} from '@toolkit/utilities/datetime.util';
+import {daysOfMonth, daysOfWeek} from '@toolkit/utilities/datetime.util';
 
 enum HEATMAP_TYPE {
   Availability = 1,
   Demand = 2,
 }
+type HeatmapInfo = {type: HEATMAP_TYPE; data: User[] | number}[];
 
 const HOUR_OF_OPENING = 5;
 const HOUR_OF_CLOSURE = 22;
@@ -38,7 +39,9 @@ export class HeatmapController {
     @Query('year') year: number,
     @Query('month') month: number,
     @Query('weekOfMonth') weekOfMonth: number,
-    @Query('types') types: (number | string)[]
+    @Query('types') types: (number | string)[],
+    @Query('hostUserId') hostUserId: string | undefined,
+    @Query('timeZone') timeZone: string
   ) {
     const heatmapInfoTimeslots: {
       year: number;
@@ -48,17 +51,24 @@ export class HeatmapController {
       hour: number;
       minute: number;
       minutesOfTimeslot: number;
-      info: {type: HEATMAP_TYPE; data: User[] | number}[];
+      info: HeatmapInfo;
     }[] = [];
 
     // [step 1] Generate monthly timeslots.
-    const heatmapTimeslots = this.availabilityTimeslotService.timeslotsOfWeek({
+    const days = daysOfWeek(year, month, weekOfMonth);
+    const dateOfStart = new Date(year, month - 1, days[0].dayOfMonth);
+    const dateOfEnd = new Date(
       year,
-      month,
-      weekOfMonth,
+      month - 1,
+      days[days.length - 1].dayOfMonth + 1
+    );
+    const heatmapTimeslots = this.availabilityTimeslotService.generate({
+      dateOfStart,
+      dateOfEnd,
       hourOfOpening: HOUR_OF_OPENING,
       hourOfClosure: HOUR_OF_CLOSURE,
       minutesOfTimeslot: MINUTES_OF_TIMESLOT,
+      timeZone,
     });
 
     // [step 2] Prepare data for heatmap.
@@ -73,8 +83,15 @@ export class HeatmapController {
 
     // [step 2-1] Get coaches in the location.
     if (flagCoachHeatmap) {
+      const where: Prisma.UserWhereInput = {
+        profile: {eventVenueIds: {has: venueId}},
+      };
+
+      if (hostUserId) {
+        where.id = hostUserId;
+      }
       coaches = await this.coachService.findMany({
-        where: {profile: {eventVenueIds: {has: venueId}}},
+        where,
         select: {
           id: true,
           profile: {
@@ -164,43 +181,23 @@ export class HeatmapController {
       }
 
       // Gather heatmap data.
+      let info: HeatmapInfo = [];
+      const {datetimeOfEnd, datetimeOfStart, ...rest} = heatmapTimeslot;
+
       if (flagCoachHeatmap && flagDemandHeatmap) {
-        heatmapInfoTimeslots.push({
-          year: heatmapTimeslot.year,
-          month: heatmapTimeslot.month,
-          dayOfMonth: heatmapTimeslot.dayOfMonth,
-          dayOfWeek: heatmapTimeslot.dayOfWeek,
-          hour: heatmapTimeslot.hour,
-          minute: heatmapTimeslot.minute,
-          minutesOfTimeslot: heatmapTimeslot.minutesOfTimeslot,
-          info: [
-            {type: HEATMAP_TYPE.Availability, data: availableCoaches},
-            {type: HEATMAP_TYPE.Demand, data: utilization},
-          ],
-        });
+        info = [
+          {type: HEATMAP_TYPE.Availability, data: availableCoaches},
+          {type: HEATMAP_TYPE.Demand, data: utilization},
+        ];
       } else if (flagCoachHeatmap) {
-        heatmapInfoTimeslots.push({
-          year: heatmapTimeslot.year,
-          month: heatmapTimeslot.month,
-          dayOfMonth: heatmapTimeslot.dayOfMonth,
-          dayOfWeek: heatmapTimeslot.dayOfWeek,
-          hour: heatmapTimeslot.hour,
-          minute: heatmapTimeslot.minute,
-          minutesOfTimeslot: heatmapTimeslot.minutesOfTimeslot,
-          info: [{type: HEATMAP_TYPE.Availability, data: availableCoaches}],
-        });
+        info = [{type: HEATMAP_TYPE.Availability, data: availableCoaches}];
       } else if (flagDemandHeatmap) {
-        heatmapInfoTimeslots.push({
-          year: heatmapTimeslot.year,
-          month: heatmapTimeslot.month,
-          dayOfMonth: heatmapTimeslot.dayOfMonth,
-          dayOfWeek: heatmapTimeslot.dayOfWeek,
-          hour: heatmapTimeslot.hour,
-          minute: heatmapTimeslot.minute,
-          minutesOfTimeslot: heatmapTimeslot.minutesOfTimeslot,
-          info: [{type: HEATMAP_TYPE.Demand, data: utilization}],
-        });
+        info = [{type: HEATMAP_TYPE.Demand, data: utilization}];
       }
+      heatmapInfoTimeslots.push({
+        ...rest,
+        info,
+      });
     }
 
     return heatmapInfoTimeslots;

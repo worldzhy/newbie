@@ -8,4 +8,9 @@ export default registerAs('server', () => ({
   isPrimary: parseInt(process.env.SERVER_SERIAL_NUMBER ?? '0') === 1,
   httpTimeout: 300000, // milliseconds
   httpMaxRedirects: 5,
+  redis: {
+    host: process.env.REDIS_HOST,
+    port: parseInt(process.env.REDIS_PORT ?? '6379'),
+    password: process.env.REDIS_PASSWORD,
+  },
 }));

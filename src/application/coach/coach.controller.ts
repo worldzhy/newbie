@@ -1,23 +1,26 @@
 import {
-  Controller,
-  Delete,
+  Req,
   Get,
-  Patch,
   Post,
   Body,
+  Patch,
   Param,
   Query,
+  Delete,
+  Controller,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {Prisma, User} from '@prisma/client';
-import {UserService} from '@microservices/account/user/user.service';
-import {RoleService} from '@microservices/account/role/role.service';
-import {AvailabilityExpressionService} from '@microservices/event-scheduling/availability-expression.service';
+import {Request} from 'express';
 import {
   currentQuarter,
   firstDayOfQuarter,
 } from '@toolkit/utilities/datetime.util';
+import {Prisma, User} from '@prisma/client';
 import {verifyEmail} from '@toolkit/validators/user.validator';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
+import {UserService} from '@microservices/account/user/user.service';
+import {RoleService} from '@microservices/account/role/role.service';
+import {AccountService} from '@microservices/account/account.service';
+import {AvailabilityExpressionService} from '@microservices/event-scheduling/availability-expression.service';
 
 const DEFAULT_PASSWORD = 'x8nwFP814HIk!';
 
@@ -28,6 +31,7 @@ export class CoachController {
   constructor(
     private userService: UserService,
     private roleService: RoleService,
+    private readonly accountService: AccountService,
     private availabilityExpressionService: AvailabilityExpressionService
   ) {}
 
@@ -166,6 +170,32 @@ export class CoachController {
     result.records = coaches.map(coach => {
       return this.userService.withoutPassword(coach);
     });
+
+    return result;
+  }
+
+  @Get('/personal')
+  async getPersonalCoaches(
+    @Req() request: Request,
+    @Query('venueId') venueId: number
+  ) {
+    // [step 1] Get user info.
+    const user: any = await this.accountService.me(request);
+    const isAdmin = !!user?.roles?.find(({name}) => name === RoleService.names.ADMIN);
+    const eventVenueIds = user?.profile?.eventVenueIds ?? [];
+
+    if (!isAdmin && !eventVenueIds.includes(venueId)) {
+      return [];
+    }
+
+    // [step 2] Get coaches.
+    const result: User[] = await this.userService.findMany(
+      {
+        where: {roles: {some: {name: RoleService.names.COACH}}, profile: {eventVenueIds: {has: venueId}}},
+        include: {profile: true},
+        orderBy: {profile: {fullName: 'asc'}},
+      }
+    );
 
     return result;
   }

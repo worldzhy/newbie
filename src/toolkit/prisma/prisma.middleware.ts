@@ -4,6 +4,7 @@ import {
   generateHash,
   generateRandomNumbers,
 } from '@toolkit/utilities/common.util';
+import {datePlusMinutes, splitDateTime} from '@toolkit/utilities/datetime.util';
 import {verifyEmail, verifyPassword} from '@toolkit/validators/user.validator';
 
 export async function prismaMiddleware(
@@ -61,21 +62,6 @@ export async function prismaMiddleware(
       default:
         return next(params);
     }
-  } else if (
-    params.model === Prisma.ModelName.ElasticsearchDatasourceIndexField
-  ) {
-    // [middleware] The indexId from HTTP request is string type. Convert it to number type.
-    if (params.action === 'create') {
-      if (
-        params.args['data']['indexId'] &&
-        typeof params.args['data']['indexId'] === 'string'
-      ) {
-        params.args['data']['indexId'] = parseInt(
-          params.args['data']['indexId']
-        );
-      }
-    }
-    return next(params);
   } else if (params.model === Prisma.ModelName.InfrastructureStack) {
     // [middleware] Set the default stack name. AWS Infrastructure stack name must satisfy regular expression pattern: "[a-zA-Z][-a-zA-Z0-9]*".
     if (params.action === 'create') {
@@ -139,84 +125,14 @@ export async function prismaMiddleware(
     switch (params.action) {
       case 'create':
       case 'update': {
-        const date = params.args['data']['date'];
-        const timeOfStarting = params.args['data']['timeOfStarting'];
-        const timeOfEnding = params.args['data']['timeOfEnding'];
-        if (date) {
-          params.args['data']['date'] = new Date(date);
-        }
-        if (timeOfStarting) {
-          params.args['data']['timeOfStarting'] = new Date(
-            date + 'T' + timeOfStarting
-          );
-        }
-        if (timeOfEnding) {
-          params.args['data']['timeOfEnding'] = new Date(
-            date + 'T' + timeOfEnding
-          );
-        }
+        eventGeneratedFields(params.args['data']);
         return next(params);
       }
       case 'createMany': {
         for (let i = 0; i < params.args['data'].length; i++) {
-          const availability = params.args['data'][i];
-
-          const date = availability['date'];
-          const timeOfStarting = availability['timeOfStarting'];
-          const timeOfEnding = availability['timeOfEnding'];
-          if (date) {
-            params.args['data'][i]['date'] = new Date(date);
-          }
-          if (timeOfStarting) {
-            params.args['data'][i]['timeOfStarting'] = new Date(
-              date + 'T' + timeOfStarting
-            );
-          }
-          if (timeOfEnding) {
-            params.args['data'][i]['timeOfEnding'] = new Date(
-              date + 'T' + timeOfEnding
-            );
-          }
+          eventGeneratedFields(params.args['data'][i]);
         }
         return next(params);
-      }
-      case 'findUnique':
-      case 'findUniqueOrThrow':
-      case 'findFirst':
-      case 'findFirstOrThrow': {
-        const resultOne = await next(params);
-        if (resultOne) {
-          if (resultOne.date) {
-            resultOne.date = formatOutputDate(resultOne.date);
-          }
-          if (resultOne.timeOfStarting) {
-            resultOne.timeOfStarting = formatOutputTime(
-              resultOne.timeOfStarting
-            );
-          }
-          if (resultOne.timeOfEnding) {
-            resultOne.timeOfEnding = formatOutputTime(resultOne.timeOfEnding);
-          }
-        }
-        return resultOne;
-      }
-      case 'findMany': {
-        const resultMany = await next(params);
-        if (resultMany) {
-          for (let i = 0; i < resultMany.length; i++) {
-            const element = resultMany[i];
-            if (element.date) {
-              element.date = formatOutputDate(element.date);
-            }
-            if (element.timeOfStarting) {
-              element.timeOfStarting = formatOutputTime(element.timeOfStarting);
-            }
-            if (element.timeOfEnding) {
-              element.timeOfEnding = formatOutputTime(element.timeOfEnding);
-            }
-          }
-        }
-        return resultMany;
       }
       case 'delete': {
         params.action = 'update';
@@ -254,4 +170,30 @@ function formatOutputDate(date: Date) {
 // 2023-08-10T12:00:00.000Z -> 12:00:00
 function formatOutputTime(date: Date) {
   return new Date(date).toISOString().split('T')[1].replace('.000Z', '');
+}
+
+function eventGeneratedFields(data: any) {
+  if (data['datetimeOfStart'] && data['timeZone']) {
+    data['datetimeOfStart'] = new Date(data['datetimeOfStart']);
+    const splitedDateTime = splitDateTime(
+      data['datetimeOfStart'],
+      data['timeZone']
+    );
+
+    data['year'] = splitedDateTime.year;
+    data['month'] = splitedDateTime.month;
+    data['dayOfMonth'] = splitedDateTime.dayOfMonth;
+    data['hour'] = splitedDateTime.hour;
+    data['minute'] = splitedDateTime.minute;
+    data['dayOfWeek'] = splitedDateTime.dayOfWeek;
+    data['weekOfMonth'] = splitedDateTime.weekOfMonth;
+    data['weekOfYear'] = splitedDateTime.weekOfYear;
+
+    if (data['minutesOfDuration']) {
+      data['datetimeOfEnd'] = datePlusMinutes(
+        data['datetimeOfStart'],
+        data['minutesOfDuration']
+      );
+    }
+  }
 }

@@ -23,6 +23,7 @@ import {EventIssueService} from '@microservices/event-scheduling/event-issue.ser
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
 import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
 import {datePlusMinutes, daysOfMonth} from '@toolkit/utilities/datetime.util';
+import {PlaceService} from '@microservices/map/place.service';
 
 @ApiTags('Event Container')
 @ApiBearerAuth()
@@ -32,7 +33,8 @@ export class EventContainerController {
     private readonly availabilityTimeslotService: AvailabilityTimeslotService,
     private readonly eventService: EventService,
     private readonly eventIssueService: EventIssueService,
-    private readonly eventContainerService: EventContainerService
+    private readonly eventContainerService: EventContainerService,
+    private readonly placeService: PlaceService
   ) {}
 
   @Get('days-of-month')
@@ -92,9 +94,18 @@ export class EventContainerController {
 
   @Get(':eventContainerId')
   async getEventContainer(@Param('eventContainerId') eventContainerId: number) {
-    return await this.eventContainerService.findUniqueOrThrow({
+    const container = await this.eventContainerService.findUniqueOrThrow({
       where: {id: eventContainerId},
+      include: {venue: true},
     });
+
+    const place = await this.placeService.findUniqueOrThrow({
+      where: {id: container['venue']['placeId']},
+      select: {timeZone: true},
+    });
+
+    container['venue']['timeZone'] = place.timeZone;
+    return container;
   }
 
   @Patch(':eventContainerId')
@@ -211,8 +222,7 @@ export class EventContainerController {
         data: {
           datetimeOfStart: newDatetimeOfStart,
           datetimeOfEnd: newDatetimeOfEnd,
-          hour: newDatetimeOfStart.getHours(),
-          minute: newDatetimeOfStart.getMinutes(),
+          timeZone: event.timeZone,
         },
       });
     }
@@ -238,11 +248,6 @@ export class EventContainerController {
     }
 
     // [step 2] Post schedule to Mindbody.
-
-    // [step 3] Modify coaches' availability status
-    for (let i = 0; i < events.length; i++) {
-      await this.availabilityTimeslotService.checkin(events[i]);
-    }
 
     return await this.eventContainerService.update({
       where: {id: eventContainerId},

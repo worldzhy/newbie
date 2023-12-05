@@ -6,13 +6,14 @@ import {AvailabilityTimeslotService} from '@microservices/event-scheduling/avail
 import {AvailabilityExpressionStatus} from '@prisma/client';
 
 @Processor(QueueName.DEFAULT)
-export class AvailabilityTaskConsumer {
+export class AvailabilityJobConsumer {
   constructor(
     private availabilityExpressionService: AvailabilityExpressionService,
     private availabilityTimeslotService: AvailabilityTimeslotService
   ) {}
 
-  @Process({concurrency: 10}) // todo: Check if the concurrency is valid.
+  // @Process({concurrency: 10}) // todo: Check if the concurrency is valid.
+  @Process()
   async parseAvailability(job: Job) {
     let availabilityExpressionId = (job.data as any)
       .availabilityExpressionId as number;

@@ -97,9 +97,21 @@ export class AvailabilityExpressionService {
     }
 
     // [step 1] Construct cron parser options.
+    const venues = await this.prisma.eventVenue.findMany({
+      where: {id: {in: expression.venueIds}},
+      select: {placeId: true},
+    });
+    const placeIds = venues
+      .filter(venue => venue.placeId !== null || undefined)
+      .map(venue => venue.placeId!);
+    const places = await this.prisma.place.findMany({
+      where: {id: {in: placeIds}},
+      select: {timeZone: true},
+    });
+
     const cronParserOptions = {
       // ! https://unpkg.com/browse/cron-parser@4.8.1/README.md
-      tz: expression.timezone,
+      tz: places[0] ? places[0].timeZone : undefined,
       currentDate: expression.dateOfOpening.toISOString(),
       endDate: expression.dateOfClosure
         ? expression.dateOfClosure.toISOString()
@@ -206,12 +218,12 @@ export class AvailabilityExpressionService {
         timeslots.push({
           datetimeOfStart: datetimeOfStart,
           datetimeOfEnd: datetimeOfEnd,
-          year: datetimeOfStart.getFullYear(),
-          month: datetimeOfStart.getMonth() + 1, // 0-11, January gives 0
-          dayOfMonth: datetimeOfStart.getDate(),
-          dayOfWeek: datetimeOfStart.getDay(), //0-6, Sunday gives 0
-          hour: datetimeOfStart.getHours(),
-          minute: datetimeOfStart.getMinutes(),
+          // year: datetimeOfStart.getFullYear(),
+          // month: datetimeOfStart.getMonth() + 1, // 0-11, January gives 0
+          // dayOfMonth: datetimeOfStart.getDate(),
+          // dayOfWeek: datetimeOfStart.getDay(), //0-6, Sunday gives 0
+          // hour: datetimeOfStart.getHours(),
+          // minute: datetimeOfStart.getMinutes(),
           minutesOfTimeslot: this.MINUTES_Of_TIMESLOT,
         });
       }

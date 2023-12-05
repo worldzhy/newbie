@@ -3,7 +3,7 @@ import {UserProfileService} from '@microservices/account/user/user-profile.servi
 import {UserService} from '@microservices/account/user/user.service';
 import {AvailabilityExpressionService} from '@microservices/event-scheduling/availability-expression.service';
 import {EventVenueService} from '@microservices/event-scheduling/event-venue.service';
-import {GoogleFormService} from '@microservices/google-form/google-form.service';
+import {GoogleFormsService} from '@microservices/googleapis/google-forms.service';
 import {QueueService} from '@microservices/queue/queue.service';
 import {BadRequestException, Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
@@ -36,10 +36,10 @@ enum FormItemTitle {
 }
 
 @Injectable()
-export class AvailabilityTaskProducer {
+export class AvailabilityJobProducer {
   constructor(
     private readonly configService: ConfigService,
-    private readonly googleFormService: GoogleFormService,
+    private readonly googleFormsService: GoogleFormsService,
     private readonly userService: UserService,
     private readonly userProfileService: UserProfileService,
     private readonly availabilityExpressionService: AvailabilityExpressionService,
@@ -47,7 +47,7 @@ export class AvailabilityTaskProducer {
     private readonly queueService: QueueService
   ) {}
 
-  @Cron('36 1 10 * *')
+  @Cron('1 1 1 1 *')
   async handleCron() {
     if (
       !this.configService.getOrThrow<boolean>('server.isPrimary') ||
@@ -109,7 +109,7 @@ export class AvailabilityTaskProducer {
       forms_v1.Schema$Item
     > = {};
 
-    const formItems = await this.googleFormService.getFormItems(FORM_ID);
+    const formItems = await this.googleFormsService.getFormItems(FORM_ID);
     for (let i = 0; i < formItems.length; i++) {
       const formItem = formItems[i];
       const title = formItem.title;
@@ -217,9 +217,9 @@ export class AvailabilityTaskProducer {
     }
 
     // [step 3] Process google form responses.
-    const formResponses = await this.googleFormService.getFormResponses(
-      FORM_ID
-    );
+    const formResponses =
+      await this.googleFormsService.getFormResponses(FORM_ID);
+    const jobDataArray: {availabilityExpressionId: number}[] = [];
 
     for (let i = 0; i < formResponses.length; i++) {
       const formResponse = formResponses[i];
@@ -261,8 +261,18 @@ export class AvailabilityTaskProducer {
         console.log(formResponse.answers);
       }
       if (!coach) {
-        console.log('Coach is not found: ' + i);
-        console.log(answers[emailItemQuestionId].textAnswers?.answers);
+        console.log(
+          'Coach is not found: ' +
+            answers[emailItemQuestionId].textAnswers?.answers![0].value
+        );
+        continue;
+      }
+
+      // Only process the new response from a coach.
+      const count = await this.availabilityExpressionService.count({
+        where: {hostUserId: coach.id, reportedAt: {gte: reportedAt}},
+      });
+      if (count > 0) {
         continue;
       }
 
@@ -427,7 +437,7 @@ export class AvailabilityTaskProducer {
         });
       if (resultOfDelete.count > 0) {
         console.log(
-          'Duplicated response: ' + coach.email + ' | id: ' + coach.id
+          'Deleted old response: ' + coach.email + '( ' + coach.id + ' )'
         );
       }
 
@@ -444,8 +454,12 @@ export class AvailabilityTaskProducer {
         },
       });
 
-      // [step 3-7] Add it to task queue.
-      await this.queueService.addJob({availabilityExpressionId: exp.id});
+      jobDataArray.push({availabilityExpressionId: exp.id});
+    }
+
+    // [step 4] Add jobs to task queue.
+    if (jobDataArray.length > 0) {
+      await this.queueService.addJobs(jobDataArray);
     }
   }
 }

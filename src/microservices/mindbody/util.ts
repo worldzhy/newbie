@@ -1,8 +1,16 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as _ from 'lodash';
 import * as moment from 'moment';
 
 export function toMbParams(query: any) {
-  const {pageSize = 10, page = 1, locationId, startDate, endDate} = query;
+  const {
+    pageSize = 10,
+    page = 1,
+    locationId,
+    startDate,
+    endDate,
+    locationIds,
+  } = query;
   const offest = pageSize * (page - 1);
   const params = {
     limit: pageSize,
@@ -11,10 +19,14 @@ export function toMbParams(query: any) {
   };
 
   if (locationId) {
-    params['locationIds[0]'] = locationId;
-    // params['locationIds[0]'] = 7;
-    params['locationIds[0]'] = 1;
+    params.locationId = 3;
   }
+
+  if (locationIds) {
+    params.locationIds = 3;
+  }
+
+  params.scheduleTypes = 'Resource';
 
   if (startDate) {
     params.startDate = startDate;
@@ -27,6 +39,10 @@ export function toMbParams(query: any) {
   if (endDate) {
     params.endDate = endDate;
   }
+
+  if (endDate) {
+    params.endDate = endDate;
+  }
   return params;
 }
 
@@ -34,33 +50,31 @@ export function parseHeaders(headers: any, query: any) {
   const {studioId} = query;
   const _headers = _.cloneDeep(headers);
   if (studioId) {
-    _headers.SiteId = studioId;
-    // _headers.SiteId = 552763;
-    _headers.SiteId = -99;
+    _headers.SiteId = 44717;
   }
   return _headers;
 }
 
 export function hmsToSeconds(hms) {
-  var splitTime = hms.split(':');
-  var hours = parseInt(splitTime[0], 10) || 0;
-  var minutes = parseInt(splitTime[1], 10) || 0;
-  var seconds = parseInt(splitTime[2], 10) || 0;
+  const splitTime = hms.split(':');
+  const hours = parseInt(splitTime[0], 10) || 0;
+  const minutes = parseInt(splitTime[1], 10) || 0;
+  const seconds = parseInt(splitTime[2], 10) || 0;
 
   return hours * 3600 + minutes * 60 + seconds;
 }
 
 export function datetimeToDaySec(datetime) {
   const hms = moment(datetime).format('HH:mm:ss');
-  var splitTime = hms.split(':');
-  var hours = parseInt(splitTime[0], 10) || 0;
-  var minutes = parseInt(splitTime[1], 10) || 0;
-  var seconds = parseInt(splitTime[2], 10) || 0;
+  const splitTime = hms.split(':');
+  const hours = parseInt(splitTime[0], 10) || 0;
+  const minutes = parseInt(splitTime[1], 10) || 0;
+  const seconds = parseInt(splitTime[2], 10) || 0;
 
   return hours * 3600 + minutes * 60 + seconds;
 }
 
-export function groupClassesByDate(cs: any) {
+export function groupClassesByDate(cs: any, resourceId: any = undefined) {
   let _cs = cs.map((c: any) => {
     const weekday = moment(c.StartDateTime).weekday();
     const classdate = moment(c.StartDateTime).format('YYYY-MM-DD');
@@ -71,7 +85,7 @@ export function groupClassesByDate(cs: any) {
     const startSec = hmsToSeconds(startTime);
     const endSec = hmsToSeconds(endTime);
 
-    const ResourceId = _.get(c,'Resource.Id') || 0
+    const ResourceId = _.get(c, 'Resource.Id') || 0;
 
     return {
       ClassInstanceIds: c.Id,
@@ -90,9 +104,14 @@ export function groupClassesByDate(cs: any) {
     };
   });
 
+  console.log(resourceId);
+  if (resourceId) {
+    _cs = _.filter(_cs, (d: any) => d.ResourceId === parseInt(resourceId));
+  }
+
   _cs = _.sortBy(_cs, (d: any) => d.classdate);
 
-  let groupCs = _.groupBy(_cs, (d: any) => {
+  const groupCs = _.groupBy(_cs, (d: any) => {
     return d.classdate;
   });
 
@@ -100,4 +119,43 @@ export function groupClassesByDate(cs: any) {
     groupCs[dc] = _.sortBy(groupCs[dc], (d: any) => d.startHour);
   }
   return groupCs;
+}
+
+export function getWeekdays(dayOfWeek) {
+  const weekdays = {
+    DaySunday: false,
+    DayMonday: false,
+    DayTuesday: false,
+    DayWednesday: false,
+    DayThursday: false,
+    DayFriday: false,
+    DaySaturday: false,
+  };
+
+  switch (dayOfWeek) {
+    case 0:
+      weekdays.DaySunday = true;
+      break;
+    case 1:
+      weekdays.DayMonday = true;
+      break;
+    case 2:
+      weekdays.DayTuesday = true;
+      break;
+    case 3:
+      weekdays.DayWednesday = true;
+      break;
+    case 4:
+      weekdays.DayThursday = true;
+      break;
+    case 5:
+      weekdays.DayFriday = true;
+      break;
+    case 6:
+      weekdays.DaySaturday = true;
+      break;
+    default:
+      break;
+  }
+  return weekdays;
 }

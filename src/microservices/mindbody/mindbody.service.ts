@@ -4,7 +4,6 @@ import {ConfigService} from '@nestjs/config';
 import {toMbParams, parseHeaders} from './util';
 import {AddClassScheduleDto, endClassScheduleDto} from './mindbody.dto';
 import * as _ from 'lodash';
-import * as moment from 'moment';
 
 @Injectable()
 export class MindbodyService {
@@ -14,11 +13,11 @@ export class MindbodyService {
   private mbUrl;
   private accessToken;
   private siteId: number;
-  private headers: any;
+  private headers;
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly httpService: HttpService,
+    private readonly httpService: HttpService
   ) {
     this.apiKey = this.configService.getOrThrow<string>(
       'microservice.mindbody.apiKey'
@@ -59,6 +58,12 @@ export class MindbodyService {
     }
   }
 
+  async setStudioId(stdudioId) {
+    console.log(stdudioId);
+    // this.headers.stdudioId = stdudioId;
+    this.headers.SiteId = 44717;
+  }
+
   async getClassDescriptions(query) {
     const params = toMbParams(query);
     const headers = parseHeaders(this.headers, query);
@@ -81,13 +86,34 @@ export class MindbodyService {
     }
   }
 
+  async getProducts(query) {
+    const params = toMbParams(query);
+    const headers = parseHeaders(this.headers, query);
+
+    try {
+      const response = await this.httpService.axiosRef.get(
+        `${this.mbUrl}sale/products`,
+        {
+          headers,
+          params,
+        }
+      );
+
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return this.errorHandle(error);
+    }
+  }
+
   async getClasses(query) {
     const params = toMbParams(query);
     const headers = parseHeaders(this.headers, query);
 
     params.startDateTime = query.startDateTime;
     params.endDateTime = query.endDateTime;
-
     try {
       const response = await this.httpService.axiosRef.get(
         `${this.mbUrl}class/classes`,
@@ -130,9 +156,36 @@ export class MindbodyService {
     const params = toMbParams(query);
     const headers = parseHeaders(this.headers, query);
 
+    const _params = {
+      ...params,
+      locationId: 1,
+    };
     try {
       const response = await this.httpService.axiosRef.get(
         `${this.mbUrl}Staff/Staff`,
+        {
+          headers,
+          params: _params,
+        }
+      );
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return this.errorHandle(error);
+    }
+  }
+
+  async queryClinets(query) {
+    this.setStudioId(query.studioId);
+    await this.getUserToken();
+    const params = toMbParams(query);
+    const headers = parseHeaders(this.headers, query);
+
+    try {
+      const response = await this.httpService.axiosRef.get(
+        `${this.mbUrl}client/clients`,
         {
           headers,
           params,
@@ -217,6 +270,7 @@ export class MindbodyService {
   async getResources(query) {
     const params = toMbParams(query);
     const headers = parseHeaders(this.headers, query);
+
     try {
       const response = await this.httpService.axiosRef.get(
         `${this.mbUrl}site/resources`,
@@ -249,14 +303,17 @@ export class MindbodyService {
   }
 
   async addClassSchedule(data: AddClassScheduleDto) {
+    this.setStudioId(data.studioId);
     await this.getUserToken();
-    let {schedule} = data;
+    const {schedule} = data;
+
+    const _schedule = {...schedule, LocationId: 3};
     const headers = parseHeaders(this.headers, data);
 
     try {
       const response = await this.httpService.axiosRef.post(
         `${this.mbUrl}class/addclassschedule`,
-        schedule,
+        _schedule,
         {
           headers,
         }
@@ -272,8 +329,8 @@ export class MindbodyService {
   }
 
   async endClassSchduleById(data: endClassScheduleDto) {
+    this.setStudioId(data.studioId);
     await this.getUserToken();
-    const headers = parseHeaders(this.headers, data);
 
     const schedule = {
       ClassId: data.scheduleId,
@@ -287,20 +344,20 @@ export class MindbodyService {
     };
     const params = {...data, schedule};
 
-    console.log(params);
-
     return this.updateClassSchedule(params);
   }
 
   async updateClassSchedule(data: AddClassScheduleDto) {
+    this.setStudioId(data.studioId);
     await this.getUserToken();
     const headers = parseHeaders(this.headers, data);
     const {schedule} = data;
+    const _schedule = {...schedule, LocationId: 3};
 
     try {
       const response = await this.httpService.axiosRef.post(
         `${this.mbUrl}class/updateclassschedule`,
-        schedule,
+        _schedule,
         {
           headers,
         }

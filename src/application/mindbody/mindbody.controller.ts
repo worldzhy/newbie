@@ -1,20 +1,11 @@
-import {
-  Body,
-  Controller,
-  Get,
-  HttpException,
-  Post,
-  Query,
-} from '@nestjs/common';
-import {ApiTags, ApiBearerAuth} from '@nestjs/swagger';
+import {Body, Controller, Get, Post, Query} from '@nestjs/common';
+import {ApiTags} from '@nestjs/swagger';
 import {MindbodyService} from '@microservices/mindbody/mindbody.service';
 import {
   AddClassScheduleDto,
   BasePageDto,
   endClassScheduleDto,
 } from '@microservices/mindbody/mindbody.dto';
-import * as _ from 'lodash';
-import * as moment from 'moment';
 import {groupClassesByDate} from '@microservices/mindbody/util';
 
 @ApiTags('Mindbody')
@@ -37,6 +28,11 @@ export class MindbodyController {
     return await this.mindbodyService.getResources(query);
   }
 
+  @Get('sale/products')
+  async getProducts(@Query() query: BasePageDto) {
+    return await this.mindbodyService.getProducts(query);
+  }
+
   @Get('class/classdescriptions')
   async getClassDescriptions(@Query() query: BasePageDto) {
     return await this.mindbodyService.getClassDescriptions(query);
@@ -47,7 +43,9 @@ export class MindbodyController {
     const resp = await this.mindbodyService.getClasses(query);
     const {Classes: cs} = resp.data;
 
-    const groupCs = groupClassesByDate(cs);
+    const {resourceId} = query;
+
+    const groupCs = groupClassesByDate(cs, resourceId);
 
     return {
       groupCs,
@@ -75,49 +73,6 @@ export class MindbodyController {
   @Get('class/classschedules')
   async getClassSchedules(@Query() query: BasePageDto) {
     const resp = await this.mindbodyService.getClassSchedules(query);
-
-    // const {ClassSchedules: cs} = resp;
-
-    // const _cs = cs.map((c: any) => {
-    //   if (c.DaySunday) {
-    //     c.weekday = 0;
-    //   }
-    //   if (c.DayMonday) {
-    //     c.weekday = 1;
-    //   }
-    //   if (c.DayTuesday) {
-    //     c.weekday = 2;
-    //   }
-    //   if (c.DayWednesday) {
-    //     c.weekday = 3;
-    //   }
-    //   if (c.DayThursday) {
-    //     c.weekday = 4;
-    //   }
-    //   if (c.DayFriday) {
-    //     c.weekday = 5;
-    //   }
-    //   if (c.DaySaturday) {
-    //     c.weekday = 6;
-    //   }
-
-    //   return {
-    //     name: c.ClassDescription.Name,
-    //     weekday: c.weekday,
-    //     startHour: moment(c.StartTime).hour(),
-    //     startTime: moment(c.StartTime).format('HH:mm:ss'),
-    //     endTime: moment(c.EndTime).format('HH:mm:ss'),
-    //   };
-    // });
-
-    // const groupCs = _.groupBy(_cs, (d: any) => {
-    //   return d.weekday;
-    // });
-
-    // for (const dc of Object.keys(groupCs)) {
-    //   groupCs[dc] = _.sortBy(groupCs[dc], (d: any) => d.startHour);
-    // }
-
     return resp;
   }
 
@@ -140,5 +95,10 @@ export class MindbodyController {
   @Get('staff/staff')
   async getStaff(@Query() query: BasePageDto) {
     return await this.mindbodyService.getStaff(query);
+  }
+
+  @Get('client/clients')
+  async queryClinets(@Query() query: BasePageDto) {
+    return await this.mindbodyService.queryClinets(query);
   }
 }

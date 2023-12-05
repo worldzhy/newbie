@@ -241,6 +241,7 @@ model CronTask {
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
 enum AvailabilityExpressionStatus {
   EDITING
+  PUBLISHING
   PUBLISHED
 
   @@schema("microservice/event-scheduling")
@@ -304,10 +305,9 @@ model AvailabilityExpression {
   dateOfOpening                          DateTime
   dateOfClosure                          DateTime?
   minutesOfDuration                      Int // Generally it should be 30 or 60
-  timezone                               String? // https://www.iplocate.com/en/resources/timezones/list-of-timezones
-  reportedAt                             DateTime                     @db.Timestamptz()
-  createdAt                              DateTime                     @default(now()) @db.Timestamptz()
-  updatedAt                              DateTime                     @updatedAt @db.Timestamptz()
+  reportedAt                             DateTime
+  createdAt                              DateTime                     @default(now())
+  updatedAt                              DateTime                     @updatedAt
   timeslots                              AvailabilityTimeslot[]
 
   @@schema("microservice/event-scheduling")
@@ -318,18 +318,11 @@ model AvailabilityTimeslot {
   status            AvailabilityTimeslotStatus @default(USABLE)
   hostUserId        String                     @db.Uuid
   venueIds          Int[]
-  datetimeOfStart   DateTime                   @db.Timestamptz()
-  datetimeOfEnd     DateTime                   @db.Timestamptz()
-  year              Int
-  month             Int
-  dayOfMonth        Int
-  dayOfWeek         Int
-  hour              Int
-  minute            Int
+  datetimeOfStart   DateTime
+  datetimeOfEnd     DateTime
   minutesOfTimeslot Int                        @default(5)
-  timezone          String? // https://www.iplocate.com/en/resources/timezones/list-of-timezones
-  createdAt         DateTime                   @default(now()) @db.Timestamptz()
-  updatedAt         DateTime                   @updatedAt @db.Timestamptz()
+  createdAt         DateTime                   @default(now())
+  updatedAt         DateTime                   @updatedAt
   expression        AvailabilityExpression     @relation(fields: [expressionId], references: [id], onDelete: Cascade)
   expressionId      Int
 
@@ -342,19 +335,20 @@ model Event {
   isLocked          Boolean          @default(false)
   isPublished       Boolean          @default(false)
   hostUserId        String?          @db.Uuid
-  datetimeOfStart   DateTime         @db.Timestamptz()
-  datetimeOfEnd     DateTime         @db.Timestamptz()
+  datetimeOfStart   DateTime
+  datetimeOfEnd     DateTime
+  timeZone          String
   year              Int
   month             Int
   dayOfMonth        Int
+  hour              Int
+  minute            Int
   dayOfWeek         Int
   weekOfMonth       Int // The number of week in a month, it will be 1 to 6.
   weekOfYear        Int // The number of week in a month, it will be 1 to 53.
-  hour              Int
-  minute            Int
   minutesOfDuration Int
-  createdAt         DateTime         @default(now()) @db.Timestamptz()
-  updatedAt         DateTime         @updatedAt @db.Timestamptz()
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
   deletedAt         DateTime? // Support soft deletion
   changeLogs        EventChangeLog[]
   issues            EventIssue[]
@@ -374,8 +368,8 @@ model EventIssue {
   type        EventIssueType
   status      EventIssueStatus @default(UNREPAIRED)
   description String?
-  createdAt   DateTime         @default(now()) @db.Timestamptz()
-  updatedAt   DateTime         @updatedAt @db.Timestamptz()
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
   event       Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
   eventId     Int
 
@@ -390,34 +384,42 @@ model EventType {
   minutesInAdvanceToReserve Int?
   minutesInAdvanceToCancel  Int?
   tagId                     Int?
-  createdAt                 DateTime @default(now()) @db.Timestamptz()
-  updatedAt                 DateTime @updatedAt @db.Timestamptz()
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
   events                    Event[]
 
   @@schema("microservice/event-scheduling")
 }
 
 model EventVenue {
-  id                  Int              @id @default(autoincrement())
-  name                String
-  numberOfSeats       Int              @default(1)
-  minutesOfBreak      Int              @default(0)
-  hourOfDayStart      Int              @default(6)
-  hourOfDayEnd        Int              @default(22)
-  minuteOfDayStart    Int              @default(0)
-  minuteOfDayEnd      Int              @default(0)
-  timezone            String? // https://www.iplocate.com/en/resources/timezones/list-of-timezones
-  tagIds              Int[]
-  placeId             Int? // Map module
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @updatedAt
-  containers          EventContainer[]
-  events              Event[]
-  // For solidcore
-  similarVenueIds     Int[]
-  external_studioName String? // snowflake
-  external_studioId   Int? // snowflake
-  external_locationId Int? // snowflake
+  id                                  Int              @id @default(autoincrement())
+  name                                String
+  numberOfSeats                       Int              @default(1)
+  minutesOfBreak                      Int              @default(0)
+  hourOfDayStart                      Int              @default(6)
+  hourOfDayEnd                        Int              @default(22)
+  minuteOfDayStart                    Int              @default(0)
+  minuteOfDayEnd                      Int              @default(0)
+  tagIds                              Int[]
+  placeId                             Int? // Map module
+  createdAt                           DateTime         @default(now())
+  updatedAt                           DateTime         @updatedAt
+  containers                          EventContainer[]
+  events                              Event[]
+  // For solidcore mindbody fields
+  similarVenueIds                     Int[]
+  external_studioName                 String?
+  external_studioId                   Int?
+  external_locationId                 Int?
+  external_resourceId                 Int?             @default(1)
+  external_staffPayRate               Int?             @default(10)
+  external_maxCapacity                Int?             @default(20)
+  external_pricingOptionsProductIds   Int[]            @default([1])
+  external_allowDateForwardEnrollment Boolean?         @default(true)
+  external_allowOpenEnrollment        Boolean?         @default(true)
+  external_bookingStatus              String?          @default("Free")
+  external_waitlistCapacity           Int?             @default(10)
+  external_webCapacity                Int?             @default(10)
 
   @@unique([external_studioId, external_locationId])
   @@schema("microservice/event-scheduling")
@@ -428,13 +430,13 @@ model EventContainer {
   name          String?
   origin        EventContainerOrigin @default(INTERNAL)
   status        EventContainerStatus @default(EDITING)
-  dateOfOpening DateTime?            @db.Timestamptz() // Use dateOfOpening and dateOfClosure together
-  dateOfClosure DateTime?            @db.Timestamptz()
+  dateOfOpening DateTime? // Use dateOfOpening and dateOfClosure together
+  dateOfClosure DateTime?
   year          Int // Use year and month together
   month         Int
   timezone      String? // https://www.iplocate.com/en/resources/timezones/list-of-timezones
-  createdAt     DateTime             @default(now()) @db.Timestamptz()
-  updatedAt     DateTime             @updatedAt @db.Timestamptz()
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
   venue         EventVenue           @relation(fields: [venueId], references: [id], onDelete: Cascade)
   venueId       Int
   events        Event[]
@@ -448,8 +450,8 @@ model EventChangeLog {
   description      String
   notedByUserId    String?            @db.Uuid
   eventContainerId Int
-  createdAt        DateTime           @default(now()) @db.Timestamptz()
-  updatedAt        DateTime           @updatedAt @db.Timestamptz()
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
   event            Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
   eventId          Int
 
@@ -459,8 +461,8 @@ model EventChangeLog {
 model Reservation {
   id           Int      @id @default(autoincrement())
   clientUserId String   @db.Uuid
-  createdAt    DateTime @default(now()) @db.Timestamptz()
-  updatedAt    DateTime @updatedAt @db.Timestamptz()
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
   event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
   eventId      Int
 

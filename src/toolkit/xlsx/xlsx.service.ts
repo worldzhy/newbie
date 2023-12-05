@@ -6,6 +6,10 @@ import * as XLSX from 'xlsx';
 export class XLSXService {
   private workbook: XLSX.WorkBook;
 
+  createWorkbook() {
+    this.workbook = XLSX.utils.book_new();
+  }
+
   loadLocalFile(filePath: string) {
     this.workbook = XLSX.readFile(filePath);
   }
@@ -45,5 +49,9 @@ export class XLSXService {
   getDataRows(sheetName: string): object[] {
     const sheet = this.workbook.Sheets[sheetName];
     return XLSX.utils.sheet_to_json(sheet);
+  }
+
+  writeFile(name: string) {
+    XLSX.writeFile(this.workbook, name);
   }
 }

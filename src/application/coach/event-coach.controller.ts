@@ -1,7 +1,7 @@
-import {Controller, Get, Query} from '@nestjs/common';
-import {ApiTags, ApiBearerAuth} from '@nestjs/swagger';
+import {Body, Controller, Post} from '@nestjs/common';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Prisma} from '@prisma/client';
-import {datePlusMinutes, weekOfMonth} from '@toolkit/utilities/datetime.util';
+import {datePlusMinutes, splitDateTime} from '@toolkit/utilities/datetime.util';
 import {UserService} from '@microservices/account/user/user.service';
 import {EventTypeService} from '@microservices/event-scheduling/event-type.service';
 import {CoachService} from './coach.service';
@@ -14,55 +14,58 @@ const ROLE_NAME_COACH = 'Coach';
 export class EventCoachController {
   constructor(
     private readonly coachService: CoachService,
-    private readonly classTypeService: EventTypeService,
+    private readonly eventTypeService: EventTypeService,
     private readonly userService: UserService
   ) {}
 
-  @Get('')
+  @Post('')
+  @ApiBody({
+    description: '',
+    examples: {
+      a: {
+        summary: '1. Get coaches',
+        value: {
+          venueId: 1,
+          typeId: 1,
+          datetimeOfStart: '2023-11-28 17:40:05.025 +0800',
+          timeZone: 'America/Los_Angeles',
+        },
+      },
+    },
+  })
   async getCoachesForEvent(
-    @Query('venueId') venueId: number,
-    @Query('year') year: number,
-    @Query('month') month: number,
-    @Query('dayOfMonth') dayOfMonth?: number,
-    @Query('hour') hour?: number,
-    @Query('minute') minute?: number,
-    @Query('typeId') typeId?: number
+    @Body()
+    body: {
+      venueId: number;
+      typeId?: number;
+      datetimeOfStart?: Date;
+      timeZone?: string;
+    }
   ) {
+    const {venueId, typeId, datetimeOfStart, timeZone} = body;
     // [step 1] There are enough conditions to get sorted coaches.
-    if (
-      venueId &&
-      typeId &&
-      year &&
-      month &&
-      dayOfMonth &&
-      hour &&
-      minute != undefined
-    ) {
-      const classType = await this.classTypeService.findUniqueOrThrow({
+    if (venueId && typeId && datetimeOfStart && timeZone) {
+      const dtOfStart = new Date(datetimeOfStart);
+      const classType = await this.eventTypeService.findUniqueOrThrow({
         where: {id: typeId},
+        select: {minutesOfDuration: true},
       });
-      const datetimeOfStart = new Date(
-        year,
-        month - 1,
-        dayOfMonth,
-        hour,
-        minute
-      );
       const datetimeOfEnd = datePlusMinutes(
-        datetimeOfStart,
+        dtOfStart,
         classType.minutesOfDuration
       );
+      const splitedDateTime = splitDateTime(dtOfStart, timeZone);
       const event = {
         venueId,
         typeId,
-        datetimeOfStart,
+        datetimeOfStart: dtOfStart,
         datetimeOfEnd,
-        year,
-        month,
-        weekOfMonth: weekOfMonth(year, month, dayOfMonth),
+        year: splitedDateTime.year,
+        month: splitedDateTime.month,
+        weekOfMonth: splitedDateTime.weekOfMonth,
         minutesOfDuration: classType.minutesOfDuration,
       };
-      return await this.coachService.sortCoachesForEvent(event);
+      return await this.coachService.getSortedCoachesWithoutQuotaLimit(event);
     }
 
     // [step 2] There are not enough conditions to get sorted coaches.

@@ -19,6 +19,7 @@ import {AvailabilityExpressionService} from '@microservices/event-scheduling/ava
 import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
 import {Request} from 'express';
 import {AccountService} from '@microservices/account/account.service';
+import {QueueService} from '@microservices/queue/queue.service';
 
 enum QUARTER {
   Q1 = 'Q1',
@@ -32,9 +33,10 @@ enum QUARTER {
 @Controller('availability-expressions')
 export class AvailabilityExpressionController {
   constructor(
-    private availabilityExpressionService: AvailabilityExpressionService,
-    private availabilityTimeslotService: AvailabilityTimeslotService,
-    private readonly accountService: AccountService
+    private readonly availabilityExpressionService: AvailabilityExpressionService,
+    private readonly availabilityTimeslotService: AvailabilityTimeslotService,
+    private readonly accountService: AccountService,
+    private readonly queueService: QueueService
   ) {}
 
   @Post('')
@@ -205,6 +207,32 @@ export class AvailabilityExpressionController {
         status: AvailabilityExpressionStatus.PUBLISHED,
       },
     });
+  }
+
+  @Post('add-queue-jobs')
+  async sendAvailabilityExpressionsToQueue() {
+    // [step 1] Get unpublished expressions.
+    const exps = await this.availabilityExpressionService.findMany({
+      where: {status: AvailabilityExpressionStatus.EDITING},
+      select: {id: true},
+    });
+
+    // [step 2] Flush the queue.
+    await this.queueService.empty();
+    await this.queueService.clean(1000, 'completed');
+    await this.queueService.clean(1000, 'delayed');
+    await this.queueService.clean(1000, 'failed');
+    await this.queueService.clean(1000, 'paused');
+    await this.queueService.clean(1000, 'wait');
+
+    // [step 3] Add to task queue.
+    if (exps.length > 0) {
+      await this.queueService.addJobs(
+        exps.map(exp => {
+          return {availabilityExpressionId: exp.id};
+        })
+      );
+    }
   }
 
   /* End */

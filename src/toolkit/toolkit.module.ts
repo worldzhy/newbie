@@ -20,8 +20,8 @@ import {HttpModule} from '@nestjs/axios';
     HttpModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        timeout: configService.get('server.httpTimeout'),
-        maxRedirects: configService.get('server.httpMaxRedirects'),
+        timeout: configService.get('HTTP_TIMEOUT'),
+        maxRedirects: configService.get('HTTP_MAX_REDIRECTS'),
       }),
       inject: [ConfigService],
     }),
@@ -60,8 +60,8 @@ function getModules() {
         imports: [ConfigModule],
         useFactory: async (configService: ConfigService) => ({
           store: redisStore,
-          host: configService.get('toolkit.cache.redis.host'),
-          port: configService.get('toolkit.cache.redis.port'),
+          host: configService.get('server.redis.host'),
+          port: configService.get('server.redis.port'),
           ttl: configService.get('toolkit.cache.redis.ttl'), // cache-manamger v4 => seconds, v5 => milliseconds
         }),
         inject: [ConfigService],
@@ -81,6 +81,5 @@ function getModules() {
       })
     );
   }
-
   return modules;
 }

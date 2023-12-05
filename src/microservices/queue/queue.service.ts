@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {InjectQueue} from '@nestjs/bull';
-import {JobStatus, Queue as BullQueue, Job} from 'bull';
+import {JobStatus, Queue as BullQueue, Job, JobStatusClean} from 'bull';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {Prisma, Queue} from '@prisma/client';
 
@@ -31,8 +31,24 @@ export class QueueService {
     await this.defaultQueue.resume();
   }
 
+  async empty() {
+    await this.defaultQueue.empty();
+  }
+
+  async clean(grace: number, status?: JobStatusClean, limit?: number) {
+    await this.defaultQueue.clean(grace, status, limit);
+  }
+
   async addJob(data: object): Promise<Job> {
     return await this.defaultQueue.add(data, {delay: 1000}); // Delay the start of a job for 1 second.
+  }
+
+  async addJobs(dataArray: object[]): Promise<Job[]> {
+    return await this.defaultQueue.addBulk(
+      dataArray.map(data => {
+        return {data, delay: 1000};
+      })
+    ); // Delay the start of a job for 1 second.
   }
 
   async getJobs(types: JobStatus[]) {

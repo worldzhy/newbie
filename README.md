@@ -28,11 +28,13 @@
 
 #### Nodejs
 
-> https://nodejs.org/en/download/package-manager/
-* Do not update these node packages:
-- "@elastic/elasticsearch": "^7.13.0"
-- "cache-manager": "^4.1.0"
-- "cache-manager-redis-store": "^2.0.0"
+> https://blog.csdn.net/worldzhy/article/details/105092560
+
+- Do not update these node packages:
+
+* "@elastic/elasticsearch": "^7.13.0"
+* "cache-manager": "^4.1.0"
+* "cache-manager-redis-store": "^2.0.0"
 
 #### pm2
 
@@ -123,6 +125,7 @@ $ npm run start:dev
 
 ```bash
 $ npm install --production
+$ npm install --save-dev tsconfig-paths
 $ cp .env.example .env
 
 ```
@@ -145,8 +148,8 @@ $ npm run start:prod
 or
 
 ```bash
-$ pm2 start ./dist/src/main.js --name newbie
-$ pm2 start --name newbie-web yarn -- start
+$ pm2 start npm --name newbie -- start
+$ pm2 start npm --name newbie-web -- start
 ```
 
 ## Stay in touch

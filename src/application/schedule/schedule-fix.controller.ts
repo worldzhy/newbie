@@ -13,14 +13,12 @@ import {CoachService} from '../coach/coach.service';
 import {EventChangeLogService} from '@microservices/event-scheduling/event-change-log.service';
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
 import {UserProfileService} from '@microservices/account/user/user-profile.service';
-import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
 
 @ApiTags('Event Container')
 @ApiBearerAuth()
 @Controller('event-containers')
 export class EventFixController {
   constructor(
-    private readonly availabilityTimeslotService: AvailabilityTimeslotService,
     private readonly eventService: EventService,
     private readonly eventIssueService: EventIssueService,
     private readonly eventContainerService: EventContainerService,
@@ -52,26 +50,18 @@ export class EventFixController {
     // [step 2] Fix issues.
     for (let i = 0; i < events.length; i++) {
       const event = events[i];
-      // [step 2-1] Undo the checkin of coach availability timeslots.
-      await this.availabilityTimeslotService.undoCheckin(event);
 
-      // [step 2-2] Fix issues.
       for (let j = 0; j < event['issues'].length; j++) {
         const issue = event['issues'][j];
         await this.fixIssue(event, issue);
       }
-
-      // [step 2-3] Checkin coach availability timeslots.
-      const newEvent = await this.eventService.findUniqueOrThrow({
-        where: {id: event.id},
-      });
-      await this.availabilityTimeslotService.checkin(newEvent);
     }
   }
 
   async fixIssue(event: Event, issue: EventIssue) {
     // [step 1] Get and set suitable coach.
-    const coaches = await this.coachService.sortAvailableCoachesForEvent(event);
+    const coaches =
+      await this.coachService.getSortedCoachesWithQuotaLimit(event);
     if (coaches.length > 0) {
       await this.eventService.update({
         where: {id: event.id},

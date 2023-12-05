@@ -1,5 +1,3 @@
-import {IsOptional, IsNumber, IsString} from 'class-validator';
-
 export interface BasePageDto {
   page?: number;
 
@@ -12,6 +10,9 @@ export interface BasePageDto {
   startDateTime?: string;
 
   endDateTime?: string;
+
+  searchText?: string;
+  resourceId?: number;
 }
 
 export interface AddClassScheduleDto {

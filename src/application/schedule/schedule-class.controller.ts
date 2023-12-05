@@ -17,26 +17,19 @@ import {
   EventIssueStatus,
 } from '@prisma/client';
 import {EventService} from '@microservices/event-scheduling/event.service';
-import {
-  datePlusMinutes,
-  dayOfWeek,
-  weekOfMonth,
-  weekOfYear,
-} from '@toolkit/utilities/datetime.util';
 import {EventIssueService} from '@microservices/event-scheduling/event-issue.service';
 import {EventTypeService} from '@microservices/event-scheduling/event-type.service';
 import {EventChangeLogService} from '@microservices/event-scheduling/event-change-log.service';
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
 import {UserProfileService} from '@microservices/account/user/user-profile.service';
-import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
 import {ScToMbService} from '@microservices/mindbody/scToMb.service';
+import {sameDaysOfMonth} from '@toolkit/utilities/datetime.util';
 
 @ApiTags('Event')
 @ApiBearerAuth()
 @Controller('events')
 export class EventController {
   constructor(
-    private readonly availabilityTimeslotService: AvailabilityTimeslotService,
     private readonly eventService: EventService,
     private readonly eventIssueService: EventIssueService,
     private readonly eventTypeService: EventTypeService,
@@ -54,21 +47,18 @@ export class EventController {
         summary: '1. Create',
         value: {
           hostUserId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
-          year: 2023,
-          month: 9,
-          dayOfMonth: 1,
-          hour: 6,
-          minute: 0,
+          datetimeOfStart: '2023-11-28 17:40:05.025 +0800',
           typeId: 1,
           venueId: 1,
           containerId: 1,
+          needToDuplicate: true,
         },
       },
     },
   })
   async createEvent(
     @Body()
-    body: Prisma.EventUncheckedCreateInput
+    body: Prisma.EventUncheckedCreateInput & {needToDuplicate?: boolean}
   ): Promise<Event> {
     if (!body.hostUserId) {
       throw new BadRequestException('hostUserId is required.');
@@ -79,20 +69,6 @@ export class EventController {
       where: {id: body.typeId},
     });
     body.minutesOfDuration = eventType.minutesOfDuration;
-    body.datetimeOfStart = new Date(
-      body.year,
-      body.month - 1,
-      body.dayOfMonth,
-      body.hour,
-      body.minute
-    );
-    body.datetimeOfEnd = datePlusMinutes(
-      body.datetimeOfStart,
-      body.minutesOfDuration
-    );
-    body.dayOfWeek = dayOfWeek(body.year, body.month, body.dayOfMonth);
-    body.weekOfMonth = weekOfMonth(body.year, body.month, body.dayOfMonth);
-    body.weekOfYear = weekOfYear(body.year, body.month, body.dayOfMonth);
 
     const event = await this.eventService.create({
       data: body,
@@ -110,21 +86,61 @@ export class EventController {
       },
     });
 
-    // [step 3] Checkin coach availability timeslots.
-    await this.availabilityTimeslotService.checkin(event);
-
-    // [step 4] Check event issues.
+    // [step 3] Check event issues.
     await this.eventIssueService.check(event);
 
-    // [step 5] Attach information.
+    // [step 4] Attach information.
     event['issues'] = await this.eventIssueService.findMany({
       where: {status: EventIssueStatus.UNREPAIRED, eventId: event.id},
     });
-
     event['hostUser'] = await this.userProfileService.findUniqueOrThrow({
       where: {userId: body.hostUserId},
       select: {userId: true, fullName: true, coachingTenure: true},
     });
+
+    // [step 5] Duplicate events.
+    if (body.needToDuplicate) {
+      const sameDays = sameDaysOfMonth(
+        event.year,
+        event.month,
+        event.dayOfMonth
+      );
+      for (let i = 0; i < sameDays.length; i++) {
+        const sameDay = sameDays[i];
+        if (sameDay.dayOfMonth === event.dayOfMonth) {
+          continue;
+        }
+
+        const newDatetimeOfStart = new Date(event.datetimeOfStart);
+        newDatetimeOfStart.setDate(sameDay.dayOfMonth);
+
+        const newOtherEvent = await this.eventService.create({
+          data: {
+            hostUserId: event.hostUserId,
+            datetimeOfStart: newDatetimeOfStart,
+            minutesOfDuration: event.minutesOfDuration,
+            timeZone: event.timeZone,
+            typeId: event.typeId,
+            venueId: event.venueId,
+            containerId: event.containerId,
+          } as Prisma.EventUncheckedCreateInput,
+        });
+
+        // Note the update.
+        await this.eventChangeLogService.create({
+          data: {
+            type: EventChangeLogType.USER,
+            description:
+              'New class: ' +
+              eventType.name +
+              ' at ' +
+              newOtherEvent.datetimeOfStart,
+            eventContainerId: newOtherEvent.containerId,
+            eventId: newOtherEvent.id,
+          },
+        });
+      }
+    }
 
     return event;
   }
@@ -189,15 +205,11 @@ export class EventController {
         summary: '1. Update',
         value: {
           hostUserId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
-          year: 2023,
-          month: 9,
-          dayOfMonth: 1,
-          dayOfWeek: 5,
-          hour: 6,
-          minute: 0,
+          datetimeOfStart: '2023-11-28 17:40:05.025 +0800',
           typeId: 1,
           venueId: 1,
           containerId: 1,
+          needToDuplicate: true,
         },
       },
     },
@@ -205,29 +217,44 @@ export class EventController {
   async updateEvent(
     @Param('eventId') eventId: number,
     @Body()
-    body: Prisma.EventUncheckedUpdateInput
+    body: Prisma.EventUncheckedUpdateInput & {needToDuplicate?: boolean}
   ): Promise<Event> {
+    // [step 0] Collect events to be repeated in this month.
+    const otherEvents: object[] = [];
+    if (body.needToDuplicate) {
+      const oldEvent = await this.eventService.findUniqueOrThrow({
+        where: {id: eventId},
+      });
+      otherEvents.push(
+        ...(await this.eventService.findMany({
+          where: {
+            id: {not: eventId},
+            containerId: oldEvent.containerId,
+            hostUserId: oldEvent.hostUserId,
+            typeId: oldEvent.typeId,
+            hour: oldEvent.hour,
+            minute: oldEvent.minute,
+            dayOfWeek: oldEvent.dayOfWeek,
+          },
+        }))
+      );
+    }
+    delete body.needToDuplicate;
+
+    // [step 1] Update event.
     if (body.typeId) {
       const eventType = await this.eventTypeService.findUniqueOrThrow({
         where: {id: body.typeId as number},
       });
       body.minutesOfDuration = eventType.minutesOfDuration;
     }
-
-    // [step 1] Undo the checkin of coach availability timeslots.
-    const oldEvent = await this.eventService.findUniqueOrThrow({
-      where: {id: eventId},
-    });
-    await this.availabilityTimeslotService.undoCheckin(oldEvent);
-
-    // [step 2] Update event.
     const newEvent = await this.eventService.update({
       where: {id: eventId},
       data: body,
       include: {type: true},
     });
 
-    // [step 3] Note the update.
+    // [step 2] Note the update.
     await this.eventChangeLogService.create({
       data: {
         type: EventChangeLogType.USER,
@@ -241,13 +268,10 @@ export class EventController {
       },
     });
 
-    // [step 4] Checkin coach availability timeslots.
-    await this.availabilityTimeslotService.checkin(newEvent);
-
-    // [step 5] Check event issues.
+    // [step 3] Check event issues.
     await this.eventIssueService.check(newEvent);
 
-    // [step 6] Attach information.
+    // [step 4] Attach information.
     newEvent['issues'] = await this.eventIssueService.findMany({
       where: {status: EventIssueStatus.UNREPAIRED, eventId: newEvent.id},
     });
@@ -256,6 +280,39 @@ export class EventController {
       newEvent['hostUser'] = await this.userProfileService.findUniqueOrThrow({
         where: {userId: newEvent.hostUserId},
         select: {userId: true, fullName: true, coachingTenure: true},
+      });
+    }
+
+    // [step 5] Duplicate events.
+    for (let i = 0; i < otherEvents.length; i++) {
+      const otherEvent = otherEvents[i] as Event;
+      const newDatetimeOfStart = otherEvent.datetimeOfStart;
+      newDatetimeOfStart.setHours(newEvent.datetimeOfStart.getHours());
+      newDatetimeOfStart.setMinutes(newEvent.datetimeOfStart.getMinutes());
+
+      const newOtherEvent = await this.eventService.update({
+        where: {id: otherEvent.id},
+        data: {
+          hostUserId: newEvent.hostUserId,
+          typeId: newEvent.typeId,
+          datetimeOfStart: newDatetimeOfStart,
+          minutesOfDuration: newEvent.minutesOfDuration,
+          timeZone: newEvent.timeZone,
+        },
+      });
+
+      // Note the update.
+      await this.eventChangeLogService.create({
+        data: {
+          type: EventChangeLogType.USER,
+          description:
+            'Update class: ' +
+            newEvent['type'].name +
+            ' at ' +
+            newOtherEvent.datetimeOfStart,
+          eventContainerId: newOtherEvent.containerId,
+          eventId: newOtherEvent.id,
+        },
       });
     }
 
@@ -300,13 +357,11 @@ export class EventController {
 
   @Delete(':eventId')
   async deleteEvent(@Param('eventId') eventId: number): Promise<Event> {
+    // [step 1] Get the event.
     const event = await this.eventService.findUniqueOrThrow({
       where: {id: eventId},
       include: {type: true},
     });
-
-    // [step 1] Undo the checkin of coach availability timeslots.
-    await this.availabilityTimeslotService.undoCheckin(event);
 
     // [step 2] Delete the event.
     await this.eventService.delete({
@@ -332,30 +387,54 @@ export class EventController {
   }
 
   @Patch(':eventId/publish')
-  async publishEvent(@Param('eventId') eventId: number) {
-    // [step 1] Get the record.
-    // const event = await this.eventService.findUniqueOrThrow({
-    //   where: {id: eventId},
-    // });
+  async publishEvent(@Param('eventId') eventId: number, @Body() body) {
     const event = await this.eventService.findUniqueOrThrow({
       where: {id: eventId},
       include: {type: true, venue: true, changeLogs: true},
     });
 
-    await this.scToMbService.eventPublish(event);
+    const {checkResult} = body;
+
+    if (checkResult) {
+      this.scToMbService.setCheckResult(checkResult);
+    } else {
+      const {_event, _body} = this.scToMbService.parseBodyEvent({
+        body,
+        event,
+      });
+      await this.scToMbService.eventCheck(_event, _body);
+    }
+
+    // await this.scToMbService.eventPublish();
+    const resp = this.scToMbService.getResult();
+
+    if (!resp.success) {
+      return resp;
+    }
+
+    await this.eventService.update({
+      where: {id: eventId},
+      data: {isPublished: true},
+    });
+    return resp;
+  }
+
+  @Patch(':eventId/publishCheck')
+  async publishCheck(@Param('eventId') eventId: number, @Body() body) {
+    const event = await this.eventService.findUniqueOrThrow({
+      where: {id: eventId},
+      include: {type: true, venue: true, changeLogs: true},
+    });
+
+    const {_event, _body} = this.scToMbService.parseBodyEvent({
+      body,
+      event,
+    });
+    await this.scToMbService.eventCheck(_event, _body);
+    await this.scToMbService.eventPublish;
     const resp = this.scToMbService.getResult();
 
     return resp;
-
-    // [step 2] Modify coaches' availability status
-    // await this.availabilityTimeslotService.checkin(event);
-
-    // [step 2] Update event status.
-    // return await this.eventService.update({
-    //   where: {id: eventId},
-    //   data: {isPublished: true},
-    // });
-    return event;
   }
 
   /* End */

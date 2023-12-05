@@ -1,12 +1,12 @@
 import {Module} from '@nestjs/common';
 import {AvailabilityExpressionController} from './availability-expression.controller';
 import {AvailabilityUploadController} from './availability-upload.controller';
-import {AvailabilityTaskProducer} from './availability-task.producer';
-import {AvailabilityTaskConsumer} from './availability-task.consumer';
+import {AvailabilityJobProducer} from './availability-job.producer';
+import {AvailabilityJobConsumer} from './availability-job.consumer';
 
 @Module({
   controllers: [AvailabilityExpressionController, AvailabilityUploadController],
-  providers: [AvailabilityTaskProducer, AvailabilityTaskConsumer],
-  exports: [AvailabilityTaskProducer, AvailabilityTaskConsumer],
+  providers: [AvailabilityJobProducer, AvailabilityJobConsumer],
+  exports: [AvailabilityJobProducer, AvailabilityJobConsumer],
 })
 export class AvailabilityModule {}

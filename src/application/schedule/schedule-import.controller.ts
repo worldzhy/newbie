@@ -104,23 +104,7 @@ export class EventCopyController {
       );
     }
 
-    // [step 4] Add events to target container.
-    // [step 4-1] Undo coaches' availability checkins.
-    const oldEvents = await this.eventService.findMany({
-      where: {containerId: eventContainerId, deletedAt: null},
-      select: {
-        id: true,
-        hostUserId: true,
-        datetimeOfStart: true,
-        datetimeOfEnd: true,
-      },
-    });
-    for (let j = 0; j < oldEvents.length; j++) {
-      const event = oldEvents[j];
-      await this.availabilityTimeslotService.undoCheckin(event);
-    }
-
-    // [step 4-2] Delete old events and create new events.
+    // [step 4] Delete old events and create new events.
     targetContainer = await this.eventContainerService.update({
       where: {id: eventContainerId},
       data: {
@@ -131,12 +115,6 @@ export class EventCopyController {
       },
       select: {events: true},
     });
-
-    // [step 4-3] Checkin coaches' availability.
-    for (let j = 0; j < targetContainer['events'].length; j++) {
-      const event = targetContainer['events'][j];
-      await this.availabilityTimeslotService.checkin(event);
-    }
   }
 
   @Patch(':eventContainerId/overwrite')

@@ -121,6 +121,89 @@ export function ceilByMinutes(datetimeOfEnd: Date, minutes: number) {
   }
 }
 
+export function constructDateTime(
+  year: number,
+  month: number,
+  dayOfMonth: number,
+  hour: number,
+  minute: number,
+  second: number,
+  timeZone: string | number
+) {
+  let offset: string = '';
+  if (typeof timeZone === 'number') {
+    offset = timeZone.toString();
+  } else {
+    const tmpDate = new Date(year, month - 1, dayOfMonth, hour, minute);
+    offset = getTimeZoneOffset(tmpDate, timeZone);
+  }
+
+  return new Date(
+    year +
+      '-' +
+      month +
+      '-' +
+      dayOfMonth +
+      ' ' +
+      hour +
+      ':' +
+      minute +
+      ':' +
+      second +
+      offset
+  );
+}
+
+/**
+ * @param date
+ * @param timeZone The runtime's time zone is default time zone if 'timeZone' is undefined.
+ */
+export function splitDateTime(
+  date: Date = new Date(),
+  timeZone?: string // https://data.iana.org/time-zones/tz-link.html
+) {
+  // The format is '29/09/2019, 05:55:55'
+  const formatter = new Intl.DateTimeFormat('en-GB', {
+    dateStyle: 'short',
+    timeStyle: 'medium',
+    timeZone: timeZone,
+  });
+  const arrayDateTime = formatter.format(date).split(', ');
+  const arrayDate = arrayDateTime[0].split('/');
+  const arrayTime = arrayDateTime[1].split(':');
+
+  const year = parseInt(arrayDate[2]);
+  const month = parseInt(arrayDate[1]);
+  const dayOfMonth = parseInt(arrayDate[0]);
+  const hour = parseInt(arrayTime[0]);
+  const minute = parseInt(arrayTime[1]);
+  return {
+    year,
+    month,
+    dayOfMonth,
+    hour,
+    minute,
+    dayOfWeek: dayOfWeek(year, month, dayOfMonth),
+    weekOfMonth: weekOfMonth(year, month, dayOfMonth),
+    weekOfYear: weekOfYear(year, month, dayOfMonth),
+  };
+}
+
+/**
+ * The format is '09:31:07 GMT-5'.
+ * The offset is related to the date even for the same time zone.
+ * @param timeZone example: 'America/Los_Angeles'
+ * @returns string of number, like '-5'
+ */
+export function getTimeZoneOffset(date: Date = new Date(), timeZone?: string) {
+  return new Intl.DateTimeFormat('en-GB', {
+    timeStyle: 'long',
+    timeZone: timeZone,
+  })
+    .format(date)
+    .split('GMT')[1];
+}
+
 /**
  * Example: September, 2023
  * generateMonthlyCalendar(2023, 9) =>
@@ -212,4 +295,44 @@ export function daysOfWeek(
     }
   }
   return daysOfWeek;
+}
+
+export function sameDaysOfMonth(
+  year: number,
+  month: number,
+  dayOfMonth: number
+) {
+  const numberOfDays = new Date(year, month, 0).getDate(); // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/Date#syntax
+  const specificDayOfWeek = new Date(year, month - 1, dayOfMonth).getDay();
+
+  const sameDaysOfMonth: {
+    year: number;
+    month: number;
+    dayOfMonth: number;
+    dayOfWeek: number;
+    weekOfMonth: number;
+    weekOfYear: number;
+  }[] = [];
+  for (let day = 1, week = 1; day <= numberOfDays; day++) {
+    const date = new Date(year, month - 1, day);
+    const dayOfMonth = date.getDate();
+    const dayOfWeek = date.getDay();
+
+    // * Monday is the first day => if (dayOfWeek === 1 && day !== 1)
+    // * Sunday is the first day => if (dayOfWeek === 0 && day !== 1)
+    if (dayOfWeek === 1 && day !== 1) {
+      week += 1;
+    }
+    if (dayOfWeek === specificDayOfWeek) {
+      sameDaysOfMonth.push({
+        year,
+        month,
+        dayOfMonth,
+        dayOfWeek,
+        weekOfMonth: week,
+        weekOfYear: weekOfYear(year, month, dayOfMonth),
+      });
+    }
+  }
+  return sameDaysOfMonth;
 }

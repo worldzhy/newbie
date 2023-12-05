@@ -48,11 +48,21 @@ export class LocationController {
           external_studioId: 5723396,
           external_studioName: '[solidcore] California',
           external_locationId: 1,
+          external_resourceId: 1,
+          external_staffPayRate: 10,
+          external_maxCapacity: 20,
+          external_pricingOptionsProductIds: [1],
+          external_allowDateForwardEnrollment: true,
+          external_allowOpenEnrollment: true,
+          external_bookingStatus: '',
+          external_waitlistCapacity: 10,
+          external_webCapacity: 10,
           // Save in place table of map module.
           address: '9001 Santa Monica Boulevard suite 103',
           city: 'West Hollywood',
           state: 'CA',
           country: 'US',
+          timeZone: 'Asia/Shanghai',
         },
       },
     },
@@ -62,11 +72,11 @@ export class LocationController {
     body: Prisma.EventVenueUncheckedCreateInput &
       Prisma.PlaceUncheckedCreateInput
   ) {
-    const {address, city, state, country, ...dataOfVenue} = body;
+    const {address, city, state, country, timeZone, ...dataOfVenue} = body;
     // [step 1] Create place.
-    if (address || city || state || country) {
+    if (address || city || state || country || timeZone) {
       const place = await this.placeService.create({
-        data: {address, city, state, country},
+        data: {address, city, state, country, timeZone},
       });
       dataOfVenue.placeId = place.id;
     }
@@ -76,7 +86,7 @@ export class LocationController {
       data: dataOfVenue,
     });
 
-    return {...venue, address, city, state, country};
+    return {...venue, address, city, state, country, timeZone};
   }
 
   @Get('')
@@ -109,12 +119,9 @@ export class LocationController {
       {where}
     );
 
-    // [step 3] Attach place information.
+    // [step 3] Attach place information Optimization.
     const venuePlaceIds = venues.records.map((d: any) => d.placeId);
-    const places = await this.placeService.findMany({
-      where: {id: {in: venuePlaceIds}},
-      select: {id: true, address: true, state: true, city: true, country: true},
-    });
+    const places = await this.placeService.findManyByIds(venuePlaceIds);
 
     venues.records.map((venue: EventVenue & Place) => {
       const place: any = _.find(places, (p: Place) => {
@@ -126,6 +133,7 @@ export class LocationController {
         venue.city = place.city;
         venue.state = place.state;
         venue.country = place.country;
+        venue.timeZone = place.timeZone;
       }
     });
 
@@ -183,6 +191,7 @@ export class LocationController {
           venue.city = place.city;
           venue.state = place.state;
           venue.country = place.country;
+          venue.timeZone = place.timeZone;
         }
       }
     }
@@ -207,6 +216,7 @@ export class LocationController {
         venue.city = place.city;
         venue.state = place.state;
         venue.country = place.country;
+        venue.timeZone = place.timeZone;
       }
     }
 
@@ -232,11 +242,21 @@ export class LocationController {
           external_studioId: 5723396,
           external_studioName: '[solidcore] California',
           external_locationId: 1,
+          external_resourceId: 1,
+          external_staffPayRate: 10,
+          external_maxCapacity: 20,
+          external_pricingOptionsProductIds: [1],
+          external_allowDateForwardEnrollment: true,
+          external_allowOpenEnrollment: true,
+          external_bookingStatus: '',
+          external_waitlistCapacity: 10,
+          external_webCapacity: 10,
           // Save in place table of map module.
           address: '9001 Santa Monica Boulevard suite 103',
           city: 'West Hollywood',
           state: 'CA',
           country: 'US',
+          timeZone: 'Asia/Shanghai',
         },
       },
     },
@@ -248,7 +268,7 @@ export class LocationController {
       Prisma.PlaceUncheckedUpdateInput &
       Prisma.PlaceUncheckedCreateInput
   ) {
-    const {address, city, state, country, ...dataOfVenue} = body;
+    const {address, city, state, country, timeZone, ...dataOfVenue} = body;
 
     // [step 1] Update event venue.
     const venue = await this.eventVenueService.update({
@@ -259,11 +279,11 @@ export class LocationController {
     // [step 2] Update or create place.
     await this.placeService.upsert({
       where: {id: venue.placeId ?? undefined},
-      update: {address, city, state, country},
-      create: {address, city, state, country},
+      update: {address, city, state, country, timeZone},
+      create: {address, city, state, country, timeZone},
     });
 
-    return {...venue, address, city, state, country};
+    return {...venue, address, city, state, country, timeZone};
   }
 
   @Delete(':eventVenueId')

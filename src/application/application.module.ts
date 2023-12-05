@@ -10,7 +10,7 @@ import {HttpMiddleware} from '@_middleware/_http.middleware';
 import {ToolkitModule} from '@toolkit/toolkit.module';
 import {AccountModule} from '@microservices/account/account.module';
 import {EventSchedulingModule} from '@microservices/event-scheduling/event-scheduling.module';
-import {GoogleFormModule} from '@microservices/google-form/google-form.module';
+import {GoogleAPIsModule} from '@microservices/googleapis/googleapis.module';
 import {MapModule} from '@microservices/map/map.module';
 import {MindbodyModule} from '@microservices/mindbody/mindbody.module';
 import {QueueModule} from '@microservices/queue/queue.module';
@@ -47,7 +47,7 @@ import {AnalysisController} from './analysis/analysis.controller';
     // Microservices (Global modules)
     AccountModule,
     EventSchedulingModule,
-    GoogleFormModule,
+    GoogleAPIsModule,
     MapModule,
     MindbodyModule,
     QueueModule,
