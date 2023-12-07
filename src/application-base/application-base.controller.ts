@@ -2,7 +2,7 @@ import {Controller, Get} from '@nestjs/common';
 import {ApiTags} from '@nestjs/swagger';
 import {Public} from '@microservices/account/security/authentication/public/public.decorator';
 
-@ApiTags('[Application]')
+@ApiTags('[Newbie]')
 @Controller()
 export class ApplicationBaseController {
   @Public()

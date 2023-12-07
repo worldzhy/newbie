@@ -6,7 +6,7 @@ import {RefreshTokenService} from '@microservices/token/refresh-token/refresh-to
 
 @ApiTags('Account')
 @Controller('account')
-export class AccountLogoutController {
+export class LogoutController {
   constructor(
     private readonly accountService: AccountService,
     private readonly refreshTokenService: RefreshTokenService

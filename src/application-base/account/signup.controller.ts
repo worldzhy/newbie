@@ -11,7 +11,7 @@ import {
 
 @ApiTags('Account')
 @Controller('account')
-export class AccountSignupController {
+export class SignupController {
   constructor(private readonly userService: UserService) {}
 
   /**
@@ -55,10 +55,7 @@ export class AccountSignupController {
       },
     },
   })
-  async signup(
-    @Body()
-    body: Prisma.UserCreateInput
-  ): Promise<User> {
+  async signup(@Body() body: Prisma.UserCreateInput): Promise<User> {
     let emailCount = 0;
     let phoneCount = 0;
     let profileCount = 0;

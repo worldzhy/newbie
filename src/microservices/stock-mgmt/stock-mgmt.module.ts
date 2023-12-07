@@ -28,4 +28,4 @@ import {WarehouseService} from './warehouse.service';
     WarehouseService,
   ],
 })
-export class OrderManagementModule {}
+export class StockManagementModule {}

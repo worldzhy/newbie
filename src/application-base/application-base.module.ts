@@ -7,43 +7,36 @@ import {PrismaExceptionFilter} from '@_filter/_prisma-exception.filter';
 import {ThrottlerExceptionFilter} from '@_filter/_throttler-exception.filter';
 import {HttpMiddleware} from '@_middleware/_http.middleware';
 
+// Toolkit and microservice modules
 import {ToolkitModule} from '@toolkit/toolkit.module';
 import {AccountModule} from '@microservices/account/account.module';
 import {EventSchedulingModule} from '@microservices/event-scheduling/event-scheduling.module';
+import {GoogleAPIsModule} from '@microservices/googleapis/googleapis.module';
 import {FileManagementModule} from '@microservices/file-mgmt/file-mgmt.module';
 import {MapModule} from '@microservices/map/map.module';
 import {NotificationModule} from '@microservices/notification/notification.module';
 import {OrderManagementModule} from '@microservices/order-mgmt/order-mgmt.module';
 import {ProjectManagementModule} from '@microservices/project-mgmt/project-mgmt.module';
 import {QueueModule} from '@microservices/queue/queue.module';
+import {StockManagementModule} from '@microservices/stock-mgmt/stock-mgmt.module';
 import {TagModule} from '@microservices/tag/tag.module';
 import {WorkflowModule} from '@microservices/workflow/workflow.module';
 
-import {EnginedModule} from './engined/engined.module';
-import {RecruitmentModule} from './recruitment/recruitment.module';
-import {ApplicationBaseController} from './application-base.controller';
-import {AccountLoginController} from './account/account-login.controller';
-import {AccountLogoutController} from './account/account-logout.controller';
-import {AccountOthersController} from './account/account-others.controller';
-import {AccountPasswordController} from './account/account-password.controller';
-import {AccountSignupController} from './account/account-signup.controller';
-import {OrganizationController} from './account/organization.controller';
-import {UserController} from './account/user.controller';
-import {UserProfileController} from './account/user-profile.controller';
-import {PermissionController} from './account/permission.controller';
-import {RoleController} from './account/role.controller';
-import {PlaceController} from './map/place.controller';
-import {NotificationController} from './notification/notification.controller';
-import {ProjectCheckpointController} from './project-mgmt/checkpoint.controller';
-import {ProjectEnvironmentController} from './project-mgmt/environment.controller';
-import {ProjectInfrastructureStackController} from './project-mgmt/infrastructure-stack.controller';
-import {ProjectElementController} from './project-mgmt/project-element.controller';
-import {ProjectController} from './project-mgmt/project.controller';
-import {WorkflowController} from './workflow/workflow.controller';
-import {WorkflowStateController} from './workflow/workflow-state.controller';
-import {WorkflowViewController} from './workflow/workflow-view.controller';
-import {WorkflowViewComponentController} from './workflow/workflow-view-component.controller';
-import {WorkflowRouteController} from './workflow/workflow-route.controller';
+// Toolkit and microservice controllers
+import {AccountController} from './account/account.controller';
+import {LoginByPasswordController} from './account/login-by-password.controller';
+import {LoginByProfileController} from './account/login-by-profile.controller';
+import {LoginByVerificationCodeController} from './account/login-by-verificationcode.controller';
+import {LoginRefreshController} from './account/login-refresh.controller';
+import {LogoutController} from './account/logout.controller';
+import {SignupController} from './account/signup.controller';
+import {OrganizationController} from './account/organization/organization.controller';
+import {PermissionController} from './account/permission/permission.controller';
+import {RoleController} from './account/role/role.controller';
+import {UserController} from './account/user/user.controller';
+import {UserProfileController} from './account/user/user-profile.controller';
+import {TagController} from './tag/tag.controller';
+import {TagGroupController} from './tag/tag-group.controller';
 
 @Module({
   imports: [
@@ -53,47 +46,32 @@ import {WorkflowRouteController} from './workflow/workflow-route.controller';
     // Microservices (Global modules)
     AccountModule,
     EventSchedulingModule,
+    GoogleAPIsModule,
     FileManagementModule,
     MapModule,
     NotificationModule,
     OrderManagementModule,
     ProjectManagementModule,
     QueueModule,
+    StockManagementModule,
     TagModule,
     WorkflowModule,
-
-    // Application
-    EnginedModule,
-    RecruitmentModule,
   ],
   controllers: [
-    ApplicationBaseController,
-    AccountLoginController,
-    AccountLogoutController,
-    AccountOthersController,
-    AccountPasswordController,
-    AccountSignupController,
-    OrganizationController,
-    UserController,
-    UserProfileController,
-    PermissionController,
-    RoleController,
-
-    PlaceController,
-
-    NotificationController,
-
-    ProjectCheckpointController,
-    ProjectEnvironmentController,
-    ProjectInfrastructureStackController,
-    ProjectElementController,
-    ProjectController,
-
-    WorkflowController,
-    WorkflowStateController,
-    WorkflowViewController,
-    WorkflowViewComponentController,
-    WorkflowRouteController,
+    AccountController,
+    LoginByPasswordController,
+    LoginByProfileController,
+    LoginByVerificationCodeController,
+    LoginRefreshController,
+    LogoutController,
+    SignupController,
+    // OrganizationController,
+    // PermissionController,
+    // RoleController,
+    // UserController,
+    // UserProfileController,
+    TagController,
+    TagGroupController,
   ],
   providers: [
     // Filters
@@ -103,7 +81,7 @@ import {WorkflowRouteController} from './workflow/workflow-route.controller';
     {provide: APP_FILTER, useClass: ThrottlerExceptionFilter}, // 1st priority for exceptions thrown by throttler (rate limit).
   ],
 })
-export class ApplicationExampleModule {
+export class ApplicationBaseModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(HttpMiddleware).forRoutes('*');
   }

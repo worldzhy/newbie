@@ -9,9 +9,10 @@ import {
   SwaggerModule,
   SwaggerCustomOptions,
 } from '@nestjs/swagger';
-import {ApplicationModule} from './application-solidcore/application-solidcore.module';
 import {ClusterService} from './cluster';
-// import {ApplicationExampleModule as ApplicationModule} from './application-example/application-example.module';
+import {ApplicationDemoModule as ApplicationModule} from './application-demo/application-demo.module';
+// import {ApplicationRecruitmentModule as ApplicationModule} from './application-recruitment/application-recruitment.module';
+// import {ApplicationSolidcoreModule as ApplicationModule} from './application-solidcore/application-solidcore.module';
 
 function checkEnvVars(configService: ConfigService) {
   const requiredEnvVars = ['ENVIRONMENT', 'PORT'];
@@ -96,5 +97,5 @@ async function bootstrap() {
 
   console.log(`Application is running on: ${await app.getUrl()}`);
 }
-// ClusterService.clusterize(bootstrap);
 bootstrap();
+// ClusterService.clusterize(bootstrap);

@@ -5,9 +5,12 @@ import {EventController} from './schedule-class.controller';
 import {EventFixController} from './schedule-fix.controller';
 import {EventCopyController} from './schedule-import.controller';
 import {EventContainerController} from './schedule.controller';
+import {CoachModule} from '../coach/coach.module';
+import {RawDataModule} from '../raw-data/raw-data.module';
 
 @Global()
 @Module({
+  imports: [CoachModule, RawDataModule],
   controllers: [
     EventChangeLogController,
     EventController,
@@ -18,4 +21,4 @@ import {EventContainerController} from './schedule.controller';
   providers: [AsyncPublishService],
   exports: [AsyncPublishService],
 })
-export class EventScheduleModule {}
+export class SchedulingModule {}
