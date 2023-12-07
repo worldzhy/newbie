@@ -25,7 +25,7 @@ enum EventIssueDescription {
   Error_LocationUnavailable = 'The coach is not able to teach in this location.',
 }
 
-const MINUTES_OF_CONFLICT_DISTANCE = 30;
+const MINUTES_OF_CONFLICT_DISTANCE = 60;
 
 @Injectable()
 export class EventIssueService {

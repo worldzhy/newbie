@@ -52,7 +52,7 @@ export class ClassController {
     }
     return await this.eventTypeService.findManyInManyPages(
       {page, pageSize},
-      {where, orderBy: {name: 'asc'}}
+      {where, orderBy: {id: 'asc'}}
     );
   }
 

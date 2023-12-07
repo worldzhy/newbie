@@ -21,10 +21,12 @@ export function toMbParams(query: any) {
   if (locationId) {
     params.locationId = 3;
   }
+  params.locationId = 3;
 
   if (locationIds) {
     params.locationIds = 3;
   }
+  params.locationIds = 3;
 
   params.scheduleTypes = 'Resource';
 
@@ -90,6 +92,7 @@ export function groupClassesByDate(cs: any, resourceId: any = undefined) {
     return {
       ClassInstanceIds: c.Id,
       ClassScheduleId: c.ClassScheduleId,
+      LocationId: c.Location.Id,
       name: c.ClassDescription.Name,
       ClassDescriptionActive: c.ClassDescription.Active,
       ClassDesId: c.ClassDescription.Id,
@@ -104,10 +107,9 @@ export function groupClassesByDate(cs: any, resourceId: any = undefined) {
     };
   });
 
-  console.log(resourceId);
-  if (resourceId) {
-    _cs = _.filter(_cs, (d: any) => d.ResourceId === parseInt(resourceId));
-  }
+  // if (resourceId) {
+  //   _cs = _.filter(_cs, (d: any) => d.ResourceId === parseInt(resourceId));
+  // }
 
   _cs = _.sortBy(_cs, (d: any) => d.classdate);
 

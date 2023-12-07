@@ -1,12 +1,12 @@
 import {Body, Controller, Get, Post, Query} from '@nestjs/common';
 import {ApiTags} from '@nestjs/swagger';
-import {MindbodyService} from '@microservices/mindbody/mindbody.service';
+import {MindbodyService} from 'src/application/mindbody/mindbody.service';
 import {
   AddClassScheduleDto,
   BasePageDto,
   endClassScheduleDto,
-} from '@microservices/mindbody/mindbody.dto';
-import {groupClassesByDate} from '@microservices/mindbody/util';
+} from 'src/application/mindbody/mindbody.dto';
+import {groupClassesByDate} from 'src/application/mindbody/util';
 
 @ApiTags('Mindbody')
 @Controller('mindbody')
@@ -70,6 +70,12 @@ export class MindbodyController {
     return resp;
   }
 
+  @Get('class/stopclassschedules')
+  async stopClassSchedules(@Query() query: BasePageDto) {
+    const resp = await this.mindbodyService.stopClassSchedules(query);
+    return resp;
+  }
+
   @Get('class/classschedules')
   async getClassSchedules(@Query() query: BasePageDto) {
     const resp = await this.mindbodyService.getClassSchedules(query);
@@ -89,6 +95,12 @@ export class MindbodyController {
   @Post('class/endclassschedulebyId')
   async endClassSchduleById(@Body() body: endClassScheduleDto) {
     const resp = await this.mindbodyService.endClassSchduleById(body);
+    return resp;
+  }
+
+  @Post('class/endClassFeatureSchduleById')
+  async endClassSchduleById2(@Body() body: endClassScheduleDto) {
+    const resp = await this.mindbodyService.endClassFeatureSchduleById(body);
     return resp;
   }
 

@@ -121,7 +121,19 @@ export class LocationController {
 
     // [step 3] Attach place information Optimization.
     const venuePlaceIds = venues.records.map((d: any) => d.placeId);
-    const places = await this.placeService.findManyByIds(venuePlaceIds);
+    const places = await this.placeService.findMany({
+      where: {
+        id: {in: venuePlaceIds},
+      },
+      select: {
+        id: true,
+        address: true,
+        state: true,
+        city: true,
+        country: true,
+        timeZone: true,
+      },
+    });
 
     venues.records.map((venue: EventVenue & Place) => {
       const place: any = _.find(places, (p: Place) => {

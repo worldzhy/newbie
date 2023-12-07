@@ -63,7 +63,10 @@ export class EventTypeService {
     const eventTypes = await this.prisma.eventType.findMany();
     for (let i = 0; i < eventTypes.length; i++) {
       const eventType = eventTypes[i];
-      if (name.toLowerCase().includes(eventType.name.toLowerCase())) {
+      if (
+        name.toLowerCase().includes(eventType.name.toLowerCase()) ||
+        eventType.name.toLowerCase().includes(name.toLowerCase())
+      ) {
         return eventType;
       }
     }

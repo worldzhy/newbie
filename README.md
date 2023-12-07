@@ -141,15 +141,11 @@ $ npx prisma db seed
 ### Start the app
 
 ```bash
-$ npm run build
-$ npm run start:prod
-```
-
-or
-
-```bash
 $ pm2 start npm --name newbie -- start
-$ pm2 start npm --name newbie-web -- start
+
+$ pm2 stop newbie
+$ npm run build
+$ pm2 start newbie
 ```
 
 ## Stay in touch

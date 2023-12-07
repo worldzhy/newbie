@@ -12,7 +12,7 @@ import {AccountModule} from '@microservices/account/account.module';
 import {EventSchedulingModule} from '@microservices/event-scheduling/event-scheduling.module';
 import {GoogleAPIsModule} from '@microservices/googleapis/googleapis.module';
 import {MapModule} from '@microservices/map/map.module';
-import {MindbodyModule} from '@microservices/mindbody/mindbody.module';
+import {MindbodyModule} from 'src/application/mindbody/mindbody.module';
 import {QueueModule} from '@microservices/queue/queue.module';
 import {TagModule} from '@microservices/tag/tag.module';
 import {AvailabilityModule} from './availability/availability.module';
@@ -56,6 +56,7 @@ import {AnalysisController} from './analysis/analysis.controller';
     // Application
     AvailabilityModule,
     CoachModule,
+    EventSchedulingModule,
     RawDataModule,
   ],
   controllers: [
@@ -67,11 +68,6 @@ import {AnalysisController} from './analysis/analysis.controller';
     AccountOthersController,
     AreaManagerController,
     ClassController,
-    EventController,
-    EventContainerController,
-    EventChangeLogController,
-    EventCopyController,
-    EventFixController,
     HeatmapController,
     LocationController,
     MindbodyController,

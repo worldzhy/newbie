@@ -22,7 +22,9 @@ import {EventTypeService} from '@microservices/event-scheduling/event-type.servi
 import {EventChangeLogService} from '@microservices/event-scheduling/event-change-log.service';
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
 import {UserProfileService} from '@microservices/account/user/user-profile.service';
-import {ScToMbService} from '@microservices/mindbody/scToMb.service';
+import {ScToMbService} from 'src/application/mindbody/scToMb.service';
+import {AsyncPublishService} from 'src/application/schedule/async-publish.service';
+import {OnEvent} from '@nestjs/event-emitter';
 import {sameDaysOfMonth} from '@toolkit/utilities/datetime.util';
 
 @ApiTags('Event')
@@ -36,7 +38,8 @@ export class EventController {
     private readonly eventContainerService: EventContainerService,
     private readonly eventChangeLogService: EventChangeLogService,
     private readonly userProfileService: UserProfileService,
-    private readonly scToMbService: ScToMbService
+    private readonly scToMbService: ScToMbService,
+    private readonly asyncPublishService: AsyncPublishService,
   ) {}
 
   @Post('')
@@ -405,7 +408,7 @@ export class EventController {
       await this.scToMbService.eventCheck(_event, _body);
     }
 
-    // await this.scToMbService.eventPublish();
+    await this.scToMbService.eventPublish();
     const resp = this.scToMbService.getResult();
 
     if (!resp.success) {
@@ -435,6 +438,26 @@ export class EventController {
     const resp = this.scToMbService.getResult();
 
     return resp;
+  }
+
+  @Post('publishContainer')
+  async publishContainer(@Body() body) {
+    return this.asyncPublishService.publishContainer(body);
+  }
+
+  // @Post('publishContainerHandle')
+  // async publishContainerHandle(@Body() body) {
+  //   return this.asyncPublishService.publishContainerHandle(body);
+  // }
+
+  @OnEvent('schdules.addOne')
+  async addScduleEvent(payload) {
+    await this.asyncPublishService.addSchduleOne(payload);
+  }
+
+  @OnEvent('schdules.remove')
+  async removeScduleEvent(payload) {
+    await this.asyncPublishService.removeSchdules(payload);
   }
 
   /* End */

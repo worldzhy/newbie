@@ -8,6 +8,7 @@ import {
   Param,
   Query,
   Req,
+  Inject,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {
@@ -20,6 +21,8 @@ import {AvailabilityTimeslotService} from '@microservices/event-scheduling/avail
 import {Request} from 'express';
 import {AccountService} from '@microservices/account/account.service';
 import {QueueService} from '@microservices/queue/queue.service';
+import {CACHE_MANAGER} from '@nestjs/cache-manager';
+import {Cache} from 'cache-manager';
 
 enum QUARTER {
   Q1 = 'Q1',
@@ -33,6 +36,7 @@ enum QUARTER {
 @Controller('availability-expressions')
 export class AvailabilityExpressionController {
   constructor(
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly availabilityExpressionService: AvailabilityExpressionService,
     private readonly availabilityTimeslotService: AvailabilityTimeslotService,
     private readonly accountService: AccountService,
@@ -217,16 +221,11 @@ export class AvailabilityExpressionController {
       select: {id: true},
     });
 
-    // [step 2] Flush the queue.
-    await this.queueService.empty();
-    await this.queueService.clean(1000, 'completed');
-    await this.queueService.clean(1000, 'delayed');
-    await this.queueService.clean(1000, 'failed');
-    await this.queueService.clean(1000, 'paused');
-    await this.queueService.clean(1000, 'wait');
-
-    // [step 3] Add to task queue.
+    // [step 2] Add to task queue.
     if (exps.length > 0) {
+      // Clean queue jobs and http response cache.
+      await this.cacheManager.reset();
+
       await this.queueService.addJobs(
         exps.map(exp => {
           return {availabilityExpressionId: exp.id};

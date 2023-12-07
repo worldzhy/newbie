@@ -21,7 +21,6 @@ import {
 import {EventService} from '@microservices/event-scheduling/event.service';
 import {EventIssueService} from '@microservices/event-scheduling/event-issue.service';
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
-import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
 import {datePlusMinutes, daysOfMonth} from '@toolkit/utilities/datetime.util';
 import {PlaceService} from '@microservices/map/place.service';
 
@@ -30,7 +29,6 @@ import {PlaceService} from '@microservices/map/place.service';
 @Controller('event-containers')
 export class EventContainerController {
   constructor(
-    private readonly availabilityTimeslotService: AvailabilityTimeslotService,
     private readonly eventService: EventService,
     private readonly eventIssueService: EventIssueService,
     private readonly eventContainerService: EventContainerService,

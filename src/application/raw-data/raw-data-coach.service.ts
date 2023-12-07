@@ -155,5 +155,27 @@ export class RawDataCoachService {
     }
   }
 
+  async queryStaff(params) {
+    const {email, studioId, locationId} = params;
+    const sqlText = `
+    select studioid,location,trainerid,tremailname as email
+      from trainers
+      where tremailname = ?
+      and studioid = ?
+    `;
+
+    const executeOpt = {
+      sqlText,
+      binds: [email, studioId, locationId],
+    };
+
+    const data: any = await this.snowflakeService.execute(executeOpt);
+
+    return {
+      data,
+      count: data.length,
+    };
+  }
+
   /* End */
 }

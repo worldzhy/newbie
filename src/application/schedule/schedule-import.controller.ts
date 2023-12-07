@@ -14,7 +14,6 @@ import {
   EventContainerStatus,
   EventContainerOrigin,
 } from '@prisma/client';
-import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
 import {EventService} from '@microservices/event-scheduling/event.service';
 import {daysOfMonth} from '@toolkit/utilities/datetime.util';
@@ -25,7 +24,6 @@ import {RawDataSchedulingService} from '../raw-data/raw-data-scheduling.service'
 @Controller('event-containers')
 export class EventCopyController {
   constructor(
-    private readonly availabilityTimeslotService: AvailabilityTimeslotService,
     private readonly eventContainerService: EventContainerService,
     private readonly eventService: EventService,
     private readonly rawDataSchedulingService: RawDataSchedulingService
@@ -81,40 +79,39 @@ export class EventCopyController {
     }
 
     // [step 3] Generate events for target container.
-    const targetEvents: Prisma.EventUncheckedCreateWithoutContainerInput[] = [];
+    const targetEvents: Prisma.EventCreateManyInput[] = [];
     const weeksOfTargetContainer = daysOfMonth(
       targetContainer.year,
       targetContainer.month
     );
     for (let i = 0; i < weeksOfTargetContainer.length; i++) {
       targetEvents.push(
-        ...this.eventService.copyMany({
-          events: sourceContainer['events'],
-          from: {
-            year: sourceContainer.year,
-            month: sourceContainer.month,
-            week: 2, // The first week may be a semi week but the 2nd week must be a full week.
-          },
-          to: {
-            year: targetContainer.year,
-            month: targetContainer.month,
-            week: i + 1,
-          },
-        })
+        ...this.eventService
+          .copyMany({
+            events: sourceContainer['events'],
+            from: {
+              year: sourceContainer.year,
+              month: sourceContainer.month,
+              week: 2, // The first week may be a semi week but the 2nd week must be a full week.
+            },
+            to: {
+              year: targetContainer.year,
+              month: targetContainer.month,
+              week: i + 1,
+            },
+          })
+          .map(event => {
+            event.containerId = eventContainerId;
+            return event;
+          })
       );
     }
 
     // [step 4] Delete old events and create new events.
-    targetContainer = await this.eventContainerService.update({
-      where: {id: eventContainerId},
-      data: {
-        events: {
-          deleteMany: {containerId: eventContainerId},
-          create: targetEvents,
-        },
-      },
-      select: {events: true},
+    await this.eventService.deleteMany({
+      where: {containerId: eventContainerId},
     });
+    await this.eventService.createMany({data: targetEvents});
   }
 
   @Patch(':eventContainerId/overwrite')

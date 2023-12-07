@@ -4,6 +4,7 @@ import {ConfigService} from '@nestjs/config';
 import {toMbParams, parseHeaders} from './util';
 import {AddClassScheduleDto, endClassScheduleDto} from './mindbody.dto';
 import * as _ from 'lodash';
+import * as moment from 'moment';
 
 @Injectable()
 export class MindbodyService {
@@ -114,6 +115,7 @@ export class MindbodyService {
 
     params.startDateTime = query.startDateTime;
     params.endDateTime = query.endDateTime;
+
     try {
       const response = await this.httpService.axiosRef.get(
         `${this.mbUrl}class/classes`,
@@ -225,6 +227,61 @@ export class MindbodyService {
     }
   }
 
+  async stopClassSchedules(query) {
+    const {data: schs} = await this.getClassSchedules(query);
+
+    const {ClassSchedules} = schs;
+
+    const _schs = ClassSchedules.map(d => {
+      return {
+        Id: d.Id,
+        Name: d.ClassDescription.Name,
+        Classes: d.Classes,
+        DescActive: d.ClassDescription.Active,
+        IsAvailable: d.IsAvailable,
+        DaySunday: d.DaySunday,
+        DayMonday: d.DayMonday,
+        DayTuesday: d.DayTuesday,
+        DayWednesday: d.DayWednesday,
+        DayThursday: d.DayThursday,
+        DayFriday: d.DayFriday,
+        DaySaturday: d.DaySaturday,
+        StartTime: d.StartTime,
+        EndTime: d.EndTime,
+        StartDate: d.StartDate,
+        EndDate: d.EndDate,
+      };
+    });
+
+    const avaSchs = _schs.filter(d => {
+      return d.IsAvailable;
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const results: any[] = [];
+
+    for (const _sch of avaSchs) {
+      const params = {
+        studioId: query.studioId,
+        locationId: query.locationId,
+        scheduleId: _sch.Id,
+      };
+
+      const startDate = moment(_sch.StartDate);
+      const endOfMonth = moment().endOf('month');
+
+      let resp;
+      if (startDate.isBefore(endOfMonth)) {
+        resp = await this.endClassSchduleById(params);
+      } else {
+        resp = await this.endClassFeatureSchduleById(params);
+      }
+
+      results.push(resp);
+    }
+    return results;
+  }
+
   async getClassSchedules(query) {
     const params = toMbParams(query);
     const headers = parseHeaders(this.headers, query);
@@ -328,7 +385,26 @@ export class MindbodyService {
     }
   }
 
-  async endClassSchduleById(data: endClassScheduleDto) {
+  async endClassSchduleById(data: endClassScheduleDto, EndDate = undefined) {
+    this.setStudioId(data.studioId);
+    await this.getUserToken();
+
+    let _EndDate = moment().endOf('month').toISOString();
+
+    if (EndDate) {
+      _EndDate = EndDate;
+    }
+
+    const schedule = {
+      ClassId: data.scheduleId,
+      EndDate: _EndDate,
+    };
+    const params = {...data, schedule};
+
+    return this.updateClassSchedule(params);
+  }
+
+  async endClassFeatureSchduleById(data: endClassScheduleDto) {
     this.setStudioId(data.studioId);
     await this.getUserToken();
 

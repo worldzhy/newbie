@@ -85,7 +85,7 @@ export class EventService {
     );
     const daysOfSourceWeek = calendarOfSourceContainer[params.from.week - 1];
     const daysOfTargetWeek = calendarOfTargetContainer[params.to.week - 1];
-    const targetEvents: Prisma.EventUncheckedCreateWithoutContainerInput[] = [];
+    const targetEvents: Prisma.EventCreateManyInput[] = [];
 
     for (let j = 0; j < daysOfTargetWeek.length; j++) {
       const dayOfTargetWeek = daysOfTargetWeek[j];
@@ -102,7 +102,7 @@ export class EventService {
               dayOfSourceWeek.dayOfWeek === event.dayOfWeek
             ) {
               /*
-               * With `const datetimeOfStart = event.datetimeOfStart;`,
+               ! With `const datetimeOfStart = event.datetimeOfStart;`,
                ! when you set datetimeOfStart with new FullYear, Month and Date, 
                ! the original event.datetimeOfStart will be changed.
               */
@@ -111,28 +111,14 @@ export class EventService {
               datetimeOfStart.setMonth(dayOfTargetWeek.month - 1);
               datetimeOfStart.setDate(dayOfTargetWeek.dayOfMonth);
 
-              const datetimeOfEnd = new Date(event.datetimeOfEnd);
-              datetimeOfEnd.setFullYear(dayOfTargetWeek.year);
-              datetimeOfEnd.setMonth(dayOfTargetWeek.month - 1);
-              datetimeOfEnd.setDate(dayOfTargetWeek.dayOfMonth);
-
               targetEvents.push({
                 hostUserId: event.hostUserId,
-                timeZone: event.timeZone,
-                year: dayOfTargetWeek.year,
-                month: dayOfTargetWeek.month,
-                dayOfMonth: dayOfTargetWeek.dayOfMonth,
-                dayOfWeek: dayOfTargetWeek.dayOfWeek,
-                weekOfMonth: dayOfTargetWeek.weekOfMonth,
-                weekOfYear: dayOfTargetWeek.weekOfYear,
-                hour: event.hour,
-                minute: event.minute,
-                minutesOfDuration: event.minutesOfDuration,
                 datetimeOfStart: datetimeOfStart,
-                datetimeOfEnd: datetimeOfEnd,
+                timeZone: event.timeZone,
+                minutesOfDuration: event.minutesOfDuration,
                 typeId: event.typeId,
                 venueId: event.venueId,
-              });
+              } as Prisma.EventCreateManyInput);
             }
           }
         }

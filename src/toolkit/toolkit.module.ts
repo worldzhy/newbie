@@ -1,17 +1,18 @@
 import {Global, Module} from '@nestjs/common';
+import {ConfigModule, ConfigService} from '@nestjs/config';
 import {CacheModule} from '@nestjs/cache-manager';
 import * as redisStore from 'cache-manager-redis-store';
-import {ConfigModule, ConfigService} from '@nestjs/config';
-import ServerConfiguration from '@_config/server.config';
-import MicroservicesConfiguration from '@_config/microservice.config';
-import ToolkitConfiguration from '@_config/toolkit.config';
+import {HttpModule} from '@nestjs/axios';
+import {EventEmitterModule} from '@nestjs/event-emitter';
 import {AwsModule} from './aws/aws.module';
 import {ElasticModule} from './elastic/elastic.module';
 import {CustomLoggerModule} from './logger/logger.module';
 import {PrismaModule} from './prisma/prisma.module';
 import {SnowflakeModule} from './snowflake/snowflake.module';
 import {XLSXModule} from './xlsx/xlsx.module';
-import {HttpModule} from '@nestjs/axios';
+import ServerConfiguration from '@_config/server.config';
+import MicroservicesConfiguration from '@_config/microservice.config';
+import ToolkitConfiguration from '@_config/toolkit.config';
 
 @Global()
 @Module({
@@ -47,6 +48,7 @@ function getModules() {
       }),
       inject: [ConfigService],
     }),
+    EventEmitterModule.forRoot(),
     AwsModule,
     ElasticModule,
     CustomLoggerModule,
