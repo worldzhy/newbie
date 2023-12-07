@@ -4,9 +4,9 @@ import {Prisma, AsyncPublish, AsyncEventStatus} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {EventService} from '../../microservices/event-scheduling/event.service';
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {ScToMbService} from 'src/application/mindbody/scToMb.service';
+import {ScToMbService} from 'src/application-solidcore/mindbody/scToMb.service';
 import {AvailabilityTimeslotService} from '../../microservices/event-scheduling/availability-timeslot.service';
-import {MindbodyService} from 'src/application/mindbody/mindbody.service';
+import {MindbodyService} from 'src/application-solidcore/mindbody/mindbody.service';
 import * as moment from 'moment';
 import * as _ from 'lodash';
 

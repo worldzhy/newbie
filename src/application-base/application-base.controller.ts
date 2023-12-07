@@ -4,7 +4,7 @@ import {Public} from '@microservices/account/security/authentication/public/publ
 
 @ApiTags('[Application]')
 @Controller()
-export class ApplicationExampleController {
+export class ApplicationBaseController {
   @Public()
   @Get('')
   hello(): string {

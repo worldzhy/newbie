@@ -10,7 +10,7 @@ import {compareHash} from '@toolkit/utilities/common.util';
 
 @ApiTags('Account')
 @Controller('account')
-export class AccountForgotController {
+export class AccountPasswordController {
   constructor(
     private readonly accountService: AccountService,
     private readonly userService: UserService,

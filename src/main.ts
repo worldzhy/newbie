@@ -9,7 +9,7 @@ import {
   SwaggerModule,
   SwaggerCustomOptions,
 } from '@nestjs/swagger';
-import {ApplicationModule} from './application/application.module';
+import {ApplicationModule} from './application-solidcore/application-solidcore.module';
 import {ClusterService} from './cluster';
 // import {ApplicationExampleModule as ApplicationModule} from './application-example/application-example.module';
 

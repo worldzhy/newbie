@@ -22,8 +22,8 @@ import {EventTypeService} from '@microservices/event-scheduling/event-type.servi
 import {EventChangeLogService} from '@microservices/event-scheduling/event-change-log.service';
 import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
 import {UserProfileService} from '@microservices/account/user/user-profile.service';
-import {ScToMbService} from 'src/application/mindbody/scToMb.service';
-import {AsyncPublishService} from 'src/application/schedule/async-publish.service';
+import {ScToMbService} from 'src/application-solidcore/mindbody/scToMb.service';
+import {AsyncPublishService} from 'src/application-solidcore/schedule/async-publish.service';
 import {OnEvent} from '@nestjs/event-emitter';
 import {sameDaysOfMonth} from '@toolkit/utilities/datetime.util';
 
@@ -39,7 +39,7 @@ export class EventController {
     private readonly eventChangeLogService: EventChangeLogService,
     private readonly userProfileService: UserProfileService,
     private readonly scToMbService: ScToMbService,
-    private readonly asyncPublishService: AsyncPublishService,
+    private readonly asyncPublishService: AsyncPublishService
   ) {}
 
   @Post('')

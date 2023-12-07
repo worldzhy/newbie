@@ -1,12 +1,12 @@
 import {Body, Controller, Get, Post, Query} from '@nestjs/common';
 import {ApiTags} from '@nestjs/swagger';
-import {MindbodyService} from 'src/application/mindbody/mindbody.service';
+import {MindbodyService} from 'src/application-solidcore/mindbody/mindbody.service';
 import {
   AddClassScheduleDto,
   BasePageDto,
   endClassScheduleDto,
-} from 'src/application/mindbody/mindbody.dto';
-import {groupClassesByDate} from 'src/application/mindbody/util';
+} from 'src/application-solidcore/mindbody/mindbody.dto';
+import {groupClassesByDate} from 'src/application-solidcore/mindbody/util';
 
 @ApiTags('Mindbody')
 @Controller('mindbody')

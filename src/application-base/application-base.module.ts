@@ -21,7 +21,7 @@ import {WorkflowModule} from '@microservices/workflow/workflow.module';
 
 import {EnginedModule} from './engined/engined.module';
 import {RecruitmentModule} from './recruitment/recruitment.module';
-import {ApplicationExampleController} from './application-example.controller';
+import {ApplicationBaseController} from './application-base.controller';
 import {AccountLoginController} from './account/account-login.controller';
 import {AccountLogoutController} from './account/account-logout.controller';
 import {AccountOthersController} from './account/account-others.controller';
@@ -67,7 +67,7 @@ import {WorkflowRouteController} from './workflow/workflow-route.controller';
     RecruitmentModule,
   ],
   controllers: [
-    ApplicationExampleController,
+    ApplicationBaseController,
     AccountLoginController,
     AccountLogoutController,
     AccountOthersController,

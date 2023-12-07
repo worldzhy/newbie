@@ -21,7 +21,7 @@ import {
 import {DatatransTaskService} from './task.service';
 import {SqsService} from '@toolkit/aws/aws.sqs.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {PostgresqlDatasourceConstraintService} from 'src/application-example/engined/datasource/postgresql/constraint/constraint.service';
+import {PostgresqlDatasourceConstraintService} from 'src/application-base/engined/datasource/postgresql/constraint/constraint.service';
 import {ConfigService} from '@nestjs/config';
 
 @ApiTags('EngineD / Datatrans Task')

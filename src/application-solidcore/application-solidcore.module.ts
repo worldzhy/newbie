@@ -12,25 +12,20 @@ import {AccountModule} from '@microservices/account/account.module';
 import {EventSchedulingModule} from '@microservices/event-scheduling/event-scheduling.module';
 import {GoogleAPIsModule} from '@microservices/googleapis/googleapis.module';
 import {MapModule} from '@microservices/map/map.module';
-import {MindbodyModule} from 'src/application/mindbody/mindbody.module';
+import {MindbodyModule} from 'src/application-solidcore/mindbody/mindbody.module';
 import {QueueModule} from '@microservices/queue/queue.module';
 import {TagModule} from '@microservices/tag/tag.module';
 import {AvailabilityModule} from './availability/availability.module';
 import {CoachModule} from './coach/coach.module';
 import {RawDataModule} from './raw-data/raw-data.module';
-import {ApplicationController} from './application.controller';
-import {AccountForgotController} from './account/account-password.controller';
+import {ApplicationSolidcoreController} from './application-solidcore.controller';
+import {AccountPasswordController} from './account/account-password.controller';
 import {AccountLoginController} from './account/account-login.controller';
 import {AccountLogoutController} from './account/account-logout.controller';
 import {AccountSignupController} from './account/account-signup.controller';
 import {AccountOthersController} from './account/account-others.controller';
 import {AreaManagerController} from './area-manager/area-manager.controller';
 import {ClassController} from './class/class.controller';
-import {EventController} from './schedule/schedule-class.controller';
-import {EventContainerController} from './schedule/schedule.controller';
-import {EventChangeLogController} from './schedule/schedule-class-changelog.controller';
-import {EventCopyController} from './schedule/schedule-import.controller';
-import {EventFixController} from './schedule/schedule-fix.controller';
 import {HeatmapController} from './heatmap/heatmap.controller';
 import {LocationController} from './location/location.controller';
 import {MindbodyController} from './mindbody/mindbody.controller';
@@ -60,8 +55,8 @@ import {AnalysisController} from './analysis/analysis.controller';
     RawDataModule,
   ],
   controllers: [
-    ApplicationController,
-    AccountForgotController,
+    ApplicationSolidcoreController,
+    AccountPasswordController,
     AccountLoginController,
     AccountLogoutController,
     AccountSignupController,

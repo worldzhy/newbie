@@ -1,12 +1,7 @@
-import {
-  Controller,
-  Body,
-  BadRequestException,
-  Post,
-  NotFoundException,
-} from '@nestjs/common';
+import {Controller, Body, BadRequestException, Post} from '@nestjs/common';
 import {ApiTags, ApiBody, ApiBearerAuth} from '@nestjs/swagger';
-import {User} from '@prisma/client';
+import {User, VerificationCodeUse} from '@prisma/client';
+import {AccountService} from '@microservices/account/account.service';
 import {UserService} from '@microservices/account/user/user.service';
 import {Public} from '@microservices/account/security/authentication/public/public.decorator';
 import {VerificationCodeService} from '@microservices/account/verification-code/verification-code.service';
@@ -17,9 +12,49 @@ import {compareHash} from '@toolkit/utilities/common.util';
 @Controller('account')
 export class AccountPasswordController {
   constructor(
+    private readonly accountService: AccountService,
     private readonly userService: UserService,
     private readonly verificationCodeService: VerificationCodeService
   ) {}
+
+  @Public()
+  @Post('send-verification-code')
+  @ApiBody({
+    description: '',
+    examples: {
+      a: {
+        summary: 'Send to email',
+        value: {
+          email: 'henry@inceptionpad.com',
+          use: VerificationCodeUse.RESET_PASSWORD,
+        },
+      },
+      b: {
+        summary: 'Send to phone',
+        value: {
+          phone: '13260000789',
+          use: VerificationCodeUse.LOGIN_BY_PHONE,
+        },
+      },
+    },
+  })
+  async sendVerificationCode(
+    @Body() body: {email?: string; phone?: string; use: VerificationCodeUse}
+  ): Promise<boolean> {
+    if (body.email && verifyEmail(body.email)) {
+      return await this.accountService.sendVerificationCode({
+        email: body.email,
+        use: body.use,
+      });
+    } else if (body.phone && verifyPhone(body.phone)) {
+      return await this.accountService.sendVerificationCode({
+        phone: body.phone,
+        use: body.use,
+      });
+    } else {
+      return false;
+    }
+  }
 
   @Public()
   @Post('reset-password')
