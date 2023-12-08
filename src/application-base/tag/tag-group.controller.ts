@@ -10,13 +10,13 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {TagGroup, Prisma} from '@prisma/client';
-import {TagGroupService} from '@microservices/tag/tag-group.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Tag Group')
 @ApiBearerAuth()
 @Controller('tag-groups')
 export class TagGroupController {
-  constructor(private readonly tagGroupService: TagGroupService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Post('')
   @ApiBody({
@@ -31,7 +31,7 @@ export class TagGroupController {
   async createTagGroup(
     @Body() body: Prisma.TagGroupUncheckedCreateInput
   ): Promise<TagGroup> {
-    return await this.tagGroupService.create({
+    return await this.prisma.tagGroup.create({
       data: body,
     });
   }
@@ -41,14 +41,17 @@ export class TagGroupController {
     @Query('page') page: number,
     @Query('pageSize') pageSize: number
   ) {
-    return await this.tagGroupService.findManyInManyPages({page, pageSize});
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.TagGroup,
+      pagination: {page, pageSize},
+    });
   }
 
   @Get(':tagGroupId')
   async getTagGroup(
     @Param('tagGroupId') tagGroupId: number
   ): Promise<TagGroup> {
-    return await this.tagGroupService.findUniqueOrThrow({
+    return await this.prisma.tagGroup.findUniqueOrThrow({
       where: {id: tagGroupId},
     });
   }
@@ -68,7 +71,7 @@ export class TagGroupController {
     @Body()
     body: Prisma.TagGroupUpdateInput
   ): Promise<TagGroup> {
-    return await this.tagGroupService.update({
+    return await this.prisma.tagGroup.update({
       where: {id: tagGroupId},
       data: body,
     });
@@ -78,7 +81,7 @@ export class TagGroupController {
   async deleteTagGroup(
     @Param('tagGroupId') tagGroupId: number
   ): Promise<TagGroup> {
-    return await this.tagGroupService.delete({
+    return await this.prisma.tagGroup.delete({
       where: {id: tagGroupId},
     });
   }

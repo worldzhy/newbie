@@ -10,12 +10,14 @@ import {
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {PostgresqlDatasourceTable, Prisma} from '@prisma/client';
 import {PostgresqlDatasourceTableService} from './table.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('EngineD / Postgresql Datasource Table')
 @ApiBearerAuth()
 @Controller('postgresql-datasource-tables')
 export class PostgresqlDatasourceTableController {
   constructor(
+    private readonly prisma: PrismaService,
     private postgresqlDatasourceTableService: PostgresqlDatasourceTableService
   ) {}
 
@@ -39,21 +41,21 @@ export class PostgresqlDatasourceTableController {
     await this.postgresqlDatasourceTableService.createTable(body.name);
 
     // [step 2] Save the table record in database.
-    return await this.postgresqlDatasourceTableService.create({
+    return await this.prisma.postgresqlDatasourceTable.create({
       data: body,
     });
   }
 
   @Get('')
   async getPostgresqlDatasourceTables(): Promise<PostgresqlDatasourceTable[]> {
-    return await this.postgresqlDatasourceTableService.findMany({});
+    return await this.prisma.postgresqlDatasourceTable.findMany({});
   }
 
   @Get(':tableId')
   async getPostgresqlDatasourceTable(
     @Param('tableId') tableId: number
   ): Promise<PostgresqlDatasourceTable | null> {
-    return await this.postgresqlDatasourceTableService.findUnique({
+    return await this.prisma.postgresqlDatasourceTable.findUnique({
       where: {id: tableId},
     });
   }
@@ -63,7 +65,7 @@ export class PostgresqlDatasourceTableController {
     @Param('tableId') tableId: number,
     @Body() body: Prisma.PostgresqlDatasourceTableUpdateInput
   ): Promise<PostgresqlDatasourceTable> {
-    return await this.postgresqlDatasourceTableService.update({
+    return await this.prisma.postgresqlDatasourceTable.update({
       where: {id: tableId},
       data: body,
     });
@@ -74,7 +76,7 @@ export class PostgresqlDatasourceTableController {
     @Param('tableId') tableId: number
   ): Promise<PostgresqlDatasourceTable> {
     // [step 1] Get the table.
-    const table = await this.postgresqlDatasourceTableService.findUniqueOrThrow(
+    const table = await this.prisma.postgresqlDatasourceTable.findUniqueOrThrow(
       {where: {id: tableId}}
     );
 
@@ -82,7 +84,7 @@ export class PostgresqlDatasourceTableController {
     await this.postgresqlDatasourceTableService.dropTable(table.name);
 
     // [step 3] Delete the table record in database.
-    return await this.postgresqlDatasourceTableService.delete({
+    return await this.prisma.postgresqlDatasourceTable.delete({
       where: {id: tableId},
     });
   }

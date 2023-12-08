@@ -6,11 +6,11 @@ import {
 import {PassportStrategy} from '@nestjs/passport';
 import {Strategy} from 'passport-custom';
 import {Request} from 'express';
-import {UserProfileService} from '@microservices/account/user/user-profile.service';
 import {
   IpLoginLimiterService,
   UserLoginLimiterService,
 } from '@microservices/account/security/login-limiter/login-limiter.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @Injectable()
 export class AuthProfileStrategy extends PassportStrategy(
@@ -18,7 +18,7 @@ export class AuthProfileStrategy extends PassportStrategy(
   'passport-custom.user-profile'
 ) {
   constructor(
-    private readonly userProfileService: UserProfileService,
+    private readonly prisma: PrismaService,
     private readonly securityLoginIpAttemptService: IpLoginLimiterService,
     private readonly securityLoginUserAttemptService: UserLoginLimiterService
   ) {
@@ -41,7 +41,7 @@ export class AuthProfileStrategy extends PassportStrategy(
     }
 
     // [step 2] Get profiles.
-    const profiles = await this.userProfileService.findMany({
+    const profiles = await this.prisma.userProfile.findMany({
       where: {firstName, middleName, lastName, suffix, dateOfBirth},
     });
     if (profiles.length !== 1) {
@@ -51,9 +51,8 @@ export class AuthProfileStrategy extends PassportStrategy(
 
     // [step 3] Check if user is allowed to login.
     const userId = profiles[0].userId;
-    const isUserAllowed = await this.securityLoginUserAttemptService.isAllowed(
-      userId
-    );
+    const isUserAllowed =
+      await this.securityLoginUserAttemptService.isAllowed(userId);
     if (!isUserAllowed) {
       throw new ForbiddenException('Forbidden resource');
     }

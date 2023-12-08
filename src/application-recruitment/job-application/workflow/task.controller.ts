@@ -19,19 +19,19 @@ import {
 } from '@prisma/client';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
 import {AccessTokenService} from '@microservices/token/access-token/access-token.service';
-import {JobApplicationWorkflowService} from '../workflow.service';
-import {JobApplicationWorkflowTaskService} from './task.service';
+import {JobApplicationWorkflowService} from './workflow.service';
 import {UserService} from '@microservices/account/user/user.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Recruitment / Job Application / Workflow Task')
 @ApiBearerAuth()
 @Controller('recruitment-workflow-tasks')
 export class JobApplicationWorkflowTaskController {
   constructor(
+    private readonly prisma: PrismaService,
     private readonly userService: UserService,
     private readonly accessTokenService: AccessTokenService,
-    private readonly jobApplicationWorkflowService: JobApplicationWorkflowService,
-    private readonly jobApplicationWorkflowTaskService: JobApplicationWorkflowTaskService
+    private readonly jobApplicationWorkflowService: JobApplicationWorkflowService
   ) {}
 
   @Post('')
@@ -70,22 +70,22 @@ export class JobApplicationWorkflowTaskController {
     const {userId} = this.accessTokenService.decodeToken(
       this.accessTokenService.getTokenFromHttpRequest(request)
     ) as {userId: string};
-    const reporterUser = await this.userService.findUniqueOrThrow({
+    const reporterUser = await this.prisma.user.findUniqueOrThrow({
       where: {id: userId},
       include: {profile: {select: {fullName: true}}},
     });
-    body.reporter = reporterUser['profile'].fullName;
+    body.reporter = reporterUser['profile']?.fullName;
     body.reporterUserId = userId;
 
     // [step 3] Get assignee user.
-    const assigneeUser = await this.userService.findUniqueOrThrow({
+    const assigneeUser = await this.prisma.user.findUniqueOrThrow({
       where: {id: body.assigneeUserId},
       include: {profile: {select: {fullName: true}}},
     });
-    body.assignee = assigneeUser['profile'].fullName;
+    body.assignee = assigneeUser['profile']?.fullName;
 
     // [step 3] Create jobApplicationTest.
-    return await this.jobApplicationWorkflowTaskService.create({data: body});
+    return await this.prisma.jobApplicationWorkflowTask.create({data: body});
   }
 
   @Get('')
@@ -110,10 +110,11 @@ export class JobApplicationWorkflowTaskController {
     }
 
     // [step 2] Get records.
-    return await this.jobApplicationWorkflowTaskService.findManyInManyPages(
-      {page, pageSize},
-      {where}
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.JobApplicationWorkflowTask,
+      pagination: {page, pageSize},
+      findManyArgs: {where},
+    });
   }
 
   @Get(':taskId')
@@ -124,7 +125,7 @@ export class JobApplicationWorkflowTaskController {
   async getJobApplicationWorkflowTask(
     @Param('taskId') taskId: number
   ): Promise<JobApplicationWorkflowTask | null> {
-    return await this.jobApplicationWorkflowTaskService.findUnique({
+    return await this.prisma.jobApplicationWorkflowTask.findUnique({
       where: {id: taskId},
     });
   }
@@ -149,7 +150,7 @@ export class JobApplicationWorkflowTaskController {
     @Param('taskId') taskId: number,
     @Body() body: Prisma.JobApplicationWorkflowTaskUpdateInput
   ): Promise<JobApplicationWorkflowTask> {
-    return await this.jobApplicationWorkflowTaskService.update({
+    return await this.prisma.jobApplicationWorkflowTask.update({
       where: {id: taskId},
       data: body,
     });
@@ -163,7 +164,7 @@ export class JobApplicationWorkflowTaskController {
   async deleteJobApplicationWorkflowTask(
     @Param('taskId') taskId: number
   ): Promise<JobApplicationWorkflowTask> {
-    return await this.jobApplicationWorkflowTaskService.delete({
+    return await this.prisma.jobApplicationWorkflowTask.delete({
       where: {id: taskId},
     });
   }

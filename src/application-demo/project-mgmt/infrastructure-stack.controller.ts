@@ -7,7 +7,6 @@ import {
   Body,
   Param,
   BadRequestException,
-  NotFoundException,
   Query,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
@@ -17,7 +16,6 @@ import {
   InfrastructureStackState,
   Prisma,
 } from '@prisma/client';
-import {ProjectInfrastructureStackService} from '@microservices/project-mgmt/infrastructure/infrastructure-stack.service';
 import {
   CloudFormationStackService,
   CloudFormationStackType,
@@ -31,13 +29,14 @@ import {
   CreateStackCommandOutput,
   DeleteStackCommandOutput,
 } from '@aws-sdk/client-cloudformation';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Project Management / Infrastructure Stack')
 @ApiBearerAuth()
 @Controller('project-infrastructure-stacks')
 export class ProjectInfrastructureStackController {
   constructor(
-    private readonly infrastructureStackService: ProjectInfrastructureStackService,
+    private readonly prisma: PrismaService,
     private readonly cloudformationStackService: CloudFormationStackService,
     private readonly pulumiStackService: PulumiStackService
   ) {}
@@ -102,14 +101,14 @@ export class ProjectInfrastructureStackController {
     @Body()
     body: Prisma.InfrastructureStackUncheckedCreateInput
   ): Promise<InfrastructureStack> {
-    return await this.infrastructureStackService.create({data: body});
+    return await this.prisma.infrastructureStack.create({data: body});
   }
 
   @Get(':stackId')
   async getStack(
     @Param('stackId') stackId: string
   ): Promise<InfrastructureStack> {
-    return await this.infrastructureStackService.findUniqueOrThrow({
+    return await this.prisma.infrastructureStack.findUniqueOrThrow({
       where: {id: stackId},
     });
   }
@@ -143,7 +142,7 @@ export class ProjectInfrastructureStackController {
     @Body()
     body: Prisma.InfrastructureStackUpdateInput
   ): Promise<InfrastructureStack> {
-    return await this.infrastructureStackService.update({
+    return await this.prisma.infrastructureStack.update({
       where: {id: stackId},
       data: body,
     });
@@ -155,7 +154,7 @@ export class ProjectInfrastructureStackController {
     stackId: string
   ): Promise<InfrastructureStack> {
     // [step 1] Get the infrastructure stack.
-    const stack = await this.infrastructureStackService.findUniqueOrThrow({
+    const stack = await this.prisma.infrastructureStack.findUniqueOrThrow({
       where: {id: stackId},
     });
 
@@ -174,7 +173,7 @@ export class ProjectInfrastructureStackController {
     }
 
     // [step 2] Delete the stack record on database.
-    return await this.infrastructureStackService.delete({where: {id: stackId}});
+    return await this.prisma.infrastructureStack.delete({where: {id: stackId}});
   }
 
   //* Create resources
@@ -184,7 +183,7 @@ export class ProjectInfrastructureStackController {
     stackId: string
   ): Promise<InfrastructureStack> {
     // [step 1] Get the infrastructure stack.
-    const stack = await this.infrastructureStackService.findUniqueOrThrow({
+    const stack = await this.prisma.infrastructureStack.findUniqueOrThrow({
       where: {id: stackId},
       include: {environment: true},
     });
@@ -247,7 +246,7 @@ export class ProjectInfrastructureStackController {
       throw new BadRequestException('The infrastructure manager is invalid.');
     }
 
-    return await this.infrastructureStackService.update({
+    return await this.prisma.infrastructureStack.update({
       where: {id: stack.id},
       data: {
         state: state,
@@ -263,7 +262,7 @@ export class ProjectInfrastructureStackController {
     stackId: string
   ): Promise<InfrastructureStack> {
     // [step 1] Get the infrastructure stack.
-    const stack = await this.infrastructureStackService.findUniqueOrThrow({
+    const stack = await this.prisma.infrastructureStack.findUniqueOrThrow({
       where: {id: stackId},
       include: {environment: true},
     });
@@ -303,7 +302,7 @@ export class ProjectInfrastructureStackController {
       throw new BadRequestException('The infrastructure manager is invalid.');
     }
 
-    return await this.infrastructureStackService.update({
+    return await this.prisma.infrastructureStack.update({
       where: {id: stack.id},
       data: {
         state: state,

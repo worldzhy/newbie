@@ -18,10 +18,8 @@ import {
   ElasticsearchDatasourceIndex,
   PostgresqlDatasourceConstraintKeyType,
 } from '@prisma/client';
-import {DatatransTaskService} from './task.service';
 import {SqsService} from '@toolkit/aws/aws.sqs.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {PostgresqlDatasourceConstraintService} from 'src/application-demo/engined/datasource/postgresql/constraint/constraint.service';
 import {ConfigService} from '@nestjs/config';
 
 @ApiTags('EngineD / Datatrans Task')
@@ -29,10 +27,8 @@ import {ConfigService} from '@nestjs/config';
 @Controller('datatrans-tasks')
 export class DatatransTaskController {
   constructor(
-    private readonly datatransTaskService: DatatransTaskService,
     private readonly sqsService: SqsService,
     private readonly prisma: PrismaService,
-    private readonly postgresqlDatasourceConstraintService: PostgresqlDatasourceConstraintService,
     private readonly configService: ConfigService
   ) {}
 
@@ -53,19 +49,19 @@ export class DatatransTaskController {
   async createDatatransTask(
     @Body() body: Prisma.DatatransTaskUncheckedCreateInput
   ): Promise<DatatransTask> {
-    return await this.datatransTaskService.create({data: body});
+    return await this.prisma.datatransTask.create({data: body});
   }
 
   @Get('')
   async getDatatransTasks(): Promise<DatatransTask[]> {
-    return await this.datatransTaskService.findMany({});
+    return await this.prisma.datatransTask.findMany({});
   }
 
   @Get(':taskId')
   async getDatatransTask(
     @Param('taskId') taskId: number
   ): Promise<DatatransTask | null> {
-    return await this.datatransTaskService.findUnique({
+    return await this.prisma.datatransTask.findUnique({
       where: {id: taskId},
     });
   }
@@ -75,7 +71,7 @@ export class DatatransTaskController {
     @Param('taskId') taskId: number,
     @Body() body: Prisma.DatatransTaskUpdateInput
   ): Promise<DatatransTask> {
-    return await this.datatransTaskService.update({
+    return await this.prisma.datatransTask.update({
       where: {id: taskId},
       data: body,
     });
@@ -85,7 +81,7 @@ export class DatatransTaskController {
   async deleteDatatransTask(
     @Param('taskId') taskId: number
   ): Promise<DatatransTask> {
-    return await this.datatransTaskService.delete({
+    return await this.prisma.datatransTask.delete({
       where: {id: taskId},
     });
   }
@@ -96,7 +92,7 @@ export class DatatransTaskController {
     @Param('taskId') taskId: number
   ): Promise<DatatransTask> {
     // [step 1] Get task.
-    const task = await this.datatransTaskService.findUniqueOrThrow({
+    const task = await this.prisma.datatransTask.findUniqueOrThrow({
       where: {id: taskId},
       include: {
         mission: {
@@ -142,7 +138,7 @@ export class DatatransTaskController {
     for (let index = 0; index < hasManyTables.length; index++) {
       const childTableName = hasManyTables[index];
       const constraint =
-        await this.postgresqlDatasourceConstraintService.findFirstOrThrow({
+        await this.prisma.postgresqlDatasourceConstraint.findFirstOrThrow({
           where: {
             AND: [
               {table: childTableName},
@@ -163,7 +159,7 @@ export class DatatransTaskController {
     }
 
     // [step 4] Update task state.
-    return await this.datatransTaskService.update({
+    return await this.prisma.datatransTask.update({
       where: {id: taskId},
       data: {state: DatatransTaskState.DONE},
     });
@@ -175,7 +171,7 @@ export class DatatransTaskController {
     @Param('taskId') taskId: number
   ): Promise<DatatransTask> {
     // [step 1] Get task.
-    const task = await this.datatransTaskService.findUniqueOrThrow({
+    const task = await this.prisma.datatransTask.findUniqueOrThrow({
       where: {id: taskId},
     });
 
@@ -188,7 +184,7 @@ export class DatatransTaskController {
     });
 
     // [step 3] Update task state.
-    return await this.datatransTaskService.update({
+    return await this.prisma.datatransTask.update({
       where: {id: taskId},
       data: {
         state: DatatransTaskState.IN_QUEUE,

@@ -5,15 +5,15 @@ import {AccountService} from '@microservices/account/account.service';
 import {LoggingIn} from '@microservices/account/security/login-limiter/ip-login-limiter.decorator';
 import {LoggingInByProfile} from '@microservices/account/security/authentication/profile/profile.decorator';
 import {LoggingInByUuid} from '@microservices/account/security/authentication/uuid/uuid.decorator';
-import {UserProfileService} from '@microservices/account/user/user-profile.service';
 import {AccessToken} from '@prisma/client';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Account')
 @Controller('account')
 export class LoginByProfileController {
   constructor(
-    private readonly accountService: AccountService,
-    private readonly profileService: UserProfileService
+    private readonly prisma: PrismaService,
+    private readonly accountService: AccountService
   ) {}
 
   /**
@@ -62,7 +62,7 @@ export class LoginByProfileController {
   ): Promise<AccessToken> {
     // [step 1] It has been confirmed there is only one profile.
     const {firstName, middleName, lastName, suffix, dateOfBirth} = body;
-    const profiles = await this.profileService.findMany({
+    const profiles = await this.prisma.userProfile.findMany({
       where: {firstName, middleName, lastName, suffix, dateOfBirth},
     });
 

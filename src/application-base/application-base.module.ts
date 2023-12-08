@@ -34,7 +34,6 @@ import {OrganizationController} from './account/organization/organization.contro
 import {PermissionController} from './account/permission/permission.controller';
 import {RoleController} from './account/role/role.controller';
 import {UserController} from './account/user/user.controller';
-import {UserProfileController} from './account/user/user-profile.controller';
 import {TagController} from './tag/tag.controller';
 import {TagGroupController} from './tag/tag-group.controller';
 
@@ -69,7 +68,6 @@ import {TagGroupController} from './tag/tag-group.controller';
     // PermissionController,
     // RoleController,
     // UserController,
-    // UserProfileController,
     TagController,
     TagGroupController,
   ],

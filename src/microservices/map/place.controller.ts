@@ -11,13 +11,13 @@ import {
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {PermissionAction, Prisma, Place} from '@prisma/client';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
-import {PlaceService} from '@microservices/map/place.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Place')
 @ApiBearerAuth()
 @Controller('places')
 export class PlaceController {
-  constructor(private readonly locationService: PlaceService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Post('')
   @RequirePermission(PermissionAction.Create, Prisma.ModelName.Place)
@@ -49,7 +49,7 @@ export class PlaceController {
   async createPlace(
     @Body() body: Prisma.PlaceUncheckedCreateInput
   ): Promise<Place> {
-    return await this.locationService.create({data: body});
+    return await this.prisma.place.create({data: body});
   }
 
   @Get('')
@@ -58,13 +58,16 @@ export class PlaceController {
     @Query('page') page: number,
     @Query('pageSize') pageSize: number
   ) {
-    return await this.locationService.findManyInManyPages({page, pageSize});
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.Place,
+      pagination: {page, pageSize},
+    });
   }
 
   @Get(':placeId')
   @RequirePermission(PermissionAction.Get, Prisma.ModelName.Place)
   async getPlace(@Param('placeId') placeId: number): Promise<Place> {
-    return await this.locationService.findUniqueOrThrow({where: {id: placeId}});
+    return await this.prisma.place.findUniqueOrThrow({where: {id: placeId}});
   }
 
   @Patch(':placeId')
@@ -98,7 +101,7 @@ export class PlaceController {
     @Param('placeId') placeId: number,
     @Body() body: Prisma.PlaceUpdateInput
   ): Promise<Place> {
-    return await this.locationService.update({
+    return await this.prisma.place.update({
       where: {id: placeId},
       data: body,
     });
@@ -107,7 +110,7 @@ export class PlaceController {
   @Delete(':placeId')
   @RequirePermission(PermissionAction.Delete, Prisma.ModelName.Place)
   async deletePlace(@Param('placeId') placeId: number): Promise<Place> {
-    return await this.locationService.delete({
+    return await this.prisma.place.delete({
       where: {id: placeId},
     });
   }

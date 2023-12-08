@@ -10,21 +10,15 @@ import {FileInterceptor} from '@nestjs/platform-express';
 import {Express} from 'express';
 import {XLSXService} from '@toolkit/xlsx/xlsx.service';
 import {UserService} from '@microservices/account/user/user.service';
-import {UserProfileService} from '@microservices/account/user/user-profile.service';
-import {EventTypeService} from '@microservices/event-scheduling/event-type.service';
-import {EventVenueService} from '@microservices/event-scheduling/event-venue.service';
-import {TagService} from '@microservices/tag/tag.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Coach')
 @ApiBearerAuth()
 @Controller('coaches')
 export class CoachInfoUploadController {
   constructor(
-    private readonly userService: UserService,
-    private readonly userProfileService: UserProfileService,
-    private readonly eventTypeService: EventTypeService,
-    private readonly eventVenueService: EventVenueService,
-    private readonly tagService: TagService
+    private readonly prisma: PrismaService,
+    private readonly userService: UserService
   ) {}
 
   @Post('load-xlsx-file')
@@ -53,7 +47,7 @@ export class CoachInfoUploadController {
         continue;
       }
 
-      const coach = await this.userService.findUnique({
+      const coach = await this.prisma.user.findUnique({
         where: {email: row['Email'].trim().toLowerCase()},
         select: {id: true, profile: {select: {fullName: true}}},
       });
@@ -87,21 +81,21 @@ export class CoachInfoUploadController {
       }
 
       // [step 3] Overwrite coach locations and installments.
-      const venues = await this.eventVenueService.findMany({
+      const venues = await this.prisma.eventVenue.findMany({
         where: {name: {in: coachLocationNames}},
         select: {id: true},
       });
       const coachLocationIds = venues.map(venue => {
         return venue.id;
       });
-      const installmentTags = await this.tagService.findMany({
+      const installmentTags = await this.prisma.tag.findMany({
         where: {name: {in: coachInstallmentNames}},
       });
       const installmentTagIds = installmentTags.map(tag => {
         return tag.id;
       });
 
-      const eventTypes = await this.eventTypeService.findMany({
+      const eventTypes = await this.prisma.eventType.findMany({
         where: {
           tagId: {in: installmentTagIds},
         },
@@ -111,7 +105,7 @@ export class CoachInfoUploadController {
       });
 
       // [step 4] Update coach profile.
-      await this.userProfileService.update({
+      await this.prisma.userProfile.update({
         where: {userId: coach.id},
         data: {
           eventVenueIds: coachLocationIds,

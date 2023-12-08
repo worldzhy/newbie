@@ -9,14 +9,14 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {ProjectEnvironmentService} from '@microservices/project-mgmt/environment/environment.service';
 import {Prisma, ProjectEnvironment} from '@prisma/client';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Project Management / Project Environment')
 @ApiBearerAuth()
 @Controller('project-environments')
 export class ProjectEnvironmentController {
-  constructor(private readonly environmentService: ProjectEnvironmentService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Post('')
   @ApiBody({
@@ -43,7 +43,7 @@ export class ProjectEnvironmentController {
     }
 
     // [step 2] Create project.
-    return await this.environmentService.create({
+    return await this.prisma.projectEnvironment.create({
       data: body,
     });
   }
@@ -52,7 +52,7 @@ export class ProjectEnvironmentController {
   async getEnvironment(
     @Param('environmentId') environmentId: number
   ): Promise<ProjectEnvironment> {
-    return await this.environmentService.findUniqueOrThrow({
+    return await this.prisma.projectEnvironment.findUniqueOrThrow({
       where: {id: environmentId},
     });
   }
@@ -84,7 +84,7 @@ export class ProjectEnvironmentController {
     @Param('environmentId') environmentId: number,
     @Body() body: Prisma.ProjectEnvironmentUpdateInput
   ): Promise<ProjectEnvironment> {
-    return await this.environmentService.update({
+    return await this.prisma.projectEnvironment.update({
       where: {id: environmentId},
       data: body,
     });
@@ -94,7 +94,7 @@ export class ProjectEnvironmentController {
   async deleteEnvironment(
     @Param('environmentId') environmentId: number
   ): Promise<ProjectEnvironment> {
-    return await this.environmentService.delete({
+    return await this.prisma.projectEnvironment.delete({
       where: {id: environmentId},
     });
   }
@@ -104,7 +104,7 @@ export class ProjectEnvironmentController {
   async getProjectCloudformationStacks(
     @Param('environmentId') environmentId: number
   ): Promise<ProjectEnvironment> {
-    return await this.environmentService.findUniqueOrThrow({
+    return await this.prisma.projectEnvironment.findUniqueOrThrow({
       where: {id: environmentId},
       include: {infrastructureStacks: true},
     });

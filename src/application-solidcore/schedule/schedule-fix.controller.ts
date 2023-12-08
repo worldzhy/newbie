@@ -7,24 +7,16 @@ import {
   EventIssueStatus,
   EventIssueType,
 } from '@prisma/client';
-import {EventService} from '@microservices/event-scheduling/event.service';
-import {EventIssueService} from '@microservices/event-scheduling/event-issue.service';
 import {CoachService} from '../coach/coach.service';
-import {EventChangeLogService} from '@microservices/event-scheduling/event-change-log.service';
-import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
-import {UserProfileService} from '@microservices/account/user/user-profile.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Event Container')
 @ApiBearerAuth()
 @Controller('event-containers')
 export class EventFixController {
   constructor(
-    private readonly eventService: EventService,
-    private readonly eventIssueService: EventIssueService,
-    private readonly eventContainerService: EventContainerService,
-    private readonly eventContainerNoteService: EventChangeLogService,
-    private readonly coachService: CoachService,
-    private readonly userProfileService: UserProfileService
+    private readonly prisma: PrismaService,
+    private readonly coachService: CoachService
   ) {}
 
   @Get(':eventContainerId/fix')
@@ -32,11 +24,11 @@ export class EventFixController {
     @Param('eventContainerId') eventContainerId: number,
     @Query('weekOfMonth') weekOfMonth: number
   ) {
-    const container = await this.eventContainerService.findUniqueOrThrow({
+    const container = await this.prisma.eventContainer.findUniqueOrThrow({
       where: {id: eventContainerId},
     });
     // [step 1] Get events.
-    const events = await this.eventService.findMany({
+    const events = await this.prisma.event.findMany({
       where: {
         containerId: eventContainerId,
         year: container.year,
@@ -63,13 +55,13 @@ export class EventFixController {
     const coaches =
       await this.coachService.getSortedCoachesWithQuotaLimit(event);
     if (coaches.length > 0) {
-      await this.eventService.update({
+      await this.prisma.event.update({
         where: {id: event.id},
         data: {hostUserId: coaches[0].id},
       });
 
       // [step 2] Mark the issue is repaired.
-      await this.eventIssueService.update({
+      await this.prisma.eventIssue.update({
         where: {id: issue.id},
         data: {status: EventIssueStatus.REPAIRED},
       });
@@ -79,13 +71,13 @@ export class EventFixController {
       switch (issue.type) {
         case EventIssueType.ERROR_NONEXISTENT_COACH:
           description =
-            'Coach changed: No coach' + ' -> ' + coaches[0]['profile'].fullName;
+            'Coach changed: No coach' + ' -> ' + coaches[0].profile?.fullName;
         case EventIssueType.ERROR_CONFLICTING_EVENT_TIME:
         case EventIssueType.ERROR_UNAVAILABLE_EVENT_TIME:
         case EventIssueType.ERROR_UNAVAILABLE_EVENT_TYPE:
         case EventIssueType.ERROR_UNAVAILABLE_EVENT_VENUE: {
           if (event.hostUserId) {
-            const userProfile = await this.userProfileService.findUniqueOrThrow(
+            const userProfile = await this.prisma.userProfile.findUniqueOrThrow(
               {
                 where: {userId: event.hostUserId},
                 select: {fullName: true},
@@ -95,11 +87,11 @@ export class EventFixController {
               'Coach changed: ' +
               userProfile.fullName +
               ' -> ' +
-              coaches[0]['profile'].fullName;
+              coaches[0].profile?.fullName;
           }
         }
       }
-      await this.eventContainerNoteService.create({
+      await this.prisma.eventChangeLog.create({
         data: {
           type: EventChangeLogType.SYSTEM,
           description,

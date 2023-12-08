@@ -5,8 +5,8 @@ import {AddClassScheduleDto} from './mindbody.dto';
 import * as moment from 'moment';
 import * as _ from 'lodash';
 import {datetimeToDaySec, getWeekdays, groupClassesByDate} from './util';
-import {UserService} from '@microservices/account/user/user.service';
 import {RawDataCoachService} from '../raw-data/raw-data-coach.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 enum ClassHandle {
   None = 'None',
@@ -32,8 +32,8 @@ export class ScToMbService {
   locationId;
 
   constructor(
+    private readonly prisma: PrismaService,
     private mindbodyService: MindbodyService,
-    private userService: UserService,
     private rawDataCoachService: RawDataCoachService
   ) {}
 
@@ -477,7 +477,7 @@ export class ScToMbService {
 
     const {hostUserId} = this.event;
 
-    const staff = await this.userService.findUnique({where: {id: hostUserId}});
+    const staff = await this.prisma.user.findUnique({where: {id: hostUserId}});
 
     if (!staff) {
       this.checkResult.success = false;

@@ -13,12 +13,14 @@ import {DatatransPipelineService} from './pipeline.service';
 import {PostgresqlDatasourceTableService} from '../../datasource/postgresql/table/table.service';
 import {ElasticsearchDatasourceIndexService} from '../../datasource/elasticsearch/index/index.service';
 import {DatatransPipeline, Prisma} from '@prisma/client';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('EngineD / Datatrans Pipeline')
 @ApiBearerAuth()
 @Controller('datatrans-pipelines')
 export class DatatransPipelineController {
   constructor(
+    private readonly prisma: PrismaService,
     private readonly pipelineService: DatatransPipelineService,
     private readonly postgresqlDatasourceTableService: PostgresqlDatasourceTableService,
     private readonly elasticsearchDatasourceIndexService: ElasticsearchDatasourceIndexService
@@ -62,25 +64,27 @@ export class DatatransPipelineController {
     }
 
     // [step 2] Create pipeline.
-    return await this.pipelineService.create({
-      name: body.name,
-      hasManyTables: body.hasManyTables,
-      belongsToTables: body.belongsToTables,
-      fromTable: {connect: {id: body.fromTableId}},
-      toIndex: {connect: {id: body.toIndexId}},
+    return await this.prisma.datatransPipeline.create({
+      data: {
+        name: body.name,
+        hasManyTables: body.hasManyTables,
+        belongsToTables: body.belongsToTables,
+        fromTable: {connect: {id: body.fromTableId}},
+        toIndex: {connect: {id: body.toIndexId}},
+      },
     });
   }
 
   @Get('')
   async getPipelines(): Promise<DatatransPipeline[]> {
-    return await this.pipelineService.findMany({});
+    return await this.prisma.datatransPipeline.findMany({});
   }
 
   @Get(':pipelineId')
   async getPipeline(
     @Param('pipelineId') pipelineId: string
   ): Promise<DatatransPipeline | null> {
-    return await this.pipelineService.findUnique({
+    return await this.prisma.datatransPipeline.findUnique({
       where: {id: pipelineId},
     });
   }
@@ -104,7 +108,7 @@ export class DatatransPipelineController {
     @Body()
     body: Prisma.DatatransPipelineUpdateInput
   ): Promise<DatatransPipeline> {
-    return await this.pipelineService.update({
+    return await this.prisma.datatransPipeline.update({
       where: {id: pipelineId},
       data: body,
     });
@@ -114,7 +118,9 @@ export class DatatransPipelineController {
   async deletePipeline(
     @Param('pipelineId') pipelineId: string
   ): Promise<DatatransPipeline> {
-    return await this.pipelineService.delete({where: {id: pipelineId}});
+    return await this.prisma.datatransPipeline.delete({
+      where: {id: pipelineId},
+    });
   }
 
   @Get(':pipelineId/overview')
@@ -126,7 +132,7 @@ export class DatatransPipelineController {
     belongsTo: {name: string; numberOfRecords: number}[];
   }> {
     // [step 1] Get pipeline.
-    const pipeline = await this.pipelineService.findUnique({
+    const pipeline = await this.prisma.datatransPipeline.findUnique({
       where: {id: pipelineId},
       include: {fromTable: true},
     });

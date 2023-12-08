@@ -1,15 +1,13 @@
 import {Injectable} from '@nestjs/common';
-import {EventVenueService} from '@microservices/event-scheduling/event-venue.service';
-import {PlaceService} from '@microservices/map/place.service';
 import {SnowflakeService} from '@toolkit/snowflake/snowflake.service';
 import {GoogleTimezoneService} from '@microservices/googleapis/google-timezone.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @Injectable()
 export class RawDataLocationService {
   constructor(
+    private readonly prisma: PrismaService,
     private readonly snowflakeService: SnowflakeService,
-    private readonly eventVenueService: EventVenueService,
-    private readonly placeService: PlaceService,
     private readonly googleTimezoneService: GoogleTimezoneService
   ) {}
 
@@ -52,7 +50,7 @@ export class RawDataLocationService {
     for (let i = 0; i < locations.length; i++) {
       const location = locations[i];
 
-      const count = await this.eventVenueService.count({
+      const count = await this.prisma.eventVenue.count({
         where: {
           external_studioId: location.STUDIOID,
           external_locationId: location.LOCATIONID,
@@ -64,7 +62,7 @@ export class RawDataLocationService {
           location.CITY + ',' + location.STATEPROVCODE
         );
 
-        const place = await this.placeService.create({
+        const place = await this.prisma.place.create({
           data: {
             address: location.ADDRESS,
             city: location.CITY,
@@ -73,7 +71,7 @@ export class RawDataLocationService {
             timeZone,
           },
         });
-        await this.eventVenueService.create({
+        await this.prisma.eventVenue.create({
           data: {
             name: location.LOCATIONNAME,
             placeId: place.id,

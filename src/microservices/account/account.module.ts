@@ -7,11 +7,8 @@ import {AuthProfileStrategy} from './security/authentication/profile/profile.str
 import {AuthUuidStrategy} from './security/authentication/uuid/uuid.strategy';
 import {AuthVerificationCodeStrategy} from './security/authentication/verification-code/verification-code.strategy';
 import {AuthRefreshStrategy} from './security/authentication/refresh/refresh.strategy';
-import {OrganizationService} from './organization/organization.service';
-import {PermissionService} from './permission/permission.service';
 import {RoleService} from './role/role.service';
 import {UserService} from './user/user.service';
-import {UserProfileService} from './user/user-profile.service';
 import {
   IpLoginLimiterService,
   UserLoginLimiterService,
@@ -31,9 +28,12 @@ import {TokenModule} from '@microservices/token/token.module';
   imports: [
     ThrottlerModule.forRoot({
       // Rate Limit (Maximum of 60 requests per 60 seconds)
-      throttlers: [{
-        limit: 60,
-        ttl: 60}]
+      throttlers: [
+        {
+          limit: 60,
+          ttl: 60,
+        },
+      ],
     }),
     NotificationModule,
     TokenModule,
@@ -54,22 +54,11 @@ import {TokenModule} from '@microservices/token/token.module';
     IpLoginLimiterService,
     UserLoginLimiterService,
     IpLoginLimiterGuard,
-    OrganizationService,
-    PermissionService,
     RoleService,
-    UserProfileService,
     UserService,
     VerificationCodeService,
     AccountService,
   ],
-  exports: [
-    OrganizationService,
-    PermissionService,
-    RoleService,
-    UserProfileService,
-    UserService,
-    VerificationCodeService,
-    AccountService,
-  ],
+  exports: [RoleService, UserService, VerificationCodeService, AccountService],
 })
 export class AccountModule {}

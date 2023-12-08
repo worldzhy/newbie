@@ -1,5 +1,4 @@
 import {BadRequestException, Injectable} from '@nestjs/common';
-import {ElasticsearchDatasourceIndex, Prisma} from '@prisma/client';
 import {ElasticService} from '@toolkit/elastic/elastic.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
@@ -9,56 +8,6 @@ export class ElasticsearchDatasourceIndexService {
     private readonly prisma: PrismaService,
     private readonly elastic: ElasticService
   ) {}
-
-  async findUnique(
-    params: Prisma.ElasticsearchDatasourceIndexFindUniqueArgs
-  ): Promise<ElasticsearchDatasourceIndex | null> {
-    return await this.prisma.elasticsearchDatasourceIndex.findUnique(params);
-  }
-
-  async findUniqueOrThrow(
-    params: Prisma.ElasticsearchDatasourceIndexFindUniqueOrThrowArgs
-  ): Promise<ElasticsearchDatasourceIndex> {
-    return await this.prisma.elasticsearchDatasourceIndex.findUniqueOrThrow(
-      params
-    );
-  }
-
-  async findMany(
-    params: Prisma.ElasticsearchDatasourceIndexFindManyArgs
-  ): Promise<ElasticsearchDatasourceIndex[]> {
-    return await this.prisma.elasticsearchDatasourceIndex.findMany(params);
-  }
-
-  async create(
-    params: Prisma.ElasticsearchDatasourceIndexCreateArgs
-  ): Promise<ElasticsearchDatasourceIndex> {
-    return await this.prisma.elasticsearchDatasourceIndex.create(params);
-  }
-
-  async createMany(
-    params: Prisma.ElasticsearchDatasourceIndexCreateManyArgs
-  ): Promise<Prisma.BatchPayload> {
-    return await this.prisma.elasticsearchDatasourceIndex.createMany(params);
-  }
-
-  async update(
-    params: Prisma.ElasticsearchDatasourceIndexUpdateArgs
-  ): Promise<ElasticsearchDatasourceIndex> {
-    return await this.prisma.elasticsearchDatasourceIndex.update(params);
-  }
-
-  async delete(
-    params: Prisma.ElasticsearchDatasourceIndexDeleteArgs
-  ): Promise<ElasticsearchDatasourceIndex> {
-    return await this.prisma.elasticsearchDatasourceIndex.delete(params);
-  }
-
-  async deleteMany(
-    params: Prisma.ElasticsearchDatasourceIndexDeleteManyArgs
-  ): Promise<Prisma.BatchPayload> {
-    return await this.prisma.elasticsearchDatasourceIndex.deleteMany(params);
-  }
 
   async checkExistence(id: number): Promise<boolean> {
     const count = await this.prisma.elasticsearchDatasourceIndex.count({

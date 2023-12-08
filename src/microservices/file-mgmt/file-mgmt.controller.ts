@@ -19,21 +19,19 @@ import {ConfigService} from '@nestjs/config';
 import {Express} from 'express';
 import {createReadStream} from 'fs';
 import {diskStorage} from 'multer';
-import {FileService} from '@microservices/file-mgmt/file/file.service';
-import {FolderService} from '@microservices/file-mgmt/folder/folder.service';
 import {AccessTokenService} from '@microservices/token/access-token/access-token.service';
 import {S3Service} from '@toolkit/aws/aws.s3.service';
 import {generateRandomLetters} from '@toolkit/utilities/common.util';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('[Microservice] File Management')
 @ApiBearerAuth()
 @Controller('file-mgmt')
 export class FileManagementController {
   constructor(
+    private readonly prisma: PrismaService,
     private readonly accessTokenService: AccessTokenService,
-    private readonly fileService: FileService,
     private readonly s3Service: S3Service,
-    private readonly folderService: FolderService,
     private readonly configService: ConfigService
   ) {}
 
@@ -58,7 +56,7 @@ export class FileManagementController {
     file: Express.Multer.File
   ) {
     // [step 1] Get workflow folder.
-    const folder = await this.folderService.findUniqueOrThrow({
+    const folder = await this.prisma.folder.findUniqueOrThrow({
       where: {id: parseInt(body.folderId)},
     });
 
@@ -75,7 +73,7 @@ export class FileManagementController {
     });
 
     // [step 3] Create a record.
-    return await this.fileService.create({
+    return await this.prisma.file.create({
       data: {
         originalName: file.originalname,
         mimeType: file.mimetype,
@@ -100,7 +98,7 @@ export class FileManagementController {
     @Param('fileId') fileId: string
   ) {
     // [step 1] Get the file information.
-    const file = await this.fileService.findUniqueOrThrow({
+    const file = await this.prisma.file.findUniqueOrThrow({
       where: {id: fileId},
     });
 
@@ -136,7 +134,7 @@ export class FileManagementController {
     @Param('fileId') fileId: string
   ) {
     // [step 1] Get the file information.
-    const file = await this.fileService.findUniqueOrThrow({
+    const file = await this.prisma.file.findUniqueOrThrow({
       where: {id: fileId},
       include: {folder: true},
     });
@@ -174,7 +172,7 @@ export class FileManagementController {
     )
     file: Express.Multer.File
   ) {
-    return await this.fileService.create({
+    return await this.prisma.file.create({
       data: {
         originalName: file.originalname,
         mimeType: file.mimetype,
@@ -200,7 +198,7 @@ export class FileManagementController {
     @Param('fileId') fileId: string
   ) {
     // [step 1] Get the file information.
-    const file = await this.fileService.findUniqueOrThrow({
+    const file = await this.prisma.file.findUniqueOrThrow({
       where: {id: fileId},
     });
 

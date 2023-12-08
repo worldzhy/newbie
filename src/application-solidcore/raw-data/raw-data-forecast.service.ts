@@ -1,8 +1,8 @@
 import {Injectable} from '@nestjs/common';
-import {EventVenueService} from '@microservices/event-scheduling/event-venue.service';
 import {SnowflakeService} from '@toolkit/snowflake/snowflake.service';
 import * as moment from 'moment';
 import * as _ from 'lodash';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 const ANALYSE_MONTH = 1;
 
@@ -13,12 +13,12 @@ export class RawDataForecastService {
   private fixRate: any[];
 
   constructor(
-    private readonly snowflakeService: SnowflakeService,
-    private readonly eventVenueService: EventVenueService
+    private readonly prisma: PrismaService,
+    private readonly snowflakeService: SnowflakeService
   ) {}
 
   async forecast(params: {venueId: number; year: number; month: number}) {
-    const location = await this.eventVenueService.findUniqueOrThrow({
+    const location = await this.prisma.eventVenue.findUniqueOrThrow({
       where: {id: params.venueId},
     });
     const studioId = location.external_studioId;

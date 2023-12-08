@@ -17,12 +17,12 @@ import {
   AvailabilityExpressionStatus,
 } from '@prisma/client';
 import {AvailabilityExpressionService} from '@microservices/event-scheduling/availability-expression.service';
-import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
 import {Request} from 'express';
 import {AccountService} from '@microservices/account/account.service';
 import {QueueService} from '@microservices/queue/queue.service';
 import {CACHE_MANAGER} from '@nestjs/cache-manager';
 import {Cache} from 'cache-manager';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 enum QUARTER {
   Q1 = 'Q1',
@@ -37,8 +37,8 @@ enum QUARTER {
 export class AvailabilityExpressionController {
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private readonly prisma: PrismaService,
     private readonly availabilityExpressionService: AvailabilityExpressionService,
-    private readonly availabilityTimeslotService: AvailabilityTimeslotService,
     private readonly accountService: AccountService,
     private readonly queueService: QueueService
   ) {}
@@ -72,7 +72,7 @@ export class AvailabilityExpressionController {
       body;
     availabilityExpressionCreateInput.reportedAt = new Date();
 
-    return await this.availabilityExpressionService.create({
+    return await this.prisma.availabilityExpression.create({
       data: availabilityExpressionCreateInput,
     });
   }
@@ -123,17 +123,18 @@ export class AvailabilityExpressionController {
     }
 
     // [step 2] Get records.
-    return await this.availabilityExpressionService.findManyInManyPages(
-      {page, pageSize},
-      {where}
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.AvailabilityExpression,
+      pagination: {page, pageSize},
+      findManyArgs: {where},
+    });
   }
 
   @Get(':availabilityExpressionId')
   async getAvailabilityExpression(
     @Param('availabilityExpressionId') availabilityExpressionId: number
   ) {
-    return await this.availabilityExpressionService.findUniqueOrThrow({
+    return await this.prisma.availabilityExpression.findUniqueOrThrow({
       where: {id: availabilityExpressionId},
     });
   }
@@ -169,7 +170,7 @@ export class AvailabilityExpressionController {
     availabilityExpressionUpdateInput.status =
       AvailabilityExpressionStatus.EDITING;
 
-    return await this.availabilityExpressionService.update({
+    return await this.prisma.availabilityExpression.update({
       where: {id: availabilityExpressionId},
       data: availabilityExpressionUpdateInput,
     });
@@ -179,7 +180,7 @@ export class AvailabilityExpressionController {
   async deleteAvailabilityExpression(
     @Param('availabilityExpressionId') availabilityExpressionId: number
   ): Promise<AvailabilityExpression> {
-    return await this.availabilityExpressionService.delete({
+    return await this.prisma.availabilityExpression.delete({
       where: {id: availabilityExpressionId},
     });
   }
@@ -197,15 +198,15 @@ export class AvailabilityExpressionController {
     }
 
     // [step 2] Delete and create timeslots.
-    await this.availabilityTimeslotService.deleteMany({
+    await this.prisma.availabilityTimeslot.deleteMany({
       where: {expressionId: availabilityExpressionId},
     });
-    await this.availabilityTimeslotService.createMany({
+    await this.prisma.availabilityTimeslot.createMany({
       data: availabilityTimeslots,
     });
 
     // [step 3] Update expression status.
-    return await this.availabilityExpressionService.update({
+    return await this.prisma.availabilityExpression.update({
       where: {id: availabilityExpressionId},
       data: {
         status: AvailabilityExpressionStatus.PUBLISHED,
@@ -216,7 +217,7 @@ export class AvailabilityExpressionController {
   @Post('add-queue-jobs')
   async sendAvailabilityExpressionsToQueue() {
     // [step 1] Get unpublished expressions.
-    const exps = await this.availabilityExpressionService.findMany({
+    const exps = await this.prisma.availabilityExpression.findMany({
       where: {status: AvailabilityExpressionStatus.EDITING},
       select: {id: true},
     });

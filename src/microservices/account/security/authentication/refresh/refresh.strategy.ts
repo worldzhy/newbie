@@ -4,6 +4,7 @@ import {Strategy} from 'passport-custom';
 import {Request} from 'express';
 import {AccountService} from '@microservices/account/account.service';
 import {RefreshTokenService} from '@microservices/token/refresh-token/refresh-token.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @Injectable()
 export class AuthRefreshStrategy extends PassportStrategy(
@@ -11,6 +12,7 @@ export class AuthRefreshStrategy extends PassportStrategy(
   'passport-custom.refresh'
 ) {
   constructor(
+    private readonly prisma: PrismaService,
     private readonly accountService: AccountService,
     private readonly refreshTokenService: RefreshTokenService
   ) {
@@ -39,7 +41,7 @@ export class AuthRefreshStrategy extends PassportStrategy(
 
     // [step 2] Verify that refresh token is in db
     try {
-      await this.refreshTokenService.findFirstOrThrow({
+      await this.prisma.refreshToken.findFirstOrThrow({
         where: {token: refreshToken},
       });
     } catch (err: unknown) {

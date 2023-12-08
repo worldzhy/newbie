@@ -10,13 +10,13 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {WorkflowView, Prisma} from '@prisma/client';
-import {WorkflowViewService} from '@microservices/workflow/workflow-view.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Workflow / View')
 @ApiBearerAuth()
 @Controller('workflow-views')
 export class WorkflowViewController {
-  constructor(private readonly workflowViewService: WorkflowViewService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Post('')
   @ApiBody({
@@ -34,22 +34,25 @@ export class WorkflowViewController {
   async createWorkflowView(
     @Body() body: Prisma.WorkflowViewUncheckedCreateInput
   ): Promise<WorkflowView> {
-    return await this.workflowViewService.create({
+    return await this.prisma.workflowView.create({
       data: body,
     });
   }
 
   @Get('start-views')
   async getWorkflowStartViews(@Query('workflowId') workflowId?: string) {
-    return await this.workflowViewService.findManyInOnePage({
-      where: {
-        workflowId: workflowId,
-        inboundRoutes: {some: {startSign: true}},
-      },
-      include: {
-        components: {orderBy: {sort: 'asc'}},
-        inboundRoutes: {include: {state: true}},
-        outboundRoutes: {include: {state: true}},
+    return await this.prisma.findManyInOnePage({
+      model: Prisma.ModelName.WorkflowView,
+      findManyArgs: {
+        where: {
+          workflowId: workflowId,
+          inboundRoutes: {some: {startSign: true}},
+        },
+        include: {
+          components: {orderBy: {sort: 'asc'}},
+          inboundRoutes: {include: {state: true}},
+          outboundRoutes: {include: {state: true}},
+        },
       },
     });
   }
@@ -58,7 +61,7 @@ export class WorkflowViewController {
   async getWorkflowView(
     @Param('viewId') viewId: number
   ): Promise<WorkflowView> {
-    return await this.workflowViewService.findUniqueOrThrow({
+    return await this.prisma.workflowView.findUniqueOrThrow({
       where: {id: viewId},
       include: {
         components: {orderBy: {sort: 'asc'}},
@@ -85,7 +88,7 @@ export class WorkflowViewController {
     @Body()
     body: Prisma.WorkflowViewUpdateInput
   ): Promise<WorkflowView> {
-    return await this.workflowViewService.update({
+    return await this.prisma.workflowView.update({
       where: {id: viewId},
       data: body,
     });
@@ -95,7 +98,7 @@ export class WorkflowViewController {
   async deleteWorkflowView(
     @Param('viewId') viewId: number
   ): Promise<WorkflowView> {
-    return await this.workflowViewService.delete({
+    return await this.prisma.workflowView.delete({
       where: {id: viewId},
     });
   }

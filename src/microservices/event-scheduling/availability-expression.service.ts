@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
-import {Prisma, AvailabilityExpression} from '@prisma/client';
+import {Prisma} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {datePlusMinutes, datePlusYears} from '@toolkit/utilities/datetime.util';
 const CronParser = require('cron-parser');
@@ -16,75 +16,6 @@ export class AvailabilityExpressionService {
     this.MINUTES_Of_TIMESLOT = this.configService.getOrThrow<number>(
       'microservice.eventScheduling.minutesOfTimeslotUnit'
     );
-  }
-
-  async findFirst(
-    args: Prisma.AvailabilityExpressionFindFirstArgs
-  ): Promise<AvailabilityExpression | null> {
-    return await this.prisma.availabilityExpression.findFirst(args);
-  }
-
-  async findUniqueOrThrow(
-    args: Prisma.AvailabilityExpressionFindUniqueOrThrowArgs
-  ): Promise<AvailabilityExpression> {
-    return await this.prisma.availabilityExpression.findUniqueOrThrow(args);
-  }
-
-  async findMany(
-    args: Prisma.AvailabilityExpressionFindManyArgs
-  ): Promise<AvailabilityExpression[]> {
-    return await this.prisma.availabilityExpression.findMany(args);
-  }
-
-  async findManyInManyPages(
-    pagination: {page: number; pageSize: number},
-    findManyArgs?: Prisma.AvailabilityExpressionFindManyArgs
-  ) {
-    return await this.prisma.findManyInManyPages({
-      model: Prisma.ModelName.AvailabilityExpression,
-      pagination,
-      findManyArgs,
-    });
-  }
-
-  async create(
-    args: Prisma.AvailabilityExpressionCreateArgs
-  ): Promise<AvailabilityExpression> {
-    return await this.prisma.availabilityExpression.create(args);
-  }
-
-  async createMany(
-    args: Prisma.AvailabilityExpressionCreateManyArgs
-  ): Promise<Prisma.BatchPayload> {
-    return await this.prisma.availabilityExpression.createMany(args);
-  }
-
-  async update(
-    args: Prisma.AvailabilityExpressionUpdateArgs
-  ): Promise<AvailabilityExpression> {
-    return await this.prisma.availabilityExpression.update(args);
-  }
-
-  async updateMany(
-    args: Prisma.AvailabilityExpressionUpdateManyArgs
-  ): Promise<Prisma.BatchPayload> {
-    return await this.prisma.availabilityExpression.updateMany(args);
-  }
-
-  async delete(
-    args: Prisma.AvailabilityExpressionDeleteArgs
-  ): Promise<AvailabilityExpression> {
-    return await this.prisma.availabilityExpression.delete(args);
-  }
-
-  async deleteMany(
-    args: Prisma.AvailabilityExpressionDeleteManyArgs
-  ): Promise<Prisma.BatchPayload> {
-    return await this.prisma.availabilityExpression.deleteMany(args);
-  }
-
-  async count(args: Prisma.AvailabilityExpressionCountArgs): Promise<number> {
-    return await this.prisma.availabilityExpression.count(args);
   }
 
   async parse(id: number) {

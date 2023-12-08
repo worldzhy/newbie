@@ -10,13 +10,13 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Workflow, Prisma} from '@prisma/client';
-import {WorkflowService} from '@microservices/workflow/workflow.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Workflow')
 @ApiBearerAuth()
 @Controller('workflows')
 export class WorkflowController {
-  constructor(private readonly workflowService: WorkflowService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Post('')
   @ApiBody({
@@ -33,7 +33,7 @@ export class WorkflowController {
   async createWorkflow(
     @Body() body: Prisma.WorkflowUncheckedCreateInput
   ): Promise<Workflow> {
-    return await this.workflowService.create({
+    return await this.prisma.workflow.create({
       data: body,
     });
   }
@@ -43,14 +43,17 @@ export class WorkflowController {
     @Query('page') page: number,
     @Query('pageSize') pageSize: number
   ) {
-    return await this.workflowService.findManyInManyPages({page, pageSize});
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.Workflow,
+      pagination: {page, pageSize},
+    });
   }
 
   @Get(':workflowId')
   async getWorkflow(
     @Param('workflowId') workflowId: string
   ): Promise<Workflow> {
-    return await this.workflowService.findUniqueOrThrow({
+    return await this.prisma.workflow.findUniqueOrThrow({
       where: {id: workflowId},
       include: {views: true, states: true},
     });
@@ -73,7 +76,7 @@ export class WorkflowController {
     @Body()
     body: Prisma.WorkflowUpdateInput
   ): Promise<Workflow> {
-    return await this.workflowService.update({
+    return await this.prisma.workflow.update({
       where: {id: workflowId},
       data: body,
     });
@@ -83,7 +86,7 @@ export class WorkflowController {
   async deleteWorkflow(
     @Param('workflowId') workflowId: string
   ): Promise<Workflow> {
-    return await this.workflowService.delete({
+    return await this.prisma.workflow.delete({
       where: {id: workflowId},
     });
   }

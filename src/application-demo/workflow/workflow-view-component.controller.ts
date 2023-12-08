@@ -13,15 +13,13 @@ import {
   Prisma,
   WorkflowViewComponentType,
 } from '@prisma/client';
-import {WorkflowViewComponentService} from '@microservices/workflow/workflow-view-component.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Workflow / View / Component')
 @ApiBearerAuth()
 @Controller('workflow-view-components')
 export class WorkflowViewComponentController {
-  constructor(
-    private readonly workflowViewComponentService: WorkflowViewComponentService
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Get('types')
   async listWorkflowViewComponentTypes() {
@@ -56,7 +54,7 @@ export class WorkflowViewComponentController {
   async createWorkflowViewComponents(
     @Body() body: Prisma.WorkflowViewComponentCreateManyArgs
   ) {
-    return await this.workflowViewComponentService.createMany({
+    return await this.prisma.workflowViewComponent.createMany({
       data: body.data,
     });
   }
@@ -65,7 +63,7 @@ export class WorkflowViewComponentController {
   async getWorkflowViewComponent(
     @Param('componentId') componentId: number
   ): Promise<WorkflowViewComponent> {
-    return await this.workflowViewComponentService.findUniqueOrThrow({
+    return await this.prisma.workflowViewComponent.findUniqueOrThrow({
       where: {id: componentId},
     });
   }
@@ -90,7 +88,7 @@ export class WorkflowViewComponentController {
     @Body()
     body: Prisma.WorkflowViewComponentUpdateInput
   ): Promise<WorkflowViewComponent> {
-    return await this.workflowViewComponentService.update({
+    return await this.prisma.workflowViewComponent.update({
       where: {id: componentId},
       data: body,
     });
@@ -100,7 +98,7 @@ export class WorkflowViewComponentController {
   async deleteWorkflowViewComponent(
     @Param('componentId') componentId: number
   ): Promise<WorkflowViewComponent> {
-    return await this.workflowViewComponentService.delete({
+    return await this.prisma.workflowViewComponent.delete({
       where: {id: componentId},
     });
   }

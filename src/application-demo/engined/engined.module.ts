@@ -10,18 +10,12 @@ import {ElasticsearchDatasourceIndexFieldController} from './datasource/elastics
 import {DatatransPipelineController} from './datatrans/pipeline/pipeline.controller';
 import {DatatransMissionController} from './datatrans/mission/mission.controller';
 import {DatatransTaskController} from './datatrans/mission/task/task.controller';
-import {ElasticsearchDataboardService} from './databoard/elasticsearch/elasticsearch-databoard.service';
-import {ElasticsearchDataboardColumnService} from './databoard/elasticsearch/column/column.service';
 import {PostgresqlDatasourceService} from './datasource/postgresql/postgresql-datasource.service';
 import {PostgresqlDatasourceTableService} from './datasource/postgresql/table/table.service';
 import {PostgresqlDatasourceTableColumnService} from './datasource/postgresql/column/column.service';
-import {PostgresqlDatasourceConstraintService} from './datasource/postgresql/constraint/constraint.service';
 import {ElasticsearchDatasourceService} from './datasource/elasticsearch/elasticsearch-datasource.service';
 import {ElasticsearchDatasourceIndexService} from './datasource/elasticsearch/index/index.service';
-import {ElasticsearchDatasourceIndexFieldService} from './datasource/elasticsearch/field/field.service';
 import {DatatransPipelineService} from './datatrans/pipeline/pipeline.service';
-import {DatatransMissionService} from './datatrans/mission/mission.service';
-import {DatatransTaskService} from './datatrans/mission/task/task.service';
 
 @Module({
   controllers: [
@@ -38,32 +32,20 @@ import {DatatransTaskService} from './datatrans/mission/task/task.service';
     DatatransTaskController,
   ],
   providers: [
-    ElasticsearchDataboardService,
-    ElasticsearchDataboardColumnService,
     PostgresqlDatasourceService,
     PostgresqlDatasourceTableService,
     PostgresqlDatasourceTableColumnService,
-    PostgresqlDatasourceConstraintService,
     ElasticsearchDatasourceService,
     ElasticsearchDatasourceIndexService,
-    ElasticsearchDatasourceIndexFieldService,
     DatatransPipelineService,
-    DatatransMissionService,
-    DatatransTaskService,
   ],
   exports: [
-    ElasticsearchDataboardService,
-    ElasticsearchDataboardColumnService,
     PostgresqlDatasourceService,
     PostgresqlDatasourceTableService,
     PostgresqlDatasourceTableColumnService,
-    PostgresqlDatasourceConstraintService,
     ElasticsearchDatasourceService,
     ElasticsearchDatasourceIndexService,
-    ElasticsearchDatasourceIndexFieldService,
     DatatransPipelineService,
-    DatatransMissionService,
-    DatatransTaskService,
   ],
 })
 export class EnginedModule {}

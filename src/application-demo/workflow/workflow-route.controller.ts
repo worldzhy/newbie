@@ -10,13 +10,13 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {WorkflowRoute, Prisma} from '@prisma/client';
-import {WorkflowRouteService} from '@microservices/workflow/workflow-route.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Workflow / Route')
 @ApiBearerAuth()
 @Controller('workflow-routes')
 export class WorkflowRouteController {
-  constructor(private readonly workflowRouteService: WorkflowRouteService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Post('')
   @ApiBody({
@@ -35,7 +35,7 @@ export class WorkflowRouteController {
   async createWorkflowRoute(
     @Body() body: Prisma.WorkflowRouteUncheckedCreateInput
   ): Promise<WorkflowRoute> {
-    return await this.workflowRouteService.create({
+    return await this.prisma.workflowRoute.create({
       data: body,
     });
   }
@@ -44,7 +44,7 @@ export class WorkflowRouteController {
   async getWorkflowRoutes(
     @Query('workflowId') workflowId: string
   ): Promise<WorkflowRoute[]> {
-    return await this.workflowRouteService.findMany({
+    return await this.prisma.workflowRoute.findMany({
       where: {view: {workflowId}},
       include: {view: true, state: true, nextView: true},
     });
@@ -75,7 +75,7 @@ export class WorkflowRouteController {
     @Body()
     body: Prisma.WorkflowRouteUpdateInput
   ): Promise<WorkflowRoute> {
-    return await this.workflowRouteService.update({
+    return await this.prisma.workflowRoute.update({
       where: {id: routeId},
       data: body,
     });
@@ -85,7 +85,7 @@ export class WorkflowRouteController {
   async deleteWorkflowRoute(
     @Param('routeId') routeId: number
   ): Promise<WorkflowRoute> {
-    return await this.workflowRouteService.delete({
+    return await this.prisma.workflowRoute.delete({
       where: {id: routeId},
     });
   }

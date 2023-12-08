@@ -10,19 +10,13 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Prisma, EventChangeLog} from '@prisma/client';
-import {EventChangeLogService} from '@microservices/event-scheduling/event-change-log.service';
-import {EventService} from '@microservices/event-scheduling/event.service';
-import {UserProfileService} from '@microservices/account/user/user-profile.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Event Change Log')
 @ApiBearerAuth()
 @Controller('event-changelogs')
 export class EventChangeLogController {
-  constructor(
-    private readonly eventChangeLogService: EventChangeLogService,
-    private readonly eventService: EventService,
-    private readonly userProfileService: UserProfileService
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Post('')
   @ApiBody({
@@ -42,7 +36,7 @@ export class EventChangeLogController {
     @Body()
     body: Prisma.EventChangeLogUncheckedCreateInput
   ): Promise<EventChangeLog> {
-    return await this.eventChangeLogService.create({
+    return await this.prisma.eventChangeLog.create({
       data: body,
     });
   }
@@ -53,9 +47,10 @@ export class EventChangeLogController {
     @Query('pageSize') pageSize: number,
     @Query('containerId') containerId: number
   ) {
-    const result = await this.eventService.findManyInManyPages(
-      {page, pageSize},
-      {
+    const result = await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.Event,
+      pagination: {page, pageSize},
+      findManyArgs: {
         where: {
           containerId,
           changeLogs: {some: {eventContainerId: containerId}},
@@ -64,8 +59,8 @@ export class EventChangeLogController {
           type: {select: {name: true}},
           changeLogs: {select: {description: true}},
         },
-      }
-    );
+      },
+    });
 
     // Get all the coaches information
     const coachIds = result.records
@@ -73,7 +68,7 @@ export class EventChangeLogController {
         return event.hostUserId;
       })
       .filter(coachId => coachId !== null) as string[];
-    const coachProfiles = await this.userProfileService.findMany({
+    const coachProfiles = await this.prisma.userProfile.findMany({
       where: {userId: {in: coachIds}},
       select: {userId: true, fullName: true, coachingTenure: true},
     });
@@ -117,7 +112,7 @@ export class EventChangeLogController {
     @Body()
     body: Prisma.EventChangeLogUncheckedUpdateInput
   ): Promise<EventChangeLog> {
-    return await this.eventChangeLogService.update({
+    return await this.prisma.eventChangeLog.update({
       where: {id: noteId},
       data: body,
     });
@@ -127,7 +122,7 @@ export class EventChangeLogController {
   async deleteEventChangeLog(
     @Param('noteId') noteId: number
   ): Promise<EventChangeLog> {
-    return await this.eventChangeLogService.delete({
+    return await this.prisma.eventChangeLog.delete({
       where: {id: noteId},
     });
   }

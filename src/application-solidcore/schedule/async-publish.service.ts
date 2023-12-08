@@ -2,7 +2,6 @@
 import {BadRequestException, Injectable} from '@nestjs/common';
 import {Prisma, AsyncPublish, AsyncEventStatus} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {EventService} from '../../microservices/event-scheduling/event.service';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {ScToMbService} from 'src/application-solidcore/mindbody/scToMb.service';
 import {AvailabilityTimeslotService} from '../../microservices/event-scheduling/availability-timeslot.service';
@@ -14,7 +13,6 @@ import * as _ from 'lodash';
 export class AsyncPublishService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly eventService: EventService,
     private readonly eventEmitter: EventEmitter2,
     private readonly scToMbService: ScToMbService,
     private readonly availabilityTimeslotService: AvailabilityTimeslotService,
@@ -98,7 +96,7 @@ export class AsyncPublishService {
       );
     }
 
-    const eventsCnt = await this.eventService.count({
+    const eventsCnt = await this.prisma.event.count({
       where: {
         containerId,
       },
@@ -283,7 +281,7 @@ export class AsyncPublishService {
       },
     });
 
-    const events = await this.eventService.findMany({
+    const events = await this.prisma.event.findMany({
       where: {
         containerId: container.id,
       },
@@ -329,7 +327,7 @@ export class AsyncPublishService {
 
     const {containerId} = asyncPublish;
 
-    const event = await this.eventService.findUniqueOrThrow({
+    const event = await this.prisma.event.findUniqueOrThrow({
       where: {id: eventId},
       include: {type: true, venue: true, changeLogs: true},
     });
@@ -391,7 +389,7 @@ export class AsyncPublishService {
     await this.availabilityTimeslotService.checkin(event);
 
     // // [step 2] Update event status.
-    await this.eventService.update({
+    await this.prisma.event.update({
       where: {id: eventId},
       data: {isPublished: true},
     });

@@ -8,23 +8,21 @@ import {
   Patch,
 } from '@nestjs/common';
 import {ApiTags, ApiBody, ApiBearerAuth} from '@nestjs/swagger';
-import {Prisma, User, VerificationCodeUse} from '@prisma/client';
+import {Prisma, VerificationCodeUse} from '@prisma/client';
 import {Request} from 'express';
 import {AccountService} from '@microservices/account/account.service';
-import {UserService} from '@microservices/account/user/user.service';
-import {UserProfileService} from '@microservices/account/user/user-profile.service';
 import {VerificationCodeService} from '@microservices/account/verification-code/verification-code.service';
 import {Public} from '@microservices/account/security/authentication/public/public.decorator';
 import {verifyEmail, verifyPhone} from '@toolkit/validators/user.validator';
 import {compareHash} from '@toolkit/utilities/common.util';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Account')
 @Controller('account')
 export class AccountController {
   constructor(
+    private readonly prisma: PrismaService,
     private readonly accountService: AccountService,
-    private readonly userService: UserService,
-    private readonly userProfileService: UserProfileService,
     private readonly verificationCodeService: VerificationCodeService
   ) {}
 
@@ -60,11 +58,11 @@ export class AccountController {
     @Req() request: Request,
     @Body()
     body: Prisma.UserUpdateInput
-  ): Promise<User> {
+  ) {
     const user = await this.accountService.me(request);
 
     if (!user['profile'] && body.profile) {
-      await this.userProfileService.create({
+      await this.prisma.userProfile.create({
         data: {
           userId: user.id,
           firstName: body.profile.update?.firstName as
@@ -81,7 +79,7 @@ export class AccountController {
       delete body.profile;
     }
 
-    return await this.userService.update({
+    return await this.prisma.user.update({
       where: {id: user.id},
       data: body,
       select: {
@@ -119,7 +117,7 @@ export class AccountController {
   })
   async changePassword(
     @Body() body: {userId: string; currentPassword: string; newPassword: string}
-  ): Promise<User> {
+  ) {
     // [step 1] Guard statement.
     if (!('currentPassword' in body) || !('newPassword' in body)) {
       throw new BadRequestException(
@@ -135,7 +133,7 @@ export class AccountController {
     }
 
     // [step 3] Verify the current password.
-    const user = await this.userService.findUniqueOrThrow({
+    const user = await this.prisma.user.findUniqueOrThrow({
       where: {id: body.userId},
     });
     const match = await compareHash(body.currentPassword, user.password);
@@ -144,7 +142,7 @@ export class AccountController {
     }
 
     // [step 4] Change password.
-    return await this.userService.update({
+    return await this.prisma.user.update({
       where: {id: body.userId},
       data: {password: body.newPassword},
       select: {id: true, email: true, phone: true},
@@ -221,7 +219,7 @@ export class AccountController {
       verificationCode: string;
       newPassword: string;
     }
-  ): Promise<User> {
+  ) {
     if (body.email && verifyEmail(body.email)) {
       if (
         await this.verificationCodeService.validateForEmail(
@@ -229,7 +227,7 @@ export class AccountController {
           body.email
         )
       ) {
-        return await this.userService.update({
+        return await this.prisma.user.update({
           where: {email: body.email.toLowerCase()},
           data: {password: body.newPassword},
           select: {id: true, email: true, phone: true},
@@ -242,7 +240,7 @@ export class AccountController {
           body.phone
         )
       ) {
-        return await this.userService.update({
+        return await this.prisma.user.update({
           where: {phone: body.phone},
           data: {password: body.newPassword},
           select: {id: true, email: true, phone: true},

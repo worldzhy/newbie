@@ -10,14 +10,18 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Prisma, User} from '@prisma/client';
-import {UserService} from '@microservices/account/user/user.service';
 import {RoleService} from '@microservices/account/role/role.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {UserService} from '@microservices/account/user/user.service';
 
 @ApiTags('Area Manager')
 @ApiBearerAuth()
 @Controller('area-managers')
 export class AreaManagerController {
-  constructor(private userService: UserService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly userService: UserService
+  ) {}
 
   @Post('')
   @ApiBody({
@@ -45,12 +49,12 @@ export class AreaManagerController {
   async createUser(
     @Body()
     body: Prisma.UserCreateInput
-  ): Promise<User> {
+  ) {
     const userCreateInput: Prisma.UserCreateInput = body;
     // Construct roles.
     userCreateInput.roles = {connect: {name: RoleService.names.AREA_MANAGER}};
 
-    return await this.userService.create({
+    return await this.prisma.user.create({
       data: userCreateInput,
       select: {
         id: true,
@@ -93,13 +97,14 @@ export class AreaManagerController {
     }
 
     // [step 2] Get users.
-    const result = await this.userService.findManyInManyPages(
-      {page, pageSize},
-      {
+    const result = await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.User,
+      pagination: {page, pageSize},
+      findManyArgs: {
         where,
         include: {profile: true},
-      }
-    );
+      },
+    });
 
     // [step 4] Return users without password.
     result.records = result.records.map(user => {
@@ -111,7 +116,7 @@ export class AreaManagerController {
 
   @Get(':userId')
   async getUser(@Param('userId') userId: string) {
-    const user = await this.userService.findUniqueOrThrow({
+    const user = await this.prisma.user.findUniqueOrThrow({
       where: {id: userId},
       include: {
         profile: true,
@@ -152,7 +157,7 @@ export class AreaManagerController {
   ): Promise<User> {
     const userUpdateInput: Prisma.UserUpdateInput = body;
 
-    return await this.userService.update({
+    return await this.prisma.user.update({
       where: {id: userId},
       data: userUpdateInput,
       include: {profile: true},
@@ -161,7 +166,7 @@ export class AreaManagerController {
 
   @Delete(':userId')
   async deleteUser(@Param('userId') userId: string): Promise<User> {
-    return await this.userService.delete({
+    return await this.prisma.user.delete({
       where: {id: userId},
     });
   }

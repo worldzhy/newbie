@@ -15,13 +15,13 @@ import {
   Prisma,
   TrustedEntityType,
 } from '@prisma/client';
-import {PermissionService} from '@microservices/account/permission/permission.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Account / Permission')
 @ApiBearerAuth()
 @Controller('permissions')
 export class PermissionController {
-  constructor(private permissionService: PermissionService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Get('resources')
   listPermissionResources() {
@@ -52,7 +52,7 @@ export class PermissionController {
   async createPermission(
     @Body() body: Prisma.PermissionCreateInput
   ): Promise<Permission> {
-    return await this.permissionService.create({
+    return await this.prisma.permission.create({
       data: body,
     });
   }
@@ -78,17 +78,18 @@ export class PermissionController {
     }
 
     // [step 2] Get permissions.
-    return await this.permissionService.findManyInManyPages(
-      {page, pageSize},
-      {where}
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.Permission,
+      pagination: {page, pageSize},
+      findManyArgs: {where},
+    });
   }
 
   @Get(':permissionId')
   async getPermission(
     @Param('permissionId') permissionId: number
   ): Promise<Permission> {
-    return await this.permissionService.findUniqueOrThrow({
+    return await this.prisma.permission.findUniqueOrThrow({
       where: {id: permissionId},
     });
   }
@@ -113,7 +114,7 @@ export class PermissionController {
     @Body()
     body: Prisma.PermissionUpdateInput
   ): Promise<Permission> {
-    return await this.permissionService.update({
+    return await this.prisma.permission.update({
       where: {id: permissionId},
       data: body,
     });
@@ -123,7 +124,7 @@ export class PermissionController {
   async deletePermission(
     @Param('permissionId') permissionId: number
   ): Promise<Permission> {
-    return await this.permissionService.delete({
+    return await this.prisma.permission.delete({
       where: {id: permissionId},
     });
   }

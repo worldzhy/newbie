@@ -10,7 +10,6 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {JobApplicationWorkflowNoteService} from './note.service';
 
 import {
   JobApplicationWorkflowNote,
@@ -19,18 +18,17 @@ import {
 } from '@prisma/client';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
 import {AccessTokenService} from '@microservices/token/access-token/access-token.service';
-import {JobApplicationWorkflowService} from '../workflow.service';
-import {UserService} from '@microservices/account/user/user.service';
+import {JobApplicationWorkflowService} from './workflow.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Recruitment / Job Application / Workflow Note')
 @ApiBearerAuth()
 @Controller('recruitment-workflow-notes')
 export class JobApplicationWorkflowNoteController {
   constructor(
-    private readonly userService: UserService,
+    private readonly prisma: PrismaService,
     private readonly accessTokenService: AccessTokenService,
-    private readonly jobApplicationWorkflowService: JobApplicationWorkflowService,
-    private readonly jobApplicationWorkflowNoteService: JobApplicationWorkflowNoteService
+    private readonly jobApplicationWorkflowService: JobApplicationWorkflowService
   ) {}
 
   @Post('')
@@ -68,15 +66,15 @@ export class JobApplicationWorkflowNoteController {
     const {userId} = this.accessTokenService.decodeToken(
       this.accessTokenService.getTokenFromHttpRequest(request)
     ) as {userId: string};
-    const user = await this.userService.findUniqueOrThrow({
+    const user = await this.prisma.user.findUniqueOrThrow({
       where: {id: userId},
       include: {profile: {select: {fullName: true}}},
     });
     body.reporterUserId = userId;
-    body.reporter = user['profile'].fullName;
+    body.reporter = user['profile']?.fullName;
 
     // [step 3] Create jobApplicationWorkflowNote.
-    return await this.jobApplicationWorkflowNoteService.create({data: body});
+    return await this.prisma.jobApplicationWorkflowNote.create({data: body});
   }
 
   @Get('')
@@ -87,7 +85,7 @@ export class JobApplicationWorkflowNoteController {
   async getJobApplicationWorkflowNotes(): Promise<
     JobApplicationWorkflowNote[]
   > {
-    return await this.jobApplicationWorkflowNoteService.findMany({});
+    return await this.prisma.jobApplicationWorkflowNote.findMany({});
   }
 
   @Get(':noteId')
@@ -98,7 +96,7 @@ export class JobApplicationWorkflowNoteController {
   async getJobApplicationWorkflowNote(
     @Param('noteId') noteId: number
   ): Promise<JobApplicationWorkflowNote | null> {
-    return await this.jobApplicationWorkflowNoteService.findUnique({
+    return await this.prisma.jobApplicationWorkflowNote.findUnique({
       where: {id: noteId},
     });
   }
@@ -123,7 +121,7 @@ export class JobApplicationWorkflowNoteController {
     @Param('noteId') noteId: number,
     @Body() body: Prisma.JobApplicationWorkflowNoteUpdateInput
   ): Promise<JobApplicationWorkflowNote> {
-    return await this.jobApplicationWorkflowNoteService.update({
+    return await this.prisma.jobApplicationWorkflowNote.update({
       where: {id: noteId},
       data: body,
     });
@@ -137,7 +135,7 @@ export class JobApplicationWorkflowNoteController {
   async deleteJobApplicationWorkflowNote(
     @Param('noteId') noteId: number
   ): Promise<JobApplicationWorkflowNote> {
-    return await this.jobApplicationWorkflowNoteService.delete({
+    return await this.prisma.jobApplicationWorkflowNote.delete({
       where: {id: noteId},
     });
   }

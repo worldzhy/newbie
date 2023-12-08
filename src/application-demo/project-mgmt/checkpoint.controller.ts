@@ -1,13 +1,13 @@
 import {Controller, Delete, Get, Patch, Body, Param} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {ProjectCheckpointService} from '@microservices/project-mgmt/checkpoint/checkpoint.service';
 import {Prisma, ProjectCheckpoint, ProjectCheckpointType} from '@prisma/client';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Project Management / Project Checkpoint')
 @ApiBearerAuth()
 @Controller('project-checkpoints')
 export class ProjectCheckpointController {
-  constructor(private readonly checkpointService: ProjectCheckpointService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Get('types')
   listCheckpoints() {
@@ -23,7 +23,7 @@ export class ProjectCheckpointController {
   async getCheckpoint(
     @Param('checkpointId') checkpointId: number
   ): Promise<ProjectCheckpoint | null> {
-    return await this.checkpointService.findUniqueOrThrow({
+    return await this.prisma.projectCheckpoint.findUniqueOrThrow({
       where: {id: checkpointId},
     });
   }
@@ -44,7 +44,7 @@ export class ProjectCheckpointController {
     @Param('checkpointId') checkpointId: number,
     @Body() body: Prisma.ProjectCheckpointUpdateInput
   ): Promise<ProjectCheckpoint> {
-    return await this.checkpointService.update({
+    return await this.prisma.projectCheckpoint.update({
       where: {id: checkpointId},
       data: body,
     });
@@ -54,7 +54,7 @@ export class ProjectCheckpointController {
   async deleteCheckpoint(
     @Param('checkpointId') checkpointId: number
   ): Promise<ProjectCheckpoint | null> {
-    return await this.checkpointService.delete({
+    return await this.prisma.projectCheckpoint.delete({
       where: {id: checkpointId},
     });
   }

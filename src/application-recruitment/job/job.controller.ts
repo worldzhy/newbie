@@ -10,13 +10,13 @@ import {
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Prisma, Job, PermissionAction, JobType} from '@prisma/client';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
-import {JobService} from './job.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Recruitment / Job')
 @ApiBearerAuth()
 @Controller('recruitment-jobs')
 export class JobController {
-  constructor(private jobService: JobService) {}
+  constructor(private prisma: PrismaService) {}
 
   @Get('types')
   listJobTypes(): string[] {
@@ -76,19 +76,19 @@ export class JobController {
     },
   })
   async createJob(@Body() body: Prisma.JobUncheckedCreateInput): Promise<Job> {
-    return await this.jobService.create({data: body});
+    return await this.prisma.job.create({data: body});
   }
 
   @Get('')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.Job)
   async getJobs(): Promise<Job[]> {
-    return await this.jobService.findMany({});
+    return await this.prisma.job.findMany({});
   }
 
   @Get(':jobId')
   @RequirePermission(PermissionAction.Get, Prisma.ModelName.Job)
   async getJob(@Param('jobId') jobId: string): Promise<Job | null> {
-    return await this.jobService.findUnique({where: {id: jobId}});
+    return await this.prisma.job.findUnique({where: {id: jobId}});
   }
 
   @Patch(':jobId')
@@ -112,7 +112,7 @@ export class JobController {
     @Param('jobId') jobId: string,
     @Body() body: Prisma.JobUpdateInput
   ): Promise<Job> {
-    return await this.jobService.update({
+    return await this.prisma.job.update({
       where: {id: jobId},
       data: body,
     });
@@ -121,7 +121,7 @@ export class JobController {
   @Delete(':jobId')
   @RequirePermission(PermissionAction.Delete, Prisma.ModelName.Job)
   async deleteUser(@Param('jobId') jobId: string): Promise<Job> {
-    return await this.jobService.delete({
+    return await this.prisma.job.delete({
       where: {id: jobId},
     });
   }

@@ -11,12 +11,14 @@ import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {PostgresqlDatasourceTableColumn, Prisma} from '@prisma/client';
 import {PostgresqlDatasourceTableService} from '../table/table.service';
 import {PostgresqlDatasourceTableColumnService} from './column.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('EngineD / Postgresql Datasource Table Column')
 @ApiBearerAuth()
 @Controller('postgresql-datasource-table-columns')
 export class PostgresqlDatasourceTableColumnController {
   constructor(
+    private readonly prisma: PrismaService,
     private readonly postgresqlDatasourceTableService: PostgresqlDatasourceTableService,
     private readonly postgresqlDatasourceTableColumnService: PostgresqlDatasourceTableColumnService
   ) {}
@@ -61,14 +63,14 @@ export class PostgresqlDatasourceTableColumnController {
   async getPostgresqlDatasourceTableColumns(): Promise<
     PostgresqlDatasourceTableColumn[]
   > {
-    return await this.postgresqlDatasourceTableColumnService.findMany({});
+    return await this.prisma.postgresqlDatasourceTableColumn.findMany({});
   }
 
   @Get(':columnId')
   async getPostgresqlDatasourceTableColumn(
     @Param('columnId') columnId: number
   ): Promise<PostgresqlDatasourceTableColumn | null> {
-    return await this.postgresqlDatasourceTableColumnService.findUnique({
+    return await this.prisma.postgresqlDatasourceTableColumn.findUnique({
       where: {id: columnId},
     });
   }
@@ -78,7 +80,7 @@ export class PostgresqlDatasourceTableColumnController {
     @Param('columnId') columnId: number,
     @Body() body: Prisma.ElasticsearchDatasourceIndexUpdateInput
   ): Promise<PostgresqlDatasourceTableColumn> {
-    return await this.postgresqlDatasourceTableColumnService.update({
+    return await this.prisma.postgresqlDatasourceTableColumn.update({
       where: {id: columnId},
       data: body,
     });
@@ -90,7 +92,7 @@ export class PostgresqlDatasourceTableColumnController {
   ): Promise<PostgresqlDatasourceTableColumn> {
     // [step 1] Get the column.
     const column =
-      await this.postgresqlDatasourceTableColumnService.findUniqueOrThrow({
+      await this.prisma.postgresqlDatasourceTableColumn.findUniqueOrThrow({
         where: {id: columnId},
         include: {table: true},
       });
@@ -99,7 +101,7 @@ export class PostgresqlDatasourceTableColumnController {
     await this.postgresqlDatasourceTableColumnService.dropColulmn(column);
 
     // [step 3] Delete column record in database.
-    return await this.postgresqlDatasourceTableColumnService.delete({
+    return await this.prisma.postgresqlDatasourceTableColumn.delete({
       where: {id: columnId},
     });
   }

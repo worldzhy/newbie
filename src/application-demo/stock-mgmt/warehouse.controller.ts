@@ -11,13 +11,13 @@ import {
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {PermissionAction, Prisma, Warehouse} from '@prisma/client';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
-import {WarehouseService} from '@microservices/stock-mgmt/warehouse.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Warehouse')
 @ApiBearerAuth()
 @Controller('warehouseWarehouses')
 export class WarehouseController {
-  constructor(private readonly warehouseService: WarehouseService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Post('')
   @RequirePermission(PermissionAction.Create, Prisma.ModelName.Warehouse)
@@ -33,7 +33,7 @@ export class WarehouseController {
   async createWarehouse(
     @Body() body: Prisma.WarehouseUncheckedCreateInput
   ): Promise<Warehouse> {
-    return await this.warehouseService.create({data: body});
+    return await this.prisma.warehouse.create({data: body});
   }
 
   @Get('')
@@ -42,7 +42,10 @@ export class WarehouseController {
     @Query('page') page: number,
     @Query('pageSize') pageSize: number
   ) {
-    return await this.warehouseService.findManyInManyPages({page, pageSize});
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.Warehouse,
+      pagination: {page, pageSize},
+    });
   }
 
   @Get(':warehouseWarehouseId')
@@ -50,7 +53,7 @@ export class WarehouseController {
   async getWarehouse(
     @Param('warehouseId') warehouseId: string
   ): Promise<Warehouse> {
-    return await this.warehouseService.findUniqueOrThrow({
+    return await this.prisma.warehouse.findUniqueOrThrow({
       where: {id: warehouseId},
     });
   }
@@ -70,7 +73,7 @@ export class WarehouseController {
     @Param('warehouseWarehouseId') warehouseId: string,
     @Body() body: Prisma.WarehouseUpdateInput
   ): Promise<Warehouse> {
-    return await this.warehouseService.update({
+    return await this.prisma.warehouse.update({
       where: {id: warehouseId},
       data: body,
     });
@@ -81,7 +84,7 @@ export class WarehouseController {
   async deleteWarehouse(
     @Param('warehouseId') warehouseId: string
   ): Promise<Warehouse> {
-    return await this.warehouseService.delete({
+    return await this.prisma.warehouse.delete({
       where: {id: warehouseId},
     });
   }

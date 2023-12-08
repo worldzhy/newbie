@@ -10,15 +10,13 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {ElasticsearchDatasourceIndexField, Prisma} from '@prisma/client';
-import {ElasticsearchDatasourceIndexFieldService} from './field.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('EngineD / Elasticsearch Datasource Index Field')
 @ApiBearerAuth()
 @Controller('elasticsearch-datasource-index-fields')
 export class ElasticsearchDatasourceIndexFieldController {
-  constructor(
-    private elasticsearchDatasourceIndexFieldService: ElasticsearchDatasourceIndexFieldService
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Post('')
   @ApiBody({
@@ -36,7 +34,7 @@ export class ElasticsearchDatasourceIndexFieldController {
   async createElasticsearchDatasourceIndexField(
     @Body() body: Prisma.ElasticsearchDatasourceIndexFieldUncheckedCreateInput
   ): Promise<ElasticsearchDatasourceIndexField> {
-    return await this.elasticsearchDatasourceIndexFieldService.create({
+    return await this.prisma.elasticsearchDatasourceIndexField.create({
       data: body,
     });
   }
@@ -45,17 +43,13 @@ export class ElasticsearchDatasourceIndexFieldController {
   async getElasticsearchDatasourceIndexFields(
     @Query('page') page: number,
     @Query('pageSize') pageSize: number
-  ) {
-    return await this.elasticsearchDatasourceIndexFieldService.findManyInManyPages(
-      {page, pageSize}
-    );
-  }
+  ) {}
 
   @Get(':indexId')
   async getElasticsearchDatasourceIndexField(
     @Param('indexId') indexId: number
   ): Promise<ElasticsearchDatasourceIndexField | null> {
-    return await this.elasticsearchDatasourceIndexFieldService.findUnique({
+    return await this.prisma.elasticsearchDatasourceIndexField.findUnique({
       where: {id: indexId},
     });
   }
@@ -65,7 +59,7 @@ export class ElasticsearchDatasourceIndexFieldController {
     @Param('indexId') indexId: number,
     @Body() body: Prisma.ElasticsearchDatasourceIndexFieldUpdateInput
   ): Promise<ElasticsearchDatasourceIndexField> {
-    return await this.elasticsearchDatasourceIndexFieldService.update({
+    return await this.prisma.elasticsearchDatasourceIndexField.update({
       where: {id: indexId},
       data: body,
     });
@@ -75,7 +69,7 @@ export class ElasticsearchDatasourceIndexFieldController {
   async deleteElasticsearchDatasourceIndexField(
     @Param('indexId') indexId: number
   ): Promise<ElasticsearchDatasourceIndexField> {
-    return await this.elasticsearchDatasourceIndexFieldService.delete({
+    return await this.prisma.elasticsearchDatasourceIndexField.delete({
       where: {id: indexId},
     });
   }

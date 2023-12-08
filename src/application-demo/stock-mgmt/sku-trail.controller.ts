@@ -11,13 +11,13 @@ import {
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {PermissionAction, Prisma, SkuTrail} from '@prisma/client';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
-import {SkuTrailService} from '@microservices/stock-mgmt/sku-trail.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('SkuTrail')
 @ApiBearerAuth()
 @Controller('skuTrails')
 export class SkuTrailController {
-  constructor(private readonly skuTrailService: SkuTrailService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Post('')
   @RequirePermission(PermissionAction.Create, Prisma.ModelName.SkuTrail)
@@ -33,7 +33,7 @@ export class SkuTrailController {
   async createSkuTrail(
     @Body() body: Prisma.SkuTrailUncheckedCreateInput
   ): Promise<SkuTrail> {
-    return await this.skuTrailService.create({data: body});
+    return await this.prisma.skuTrail.create({data: body});
   }
 
   @Get('')
@@ -42,7 +42,10 @@ export class SkuTrailController {
     @Query('page') page: number,
     @Query('pageSize') pageSize: number
   ) {
-    return await this.skuTrailService.findManyInManyPages({page, pageSize});
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.SkuTrail,
+      pagination: {page, pageSize},
+    });
   }
 
   @Get(':skuTrailId')
@@ -50,7 +53,7 @@ export class SkuTrailController {
   async getSkuTrail(
     @Param('skuTrailId') skuTrailId: number
   ): Promise<SkuTrail> {
-    return await this.skuTrailService.findUniqueOrThrow({
+    return await this.prisma.skuTrail.findUniqueOrThrow({
       where: {id: skuTrailId},
     });
   }
@@ -70,7 +73,7 @@ export class SkuTrailController {
     @Param('skuTrailId') skuTrailId: number,
     @Body() body: Prisma.SkuTrailUpdateInput
   ): Promise<SkuTrail> {
-    return await this.skuTrailService.update({
+    return await this.prisma.skuTrail.update({
       where: {id: skuTrailId},
       data: body,
     });
@@ -81,7 +84,7 @@ export class SkuTrailController {
   async deleteSkuTrail(
     @Param('skuTrailId') skuTrailId: number
   ): Promise<SkuTrail> {
-    return await this.skuTrailService.delete({
+    return await this.prisma.skuTrail.delete({
       where: {id: skuTrailId},
     });
   }

@@ -8,16 +8,14 @@ import {
   Param,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {ElasticsearchDataboardColumnService} from './column.service';
 import {ElasticsearchDataboardColumn, Prisma} from '@prisma/client';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('EngineD / Elasticsearch Databoard Column')
 @ApiBearerAuth()
 @Controller('elasticsearch-databoard-columns')
 export class ElasticsearchDataboardColumnController {
-  constructor(
-    private elasticsearchDataboardColumnService: ElasticsearchDataboardColumnService
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   @Post('')
   @ApiBody({
@@ -35,14 +33,14 @@ export class ElasticsearchDataboardColumnController {
     @Body()
     body: Prisma.ElasticsearchDataboardColumnCreateInput
   ) {
-    return await this.elasticsearchDataboardColumnService.create({data: body});
+    return await this.prisma.elasticsearchDataboardColumn.create({data: body});
   }
 
   @Get(':columnId')
   async getElasticsearchDataboardColumn(
     @Param('columnId') columnId: number
   ): Promise<ElasticsearchDataboardColumn> {
-    return await this.elasticsearchDataboardColumnService.findUniqueOrThrow({
+    return await this.prisma.elasticsearchDataboardColumn.findUniqueOrThrow({
       where: {id: columnId},
     });
   }
@@ -63,7 +61,7 @@ export class ElasticsearchDataboardColumnController {
     @Param('columnId') columnId: number,
     @Body() body: Prisma.ElasticsearchDataboardColumnUpdateInput
   ): Promise<ElasticsearchDataboardColumn> {
-    return await this.elasticsearchDataboardColumnService.update({
+    return await this.prisma.elasticsearchDataboardColumn.update({
       where: {id: columnId},
       data: body,
     });
@@ -73,7 +71,7 @@ export class ElasticsearchDataboardColumnController {
   async deleteElasticsearchDataboardColumn(
     @Param('columnId') columnId: number
   ): Promise<ElasticsearchDataboardColumn> {
-    return await this.elasticsearchDataboardColumnService.delete({
+    return await this.prisma.elasticsearchDataboardColumn.delete({
       where: {id: columnId},
     });
   }

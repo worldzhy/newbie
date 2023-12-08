@@ -10,7 +10,6 @@ import {
   Query,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {ProjectService} from '@microservices/project-mgmt/project/project.service';
 import {verifyProjectName} from '@toolkit/validators/project.validator';
 
 import {
@@ -21,12 +20,13 @@ import {
   ProjectState,
 } from '@prisma/client';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Project Management / Project')
 @ApiBearerAuth()
 @Controller('projects')
 export class ProjectController {
-  constructor(private projectService: ProjectService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Post('')
   @ApiBody({
@@ -52,7 +52,7 @@ export class ProjectController {
     }
 
     // [step 2] Create project.
-    return await this.projectService.create({
+    return await this.prisma.project.create({
       data: {
         name: body.name,
         state: ProjectState.DESIGNING,
@@ -94,15 +94,16 @@ export class ProjectController {
     }
 
     // [step 2] Get records.
-    return await this.projectService.findManyInManyPages(
-      {page, pageSize},
-      {where}
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.Project,
+      pagination: {page, pageSize},
+      findManyArgs: {where},
+    });
   }
 
   @Get(':projectId')
   async getProject(@Param('projectId') projectId: string): Promise<Project> {
-    return await this.projectService.findUniqueOrThrow({
+    return await this.prisma.project.findUniqueOrThrow({
       where: {id: projectId},
     });
   }
@@ -123,7 +124,7 @@ export class ProjectController {
     @Param('projectId') projectId: string,
     @Body() body: Prisma.ProjectUpdateInput
   ): Promise<Project> {
-    return await this.projectService.update({
+    return await this.prisma.project.update({
       where: {id: projectId},
       data: body,
     });
@@ -131,7 +132,7 @@ export class ProjectController {
 
   @Delete(':projectId')
   async deleteProject(@Param('projectId') projectId: string): Promise<Project> {
-    return await this.projectService.delete({where: {id: projectId}});
+    return await this.prisma.project.delete({where: {id: projectId}});
   }
 
   //* Get checkpoints
@@ -139,7 +140,7 @@ export class ProjectController {
   async getProjectCheckpoints(
     @Param('projectId') projectId: string
   ): Promise<Project> {
-    return await this.projectService.findUniqueOrThrow({
+    return await this.prisma.project.findUniqueOrThrow({
       where: {id: projectId},
       include: {checkpoints: true},
     });
@@ -150,7 +151,7 @@ export class ProjectController {
   async getProjectEnvironments(
     @Param('projectId') projectId: string
   ): Promise<Project> {
-    return await this.projectService.findUniqueOrThrow({
+    return await this.prisma.project.findUniqueOrThrow({
       where: {id: projectId},
       include: {environments: true},
     });

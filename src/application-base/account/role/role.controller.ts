@@ -10,13 +10,13 @@ import {
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Role, Prisma, PermissionAction} from '@prisma/client';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
-import {RoleService} from '@microservices/account/role/role.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Account / Role')
 @ApiBearerAuth()
 @Controller('roles')
 export class RoleController {
-  constructor(private roleService: RoleService) {}
+  constructor(private prisma: PrismaService) {}
 
   @Post('')
   @RequirePermission(PermissionAction.Create, Prisma.ModelName.Role)
@@ -34,7 +34,7 @@ export class RoleController {
   async createRole(
     @Body() body: Prisma.RoleUncheckedCreateInput
   ): Promise<Role> {
-    return await this.roleService.create({
+    return await this.prisma.role.create({
       data: body,
     });
   }
@@ -42,13 +42,13 @@ export class RoleController {
   @Get('')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.Role)
   async getRoles() {
-    return await this.roleService.findManyInOnePage();
+    return await this.prisma.findManyInOnePage({model: Prisma.ModelName.Role});
   }
 
   @Get(':roleId')
   @RequirePermission(PermissionAction.Get, Prisma.ModelName.Role)
   async getRole(@Param('roleId') roleId: string): Promise<Role> {
-    return await this.roleService.findUniqueOrThrow({
+    return await this.prisma.role.findUniqueOrThrow({
       where: {id: roleId},
     });
   }
@@ -71,7 +71,7 @@ export class RoleController {
     @Body()
     body: Prisma.RoleUpdateInput
   ): Promise<Role> {
-    return await this.roleService.update({
+    return await this.prisma.role.update({
       where: {id: roleId},
       data: body,
     });
@@ -80,7 +80,7 @@ export class RoleController {
   @Delete(':roleId')
   @RequirePermission(PermissionAction.Delete, Prisma.ModelName.Role)
   async deleteRole(@Param('roleId') roleId: string): Promise<Role> {
-    return await this.roleService.delete({
+    return await this.prisma.role.delete({
       where: {id: roleId},
     });
   }

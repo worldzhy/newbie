@@ -14,17 +14,17 @@ import {
   EventContainerStatus,
   EventContainerOrigin,
 } from '@prisma/client';
-import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
 import {EventService} from '@microservices/event-scheduling/event.service';
 import {daysOfMonth} from '@toolkit/utilities/datetime.util';
 import {RawDataSchedulingService} from '../raw-data/raw-data-scheduling.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Event Container')
 @ApiBearerAuth()
 @Controller('event-containers')
 export class EventCopyController {
   constructor(
-    private readonly eventContainerService: EventContainerService,
+    private readonly prisma: PrismaService,
     private readonly eventService: EventService,
     private readonly rawDataSchedulingService: RawDataSchedulingService
   ) {}
@@ -36,7 +36,7 @@ export class EventCopyController {
     @Query('month') month: number
   ) {
     // [step 1] Get target container.
-    let targetContainer = await this.eventContainerService.findUniqueOrThrow({
+    let targetContainer = await this.prisma.eventContainer.findUniqueOrThrow({
       where: {id: eventContainerId},
     });
     if (targetContainer.status === EventContainerStatus.PUBLISHED) {
@@ -45,7 +45,7 @@ export class EventCopyController {
 
     // [step 2] Get the source container we want to copy its events.
     // [step 2-1] Seach the source container in local database.
-    let sourceContainer = await this.eventContainerService.findFirst({
+    let sourceContainer = await this.prisma.eventContainer.findFirst({
       where: {
         year,
         month,
@@ -63,7 +63,7 @@ export class EventCopyController {
         month,
       });
 
-      sourceContainer = await this.eventContainerService.findFirst({
+      sourceContainer = await this.prisma.eventContainer.findFirst({
         where: {
           year,
           month,
@@ -108,10 +108,10 @@ export class EventCopyController {
     }
 
     // [step 4] Delete old events and create new events.
-    await this.eventService.deleteMany({
+    await this.prisma.event.deleteMany({
       where: {containerId: eventContainerId},
     });
-    await this.eventService.createMany({data: targetEvents});
+    await this.prisma.event.createMany({data: targetEvents});
   }
 
   @Patch(':eventContainerId/overwrite')
@@ -134,7 +134,7 @@ export class EventCopyController {
     const {fromWeekNumber, toWeekNumbers} = body;
 
     // [step 1] Get the container.
-    const container = await this.eventContainerService.findUniqueOrThrow({
+    const container = await this.prisma.eventContainer.findUniqueOrThrow({
       where: {id: eventContainerId},
       include: {events: true},
     });
@@ -168,7 +168,7 @@ export class EventCopyController {
       return event.id;
     });
 
-    await this.eventContainerService.update({
+    await this.prisma.eventContainer.update({
       where: {id: eventContainerId},
       data: {
         events: {

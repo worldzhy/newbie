@@ -17,12 +17,14 @@ import {
   Prisma,
 } from '@prisma/client';
 import {ElasticsearchDatasourceIndexService} from './index.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('EngineD / Elasticsearch Datasource Index')
 @ApiBearerAuth()
 @Controller('elasticsearch-datasource-indices')
 export class ElasticsearchDatasourceIndexController {
   constructor(
+    private readonly prisma: PrismaService,
     private elasticsearchDatasourceIndexService: ElasticsearchDatasourceIndexService
   ) {}
 
@@ -46,7 +48,7 @@ export class ElasticsearchDatasourceIndexController {
     await this.elasticsearchDatasourceIndexService.createIndex(body.name);
 
     // [step 2] Save the index record in database.
-    return await this.elasticsearchDatasourceIndexService.create({
+    return await this.prisma.elasticsearchDatasourceIndex.create({
       data: body,
     });
   }
@@ -55,14 +57,14 @@ export class ElasticsearchDatasourceIndexController {
   async getElasticsearchDatasourceIndices(): Promise<
     ElasticsearchDatasourceIndex[]
   > {
-    return await this.elasticsearchDatasourceIndexService.findMany({});
+    return await this.prisma.elasticsearchDatasourceIndex.findMany({});
   }
 
   @Get(':indexId')
   async getElasticsearchDatasourceIndex(
     @Param('indexId') indexId: number
   ): Promise<ElasticsearchDatasourceIndex | null> {
-    return await this.elasticsearchDatasourceIndexService.findUnique({
+    return await this.prisma.elasticsearchDatasourceIndex.findUnique({
       where: {id: indexId},
     });
   }
@@ -72,7 +74,7 @@ export class ElasticsearchDatasourceIndexController {
     @Param('indexId') indexId: number,
     @Body() body: Prisma.ElasticsearchDatasourceIndexUpdateInput
   ): Promise<ElasticsearchDatasourceIndex> {
-    return await this.elasticsearchDatasourceIndexService.update({
+    return await this.prisma.elasticsearchDatasourceIndex.update({
       where: {id: indexId},
       data: body,
     });
@@ -84,7 +86,7 @@ export class ElasticsearchDatasourceIndexController {
   ): Promise<ElasticsearchDatasourceIndex> {
     // [step 1] Get the index.
     const index =
-      await this.elasticsearchDatasourceIndexService.findUniqueOrThrow({
+      await this.prisma.elasticsearchDatasourceIndex.findUniqueOrThrow({
         where: {id: indexId},
       });
 
@@ -92,7 +94,7 @@ export class ElasticsearchDatasourceIndexController {
     await this.elasticsearchDatasourceIndexService.createIndex(index.name);
 
     // [step 3] Save the index record in database.
-    return await this.elasticsearchDatasourceIndexService.delete({
+    return await this.prisma.elasticsearchDatasourceIndex.delete({
       where: {id: indexId},
     });
   }
@@ -103,7 +105,7 @@ export class ElasticsearchDatasourceIndexController {
   ): Promise<ElasticsearchDatasourceIndex> {
     // [step 1] Get index.
     const index =
-      await this.elasticsearchDatasourceIndexService.findUniqueOrThrow({
+      await this.prisma.elasticsearchDatasourceIndex.findUniqueOrThrow({
         where: {id: indexId},
         include: {fields: true},
       });
@@ -125,7 +127,7 @@ export class ElasticsearchDatasourceIndexController {
     );
 
     // [step 3] Update index state.
-    return this.elasticsearchDatasourceIndexService.update({
+    return this.prisma.elasticsearchDatasourceIndex.update({
       where: {id: indexId},
       data: {state: ElasticsearchDatasourceIndexState.HAS_MAPPING},
     });
@@ -136,7 +138,7 @@ export class ElasticsearchDatasourceIndexController {
     @Param('indexId') indexId: number
   ) {
     const index =
-      await this.elasticsearchDatasourceIndexService.findUniqueOrThrow({
+      await this.prisma.elasticsearchDatasourceIndex.findUniqueOrThrow({
         where: {id: indexId},
       });
     if (index.state === ElasticsearchDatasourceIndexState.NO_MAPPING) {

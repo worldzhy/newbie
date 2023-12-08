@@ -16,17 +16,17 @@ import {
   Prisma,
 } from '@prisma/client';
 import {ElasticsearchDatasourceService} from './elasticsearch-datasource.service';
-import {ElasticsearchDatasourceIndexFieldService} from './field/field.service';
 import {ElasticsearchDatasourceIndexService} from './index/index.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('EngineD / Elasticsearch Datasource')
 @ApiBearerAuth()
 @Controller('elasticsearch-datasources')
 export class ElasticsearchDatasourceController {
   constructor(
+    private readonly prisma: PrismaService,
     private readonly elasticsearchDatasourceService: ElasticsearchDatasourceService,
-    private readonly elasticsearchDatasourceIndexService: ElasticsearchDatasourceIndexService,
-    private readonly elasticsearchDatasourceIndexFieldService: ElasticsearchDatasourceIndexFieldService
+    private readonly elasticsearchDatasourceIndexService: ElasticsearchDatasourceIndexService
   ) {}
 
   @Post('')
@@ -45,25 +45,20 @@ export class ElasticsearchDatasourceController {
     @Body()
     body: Prisma.ElasticsearchDatasourceCreateInput
   ): Promise<ElasticsearchDatasource> {
-    return await this.elasticsearchDatasourceService.create({data: body});
+    return await this.prisma.elasticsearchDatasource.create({data: body});
   }
 
   @Get('')
   async getElasticsearchDatasources(
     @Query('page') page: number,
     @Query('pageSize') pageSize: number
-  ) {
-    return await this.elasticsearchDatasourceService.findManyInManyPages({
-      page,
-      pageSize,
-    });
-  }
+  ) {}
 
   @Get(':datasourceId')
   async getElasticsearchDatasource(
     @Param('datasourceId') datasourceId: string
   ): Promise<ElasticsearchDatasource | null> {
-    return await this.elasticsearchDatasourceService.findUnique({
+    return await this.prisma.elasticsearchDatasource.findUnique({
       where: {id: datasourceId},
     });
   }
@@ -84,7 +79,7 @@ export class ElasticsearchDatasourceController {
     @Param('datasourceId') datasourceId: string,
     @Body() body: Prisma.ElasticsearchDatasourceUpdateInput
   ): Promise<ElasticsearchDatasource> {
-    return await this.elasticsearchDatasourceService.update({
+    return await this.prisma.elasticsearchDatasource.update({
       where: {id: datasourceId},
       data: body,
     });
@@ -94,7 +89,7 @@ export class ElasticsearchDatasourceController {
   async deleteElasticsearchDatasource(
     @Param('datasourceId') datasourceId: string
   ): Promise<ElasticsearchDatasource> {
-    return await this.elasticsearchDatasourceService.delete({
+    return await this.prisma.elasticsearchDatasource.delete({
       where: {id: datasourceId},
     });
   }
@@ -107,7 +102,7 @@ export class ElasticsearchDatasourceController {
     @Param('datasourceId') datasourceId: string
   ): Promise<ElasticsearchDatasource> {
     // [step 1] Get datasource.
-    const datasource = await this.elasticsearchDatasourceService.findUnique({
+    const datasource = await this.prisma.elasticsearchDatasource.findUnique({
       where: {id: datasourceId},
     });
     if (!datasource) {
@@ -115,9 +110,8 @@ export class ElasticsearchDatasourceController {
     }
 
     // [step 2] Get mappings of all indices.
-    const result = await this.elasticsearchDatasourceService.getMapping(
-      datasource
-    );
+    const result =
+      await this.elasticsearchDatasourceService.getMapping(datasource);
 
     // [step 3] Save fields of all indices.
     const indexNames = Object.keys(result.body);
@@ -129,7 +123,7 @@ export class ElasticsearchDatasourceController {
       }
 
       // Save the index.
-      const index = await this.elasticsearchDatasourceIndexService.create({
+      const index = await this.prisma.elasticsearchDatasourceIndex.create({
         data: {
           name: indexName,
           datasource: {connect: {id: datasource.id}},
@@ -141,7 +135,7 @@ export class ElasticsearchDatasourceController {
         const fieldNames = Object.keys(
           result.body[indexName].mappings.properties
         );
-        await this.elasticsearchDatasourceIndexFieldService.createMany({
+        await this.prisma.elasticsearchDatasourceIndexField.createMany({
           data: fieldNames.map(fieldName => {
             return {
               name: fieldName,
@@ -157,7 +151,7 @@ export class ElasticsearchDatasourceController {
     }
 
     // [step 4] Update datasource state.
-    return await this.elasticsearchDatasourceService.update({
+    return await this.prisma.elasticsearchDatasource.update({
       where: {id: datasource.id},
       data: {state: ElasticsearchDatasourceState.LOADED},
     });
@@ -171,7 +165,7 @@ export class ElasticsearchDatasourceController {
     @Param('datasourceId') datasourceId: string
   ): Promise<ElasticsearchDatasource> {
     // [step 1] Get datasource.
-    const datasource = await this.elasticsearchDatasourceService.findUnique({
+    const datasource = await this.prisma.elasticsearchDatasource.findUnique({
       where: {id: datasourceId},
     });
     if (!datasource) {
@@ -179,12 +173,12 @@ export class ElasticsearchDatasourceController {
     }
 
     // [step 2] Delete indices, their fields will be cascade deleted.
-    await this.elasticsearchDatasourceIndexService.deleteMany({
+    await this.prisma.elasticsearchDatasourceIndex.deleteMany({
       where: {datasourceId: datasource.id},
     });
 
     // [step 3] Update datasource state.
-    return await this.elasticsearchDatasourceService.update({
+    return await this.prisma.elasticsearchDatasource.update({
       where: {id: datasource.id},
       data: {state: ElasticsearchDatasourceState.NOT_LOADED},
     });
@@ -194,7 +188,7 @@ export class ElasticsearchDatasourceController {
   async getElasticsearchDatasourceIndices(
     @Param('datasourceId') datasourceId: string
   ): Promise<ElasticsearchDatasource> {
-    return await this.elasticsearchDatasourceService.findUniqueOrThrow({
+    return await this.prisma.elasticsearchDatasource.findUniqueOrThrow({
       where: {id: datasourceId},
       include: {indices: true},
     });
@@ -228,7 +222,7 @@ export class ElasticsearchDatasourceController {
     }
   ) {
     // [step 1] Get datasource.
-    const datasource = await this.elasticsearchDatasourceService.findUnique({
+    const datasource = await this.prisma.elasticsearchDatasource.findUnique({
       where: {id: datasourceId},
     });
     if (!datasource) {
@@ -265,7 +259,7 @@ export class ElasticsearchDatasourceController {
     }
   ) {
     // [step 1] Get datasource.
-    const datasource = await this.elasticsearchDatasourceService.findUnique({
+    const datasource = await this.prisma.elasticsearchDatasource.findUnique({
       where: {id: datasourceId},
     });
     if (!datasource) {

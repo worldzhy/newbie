@@ -6,18 +6,16 @@ import {
   Role,
   TrustedEntityType,
 } from '@prisma/client';
-import {UserService} from '@microservices/account/user/user.service';
-import {PermissionService} from '../../permission/permission.service';
 import {PERMISSION_KEY} from './authorization.decorator';
 import {AccessTokenService} from '@microservices/token/access-token/access-token.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @Injectable()
 export class AuthorizationGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    private readonly userService: UserService,
-    private readonly accessTokenService: AccessTokenService,
-    private readonly permissionService: PermissionService
+    private readonly prisma: PrismaService,
+    private readonly accessTokenService: AccessTokenService
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -41,14 +39,14 @@ export class AuthorizationGuard implements CanActivate {
     };
 
     // [step 3] Get user with organization and roles.
-    const user = await this.userService.findUniqueOrThrow({
+    const user = await this.prisma.user.findUniqueOrThrow({
       where: {id: payload.userId},
       include: {roles: true},
     });
 
     // [step 4-1] Get organization permissions.
     if (user.organizationId) {
-      const organizationPermissions = await this.permissionService.findMany({
+      const organizationPermissions = await this.prisma.permission.findMany({
         where: {
           trustedEntityType: TrustedEntityType.ORGANIZATION,
           trustedEntityId: user.organizationId,
@@ -72,7 +70,7 @@ export class AuthorizationGuard implements CanActivate {
       return role.id;
     });
     if (roleIds) {
-      const rolePermissions = await this.permissionService.findMany({
+      const rolePermissions = await this.prisma.permission.findMany({
         where: {
           trustedEntityType: TrustedEntityType.ROLE,
           trustedEntityId: {in: roleIds},
@@ -92,7 +90,7 @@ export class AuthorizationGuard implements CanActivate {
     }
 
     // [step 4-3] Get user's permissions.
-    const userPermissions = await this.permissionService.findMany({
+    const userPermissions = await this.prisma.permission.findMany({
       where: {
         trustedEntityType: TrustedEntityType.USER,
         trustedEntityId: user.id,

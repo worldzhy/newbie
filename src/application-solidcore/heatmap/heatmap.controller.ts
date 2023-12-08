@@ -2,10 +2,10 @@ import {Controller, Query, Get, UseInterceptors} from '@nestjs/common';
 import {CacheInterceptor} from '@nestjs/cache-manager';
 import {ApiTags, ApiBearerAuth} from '@nestjs/swagger';
 import {Prisma, User} from '@prisma/client';
-import {UserService} from '@microservices/account/user/user.service';
 import {RawDataForecastService} from '../raw-data/raw-data-forecast.service';
 import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
 import {daysOfMonth, daysOfWeek} from '@toolkit/utilities/datetime.util';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 enum HEATMAP_TYPE {
   Availability = 1,
@@ -23,8 +23,8 @@ const MINUTES_OF_TIMESLOT = 60;
 @UseInterceptors(CacheInterceptor)
 export class HeatmapController {
   constructor(
+    private readonly prisma: PrismaService,
     private readonly availabilityTimeslotService: AvailabilityTimeslotService,
-    private readonly coachService: UserService,
     private readonly rawDataForecastService: RawDataForecastService
   ) {}
 
@@ -90,7 +90,7 @@ export class HeatmapController {
       if (hostUserId) {
         where.id = hostUserId;
       }
-      coaches = await this.coachService.findMany({
+      coaches = await this.prisma.user.findMany({
         where,
         select: {
           id: true,

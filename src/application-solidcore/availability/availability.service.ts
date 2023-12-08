@@ -1,17 +1,13 @@
 import {Express} from 'express';
 import {forms_v1} from '@googleapis/forms';
-import {UserProfileService} from '@microservices/account/user/user-profile.service';
-import {UserService} from '@microservices/account/user/user.service';
-import {AvailabilityExpressionService} from '@microservices/event-scheduling/availability-expression.service';
-import {EventVenueService} from '@microservices/event-scheduling/event-venue.service';
 import {GoogleFormsService} from '@microservices/googleapis/google-forms.service';
 import {BadRequestException, Injectable} from '@nestjs/common';
-import {User} from '@prisma/client';
 import {
   firstDayOfMonth,
   lastDayOfMonth,
 } from '@toolkit/utilities/datetime.util';
 import {XLSXService} from '@toolkit/xlsx/xlsx.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 const HOUR_OF_DAY_START = 5;
 const HOUR_OF_DAY_END = 22;
@@ -33,11 +29,8 @@ enum FormItemTitle {
 @Injectable()
 export class AvailabilityService {
   constructor(
-    private readonly googleFormsService: GoogleFormsService,
-    private readonly userService: UserService,
-    private readonly userProfileService: UserProfileService,
-    private readonly availabilityExpressionService: AvailabilityExpressionService,
-    private readonly eventVenueService: EventVenueService
+    private readonly prisma: PrismaService,
+    private readonly googleFormsService: GoogleFormsService
   ) {}
 
   async parseXLSXFile(
@@ -62,7 +55,7 @@ export class AvailabilityService {
         continue;
       }
 
-      const coach = await this.userService.findUnique({
+      const coach = await this.prisma.user.findUnique({
         where: {email: row['Email'].trim().toLowerCase()},
         select: {id: true, profile: {select: {fullName: true}}},
       });
@@ -71,7 +64,7 @@ export class AvailabilityService {
       }
 
       // [step 2-2] Only process the new response from a coach.
-      const count = await this.availabilityExpressionService.count({
+      const count = await this.prisma.availabilityExpression.count({
         where: {
           hostUserId: coach.id,
           reportedAt: {gte: new Date(row['Timestamp'])},
@@ -178,7 +171,7 @@ export class AvailabilityService {
       }
 
       // [step 2-4] Create or overwrite coach availability expression.
-      const venues = await this.eventVenueService.findMany({
+      const venues = await this.prisma.eventVenue.findMany({
         where: {name: {in: coachLocationNames}},
         select: {id: true},
       });
@@ -186,7 +179,7 @@ export class AvailabilityService {
         return venue.id;
       });
 
-      await this.availabilityExpressionService.deleteMany({
+      await this.prisma.availabilityExpression.deleteMany({
         where: {
           name: {
             contains: params.year + ' Q' + params.quarter,
@@ -196,10 +189,10 @@ export class AvailabilityService {
         },
       });
 
-      await this.availabilityExpressionService.create({
+      await this.prisma.availabilityExpression.create({
         data: {
           name:
-            coach['profile'].fullName +
+            coach['profile']!.fullName +
             ' - ' +
             params.year +
             ' Q' +
@@ -215,7 +208,7 @@ export class AvailabilityService {
       });
 
       // [step 2-5] Update coach profile.
-      await this.userProfileService.update({
+      await this.prisma.userProfile.update({
         where: {userId: coach.id},
         data: {
           eventVenueIds: coachLocationIds,
@@ -375,7 +368,11 @@ export class AvailabilityService {
       }
 
       // [step 3-1] Get the coach.
-      let coach: User | null = null;
+      let coach: {
+        id: string;
+        email: string | null;
+        profile: {fullName: string | null} | null;
+      } | null = null;
       if (answers[emailItemQuestionId]) {
         const answer = answers[emailItemQuestionId];
         if (
@@ -383,7 +380,7 @@ export class AvailabilityService {
           answer.textAnswers.answers &&
           answer.textAnswers.answers[0].value
         ) {
-          coach = await this.userService.findUnique({
+          coach = await this.prisma.user.findUnique({
             where: {
               email: answer.textAnswers.answers[0].value.trim().toLowerCase(),
             },
@@ -406,7 +403,7 @@ export class AvailabilityService {
       }
 
       // Only process the new response from a coach.
-      const count = await this.availabilityExpressionService.count({
+      const count = await this.prisma.availabilityExpression.count({
         where: {hostUserId: coach.id, reportedAt: {gte: reportedAt}},
       });
       if (count > 0) {
@@ -425,7 +422,7 @@ export class AvailabilityService {
             mappingQuestion_NumberItem[questionId].title ===
             FormItemTitle.MinimumPreferredQuota
           ) {
-            await this.userProfileService.update({
+            await this.prisma.userProfile.update({
               where: {userId: coach.id},
               data: {
                 quotaOfWeekMinPreference: parseInt(
@@ -437,7 +434,7 @@ export class AvailabilityService {
             mappingQuestion_NumberItem[questionId].title ===
             FormItemTitle.MaximumPreferredQuota
           ) {
-            await this.userProfileService.update({
+            await this.prisma.userProfile.update({
               where: {userId: coach.id},
               data: {
                 quotaOfWeekMaxPreference: parseInt(
@@ -557,7 +554,7 @@ export class AvailabilityService {
       });
 
       // [step 3-6] Create or overwrite coach availability expression.
-      const venues = await this.eventVenueService.findMany({
+      const venues = await this.prisma.eventVenue.findMany({
         where: {name: {in: coachLocationNames}},
         select: {id: true},
       });
@@ -566,7 +563,7 @@ export class AvailabilityService {
       });
 
       const resultOfDelete =
-        await this.availabilityExpressionService.deleteMany({
+        await this.prisma.availabilityExpression.deleteMany({
           where: {
             name: {
               contains: params.year + ' Q' + params.quarter,
@@ -581,10 +578,10 @@ export class AvailabilityService {
         );
       }
 
-      await this.availabilityExpressionService.create({
+      await this.prisma.availabilityExpression.create({
         data: {
           name:
-            coach['profile'].fullName +
+            coach.profile?.fullName +
             ' - ' +
             params.year +
             ' Q' +

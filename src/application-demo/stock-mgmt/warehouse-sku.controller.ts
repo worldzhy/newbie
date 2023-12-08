@@ -11,13 +11,13 @@ import {
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {PermissionAction, Prisma, WarehouseSku} from '@prisma/client';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
-import {WarehouseSkuService} from '@microservices/stock-mgmt/warehouse-sku.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('WarehouseSku')
 @ApiBearerAuth()
 @Controller('warehouseWarehouseSkus')
 export class WarehouseSkuController {
-  constructor(private readonly warehouseSkuService: WarehouseSkuService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Post('')
   @RequirePermission(PermissionAction.Create, Prisma.ModelName.WarehouseSku)
@@ -33,7 +33,7 @@ export class WarehouseSkuController {
   async createWarehouseSku(
     @Body() body: Prisma.WarehouseSkuUncheckedCreateInput
   ): Promise<WarehouseSku> {
-    return await this.warehouseSkuService.create({data: body});
+    return await this.prisma.warehouseSku.create({data: body});
   }
 
   @Get('')
@@ -42,9 +42,12 @@ export class WarehouseSkuController {
     @Query('page') page: number,
     @Query('pageSize') pageSize: number
   ) {
-    return await this.warehouseSkuService.findManyInManyPages({
-      page,
-      pageSize,
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.WarehouseSku,
+      pagination: {
+        page,
+        pageSize,
+      },
     });
   }
 
@@ -53,7 +56,7 @@ export class WarehouseSkuController {
   async getWarehouseSku(
     @Param('warehouseSkuId') warehouseSkuId: number
   ): Promise<WarehouseSku> {
-    return await this.warehouseSkuService.findUniqueOrThrow({
+    return await this.prisma.warehouseSku.findUniqueOrThrow({
       where: {id: warehouseSkuId},
     });
   }
@@ -73,7 +76,7 @@ export class WarehouseSkuController {
     @Param('warehouseWarehouseSkuId') warehouseSkuId: number,
     @Body() body: Prisma.WarehouseSkuUpdateInput
   ): Promise<WarehouseSku> {
-    return await this.warehouseSkuService.update({
+    return await this.prisma.warehouseSku.update({
       where: {id: warehouseSkuId},
       data: body,
     });
@@ -84,7 +87,7 @@ export class WarehouseSkuController {
   async deleteWarehouseSku(
     @Param('warehouseSkuId') warehouseSkuId: number
   ): Promise<WarehouseSku> {
-    return await this.warehouseSkuService.delete({
+    return await this.prisma.warehouseSku.delete({
       where: {id: warehouseSkuId},
     });
   }

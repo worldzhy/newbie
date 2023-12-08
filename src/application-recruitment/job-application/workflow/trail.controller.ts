@@ -8,25 +8,19 @@ import {
   Query,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {JobApplicationWorkflowTrailService} from './trail.service';
 import {
   Prisma,
   JobApplicationWorkflowTrail,
   PermissionAction,
 } from '@prisma/client';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
-import {RoleService} from '@microservices/account/role/role.service';
-import {UserService} from '@microservices/account/user/user.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Recruitment / Job Application / Workflow Trail')
 @ApiBearerAuth()
 @Controller('recruitment-workflow-steps')
 export class JobApplicationWorkflowTrailController {
-  constructor(
-    private readonly workflowTrailService: JobApplicationWorkflowTrailService,
-    private readonly userService: UserService,
-    private readonly roleService: RoleService
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Get('')
   @RequirePermission(
@@ -45,24 +39,25 @@ export class JobApplicationWorkflowTrailController {
     }
 
     // [step 2] Get workflow steps.
-    const result = await this.workflowTrailService.findManyInManyPages(
-      {page, pageSize},
-      {where: where, orderBy: {createdAt: 'desc'}}
-    );
+    const result = await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.JobApplicationWorkflowTrail,
+      pagination: {page, pageSize},
+      findManyArgs: {where: where, orderBy: {createdAt: 'desc'}},
+    });
 
     // [step 4] Process before return.
     for (let i = 0; i < result.records.length; i++) {
       // Attach processedBy username.
       const step = result.records[i];
-      const user = await this.userService.findUniqueOrThrow({
+      const user = await this.prisma.user.findUniqueOrThrow({
         where: {id: step.processedByUserId},
         include: {profile: {select: {fullName: true}}},
       });
-      step['processedByUser'] = user['profile'].fullName;
+      step['processedByUser'] = user['profile']?.fullName;
 
       // Attach next role name
       if (step.nextRoleId) {
-        const role = await this.roleService.findUniqueOrThrow({
+        const role = await this.prisma.role.findUniqueOrThrow({
           where: {id: step.nextRoleId},
           select: {name: true},
         });
@@ -81,7 +76,7 @@ export class JobApplicationWorkflowTrailController {
   async getWorkflowTrail(
     @Param('trailId') trailId: number
   ): Promise<JobApplicationWorkflowTrail | null> {
-    return await this.workflowTrailService.findUnique({
+    return await this.prisma.jobApplicationWorkflowTrail.findUnique({
       where: {id: trailId},
     });
   }
@@ -117,7 +112,7 @@ export class JobApplicationWorkflowTrailController {
     @Param('trailId') trailId: number,
     @Body() body: Prisma.JobApplicationWorkflowTrailUpdateInput
   ): Promise<JobApplicationWorkflowTrail> {
-    return await this.workflowTrailService.update({
+    return await this.prisma.jobApplicationWorkflowTrail.update({
       where: {id: trailId},
       data: body,
     });
@@ -131,7 +126,7 @@ export class JobApplicationWorkflowTrailController {
   async deleteWorkflowTrail(
     @Param('trailId') trailId: number
   ): Promise<JobApplicationWorkflowTrail> {
-    return await this.workflowTrailService.delete({
+    return await this.prisma.jobApplicationWorkflowTrail.delete({
       where: {id: trailId},
     });
   }

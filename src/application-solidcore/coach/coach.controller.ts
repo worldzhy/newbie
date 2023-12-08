@@ -20,8 +20,7 @@ import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {UserService} from '@microservices/account/user/user.service';
 import {RoleService} from '@microservices/account/role/role.service';
 import {AccountService} from '@microservices/account/account.service';
-import {AvailabilityExpressionService} from '@microservices/event-scheduling/availability-expression.service';
-import {EventVenueService} from '@microservices/event-scheduling/event-venue.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 const DEFAULT_PASSWORD = 'x8nwFP814HIk!';
 
@@ -30,11 +29,9 @@ const DEFAULT_PASSWORD = 'x8nwFP814HIk!';
 @Controller('coaches')
 export class CoachController {
   constructor(
+    private readonly prisma: PrismaService,
     private readonly userService: UserService,
-    private readonly roleService: RoleService,
-    private readonly accountService: AccountService,
-    private readonly availabilityExpressionService: AvailabilityExpressionService,
-    private readonly eventVenueService: EventVenueService
+    private readonly accountService: AccountService
   ) {}
 
   @Post('')
@@ -64,16 +61,13 @@ export class CoachController {
       },
     },
   })
-  async createUser(
-    @Body()
-    body: Prisma.UserCreateInput
-  ): Promise<User> {
+  async createUser(@Body() body: Prisma.UserCreateInput) {
     const userCreateInput: Prisma.UserCreateInput = body;
 
     // Construct roles.
     userCreateInput.roles = {connect: {name: RoleService.names.COACH}};
 
-    return await this.userService.create({
+    return await this.prisma.user.create({
       data: userCreateInput,
       select: {
         id: true,
@@ -127,7 +121,7 @@ export class CoachController {
         for (let i = 0; i < body.muiFilter.items.length; i++) {
           const item = body.muiFilter.items[i];
           if (item.field === 'eventVenueIds' && item.value) {
-            const venue = await this.eventVenueService.findFirst({
+            const venue = await this.prisma.eventVenue.findFirst({
               where: {name: {[item.operator]: item.value, mode: 'insensitive'}},
               select: {id: true},
             });
@@ -141,14 +135,15 @@ export class CoachController {
     }
 
     // [step 2] Get coaches.
-    const result = await this.userService.findManyInManyPages(
-      {page, pageSize},
-      {
+    const result = await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.User,
+      pagination: {page, pageSize},
+      findManyArgs: {
         where: {AND: [roleFilter, searchFilter]},
         include: {profile: true},
         orderBy: {profile: {fullName: 'asc'}},
-      }
-    );
+      },
+    });
     const coaches = result.records as User[];
 
     // [step 3] Attach availability information.
@@ -158,7 +153,7 @@ export class CoachController {
       const coach = coaches[i];
       // Attach current quarter availability status.
       const expOfCurrentQuarter =
-        await this.availabilityExpressionService.findFirst({
+        await this.prisma.availabilityExpression.findFirst({
           where: {
             hostUserId: coach.id,
             dateOfOpening: firstDayOfQuarter(thisYear, thisQuarter),
@@ -178,7 +173,7 @@ export class CoachController {
         nextQuarter += 1;
       }
       const expOfNextQuarter =
-        await this.availabilityExpressionService.findFirst({
+        await this.prisma.availabilityExpression.findFirst({
           where: {
             hostUserId: coach.id,
             dateOfOpening: firstDayOfQuarter(nextYear, nextQuarter),
@@ -230,14 +225,15 @@ export class CoachController {
     }
 
     // [step 2] Get coaches.
-    const result = await this.userService.findManyInManyPages(
-      {page, pageSize},
-      {
+    const result = await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.User,
+      pagination: {page, pageSize},
+      findManyArgs: {
         where,
         include: {profile: true},
         orderBy: {profile: {fullName: 'asc'}},
-      }
-    );
+      },
+    });
     const coaches = result.records as User[];
 
     // [step 3] Attach availability information.
@@ -247,7 +243,7 @@ export class CoachController {
       const coach = coaches[i];
       // Attach current quarter availability status.
       const expOfCurrentQuarter =
-        await this.availabilityExpressionService.findFirst({
+        await this.prisma.availabilityExpression.findFirst({
           where: {
             hostUserId: coach.id,
             dateOfOpening: firstDayOfQuarter(thisYear, thisQuarter),
@@ -269,7 +265,7 @@ export class CoachController {
         nextQuarter += 1;
       }
       const expOfNextQuarter =
-        await this.availabilityExpressionService.findFirst({
+        await this.prisma.availabilityExpression.findFirst({
           where: {
             hostUserId: coach.id,
             dateOfOpening: firstDayOfQuarter(nextYear, nextQuarter),
@@ -306,7 +302,7 @@ export class CoachController {
     }
 
     // [step 2] Get coaches.
-    const result: User[] = await this.userService.findMany({
+    const result: User[] = await this.prisma.user.findMany({
       where: {
         roles: {some: {name: RoleService.names.COACH}},
         profile: {eventVenueIds: {has: venueId}},
@@ -320,7 +316,7 @@ export class CoachController {
 
   @Get(':userId')
   async getUser(@Param('userId') userId: string) {
-    const user = await this.userService.findUniqueOrThrow({
+    const user = await this.prisma.user.findUniqueOrThrow({
       where: {id: userId},
       include: {
         roles: true,
@@ -364,10 +360,10 @@ export class CoachController {
     @Param('userId') userId: string,
     @Body()
     body: Prisma.UserUpdateInput
-  ): Promise<User> {
+  ) {
     const userUpdateInput: Prisma.UserUpdateInput = body;
 
-    return await this.userService.update({
+    return await this.prisma.user.update({
       where: {id: userId},
       data: userUpdateInput,
       select: {
@@ -381,18 +377,18 @@ export class CoachController {
 
   @Delete(':userId')
   async deleteUser(@Param('userId') userId: string): Promise<User> {
-    return await this.userService.delete({
+    return await this.prisma.user.delete({
       where: {id: userId},
     });
   }
 
   @Patch(':userId/role-area-manager')
-  async addAreaManagerRole(@Param('userId') userId: string): Promise<User> {
-    const role = await this.roleService.findUniqueOrThrow({
+  async addAreaManagerRole(@Param('userId') userId: string) {
+    const role = await this.prisma.role.findUniqueOrThrow({
       where: {name: RoleService.names.AREA_MANAGER},
     });
 
-    return await this.userService.update({
+    return await this.prisma.user.update({
       where: {id: userId},
       data: {
         password: DEFAULT_PASSWORD,

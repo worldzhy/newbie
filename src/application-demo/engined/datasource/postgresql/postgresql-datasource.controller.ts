@@ -19,9 +19,9 @@ import {
   Prisma,
 } from '@prisma/client';
 import {PostgresqlDatasourceTableColumnService} from './column/column.service';
-import {PostgresqlDatasourceConstraintService} from './constraint/constraint.service';
 import {PostgresqlDatasourceService} from './postgresql-datasource.service';
 import {PostgresqlDatasourceTableService} from './table/table.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 enum ConstraintType {
   PRIMARY_KEY = 'PRIMARY KEY',
@@ -34,8 +34,8 @@ enum ConstraintType {
 @Controller('postgresql-datasources')
 export class PostgresqlDatasourceController {
   constructor(
+    private readonly prisma: PrismaService,
     private readonly postgresqlDatasourceService: PostgresqlDatasourceService,
-    private readonly postgresqlDatasourceConstraintService: PostgresqlDatasourceConstraintService,
     private readonly postgresqlDatasourceTableService: PostgresqlDatasourceTableService,
     private readonly postgresqlDatasourceTableColumnService: PostgresqlDatasourceTableColumnService
   ) {}
@@ -65,12 +65,12 @@ export class PostgresqlDatasourceController {
       schema: string;
     }
   ): Promise<PostgresqlDatasource> {
-    return await this.postgresqlDatasourceService.create({data: body});
+    return await this.prisma.postgresqlDatasource.create({data: body});
   }
 
   @Get('')
   async getPostgresqlDatasources(): Promise<PostgresqlDatasource[]> {
-    return await this.postgresqlDatasourceService.findMany({
+    return await this.prisma.postgresqlDatasource.findMany({
       orderBy: {
         _relevance: {
           fields: ['database'],
@@ -85,7 +85,7 @@ export class PostgresqlDatasourceController {
   async getPostgresqlDatasource(
     @Param('datasourceId') datasourceId: string
   ): Promise<PostgresqlDatasource | null> {
-    return await this.postgresqlDatasourceService.findUnique({
+    return await this.prisma.postgresqlDatasource.findUnique({
       where: {id: datasourceId},
     });
   }
@@ -109,7 +109,7 @@ export class PostgresqlDatasourceController {
     @Param('datasourceId') datasourceId: string,
     @Body() body: {host: string; port: number; database: string}
   ): Promise<PostgresqlDatasource> {
-    return await this.postgresqlDatasourceService.update({
+    return await this.prisma.postgresqlDatasource.update({
       where: {id: datasourceId},
       data: {...body},
     });
@@ -119,7 +119,7 @@ export class PostgresqlDatasourceController {
   async deletePostgresqlDatasourceTable(
     @Param('datasourceId') datasourceId: string
   ): Promise<PostgresqlDatasource> {
-    return await this.postgresqlDatasourceService.delete({
+    return await this.prisma.postgresqlDatasource.delete({
       where: {id: datasourceId},
     });
   }
@@ -129,7 +129,7 @@ export class PostgresqlDatasourceController {
     @Param('datasourceId') datasourceId: string
   ): Promise<PostgresqlDatasource> {
     // * [step 1] Get the postgresql.
-    const datasource = await this.postgresqlDatasourceService.findUnique({
+    const datasource = await this.prisma.postgresqlDatasource.findUnique({
       where: {id: datasourceId},
     });
     if (!datasource) {
@@ -137,7 +137,7 @@ export class PostgresqlDatasourceController {
     }
 
     // * [step 2] Check if the datasource has been loaded.
-    const count = await this.postgresqlDatasourceTableService.count({
+    const count = await this.prisma.postgresqlDatasourceTable.count({
       where: {datasourceId: datasourceId},
     });
     if (count > 0) {
@@ -147,12 +147,11 @@ export class PostgresqlDatasourceController {
     }
 
     // * [step 3] Select and save tables and columns.
-    const tables = await this.postgresqlDatasourceService.selectTables(
-      datasource
-    );
+    const tables =
+      await this.postgresqlDatasourceService.selectTables(datasource);
     for (let i = 0; i < tables.length; i++) {
       // Save a table.
-      const table = await this.postgresqlDatasourceTableService.create({
+      const table = await this.prisma.postgresqlDatasourceTable.create({
         data: {
           name: tables[i].name,
           schema: tables[i].schema,
@@ -162,12 +161,11 @@ export class PostgresqlDatasourceController {
       });
 
       // Get columns of a table.
-      const columns = await this.postgresqlDatasourceService.selectColumns(
-        table
-      );
+      const columns =
+        await this.postgresqlDatasourceService.selectColumns(table);
 
       // Save columns of a table.
-      await this.postgresqlDatasourceTableColumnService.createMany({
+      await this.prisma.postgresqlDatasourceTableColumn.createMany({
         data: columns.map(column => {
           return {
             name: column.column_name,
@@ -241,12 +239,12 @@ export class PostgresqlDatasourceController {
     });
 
     // [step 4-5] Save constraints.
-    await this.postgresqlDatasourceConstraintService.createMany({
+    await this.prisma.postgresqlDatasourceConstraint.createMany({
       data: constraints,
     });
 
     // * [step 5] Update datasource state.
-    return await this.postgresqlDatasourceService.update({
+    return await this.prisma.postgresqlDatasource.update({
       where: {id: datasource.id},
       data: {state: PostgresqlDatasourceState.LOADED},
     });
@@ -260,7 +258,7 @@ export class PostgresqlDatasourceController {
     @Param('datasourceId') datasourceId: string
   ): Promise<PostgresqlDatasource> {
     // [step 1] Get the postgresql.
-    const datasource = await this.postgresqlDatasourceService.findUnique({
+    const datasource = await this.prisma.postgresqlDatasource.findUnique({
       where: {id: datasourceId},
     });
     if (!datasource) {
@@ -268,17 +266,17 @@ export class PostgresqlDatasourceController {
     }
 
     // [step 2] Delete tables and their columns.
-    await this.postgresqlDatasourceTableService.deleteMany({
+    await this.prisma.postgresqlDatasourceTable.deleteMany({
       where: {datasourceId: datasource.id},
     });
 
     // [step 3] Delete constraints.
-    await this.postgresqlDatasourceConstraintService.deleteMany({
-      datasourceId: datasource.id,
+    await this.prisma.postgresqlDatasourceConstraint.deleteMany({
+      where: {datasourceId: datasource.id},
     });
 
     // [step 4] Update datasource state.
-    return await this.postgresqlDatasourceService.update({
+    return await this.prisma.postgresqlDatasource.update({
       where: {id: datasource.id},
       data: {state: PostgresqlDatasourceState.NOT_LOADED},
     });
@@ -288,7 +286,7 @@ export class PostgresqlDatasourceController {
   async getPostgresqlDatasourceTables(
     @Param('datasourceId') datasourceId: string
   ): Promise<PostgresqlDatasource> {
-    return await this.postgresqlDatasourceService.findUniqueOrThrow({
+    return await this.prisma.postgresqlDatasource.findUniqueOrThrow({
       where: {id: datasourceId},
       include: {tables: true},
     });
@@ -299,7 +297,7 @@ export class PostgresqlDatasourceController {
     @Param('datasourceId')
     datasourceId: string
   ): Promise<PostgresqlDatasource> {
-    return await this.postgresqlDatasourceService.findUniqueOrThrow({
+    return await this.prisma.postgresqlDatasource.findUniqueOrThrow({
       where: {id: datasourceId},
       include: {constraints: true},
     });
@@ -311,7 +309,7 @@ export class PostgresqlDatasourceController {
     @Param('tableName') tableName: string
   ): Promise<PostgresqlDatasourceConstraint[]> {
     // [step 1] Get datasource.
-    const datasource = await this.postgresqlDatasourceService.findUnique({
+    const datasource = await this.prisma.postgresqlDatasource.findUnique({
       where: {id: datasourceId},
     });
     if (!datasource) {
@@ -319,7 +317,7 @@ export class PostgresqlDatasourceController {
     }
 
     // [step 2] Get columns group by table.
-    return await this.postgresqlDatasourceConstraintService.findMany({
+    return await this.prisma.postgresqlDatasourceConstraint.findMany({
       where: {
         AND: {
           datasourceId: datasource.id,
@@ -358,7 +356,7 @@ export class PostgresqlDatasourceController {
     }[] = [];
 
     // * [step 1] Get the postgresql.
-    const datasource = await this.postgresqlDatasourceService.findUnique({
+    const datasource = await this.prisma.postgresqlDatasource.findUnique({
       where: {id: datasourceId},
       include: {tables: true},
     });
@@ -377,7 +375,7 @@ export class PostgresqlDatasourceController {
       const parentTables: {name: string; numberOfRecords: number}[] = [];
 
       // [step 2-1] Get and construct child tables.
-      constraints = await this.postgresqlDatasourceConstraintService.findMany({
+      constraints = await this.prisma.postgresqlDatasourceConstraint.findMany({
         where: {foreignTable: table.name},
       });
 
@@ -395,7 +393,7 @@ export class PostgresqlDatasourceController {
       );
 
       // [step 2-2] Get and construct parent tables.
-      constraints = (await this.postgresqlDatasourceConstraintService.findMany({
+      constraints = (await this.prisma.postgresqlDatasourceConstraint.findMany({
         where: {AND: {table: table.name, foreignTable: {not: null}}},
       })) as PostgresqlDatasourceConstraint[];
 

@@ -6,12 +6,12 @@ import {
 import {PassportStrategy} from '@nestjs/passport';
 import {Strategy} from 'passport-custom';
 import {Request} from 'express';
-import {UserService} from '@microservices/account/user/user.service';
 import {verifyUuid} from '@toolkit/validators/user.validator';
 import {
   IpLoginLimiterService,
   UserLoginLimiterService,
 } from '@microservices/account/security/login-limiter/login-limiter.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @Injectable()
 export class AuthUuidStrategy extends PassportStrategy(
@@ -19,7 +19,7 @@ export class AuthUuidStrategy extends PassportStrategy(
   'passport-custom.uuid'
 ) {
   constructor(
-    private readonly userService: UserService,
+    private readonly prisma: PrismaService,
     private readonly securityLoginIpAttemptService: IpLoginLimiterService,
     private readonly securityLoginUserAttemptService: UserLoginLimiterService
   ) {
@@ -39,7 +39,7 @@ export class AuthUuidStrategy extends PassportStrategy(
     }
 
     // [step 2] Validate uuid.
-    const user = await this.userService.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: {id: uuid},
     });
     if (!user) {

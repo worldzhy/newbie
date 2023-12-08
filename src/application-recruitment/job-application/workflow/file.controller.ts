@@ -1,6 +1,5 @@
 import {Controller, Delete, Get, Patch, Body, Param} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {JobApplicationWorkflowFileService} from './file.service';
 
 import {
   JobApplicationWorkflowFile,
@@ -8,14 +7,13 @@ import {
   Prisma,
 } from '@prisma/client';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Recruitment / Job Application / Workflow File')
 @ApiBearerAuth()
 @Controller('recruitment-workflow-files')
 export class JobApplicationWorkflowFileController {
-  constructor(
-    private readonly jobApplicationWorkflowFileService: JobApplicationWorkflowFileService
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Get('')
   @RequirePermission(
@@ -25,7 +23,7 @@ export class JobApplicationWorkflowFileController {
   async getJobApplicationWorkflowFiles(): Promise<
     JobApplicationWorkflowFile[]
   > {
-    return await this.jobApplicationWorkflowFileService.findMany({});
+    return await this.prisma.jobApplicationWorkflowFile.findMany({});
   }
 
   @Get(':fileId')
@@ -36,7 +34,7 @@ export class JobApplicationWorkflowFileController {
   async getJobApplicationWorkflowFile(
     @Param('fileId') fileId: number
   ): Promise<JobApplicationWorkflowFile | null> {
-    return await this.jobApplicationWorkflowFileService.findUnique({
+    return await this.prisma.jobApplicationWorkflowFile.findUnique({
       where: {id: fileId},
     });
   }
@@ -61,7 +59,7 @@ export class JobApplicationWorkflowFileController {
     @Param('fileId') fileId: number,
     @Body() body: Prisma.JobApplicationWorkflowFileUpdateInput
   ): Promise<JobApplicationWorkflowFile> {
-    return await this.jobApplicationWorkflowFileService.update({
+    return await this.prisma.jobApplicationWorkflowFile.update({
       where: {id: fileId},
       data: body,
     });
@@ -75,7 +73,7 @@ export class JobApplicationWorkflowFileController {
   async deleteJobApplicationWorkflowFile(
     @Param('fileId') fileId: number
   ): Promise<JobApplicationWorkflowFile> {
-    return await this.jobApplicationWorkflowFileService.delete({
+    return await this.prisma.jobApplicationWorkflowFile.delete({
       where: {id: fileId},
     });
   }

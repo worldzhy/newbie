@@ -10,13 +10,13 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Tag, Prisma} from '@prisma/client';
-import {TagService} from '@microservices/tag/tag.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Tag')
 @ApiBearerAuth()
 @Controller('tags')
 export class TagController {
-  constructor(private readonly tagService: TagService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Post('')
   @ApiBody({
@@ -32,7 +32,7 @@ export class TagController {
     },
   })
   async createTag(@Body() body: Prisma.TagUncheckedCreateInput): Promise<Tag> {
-    return await this.tagService.create({
+    return await this.prisma.tag.create({
       data: body,
     });
   }
@@ -61,12 +61,16 @@ export class TagController {
       // where === undefined
     }
 
-    return await this.tagService.findManyInManyPages({page, pageSize}, {where});
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.Tag,
+      pagination: {page, pageSize},
+      findManyArgs: {where},
+    });
   }
 
   @Get(':tagId')
   async getTag(@Param('tagId') tagId: number): Promise<Tag> {
-    return await this.tagService.findUniqueOrThrow({
+    return await this.prisma.tag.findUniqueOrThrow({
       where: {id: tagId},
     });
   }
@@ -89,7 +93,7 @@ export class TagController {
     @Body()
     body: Prisma.TagUpdateInput
   ): Promise<Tag> {
-    return await this.tagService.update({
+    return await this.prisma.tag.update({
       where: {id: tagId},
       data: body,
     });
@@ -97,7 +101,7 @@ export class TagController {
 
   @Delete(':tagId')
   async deleteTag(@Param('tagId') tagId: number): Promise<Tag> {
-    return await this.tagService.delete({
+    return await this.prisma.tag.delete({
       where: {id: tagId},
     });
   }

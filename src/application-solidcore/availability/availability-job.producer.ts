@@ -4,11 +4,11 @@ import {CACHE_MANAGER} from '@nestjs/cache-manager';
 import {Cache} from 'cache-manager';
 import {Cron} from '@nestjs/schedule';
 import {AvailabilityService} from './availability.service';
-import {AvailabilityExpressionService} from '@microservices/event-scheduling/availability-expression.service';
 import {AvailabilityExpressionStatus} from '@prisma/client';
 import {QueueService} from '@microservices/queue/queue.service';
 
 import {currentQuarter} from '@toolkit/utilities/datetime.util';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 const cluster = require('node:cluster');
 
@@ -18,9 +18,9 @@ const LAST_DAY_FOR_EACH_QUARTER = 10;
 export class AvailabilityJobProducer {
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
     private readonly availabilityService: AvailabilityService,
-    private readonly availabilityExpressionService: AvailabilityExpressionService,
     private readonly queueService: QueueService
   ) {}
 
@@ -65,7 +65,7 @@ export class AvailabilityJobProducer {
     await this.availabilityService.fetchGoogleForm({year, quarter});
 
     // [step 2] Get unpublished expressions.
-    const exps = await this.availabilityExpressionService.findMany({
+    const exps = await this.prisma.availabilityExpression.findMany({
       where: {status: AvailabilityExpressionStatus.EDITING},
       select: {id: true},
     });

@@ -1,19 +1,30 @@
 import {Injectable} from '@nestjs/common';
-import {AvailabilityTimeslotStatus, User} from '@prisma/client';
+import {Prisma} from '@prisma/client';
 import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
-import {UserService} from '@microservices/account/user/user.service';
-import {EventService} from '@microservices/event-scheduling/event.service';
 import {ceilByMinutes, floorByMinutes} from '@toolkit/utilities/datetime.util';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 const ROLE_NAME_COACH = 'Coach';
+const userSelectArgs: Prisma.UserSelect = {
+  id: true,
+  profile: {
+    select: {
+      fullName: true,
+      coachingTenure: true,
+      quotaOfWeek: true,
+      quotaOfWeekMinPreference: true,
+      quotaOfWeekMaxPreference: true,
+    },
+  },
+};
 
 @Injectable()
 export class CoachService {
   private MINUTES_Of_TIMESLOT_UNIT: number;
+
   constructor(
-    private readonly availabilityTimeslotService: AvailabilityTimeslotService,
-    private readonly eventService: EventService,
-    private readonly userService: UserService
+    private readonly prisma: PrismaService,
+    private readonly availabilityTimeslotService: AvailabilityTimeslotService
   ) {
     this.MINUTES_Of_TIMESLOT_UNIT =
       this.availabilityTimeslotService.MINUTES_Of_TIMESLOT_UNIT;
@@ -29,8 +40,14 @@ export class CoachService {
     weekOfMonth: number;
     minutesOfDuration: number;
   }) {
+    type UserResult = Prisma.Result<
+      typeof this.prisma.user,
+      {select: typeof userSelectArgs},
+      'findUniqueOrThrow'
+    >;
+
     // [step 1] Get coaches for the specific venue.
-    const coaches = await this.userService.findMany({
+    const coaches = await this.prisma.user.findMany({
       where: {
         roles: {some: {name: ROLE_NAME_COACH}},
         profile: {
@@ -38,25 +55,14 @@ export class CoachService {
           eventTypeIds: {has: event.typeId},
         },
       },
-      select: {
-        id: true,
-        profile: {
-          select: {
-            fullName: true,
-            coachingTenure: true,
-            quotaOfWeek: true,
-            quotaOfWeekMinPreference: true,
-            quotaOfWeekMaxPreference: true,
-          },
-        },
-      },
+      select: userSelectArgs,
     });
     const coachIds = coaches.map(coach => {
       return coach.id;
     });
 
     // [step 2] Filter available coaches.
-    const availableCoaches: User[] = [];
+    const availableCoaches: UserResult[] = [];
 
     // [step 2-1] Get availabilities.
     const newDatetimeOfStart = floorByMinutes(
@@ -67,7 +73,7 @@ export class CoachService {
       event.datetimeOfEnd,
       this.MINUTES_Of_TIMESLOT_UNIT
     );
-    const availabilities = await this.availabilityTimeslotService.findMany({
+    const availabilities = await this.prisma.availabilityTimeslot.findMany({
       where: {
         hostUserId: {in: coachIds},
         venueIds: {has: event.venueId},
@@ -97,7 +103,7 @@ export class CoachService {
         event.minutesOfDuration / this.MINUTES_Of_TIMESLOT_UNIT
       ) {
         // Count coach's events in all locations.
-        const countOfEvents = await this.eventService.count({
+        const countOfEvents = await this.prisma.event.count({
           where: {
             hostUserId: coach.id,
             year: event.year,
@@ -108,21 +114,23 @@ export class CoachService {
         });
 
         // ! A coach can not be dispatched more classes than his/her max preference.
-        if (coach['profile'].quotaOfWeekMaxPreference - countOfEvents > 0) {
+        if (coach['profile']?.quotaOfWeekMaxPreference! - countOfEvents > 0) {
           sortedAvailableCoaches.push({
             hostUserId: coach.id,
-            remainingQuota: coach['profile'].quotaOfWeek - countOfEvents,
+            remainingQuota: coach['profile']?.quotaOfWeek! - countOfEvents,
             remainingQuotaOfMinPreference:
-              coach['profile'].quotaOfWeekMinPreference - countOfEvents,
+              coach['profile']?.quotaOfWeekMinPreference! - countOfEvents,
             remainingQuotaOfMaxPreference:
-              coach['profile'].quotaOfWeekMaxPreference - countOfEvents,
-            quotaOfWeek: coach['profile'].quotaOfWeek,
-            quotaOfWeekMinPreference: coach['profile'].quotaOfWeekMinPreference,
-            quotaOfWeekMaxPreference: coach['profile'].quotaOfWeekMaxPreference,
+              coach['profile']?.quotaOfWeekMaxPreference! - countOfEvents,
+            quotaOfWeek: coach['profile']?.quotaOfWeek!,
+            quotaOfWeekMinPreference:
+              coach['profile']?.quotaOfWeekMinPreference!,
+            quotaOfWeekMaxPreference:
+              coach['profile']?.quotaOfWeekMaxPreference!,
           });
 
           // Count of coach's events in all locations.
-          coach['profile']['quotaOfUsed'] = countOfEvents;
+          coach['profile']!['quotaOfUsed'] = countOfEvents;
           availableCoaches.push(coach);
         }
       }
@@ -178,7 +186,7 @@ export class CoachService {
     });
 
     // [step 4] Return sorted available coaches.
-    const finalCoaches: User[] = [];
+    const finalCoaches: UserResult[] = [];
     for (let m = 0; m < sortedAvailableCoaches.length; m++) {
       const sortedAvailableCoach = sortedAvailableCoaches[m];
       for (let n = 0; n < availableCoaches.length; n++) {
@@ -202,7 +210,7 @@ export class CoachService {
     minutesOfDuration: number;
   }) {
     // [step 1] Get coaches for the specific venue.
-    const coaches = await this.userService.findMany({
+    const coaches = await this.prisma.user.findMany({
       where: {
         roles: {some: {name: ROLE_NAME_COACH}},
         profile: {
@@ -210,18 +218,7 @@ export class CoachService {
           eventTypeIds: {has: event.typeId},
         },
       },
-      select: {
-        id: true,
-        profile: {
-          select: {
-            fullName: true,
-            coachingTenure: true,
-            quotaOfWeek: true,
-            quotaOfWeekMinPreference: true,
-            quotaOfWeekMaxPreference: true,
-          },
-        },
-      },
+      select: userSelectArgs,
     });
     const coachIds = coaches.map(coach => {
       return coach.id;
@@ -236,7 +233,7 @@ export class CoachService {
       event.datetimeOfEnd,
       this.MINUTES_Of_TIMESLOT_UNIT
     );
-    const availabilities = await this.availabilityTimeslotService.findMany({
+    const availabilities = await this.prisma.availabilityTimeslot.findMany({
       where: {
         hostUserId: {in: coachIds},
         venueIds: {has: event.venueId},
@@ -258,13 +255,13 @@ export class CoachService {
         availabilitiesOfOneCoach.length >=
         event.minutesOfDuration / this.MINUTES_Of_TIMESLOT_UNIT
       ) {
-        coach['profile']['isAvailable'] = true;
+        coach.profile!['isAvailable'] = true;
       } else {
-        coach['profile']['isAvailable'] = false;
+        coach.profile!['isAvailable'] = false;
       }
 
       // Count coach's events in all locations.
-      const countOfEvents = await this.eventService.count({
+      const countOfEvents = await this.prisma.event.count({
         where: {
           hostUserId: coach.id,
           year: event.year,
@@ -274,13 +271,13 @@ export class CoachService {
         },
       });
 
-      coach['profile']['quotaOfUsed'] = countOfEvents;
-      coach['profile']['remainingQuota'] =
-        coach['profile'].quotaOfWeek - countOfEvents;
-      coach['profile']['remainingQuotaOfMinPreference'] =
-        coach['profile'].quotaOfWeekMinPreference - countOfEvents;
-      coach['profile']['remainingQuotaOfMaxPreference'] =
-        coach['profile'].quotaOfWeekMaxPreference - countOfEvents;
+      coach.profile!['quotaOfUsed'] = countOfEvents;
+      coach.profile!['remainingQuota'] =
+        coach.profile!.quotaOfWeek! - countOfEvents;
+      coach.profile!['remainingQuotaOfMinPreference'] =
+        coach.profile!.quotaOfWeekMinPreference! - countOfEvents;
+      coach.profile!['remainingQuotaOfMaxPreference'] =
+        coach.profile!.quotaOfWeekMaxPreference! - countOfEvents;
 
       // [RC 2023-11-21] A coach is available even she/he has been scheduled more than max preferred number of classes.
       // if (countOfEvents >= coach['profile'].quotaOfWeekMaxPreference) {
@@ -290,49 +287,49 @@ export class CoachService {
 
     // [step 3] Sort coaches by quota.
     coaches.sort((coachA, coachB) => {
-      const a = coachA['profile'];
-      const b = coachB['profile'];
-      if (a.remainingQuota > 0 && b.remainingQuota > 0) {
+      const a = coachA.profile!;
+      const b = coachB.profile!;
+      if (a['remainingQuota'] > 0 && b['remainingQuota'] > 0) {
         if (
-          a.remainingQuota / a.quotaOfWeek >=
-          b.remainingQuota / b.quotaOfWeek
+          a['remainingQuota'] / a.quotaOfWeek! >=
+          b['remainingQuota'] / b.quotaOfWeek!
         ) {
           return -1; // a is in front of b
         } else {
           return 1; // b is in front of a
         }
-      } else if (a.remainingQuota <= 0 && b.remainingQuota <= 0) {
+      } else if (a['remainingQuota'] <= 0 && b['remainingQuota'] <= 0) {
         if (
-          a.remainingQuotaOfMinPreference > 0 &&
-          b.remainingQuotaOfMinPreference > 0
+          a['remainingQuotaOfMinPreference'] > 0 &&
+          b['remainingQuotaOfMinPreference'] > 0
         ) {
           if (
-            a.remainingQuotaOfMinPreference / a.quotaOfWeekMinPreference >=
-            b.remainingQuotaOfMinPreference / b.quotaOfWeekMinPreference
+            a['remainingQuotaOfMinPreference'] / a.quotaOfWeekMinPreference! >=
+            b['remainingQuotaOfMinPreference'] / b.quotaOfWeekMinPreference!
           ) {
             return -1;
           } else {
             return 1;
           }
         } else if (
-          a.remainingQuotaOfMinPreference <= 0 &&
-          b.remainingQuotaOfMinPreference <= 0
+          a['remainingQuotaOfMinPreference'] <= 0 &&
+          b['remainingQuotaOfMinPreference'] <= 0
         ) {
           // ! The remainingQuotaOfMaxPreference must be larger than 0.
           if (
-            a.remainingQuotaOfMaxPreference / a.quotaOfWeekMaxPreference >=
-            b.remainingQuotaOfMaxPreference / b.quotaOfWeekMaxPreference
+            a['remainingQuotaOfMaxPreference'] / a.quotaOfWeekMaxPreference! >=
+            b['remainingQuotaOfMaxPreference'] / b.quotaOfWeekMaxPreference!
           ) {
             return -1;
           } else {
             return 1;
           }
-        } else if (a.remainingQuotaOfMinPreference > 0) {
+        } else if (a['remainingQuotaOfMinPreference'] > 0) {
           return -1;
         } else {
           return 1;
         }
-      } else if (a.remainingQuota > 0) {
+      } else if (a['remainingQuota'] > 0) {
         return -1;
       } else {
         return 1;

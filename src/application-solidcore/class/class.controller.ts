@@ -10,13 +10,13 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {EventType, Prisma} from '@prisma/client';
-import {EventTypeService} from '@microservices/event-scheduling/event-type.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Class')
 @ApiBearerAuth()
 @Controller('classes')
 export class ClassController {
-  constructor(private readonly eventTypeService: EventTypeService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Post('')
   @ApiBody({
@@ -35,7 +35,7 @@ export class ClassController {
   async createEventType(
     @Body() body: Prisma.EventTypeUncheckedCreateInput
   ): Promise<EventType> {
-    return await this.eventTypeService.create({
+    return await this.prisma.eventType.create({
       data: body,
     });
   }
@@ -50,17 +50,18 @@ export class ClassController {
     if (name && name.trim()) {
       where = {name: {contains: name.trim(), mode: 'insensitive'}};
     }
-    return await this.eventTypeService.findManyInManyPages(
-      {page, pageSize},
-      {where, orderBy: {id: 'asc'}}
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.EventType,
+      pagination: {page, pageSize},
+      findManyArgs: {where, orderBy: {id: 'asc'}},
+    });
   }
 
   @Get(':eventTypeId')
   async getEventType(
     @Param('eventTypeId') eventTypeId: number
   ): Promise<EventType> {
-    return await this.eventTypeService.findUniqueOrThrow({
+    return await this.prisma.eventType.findUniqueOrThrow({
       where: {id: eventTypeId},
     });
   }
@@ -83,7 +84,7 @@ export class ClassController {
     @Body()
     body: Prisma.EventTypeUpdateInput
   ): Promise<EventType> {
-    return await this.eventTypeService.update({
+    return await this.prisma.eventType.update({
       where: {id: eventTypeId},
       data: body,
     });
@@ -93,7 +94,7 @@ export class ClassController {
   async deleteEventType(
     @Param('eventTypeId') eventTypeId: number
   ): Promise<EventType> {
-    return await this.eventTypeService.delete({
+    return await this.prisma.eventType.delete({
       where: {id: eventTypeId},
     });
   }

@@ -9,14 +9,14 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {ProjectElementService} from '@microservices/project-mgmt/project/project-element.service';
 import {Prisma, ProjectElement} from '@prisma/client';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Project Management / Project Element')
 @ApiBearerAuth()
 @Controller('project-elements')
 export class ProjectElementController {
-  constructor(private readonly elementService: ProjectElementService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Post('')
   @ApiBody({
@@ -43,7 +43,7 @@ export class ProjectElementController {
     }
 
     // [step 2] Create project.
-    return await this.elementService.create({
+    return await this.prisma.projectElement.create({
       data: body,
     });
   }
@@ -51,7 +51,7 @@ export class ProjectElementController {
   //* Get many
   @Get('')
   async getElements(): Promise<ProjectElement[]> {
-    return await this.elementService.findMany({});
+    return await this.prisma.projectElement.findMany({});
   }
 
   //* Get
@@ -59,7 +59,7 @@ export class ProjectElementController {
   async getElement(
     @Param('elementId') elementId: number
   ): Promise<ProjectElement> {
-    return await this.elementService.findUniqueOrThrow({
+    return await this.prisma.projectElement.findUniqueOrThrow({
       where: {id: elementId},
     });
   }
@@ -81,7 +81,7 @@ export class ProjectElementController {
     @Param('elementId') elementId: number,
     @Body() body: Prisma.ProjectElementUpdateInput
   ): Promise<ProjectElement> {
-    return await this.elementService.update({
+    return await this.prisma.projectElement.update({
       where: {id: elementId},
       data: body,
     });
@@ -92,7 +92,7 @@ export class ProjectElementController {
   async deleteElement(
     @Param('elementId') elementId: number
   ): Promise<ProjectElement | null> {
-    return await this.elementService.delete({
+    return await this.prisma.projectElement.delete({
       where: {id: elementId},
     });
   }

@@ -2,9 +2,8 @@ import {Body, Controller, Post} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Prisma} from '@prisma/client';
 import {datePlusMinutes, splitDateTime} from '@toolkit/utilities/datetime.util';
-import {UserService} from '@microservices/account/user/user.service';
-import {EventTypeService} from '@microservices/event-scheduling/event-type.service';
 import {CoachService} from './coach.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 const ROLE_NAME_COACH = 'Coach';
 
@@ -13,9 +12,8 @@ const ROLE_NAME_COACH = 'Coach';
 @Controller('event-coaches')
 export class EventCoachController {
   constructor(
-    private readonly coachService: CoachService,
-    private readonly eventTypeService: EventTypeService,
-    private readonly userService: UserService
+    private readonly prisma: PrismaService,
+    private readonly coachService: CoachService
   ) {}
 
   @Post('')
@@ -46,7 +44,7 @@ export class EventCoachController {
     // [step 1] There are enough conditions to get sorted coaches.
     if (venueId && typeId && datetimeOfStart && timeZone) {
       const dtOfStart = new Date(datetimeOfStart);
-      const classType = await this.eventTypeService.findUniqueOrThrow({
+      const classType = await this.prisma.eventType.findUniqueOrThrow({
         where: {id: typeId},
         select: {minutesOfDuration: true},
       });
@@ -82,7 +80,7 @@ export class EventCoachController {
       where.profile = {eventTypeIds: {has: typeId}};
     }
 
-    return await this.userService.findMany({
+    return await this.prisma.user.findMany({
       where,
       select: {
         id: true,

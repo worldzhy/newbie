@@ -10,13 +10,13 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {WorkflowState, Prisma} from '@prisma/client';
-import {WorkflowStateService} from '@microservices/workflow/workflow-state.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Workflow / State')
 @ApiBearerAuth()
 @Controller('workflow-states')
 export class WorkflowStateController {
-  constructor(private readonly workflowStateService: WorkflowStateService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Post('')
   @ApiBody({
@@ -34,15 +34,18 @@ export class WorkflowStateController {
   async createWorkflowState(
     @Body() body: Prisma.WorkflowStateUncheckedCreateInput
   ): Promise<WorkflowState> {
-    return await this.workflowStateService.create({
+    return await this.prisma.workflowState.create({
       data: body,
     });
   }
 
   @Get('')
   async getWorkflowStates(@Query('workflowId') workflowId?: string) {
-    return await this.workflowStateService.findManyInOnePage({
-      where: {workflowId},
+    return await this.prisma.findManyInOnePage({
+      model: Prisma.ModelName.WorkflowState,
+      findManyArgs: {
+        where: {workflowId},
+      },
     });
   }
 
@@ -63,7 +66,7 @@ export class WorkflowStateController {
     @Body()
     body: Prisma.WorkflowStateUpdateInput
   ): Promise<WorkflowState> {
-    return await this.workflowStateService.update({
+    return await this.prisma.workflowState.update({
       where: {id: stateId},
       data: body,
     });
@@ -73,7 +76,7 @@ export class WorkflowStateController {
   async deleteWorkflowState(
     @Param('stateId') stateId: number
   ): Promise<WorkflowState> {
-    return await this.workflowStateService.delete({
+    return await this.prisma.workflowState.delete({
       where: {id: stateId},
     });
   }

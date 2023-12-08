@@ -9,18 +9,18 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {CertificationService} from './certification.service';
 
 import {Certification, PermissionAction, Prisma} from '@prisma/client';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
 import {UserService} from '@microservices/account/user/user.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Recruitment / Candidate / Certification')
 @ApiBearerAuth()
 @Controller('recruitment-candidate-certifications')
 export class CertificationController {
   constructor(
-    private readonly candidateCertificationService: CertificationService,
+    private readonly prisma: PrismaService,
     private readonly userService: UserService
   ) {}
 
@@ -49,14 +49,14 @@ export class CertificationController {
     }
 
     // [step 2] Create candidateCertification.
-    return await this.candidateCertificationService.create({data: body});
+    return await this.prisma.certification.create({data: body});
   }
 
   //* Get many
   @Get('')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.Certification)
   async getCertifications(): Promise<Certification[]> {
-    return await this.candidateCertificationService.findMany({});
+    return await this.prisma.certification.findMany({});
   }
 
   //* Get
@@ -65,7 +65,7 @@ export class CertificationController {
   async getCertification(
     @Param('certificationId') certificationId: number
   ): Promise<Certification | null> {
-    return await this.candidateCertificationService.findUnique({
+    return await this.prisma.certification.findUnique({
       where: {id: certificationId},
     });
   }
@@ -88,7 +88,7 @@ export class CertificationController {
     @Param('certificationId') certificationId: number,
     @Body() body: Prisma.CertificationUpdateInput
   ): Promise<Certification> {
-    return await this.candidateCertificationService.update({
+    return await this.prisma.certification.update({
       where: {id: certificationId},
       data: body,
     });
@@ -100,7 +100,7 @@ export class CertificationController {
   async deleteCertification(
     @Param('certificationId') certificationId: number
   ): Promise<Certification> {
-    return await this.candidateCertificationService.delete({
+    return await this.prisma.certification.delete({
       where: {id: certificationId},
     });
   }

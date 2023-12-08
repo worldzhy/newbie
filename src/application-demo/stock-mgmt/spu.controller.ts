@@ -11,13 +11,13 @@ import {
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {PermissionAction, Prisma, Spu} from '@prisma/client';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
-import {SpuService} from '@microservices/stock-mgmt/spu.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Spu')
 @ApiBearerAuth()
 @Controller('spus')
 export class SpuController {
-  constructor(private readonly spuService: SpuService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Post('')
   @RequirePermission(PermissionAction.Create, Prisma.ModelName.Spu)
@@ -31,7 +31,7 @@ export class SpuController {
     },
   })
   async createSpu(@Body() body: Prisma.SpuUncheckedCreateInput): Promise<Spu> {
-    return await this.spuService.create({data: body});
+    return await this.prisma.spu.create({data: body});
   }
 
   @Get('')
@@ -40,13 +40,16 @@ export class SpuController {
     @Query('page') page: number,
     @Query('pageSize') pageSize: number
   ) {
-    return await this.spuService.findManyInManyPages({page, pageSize});
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.Spu,
+      pagination: {page, pageSize},
+    });
   }
 
   @Get(':spuId')
   @RequirePermission(PermissionAction.Get, Prisma.ModelName.Spu)
   async getSpu(@Param('spuId') spuId: string): Promise<Spu> {
-    return await this.spuService.findUniqueOrThrow({where: {id: spuId}});
+    return await this.prisma.spu.findUniqueOrThrow({where: {id: spuId}});
   }
 
   @Patch(':spuId')
@@ -64,7 +67,7 @@ export class SpuController {
     @Param('spuId') spuId: string,
     @Body() body: Prisma.SpuUpdateInput
   ): Promise<Spu> {
-    return await this.spuService.update({
+    return await this.prisma.spu.update({
       where: {id: spuId},
       data: body,
     });
@@ -73,7 +76,7 @@ export class SpuController {
   @Delete(':spuId')
   @RequirePermission(PermissionAction.Delete, Prisma.ModelName.Spu)
   async deleteSpu(@Param('spuId') spuId: string): Promise<Spu> {
-    return await this.spuService.delete({
+    return await this.prisma.spu.delete({
       where: {id: spuId},
     });
   }

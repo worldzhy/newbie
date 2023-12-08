@@ -1,11 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
-import {
-  Prisma,
-  AvailabilityTimeslot,
-  Event,
-  AvailabilityTimeslotStatus,
-} from '@prisma/client';
+import {Event, AvailabilityTimeslotStatus} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {
   ceilByMinutes,
@@ -25,58 +20,6 @@ export class AvailabilityTimeslotService {
     this.MINUTES_Of_TIMESLOT_UNIT = this.configService.getOrThrow<number>(
       'microservice.eventScheduling.minutesOfTimeslotUnit'
     );
-  }
-
-  async findUniqueOrThrow(
-    params: Prisma.AvailabilityTimeslotFindUniqueOrThrowArgs
-  ): Promise<AvailabilityTimeslot> {
-    return await this.prisma.availabilityTimeslot.findUniqueOrThrow(params);
-  }
-
-  async findMany(
-    params: Prisma.AvailabilityTimeslotFindManyArgs
-  ): Promise<AvailabilityTimeslot[]> {
-    return await this.prisma.availabilityTimeslot.findMany(params);
-  }
-
-  async create(
-    params: Prisma.AvailabilityTimeslotCreateArgs
-  ): Promise<AvailabilityTimeslot> {
-    return await this.prisma.availabilityTimeslot.create(params);
-  }
-
-  async createMany(
-    params: Prisma.AvailabilityTimeslotCreateManyArgs
-  ): Promise<Prisma.BatchPayload> {
-    return await this.prisma.availabilityTimeslot.createMany(params);
-  }
-
-  async update(
-    params: Prisma.AvailabilityTimeslotUpdateArgs
-  ): Promise<AvailabilityTimeslot> {
-    return await this.prisma.availabilityTimeslot.update(params);
-  }
-
-  async updateMany(
-    params: Prisma.AvailabilityTimeslotUpdateManyArgs
-  ): Promise<Prisma.BatchPayload> {
-    return await this.prisma.availabilityTimeslot.updateMany(params);
-  }
-
-  async delete(
-    params: Prisma.AvailabilityTimeslotDeleteArgs
-  ): Promise<AvailabilityTimeslot> {
-    return await this.prisma.availabilityTimeslot.delete(params);
-  }
-
-  async deleteMany(
-    params: Prisma.AvailabilityTimeslotDeleteManyArgs
-  ): Promise<Prisma.BatchPayload> {
-    return await this.prisma.availabilityTimeslot.deleteMany(params);
-  }
-
-  async count(params: Prisma.AvailabilityTimeslotCountArgs): Promise<number> {
-    return await this.prisma.availabilityTimeslot.count(params);
   }
 
   async groupByHostUserId(params: {

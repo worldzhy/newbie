@@ -11,20 +11,18 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {EventVenue, Place, Prisma} from '@prisma/client';
-import {EventVenueService} from '@microservices/event-scheduling/event-venue.service';
-import {PlaceService} from '@microservices/map/place.service';
 import {AccountService} from '@microservices/account/account.service';
 import {Request} from 'express';
 import {RoleService} from '@microservices/account/role/role.service';
 import * as _ from 'lodash';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Location')
 @ApiBearerAuth()
 @Controller('locations')
 export class LocationController {
   constructor(
-    private readonly eventVenueService: EventVenueService,
-    private readonly placeService: PlaceService,
+    private readonly prisma: PrismaService,
     private readonly accountService: AccountService,
     private readonly roleService: RoleService
   ) {}
@@ -75,14 +73,14 @@ export class LocationController {
     const {address, city, state, country, timeZone, ...dataOfVenue} = body;
     // [step 1] Create place.
     if (address || city || state || country || timeZone) {
-      const place = await this.placeService.create({
+      const place = await this.prisma.place.create({
         data: {address, city, state, country, timeZone},
       });
       dataOfVenue.placeId = place.id;
     }
 
     // [step 2] Create event venue.
-    const venue = await this.eventVenueService.create({
+    const venue = await this.prisma.eventVenue.create({
       data: dataOfVenue,
     });
 
@@ -114,14 +112,15 @@ export class LocationController {
     }
 
     // [step 2] Get event venues.
-    const venues = await this.eventVenueService.findManyInManyPages(
-      {page, pageSize},
-      {where}
-    );
+    const venues = await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.EventVenue,
+      pagination: {page, pageSize},
+      findManyArgs: {where},
+    });
 
     // [step 3] Attach place information Optimization.
     const venuePlaceIds = venues.records.map((d: any) => d.placeId);
-    const places = await this.placeService.findMany({
+    const places = await this.prisma.place.findMany({
       where: {
         id: {in: venuePlaceIds},
       },
@@ -186,7 +185,7 @@ export class LocationController {
     }
 
     // [step 2] Get event venues.
-    const venues = await this.eventVenueService.findMany({
+    const venues = await this.prisma.eventVenue.findMany({
       where,
       select: {id: true, name: true, placeId: true},
     });
@@ -195,7 +194,7 @@ export class LocationController {
     for (let i = 0; i < venues.length; i++) {
       const venue = venues[i] as EventVenue & Place;
       if (venue.placeId) {
-        const place = await this.placeService.findUnique({
+        const place = await this.prisma.place.findUnique({
           where: {id: venue.placeId},
         });
         if (place) {
@@ -214,13 +213,13 @@ export class LocationController {
   @Get(':eventVenueId')
   async getEventVenue(@Param('eventVenueId') eventVenueId: number) {
     // [step 1] Get venue.
-    const venue = (await this.eventVenueService.findUniqueOrThrow({
+    const venue = (await this.prisma.eventVenue.findUniqueOrThrow({
       where: {id: eventVenueId},
     })) as EventVenue & Place;
 
     // [step 2] Attach place information.
     if (venue.placeId) {
-      const place = await this.placeService.findUnique({
+      const place = await this.prisma.place.findUnique({
         where: {id: venue.placeId},
       });
       if (place) {
@@ -283,13 +282,13 @@ export class LocationController {
     const {address, city, state, country, timeZone, ...dataOfVenue} = body;
 
     // [step 1] Update event venue.
-    const venue = await this.eventVenueService.update({
+    const venue = await this.prisma.eventVenue.update({
       where: {id: eventVenueId},
       data: dataOfVenue,
     });
 
     // [step 2] Update or create place.
-    await this.placeService.upsert({
+    await this.prisma.place.upsert({
       where: {id: venue.placeId ?? undefined},
       update: {address, city, state, country, timeZone},
       create: {address, city, state, country, timeZone},
@@ -302,7 +301,7 @@ export class LocationController {
   async deleteEventVenue(
     @Param('eventVenueId') eventVenueId: number
   ): Promise<EventVenue> {
-    return await this.eventVenueService.delete({
+    return await this.prisma.eventVenue.delete({
       where: {id: eventVenueId},
     });
   }

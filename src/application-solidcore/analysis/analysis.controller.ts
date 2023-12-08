@@ -1,10 +1,8 @@
 import {Controller, Query, Get} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth} from '@nestjs/swagger';
-import {UserService} from '@microservices/account/user/user.service';
-import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
-import {EventService} from '@microservices/event-scheduling/event.service';
 import {daysOfMonth} from '@toolkit/utilities/datetime.util';
-import {User} from '@prisma/client';
+import {Prisma} from '@prisma/client';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 const ROLE_NAME_COACH = 'Coach';
 
@@ -12,11 +10,7 @@ const ROLE_NAME_COACH = 'Coach';
 @ApiBearerAuth()
 @Controller('analysis')
 export class AnalysisController {
-  constructor(
-    private readonly eventService: EventService,
-    private readonly eventContainerService: EventContainerService,
-    private readonly userService: UserService
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Get('coaches')
   async getCoachesUnderQuota(@Query('containerId') containerId: number) {
@@ -27,25 +21,31 @@ export class AnalysisController {
     }[] = [];
 
     // [step 1] Get container and coaches.
-    const container = await this.eventContainerService.findUniqueOrThrow({
+    const userSelectArgs: Prisma.UserSelect = {
+      id: true,
+      profile: {
+        select: {
+          fullName: true,
+          quotaOfWeek: true,
+          quotaOfWeekMaxPreference: true,
+          quotaOfWeekMinPreference: true,
+        },
+      },
+    };
+    type UserResult = Prisma.Result<
+      typeof this.prisma.user,
+      {select: typeof userSelectArgs},
+      'findUniqueOrThrow'
+    >;
+    const container = await this.prisma.eventContainer.findUniqueOrThrow({
       where: {id: containerId},
     });
-    const coaches = await this.userService.findMany({
+    const coaches = await this.prisma.user.findMany({
       where: {
         roles: {some: {name: ROLE_NAME_COACH}},
         profile: {eventVenueIds: {has: container.venueId}},
       },
-      select: {
-        id: true,
-        profile: {
-          select: {
-            fullName: true,
-            quotaOfWeek: true,
-            quotaOfWeekMaxPreference: true,
-            quotaOfWeekMinPreference: true,
-          },
-        },
-      },
+      select: userSelectArgs,
     });
 
     if (coaches.length === 0) {
@@ -54,29 +54,27 @@ export class AnalysisController {
 
     // [step 2] Analyse coaches.
     const calendar = daysOfMonth(container.year, container.month);
-    const coachesUnderQuota: User[] = [];
-    const coachesUnderPreferredQuota: User[] = [];
-    const coachesOverPreferredQuota: User[] = [];
+    const coachesUnderQuota: UserResult[] = [];
+    const coachesUnderPreferredQuota: UserResult[] = [];
+    const coachesOverPreferredQuota: UserResult[] = [];
     const coachScheduledMost: {
-      coach: User;
+      coach: UserResult;
       countOfScheduledClass: number;
     } = {coach: coaches[0], countOfScheduledClass: 0};
     const coachScheduledLeast: {
-      coach: User;
+      coach: UserResult;
       countOfScheduledClass: number;
     } = {coach: coaches[0], countOfScheduledClass: 0};
 
     for (let i = 0; i < coaches.length; i++) {
       const coach = coaches[i];
-      const quotaOfWeek = coach['profile'].quotaOfWeek;
-      const quotaOfWeekMinPerference =
-        coach['profile'].quotaOfWeekMinPerference;
-      const quotaOfWeekMaxPerference =
-        coach['profile'].quotaOfWeekMaxPerference;
+      const quotaOfWeek = coach.profile!.quotaOfWeek!;
+      const quotaOfWeekMinPreference = coach.profile!.quotaOfWeekMinPreference!;
+      const quotaOfWeekMaxPreference = coach.profile!.quotaOfWeekMaxPreference!;
 
       for (let indexOfWeek = 0; indexOfWeek < calendar.length; indexOfWeek++) {
         if (calendar[indexOfWeek].length === 7) {
-          const countOfScheduledClass = await this.eventService.count({
+          const countOfScheduledClass = await this.prisma.event.count({
             where: {
               hostUserId: coach.id,
               year: container.year,
@@ -84,7 +82,7 @@ export class AnalysisController {
               weekOfMonth: indexOfWeek + 1,
             },
           });
-          coach['profile']['countOfScheduledClass'] = countOfScheduledClass;
+          coach.profile!['countOfScheduledClass'] = countOfScheduledClass;
 
           if (countOfScheduledClass < quotaOfWeek) {
             let existed = false;
@@ -98,7 +96,7 @@ export class AnalysisController {
               coachesUnderQuota.push(coach);
             }
           }
-          if (countOfScheduledClass < quotaOfWeekMinPerference) {
+          if (countOfScheduledClass < quotaOfWeekMinPreference) {
             let existed = false;
             for (let s = 0; s < coachesUnderPreferredQuota.length; s++) {
               const element = coachesUnderPreferredQuota[s];
@@ -110,7 +108,7 @@ export class AnalysisController {
               coachesUnderPreferredQuota.push(coach);
             }
           }
-          if (countOfScheduledClass > quotaOfWeekMaxPerference) {
+          if (countOfScheduledClass > quotaOfWeekMaxPreference) {
             let existed = false;
             for (let s = 0; s < coachesOverPreferredQuota.length; s++) {
               const element = coachesOverPreferredQuota[s];

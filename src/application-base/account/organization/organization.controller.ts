@@ -11,13 +11,13 @@ import {
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Organization, PermissionAction, Prisma} from '@prisma/client';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
-import {OrganizationService} from '@microservices/account/organization/organization.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Account / Organization')
 @ApiBearerAuth()
 @Controller('organizations')
 export class OrganizationController {
-  constructor(private organizationService: OrganizationService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Post('')
   @RequirePermission(PermissionAction.Create, Prisma.ModelName.Organization)
@@ -35,7 +35,7 @@ export class OrganizationController {
   async createOrganization(
     @Body() body: Prisma.OrganizationCreateInput
   ): Promise<Organization> {
-    return await this.organizationService.create({
+    return await this.prisma.organization.create({
       data: body,
     });
   }
@@ -57,9 +57,10 @@ export class OrganizationController {
     }
 
     // [step 2] Get organizations.
-    return await this.organizationService.findManyInManyPages(
-      {page, pageSize},
-      {
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.Organization,
+      pagination: {page, pageSize},
+      findManyArgs: {
         orderBy: {
           _relevance: {
             fields: ['name'],
@@ -68,8 +69,8 @@ export class OrganizationController {
           },
         },
         where: where,
-      }
-    );
+      },
+    });
   }
 
   @Get(':organizationId')
@@ -77,7 +78,7 @@ export class OrganizationController {
   async getOrganization(
     @Param('organizationId') organizationId: string
   ): Promise<Organization> {
-    return await this.organizationService.findUniqueOrThrow({
+    return await this.prisma.organization.findUniqueOrThrow({
       where: {id: organizationId},
     });
   }
@@ -100,7 +101,7 @@ export class OrganizationController {
     @Body()
     body: Prisma.OrganizationUpdateInput
   ): Promise<Organization> {
-    return await this.organizationService.update({
+    return await this.prisma.organization.update({
       where: {id: organizationId},
       data: body,
     });
@@ -111,7 +112,7 @@ export class OrganizationController {
   async deleteOrganization(
     @Param('organizationId') organizationId: string
   ): Promise<Organization> {
-    return await this.organizationService.delete({
+    return await this.prisma.organization.delete({
       where: {id: organizationId},
     });
   }

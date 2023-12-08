@@ -1,18 +1,16 @@
 import {Injectable} from '@nestjs/common';
 import {UserService} from '@microservices/account/user/user.service';
-import {UserProfileService} from '@microservices/account/user/user-profile.service';
-import {EventVenueService} from '@microservices/event-scheduling/event-venue.service';
 import {SnowflakeService} from '@toolkit/snowflake/snowflake.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 const ROLE_NAME_COACH = 'Coach';
 
 @Injectable()
 export class RawDataCoachService {
   constructor(
+    private readonly prisma: PrismaService,
     private readonly snowflakeService: SnowflakeService,
-    private readonly eventVenueService: EventVenueService,
-    private readonly userService: UserService,
-    private readonly userProfileService: UserProfileService
+    private readonly userService: UserService
   ) {}
 
   async syncCoachesAndLinkLocations() {
@@ -39,13 +37,13 @@ export class RawDataCoachService {
         coach.TREMAILNAME = coach.TREMAILNAME.slice(0, -1);
       }
 
-      const count = await this.userService.count({
+      const count = await this.prisma.user.count({
         where: {email: coach.TREMAILNAME},
       });
 
       if (count === 0) {
         try {
-          await this.userService.create({
+          await this.prisma.user.create({
             data: {
               email: coach.TREMAILNAME,
               roles: {connect: {name: ROLE_NAME_COACH}},
@@ -89,7 +87,7 @@ export class RawDataCoachService {
     const coachAndLocations: any = await this.snowflakeService.execute(options);
 
     // [step 2] Get all the coaches. The total count of coaches is about x thousands.
-    const coaches = await this.userService.findMany({
+    const coaches = await this.prisma.user.findMany({
       where: {email: {not: null}, roles: {some: {name: ROLE_NAME_COACH}}},
       select: {
         email: true,
@@ -101,16 +99,17 @@ export class RawDataCoachService {
     // https://stackoverflow.com/questions/19874555/how-do-i-convert-array-of-objects-into-one-object-in-javascript
     const emailAndLocationIdsMapping = coaches.reduce(
       (obj, item) =>
-        Object.assign(obj, {[item.email!]: item['profile']['eventVenueIds']}),
+        Object.assign(obj, {[item.email!]: item['profile']!['eventVenueIds']}),
       {}
     );
     const emailAndProfileIdMapping = coaches.reduce(
-      (obj, item) => Object.assign(obj, {[item.email!]: item['profile']['id']}),
+      (obj, item) =>
+        Object.assign(obj, {[item.email!]: item['profile']!['id']}),
       {}
     );
 
     // [step 3] Get all the locations. The total count of locations is about x hundreds.
-    const locations = await this.eventVenueService.findMany({
+    const locations = await this.prisma.eventVenue.findMany({
       select: {
         id: true,
         external_locationId: true,
@@ -147,7 +146,7 @@ export class RawDataCoachService {
     // [step 5] Update coach eventVenueIds.
     for (const email in emailAndLocationIdsMapping) {
       if (emailAndLocationIdsMapping[email].length > 0) {
-        await this.userProfileService.update({
+        await this.prisma.userProfile.update({
           where: {id: emailAndProfileIdMapping[email]},
           data: {eventVenueIds: emailAndLocationIdsMapping[email]},
         });

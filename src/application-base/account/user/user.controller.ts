@@ -15,12 +15,16 @@ import {UserService} from '@microservices/account/user/user.service';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
 import {compareHash} from '@toolkit/utilities/common.util';
 import {verifyUuid} from '@toolkit/validators/user.validator';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Account / User')
 @ApiBearerAuth()
 @Controller('users')
 export class UserController {
-  constructor(private userService: UserService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly userService: UserService
+  ) {}
 
   @Post('')
   @RequirePermission(PermissionAction.Create, Prisma.ModelName.User)
@@ -49,7 +53,7 @@ export class UserController {
   async createUser(
     @Body()
     body: Prisma.UserCreateInput & {roles?: Role[]}
-  ): Promise<User> {
+  ) {
     const {roles, ...user} = body;
     const userCreateInput: Prisma.UserCreateInput = user;
     // Construct roles.
@@ -59,7 +63,7 @@ export class UserController {
       };
     }
 
-    return await this.userService.create({
+    return await this.prisma.user.create({
       data: userCreateInput,
       select: {
         id: true,
@@ -113,16 +117,17 @@ export class UserController {
     }
 
     // [step 2] Get users.
-    const result = await this.userService.findManyInManyPages(
-      {page, pageSize},
-      {
+    const result = await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.User,
+      pagination: {page, pageSize},
+      findManyArgs: {
         where: where,
         include: {
           roles: true,
           profile: true,
         },
-      }
-    );
+      },
+    });
 
     // [step 3] Return users without password.
     result.records = result.records.map(user => {
@@ -135,7 +140,7 @@ export class UserController {
   @Get(':userId')
   @RequirePermission(PermissionAction.Get, Prisma.ModelName.User)
   async getUser(@Param('userId') userId: string) {
-    const user = await this.userService.findUniqueOrThrow({
+    const user = await this.prisma.user.findUniqueOrThrow({
       where: {id: userId},
       include: {
         roles: true,
@@ -183,7 +188,7 @@ export class UserController {
       };
     }
 
-    return await this.userService.update({
+    return await this.prisma.user.update({
       where: {id: userId},
       data: userUpdateInput,
     });
@@ -192,7 +197,7 @@ export class UserController {
   @Delete(':userId')
   @RequirePermission(PermissionAction.Delete, Prisma.ModelName.User)
   async deleteUser(@Param('userId') userId: string): Promise<User> {
-    return await this.userService.delete({
+    return await this.prisma.user.delete({
       where: {id: userId},
     });
   }
@@ -200,7 +205,7 @@ export class UserController {
   @Get(':userId/profiles')
   @RequirePermission(PermissionAction.Get, Prisma.ModelName.User)
   async getUserProfiles(@Param('userId') userId: string) {
-    const user = await this.userService.findUniqueOrThrow({
+    const user = await this.prisma.user.findUniqueOrThrow({
       where: {id: userId},
       include: {profile: true},
     });
@@ -211,7 +216,7 @@ export class UserController {
   @Get(':userId/roles')
   @RequirePermission(PermissionAction.Get, Prisma.ModelName.User)
   async getUserRoles(@Param('userId') userId: string) {
-    const user = await this.userService.findUniqueOrThrow({
+    const user = await this.prisma.user.findUniqueOrThrow({
       where: {id: userId},
       include: {roles: true},
     });
@@ -244,7 +249,7 @@ export class UserController {
   async changePassword(
     @Param('userId') userId: string,
     @Body() body: {currentPassword: string; newPassword: string}
-  ): Promise<User> {
+  ) {
     // [step 1] Guard statement.
     if (!('currentPassword' in body) || !('newPassword' in body)) {
       throw new BadRequestException(
@@ -260,7 +265,7 @@ export class UserController {
     }
 
     // [step 3] Verify the current password.
-    const user = await this.userService.findUniqueOrThrow({
+    const user = await this.prisma.user.findUniqueOrThrow({
       where: {id: userId},
     });
     const match = await compareHash(body.currentPassword, user.password);
@@ -269,7 +274,7 @@ export class UserController {
     }
 
     // [step 4] Change password.
-    return await this.userService.update({
+    return await this.prisma.user.update({
       where: {id: userId},
       data: {password: body.newPassword},
       select: {id: true, email: true, phone: true},

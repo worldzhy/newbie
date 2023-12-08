@@ -1,51 +1,10 @@
 import {Injectable} from '@nestjs/common';
-import {
-  Prisma,
-  DatatransPipeline,
-  PostgresqlDatasourceTable,
-} from '@prisma/client';
+import {DatatransPipeline, PostgresqlDatasourceTable} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @Injectable()
 export class DatatransPipelineService {
   constructor(private readonly prisma: PrismaService) {}
-
-  async findUnique(
-    params: Prisma.DatatransPipelineFindUniqueArgs
-  ): Promise<DatatransPipeline | null> {
-    return await this.prisma.datatransPipeline.findUnique(params);
-  }
-
-  async findMany(
-    params: Prisma.DatatransPipelineFindManyArgs
-  ): Promise<DatatransPipeline[]> {
-    return await this.prisma.datatransPipeline.findMany(params);
-  }
-
-  async create(
-    data: Prisma.DatatransPipelineCreateInput
-  ): Promise<DatatransPipeline> {
-    return await this.prisma.datatransPipeline.create({data});
-  }
-
-  async update(
-    params: Prisma.DatatransPipelineUpdateArgs
-  ): Promise<DatatransPipeline> {
-    return await this.prisma.datatransPipeline.update(params);
-  }
-
-  async delete(
-    params: Prisma.DatatransPipelineDeleteArgs
-  ): Promise<DatatransPipeline> {
-    return await this.prisma.datatransPipeline.delete(params);
-  }
-
-  async checkExistence(id: string): Promise<boolean> {
-    const count = await this.prisma.datatransPipeline.count({
-      where: {id},
-    });
-    return count > 0 ? true : false;
-  }
 
   async overview(pipeline: DatatransPipeline): Promise<{
     table: string;

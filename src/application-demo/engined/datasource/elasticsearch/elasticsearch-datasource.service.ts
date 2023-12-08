@@ -1,6 +1,6 @@
 import {RequestParams} from '@elastic/elasticsearch';
 import {Injectable, NotFoundException} from '@nestjs/common';
-import {ElasticsearchDatasource, Prisma} from '@prisma/client';
+import {ElasticsearchDatasource} from '@prisma/client';
 import {ElasticService} from '@toolkit/elastic/elastic.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {get as lodash_get, split as lodash_split} from 'lodash';
@@ -11,47 +11,6 @@ export class ElasticsearchDatasourceService {
     private readonly prisma: PrismaService,
     private readonly elastic: ElasticService
   ) {}
-
-  async findUnique(
-    args: Prisma.ElasticsearchDatasourceFindUniqueArgs
-  ): Promise<ElasticsearchDatasource | null> {
-    return await this.prisma.elasticsearchDatasource.findUnique(args);
-  }
-
-  async findUniqueOrThrow(
-    args: Prisma.ElasticsearchDatasourceFindUniqueOrThrowArgs
-  ): Promise<ElasticsearchDatasource> {
-    return await this.prisma.elasticsearchDatasource.findUniqueOrThrow(args);
-  }
-
-  async findManyInManyPages(
-    pagination: {page: number; pageSize: number},
-    findManyArgs?: Prisma.ElasticsearchDatasourceFindManyArgs
-  ) {
-    return await this.prisma.findManyInManyPages({
-      model: Prisma.ModelName.ElasticsearchDatasource,
-      pagination,
-      findManyArgs,
-    });
-  }
-
-  async create(
-    args: Prisma.ElasticsearchDatasourceCreateArgs
-  ): Promise<ElasticsearchDatasource> {
-    return await this.prisma.elasticsearchDatasource.create(args);
-  }
-
-  async update(
-    args: Prisma.ElasticsearchDatasourceUpdateArgs
-  ): Promise<ElasticsearchDatasource> {
-    return await this.prisma.elasticsearchDatasource.update(args);
-  }
-
-  async delete(
-    args: Prisma.ElasticsearchDatasourceDeleteArgs
-  ): Promise<ElasticsearchDatasource> {
-    return await this.prisma.elasticsearchDatasource.delete(args);
-  }
 
   // ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
   //   ! Elasticsearch index operations    //

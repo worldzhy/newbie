@@ -11,13 +11,13 @@ import {
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {PermissionAction, Prisma, SkuConversion} from '@prisma/client';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
-import {SkuConversionService} from '@microservices/stock-mgmt/sku-conversion.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('SkuConversion')
 @ApiBearerAuth()
 @Controller('skuConversions')
 export class SkuConversionController {
-  constructor(private readonly skuConversionService: SkuConversionService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Post('')
   @RequirePermission(PermissionAction.Create, Prisma.ModelName.SkuConversion)
@@ -33,7 +33,7 @@ export class SkuConversionController {
   async createSkuConversion(
     @Body() body: Prisma.SkuConversionUncheckedCreateInput
   ): Promise<SkuConversion> {
-    return await this.skuConversionService.create({data: body});
+    return await this.prisma.skuConversion.create({data: body});
   }
 
   @Get('')
@@ -42,9 +42,12 @@ export class SkuConversionController {
     @Query('page') page: number,
     @Query('pageSize') pageSize: number
   ) {
-    return await this.skuConversionService.findManyInManyPages({
-      page,
-      pageSize,
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.SkuConversion,
+      pagination: {
+        page,
+        pageSize,
+      },
     });
   }
 
@@ -53,7 +56,7 @@ export class SkuConversionController {
   async getSkuConversion(
     @Param('skuConversionId') skuConversionId: number
   ): Promise<SkuConversion> {
-    return await this.skuConversionService.findUniqueOrThrow({
+    return await this.prisma.skuConversion.findUniqueOrThrow({
       where: {id: skuConversionId},
     });
   }
@@ -73,7 +76,7 @@ export class SkuConversionController {
     @Param('skuConversionId') skuConversionId: number,
     @Body() body: Prisma.SkuConversionUpdateInput
   ): Promise<SkuConversion> {
-    return await this.skuConversionService.update({
+    return await this.prisma.skuConversion.update({
       where: {id: skuConversionId},
       data: body,
     });
@@ -84,7 +87,7 @@ export class SkuConversionController {
   async deleteSkuConversion(
     @Param('skuConversionId') skuConversionId: number
   ): Promise<SkuConversion> {
-    return await this.skuConversionService.delete({
+    return await this.prisma.skuConversion.delete({
       where: {id: skuConversionId},
     });
   }

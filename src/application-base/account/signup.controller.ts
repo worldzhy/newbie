@@ -1,18 +1,18 @@
 import {Controller, Post, Body, BadRequestException} from '@nestjs/common';
 import {ApiTags, ApiBody} from '@nestjs/swagger';
 import {Prisma, User} from '@prisma/client';
-import {UserService} from '@microservices/account/user/user.service';
 import {Public} from '@microservices/account/security/authentication/public/public.decorator';
 import {
   verifyEmail,
   verifyPassword,
   verifyPhone,
 } from '@toolkit/validators/user.validator';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Account')
 @Controller('account')
 export class SignupController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   /**
    * Sign up by:
@@ -55,7 +55,7 @@ export class SignupController {
       },
     },
   })
-  async signup(@Body() body: Prisma.UserCreateInput): Promise<User> {
+  async signup(@Body() body: Prisma.UserCreateInput) {
     let emailCount = 0;
     let phoneCount = 0;
     let profileCount = 0;
@@ -92,7 +92,7 @@ export class SignupController {
     }
 
     // [step 2] Check account existence.
-    const users = await this.userService.findMany({
+    const users = await this.prisma.user.findMany({
       where: {
         OR: [{email: body.email}, {phone: body.phone}],
       },
@@ -104,7 +104,7 @@ export class SignupController {
     // [step 3] Create(Sign up) a new account.
     if (emailCount === 1 || phoneCount === 1 || profileCount === 1) {
       // Generate password hash if needed.
-      return await this.userService.create({
+      return await this.prisma.user.create({
         data: body,
         select: {
           id: true,

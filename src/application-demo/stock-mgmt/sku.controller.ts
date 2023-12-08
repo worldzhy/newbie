@@ -11,13 +11,13 @@ import {
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {PermissionAction, Prisma, Sku} from '@prisma/client';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
-import {SkuService} from '@microservices/stock-mgmt/sku.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Sku')
 @ApiBearerAuth()
 @Controller('skus')
 export class SkuController {
-  constructor(private readonly skuService: SkuService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Post('')
   @RequirePermission(PermissionAction.Create, Prisma.ModelName.Sku)
@@ -31,7 +31,7 @@ export class SkuController {
     },
   })
   async createSku(@Body() body: Prisma.SkuUncheckedCreateInput): Promise<Sku> {
-    return await this.skuService.create({data: body});
+    return await this.prisma.sku.create({data: body});
   }
 
   @Get('')
@@ -40,13 +40,16 @@ export class SkuController {
     @Query('page') page: number,
     @Query('pageSize') pageSize: number
   ) {
-    return await this.skuService.findManyInManyPages({page, pageSize});
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.Sku,
+      pagination: {page, pageSize},
+    });
   }
 
   @Get(':skuId')
   @RequirePermission(PermissionAction.Get, Prisma.ModelName.Sku)
   async getSku(@Param('skuId') skuId: string): Promise<Sku> {
-    return await this.skuService.findUniqueOrThrow({where: {id: skuId}});
+    return await this.prisma.sku.findUniqueOrThrow({where: {id: skuId}});
   }
 
   @Patch(':skuId')
@@ -64,7 +67,7 @@ export class SkuController {
     @Param('skuId') skuId: string,
     @Body() body: Prisma.SkuUpdateInput
   ): Promise<Sku> {
-    return await this.skuService.update({
+    return await this.prisma.sku.update({
       where: {id: skuId},
       data: body,
     });
@@ -73,7 +76,7 @@ export class SkuController {
   @Delete(':skuId')
   @RequirePermission(PermissionAction.Delete, Prisma.ModelName.Sku)
   async deleteSku(@Param('skuId') skuId: string): Promise<Sku> {
-    return await this.skuService.delete({
+    return await this.prisma.sku.delete({
       where: {id: skuId},
     });
   }

@@ -10,17 +10,13 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Prisma, DatatransMission, DatatransMissionState} from '@prisma/client';
-import {DatatransMissionService} from './mission.service';
-import {DatatransTaskService} from './task/task.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('EngineD / Datatrans Mission')
 @ApiBearerAuth()
 @Controller('datatrans-missions')
 export class DatatransMissionController {
-  constructor(
-    private readonly datatransMissionService: DatatransMissionService,
-    private readonly datatransTaskService: DatatransTaskService
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Post('')
   @ApiBody({
@@ -39,19 +35,19 @@ export class DatatransMissionController {
   async createDatatransMission(
     @Body() body: Prisma.DatatransMissionUncheckedCreateInput
   ): Promise<DatatransMission> {
-    return await this.datatransMissionService.create({data: body});
+    return await this.prisma.datatransMission.create({data: body});
   }
 
   @Get('')
   async getDatatransMissions(): Promise<DatatransMission[]> {
-    return await this.datatransMissionService.findMany({});
+    return await this.prisma.datatransMission.findMany({});
   }
 
   @Get(':missionId')
   async getDatatransMission(
     @Param('missionId') missionId: string
   ): Promise<DatatransMission | null> {
-    return await this.datatransMissionService.findUnique({
+    return await this.prisma.datatransMission.findUnique({
       where: {id: missionId},
     });
   }
@@ -61,7 +57,7 @@ export class DatatransMissionController {
     @Param('missionId') missionId: string,
     @Body() body: Prisma.DatatransMissionUpdateInput
   ): Promise<DatatransMission> {
-    return await this.datatransMissionService.update({
+    return await this.prisma.datatransMission.update({
       where: {id: missionId},
       data: body,
     });
@@ -71,7 +67,7 @@ export class DatatransMissionController {
   async deleteDatatransMission(
     @Param('missionId') missionId: string
   ): Promise<DatatransMission> {
-    return await this.datatransMissionService.delete({
+    return await this.prisma.datatransMission.delete({
       where: {id: missionId},
     });
   }
@@ -81,7 +77,7 @@ export class DatatransMissionController {
     @Param('missionId') missionId: string
   ): Promise<DatatransMission> {
     // [step 1] Get mission.
-    const mission = await this.datatransMissionService.findUnique({
+    const mission = await this.prisma.datatransMission.findUnique({
       where: {id: missionId},
     });
     if (!mission) {
@@ -105,12 +101,12 @@ export class DatatransMissionController {
     }
 
     if (tasks.length > 0) {
-      await this.datatransTaskService.createMany({
+      await this.prisma.datatransTask.createMany({
         data: tasks,
       });
     }
     if (numberOfRecordsForLastBatch > 0) {
-      await this.datatransTaskService.create({
+      await this.prisma.datatransTask.create({
         data: {
           take: numberOfRecordsForLastBatch,
           skip: mission.numberOfRecords - numberOfRecordsForLastBatch,
@@ -120,7 +116,7 @@ export class DatatransMissionController {
     }
 
     // [step 3] Update mission state.
-    return await this.datatransMissionService.update({
+    return await this.prisma.datatransMission.update({
       where: {id: missionId},
       data: {state: DatatransMissionState.SPLIT},
     });

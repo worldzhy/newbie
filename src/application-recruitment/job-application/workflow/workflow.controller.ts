@@ -10,29 +10,17 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {JobApplicationWorkflow, PermissionAction, Prisma} from '@prisma/client';
-import {JobApplicationWorkflowService} from './workflow.service';
-import {JobApplicationWorkflowFileService} from './file/file.service';
-import {JobApplicationWorkflowTrailService} from './trail/trail.service';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
-import {RoleService} from '@microservices/account/role/role.service';
-import {UserService} from '@microservices/account/user/user.service';
-import {WorkflowRouteService} from '@microservices/workflow/workflow-route.service';
-import {FileService} from '@microservices/file-mgmt/file/file.service';
 import {AccessTokenService} from '@microservices/token/access-token/access-token.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Recruitment / Job Application / Workflow')
 @ApiBearerAuth()
 @Controller('recruitment-workflows')
 export class JobApplicationWorkflowController {
   constructor(
-    private readonly fileService: FileService,
-    private readonly accessTokenService: AccessTokenService,
-    private readonly userService: UserService,
-    private readonly roleService: RoleService,
-    private readonly workflowRouteService: WorkflowRouteService,
-    private readonly jobApplicationWorkflowService: JobApplicationWorkflowService,
-    private readonly jobApplicationWorkflowTrailService: JobApplicationWorkflowTrailService,
-    private readonly jobApplicationWorkflowFileService: JobApplicationWorkflowFileService
+    private readonly prisma: PrismaService,
+    private readonly accessTokenService: AccessTokenService
   ) {}
 
   @Get('test-types')
@@ -106,7 +94,7 @@ export class JobApplicationWorkflowController {
     Prisma.ModelName.JobApplicationWorkflow
   )
   async getJobApplicationWorkflows(): Promise<JobApplicationWorkflow[]> {
-    return await this.jobApplicationWorkflowService.findMany({});
+    return await this.prisma.jobApplicationWorkflow.findMany({});
   }
 
   @Get(':workflowId')
@@ -117,7 +105,7 @@ export class JobApplicationWorkflowController {
   async getJobApplicationWorkflow(
     @Param('workflowId') workflowId: string
   ): Promise<JobApplicationWorkflow> {
-    const workflow = await this.jobApplicationWorkflowService.findUniqueOrThrow(
+    const workflow = await this.prisma.jobApplicationWorkflow.findUniqueOrThrow(
       {
         where: {id: workflowId},
         include: {
@@ -136,15 +124,15 @@ export class JobApplicationWorkflowController {
     for (let i = 0; i < workflow['steps'].length; i++) {
       // Attach processedBy username.
       const step = workflow['steps'][i];
-      const user = await this.userService.findUniqueOrThrow({
+      const user = await this.prisma.user.findUniqueOrThrow({
         where: {id: step.processedByUserId},
         include: {profile: {select: {fullName: true}}},
       });
-      step['processedByUser'] = user['profile'].fullName;
+      step['processedByUser'] = user['profile']?.fullName;
 
       // Attach next role name.
       if (step.nextRoleId) {
-        const role = await this.roleService.findUniqueOrThrow({
+        const role = await this.prisma.role.findUniqueOrThrow({
           where: {id: step.nextRoleId},
           select: {name: true},
         });
@@ -152,7 +140,7 @@ export class JobApplicationWorkflowController {
       }
 
       // Attach files.
-      step.files = await this.jobApplicationWorkflowFileService.findMany({
+      step.files = await this.prisma.jobApplicationWorkflowFile.findMany({
         where: {
           workflowStepId: step.id,
         },
@@ -219,7 +207,7 @@ export class JobApplicationWorkflowController {
     }
   ): Promise<JobApplicationWorkflow> {
     // [step 1] Get workflow.
-    const workflow = await this.jobApplicationWorkflowService.findUniqueOrThrow(
+    const workflow = await this.prisma.jobApplicationWorkflow.findUniqueOrThrow(
       {
         where: {id: workflowId},
       }
@@ -231,14 +219,14 @@ export class JobApplicationWorkflowController {
     ) as {userId: string};
 
     // [step 3] Get workflow route.
-    const route = await this.workflowRouteService.findUniqueOrThrow({
+    const route = await this.prisma.workflowRoute.findUniqueOrThrow({
       where: {
         viewId_stateId: {viewId: body.viewId, stateId: body.stateId},
       },
     });
 
     // [step 4] Create workflow step.
-    const step = await this.jobApplicationWorkflowTrailService.create({
+    const step = await this.prisma.jobApplicationWorkflowTrail.create({
       data: {
         workflowId: workflowId,
         viewId: route.viewId,
@@ -272,7 +260,7 @@ export class JobApplicationWorkflowController {
     if (body.fileIds) {
       // Filter null value in the fileIds array.
       const fileIds = body.fileIds.filter(fileId => fileId !== null);
-      const files = await this.fileService.findMany({
+      const files = await this.prisma.file.findMany({
         where: {id: {in: fileIds}},
       });
       updateInput.files = {
@@ -288,7 +276,7 @@ export class JobApplicationWorkflowController {
       };
     }
 
-    return await this.jobApplicationWorkflowService.update({
+    return await this.prisma.jobApplicationWorkflow.update({
       where: {id: workflowId},
       data: updateInput,
     });
@@ -302,7 +290,7 @@ export class JobApplicationWorkflowController {
   async deleteJobApplicationWorkflow(
     @Param('workflowId') workflowId: string
   ): Promise<JobApplicationWorkflow> {
-    return await this.jobApplicationWorkflowService.delete({
+    return await this.prisma.jobApplicationWorkflow.delete({
       where: {id: workflowId},
     });
   }
@@ -317,10 +305,8 @@ export class JobApplicationWorkflowController {
     PermissionAction.Get,
     Prisma.ModelName.JobApplicationWorkflow
   )
-  async getJobApplicationLock(
-    @Param('workflowId') workflowId: string
-  ): Promise<JobApplicationWorkflow> {
-    return await this.jobApplicationWorkflowService.findUniqueOrThrow({
+  async getJobApplicationLock(@Param('workflowId') workflowId: string) {
+    return await this.prisma.jobApplicationWorkflow.findUniqueOrThrow({
       where: {id: workflowId},
       select: {beingHeldByUserId: true, beingHeldByUser: true},
     });
@@ -345,7 +331,7 @@ export class JobApplicationWorkflowController {
       this.accessTokenService.getTokenFromHttpRequest(request)
     ) as {userId: string};
 
-    return await this.jobApplicationWorkflowService.update({
+    return await this.prisma.jobApplicationWorkflow.update({
       where: {id: workflowId},
       data: {beingHeldByUserId: userId},
     });
@@ -370,13 +356,13 @@ export class JobApplicationWorkflowController {
       this.accessTokenService.getTokenFromHttpRequest(request)
     ) as {userId: string};
     const jobApplication =
-      await this.jobApplicationWorkflowService.findUniqueOrThrow({
+      await this.prisma.jobApplicationWorkflow.findUniqueOrThrow({
         where: {id: workflowId},
       });
 
     // A user can only unlock the lock set by itself.
     if (jobApplication.beingHeldByUserId === userId) {
-      return await this.jobApplicationWorkflowService.update({
+      return await this.prisma.jobApplicationWorkflow.update({
         where: {id: workflowId},
         data: {beingHeldByUserId: null},
       });

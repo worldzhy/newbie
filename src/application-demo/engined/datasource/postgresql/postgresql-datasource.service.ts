@@ -1,50 +1,10 @@
 import {Injectable} from '@nestjs/common';
-import {
-  PostgresqlDatasource,
-  PostgresqlDatasourceTable,
-  Prisma,
-} from '@prisma/client';
+import {PostgresqlDatasource, PostgresqlDatasourceTable} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @Injectable()
 export class PostgresqlDatasourceService {
   constructor(private readonly prisma: PrismaService) {}
-
-  async findUnique(
-    params: Prisma.PostgresqlDatasourceFindUniqueArgs
-  ): Promise<PostgresqlDatasource | null> {
-    return await this.prisma.postgresqlDatasource.findUnique(params);
-  }
-
-  async findUniqueOrThrow(
-    params: Prisma.PostgresqlDatasourceFindUniqueOrThrowArgs
-  ): Promise<PostgresqlDatasource> {
-    return await this.prisma.postgresqlDatasource.findUniqueOrThrow(params);
-  }
-
-  async findMany(
-    params: Prisma.PostgresqlDatasourceFindManyArgs
-  ): Promise<PostgresqlDatasource[]> {
-    return await this.prisma.postgresqlDatasource.findMany(params);
-  }
-
-  async create(
-    params: Prisma.PostgresqlDatasourceCreateArgs
-  ): Promise<PostgresqlDatasource> {
-    return await this.prisma.postgresqlDatasource.create(params);
-  }
-
-  async update(
-    params: Prisma.PostgresqlDatasourceUpdateArgs
-  ): Promise<PostgresqlDatasource> {
-    return await this.prisma.postgresqlDatasource.update(params);
-  }
-
-  async delete(
-    params: Prisma.PostgresqlDatasourceDeleteArgs
-  ): Promise<PostgresqlDatasource> {
-    return await this.prisma.postgresqlDatasource.delete(params);
-  }
 
   // ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄  ⌄ //
   //    ! Postgresql table operations      //

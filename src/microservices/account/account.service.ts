@@ -11,10 +11,12 @@ import {RefreshTokenService} from '@microservices/token/refresh-token/refresh-to
 import {getSecondsUntilunixTimestamp} from '@toolkit/utilities/datetime.util';
 import {UserService} from '@microservices/account/user/user.service';
 import {Request} from 'express';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @Injectable()
 export class AccountService {
   constructor(
+    private readonly prisma: PrismaService,
     private readonly userService: UserService,
     private readonly accessTokenService: AccessTokenService,
     private readonly refreshTokenService: RefreshTokenService,
@@ -28,12 +30,12 @@ export class AccountService {
       this.accessTokenService.getTokenFromHttpRequest(request);
 
     // [step 2] Get UserToken record.
-    const userToken = await this.accessTokenService.findFirstOrThrow({
+    const userToken = await this.prisma.accessToken.findFirstOrThrow({
       where: {token: accessToken},
     });
 
     // [step 3] Get user.
-    const user = await this.userService.findUniqueOrThrow({
+    const user = await this.prisma.user.findUniqueOrThrow({
       where: {id: userToken.userId},
       include: {roles: true, profile: true},
     });
@@ -59,7 +61,7 @@ export class AccountService {
     await this.invalidateTokens(user.id);
 
     // [step 4] Update last login time.
-    await this.userService.update({
+    await this.prisma.user.update({
       where: {id: user.id},
       data: {lastLoginAt: new Date()},
     });
@@ -70,10 +72,10 @@ export class AccountService {
 
   async invalidateTokens(userId: string) {
     await Promise.all([
-      this.accessTokenService.deleteMany({
+      this.prisma.accessToken.deleteMany({
         where: {userId},
       }),
-      this.refreshTokenService.deleteMany({
+      this.prisma.refreshToken.deleteMany({
         where: {userId},
       }),
     ]);
@@ -100,13 +102,13 @@ export class AccountService {
 
     // [step 3] Generate tokens
     const [accessToken, refreshToken] = await Promise.all([
-      this.accessTokenService.create({
+      this.prisma.accessToken.create({
         data: {
           userId: userId,
           token: this.accessTokenService.sign(jwtPayload),
         },
       }),
-      this.refreshTokenService.create({
+      this.prisma.refreshToken.create({
         data: {
           userId: userId,
           token: this.refreshTokenService.sign(jwtPayload, refreshTokenOptions),

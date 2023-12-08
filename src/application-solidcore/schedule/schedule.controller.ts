@@ -18,21 +18,17 @@ import {
   EventContainerOrigin,
   EventIssueStatus,
 } from '@prisma/client';
-import {EventService} from '@microservices/event-scheduling/event.service';
 import {EventIssueService} from '@microservices/event-scheduling/event-issue.service';
-import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
 import {datePlusMinutes, daysOfMonth} from '@toolkit/utilities/datetime.util';
-import {PlaceService} from '@microservices/map/place.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Event Container')
 @ApiBearerAuth()
 @Controller('event-containers')
 export class EventContainerController {
   constructor(
-    private readonly eventService: EventService,
-    private readonly eventIssueService: EventIssueService,
-    private readonly eventContainerService: EventContainerService,
-    private readonly placeService: PlaceService
+    private readonly prisma: PrismaService,
+    private readonly eventIssueService: EventIssueService
   ) {}
 
   @Get('days-of-month')
@@ -58,7 +54,7 @@ export class EventContainerController {
     @Body()
     body: Prisma.EventContainerUncheckedCreateInput
   ): Promise<EventContainer> {
-    return await this.eventContainerService.create({
+    return await this.prisma.eventContainer.create({
       data: body,
     });
   }
@@ -84,21 +80,22 @@ export class EventContainerController {
     //   {year: 'desc', month: 'desc', name: 'asc'};
 
     // [step 2] Get eventContainers.
-    return await this.eventContainerService.findManyInManyPages(
-      {page, pageSize},
-      {where}
-    );
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.EventContainer,
+      pagination: {page, pageSize},
+      findManyArgs: {where},
+    });
   }
 
   @Get(':eventContainerId')
   async getEventContainer(@Param('eventContainerId') eventContainerId: number) {
-    const container = await this.eventContainerService.findUniqueOrThrow({
+    const container = await this.prisma.eventContainer.findUniqueOrThrow({
       where: {id: eventContainerId},
       include: {venue: true},
     });
 
-    const place = await this.placeService.findUniqueOrThrow({
-      where: {id: container['venue']['placeId']},
+    const place = await this.prisma.place.findUniqueOrThrow({
+      where: {id: container['venue']['placeId']!},
       select: {timeZone: true},
     });
 
@@ -125,7 +122,7 @@ export class EventContainerController {
     @Body()
     body: Prisma.EventContainerUncheckedUpdateInput
   ): Promise<EventContainer> {
-    const container = await this.eventContainerService.findUniqueOrThrow({
+    const container = await this.prisma.eventContainer.findUniqueOrThrow({
       where: {id: eventContainerId},
       include: {events: true},
     });
@@ -134,7 +131,7 @@ export class EventContainerController {
       throw new BadRequestException('Already started to schedule.');
     }
 
-    return await this.eventContainerService.update({
+    return await this.prisma.eventContainer.update({
       where: {id: eventContainerId},
       data: body,
     });
@@ -144,7 +141,7 @@ export class EventContainerController {
   async deleteEventContainer(
     @Param('eventContainerId') eventContainerId: number
   ): Promise<EventContainer> {
-    return await this.eventContainerService.delete({
+    return await this.prisma.eventContainer.delete({
       where: {id: eventContainerId},
     });
   }
@@ -155,11 +152,11 @@ export class EventContainerController {
     @Query('weekOfMonth') weekOfMonth: number
   ) {
     // Get event container.
-    const container = await this.eventContainerService.findUniqueOrThrow({
+    const container = await this.prisma.eventContainer.findUniqueOrThrow({
       where: {id: eventContainerId},
     });
 
-    const events = await this.eventService.findMany({
+    const events = await this.prisma.event.findMany({
       where: {
         containerId: eventContainerId,
         year: container.year,
@@ -174,7 +171,7 @@ export class EventContainerController {
       await this.eventIssueService.check(events[i]);
     }
 
-    return await this.eventIssueService.findMany({
+    return await this.prisma.eventIssue.findMany({
       where: {
         status: EventIssueStatus.UNREPAIRED,
         event: {
@@ -200,7 +197,7 @@ export class EventContainerController {
     @Body()
     body: {minutesOfMove: number}
   ) {
-    const events = await this.eventService.findMany({
+    const events = await this.prisma.event.findMany({
       where: {containerId: eventContainerId, deletedAt: null},
     });
 
@@ -215,7 +212,7 @@ export class EventContainerController {
         body.minutesOfMove
       );
 
-      await this.eventService.update({
+      await this.prisma.event.update({
         where: {id: event.id},
         data: {
           datetimeOfStart: newDatetimeOfStart,
@@ -231,7 +228,7 @@ export class EventContainerController {
     @Param('eventContainerId') eventContainerId: number
   ) {
     // [step 1] Get the record.
-    const container = await this.eventContainerService.findUniqueOrThrow({
+    const container = await this.prisma.eventContainer.findUniqueOrThrow({
       where: {id: eventContainerId},
       include: {events: true},
     });
@@ -247,7 +244,7 @@ export class EventContainerController {
 
     // [step 2] Post schedule to Mindbody.
 
-    return await this.eventContainerService.update({
+    return await this.prisma.eventContainer.update({
       where: {id: eventContainerId},
       data: {status: EventContainerStatus.PUBLISHED},
     });

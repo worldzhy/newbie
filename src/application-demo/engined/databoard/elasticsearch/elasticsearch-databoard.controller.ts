@@ -15,17 +15,13 @@ import {
   ElasticsearchDatasourceIndexField,
   Prisma,
 } from '@prisma/client';
-import {ElasticsearchDataboardService} from './elasticsearch-databoard.service';
-import {ElasticsearchDataboardColumnService} from './column/column.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('EngineD / Elasticsearch Databoard')
 @ApiBearerAuth()
 @Controller('elasticsearch-databoards')
 export class ElasticsearchDataboardController {
-  constructor(
-    private readonly elasticsearchDataboardService: ElasticsearchDataboardService,
-    private readonly elasticsearchDataboardColumnService: ElasticsearchDataboardColumnService
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Post('')
   @ApiBody({
@@ -45,25 +41,20 @@ export class ElasticsearchDataboardController {
     @Body()
     body: Prisma.ElasticsearchDataboardUncheckedCreateInput
   ) {
-    return await this.elasticsearchDataboardService.create({data: body});
+    return await this.prisma.elasticsearchDataboard.create({data: body});
   }
 
   @Get('')
   async getElasticsearchDataboards(
     @Query('page') page: number,
     @Query('pageSize') pageSize: number
-  ) {
-    return await this.elasticsearchDataboardService.findManyInManyPages({
-      page,
-      pageSize,
-    });
-  }
+  ) {}
 
   @Get(':databoardId')
   async getElasticsearchDataboard(
     @Param('databoardId') databoardId: string
   ): Promise<ElasticsearchDataboard> {
-    return await this.elasticsearchDataboardService.findUniqueOrThrow({
+    return await this.prisma.elasticsearchDataboard.findUniqueOrThrow({
       where: {id: databoardId},
     });
   }
@@ -84,7 +75,7 @@ export class ElasticsearchDataboardController {
     @Param('databoardId') databoardId: string,
     @Body() body: Prisma.ElasticsearchDataboardUpdateInput
   ): Promise<ElasticsearchDataboard> {
-    return await this.elasticsearchDataboardService.update({
+    return await this.prisma.elasticsearchDataboard.update({
       where: {id: databoardId},
       data: body,
     });
@@ -94,7 +85,7 @@ export class ElasticsearchDataboardController {
   async deleteElasticsearchDataboard(
     @Param('databoardId') databoardId: string
   ): Promise<ElasticsearchDataboard> {
-    return await this.elasticsearchDataboardService.delete({
+    return await this.prisma.elasticsearchDataboard.delete({
       where: {id: databoardId},
     });
   }
@@ -105,7 +96,7 @@ export class ElasticsearchDataboardController {
   ): Promise<ElasticsearchDataboard> {
     // [step 1] Get databoard
     const databoard =
-      await this.elasticsearchDataboardService.findUniqueOrThrow({
+      await this.prisma.elasticsearchDataboard.findUniqueOrThrow({
         where: {id: databoardId},
         include: {datasourceIndex: {include: {fields: true}}},
       });
@@ -114,7 +105,7 @@ export class ElasticsearchDataboardController {
     const datasourceIndexFields: ElasticsearchDatasourceIndexField[] =
       databoard['datasourceIndex']['fields'];
 
-    await this.elasticsearchDataboardColumnService.createMany({
+    await this.prisma.elasticsearchDataboardColumn.createMany({
       data: datasourceIndexFields.map(field => {
         return {
           name: field.name,
@@ -125,7 +116,7 @@ export class ElasticsearchDataboardController {
     });
 
     // [step 3] Update databoard state
-    return await this.elasticsearchDataboardService.update({
+    return await this.prisma.elasticsearchDataboard.update({
       where: {id: databoardId},
       data: {state: ElasticsearchDataboardState.LOADED},
     });
@@ -137,17 +128,17 @@ export class ElasticsearchDataboardController {
   ): Promise<ElasticsearchDataboard> {
     // [step 1] Get databoard
     const databoard =
-      await this.elasticsearchDataboardService.findUniqueOrThrow({
+      await this.prisma.elasticsearchDataboard.findUniqueOrThrow({
         where: {id: databoardId},
       });
 
     // [step 2] Unload columns
-    await this.elasticsearchDataboardColumnService.deleteMany({
+    await this.prisma.elasticsearchDataboardColumn.deleteMany({
       where: {databoardId: databoardId},
     });
 
     // [step 3] Update databoard state
-    return await this.elasticsearchDataboardService.update({
+    return await this.prisma.elasticsearchDataboard.update({
       where: {id: databoardId},
       data: {state: ElasticsearchDataboardState.NOT_LOADED},
     });
@@ -158,7 +149,7 @@ export class ElasticsearchDataboardController {
     @Param('databoardId') databoardId: string
   ): Promise<ElasticsearchDataboard> {
     // [step 1] Get databoard
-    return await this.elasticsearchDataboardService.findUniqueOrThrow({
+    return await this.prisma.elasticsearchDataboard.findUniqueOrThrow({
       where: {id: databoardId},
       include: {columns: true},
     });

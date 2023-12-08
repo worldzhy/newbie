@@ -2,14 +2,14 @@ import {Processor, Process, OnQueueCompleted} from '@nestjs/bull';
 import {Job} from 'bull';
 import {QueueName} from '@microservices/queue/queue.service';
 import {AvailabilityExpressionService} from '@microservices/event-scheduling/availability-expression.service';
-import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
 import {AvailabilityExpressionStatus} from '@prisma/client';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @Processor(QueueName.DEFAULT)
 export class AvailabilityJobConsumer {
   constructor(
-    private availabilityExpressionService: AvailabilityExpressionService,
-    private availabilityTimeslotService: AvailabilityTimeslotService
+    private readonly prisma: PrismaService,
+    private availabilityExpressionService: AvailabilityExpressionService
   ) {}
 
   // @Process({concurrency: 10}) // todo: Check if the concurrency is valid.
@@ -27,15 +27,15 @@ export class AvailabilityJobConsumer {
     }
 
     // [step 2] Delete and create timeslots.
-    await this.availabilityTimeslotService.deleteMany({
+    await this.prisma.availabilityTimeslot.deleteMany({
       where: {expressionId: availabilityExpressionId},
     });
-    await this.availabilityTimeslotService.createMany({
+    await this.prisma.availabilityTimeslot.createMany({
       data: availabilityTimeslots,
     });
 
     // [step 3] Update expression status.
-    await this.availabilityExpressionService.update({
+    await this.prisma.availabilityExpression.update({
       where: {id: availabilityExpressionId},
       data: {
         status: AvailabilityExpressionStatus.PUBLISHED,

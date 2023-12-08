@@ -1,42 +1,34 @@
 import {Injectable} from '@nestjs/common';
-import {UserService} from '@microservices/account/user/user.service';
-import {EventService} from '@microservices/event-scheduling/event.service';
 import {EventTypeService} from '@microservices/event-scheduling/event-type.service';
-import {EventVenueService} from '@microservices/event-scheduling/event-venue.service';
-import {EventContainerService} from '@microservices/event-scheduling/event-container.service';
 import {SnowflakeService} from '@toolkit/snowflake/snowflake.service';
 import {EventContainerOrigin, EventContainerStatus} from '@prisma/client';
 import {getTimeZoneOffset} from '@toolkit/utilities/datetime.util';
-import {PlaceService} from '@microservices/map/place.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @Injectable()
 export class RawDataSchedulingService {
   constructor(
+    private readonly prisma: PrismaService,
     private readonly snowflakeService: SnowflakeService,
-    private readonly eventService: EventService,
-    private readonly eventTypeService: EventTypeService,
-    private readonly eventVenueService: EventVenueService,
-    private readonly placeService: PlaceService,
-    private readonly eventContainerService: EventContainerService,
-    private readonly userService: UserService
+    private readonly eventTypeService: EventTypeService
   ) {}
 
   async synchronize(params: {venueId: number; year: number; month: number}) {
     const {venueId, year, month} = params;
 
     // [step 1] Get event venue.
-    const venue = await this.eventVenueService.findUniqueOrThrow({
+    const venue = await this.prisma.eventVenue.findUniqueOrThrow({
       where: {id: venueId},
     });
     const timeZone = (
-      await this.placeService.findUniqueOrThrow({
+      await this.prisma.place.findUniqueOrThrow({
         where: {id: venue.placeId!},
         select: {timeZone: true},
       })
     ).timeZone;
 
     // [step 2] Check if the data has been fetched.
-    let count = await this.eventContainerService.count({
+    let count = await this.prisma.eventContainer.count({
       where: {
         origin: EventContainerOrigin.EXTERNAL,
         status: EventContainerStatus.PUBLISHED,
@@ -49,7 +41,7 @@ export class RawDataSchedulingService {
       return;
     }
 
-    const eventContainer = await this.eventContainerService.create({
+    const eventContainer = await this.prisma.eventContainer.create({
       data: {
         name: `[Snowflake data] ${month}/${year} ${venue.name}`,
         origin: EventContainerOrigin.EXTERNAL,
@@ -117,7 +109,7 @@ export class RawDataSchedulingService {
     const visits: any = await this.snowflakeService.execute(options);
 
     if (visits.length > 0) {
-      await this.eventService.createMany({
+      await this.prisma.event.createMany({
         data: (
           await Promise.all(
             visits.map(
@@ -149,7 +141,7 @@ export class RawDataSchedulingService {
                 if (visit.TREMAILNAME.endsWith('.')) {
                   visit.TREMAILNAME = visit.TREMAILNAME.slice(0, -1);
                 }
-                const coach = await this.userService.findUnique({
+                const coach = await this.prisma.user.findUnique({
                   where: {email: visit.TREMAILNAME},
                   select: {id: true},
                 });
@@ -186,14 +178,14 @@ export class RawDataSchedulingService {
         }),
       });
 
-      await this.eventContainerService.update({
+      await this.prisma.eventContainer.update({
         where: {id: eventContainer.id},
         data: {
           status: EventContainerStatus.PUBLISHED,
         },
       });
     } else {
-      await this.eventContainerService.delete({
+      await this.prisma.eventContainer.delete({
         where: {id: eventContainer.id},
       });
     }
