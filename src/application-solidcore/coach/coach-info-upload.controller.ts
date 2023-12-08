@@ -9,7 +9,7 @@ import {ApiBearerAuth, ApiTags} from '@nestjs/swagger';
 import {FileInterceptor} from '@nestjs/platform-express';
 import {Express} from 'express';
 import {XLSXService} from '@toolkit/xlsx/xlsx.service';
-import {UserService} from '@microservices/account/user/user.service';
+import {UserService} from '@microservices/account/user.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Coach')

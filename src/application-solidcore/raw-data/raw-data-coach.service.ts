@@ -1,5 +1,5 @@
 import {Injectable} from '@nestjs/common';
-import {UserService} from '@microservices/account/user/user.service';
+import {UserService} from '@microservices/account/user.service';
 import {SnowflakeService} from '@toolkit/snowflake/snowflake.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 

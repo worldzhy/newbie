@@ -10,9 +10,9 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Prisma, User} from '@prisma/client';
-import {RoleService} from '@microservices/account/role/role.service';
+import {RoleService} from '@microservices/account/role.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {UserService} from '@microservices/account/user/user.service';
+import {UserService} from '@microservices/account/user.service';
 
 @ApiTags('Area Manager')
 @ApiBearerAuth()

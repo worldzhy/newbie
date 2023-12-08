@@ -11,7 +11,7 @@ import {ApiTags, ApiBody, ApiBearerAuth} from '@nestjs/swagger';
 import {Prisma, VerificationCodeUse} from '@prisma/client';
 import {Request} from 'express';
 import {AccountService} from '@microservices/account/account.service';
-import {VerificationCodeService} from '@microservices/account/verification-code/verification-code.service';
+import {VerificationCodeService} from '@microservices/account/verification-code.service';
 import {Public} from '@microservices/account/security/authentication/public/public.decorator';
 import {verifyEmail, verifyPhone} from '@toolkit/validators/user.validator';
 import {compareHash} from '@toolkit/utilities/common.util';

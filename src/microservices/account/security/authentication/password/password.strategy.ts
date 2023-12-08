@@ -6,7 +6,7 @@ import {
 import {PassportStrategy} from '@nestjs/passport';
 import {Strategy} from 'passport-local';
 import {compareHash} from '@toolkit/utilities/common.util';
-import {UserService} from '@microservices/account/user/user.service';
+import {UserService} from '@microservices/account/user.service';
 import {
   IpLoginLimiterService,
   UserLoginLimiterService,

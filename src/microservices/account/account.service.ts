@@ -4,12 +4,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {UserStatus, VerificationCodeUse} from '@prisma/client';
-import {VerificationCodeService} from '@microservices/account/verification-code/verification-code.service';
+import {VerificationCodeService} from '@microservices/account/verification-code.service';
 import {NotificationService} from '@microservices/notification/notification.service';
 import {AccessTokenService} from '@microservices/token/access-token/access-token.service';
 import {RefreshTokenService} from '@microservices/token/refresh-token/refresh-token.service';
 import {getSecondsUntilunixTimestamp} from '@toolkit/utilities/datetime.util';
-import {UserService} from '@microservices/account/user/user.service';
+import {UserService} from '@microservices/account/user.service';
 import {Request} from 'express';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 

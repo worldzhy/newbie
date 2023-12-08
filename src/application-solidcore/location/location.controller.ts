@@ -13,7 +13,7 @@ import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {EventVenue, Place, Prisma} from '@prisma/client';
 import {AccountService} from '@microservices/account/account.service';
 import {Request} from 'express';
-import {RoleService} from '@microservices/account/role/role.service';
+import {RoleService} from '@microservices/account/role.service';
 import * as _ from 'lodash';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 

@@ -5,8 +5,8 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import {VerificationCodeService} from '@microservices/account/verification-code/verification-code.service';
-import {UserService} from '@microservices/account/user/user.service';
+import {VerificationCodeService} from '@microservices/account/verification-code.service';
+import {UserService} from '@microservices/account/user.service';
 import {verifyEmail, verifyPhone} from '@toolkit/validators/user.validator';
 import {
   IpLoginLimiterService,

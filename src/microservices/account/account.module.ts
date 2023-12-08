@@ -7,13 +7,13 @@ import {AuthProfileStrategy} from './security/authentication/profile/profile.str
 import {AuthUuidStrategy} from './security/authentication/uuid/uuid.strategy';
 import {AuthVerificationCodeStrategy} from './security/authentication/verification-code/verification-code.strategy';
 import {AuthRefreshStrategy} from './security/authentication/refresh/refresh.strategy';
-import {RoleService} from './role/role.service';
-import {UserService} from './user/user.service';
+import {RoleService} from './role.service';
+import {UserService} from './user.service';
 import {
   IpLoginLimiterService,
   UserLoginLimiterService,
 } from './security/login-limiter/login-limiter.service';
-import {VerificationCodeService} from './verification-code/verification-code.service';
+import {VerificationCodeService} from './verification-code.service';
 import {AccountService} from './account.service';
 
 import {AuthenticationGuard} from './security/authentication/authentication.guard';
