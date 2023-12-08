@@ -1,14 +1,18 @@
 import {Inject, Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
+import {CACHE_MANAGER} from '@nestjs/cache-manager';
+import {Cache} from 'cache-manager';
 import {Cron} from '@nestjs/schedule';
 import {AvailabilityService} from './availability.service';
 import {AvailabilityExpressionService} from '@microservices/event-scheduling/availability-expression.service';
 import {AvailabilityExpressionStatus} from '@prisma/client';
 import {QueueService} from '@microservices/queue/queue.service';
-import {CACHE_MANAGER} from '@nestjs/cache-manager';
-import {Cache} from 'cache-manager';
+
+import {currentQuarter} from '@toolkit/utilities/datetime.util';
 
 const cluster = require('node:cluster');
+
+const LAST_DAY_FOR_EACH_QUARTER = 10;
 
 @Injectable()
 export class AvailabilityJobProducer {
@@ -30,7 +34,35 @@ export class AvailabilityJobProducer {
     }
 
     // [step 1] Fetch google form to create availability expressions.
-    await this.availabilityService.fetchGoogleForm();
+    const now = new Date();
+    let year = now.getFullYear();
+    const month = now.getMonth() + 1;
+    const dayOfMonth = now.getDate();
+    let quarter = currentQuarter();
+
+    if (month in [1, 2, 3]) {
+      quarter = 1;
+      if (month === 3 && dayOfMonth > LAST_DAY_FOR_EACH_QUARTER) {
+        quarter = 2;
+      }
+    } else if (month in [4, 5, 6]) {
+      quarter = 2;
+      if (month === 6 && dayOfMonth > LAST_DAY_FOR_EACH_QUARTER) {
+        quarter = 3;
+      }
+    } else if (month in [7, 8, 9]) {
+      quarter = 3;
+      if (month === 9 && dayOfMonth > LAST_DAY_FOR_EACH_QUARTER) {
+        quarter = 4;
+      }
+    } else if (month in [10, 11, 12]) {
+      quarter = 4;
+      if (month === 12 && dayOfMonth > LAST_DAY_FOR_EACH_QUARTER) {
+        quarter = 1;
+        year += 1;
+      }
+    }
+    await this.availabilityService.fetchGoogleForm({year, quarter});
 
     // [step 2] Get unpublished expressions.
     const exps = await this.availabilityExpressionService.findMany({

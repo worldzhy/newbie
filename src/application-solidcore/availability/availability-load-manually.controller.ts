@@ -1,3 +1,4 @@
+import {Express} from 'express';
 import {
   Body,
   Controller,
@@ -8,15 +9,7 @@ import {
 } from '@nestjs/common';
 import {ApiBearerAuth, ApiBody, ApiTags} from '@nestjs/swagger';
 import {FileInterceptor} from '@nestjs/platform-express';
-import {Express} from 'express';
 import {AvailabilityService} from './availability.service';
-
-enum QUARTER {
-  Q1 = 'Q1',
-  Q2 = 'Q2',
-  Q3 = 'Q3',
-  Q4 = 'Q4',
-}
 
 @ApiTags('Availability')
 @ApiBearerAuth()
@@ -27,7 +20,7 @@ export class AvailabilityUploadController {
   @Post('upload-file')
   @ApiBody({
     description: '',
-    examples: {a: {value: {year: 2023, quarter: 'Q4'}}},
+    examples: {a: {value: {year: 2023, quarter: 4}}},
   })
   @UseInterceptors(FileInterceptor('file'))
   async loadAvailabilityFile(
@@ -40,18 +33,24 @@ export class AvailabilityUploadController {
         .build()
     )
     file: Express.Multer.File,
-    @Body() body: {year: string; quarter: QUARTER}
+    @Body() body: {year: string; quarter: string}
   ) {
-    await this.availabilityService.parseXLSXFile({
+    await this.availabilityService.parseXLSXFile(file, {
       year: parseInt(body.year),
-      quarter: body.quarter,
-      file,
+      quarter: parseInt(body.quarter),
     });
   }
 
   @Post('fetch-google-form')
-  async fetchGoogleForm() {
-    await this.availabilityService.fetchGoogleForm();
+  @ApiBody({
+    description: '',
+    examples: {a: {value: {year: 2023, quarter: 4}}},
+  })
+  async fetchGoogleForm(@Body() body: {year: string; quarter: string}) {
+    await this.availabilityService.fetchGoogleForm({
+      year: parseInt(body.year),
+      quarter: parseInt(body.quarter),
+    });
   }
 
   // End

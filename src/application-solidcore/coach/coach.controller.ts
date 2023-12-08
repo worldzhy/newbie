@@ -21,6 +21,7 @@ import {UserService} from '@microservices/account/user/user.service';
 import {RoleService} from '@microservices/account/role/role.service';
 import {AccountService} from '@microservices/account/account.service';
 import {AvailabilityExpressionService} from '@microservices/event-scheduling/availability-expression.service';
+import {EventVenueService} from '@microservices/event-scheduling/event-venue.service';
 
 const DEFAULT_PASSWORD = 'x8nwFP814HIk!';
 
@@ -29,10 +30,11 @@ const DEFAULT_PASSWORD = 'x8nwFP814HIk!';
 @Controller('coaches')
 export class CoachController {
   constructor(
-    private userService: UserService,
-    private roleService: RoleService,
+    private readonly userService: UserService,
+    private readonly roleService: RoleService,
     private readonly accountService: AccountService,
-    private availabilityExpressionService: AvailabilityExpressionService
+    private readonly availabilityExpressionService: AvailabilityExpressionService,
+    private readonly eventVenueService: EventVenueService
   ) {}
 
   @Post('')
@@ -80,6 +82,119 @@ export class CoachController {
         profile: true,
       },
     });
+  }
+
+  @Post('filter')
+  async getUsersByFilter(
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number,
+    @Body()
+    body?: {
+      name?: string;
+      muiFilter?: {
+        items: {
+          field: string;
+          operator: string;
+          id: number;
+          value: string;
+          fromInput: string;
+        }[];
+        logicOperator: string;
+        quickFilterValues: [];
+        quickFilterLogicOperator: string;
+      };
+    }
+  ) {
+    // [step 1] Construct where argument.
+    const roleFilter = {roles: {some: {name: RoleService.names.COACH}}};
+    const searchFilter = {};
+    if (body) {
+      if (body.name) {
+        const name = body.name.trim();
+        if (name.length > 0) {
+          if (verifyEmail(name)) {
+            searchFilter['email'] = name;
+          } else {
+            searchFilter['profile'] ??= {};
+            searchFilter['profile']['fullName'] = {
+              contains: name,
+              mode: 'insensitive',
+            };
+          }
+        }
+      }
+      if (body.muiFilter) {
+        for (let i = 0; i < body.muiFilter.items.length; i++) {
+          const item = body.muiFilter.items[i];
+          if (item.field === 'eventVenueIds' && item.value) {
+            const venue = await this.eventVenueService.findFirst({
+              where: {name: {[item.operator]: item.value, mode: 'insensitive'}},
+              select: {id: true},
+            });
+            if (venue) {
+              searchFilter['profile'] ??= {};
+              searchFilter['profile']['eventVenueIds'] = {has: venue.id};
+            }
+          }
+        }
+      }
+    }
+
+    // [step 2] Get coaches.
+    const result = await this.userService.findManyInManyPages(
+      {page, pageSize},
+      {
+        where: {AND: [roleFilter, searchFilter]},
+        include: {profile: true},
+        orderBy: {profile: {fullName: 'asc'}},
+      }
+    );
+    const coaches = result.records as User[];
+
+    // [step 3] Attach availability information.
+    const thisYear = new Date().getFullYear();
+    const thisQuarter = currentQuarter();
+    for (let i = 0; i < coaches.length; i++) {
+      const coach = coaches[i];
+      // Attach current quarter availability status.
+      const expOfCurrentQuarter =
+        await this.availabilityExpressionService.findFirst({
+          where: {
+            hostUserId: coach.id,
+            dateOfOpening: firstDayOfQuarter(thisYear, thisQuarter),
+          },
+        });
+      coach['profile']['availabilityOfCurrentQuarter'] = expOfCurrentQuarter
+        ? expOfCurrentQuarter.status
+        : 'None';
+
+      // Attach next quarter availability status.
+      let nextYear = thisYear;
+      let nextQuarter = thisQuarter;
+      if (thisQuarter === 4) {
+        nextYear += 1;
+        nextQuarter = 1;
+      } else {
+        nextQuarter += 1;
+      }
+      const expOfNextQuarter =
+        await this.availabilityExpressionService.findFirst({
+          where: {
+            hostUserId: coach.id,
+            dateOfOpening: firstDayOfQuarter(nextYear, nextQuarter),
+          },
+        });
+      coach['profile']['availabilityOfNextQuarter'] = expOfNextQuarter
+        ? expOfNextQuarter.status
+        : 'None';
+    }
+
+    // [step 4] Return users without password.
+    result.records = coaches.map(coach => {
+      return this.userService.withoutPassword(coach);
+    });
+
+    return result;
   }
 
   @Get('')
@@ -181,7 +296,9 @@ export class CoachController {
   ) {
     // [step 1] Get user info.
     const user: any = await this.accountService.me(request);
-    const isAdmin = !!user?.roles?.find(({name}) => name === RoleService.names.ADMIN);
+    const isAdmin = !!user?.roles?.find(
+      ({name}) => name === RoleService.names.ADMIN
+    );
     const eventVenueIds = user?.profile?.eventVenueIds ?? [];
 
     if (!isAdmin && !eventVenueIds.includes(venueId)) {
@@ -189,13 +306,14 @@ export class CoachController {
     }
 
     // [step 2] Get coaches.
-    const result: User[] = await this.userService.findMany(
-      {
-        where: {roles: {some: {name: RoleService.names.COACH}}, profile: {eventVenueIds: {has: venueId}}},
-        include: {profile: true},
-        orderBy: {profile: {fullName: 'asc'}},
-      }
-    );
+    const result: User[] = await this.userService.findMany({
+      where: {
+        roles: {some: {name: RoleService.names.COACH}},
+        profile: {eventVenueIds: {has: venueId}},
+      },
+      include: {profile: true},
+      orderBy: {profile: {fullName: 'asc'}},
+    });
 
     return result;
   }

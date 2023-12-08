@@ -1,3 +1,4 @@
+import {Express} from 'express';
 import {forms_v1} from '@googleapis/forms';
 import {UserProfileService} from '@microservices/account/user/user-profile.service';
 import {UserService} from '@microservices/account/user/user.service';
@@ -7,23 +8,15 @@ import {GoogleFormsService} from '@microservices/googleapis/google-forms.service
 import {BadRequestException, Injectable} from '@nestjs/common';
 import {User} from '@prisma/client';
 import {
-  currentQuarter,
   firstDayOfMonth,
   lastDayOfMonth,
 } from '@toolkit/utilities/datetime.util';
 import {XLSXService} from '@toolkit/xlsx/xlsx.service';
 
-enum QUARTER {
-  Q1 = 'Q1',
-  Q2 = 'Q2',
-  Q3 = 'Q3',
-  Q4 = 'Q4',
-}
 const HOUR_OF_DAY_START = 5;
 const HOUR_OF_DAY_END = 22;
 const COACH_AVAILABILITY_DURATION_GOOGLE_FORM = 15;
 const FORM_ID = '1xB_y800-DRU5EtAI_AAHrQHdlfstRpikVJy6rYlBnMk';
-const LAST_DAY_FOR_EACH_QUARTER = 28;
 
 enum FormItemTitle {
   Email = 'Email',
@@ -47,43 +40,17 @@ export class AvailabilityService {
     private readonly eventVenueService: EventVenueService
   ) {}
 
-  async parseXLSXFile(params: {
-    year: number;
-    quarter: string;
-    file: Express.Multer.File;
-  }) {
+  async parseXLSXFile(
+    file: Express.Multer.File,
+    params: {year: number; quarter: number}
+  ) {
     // [step 1] Process quarter.
-    let stringMonths = '1';
-    let dateOfOpening = new Date();
-    let dateOfClosure = new Date();
-    switch (params.quarter) {
-      case QUARTER.Q1:
-        stringMonths = '1-3';
-        dateOfOpening = firstDayOfMonth(params.year, 1);
-        dateOfClosure = lastDayOfMonth(params.year, 3);
-        break;
-      case QUARTER.Q2:
-        stringMonths = '4-6';
-        dateOfOpening = firstDayOfMonth(params.year, 4);
-        dateOfClosure = lastDayOfMonth(params.year, 6);
-        break;
-      case QUARTER.Q3:
-        stringMonths = '7-9';
-        dateOfOpening = firstDayOfMonth(params.year, 7);
-        dateOfClosure = lastDayOfMonth(params.year, 9);
-        break;
-      case QUARTER.Q4:
-        stringMonths = '10-12';
-        dateOfOpening = firstDayOfMonth(params.year, 10);
-        dateOfClosure = lastDayOfMonth(params.year, 12);
-        break;
-      default:
-        throw new BadRequestException('Bad parameter: quarter');
-    }
+    const {stringMonths, dateOfOpening, dateOfClosure} =
+      this.generateSpecificParams(params.year, params.quarter);
 
     // [step 2] Process excel data.
     const xlsx = new XLSXService();
-    xlsx.loadFile(params.file);
+    xlsx.loadFile(file);
 
     const sheets = xlsx.getSheets();
     const sheet = sheets[0];
@@ -222,7 +189,7 @@ export class AvailabilityService {
       await this.availabilityExpressionService.deleteMany({
         where: {
           name: {
-            contains: params.year + ' ' + params.quarter,
+            contains: params.year + ' Q' + params.quarter,
             mode: 'insensitive',
           },
           hostUserId: coach.id,
@@ -235,7 +202,7 @@ export class AvailabilityService {
             coach['profile'].fullName +
             ' - ' +
             params.year +
-            ' ' +
+            ' Q' +
             params.quarter,
           hostUserId: coach.id,
           venueIds: coachLocationIds,
@@ -261,64 +228,10 @@ export class AvailabilityService {
     }
   }
 
-  async fetchGoogleForm() {
-    const now = new Date();
-    let year = now.getFullYear();
-    const month = now.getMonth() + 1;
-    const dayOfMonth = now.getDate();
-    let quarter = currentQuarter();
-
-    if (month in [1, 2, 3]) {
-      quarter = 1;
-      if (month === 3 && dayOfMonth > LAST_DAY_FOR_EACH_QUARTER) {
-        quarter = 2;
-      }
-    } else if (month in [4, 5, 6]) {
-      quarter = 2;
-      if (month === 6 && dayOfMonth > LAST_DAY_FOR_EACH_QUARTER) {
-        quarter = 3;
-      }
-    } else if (month in [7, 8, 9]) {
-      quarter = 3;
-      if (month === 9 && dayOfMonth > LAST_DAY_FOR_EACH_QUARTER) {
-        quarter = 4;
-      }
-    } else if (month in [10, 11, 12]) {
-      quarter = 4;
-      if (month === 12 && dayOfMonth > LAST_DAY_FOR_EACH_QUARTER) {
-        quarter = 1;
-        year += 1;
-      }
-    }
-
+  async fetchGoogleForm(params: {year: number; quarter: number}) {
     // [step 1] Process quarter.
-    let stringMonths = '1';
-    let dateOfOpening: Date;
-    let dateOfClosure: Date;
-    switch (quarter) {
-      case 1:
-        stringMonths = '1-3';
-        dateOfOpening = firstDayOfMonth(year, 1);
-        dateOfClosure = lastDayOfMonth(year, 3);
-        break;
-      case 2:
-        stringMonths = '4-6';
-        dateOfOpening = firstDayOfMonth(year, 4);
-        dateOfClosure = lastDayOfMonth(year, 6);
-        break;
-      case 3:
-        stringMonths = '7-9';
-        dateOfOpening = firstDayOfMonth(year, 7);
-        dateOfClosure = lastDayOfMonth(year, 9);
-        break;
-      case 4:
-        stringMonths = '10-12';
-        dateOfOpening = firstDayOfMonth(year, 10);
-        dateOfClosure = lastDayOfMonth(year, 12);
-        break;
-      default:
-        throw new BadRequestException('Bad parameter: quarter');
-    }
+    const {stringMonths, dateOfOpening, dateOfClosure} =
+      this.generateSpecificParams(params.year, params.quarter);
 
     // [step 2] Parse google form.
     let emailItemQuestionId: string = '';
@@ -655,7 +568,10 @@ export class AvailabilityService {
       const resultOfDelete =
         await this.availabilityExpressionService.deleteMany({
           where: {
-            name: {contains: year + ' Q' + quarter, mode: 'insensitive'},
+            name: {
+              contains: params.year + ' Q' + params.quarter,
+              mode: 'insensitive',
+            },
             hostUserId: coach.id,
           },
         });
@@ -667,7 +583,12 @@ export class AvailabilityService {
 
       await this.availabilityExpressionService.create({
         data: {
-          name: coach['profile'].fullName + ' - ' + year + ' Q' + quarter,
+          name:
+            coach['profile'].fullName +
+            ' - ' +
+            params.year +
+            ' Q' +
+            params.quarter,
           hostUserId: coach.id,
           venueIds: coachLocationIds,
           cronExpressionsOfAvailableTimePoints: cronExpressions,
@@ -678,5 +599,37 @@ export class AvailabilityService {
         },
       });
     }
+  }
+
+  private generateSpecificParams(year: number, quarter: number) {
+    let stringMonths = '1';
+    let dateOfOpening: Date;
+    let dateOfClosure: Date;
+    switch (quarter) {
+      case 1:
+        stringMonths = '1-3';
+        dateOfOpening = firstDayOfMonth(year, 1);
+        dateOfClosure = lastDayOfMonth(year, 3);
+        break;
+      case 2:
+        stringMonths = '4-6';
+        dateOfOpening = firstDayOfMonth(year, 4);
+        dateOfClosure = lastDayOfMonth(year, 6);
+        break;
+      case 3:
+        stringMonths = '7-9';
+        dateOfOpening = firstDayOfMonth(year, 7);
+        dateOfClosure = lastDayOfMonth(year, 9);
+        break;
+      case 4:
+        stringMonths = '10-12';
+        dateOfOpening = firstDayOfMonth(year, 10);
+        dateOfClosure = lastDayOfMonth(year, 12);
+        break;
+      default:
+        throw new BadRequestException('Bad parameter: quarter');
+    }
+
+    return {stringMonths, dateOfOpening, dateOfClosure};
   }
 }

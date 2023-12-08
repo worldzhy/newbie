@@ -6,6 +6,12 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 export class EventVenueService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async findFirst(
+    args: Prisma.EventVenueFindFirstArgs
+  ): Promise<EventVenue | null> {
+    return await this.prisma.eventVenue.findFirst(args);
+  }
+
   async findUniqueOrThrow(
     args: Prisma.EventVenueFindUniqueOrThrowArgs
   ): Promise<EventVenue> {
