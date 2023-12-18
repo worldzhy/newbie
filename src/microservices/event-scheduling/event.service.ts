@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {Prisma, Event} from '@prisma/client';
-import {daysOfMonth} from '@toolkit/utilities/datetime.util';
+import {constructDateTime, daysOfMonth} from '@toolkit/utilities/datetime.util';
 
 @Injectable()
 export class EventService {
@@ -45,15 +45,15 @@ export class EventService {
               dayOfSourceWeek.dayOfMonth === event.dayOfMonth &&
               dayOfSourceWeek.dayOfWeek === event.dayOfWeek
             ) {
-              /*
-               ! With `const datetimeOfStart = event.datetimeOfStart;`,
-               ! when you set datetimeOfStart with new FullYear, Month and Date, 
-               ! the original event.datetimeOfStart will be changed.
-              */
-              const datetimeOfStart = new Date(event.datetimeOfStart);
-              datetimeOfStart.setFullYear(dayOfTargetWeek.year);
-              datetimeOfStart.setMonth(dayOfTargetWeek.month - 1);
-              datetimeOfStart.setDate(dayOfTargetWeek.dayOfMonth);
+              const datetimeOfStart = constructDateTime(
+                dayOfTargetWeek.year,
+                dayOfTargetWeek.month,
+                dayOfTargetWeek.dayOfMonth,
+                event.hour,
+                event.minute,
+                0,
+                event.timeZone
+              );
 
               targetEvents.push({
                 hostUserId: event.hostUserId,
