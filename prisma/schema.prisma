@@ -110,6 +110,7 @@ model UserProfile {
   quotaOfWeekMaxPreference Int?
   quotaOfWeek              Int? // The number of classes a coach should teach at least in a week.
 
+  @@index([userId])
   @@schema("microservice/account")
 }
 
@@ -326,6 +327,7 @@ model AvailabilityTimeslot {
   expression        AvailabilityExpression     @relation(fields: [expressionId], references: [id], onDelete: Cascade)
   expressionId      Int
 
+  @@index([hostUserId, venueIds, datetimeOfStart, datetimeOfEnd])
   @@schema("microservice/event-scheduling")
 }
 
@@ -360,6 +362,9 @@ model Event {
   containerId       Int
   reservations      Reservation[]
 
+  @@index([containerId, year, month, weekOfMonth, deletedAt])
+  @@index([hostUserId, venueId, datetimeOfStart, datetimeOfEnd, deletedAt])
+  @@index([deletedAt])
   @@schema("microservice/event-scheduling")
 }
 
