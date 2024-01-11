@@ -1,5 +1,5 @@
 import {Module} from '@nestjs/common';
-import {ApplicationBaseModule} from '@application-base/application-base.module';
+import {Application0Module} from '@application0/application0.module';
 
 import {EnginedModule} from './engined/engined.module';
 
@@ -19,7 +19,7 @@ import {WarehouseController} from './stock-mgmt/warehouse.controller';
 
 @Module({
   imports: [
-    ApplicationBaseModule, // Hope you enjoy the Newbie!
+    Application0Module, // Hope you enjoy the Newbie!
     EnginedModule,
   ],
   controllers: [

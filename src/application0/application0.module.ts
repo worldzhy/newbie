@@ -36,11 +36,11 @@ import {RoleController} from './account/role/role.controller';
 import {UserController} from './account/user/user.controller';
 import {TagController} from './tag/tag.controller';
 import {TagGroupController} from './tag/tag-group.controller';
-import {WorkflowController} from '../application-base/workflow/workflow.controller';
-import {WorkflowStateController} from '../application-base/workflow/workflow-state.controller';
-import {WorkflowViewController} from '../application-base/workflow/workflow-view.controller';
-import {WorkflowViewComponentController} from '../application-base/workflow/workflow-view-component.controller';
-import {WorkflowRouteController} from '../application-base/workflow/workflow-route.controller';
+import {WorkflowController} from './workflow/workflow.controller';
+import {WorkflowStateController} from './workflow/workflow-state.controller';
+import {WorkflowViewController} from './workflow/workflow-view.controller';
+import {WorkflowViewComponentController} from './workflow/workflow-view-component.controller';
+import {WorkflowRouteController} from './workflow/workflow-route.controller';
 
 @Module({
   imports: [
@@ -89,7 +89,7 @@ import {WorkflowRouteController} from '../application-base/workflow/workflow-rou
     {provide: APP_FILTER, useClass: ThrottlerExceptionFilter}, // 1st priority for exceptions thrown by throttler (rate limit).
   ],
 })
-export class ApplicationBaseModule {
+export class Application0Module {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(HttpMiddleware).forRoutes('*');
   }

@@ -22,7 +22,7 @@
       "@_decorator/*": ["src/_decorator/*"],
       "@_filter/*": ["src/_filter/*"],
       "@_middleware/*": ["src/_middleware/*"],
-      "@application-base/*": ["src/application-base/*"],
+      "@application0/*": ["src/application0/*"],
       "@microservices/*": ["src/microservices/*"],
       "@toolkit/*": ["src/toolkit/*"]
     }

@@ -1,5 +1,5 @@
 import {Module} from '@nestjs/common';
-import {ApplicationBaseModule} from '@application-base/application-base.module';
+import {Application0Module} from '@application0/application0.module';
 
 import {AvailabilityModule} from './availability/availability.module';
 import {ClassModule} from './class/class.module';
@@ -17,7 +17,7 @@ import {TagController} from './tag/tag.controller';
 
 @Module({
   imports: [
-    ApplicationBaseModule, // Hope you enjoy the Newbie!
+    Application0Module, // Hope you enjoy the Newbie!
     AvailabilityModule,
     ClassModule,
     CoachModule,
