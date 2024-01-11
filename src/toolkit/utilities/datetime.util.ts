@@ -92,7 +92,7 @@ export function weekOfMonth(year: number, month: number, day: number) {
   const date = new Date(year, month - 1, day);
   const dayOfWeek = date.getDay();
   const dayOfMonth = date.getDate();
-  return Math.ceil((dayOfMonth + (dayOfWeek == 0 ? 0 : 6 - dayOfWeek)) / 7);
+  return Math.ceil((dayOfMonth + (dayOfWeek === 0 ? 0 : 6 - dayOfWeek)) / 7);
 }
 
 /**
@@ -208,8 +208,8 @@ export function getTimeZoneOffset(date: Date = new Date(), timeZone?: string) {
  * Example: September, 2023
  * generateMonthlyCalendar(2023, 9) =>
   [
-    [ { year: 2023, month: 9, dayOfMonth: 1, dayOfWeek: 5 }, 
-      { year: 2023, month: 9, dayOfMonth: 2, dayOfWeek: 6 } 
+    [ { year: 2023, month: 9, dayOfMonth: 1, dayOfWeek: 5 },
+      { year: 2023, month: 9, dayOfMonth: 2, dayOfWeek: 6 }
     ],
     [
       { year: 2023, month: 9, dayOfMonth: 3, dayOfWeek: 0 },
@@ -223,7 +223,11 @@ export function getTimeZoneOffset(date: Date = new Date(), timeZone?: string) {
     ...
   ]
  */
-export function daysOfMonth(year: number, month: number) {
+export function daysOfMonth(
+  year: number,
+  month: number,
+  selectedWeek?: number
+) {
   const numberOfDays = new Date(year, month, 0).getDate(); // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/Date#syntax
 
   const daysOfMonth: {
@@ -244,6 +248,12 @@ export function daysOfMonth(year: number, month: number) {
     if (dayOfWeek === 1 && day !== 1) {
       week += 1;
       daysOfMonth[week - 1] = [];
+    }
+
+    if (selectedWeek) {
+      if (week !== selectedWeek) {
+        continue;
+      }
     }
 
     daysOfMonth[week - 1].push({
@@ -297,7 +307,7 @@ export function daysOfWeek(
   return daysOfWeek;
 }
 
-export function sameDaysOfMonth(
+export function sameWeekdaysOfMonth(
   year: number,
   month: number,
   dayOfMonth: number
@@ -305,7 +315,7 @@ export function sameDaysOfMonth(
   const numberOfDays = new Date(year, month, 0).getDate(); // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/Date#syntax
   const specificDayOfWeek = new Date(year, month - 1, dayOfMonth).getDay();
 
-  const sameDaysOfMonth: {
+  const sameWeekdaysOfMonth: {
     year: number;
     month: number;
     dayOfMonth: number;
@@ -324,7 +334,7 @@ export function sameDaysOfMonth(
       week += 1;
     }
     if (dayOfWeek === specificDayOfWeek) {
-      sameDaysOfMonth.push({
+      sameWeekdaysOfMonth.push({
         year,
         month,
         dayOfMonth,
@@ -334,5 +344,5 @@ export function sameDaysOfMonth(
       });
     }
   }
-  return sameDaysOfMonth;
+  return sameWeekdaysOfMonth;
 }

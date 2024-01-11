@@ -15,13 +15,22 @@ import {
   Event,
   EventChangeLogType,
   EventIssueStatus,
+  EventPublishStatus,
 } from '@prisma/client';
+import {EventService} from '@microservices/event-scheduling/event.service';
 import {EventIssueService} from '@microservices/event-scheduling/event-issue.service';
-import {ScToMbService} from 'src/application-solidcore/mindbody/scToMb.service';
-import {AsyncPublishService} from 'src/application-solidcore/schedule/async-publish.service';
+import {AsyncPublishService} from './async-publish.service';
 import {OnEvent} from '@nestjs/event-emitter';
-import {sameDaysOfMonth} from '@toolkit/utilities/datetime.util';
+import {MindbodyService} from '../mindbody/mindbody.service';
+import {
+  constructDateTime,
+  datePlusMinutes,
+  sameWeekdaysOfMonth,
+} from '@toolkit/utilities/datetime.util';
+import * as _ from 'lodash';
+import {ScToMbService2} from '../mindbody/scToMb2.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {RawDataCoachService} from '../raw-data/raw-data-coach.service';
 
 @ApiTags('Event')
 @ApiBearerAuth()
@@ -29,9 +38,11 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 export class EventController {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly eventService: EventService,
     private readonly eventIssueService: EventIssueService,
-    private readonly scToMbService: ScToMbService,
-    private readonly asyncPublishService: AsyncPublishService
+    private readonly asyncPublishService: AsyncPublishService,
+    private readonly mindbodyService: MindbodyService,
+    private readonly rawDataCoachService: RawDataCoachService
   ) {}
 
   @Post('')
@@ -65,6 +76,9 @@ export class EventController {
     });
     body.minutesOfDuration = eventType.minutesOfDuration;
 
+    const {needToDuplicate} = body;
+
+    delete body.needToDuplicate;
     const event = await this.prisma.event.create({
       data: body,
       include: {type: true},
@@ -94,20 +108,44 @@ export class EventController {
     });
 
     // [step 5] Duplicate events.
-    if (body.needToDuplicate) {
-      const sameDays = sameDaysOfMonth(
+    if (needToDuplicate) {
+      const sameWeekdays = sameWeekdaysOfMonth(
         event.year,
         event.month,
         event.dayOfMonth
       );
-      for (let i = 0; i < sameDays.length; i++) {
-        const sameDay = sameDays[i];
-        if (sameDay.dayOfMonth === event.dayOfMonth) {
+      for (let i = 0; i < sameWeekdays.length; i++) {
+        const sameWeekDay = sameWeekdays[i];
+        if (sameWeekDay.dayOfMonth === event.dayOfMonth) {
           continue;
         }
 
-        const newDatetimeOfStart = new Date(event.datetimeOfStart);
-        newDatetimeOfStart.setDate(sameDay.dayOfMonth);
+        const newDatetimeOfStart = constructDateTime(
+          sameWeekDay.year,
+          sameWeekDay.month,
+          sameWeekDay.dayOfMonth,
+          event.hour,
+          event.minute,
+          0,
+          event.timeZone
+        );
+        const newDatetimeOfEnd = datePlusMinutes(
+          newDatetimeOfStart,
+          eventType.minutesOfDuration
+        );
+
+        // Check if there is another event around this period.
+        if (
+          (await this.prisma.event.count({
+            where: {
+              containerId: body.containerId,
+              datetimeOfStart: {lt: newDatetimeOfEnd},
+              datetimeOfEnd: {gt: newDatetimeOfStart},
+            },
+          })) > 0
+        ) {
+          continue;
+        }
 
         const newOtherEvent = await this.prisma.event.create({
           data: {
@@ -118,6 +156,7 @@ export class EventController {
             typeId: event.typeId,
             venueId: event.venueId,
             containerId: event.containerId,
+            isPublished: false,
           } as Prisma.EventUncheckedCreateInput,
         });
 
@@ -214,104 +253,7 @@ export class EventController {
     @Body()
     body: Prisma.EventUncheckedUpdateInput & {needToDuplicate?: boolean}
   ): Promise<Event> {
-    // [step 0] Collect events to be repeated in this month.
-    const otherEvents: object[] = [];
-    if (body.needToDuplicate) {
-      const oldEvent = await this.prisma.event.findUniqueOrThrow({
-        where: {id: eventId},
-      });
-      otherEvents.push(
-        ...(await this.prisma.event.findMany({
-          where: {
-            id: {not: eventId},
-            containerId: oldEvent.containerId,
-            hostUserId: oldEvent.hostUserId,
-            typeId: oldEvent.typeId,
-            hour: oldEvent.hour,
-            minute: oldEvent.minute,
-            dayOfWeek: oldEvent.dayOfWeek,
-          },
-        }))
-      );
-    }
-    delete body.needToDuplicate;
-
-    // [step 1] Update event.
-    if (body.typeId) {
-      const eventType = await this.prisma.eventType.findUniqueOrThrow({
-        where: {id: body.typeId as number},
-      });
-      body.minutesOfDuration = eventType.minutesOfDuration;
-    }
-    const newEvent = await this.prisma.event.update({
-      where: {id: eventId},
-      data: body,
-      include: {type: true},
-    });
-
-    // [step 2] Note the update.
-    await this.prisma.eventChangeLog.create({
-      data: {
-        type: EventChangeLogType.USER,
-        description:
-          'Update class: ' +
-          newEvent['type'].name +
-          ' at ' +
-          newEvent.datetimeOfStart,
-        eventContainerId: newEvent.containerId,
-        eventId: eventId,
-      },
-    });
-
-    // [step 3] Check event issues.
-    await this.eventIssueService.check(newEvent);
-
-    // [step 4] Attach information.
-    newEvent['issues'] = await this.prisma.eventIssue.findMany({
-      where: {status: EventIssueStatus.UNREPAIRED, eventId: newEvent.id},
-    });
-
-    if (newEvent.hostUserId) {
-      newEvent['hostUser'] = await this.prisma.userProfile.findUniqueOrThrow({
-        where: {userId: newEvent.hostUserId},
-        select: {userId: true, fullName: true, coachingTenure: true},
-      });
-    }
-
-    // [step 5] Duplicate events.
-    for (let i = 0; i < otherEvents.length; i++) {
-      const otherEvent = otherEvents[i] as Event;
-      const newDatetimeOfStart = otherEvent.datetimeOfStart;
-      newDatetimeOfStart.setHours(newEvent.datetimeOfStart.getHours());
-      newDatetimeOfStart.setMinutes(newEvent.datetimeOfStart.getMinutes());
-
-      const newOtherEvent = await this.prisma.event.update({
-        where: {id: otherEvent.id},
-        data: {
-          hostUserId: newEvent.hostUserId,
-          typeId: newEvent.typeId,
-          datetimeOfStart: newDatetimeOfStart,
-          minutesOfDuration: newEvent.minutesOfDuration,
-          timeZone: newEvent.timeZone,
-        },
-      });
-
-      // Note the update.
-      await this.prisma.eventChangeLog.create({
-        data: {
-          type: EventChangeLogType.USER,
-          description:
-            'Update class: ' +
-            newEvent['type'].name +
-            ' at ' +
-            newOtherEvent.datetimeOfStart,
-          eventContainerId: newOtherEvent.containerId,
-          eventId: newOtherEvent.id,
-        },
-      });
-    }
-
-    return newEvent;
+    return this.eventService.updateEvent(eventId, body);
   }
 
   @Patch(':eventId/lock')
@@ -358,6 +300,13 @@ export class EventController {
       include: {type: true},
     });
 
+    if (event.isPublished) {
+      const deleteMbo = await this.mindbodyService.deleteFromMboById(event.id);
+      console.log('deleteMbo', deleteMbo);
+      if (!deleteMbo) {
+        throw new BadRequestException('Delete mbo class failed');
+      }
+    }
     // [step 2] Delete the event.
     await this.prisma.event.delete({
       where: {id: eventId},
@@ -388,29 +337,64 @@ export class EventController {
       include: {type: true, venue: true, changeLogs: true},
     });
 
+    // if (event.isPublished) {
+    //   throw new BadRequestException('This event is already published.');
+    // }
+
     const {checkResult} = body;
 
+    const scToMbService = new ScToMbService2(
+      this.prisma,
+      this.mindbodyService,
+      this.rawDataCoachService
+    );
+
     if (checkResult) {
-      this.scToMbService.setCheckResult(checkResult);
+      scToMbService.setCheckResult(checkResult);
     } else {
-      const {_event, _body} = this.scToMbService.parseBodyEvent({
+      const {_event, _body} = await scToMbService.parseBodyEvent({
         body,
         event,
       });
-      await this.scToMbService.eventCheck(_event, _body);
+      await scToMbService.eventCheck(_event, _body);
+    }
+    if (event.isPublished) {
+      await scToMbService.eventUpdate(event);
+    } else {
+      await scToMbService.eventPublish();
+    }
+    const resp = scToMbService.getResult();
+    const mboResp = scToMbService.getMboResult();
+
+    const classScheduleId = _.get(resp, 'mboResp.data.ClassId');
+    const mboData = {
+      resp: mboResp,
+      classScheduleId,
+    };
+
+    const updateData: any = {
+      mboData,
+    };
+
+    if (!event.isPublished) {
+      if (resp.success) {
+        updateData.publishStatus = EventPublishStatus.COMPLETED;
+        updateData.isPublished = true;
+      } else {
+        updateData.publishStatus = EventPublishStatus.FAILED;
+      }
+      await this.prisma.event.update({
+        where: {id: eventId},
+        data: updateData,
+      });
+    } else {
+      if (resp.success) {
+        updateData.publishStatus = EventPublishStatus.COMPLETED;
+        updateData.isPublished = true;
+        await this.eventService.updateEvent(eventId, body.event);
+      }
     }
 
-    await this.scToMbService.eventPublish();
-    const resp = this.scToMbService.getResult();
-
-    if (!resp.success) {
-      return resp;
-    }
-
-    await this.prisma.event.update({
-      where: {id: eventId},
-      data: {isPublished: true},
-    });
     return resp;
   }
 
@@ -418,16 +402,21 @@ export class EventController {
   async publishCheck(@Param('eventId') eventId: number, @Body() body) {
     const event = await this.prisma.event.findUniqueOrThrow({
       where: {id: eventId},
-      include: {type: true, venue: true, changeLogs: true},
+      include: {type: true, venue: true},
     });
 
-    const {_event, _body} = this.scToMbService.parseBodyEvent({
+    const scToMbService = new ScToMbService2(
+      this.prisma,
+      this.mindbodyService,
+      this.rawDataCoachService
+    );
+
+    const {_event, _body} = await scToMbService.parseBodyEvent({
       body,
       event,
     });
-    await this.scToMbService.eventCheck(_event, _body);
-    await this.scToMbService.eventPublish;
-    const resp = this.scToMbService.getResult();
+    await scToMbService.eventCheck(_event, _body);
+    const resp = scToMbService.getResult();
 
     return resp;
   }
@@ -435,6 +424,11 @@ export class EventController {
   @Post('publishContainer')
   async publishContainer(@Body() body) {
     return this.asyncPublishService.publishContainer(body);
+  }
+
+  @Post('getPublishStatus')
+  async getPublishStatus(@Body() body) {
+    return this.asyncPublishService.getPublishStatus(body);
   }
 
   // @Post('publishContainerHandle')

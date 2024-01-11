@@ -1,61 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import {datePlusMinutes, splitDateTime} from '@toolkit/utilities/datetime.util';
 import * as _ from 'lodash';
 import * as moment from 'moment';
-
-export function toMbParams(query: any) {
-  const {
-    pageSize = 10,
-    page = 1,
-    locationId,
-    startDate,
-    endDate,
-    locationIds,
-  } = query;
-  const offest = pageSize * (page - 1);
-  const params = {
-    limit: pageSize,
-    offest,
-    ...query,
-  };
-
-  if (locationId) {
-    params.locationId = 3;
-  }
-  params.locationId = 3;
-
-  if (locationIds) {
-    params.locationIds = 3;
-  }
-  params.locationIds = 3;
-
-  params.scheduleTypes = 'Resource';
-
-  if (startDate) {
-    params.startDate = startDate;
-  }
-
-  if (query.classScheduleIds) {
-    params.classScheduleIds = query.classScheduleIds;
-  }
-
-  if (endDate) {
-    params.endDate = endDate;
-  }
-
-  if (endDate) {
-    params.endDate = endDate;
-  }
-  return params;
-}
-
-export function parseHeaders(headers: any, query: any) {
-  const {studioId} = query;
-  const _headers = _.cloneDeep(headers);
-  if (studioId) {
-    _headers.SiteId = 44717;
-  }
-  return _headers;
-}
 
 export function hmsToSeconds(hms) {
   const splitTime = hms.split(':');
@@ -76,7 +22,7 @@ export function datetimeToDaySec(datetime) {
   return hours * 3600 + minutes * 60 + seconds;
 }
 
-export function groupClassesByDate(cs: any, resourceId: any = undefined) {
+export function groupClassesByDate(cs: any) {
   let _cs = cs.map((c: any) => {
     const weekday = moment(c.StartDateTime).weekday();
     const classdate = moment(c.StartDateTime).format('YYYY-MM-DD');
@@ -104,6 +50,8 @@ export function groupClassesByDate(cs: any, resourceId: any = undefined) {
       classdate,
       startSec,
       endSec,
+      email: c.Staff.Email,
+      StaffId: c.Staff.Id,
     };
   });
 
@@ -121,6 +69,13 @@ export function groupClassesByDate(cs: any, resourceId: any = undefined) {
     groupCs[dc] = _.sortBy(groupCs[dc], (d: any) => d.startHour);
   }
   return groupCs;
+}
+
+export function parseDess(resp) {
+  const dess = _.get(resp, 'data.ClassDescriptions');
+  return dess.filter(d => {
+    d.Active === true;
+  });
 }
 
 export function getWeekdays(dayOfWeek) {
@@ -160,4 +115,67 @@ export function getWeekdays(dayOfWeek) {
       break;
   }
   return weekdays;
+}
+
+export function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+export function eventGeneratedFields(data: any) {
+  if (data['datetimeOfStart'] && data['timeZone']) {
+    data['datetimeOfStart'] = new Date(data['datetimeOfStart']);
+    const splitedDateTime = splitDateTime(
+      data['datetimeOfStart'],
+      data['timeZone']
+    );
+    data['year'] = splitedDateTime.year;
+    data['month'] = splitedDateTime.month;
+    data['dayOfMonth'] = splitedDateTime.dayOfMonth;
+    data['hour'] = splitedDateTime.hour;
+    data['minute'] = splitedDateTime.minute;
+    data['dayOfWeek'] = splitedDateTime.dayOfWeek;
+    data['weekOfMonth'] = splitedDateTime.weekOfMonth;
+    data['weekOfYear'] = splitedDateTime.weekOfYear;
+
+    if (data['minutesOfDuration']) {
+      data['datetimeOfEnd'] = datePlusMinutes(
+        data['datetimeOfStart'],
+        data['minutesOfDuration']
+      );
+    }
+  }
+  return data;
+}
+
+export function compareObjects(obj1, obj2) {
+  const diff = {};
+  for (const key in obj1) {
+    if (Object.prototype.hasOwnProperty.call(obj1, key)) {
+      if (!Object.prototype.hasOwnProperty.call(obj2, key)) {
+        diff[key] = obj1[key];
+      } else {
+        if (typeof obj1[key] === 'object' && typeof obj2[key] === 'object') {
+          const nestedDiff = compareObjects(obj1[key], obj2[key]);
+          if (Object.keys(nestedDiff).length > 0) {
+            diff[key] = nestedDiff;
+          }
+        } else {
+          if (obj1[key] !== obj2[key]) {
+            diff[key] = obj1[key];
+          }
+        }
+      }
+    }
+  }
+
+  for (const key in obj2) {
+    if (
+      Object.prototype.hasOwnProperty.call(obj2, key) &&
+      !Object.prototype.hasOwnProperty.call(obj1, key)
+    ) {
+      diff[key] = obj2[key];
+    }
+  }
+
+  return diff;
 }

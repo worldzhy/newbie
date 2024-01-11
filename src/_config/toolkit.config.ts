@@ -22,6 +22,8 @@ export default registerAs('toolkit', () => ({
       accessKeyId: process.env.AWS_SQS_ACCESS_KEY_ID || 'default',
       secretAccessKey: process.env.AWS_SQS_SECRET_ACCESS_KEY || 'default',
       region: process.env.AWS_SQS_REGION || 'default',
+      publish_remove_queue: process.env.PUBLISH_REMOVE_QUEUE || 'default',
+      publish_add_queue: process.env.PUBLISH_ADD_QUEUE || 'default',
     },
   },
   bcrypt: {

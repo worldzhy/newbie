@@ -31,6 +31,7 @@ export default registerAs('microservice', () => ({
     username: process.env.MINDBODY_USER,
     password: process.env.MINDBODY_PWD,
     apiKey: process.env.MINDBODY_API_KEY,
+    setFree: process.env.MINDBODY_FREE === 'TRUE',
     siteId: -99,
   },
   notification: {

@@ -16,6 +16,7 @@ import {Request} from 'express';
 import {RoleService} from '@microservices/account/role.service';
 import * as _ from 'lodash';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {MindbodyService} from '../mindbody/mindbody.service';
 
 @ApiTags('Location')
 @ApiBearerAuth()
@@ -24,7 +25,8 @@ export class LocationController {
   constructor(
     private readonly prisma: PrismaService,
     private readonly accountService: AccountService,
-    private readonly roleService: RoleService
+    private readonly roleService: RoleService,
+    private readonly mindbodyService: MindbodyService
   ) {}
 
   @Post('')
@@ -250,6 +252,7 @@ export class LocationController {
           minuteOfDayEnd: 0,
           tagIds: [1, 2],
           similarVenueIds: [1, 2],
+          preferredProgramId: 1,
           external_studioId: 5723396,
           external_studioName: '[solidcore] California',
           external_locationId: 1,
@@ -304,6 +307,38 @@ export class LocationController {
     return await this.prisma.eventVenue.delete({
       where: {id: eventVenueId},
     });
+  }
+
+  @Get(':eventVenueId/programs')
+  async getLocationPrograms(@Param('eventVenueId') eventVenueId: number) {
+    const venue = await this.prisma.eventVenue.findUniqueOrThrow({
+      where: {id: eventVenueId},
+    });
+
+    const response = await this.mindbodyService.getClassDescriptions({
+      studioId: venue.external_studioId,
+      locationId: venue.external_locationId,
+      page: 1,
+      pageSize: 1000,
+    });
+
+    if (response.success === false) {
+      return [];
+    }
+
+    const programs: {id: number; name: string}[] = [];
+    const descriptions = response.data.ClassDescriptions;
+    for (let i = 0; i < descriptions.length; i++) {
+      const description = descriptions[i];
+      if (description.Active === true) {
+        programs.push({
+          id: description.Program.Id,
+          name: description.Program.Name,
+        });
+      }
+    }
+
+    return _.uniqBy(programs, 'id');
   }
 
   /* End */

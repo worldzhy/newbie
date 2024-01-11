@@ -40,11 +40,26 @@ export class SqsService {
    * @returns {(Promise<{data: SQS.SendMessageResult | void;err: AWSError | void;}>)}
    * @memberof SqsService
    */
-  async sendMessage(params: {queueUrl: string; body: object}) {
-    const sendMessageRequest = {
+  async sendMessage(params: {
+    queueUrl: string;
+    body: object;
+    MessageGroupId?: string;
+    MessageDeduplicationId?: string;
+  }) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sendMessageRequest: any = {
       QueueUrl: params.queueUrl,
       MessageBody: JSON.stringify(params.body),
     };
+
+    const {MessageGroupId, MessageDeduplicationId} = params;
+    if (MessageGroupId) {
+      sendMessageRequest.MessageGroupId = MessageGroupId;
+    }
+
+    if (MessageDeduplicationId) {
+      sendMessageRequest.MessageDeduplicationId = MessageDeduplicationId;
+    }
 
     return await this.client.send(new SendMessageCommand(sendMessageRequest));
   }

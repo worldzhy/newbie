@@ -10,8 +10,8 @@ import {
   SwaggerCustomOptions,
 } from '@nestjs/swagger';
 import {ClusterService} from './cluster';
-import {ApplicationDemoModule as ApplicationModule} from './application-demo/application-demo.module';
-// import {ApplicationRecruitmentModule as ApplicationModule} from './application-recruitment/application-recruitment.module';
+// import {ApplicationDemoModule as ApplicationModule} from './application-demo/application-demo.module';
+import {ApplicationRecruitmentModule as ApplicationModule} from './application-recruitment/application-recruitment.module';
 // import {ApplicationSolidcoreModule as ApplicationModule} from './application-solidcore/application-solidcore.module';
 
 function checkEnvVars(configService: ConfigService) {

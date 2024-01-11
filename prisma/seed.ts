@@ -1,18 +1,14 @@
 /* eslint-disable node/no-unpublished-import */
-import {seedForAccount} from './seed/account.seed';
-import {seedForEngined} from './seed/engined.seed';
-import {seedForPmgmt} from './seed/project-mgmt.seed';
-import {seedForWorkflow} from './seed/workflow.seed';
+import {seedForDemo} from './seed/demo.seed';
+import {seedForRecruitment} from './seed/recruitment.seed';
 import {seedForSolidcore} from './seed/solidcore.seed';
 
 async function main() {
   console.log('**Seeding Start');
 
-  await seedForAccount();
+  // await seedForDemo();
+  // await seedForRecruitment();
   await seedForSolidcore();
-  // await seedForWorkflow();
-  // await seedForEngined();
-  // await seedForPmgmt();
 
   console.log('\n**Seeding End');
 }

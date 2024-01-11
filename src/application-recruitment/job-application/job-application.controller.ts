@@ -28,7 +28,7 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Recruitment / Job Application')
 @ApiBearerAuth()
-@Controller('recruitment-job-applications')
+@Controller('job-applications')
 export class JobApplicationController {
   constructor(
     private readonly prisma: PrismaService,

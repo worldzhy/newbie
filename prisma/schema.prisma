@@ -288,6 +288,15 @@ enum EventContainerStatus {
   @@schema("microservice/event-scheduling")
 }
 
+enum EventPublishStatus {
+  INIT
+  PENDING
+  COMPLETED
+  FAILED
+
+  @@schema("microservice/event-scheduling")
+}
+
 enum EventChangeLogType {
   SYSTEM
   USER
@@ -333,10 +342,11 @@ model AvailabilityTimeslot {
 
 // todo: datetimeOfStart, datetimeOfEnd, week, dayOfWeek should be generated in prisma middleware.
 model Event {
-  id                Int              @id @default(autoincrement())
-  isLocked          Boolean          @default(false)
-  isPublished       Boolean          @default(false)
-  hostUserId        String?          @db.Uuid
+  id                Int                @id @default(autoincrement())
+  isLocked          Boolean            @default(false)
+  isPublished       Boolean            @default(false)
+  publishStatus     EventPublishStatus @default(INIT)
+  hostUserId        String?            @db.Uuid
   datetimeOfStart   DateTime
   datetimeOfEnd     DateTime
   timeZone          String
@@ -349,16 +359,18 @@ model Event {
   weekOfMonth       Int // The number of week in a month, it will be 1 to 6.
   weekOfYear        Int // The number of week in a month, it will be 1 to 53.
   minutesOfDuration Int
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
+  mboData           Json?
+  aiInfo            Json?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
   deletedAt         DateTime? // Support soft deletion
   changeLogs        EventChangeLog[]
   issues            EventIssue[]
-  type              EventType        @relation(fields: [typeId], references: [id], onDelete: Cascade)
+  type              EventType          @relation(fields: [typeId], references: [id], onDelete: Cascade)
   typeId            Int
-  venue             EventVenue       @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  venue             EventVenue         @relation(fields: [venueId], references: [id], onDelete: Cascade)
   venueId           Int
-  container         EventContainer   @relation(fields: [containerId], references: [id], onDelete: Cascade)
+  container         EventContainer     @relation(fields: [containerId], references: [id], onDelete: Cascade)
   containerId       Int
   reservations      Reservation[]
 
@@ -384,6 +396,7 @@ model EventIssue {
 model EventType {
   id                        Int      @id @default(autoincrement())
   name                      String
+  aliases                   String[]
   minutesOfDuration         Int
   minutesOfBreak            Int?
   minutesInAdvanceToReserve Int?
@@ -413,6 +426,7 @@ model EventVenue {
   events                              Event[]
   // For solidcore mindbody fields
   similarVenueIds                     Int[]
+  preferredProgramId                  Int?
   external_studioName                 String?
   external_studioId                   Int?
   external_locationId                 Int?
@@ -470,6 +484,16 @@ model Reservation {
   updatedAt    DateTime @updatedAt
   event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
   eventId      Int
+
+  @@schema("microservice/event-scheduling")
+}
+
+model MindbodySite {
+  id        Int      @id @default(autoincrement())
+  siteId    Int      @unique
+  siteName  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@schema("microservice/event-scheduling")
 }
@@ -1067,6 +1091,7 @@ model WorkflowView {
   workflow       Workflow                @relation(fields: [workflowId], references: [id], onDelete: Cascade)
   workflowId     String
 
+  @@unique([name, workflowId])
   @@schema("microservice/workflow")
 }
 
@@ -1112,6 +1137,7 @@ model WorkflowState {
   workflow    Workflow        @relation(fields: [workflowId], references: [id], onDelete: Cascade)
   workflowId  String
 
+  @@unique([name, workflowId])
   @@schema("microservice/workflow")
 }
 

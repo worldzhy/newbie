@@ -17,7 +17,6 @@ export interface BasePageDto {
 
 export interface AddClassScheduleDto {
   studioId?: number;
-  locationId?: number;
   schedule?: ClassScheduleDto;
 }
 
@@ -28,6 +27,7 @@ export interface endClassScheduleDto {
 }
 
 export interface ClassScheduleDto {
+  ClassId?: number;
   ClassDescriptionId?: number;
   LocationId?: number;
   StartDate?: string;

@@ -11,12 +11,16 @@ import {
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {EventType, Prisma} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {ClassService} from './class.service';
 
 @ApiTags('Class')
 @ApiBearerAuth()
 @Controller('classes')
 export class ClassController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly classService: ClassService
+  ) {}
 
   @Post('')
   @ApiBody({
@@ -97,6 +101,28 @@ export class ClassController {
     return await this.prisma.eventType.delete({
       where: {id: eventTypeId},
     });
+  }
+
+  @Post('merge')
+  @ApiBody({
+    description: '',
+    examples: {
+      a: {
+        summary: '1. Merge',
+        value: {
+          fromEventTypeId: 20,
+          toEventTypeId: 1,
+        },
+      },
+    },
+  })
+  async mergeEventType(
+    @Body() body: {fromEventTypeId: number; toEventTypeId: number}
+  ): Promise<number> {
+    return await this.classService.merge(
+      body.fromEventTypeId,
+      body.toEventTypeId
+    );
   }
 
   /* End */

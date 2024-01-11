@@ -3,7 +3,6 @@ import {AvailabilityExpressionService} from './availability-expression.service';
 import {AvailabilityTimeslotService} from './availability-timeslot.service';
 import {EventService} from './event.service';
 import {EventIssueService} from './event-issue.service';
-import {EventTypeService} from './event-type.service';
 import {ReservationService} from './reservation.service';
 
 @Global()
@@ -13,7 +12,6 @@ import {ReservationService} from './reservation.service';
     AvailabilityTimeslotService,
     EventService,
     EventIssueService,
-    EventTypeService,
     ReservationService,
   ],
   exports: [
@@ -21,7 +19,6 @@ import {ReservationService} from './reservation.service';
     AvailabilityTimeslotService,
     EventService,
     EventIssueService,
-    EventTypeService,
     ReservationService,
   ],
 })

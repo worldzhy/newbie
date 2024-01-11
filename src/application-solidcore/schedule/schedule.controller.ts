@@ -18,6 +18,7 @@ import {
   EventContainerOrigin,
   EventIssueStatus,
 } from '@prisma/client';
+import {EventService} from '@microservices/event-scheduling/event.service';
 import {EventIssueService} from '@microservices/event-scheduling/event-issue.service';
 import {datePlusMinutes, daysOfMonth} from '@toolkit/utilities/datetime.util';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
@@ -28,6 +29,7 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 export class EventContainerController {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly eventService: EventService,
     private readonly eventIssueService: EventIssueService
   ) {}
 
@@ -95,7 +97,7 @@ export class EventContainerController {
     });
 
     const place = await this.prisma.place.findUniqueOrThrow({
-      where: {id: container['venue']['placeId']!},
+      where: {id: container['venue']['placeId'] ?? undefined},
       select: {timeZone: true},
     });
 
@@ -146,8 +148,8 @@ export class EventContainerController {
     });
   }
 
-  @Get(':eventContainerId/check')
-  async checkEventContainer(
+  @Get(':eventContainerId/checkOld')
+  async checkEventContainerOld(
     @Param('eventContainerId') eventContainerId: number,
     @Query('weekOfMonth') weekOfMonth: number
   ) {
@@ -184,6 +186,17 @@ export class EventContainerController {
     });
   }
 
+  @Get(':eventContainerId/check')
+  async checkEventContainer(
+    @Param('eventContainerId') eventContainerId: number,
+    @Query('weekOfMonth') weekOfMonth: number
+  ) {
+    return await this.eventIssueService.checkContainer({
+      eventContainerId,
+      weekOfMonth,
+    });
+  }
+
   @Patch(':eventContainerId/bulk-move')
   @ApiBody({
     description: 'Bulk move events in the container.',
@@ -198,7 +211,11 @@ export class EventContainerController {
     body: {minutesOfMove: number}
   ) {
     const events = await this.prisma.event.findMany({
-      where: {containerId: eventContainerId, deletedAt: null},
+      where: {
+        containerId: eventContainerId,
+        deletedAt: null,
+        isPublished: false,
+      },
     });
 
     for (let i = 0; i < events.length; i++) {
