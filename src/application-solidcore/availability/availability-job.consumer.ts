@@ -1,15 +1,15 @@
 import {Processor, Process, OnQueueCompleted} from '@nestjs/bull';
 import {Job} from 'bull';
 import {QueueName} from '@microservices/queue/queue.service';
-import {AvailabilityExpressionService} from '@microservices/event-scheduling/availability-expression.service';
 import {AvailabilityExpressionStatus} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {AvailabilityService} from '@microservices/event-scheduling/availability.service';
 
 @Processor(QueueName.DEFAULT)
 export class AvailabilityJobConsumer {
   constructor(
     private readonly prisma: PrismaService,
-    private availabilityExpressionService: AvailabilityExpressionService
+    private availabilityService: AvailabilityService
   ) {}
 
   // @Process({concurrency: 10}) // todo: Check if the concurrency is valid.
@@ -20,7 +20,9 @@ export class AvailabilityJobConsumer {
 
     // [step 1] Parse expression to timeslots.
     const availabilityTimeslots =
-      await this.availabilityExpressionService.parse(availabilityExpressionId);
+      await this.availabilityService.parseAvailabilityExpression(
+        availabilityExpressionId
+      );
 
     if (availabilityTimeslots.length === 0) {
       return {};

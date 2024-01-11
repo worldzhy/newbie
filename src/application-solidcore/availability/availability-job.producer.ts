@@ -3,7 +3,7 @@ import {ConfigService} from '@nestjs/config';
 import {CACHE_MANAGER} from '@nestjs/cache-manager';
 import {Cache} from 'cache-manager';
 import {Cron} from '@nestjs/schedule';
-import {AvailabilityService} from './availability.service';
+import {AvailabilityLoadService} from './availability-load.service';
 import {AvailabilityExpressionStatus} from '@prisma/client';
 import {QueueService} from '@microservices/queue/queue.service';
 
@@ -20,7 +20,7 @@ export class AvailabilityJobProducer {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
-    private readonly availabilityService: AvailabilityService,
+    private readonly availabilityLoadService: AvailabilityLoadService,
     private readonly queueService: QueueService
   ) {}
 
@@ -62,7 +62,7 @@ export class AvailabilityJobProducer {
         year += 1;
       }
     }
-    await this.availabilityService.fetchGoogleForm({year, quarter});
+    await this.availabilityLoadService.fetchGoogleForm({year, quarter});
 
     // [step 2] Get unpublished expressions.
     const exps = await this.prisma.availabilityExpression.findMany({

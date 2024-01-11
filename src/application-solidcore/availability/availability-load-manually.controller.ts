@@ -9,13 +9,15 @@ import {
 } from '@nestjs/common';
 import {ApiBearerAuth, ApiBody, ApiTags} from '@nestjs/swagger';
 import {FileInterceptor} from '@nestjs/platform-express';
-import {AvailabilityService} from './availability.service';
+import {AvailabilityLoadService} from './availability-load.service';
 
 @ApiTags('Availability')
 @ApiBearerAuth()
 @Controller('availability')
-export class AvailabilityUploadController {
-  constructor(private readonly availabilityService: AvailabilityService) {}
+export class AvailabilityLoadController {
+  constructor(
+    private readonly availabilityLoadService: AvailabilityLoadService
+  ) {}
 
   @Post('upload-file')
   @ApiBody({
@@ -35,7 +37,7 @@ export class AvailabilityUploadController {
     file: Express.Multer.File,
     @Body() body: {year: string; quarter: string}
   ) {
-    await this.availabilityService.parseXLSXFile(file, {
+    await this.availabilityLoadService.parseXLSXFile(file, {
       year: parseInt(body.year),
       quarter: parseInt(body.quarter),
     });
@@ -47,7 +49,7 @@ export class AvailabilityUploadController {
     examples: {a: {value: {year: 2023, quarter: 4}}},
   })
   async fetchGoogleForm(@Body() body: {year: string; quarter: string}) {
-    await this.availabilityService.fetchGoogleForm({
+    await this.availabilityLoadService.fetchGoogleForm({
       year: parseInt(body.year),
       quarter: parseInt(body.quarter),
     });

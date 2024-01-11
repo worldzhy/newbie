@@ -3,7 +3,7 @@ import {CacheInterceptor} from '@nestjs/cache-manager';
 import {ApiTags, ApiBearerAuth} from '@nestjs/swagger';
 import {Prisma, User} from '@prisma/client';
 import {RawDataForecastService} from '../raw-data/raw-data-forecast.service';
-import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
+import {AvailabilityService} from '@microservices/event-scheduling/availability.service';
 import {daysOfMonth, daysOfWeek} from '@toolkit/utilities/datetime.util';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
@@ -24,7 +24,7 @@ const MINUTES_OF_TIMESLOT = 60;
 export class HeatmapController {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly availabilityTimeslotService: AvailabilityTimeslotService,
+    private readonly availabilityService: AvailabilityService,
     private readonly rawDataForecastService: RawDataForecastService
   ) {}
 
@@ -62,7 +62,7 @@ export class HeatmapController {
       month - 1,
       days[days.length - 1].dayOfMonth + 1
     );
-    const heatmapTimeslots = this.availabilityTimeslotService.generate({
+    const heatmapTimeslots = this.availabilityService.generateTimeslots({
       dateOfStart,
       dateOfEnd,
       hourOfOpening: HOUR_OF_OPENING,
@@ -129,7 +129,7 @@ export class HeatmapController {
       if (flagCoachHeatmap) {
         // Get {hostUserId:string, _count:{}}[]
         const groupedAvailabilityTimeslots =
-          await this.availabilityTimeslotService.groupByHostUserId({
+          await this.availabilityService.getTimeslotsGroupByHostUserId({
             hostUserIds: coachIds,
             venueId: venueId,
             datetimeOfStart: heatmapTimeslot.datetimeOfStart,
@@ -146,7 +146,7 @@ export class HeatmapController {
           if (
             element._count.hostUserId ===
             MINUTES_OF_TIMESLOT /
-              this.availabilityTimeslotService.MINUTES_Of_TIMESLOT_UNIT
+              this.availabilityService.MINUTES_Of_TIMESLOT_UNIT
           ) {
             for (let p = 0; p < coaches.length; p++) {
               const coach = coaches[p];

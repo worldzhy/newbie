@@ -16,13 +16,13 @@ import {
   AvailabilityExpression,
   AvailabilityExpressionStatus,
 } from '@prisma/client';
-import {AvailabilityExpressionService} from '@microservices/event-scheduling/availability-expression.service';
 import {Request} from 'express';
 import {AccountService} from '@microservices/account/account.service';
 import {QueueService} from '@microservices/queue/queue.service';
 import {CACHE_MANAGER} from '@nestjs/cache-manager';
 import {Cache} from 'cache-manager';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {AvailabilityService} from '@microservices/event-scheduling/availability.service';
 
 enum QUARTER {
   Q1 = 'Q1',
@@ -38,7 +38,7 @@ export class AvailabilityExpressionController {
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly prisma: PrismaService,
-    private readonly availabilityExpressionService: AvailabilityExpressionService,
+    private readonly availabilityService: AvailabilityService,
     private readonly accountService: AccountService,
     private readonly queueService: QueueService
   ) {}
@@ -191,7 +191,9 @@ export class AvailabilityExpressionController {
   ) {
     // [step 1] Parse expression to timeslots.
     const availabilityTimeslots =
-      await this.availabilityExpressionService.parse(availabilityExpressionId);
+      await this.availabilityService.parseAvailabilityExpression(
+        availabilityExpressionId
+      );
 
     if (availabilityTimeslots.length === 0) {
       return;

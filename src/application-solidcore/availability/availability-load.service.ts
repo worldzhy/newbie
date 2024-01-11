@@ -27,7 +27,7 @@ enum FormItemTitle {
 }
 
 @Injectable()
-export class AvailabilityService {
+export class AvailabilityLoadService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly googleFormsService: GoogleFormsService

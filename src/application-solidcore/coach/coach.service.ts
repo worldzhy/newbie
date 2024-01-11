@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {Prisma} from '@prisma/client';
-import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
+import {AvailabilityService} from '@microservices/event-scheduling/availability.service';
 import {ceilByMinutes, floorByMinutes} from '@toolkit/utilities/datetime.util';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
@@ -24,10 +24,10 @@ export class CoachService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly availabilityTimeslotService: AvailabilityTimeslotService
+    private readonly availabilityService: AvailabilityService
   ) {
     this.MINUTES_Of_TIMESLOT_UNIT =
-      this.availabilityTimeslotService.MINUTES_Of_TIMESLOT_UNIT;
+      this.availabilityService.MINUTES_Of_TIMESLOT_UNIT;
   }
 
   async getSortedCoachesWithQuotaLimit(event: {

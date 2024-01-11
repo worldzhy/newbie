@@ -13,13 +13,13 @@ import * as _ from 'lodash';
 import {ScToMbService2} from '../mindbody/scToMb2.service';
 import {sleep} from '../mindbody/util';
 import {RawDataCoachService} from '../raw-data/raw-data-coach.service';
-import {AvailabilityTimeslotService} from '@microservices/event-scheduling/availability-timeslot.service';
+import {AvailabilityService} from '@microservices/event-scheduling/availability.service';
 
 @Injectable()
 export class AsyncPublishService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly availabilityTimeslotService: AvailabilityTimeslotService,
+    private readonly availabilityService: AvailabilityService,
     private readonly eventEmitter: EventEmitter2,
     private readonly mindbodyService: MindbodyService,
     private readonly rawDataCoachService: RawDataCoachService
@@ -537,7 +537,7 @@ export class AsyncPublishService {
     }
 
     // // [step 2] Modify coaches' availability status
-    await this.availabilityTimeslotService.checkin(event);
+    await this.availabilityService.checkinTimeslots(event);
 
     // // [step 2] Update event status.
     await this.prisma.event.update({
