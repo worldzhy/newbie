@@ -15,7 +15,7 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('SkuConversion')
 @ApiBearerAuth()
-@Controller('skuConversions')
+@Controller('sku-conversions')
 export class SkuConversionController {
   constructor(private readonly prisma: PrismaService) {}
 

@@ -15,7 +15,7 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('SkuTrail')
 @ApiBearerAuth()
-@Controller('skuTrails')
+@Controller('sku-trails')
 export class SkuTrailController {
   constructor(private readonly prisma: PrismaService) {}
 

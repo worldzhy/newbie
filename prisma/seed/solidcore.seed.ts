@@ -4,9 +4,11 @@ import {
   PrismaClient,
   TrustedEntityType,
 } from '@prisma/client';
+import {prismaMiddleware} from '@toolkit/prisma/prisma.middleware';
 
 export async function seedForSolidcore() {
   const prisma = new PrismaClient();
+  prisma.$use(prismaMiddleware);
 
   console.log('- Creating roles, permissions and users...');
 

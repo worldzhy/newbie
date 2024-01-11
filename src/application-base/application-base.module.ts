@@ -36,6 +36,11 @@ import {RoleController} from './account/role/role.controller';
 import {UserController} from './account/user/user.controller';
 import {TagController} from './tag/tag.controller';
 import {TagGroupController} from './tag/tag-group.controller';
+import {WorkflowController} from '../application-base/workflow/workflow.controller';
+import {WorkflowStateController} from '../application-base/workflow/workflow-state.controller';
+import {WorkflowViewController} from '../application-base/workflow/workflow-view.controller';
+import {WorkflowViewComponentController} from '../application-base/workflow/workflow-view-component.controller';
+import {WorkflowRouteController} from '../application-base/workflow/workflow-route.controller';
 
 @Module({
   imports: [
@@ -70,6 +75,11 @@ import {TagGroupController} from './tag/tag-group.controller';
     // UserController,
     TagController,
     TagGroupController,
+    WorkflowController,
+    WorkflowStateController,
+    WorkflowViewController,
+    WorkflowViewComponentController,
+    WorkflowRouteController,
   ],
   providers: [
     // Filters

@@ -155,14 +155,21 @@ export class AccountController {
     description: '',
     examples: {
       a: {
-        summary: 'Send to email',
+        summary: 'Reset password',
         value: {
           email: 'henry@inceptionpad.com',
           use: VerificationCodeUse.RESET_PASSWORD,
         },
       },
       b: {
-        summary: 'Send to phone',
+        summary: 'Email login',
+        value: {
+          email: 'henry@inceptionpad.com',
+          use: VerificationCodeUse.LOGIN_BY_EMAIL,
+        },
+      },
+      c: {
+        summary: 'Phone login',
         value: {
           phone: '13260000789',
           use: VerificationCodeUse.LOGIN_BY_PHONE,

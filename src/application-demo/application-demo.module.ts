@@ -17,12 +17,6 @@ import {SpuController} from './stock-mgmt/spu.controller';
 import {WarehouseSkuController} from './stock-mgmt/warehouse-sku.controller';
 import {WarehouseController} from './stock-mgmt/warehouse.controller';
 
-import {WorkflowController} from './workflow/workflow.controller';
-import {WorkflowStateController} from './workflow/workflow-state.controller';
-import {WorkflowViewController} from './workflow/workflow-view.controller';
-import {WorkflowViewComponentController} from './workflow/workflow-view-component.controller';
-import {WorkflowRouteController} from './workflow/workflow-route.controller';
-
 @Module({
   imports: [
     ApplicationBaseModule, // Hope you enjoy the Newbie!
@@ -43,12 +37,6 @@ import {WorkflowRouteController} from './workflow/workflow-route.controller';
     SpuController,
     WarehouseSkuController,
     WarehouseController,
-
-    WorkflowController,
-    WorkflowStateController,
-    WorkflowViewController,
-    WorkflowViewComponentController,
-    WorkflowRouteController,
   ],
 })
 export class ApplicationDemoModule {}

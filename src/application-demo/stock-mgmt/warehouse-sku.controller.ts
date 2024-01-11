@@ -15,7 +15,7 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('WarehouseSku')
 @ApiBearerAuth()
-@Controller('warehouseWarehouseSkus')
+@Controller('warehouse-skus')
 export class WarehouseSkuController {
   constructor(private readonly prisma: PrismaService) {}
 
@@ -51,7 +51,7 @@ export class WarehouseSkuController {
     });
   }
 
-  @Get(':warehouseWarehouseSkuId')
+  @Get(':warehouseSkuId')
   @RequirePermission(PermissionAction.Get, Prisma.ModelName.WarehouseSku)
   async getWarehouseSku(
     @Param('warehouseSkuId') warehouseSkuId: number
@@ -73,7 +73,7 @@ export class WarehouseSkuController {
     },
   })
   async updateWarehouseSku(
-    @Param('warehouseWarehouseSkuId') warehouseSkuId: number,
+    @Param('warehouseSkuId') warehouseSkuId: number,
     @Body() body: Prisma.WarehouseSkuUpdateInput
   ): Promise<WarehouseSku> {
     return await this.prisma.warehouseSku.update({
@@ -82,7 +82,7 @@ export class WarehouseSkuController {
     });
   }
 
-  @Delete(':warehouseWarehouseSkuId')
+  @Delete(':warehouseSkuId')
   @RequirePermission(PermissionAction.Delete, Prisma.ModelName.WarehouseSku)
   async deleteWarehouseSku(
     @Param('warehouseSkuId') warehouseSkuId: number

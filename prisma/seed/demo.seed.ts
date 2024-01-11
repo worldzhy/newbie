@@ -1,16 +1,23 @@
 import {PrismaClient} from '@prisma/client';
+import {prismaMiddleware} from '@toolkit/prisma/prisma.middleware';
 
 export async function seedForDemo() {
   const prisma = new PrismaClient();
+  prisma.$use(prismaMiddleware);
 
-  console.log('\n* Project Management Service');
+  console.log('- Creating account...');
+  await prisma.user.create({
+    data: {
+      password: 'Abc1234!',
+      email: 'henry@inceptionpad.com',
+    },
+  });
+
   console.log('- Creating project...');
-  const projects = [{name: 'Galaxy'}, {name: 'InceptionPad'}];
+  const projects = [{name: 'InceptionPad'}];
   for (const project of projects) {
     await prisma.project.create({data: project});
   }
-
-  console.log('\n* Workflow Service');
 
   console.log('- Creating workflow...');
   const workflow = await prisma.workflow.create({
@@ -19,20 +26,20 @@ export async function seedForDemo() {
 
   console.log('- Creating workflow views...');
   const views = [
-    {workflowId: workflow.id, name: 'START'},
-    {workflowId: workflow.id, name: 'DETAILS'},
-    {workflowId: workflow.id, name: 'PURPOSE'},
-    {workflowId: workflow.id, name: 'TYPE'},
-    {workflowId: workflow.id, name: 'MARITAL'},
-    {workflowId: workflow.id, name: 'EMPLOYMENT'},
-    {workflowId: workflow.id, name: 'CITIZEN_TCUK_OR_OTHERS'},
-    {workflowId: workflow.id, name: 'CITIZEN_TCUK'},
-    {workflowId: workflow.id, name: 'CITIZEN_OTHERS'},
-    {workflowId: workflow.id, name: 'CITIZEN_TC'},
-    {workflowId: workflow.id, name: 'CITIZEN_UK'},
-    {workflowId: workflow.id, name: 'PAYMENT'},
-    {workflowId: workflow.id, name: 'COMPLETED'},
-    {workflowId: workflow.id, name: 'END'},
+    {workflowId: workflow.id, name: 'START'}, // 1
+    {workflowId: workflow.id, name: 'DETAILS'}, // 2
+    {workflowId: workflow.id, name: 'PURPOSE'}, // 3
+    {workflowId: workflow.id, name: 'TYPE'}, // 4
+    {workflowId: workflow.id, name: 'MARITAL'}, // 5
+    {workflowId: workflow.id, name: 'EMPLOYMENT'}, // 6
+    {workflowId: workflow.id, name: 'CITIZEN_TCUK_OR_OTHERS'}, // 7
+    {workflowId: workflow.id, name: 'CITIZEN_TCUK'}, // 8
+    {workflowId: workflow.id, name: 'CITIZEN_OTHERS'}, // 9
+    {workflowId: workflow.id, name: 'CITIZEN_TC'}, // 10
+    {workflowId: workflow.id, name: 'CITIZEN_UK'}, // 11
+    {workflowId: workflow.id, name: 'PAYMENT'}, // 12
+    {workflowId: workflow.id, name: 'COMPLETED'}, // 13
+    {workflowId: workflow.id, name: 'END'}, // 14
   ];
   for (let i = 0; i < views.length; i++) {
     await prisma.workflowView.createMany({data: views[i]});

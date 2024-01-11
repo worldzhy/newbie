@@ -6,9 +6,9 @@ import {seedForSolidcore} from './seed/solidcore.seed';
 async function main() {
   console.log('**Seeding Start');
 
-  // await seedForDemo();
+  await seedForDemo();
   // await seedForRecruitment();
-  await seedForSolidcore();
+  // await seedForSolidcore();
 
   console.log('\n**Seeding End');
 }

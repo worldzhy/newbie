@@ -15,7 +15,7 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Warehouse')
 @ApiBearerAuth()
-@Controller('warehouseWarehouses')
+@Controller('warehouses')
 export class WarehouseController {
   constructor(private readonly prisma: PrismaService) {}
 
@@ -48,7 +48,7 @@ export class WarehouseController {
     });
   }
 
-  @Get(':warehouseWarehouseId')
+  @Get(':warehouseId')
   @RequirePermission(PermissionAction.Get, Prisma.ModelName.Warehouse)
   async getWarehouse(
     @Param('warehouseId') warehouseId: string
@@ -70,7 +70,7 @@ export class WarehouseController {
     },
   })
   async updateWarehouse(
-    @Param('warehouseWarehouseId') warehouseId: string,
+    @Param('warehouseId') warehouseId: string,
     @Body() body: Prisma.WarehouseUpdateInput
   ): Promise<Warehouse> {
     return await this.prisma.warehouse.update({
@@ -79,7 +79,7 @@ export class WarehouseController {
     });
   }
 
-  @Delete(':warehouseWarehouseId')
+  @Delete(':warehouseId')
   @RequirePermission(PermissionAction.Delete, Prisma.ModelName.Warehouse)
   async deleteWarehouse(
     @Param('warehouseId') warehouseId: string
