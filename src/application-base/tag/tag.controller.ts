@@ -26,7 +26,7 @@ export class TagController {
         summary: '1. Create',
         value: {
           name: 'well-experienced',
-          group: 'Coach',
+          groupId: 1,
         },
       },
     },
@@ -83,7 +83,7 @@ export class TagController {
         summary: '1. Update',
         value: {
           name: 'non-experienced',
-          group: 'Coach',
+          groupId: 1,
         },
       },
     },
