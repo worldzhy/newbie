@@ -8,7 +8,7 @@ export class ApplicationRecruitmentController {
   @Public()
   @Get('')
   hello(): string {
-    return '<h1>Welcome to InceptionPad!</h1>';
+    return '<h1>Welcome to Recruitment!</h1>';
   }
 
   /* End */
