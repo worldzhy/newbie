@@ -2,7 +2,7 @@ import {Controller, Post, Body, Res} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Response} from 'express';
 import {AccountService} from '@microservices/account/account.service';
-import {LoggingIn} from '@microservices/account/security/login-limiter/ip-login-limiter.decorator';
+import {IpAttemptsLimiter} from '@microservices/account/security/login-limiter/login-limiter-ip.decorator';
 import {LoggingInByProfile} from '@microservices/account/security/authentication/profile/profile.decorator';
 import {LoggingInByUuid} from '@microservices/account/security/authentication/uuid/uuid.decorator';
 import {AccessToken} from '@prisma/client';
@@ -20,9 +20,9 @@ export class LoginByProfileController {
    * After a user is verified by auth guard, this 'login' function returns
    * a JWT to declare the user is authenticated.
    */
-  @LoggingIn()
-  @LoggingInByProfile()
   @Post('login-by-profile')
+  @IpAttemptsLimiter()
+  @LoggingInByProfile()
   @ApiBearerAuth()
   @ApiBody({
     description:
@@ -79,9 +79,9 @@ export class LoginByProfileController {
     return accessToken;
   }
 
-  @LoggingIn()
-  @LoggingInByUuid()
   @Post('login-by-uuid')
+  @IpAttemptsLimiter()
+  @LoggingInByUuid()
   @ApiBearerAuth()
   @ApiBody({
     description: 'Verfiy account by uuid.',

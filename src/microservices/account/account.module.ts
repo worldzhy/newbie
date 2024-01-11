@@ -18,7 +18,7 @@ import {AccountService} from './account.service';
 
 import {AuthenticationGuard} from './security/authentication/authentication.guard';
 import {AuthorizationGuard} from './security/authorization/authorization.guard';
-import {IpLoginLimiterGuard} from './security/login-limiter/ip-login-limiter.guard';
+import {IpLoginLimiterGuard} from './security/login-limiter/login-limiter-ip.guard';
 
 import {NotificationModule} from '@microservices/notification/notification.module';
 import {TokenModule} from '@microservices/token/token.module';

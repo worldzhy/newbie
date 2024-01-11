@@ -1,7 +1,7 @@
 import {Injectable, ExecutionContext} from '@nestjs/common';
 import {Reflector} from '@nestjs/core';
 import {ConfigService} from '@nestjs/config';
-import {IS_LOGGING_IN} from './ip-login-limiter.decorator';
+import {IP_ATTEMPTS_LIMITER} from './login-limiter-ip.decorator';
 import {IpLoginLimiterService} from './login-limiter.service';
 
 @Injectable()
@@ -27,12 +27,12 @@ export class IpLoginLimiterGuard {
       return false;
     }
 
-    // Use @LoggingIn() for all login requests
-    const isLoggingIn = this.reflector.getAllAndOverride<boolean>(
-      IS_LOGGING_IN,
+    // Use @IpAttemptsLimiter() for all login requests
+    const enableLimiter = this.reflector.getAllAndOverride<boolean>(
+      IP_ATTEMPTS_LIMITER,
       [context.getHandler(), context.getClass()]
     );
-    if (isLoggingIn) {
+    if (enableLimiter) {
       const isIpAllowed = await this.ipLoginLimiterService.isAllowed(ipAddress);
 
       if (!isIpAllowed) {

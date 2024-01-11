@@ -4,14 +4,14 @@ export default registerAs('microservice', () => ({
   account: {
     security: {
       ipLoginLimiter: {
-        // Each IP has a maximum of 10 attempts per 3600 seconds
+        // Each IP has a maximum of 10 attempts per 600 seconds
         points: 10,
-        durationSeconds: 3600,
+        durationSeconds: 600,
       },
       userLoginLimiter: {
-        // Each user has a maximum of 5 attempts per 3600 seconds
+        // Each user has a maximum of 5 attempts per 600 seconds
         points: 5,
-        durationSeconds: 3600,
+        durationSeconds: 600,
       },
     },
     verificationCode: {
