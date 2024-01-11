@@ -2,7 +2,6 @@ import {Controller, Post, Body, Res} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Response} from 'express';
 import {AccountService} from '@microservices/account/account.service';
-import {IpAttemptsLimiter} from '@microservices/account/security/login-limiter/login-limiter-ip.decorator';
 import {LoggingInByProfile} from '@microservices/account/security/authentication/profile/profile.decorator';
 import {LoggingInByUuid} from '@microservices/account/security/authentication/uuid/uuid.decorator';
 import {AccessToken} from '@prisma/client';
@@ -21,7 +20,6 @@ export class LoginByProfileController {
    * a JWT to declare the user is authenticated.
    */
   @Post('login-by-profile')
-  @IpAttemptsLimiter()
   @LoggingInByProfile()
   @ApiBearerAuth()
   @ApiBody({
@@ -80,7 +78,6 @@ export class LoginByProfileController {
   }
 
   @Post('login-by-uuid')
-  @IpAttemptsLimiter()
   @LoggingInByUuid()
   @ApiBearerAuth()
   @ApiBody({

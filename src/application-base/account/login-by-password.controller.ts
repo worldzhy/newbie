@@ -2,7 +2,10 @@ import {Controller, Post, Body, Res} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Response} from 'express';
 import {AccountService} from '@microservices/account/account.service';
-import {IpAttemptsLimiter} from '@microservices/account/security/login-limiter/login-limiter-ip.decorator';
+import {
+  LimitLoginByIp,
+  LimitLoginByUser,
+} from '@microservices/account/security/rate-limiter/rate-limiter.decorator';
 import {LoggingInByPassword} from '@microservices/account/security/authentication/password/password.decorator';
 import {AccessToken} from '@prisma/client';
 
@@ -21,7 +24,8 @@ export class LoginByPasswordController {
    * [3] phone
    */
   @Post('login-by-password')
-  @IpAttemptsLimiter()
+  @LimitLoginByIp()
+  @LimitLoginByUser()
   @LoggingInByPassword()
   @ApiBearerAuth()
   @ApiBody({

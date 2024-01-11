@@ -13,6 +13,11 @@ export default registerAs('microservice', () => ({
         points: 5,
         durationSeconds: 600,
       },
+      ipAccessLimiter: {
+        // Each user has a maximum of 100 attempts per 60 seconds
+        points: 20,
+        durationSeconds: 60,
+      },
     },
     verificationCode: {
       timeoutMinutes: 10, // The verification code will be invalid after 10 minutes.

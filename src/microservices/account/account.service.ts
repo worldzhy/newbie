@@ -4,14 +4,15 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {UserStatus, VerificationCodeUse} from '@prisma/client';
-import {VerificationCodeService} from '@microservices/account/verification-code.service';
+import {UserService} from './user.service';
+import {VerificationCodeService} from './verification-code.service';
+import {LimitLoginByUserService} from './security/rate-limiter/rate-limiter.service';
 import {NotificationService} from '@microservices/notification/notification.service';
 import {AccessTokenService} from '@microservices/token/access-token/access-token.service';
 import {RefreshTokenService} from '@microservices/token/refresh-token/refresh-token.service';
 import {getSecondsUntilunixTimestamp} from '@toolkit/utilities/datetime.util';
-import {UserService} from '@microservices/account/user.service';
-import {Request} from 'express';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {Request} from 'express';
 
 @Injectable()
 export class AccountService {
@@ -21,7 +22,8 @@ export class AccountService {
     private readonly accessTokenService: AccessTokenService,
     private readonly refreshTokenService: RefreshTokenService,
     private readonly verificationCodeService: VerificationCodeService,
-    private readonly notificationService: NotificationService
+    private readonly notificationService: NotificationService,
+    private readonly limitLoginByUserService: LimitLoginByUserService
   ) {}
 
   async me(request: Request) {
@@ -68,6 +70,14 @@ export class AccountService {
 
     // [step 5] Generate new tokens.
     return await this.generateTokens(user.id, account);
+  }
+
+  async logout(userId: string) {
+    // [step 1] Invalidate all tokens.
+    await this.invalidateTokens(userId);
+
+    // [step 2] Clear user attempts.
+    await this.limitLoginByUserService.delete(userId);
   }
 
   async invalidateTokens(userId: string) {

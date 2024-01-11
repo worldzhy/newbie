@@ -1,32 +1,19 @@
-import {
-  ForbiddenException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import {Injectable, UnauthorizedException} from '@nestjs/common';
 import {PassportStrategy} from '@nestjs/passport';
 import {Strategy} from 'passport-local';
 import {compareHash} from '@toolkit/utilities/common.util';
 import {UserService} from '@microservices/account/user.service';
-import {
-  IpLoginLimiterService,
-  UserLoginLimiterService,
-} from '@microservices/account/security/login-limiter/login-limiter.service';
-import {Request} from 'express';
 
 @Injectable()
 export class AuthPasswordStrategy extends PassportStrategy(
   Strategy,
   'passport-local.password'
 ) {
-  constructor(
-    private readonly userService: UserService,
-    private readonly securityLoginIpAttemptService: IpLoginLimiterService,
-    private readonly securityLoginUserAttemptService: UserLoginLimiterService
-  ) {
+  constructor(private readonly userService: UserService) {
     super({
       usernameField: 'account',
       passwordField: 'password',
-      passReqToCallback: true,
+      // passReqToCallback: true,
     });
   }
 
@@ -39,48 +26,31 @@ export class AuthPasswordStrategy extends PassportStrategy(
    * [3] phone
    *
    */
-  async validate(
-    req: Request,
-    account: string,
-    password: string
-  ): Promise<boolean> {
-    const ipAddress = req.socket.remoteAddress as string;
-
+  async validate(account: string, password: string): Promise<boolean> {
     // [step 1] Get the user.
     const user = await this.userService.findByAccount(account);
     if (!user) {
-      await this.securityLoginIpAttemptService.increment(ipAddress);
       throw new UnauthorizedException(
         'Invalid combination of username and password.'
       );
     }
 
-    // [step 2] Check if user is allowed to login.
-    const isUserAllowed = await this.securityLoginUserAttemptService.isAllowed(
-      user.id
-    );
-    if (!isUserAllowed) {
-      throw new ForbiddenException('Forbidden resource');
-    }
-
-    // [step 3] Handle no password situation.
+    // [step 2] Handle no password situation.
     if (!user.password) {
       throw new UnauthorizedException(
         'The password has not been set. Please login via verification code.'
       );
     }
 
-    // [step 4] Validate password.
+    // [step 3] Validate password.
     const match = await compareHash(password, user.password);
     if (match !== true) {
-      await this.securityLoginUserAttemptService.increment(user.id);
       throw new UnauthorizedException(
         'Invalid combination of username and password.'
       );
     }
 
-    // [step 5] OK.
-    await this.securityLoginUserAttemptService.delete(user.id);
+    // [step 4] OK.
     return true;
   }
 }

@@ -10,15 +10,18 @@ import {AuthRefreshStrategy} from './security/authentication/refresh/refresh.str
 import {RoleService} from './role.service';
 import {UserService} from './user.service';
 import {
-  IpLoginLimiterService,
-  UserLoginLimiterService,
-} from './security/login-limiter/login-limiter.service';
+  LimitAccessByIpService,
+  LimitLoginByIpService,
+  LimitLoginByUserService,
+} from './security/rate-limiter/rate-limiter.service';
 import {VerificationCodeService} from './verification-code.service';
 import {AccountService} from './account.service';
 
 import {AuthenticationGuard} from './security/authentication/authentication.guard';
 import {AuthorizationGuard} from './security/authorization/authorization.guard';
-import {IpLoginLimiterGuard} from './security/login-limiter/login-limiter-ip.guard';
+import {LimitAccessByIpGuard} from './security/rate-limiter/rate-limiter-ip-access.guard';
+import {LimitLoginByIpGuard} from './security/rate-limiter/rate-limiter-ip-login.guard';
+import {LimitLoginByUserGuard} from './security/rate-limiter/rate-limiter-user-login.guard';
 
 import {NotificationModule} from '@microservices/notification/notification.module';
 import {TokenModule} from '@microservices/token/token.module';
@@ -28,12 +31,7 @@ import {TokenModule} from '@microservices/token/token.module';
   imports: [
     ThrottlerModule.forRoot({
       // Rate Limit (Maximum of 60 requests per 60 seconds)
-      throttlers: [
-        {
-          limit: 60,
-          ttl: 60,
-        },
-      ],
+      throttlers: [{limit: 60, ttl: 60}],
     }),
     NotificationModule,
     TokenModule,
@@ -41,9 +39,11 @@ import {TokenModule} from '@microservices/token/token.module';
   providers: [
     // Guards
     {provide: APP_GUARD, useClass: ThrottlerGuard}, // 1st priority guard.
-    {provide: APP_GUARD, useClass: IpLoginLimiterGuard}, // 2nd priority guard.
-    {provide: APP_GUARD, useClass: AuthenticationGuard}, // 3rd priority guard.
-    {provide: APP_GUARD, useClass: AuthorizationGuard}, // 4th priority guard.
+    {provide: APP_GUARD, useClass: LimitAccessByIpGuard}, // 2nd priority guard.
+    {provide: APP_GUARD, useClass: LimitLoginByIpGuard}, // 3nd priority guard.
+    {provide: APP_GUARD, useClass: LimitLoginByUserGuard}, // 4nd priority guard.
+    {provide: APP_GUARD, useClass: AuthenticationGuard}, // 5rd priority guard.
+    {provide: APP_GUARD, useClass: AuthorizationGuard}, // 6th priority guard.
 
     JwtStrategy,
     AuthPasswordStrategy,
@@ -51,9 +51,12 @@ import {TokenModule} from '@microservices/token/token.module';
     AuthUuidStrategy,
     AuthVerificationCodeStrategy,
     AuthRefreshStrategy,
-    IpLoginLimiterService,
-    UserLoginLimiterService,
-    IpLoginLimiterGuard,
+    LimitAccessByIpService,
+    LimitLoginByIpService,
+    LimitLoginByUserService,
+    LimitAccessByIpGuard,
+    LimitLoginByIpGuard,
+    LimitLoginByUserGuard,
     RoleService,
     UserService,
     VerificationCodeService,

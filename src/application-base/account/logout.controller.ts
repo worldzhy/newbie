@@ -29,8 +29,8 @@ export class LogoutController {
     @Body() body: {userId: string},
     @Res({passthrough: true}) response: Response
   ): Promise<{data: {message: string}}> {
-    // [step 1] Invalidate all tokens
-    await this.accountService.invalidateTokens(body.userId);
+    // [step 1] Log out
+    await this.accountService.logout(body.userId);
 
     // [step 2] Clear cookie
     response.clearCookie(
