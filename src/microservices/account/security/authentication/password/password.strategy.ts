@@ -10,11 +10,7 @@ export class AuthPasswordStrategy extends PassportStrategy(
   'passport-local.password'
 ) {
   constructor(private readonly userService: UserService) {
-    super({
-      usernameField: 'account',
-      passwordField: 'password',
-      // passReqToCallback: true,
-    });
+    super({usernameField: 'account', passwordField: 'password'});
   }
 
   /**

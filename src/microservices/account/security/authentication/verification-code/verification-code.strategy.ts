@@ -14,11 +14,7 @@ export class AuthVerificationCodeStrategy extends PassportStrategy(
     private readonly verificationCodeService: VerificationCodeService,
     private readonly userService: UserService
   ) {
-    super({
-      usernameField: 'account',
-      passwordField: 'verificationCode',
-      passReqToCallback: true,
-    });
+    super({usernameField: 'account', passwordField: 'verificationCode'});
   }
 
   /**

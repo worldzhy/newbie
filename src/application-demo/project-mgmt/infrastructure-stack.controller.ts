@@ -47,7 +47,7 @@ export class ProjectInfrastructureStackController {
   }
 
   @Get('types')
-  listStackTypes(@Query() manager: string) {
+  listStackTypes(@Query('manager') manager: string) {
     if (manager === InfrastructureStackManager.CloudFormation) {
       return Object.values(CloudFormationStackType);
     } else if (manager === InfrastructureStackManager.Pulumi) {
@@ -58,7 +58,10 @@ export class ProjectInfrastructureStackController {
   }
 
   @Get('params')
-  async getStackParams(@Query() type: string, @Query() manager: string) {
+  async getStackParams(
+    @Query('type') type: string,
+    @Query('manager') manager: string
+  ) {
     if (manager === InfrastructureStackManager.CloudFormation) {
       return this.cloudformationStackService.getStackParams(type);
     } else if (manager === InfrastructureStackManager.Pulumi) {
