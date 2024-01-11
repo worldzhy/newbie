@@ -7,7 +7,11 @@ import {
   splitDateTime,
 } from '@toolkit/utilities/datetime.util';
 import {SchForecast} from './schForecast.class';
-import {frequencyAnalyze, untiAnalyze, getHourUtil} from 'src/utils/util';
+import {
+  frequencyAnalyze,
+  untiAnalyze,
+  getHourUtil,
+} from 'src/application-solidcore/raw-data/raw-data.util';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @Injectable()

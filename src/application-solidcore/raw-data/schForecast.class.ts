@@ -2,7 +2,10 @@ import * as moment from 'moment';
 import * as _ from 'lodash';
 import {RawDataSchedulingService} from './raw-data-scheduling.service';
 import {AiType} from 'src/application-solidcore/schedule/schedule.enum';
-import {getFirstFullWeekStartDate, forecastClass} from 'src/utils/util';
+import {
+  getFirstFullWeekStartDate,
+  forecastClass,
+} from 'src/application-solidcore/raw-data/raw-data.util';
 
 export class SchForecast {
   rawDataSchedulingService: RawDataSchedulingService;

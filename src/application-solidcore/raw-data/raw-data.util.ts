@@ -1,31 +1,6 @@
-import * as fs from 'fs';
-import * as path from 'path';
 import * as moment from 'moment';
 import * as _ from 'lodash';
 import {AiType} from 'src/application-solidcore/schedule/schedule.enum';
-
-export function readFilesInFolder(folderPath) {
-  const files = fs.readdirSync(folderPath);
-
-  const _files: any[] = [];
-
-  files.forEach((file: any) => {
-    const filePath = path.join(folderPath, file);
-    const stats = fs.statSync(filePath);
-
-    if (stats.isFile()) {
-      _files.push(filePath);
-    } else if (stats.isDirectory()) {
-      readFilesInFolder(filePath);
-    }
-  });
-
-  return _files;
-}
-
-export function getFileBaseName(filePath) {
-  return path.basename(filePath, path.extname(filePath));
-}
 
 export function getFirstFullWeekStartDate(year, month) {
   const firstDayOfMonth = moment(`${year}-${month}`, 'YYYY-MM').startOf(
@@ -116,23 +91,6 @@ export function frequencyAnalyze(data: any) {
   }
 
   return data2;
-}
-
-export function getWeekDayName(weekday: any, first = false) {
-  const names = [
-    'Sunday',
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-  ];
-
-  if (first) {
-    return names[weekday][0];
-  }
-  return names[weekday];
 }
 
 export function untiAnalyze(_data: any) {
@@ -258,7 +216,15 @@ export function untiAnalyze(_data: any) {
     const _weekUtilDataReverse = _.reverse(_weekUtilDataValues);
 
     const obj = {
-      weekday: getWeekDayName(wd),
+      weekday: [
+        'Sunday',
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+      ][wd],
       weekdayNo: parseInt(wd),
       avg: _totalWeekAverage,
       AvgUtilWeek: _totalWeekUtilAverage,
