@@ -9,25 +9,15 @@ import {
   SwaggerModule,
   SwaggerCustomOptions,
 } from '@nestjs/swagger';
-import {ClusterService} from './cluster';
+import {NodeClusterService} from './node-cluster';
 import {ApplicationAircruiserModule as ApplicationModule} from './application-aircruiser/application-aircruiser.module';
 // import {ApplicationBasketModule as ApplicationModule} from './application-basket/application-basket.module';
 // import {ApplicationEnginedModule as ApplicationModule} from './application-engined/application-engined.module';
 // import {ApplicationRecruitmentModule as ApplicationModule} from './application-recruitment/application-recruitment.module';
 // import {ApplicationSolidcoreModule as ApplicationModule} from './application-solidcore/application-solidcore.module';
 
-function checkEnvVars(configService: ConfigService) {
-  const requiredEnvVars = ['ENVIRONMENT', 'PORT', 'DATABASE_URL'];
-
-  requiredEnvVars.forEach(envVar => {
-    if (!configService.getOrThrow<string>(envVar)) {
-      throw Error(`Undefined environment variable: ${envVar}`);
-    }
-  });
-}
-
 async function bootstrap() {
-  // Create a nestjs application.
+  // [step 1] Create a nestjs application.
   let app: INestApplication;
   if (process.env.NODE_FRAMEWORK === 'fastify') {
     app = await NestFactory.create<NestFastifyApplication>(
@@ -39,18 +29,35 @@ async function bootstrap() {
     app.use(cookieParser());
   }
 
-  // Check environment variables.
+  // [step 2] Check required environment variables.
   const configService = app.get<ConfigService>(ConfigService);
-  checkEnvVars(configService);
+  ['ENVIRONMENT', 'PORT', 'ALLOWED_ORIGINS', 'DATABASE_URL'].forEach(envVar => {
+    if (!configService.getOrThrow<string>(envVar)) {
+      throw Error(`Undefined environment variable: ${envVar}`);
+    }
+  });
 
-  // Get environment variables.
-  const port = configService.getOrThrow<number>('server.port');
+  // [step 3] Enable features.
+  app.enableCors({
+    credentials: true,
+    origin: configService.getOrThrow<string[]>('server.allowedOrigins'),
+  });
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      /**
+       * By default, every path parameter and query parameter comes over the network as a string.
+       * When we enable this behavior globally, the ValidationPipe will try to automatically convert a string identifier
+       * to a number if we specified the id type as a number (in the method signature).
+       */
+      transform: true,
+    })
+  );
+
   const env = configService.getOrThrow<string>('server.environment');
   const nodeFramework = configService.getOrThrow<string>(
     'server.nodeFramework'
   );
-
-  // Enable functions according to different env.
   if (env === 'production') {
     // helmet is only available in production environment.
     if (nodeFramework === 'express') {
@@ -76,28 +83,12 @@ async function bootstrap() {
     SwaggerModule.setup('api', app, document, customOptions);
   }
 
-  // Enable CORS
-  app.enableCors({
-    credentials: true,
-    origin: configService.getOrThrow<string[]>('server.allowedOrigins'),
-  });
-
-  /**
-   * By default, every path parameter and query parameter comes over the network as a string.
-   * When we enable this behavior globally, the ValidationPipe will try to automatically convert a string identifier
-   * to a number if we specified the id type as a number (in the method signature).
-   */
-  app.useGlobalPipes(
-    new ValidationPipe({
-      transform: true,
-    })
-  );
-
-  // Listen port
+  // [step 4] Listen port
+  const port = configService.getOrThrow<number>('server.port');
   const server = await app.listen(port, '0.0.0.0');
   server.timeout = configService.getOrThrow<number>('server.httpTimeout');
 
   console.log(`Application is running on: ${await app.getUrl()}`);
 }
 bootstrap();
-// ClusterService.clusterize(bootstrap);
+// NodeClusterService.clusterize(bootstrap);

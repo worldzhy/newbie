@@ -14,7 +14,7 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Project Note')
 @ApiBearerAuth()
-@Controller('notes')
+@Controller('project-notes')
 export class ProjectNoteController {
   constructor(private readonly prisma: PrismaService) {}
 

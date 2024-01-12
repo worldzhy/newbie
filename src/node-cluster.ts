@@ -3,7 +3,7 @@ const cluster = require('node:cluster');
 const numCPUs = require('node:os').availableParallelism();
 
 @Injectable()
-export class ClusterService {
+export class NodeClusterService {
   static clusterize(callback: Function): void {
     if (cluster.isPrimary) {
       console.log(`MASTER SERVER IS RUNNING`);

@@ -6,7 +6,7 @@ import {
 } from '@prisma/client';
 import {prismaMiddleware} from '@toolkit/prisma/prisma.middleware';
 
-export async function seedForDemo() {
+export async function seedForAircruiser() {
   const prisma = new PrismaClient();
   prisma.$use(prismaMiddleware);
 

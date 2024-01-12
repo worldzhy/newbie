@@ -1,12 +1,12 @@
 /* eslint-disable node/no-unpublished-import */
-import {seedForDemo} from './seed/demo.seed';
+import {seedForAircruiser} from './seed/demo.seed';
 import {seedForRecruitment} from './seed/recruitment.seed';
 import {seedForSolidcore} from './seed/solidcore.seed';
 
 async function main() {
   console.log('**Seeding Start');
 
-  await seedForDemo();
+  await seedForAircruiser();
   // await seedForRecruitment();
   // await seedForSolidcore();
 
