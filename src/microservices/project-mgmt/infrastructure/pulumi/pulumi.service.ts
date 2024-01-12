@@ -15,6 +15,7 @@ import {AwsSqs_Stack} from './stack/aws-sqs.stack';
 import {AwsVpc_Stack} from './stack/aws-vpc.stack';
 import {Pulumi_Null_Stack} from './stack/null.stack';
 import {ConfigService} from '@nestjs/config';
+import {HttpService} from '@nestjs/axios';
 
 export const PulumiStackType = {
   AWS_CLOUDFRONT: 'AWS_CLOUDFRONT',
@@ -28,12 +29,15 @@ export const PulumiStackType = {
   AWS_SQS: 'AWS_SQS',
   AWS_VPC: 'AWS_VPC',
   AWS_WAF: 'AWS_WAF',
-  COMPUTING_FARGATE: 'COMPUTING_FARGATE',
+  AWS_FARGATE: 'AWS_FARGATE',
 };
 
 @Injectable()
 export class PulumiStackService {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly httpService: HttpService
+  ) {}
 
   /**
    * Start a stack.
@@ -140,7 +144,7 @@ export class PulumiStackService {
     pulumiStack: string;
   }) {
     const url = `https://api.pulumi.com/api/stacks/${params.pulumiOrganization}/${params.pulumiProject}/${params.pulumiStack}`;
-    return await axios.delete(url, {
+    const result = await axios.delete(url, {
       maxRedirects: 5,
       headers: {
         Accept: 'application/vnd.pulumi+8',
@@ -155,13 +159,15 @@ export class PulumiStackService {
         force: true,
       },
     });
+
+    return {status: result.status, data: result.data};
   }
 
   //* @See https://www.pulumi.com/docs/reference/service-rest-api/#list-stacks
   async getStacks(stackProjectName: string) {
     const url = `https://api.pulumi.com/api/user/stacks?project=${stackProjectName}`;
 
-    return await axios.get(url, {
+    const result = await axios.get(url, {
       maxRedirects: 5,
       headers: {
         Accept: 'application/vnd.pulumi+8',
@@ -173,6 +179,8 @@ export class PulumiStackService {
           ),
       },
     });
+
+    return {status: result.status, data: result.data};
   }
 
   //* Get example parameters of stack.
@@ -213,7 +221,7 @@ export class PulumiStackService {
         return AwsSqs_Stack;
       case PulumiStackType.AWS_VPC:
         return AwsVpc_Stack;
-      case PulumiStackType.COMPUTING_FARGATE:
+      case PulumiStackType.AWS_FARGATE:
         return Pulumi_Null_Stack;
       default:
         return Pulumi_Null_Stack;

@@ -12,10 +12,6 @@ export class ProductMessageTracker_Stack {
       DatabaseName: 'postgres',
       SESIdentityARN: '',
       FromAddress: 'henry@inceptionpad.com',
-      LambdaCodeS3BucketName: 'aws-quickstart-077767357755',
-      PinpointEventProcessorLambdaCodeArchiveName: '',
-      AlarmLambdaCodeArchiveName: '',
-      MessageShooterLambdaCodeArchiveName: '',
     };
   }
 

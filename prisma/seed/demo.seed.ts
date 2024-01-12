@@ -1,27 +1,79 @@
-import {PrismaClient} from '@prisma/client';
+import {
+  PermissionAction,
+  Prisma,
+  PrismaClient,
+  TrustedEntityType,
+} from '@prisma/client';
 import {prismaMiddleware} from '@toolkit/prisma/prisma.middleware';
 
 export async function seedForDemo() {
   const prisma = new PrismaClient();
   prisma.$use(prismaMiddleware);
 
-  console.log('- Creating account...');
-  await prisma.user.create({
+  console.log('- Creating roles, permissions and users...');
+  const user = await prisma.user.create({
     data: {
-      password: 'Abc1234!',
       email: 'henry@inceptionpad.com',
+      password: 'Abc1234!',
     },
   });
 
+  const permissions = {
+    Admin: [
+      {
+        action: PermissionAction.Manage,
+        resource: Prisma.ModelName.Organization,
+        where: undefined,
+        trustedEntityType: TrustedEntityType.USER,
+      },
+      {
+        action: PermissionAction.Manage,
+        resource: Prisma.ModelName.User,
+        where: undefined,
+        trustedEntityType: TrustedEntityType.USER,
+      },
+      {
+        action: PermissionAction.Manage,
+        resource: Prisma.ModelName.Role,
+        where: undefined,
+        trustedEntityType: TrustedEntityType.USER,
+      },
+      {
+        action: PermissionAction.Manage,
+        resource: Prisma.ModelName.Permission,
+        where: undefined,
+        trustedEntityType: TrustedEntityType.USER,
+      },
+    ],
+  };
+
+  for (const permission of permissions.Admin) {
+    await prisma.permission.create({
+      data: {
+        action: permission.action,
+        resource: permission.resource,
+        where: permission.where,
+        trustedEntityType: permission.trustedEntityType,
+        trustedEntityId: user.id,
+      },
+    });
+  }
+
   console.log('- Creating project...');
-  const projects = [{name: 'InceptionPad'}];
-  for (const project of projects) {
-    await prisma.project.create({data: project});
+  const projectCreateInputs = [{name: 'A Demo'}];
+  for (const projectCreateInput of projectCreateInputs) {
+    const project = await prisma.project.create({data: projectCreateInput});
+    await prisma.projectEnvironment.createMany({
+      data: [
+        {name: 'Development', projectId: project.id},
+        {name: 'Production', projectId: project.id},
+      ],
+    });
   }
 
   console.log('- Creating workflow...');
   const workflow = await prisma.workflow.create({
-    data: {name: 'A Good Workflow'},
+    data: {name: 'A Workflow'},
   });
 
   console.log('- Creating workflow views...');

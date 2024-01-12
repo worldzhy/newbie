@@ -40,22 +40,22 @@ export class AvailabilityJobProducer {
     const dayOfMonth = now.getDate();
     let quarter = currentQuarter();
 
-    if (month in [1, 2, 3]) {
+    if ([1, 2, 3].includes(month)) {
       quarter = 1;
       if (month === 3 && dayOfMonth > LAST_DAY_FOR_EACH_QUARTER) {
         quarter = 2;
       }
-    } else if (month in [4, 5, 6]) {
+    } else if ([4, 5, 6].includes(month)) {
       quarter = 2;
       if (month === 6 && dayOfMonth > LAST_DAY_FOR_EACH_QUARTER) {
         quarter = 3;
       }
-    } else if (month in [7, 8, 9]) {
+    } else if ([7, 8, 9].includes(month)) {
       quarter = 3;
       if (month === 9 && dayOfMonth > LAST_DAY_FOR_EACH_QUARTER) {
         quarter = 4;
       }
-    } else if (month in [10, 11, 12]) {
+    } else if ([10, 11, 12].includes(month)) {
       quarter = 4;
       if (month === 12 && dayOfMonth > LAST_DAY_FOR_EACH_QUARTER) {
         quarter = 1;

@@ -17,7 +17,7 @@ import {TagController} from './tag/tag.controller';
 
 @Module({
   imports: [
-    Application0Module, // Hope you enjoy the Newbie!
+    Application0Module, // BEAT IT!
     AvailabilityModule,
     ClassModule,
     CoachModule,

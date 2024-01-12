@@ -9,13 +9,13 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {Prisma, ProjectElement} from '@prisma/client';
+import {Prisma, ProjectNote} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
-@ApiTags('Project Management / Project Element')
+@ApiTags('Project Management / Project Note')
 @ApiBearerAuth()
-@Controller('project-elements')
-export class ProjectElementController {
+@Controller('notes')
+export class ProjectNoteController {
   constructor(private readonly prisma: PrismaService) {}
 
   @Post('')
@@ -33,33 +33,31 @@ export class ProjectElementController {
       },
     },
   })
-  async createElement(
+  async createNote(
     @Body()
-    body: Prisma.ProjectElementUncheckedCreateInput
-  ): Promise<ProjectElement> {
+    body: Prisma.ProjectNoteUncheckedCreateInput
+  ): Promise<ProjectNote> {
     // [step 1] Guard statement.
     if (!body.label) {
       throw new BadRequestException('Invalid parameters in the request body.');
     }
 
     // [step 2] Create project.
-    return await this.prisma.projectElement.create({
+    return await this.prisma.projectNote.create({
       data: body,
     });
   }
 
   //* Get many
   @Get('')
-  async getElements(): Promise<ProjectElement[]> {
-    return await this.prisma.projectElement.findMany({});
+  async getNotes(): Promise<ProjectNote[]> {
+    return await this.prisma.projectNote.findMany({});
   }
 
   //* Get
   @Get(':elementId')
-  async getElement(
-    @Param('elementId') elementId: number
-  ): Promise<ProjectElement> {
-    return await this.prisma.projectElement.findUniqueOrThrow({
+  async getNote(@Param('elementId') elementId: number): Promise<ProjectNote> {
+    return await this.prisma.projectNote.findUniqueOrThrow({
       where: {id: elementId},
     });
   }
@@ -77,11 +75,11 @@ export class ProjectElementController {
       },
     },
   })
-  async updateElement(
+  async updateNote(
     @Param('elementId') elementId: number,
-    @Body() body: Prisma.ProjectElementUpdateInput
-  ): Promise<ProjectElement> {
-    return await this.prisma.projectElement.update({
+    @Body() body: Prisma.ProjectNoteUpdateInput
+  ): Promise<ProjectNote> {
+    return await this.prisma.projectNote.update({
       where: {id: elementId},
       data: body,
     });
@@ -89,10 +87,10 @@ export class ProjectElementController {
 
   //* Delete
   @Delete(':elementId')
-  async deleteElement(
+  async deleteNote(
     @Param('elementId') elementId: number
-  ): Promise<ProjectElement | null> {
-    return await this.prisma.projectElement.delete({
+  ): Promise<ProjectNote | null> {
+    return await this.prisma.projectNote.delete({
       where: {id: elementId},
     });
   }

@@ -686,24 +686,11 @@ model StripePaymentIntent {
 // !          [Microservice] Project Management models             //
 // ! ------------------------------------------------------------ //
 // * Project                                                      //
+// * ProjectNote                                                  //
 // * ProjectCheckpoint                                            //
 // * ProjectEnvironment                                           //
-// * CloudFormationStack                                          //
-// * PulumiStack                                                  //
+// * InfrastructureStack                                          //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
-
-model Project {
-  id           String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name         String               @unique
-  state        ProjectState         @default(PLANNING)
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
-  elements     ProjectElement[]
-  checkpoints  ProjectCheckpoint[]
-  environments ProjectEnvironment[]
-
-  @@schema("microservice/project-mgmt")
-}
 
 enum ProjectState {
   PLANNING
@@ -714,7 +701,65 @@ enum ProjectState {
   @@schema("microservice/project-mgmt")
 }
 
-model ProjectElement {
+enum ProjectCheckpointState {
+  TODO
+  PROCESSING
+  DONE
+
+  @@schema("microservice/project-mgmt")
+}
+
+enum ProjectCheckpointType {
+  MANAGER_PRODUCT_REQUIREMENTS
+  MANAGER_PROJECT_KANBAN
+  DESIGNER_WIREFRAMES
+  DESIGNER_PROTOTYPES
+  DEVELOPER_ACCOUNT_APPLE
+  DEVELOPER_ACCOUNT_GOOGLE
+  DEVELOPER_BACKEND_REPO
+  DEVELOPER_BACKEND_FRAMEWORK
+  DEVELOPER_BACKEND_DATABASE
+  DEVELOPER_BACKEND_API
+  DEVELOPER_FRONTEND_REPO
+  DEVELOPER_FRONTEND_FRAMEWORK
+  DEVELOPER_INFRASTRUCTURE
+
+  @@schema("microservice/project-mgmt")
+}
+
+enum InfrastructureStackManager {
+  CloudFormation
+  Pulumi
+
+  @@schema("microservice/project-mgmt")
+}
+
+enum InfrastructureStackState {
+  PENDING
+  BUILD_PROCESSING
+  BUILD_SUCCEEDED
+  BUILD_FAILED
+  DESTROY_PROCESSING
+  DESTROY_SUCCEEDED
+  DESTROY_FAILED
+
+  @@schema("microservice/project-mgmt")
+}
+
+model Project {
+  id           String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String               @unique
+  state        ProjectState         @default(PLANNING)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  notes        ProjectNote[]
+  checkpoints  ProjectCheckpoint[]
+  environments ProjectEnvironment[]
+
+  @@schema("microservice/project-mgmt")
+}
+
+model ProjectNote {
   id        Int      @id @default(autoincrement())
   section   String?
   label     String
@@ -737,32 +782,6 @@ model ProjectCheckpoint {
   projectId String                 @db.Uuid
 
   @@unique([type, projectId])
-  @@schema("microservice/project-mgmt")
-}
-
-enum ProjectCheckpointType {
-  MANAGER_PRODUCT_REQUIREMENTS
-  MANAGER_PROJECT_KANBAN
-  DESIGNER_WIREFRAMES
-  DESIGNER_PROTOTYPES
-  DEVELOPER_ACCOUNT_APPLE
-  DEVELOPER_ACCOUNT_GOOGLE
-  DEVELOPER_BACKEND_REPO
-  DEVELOPER_BACKEND_FRAMEWORK
-  DEVELOPER_BACKEND_DATABASE
-  DEVELOPER_BACKEND_API
-  DEVELOPER_FRONTEND_REPO
-  DEVELOPER_FRONTEND_FRAMEWORK
-  DEVELOPER_INFRASTRUCTURE
-
-  @@schema("microservice/project-mgmt")
-}
-
-enum ProjectCheckpointState {
-  TODO
-  PROCESSING
-  DONE
-
   @@schema("microservice/project-mgmt")
 }
 
@@ -798,25 +817,6 @@ model InfrastructureStack {
   updatedAt           DateTime                   @updatedAt
   environment         ProjectEnvironment         @relation(fields: [environmentId], references: [id], onDelete: Cascade)
   environmentId       Int
-
-  @@schema("microservice/project-mgmt")
-}
-
-enum InfrastructureStackManager {
-  CloudFormation
-  Pulumi
-
-  @@schema("microservice/project-mgmt")
-}
-
-enum InfrastructureStackState {
-  PENDING
-  BUILD_PROCESSING
-  BUILD_SUCCEEDED
-  BUILD_FAILED
-  DESTROY_PROCESSING
-  DESTROY_SUCCEEDED
-  DESTROY_FAILED
 
   @@schema("microservice/project-mgmt")
 }

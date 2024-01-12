@@ -13,13 +13,11 @@ import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {verifyProjectName} from '@toolkit/validators/project.validator';
 
 import {
-  PermissionAction,
   Prisma,
   Project,
   ProjectCheckpointType,
   ProjectState,
 } from '@prisma/client';
-import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Project Management / Project')
@@ -69,7 +67,6 @@ export class ProjectController {
   }
 
   @Get('')
-  @RequirePermission(PermissionAction.List, Prisma.ModelName.Project)
   async getProjects(
     @Query('page') page: number,
     @Query('pageSize') pageSize: number,

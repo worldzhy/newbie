@@ -7,7 +7,7 @@ import {ApplicationRecruitmentController} from './application-recruitment.contro
 
 @Module({
   imports: [
-    Application0Module, // Hope you enjoy the Newbie!
+    Application0Module, // BEAT IT!
     CandidateCertificationModule,
     JobModule,
     JobApplicationModule,

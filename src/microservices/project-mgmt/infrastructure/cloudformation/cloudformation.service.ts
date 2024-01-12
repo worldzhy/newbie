@@ -22,9 +22,9 @@ export const CloudFormationStackType = {
   CICD_BUILD: 'CICD_BUILD',
   CICD_PIPELINE: 'CICD_PIPELINE',
   CICD_REPOSITORY: 'CICD_REPOSITORY',
-  COMPUTING_FARGATE: 'COMPUTING_FARGATE',
-  NETWORK_HIPAA: 'NETWORK_HIPAA',
-  PRODUCT_MESSAGE_TRACKER: 'PRODUCT_MESSAGE_TRACKER',
+  FARGATE: 'FARGATE',
+  HIPAA_NETWORK: 'HIPAA_NETWORK',
+  MESSAGE_TRACKER: 'MESSAGE_TRACKER',
 };
 
 @Injectable()
@@ -45,15 +45,19 @@ export class CloudFormationStackService {
         break;
       case CloudFormationStackType.CICD_REPOSITORY:
         break;
-      case CloudFormationStackType.COMPUTING_FARGATE:
+      case CloudFormationStackType.FARGATE:
         break;
-      case CloudFormationStackType.NETWORK_HIPAA:
+      case CloudFormationStackType.HIPAA_NETWORK:
         stack.params!['AWSConfigARN'] =
           'arn:aws:iam::' +
           environment.awsAccountId +
           ':role/aws-service-role/config.amazonaws.com/AWSServiceRoleForConfig';
         break;
-      case CloudFormationStackType.PRODUCT_MESSAGE_TRACKER:
+      case CloudFormationStackType.MESSAGE_TRACKER:
+        stack.params!['LambdaCodeS3BucketName'] = 'aws-quickstart-077767357755';
+        stack.params!['PinpointEventProcessorLambdaCodeArchiveName'] = '';
+        stack.params!['AlarmLambdaCodeArchiveName'] = '';
+        stack.params!['MessageShooterLambdaCodeArchiveName'] = '';
         break;
       default:
         break;
@@ -175,11 +179,11 @@ export class CloudFormationStackService {
         return CicdPipeline_Stack;
       case CloudFormationStackType.CICD_REPOSITORY:
         return CicdRepository_Stack;
-      case CloudFormationStackType.COMPUTING_FARGATE:
+      case CloudFormationStackType.FARGATE:
         return ComputingFargate_Stack;
-      case CloudFormationStackType.NETWORK_HIPAA:
+      case CloudFormationStackType.HIPAA_NETWORK:
         return NetworkHipaa_Stack;
-      case CloudFormationStackType.PRODUCT_MESSAGE_TRACKER:
+      case CloudFormationStackType.MESSAGE_TRACKER:
         return ProductMessageTracker_Stack;
       default:
         return Null_Stack;

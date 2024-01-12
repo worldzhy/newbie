@@ -6,8 +6,8 @@ import {EnginedModule} from './engined/engined.module';
 import {ApplicationDemoController} from './application-demo.controller';
 import {ProjectCheckpointController} from './project-mgmt/checkpoint.controller';
 import {ProjectEnvironmentController} from './project-mgmt/environment.controller';
-import {ProjectInfrastructureStackController} from './project-mgmt/infrastructure-stack.controller';
-import {ProjectElementController} from './project-mgmt/project-element.controller';
+import {ProjectInfrastructureController} from './project-mgmt/infrastructure.controller';
+import {ProjectNoteController} from './project-mgmt/note.controller';
 import {ProjectController} from './project-mgmt/project.controller';
 
 import {SkuConversionController} from './stock-mgmt/sku-conversion.controller';
@@ -19,7 +19,7 @@ import {WarehouseController} from './stock-mgmt/warehouse.controller';
 
 @Module({
   imports: [
-    Application0Module, // Hope you enjoy the Newbie!
+    Application0Module, // BEAT IT!
     EnginedModule,
   ],
   controllers: [
@@ -27,8 +27,8 @@ import {WarehouseController} from './stock-mgmt/warehouse.controller';
 
     ProjectCheckpointController,
     ProjectEnvironmentController,
-    ProjectInfrastructureStackController,
-    ProjectElementController,
+    ProjectInfrastructureController,
+    ProjectNoteController,
     ProjectController,
 
     SkuConversionController,
