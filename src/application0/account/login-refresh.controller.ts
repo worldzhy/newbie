@@ -16,7 +16,7 @@ export class LoginRefreshController {
   ) {}
 
   @AccessingRefreshEndpoint()
-  @Get('refresh')
+  @Get('refresh-token')
   @ApiCookieAuth()
   async refresh(
     @Cookies('refreshToken') refreshToken: string,

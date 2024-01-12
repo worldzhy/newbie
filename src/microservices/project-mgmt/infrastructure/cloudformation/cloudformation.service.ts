@@ -29,7 +29,6 @@ export const CloudFormationStackType = {
 
 @Injectable()
 export class CloudFormationStackService {
-  //* Create resources
   async createResources(
     stack: InfrastructureStack
   ): Promise<CreateStackCommandOutput> {
@@ -54,10 +53,14 @@ export class CloudFormationStackService {
           ':role/aws-service-role/config.amazonaws.com/AWSServiceRoleForConfig';
         break;
       case CloudFormationStackType.MESSAGE_TRACKER:
-        stack.params!['LambdaCodeS3BucketName'] = 'aws-quickstart-077767357755';
-        stack.params!['PinpointEventProcessorLambdaCodeArchiveName'] = '';
-        stack.params!['AlarmLambdaCodeArchiveName'] = '';
-        stack.params!['MessageShooterLambdaCodeArchiveName'] = '';
+        stack.params!['LambdaCodeS3BucketName'] =
+          environment.s3ForCloudformation;
+        stack.params!['PinpointEventProcessorLambdaCodeArchiveName'] =
+          'quickstart-message-tracker/codes/pinpoint-event-receiver.zip';
+        stack.params!['AlarmLambdaCodeArchiveName'] =
+          'quickstart-message-tracker/codes/alarm-message-sender.zip';
+        stack.params!['MessageShooterLambdaCodeArchiveName'] =
+          'quickstart-message-tracker/codes/pinpoint-message-sender.zip';
         break;
       default:
         break;
@@ -75,7 +78,6 @@ export class CloudFormationStackService {
     return await client.send(command);
   }
 
-  //* Describe resources
   async describeResources(stack: InfrastructureStack) {
     // [step 1] Create a cloudformation client.
     const environment = stack['environment'] as ProjectEnvironment;
@@ -89,7 +91,6 @@ export class CloudFormationStackService {
     return await client.send(command);
   }
 
-  //* Destroy resources.
   async destroyResources(
     stack: InfrastructureStack
   ): Promise<DeleteStackCommandOutput> {
@@ -116,7 +117,6 @@ export class CloudFormationStackService {
     );
   }
 
-  //* Get AWS CloudFormation client.
   private getCloudFormationClient(
     environment: ProjectEnvironment
   ): CloudFormationClient {
@@ -143,7 +143,6 @@ export class CloudFormationStackService {
     }
   }
 
-  //* Get CloudFormation template URL.
   private getStackTemplate(stack: InfrastructureStack): string {
     const environment = stack['environment'] as ProjectEnvironment;
 
@@ -170,7 +169,6 @@ export class CloudFormationStackService {
     }
   }
 
-  //* Get stack class
   private getStackServiceByType(type: string) {
     switch (type) {
       case CloudFormationStackType.CICD_BUILD:

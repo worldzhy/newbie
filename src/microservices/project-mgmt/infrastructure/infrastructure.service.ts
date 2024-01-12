@@ -55,12 +55,12 @@ export class InfrastructureService {
       include: {environment: {include: {project: true}}},
     });
 
-    if (
-      stack.state !== InfrastructureStackState.PENDING &&
-      stack.state !== InfrastructureStackState.DESTROY_SUCCEEDED
-    ) {
-      throw new BadRequestException('The infrastructure has been built.');
-    }
+    // if (
+    //   stack.state !== InfrastructureStackState.PENDING &&
+    //   stack.state !== InfrastructureStackState.DESTROY_SUCCEEDED
+    // ) {
+    //   throw new BadRequestException('The infrastructure has been built.');
+    // }
 
     // [step 2] Build the infrastructure stack.
     let output: CreateStackCommandOutput | UpResult;
@@ -124,16 +124,16 @@ export class InfrastructureService {
       include: {environment: {include: {project: true}}},
     });
 
-    if (
-      stack.state === InfrastructureStackState.PENDING ||
-      stack.state === InfrastructureStackState.BUILD_PROCESSING ||
-      stack.state === InfrastructureStackState.DESTROY_PROCESSING ||
-      stack.state === InfrastructureStackState.DESTROY_SUCCEEDED
-    ) {
-      throw new BadRequestException(
-        'The stack has not been built or is processing.'
-      );
-    }
+    // if (
+    //   stack.state === InfrastructureStackState.PENDING ||
+    //   stack.state === InfrastructureStackState.BUILD_PROCESSING ||
+    //   stack.state === InfrastructureStackState.DESTROY_PROCESSING ||
+    //   stack.state === InfrastructureStackState.DESTROY_SUCCEEDED
+    // ) {
+    //   throw new BadRequestException(
+    //     'The stack has not been built or is processing.'
+    //   );
+    // }
 
     // [step 2] Delete the stack on AWS CloudFormation.
     let output: DeleteStackCommandOutput | DestroyResult;

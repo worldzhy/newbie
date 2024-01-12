@@ -34,6 +34,7 @@ import {OrganizationController} from './account/organization/organization.contro
 import {PermissionController} from './account/permission/permission.controller';
 import {RoleController} from './account/role/role.controller';
 import {UserController} from './account/user/user.controller';
+import {NotificationController} from './notification/notification.controller';
 import {TagController} from './tag/tag.controller';
 import {TagGroupController} from './tag/tag-group.controller';
 import {WorkflowController} from './workflow/workflow.controller';
@@ -73,6 +74,7 @@ import {WorkflowRouteController} from './workflow/workflow-route.controller';
     // PermissionController,
     // RoleController,
     // UserController,
+    NotificationController,
     TagController,
     TagGroupController,
     WorkflowController,

@@ -59,13 +59,14 @@ export class ProjectInfrastructureController {
           type: CloudFormationStackType.MESSAGE_TRACKER,
           params: {
             DatabaseHost:
-              'postgres-1.cmkxbdo0yf63.rds.cn-northwest-1.amazonaws.com.cn',
+              'solidcore-dev.ccjlptnm8vot.us-east-1.rds.amazonaws.com',
             DatabasePort: '5432',
             DatabaseMasterUsername: 'postgres',
             DatabaseMasterUserPassword: 'postgres',
             DatabaseName: 'postgres',
-            SESIdentityARN: '',
-            FromAddress: 'henry@inceptionpad.com',
+            SESIdentityARN:
+              'arn:aws:ses:us-east-1:196438055748:identity/info@solidcore.co',
+            FromAddress: 'info@solidcore.co',
           },
           environmentId: 1,
         },
