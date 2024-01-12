@@ -10,7 +10,9 @@ import {
   SwaggerCustomOptions,
 } from '@nestjs/swagger';
 import {ClusterService} from './cluster';
-import {ApplicationDemoModule as ApplicationModule} from './application-demo/application-demo.module';
+import {ApplicationAircruiserModule as ApplicationModule} from './application-aircruiser/application-aircruiser.module';
+// import {ApplicationBasketModule as ApplicationModule} from './application-basket/application-basket.module';
+// import {ApplicationEnginedModule as ApplicationModule} from './application-engined/application-engined.module';
 // import {ApplicationRecruitmentModule as ApplicationModule} from './application-recruitment/application-recruitment.module';
 // import {ApplicationSolidcoreModule as ApplicationModule} from './application-solidcore/application-solidcore.module';
 
