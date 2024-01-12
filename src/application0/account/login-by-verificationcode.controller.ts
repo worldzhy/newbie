@@ -28,7 +28,7 @@ export class LoginByVerificationCodeController {
       a: {
         summary: '1. Log in with email',
         value: {
-          account: 'email@example.com',
+          account: 'henry@inceptionpad.com',
           verificationCode: '123456',
         },
       },

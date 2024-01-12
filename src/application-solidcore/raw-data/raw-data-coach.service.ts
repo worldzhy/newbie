@@ -1,5 +1,4 @@
 import {Injectable} from '@nestjs/common';
-import {UserService} from '@microservices/account/user.service';
 import {SnowflakeService} from '@toolkit/snowflake/snowflake.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
@@ -9,8 +8,7 @@ const ROLE_NAME_COACH = 'Coach';
 export class RawDataCoachService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly snowflakeService: SnowflakeService,
-    private readonly userService: UserService
+    private readonly snowflakeService: SnowflakeService
   ) {}
 
   async syncCoachesAndLinkLocations() {
