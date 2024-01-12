@@ -91,6 +91,14 @@ export class ProjectInfrastructureController {
     return await this.prisma.infrastructureStack.create({data: body});
   }
 
+  @Get('stacks')
+  async getStacks(@Query('environmentId') environmentId: number) {
+    return await this.prisma.findManyInOnePage({
+      model: Prisma.ModelName.InfrastructureStack,
+      findManyArgs: {where: {environmentId}},
+    });
+  }
+
   @Get('stacks/:stackId')
   async getStack(
     @Param('stackId') stackId: string

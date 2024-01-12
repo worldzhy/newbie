@@ -132,27 +132,5 @@ export class ProjectController {
     return await this.prisma.project.delete({where: {id: projectId}});
   }
 
-  //* Get checkpoints
-  @Get(':projectId/checkpoints')
-  async getProjectCheckpoints(
-    @Param('projectId') projectId: string
-  ): Promise<Project> {
-    return await this.prisma.project.findUniqueOrThrow({
-      where: {id: projectId},
-      include: {checkpoints: true},
-    });
-  }
-
-  //* Get environments
-  @Get(':projectId/environments')
-  async getProjectEnvironments(
-    @Param('projectId') projectId: string
-  ): Promise<Project> {
-    return await this.prisma.project.findUniqueOrThrow({
-      where: {id: projectId},
-      include: {environments: true},
-    });
-  }
-
   /* End */
 }

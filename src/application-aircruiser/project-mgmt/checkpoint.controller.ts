@@ -1,4 +1,12 @@
-import {Controller, Delete, Get, Patch, Body, Param} from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  Patch,
+  Body,
+  Param,
+  Query,
+} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Prisma, ProjectCheckpoint, ProjectCheckpointType} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
@@ -17,6 +25,14 @@ export class ProjectCheckpointController {
   @Get('states')
   listCheckpointStates() {
     return ['Todo', 'Processing', 'Done', '-'];
+  }
+
+  @Get('')
+  async getCheckpoints(@Query('projectId') projectId: string) {
+    return await this.prisma.findManyInOnePage({
+      model: Prisma.ModelName.ProjectCheckpoint,
+      findManyArgs: {where: {projectId}},
+    });
   }
 
   @Get(':checkpointId')

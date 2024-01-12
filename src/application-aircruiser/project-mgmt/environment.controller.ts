@@ -7,6 +7,7 @@ import {
   Param,
   Post,
   BadRequestException,
+  Query,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Prisma, ProjectEnvironment} from '@prisma/client';
@@ -45,6 +46,14 @@ export class ProjectEnvironmentController {
     // [step 2] Create project.
     return await this.prisma.projectEnvironment.create({
       data: body,
+    });
+  }
+
+  @Get('')
+  async getEnvironments(@Query('projectId') projectId: string) {
+    return await this.prisma.findManyInOnePage({
+      model: Prisma.ModelName.ProjectEnvironment,
+      findManyArgs: {where: {projectId}},
     });
   }
 
@@ -96,17 +105,6 @@ export class ProjectEnvironmentController {
   ): Promise<ProjectEnvironment> {
     return await this.prisma.projectEnvironment.delete({
       where: {id: environmentId},
-    });
-  }
-
-  //* Get cloudformation stacks
-  @Get(':environmentId/infrastructure-stacks')
-  async getProjectCloudformationStacks(
-    @Param('environmentId') environmentId: number
-  ): Promise<ProjectEnvironment> {
-    return await this.prisma.projectEnvironment.findUniqueOrThrow({
-      where: {id: environmentId},
-      include: {infrastructureStacks: true},
     });
   }
 

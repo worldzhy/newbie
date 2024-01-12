@@ -7,6 +7,7 @@ import {
   Param,
   Post,
   BadRequestException,
+  Query,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Prisma, ProjectNote} from '@prisma/client';
@@ -49,8 +50,16 @@ export class ProjectNoteController {
   }
 
   @Get('')
-  async getNotes(): Promise<ProjectNote[]> {
-    return await this.prisma.projectNote.findMany({});
+  async getNotes(
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number,
+    @Query('projectId') projectId: string
+  ) {
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.ProjectNote,
+      pagination: {page, pageSize},
+      findManyArgs: {where: {projectId}},
+    });
   }
 
   @Get(':noteId')
