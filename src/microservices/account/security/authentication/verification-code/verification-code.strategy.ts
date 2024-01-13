@@ -6,7 +6,7 @@ import {UserService} from '@microservices/account/user.service';
 import {verifyEmail, verifyPhone} from '@toolkit/validators/user.validator';
 
 @Injectable()
-export class AuthVerificationCodeStrategy extends PassportStrategy(
+export class VerificationCodeAuthStrategy extends PassportStrategy(
   Strategy,
   'passport-local.verification-code'
 ) {

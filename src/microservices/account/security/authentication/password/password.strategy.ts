@@ -5,7 +5,7 @@ import {compareHash} from '@toolkit/utilities/common.util';
 import {UserService} from '@microservices/account/user.service';
 
 @Injectable()
-export class AuthPasswordStrategy extends PassportStrategy(
+export class PasswordAuthStrategy extends PassportStrategy(
   Strategy,
   'passport-local.password'
 ) {

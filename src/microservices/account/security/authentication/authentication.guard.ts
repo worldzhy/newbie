@@ -3,17 +3,17 @@ import {Reflector} from '@nestjs/core';
 import {ConfigService} from '@nestjs/config';
 import {AuthGuard} from '@nestjs/passport';
 import {JwtAuthGuard} from './jwt/jwt.guard';
-import {AuthPasswordGuard} from './password/password.guard';
-import {AuthProfileGuard} from './profile/profile.guard';
-import {AuthUuidGuard} from './uuid/uuid.guard';
-import {AuthVerificationCodeGuard} from './verification-code/verification-code.guard';
+import {PasswordAuthGuard} from './password/password.guard';
+import {ProfileAuthGuard} from './profile/profile.guard';
+import {RefreshTokenAuthGuard} from './refresh-token/refresh-token.guard';
+import {UuidAuthGuard} from './uuid/uuid.guard';
+import {VerificationCodeAuthGuard} from './verification-code/verification-code.guard';
 import {IS_PUBLIC_KEY} from './public/public.decorator';
 import {IS_LOGGING_IN_PASSWORD_KEY} from './password/password.decorator';
 import {IS_LOGGING_IN_PROFILE_KEY} from './profile/profile.decorator';
 import {IS_LOGGING_IN_UUID_KEY} from './uuid/uuid.decorator';
 import {IS_LOGGING_IN_VERIFICATION_CODE_KEY} from './verification-code/verification-code.decorator';
-import {IS_ACCESSING_REFRESH_ENDPOINT} from './refresh/refresh.decorator';
-import {RefreshAuthGuard} from './refresh/refresh.guard';
+import {IS_REFRESHING_ACCESS_TOKEN} from './refresh-token/refresh-token.decorator';
 
 @Injectable()
 export class AuthenticationGuard extends AuthGuard('global-guard') {
@@ -51,7 +51,7 @@ export class AuthenticationGuard extends AuthGuard('global-guard') {
       [context.getHandler(), context.getClass()]
     );
     if (isLoggingInByPassword) {
-      return new AuthPasswordGuard().canActivate(context);
+      return new PasswordAuthGuard().canActivate(context);
     }
 
     // Use @LoggingInByProfile() for custom.profile strategy authentication
@@ -60,7 +60,7 @@ export class AuthenticationGuard extends AuthGuard('global-guard') {
       [context.getHandler(), context.getClass()]
     );
     if (isLoggingInByProfile) {
-      return new AuthProfileGuard().canActivate(context);
+      return new ProfileAuthGuard().canActivate(context);
     }
 
     // Use @LoggingInByUuid() for custom.uuid strategy authentication
@@ -69,7 +69,7 @@ export class AuthenticationGuard extends AuthGuard('global-guard') {
       [context.getHandler(), context.getClass()]
     );
     if (isLoggingInByUuid) {
-      return new AuthUuidGuard().canActivate(context);
+      return new UuidAuthGuard().canActivate(context);
     }
 
     // Use @LoggingInByVerificationCode() for local.verification-code strategy authentication
@@ -79,17 +79,16 @@ export class AuthenticationGuard extends AuthGuard('global-guard') {
         [context.getHandler(), context.getClass()]
       );
     if (isLoggingInByVerificationCode) {
-      return new AuthVerificationCodeGuard().canActivate(context);
+      return new VerificationCodeAuthGuard().canActivate(context);
     }
 
-    // Use @AccessingRefreshEndpoint() for refresh endpoint authentication
-    const isAccessingRefreshEndpoint =
-      this.reflector.getAllAndOverride<boolean>(IS_ACCESSING_REFRESH_ENDPOINT, [
-        context.getHandler(),
-        context.getClass(),
-      ]);
-    if (isAccessingRefreshEndpoint) {
-      return new RefreshAuthGuard().canActivate(context);
+    // Use @RefreshingAccessToken() for refresh endpoint authentication
+    const isRefreshingAccessToken = this.reflector.getAllAndOverride<boolean>(
+      IS_REFRESHING_ACCESS_TOKEN,
+      [context.getHandler(), context.getClass()]
+    );
+    if (isRefreshingAccessToken) {
+      return new RefreshTokenAuthGuard().canActivate(context);
     }
 
     // JWT guard is the default guard.

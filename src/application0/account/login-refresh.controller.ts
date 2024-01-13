@@ -3,7 +3,7 @@ import {ApiTags, ApiCookieAuth} from '@nestjs/swagger';
 import {Response} from 'express';
 import {AccountService} from '@microservices/account/account.service';
 import {RefreshTokenService} from '@microservices/token/refresh-token/refresh-token.service';
-import {AccessingRefreshEndpoint} from '@microservices/account/security/authentication/refresh/refresh.decorator';
+import {RefreshingAccessToken} from '@microservices/account/security/authentication/refresh-token/refresh-token.decorator';
 import {Cookies} from '@_decorator/cookie.decorator';
 import {AccessToken} from '@prisma/client';
 
@@ -15,8 +15,8 @@ export class LoginRefreshController {
     private readonly refreshTokenService: RefreshTokenService
   ) {}
 
-  @AccessingRefreshEndpoint()
-  @Get('refresh-token')
+  @RefreshingAccessToken()
+  @Get('refresh-access-token')
   @ApiCookieAuth()
   async refresh(
     @Cookies('refreshToken') refreshToken: string,

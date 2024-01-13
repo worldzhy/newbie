@@ -7,7 +7,7 @@ import {RefreshTokenService} from '@microservices/token/refresh-token/refresh-to
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @Injectable()
-export class AuthRefreshStrategy extends PassportStrategy(
+export class RefreshTokenAuthStrategy extends PassportStrategy(
   Strategy,
   'passport-custom.refresh'
 ) {
