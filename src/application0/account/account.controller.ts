@@ -13,7 +13,6 @@ import {Request} from 'express';
 import {AccountService} from '@microservices/account/account.service';
 import {VerificationCodeService} from '@microservices/account/verification-code.service';
 import {Public} from '@microservices/account/security/authentication/public/public.decorator';
-import {LimitAccessByIp} from '@microservices/account/security/rate-limiter/rate-limiter.decorator';
 import {verifyEmail, verifyPhone} from '@toolkit/validators/user.validator';
 import {compareHash} from '@toolkit/utilities/common.util';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
@@ -28,7 +27,6 @@ export class AccountController {
   ) {}
 
   @Get('me')
-  @LimitAccessByIp()
   @ApiBearerAuth()
   async getCurrentUser(@Req() request: Request) {
     return await this.accountService.me(request);

@@ -4,7 +4,6 @@ import {ThrottlerGuard, ThrottlerModule} from '@nestjs/throttler';
 
 import {AuthenticationGuard} from './authentication/authentication.guard';
 import {AuthorizationGuard} from './authorization/authorization.guard';
-import {LimitAccessByIpGuard} from './rate-limiter/rate-limiter-ip-access.guard';
 import {LimitLoginByIpGuard} from './rate-limiter/rate-limiter-ip-login.guard';
 import {LimitLoginByUserGuard} from './rate-limiter/rate-limiter-user-login.guard';
 
@@ -16,7 +15,6 @@ import {UuidAuthStrategy} from './authentication/uuid/uuid.strategy';
 import {VerificationCodeAuthStrategy} from './authentication/verification-code/verification-code.strategy';
 
 import {
-  LimitAccessByIpService,
   LimitLoginByIpService,
   LimitLoginByUserService,
 } from './rate-limiter/rate-limiter.service';
@@ -24,18 +22,16 @@ import {
 @Module({
   imports: [
     ThrottlerModule.forRoot({
-      // Rate Limit (Maximum of 60 requests per 60 seconds)
-      throttlers: [{limit: 60, ttl: 60}],
+      // Maximum of 10000 requests / 1000 milliseconds for each endpoint.
+      throttlers: [{limit: 10000, ttl: 1000}],
     }),
   ],
   providers: [
-    // Guards
     {provide: APP_GUARD, useClass: ThrottlerGuard}, // 1st priority guard.
-    {provide: APP_GUARD, useClass: LimitAccessByIpGuard}, // 2nd priority guard.
-    {provide: APP_GUARD, useClass: LimitLoginByIpGuard}, // 3nd priority guard.
-    {provide: APP_GUARD, useClass: LimitLoginByUserGuard}, // 4nd priority guard.
-    {provide: APP_GUARD, useClass: AuthenticationGuard}, // 5rd priority guard.
-    {provide: APP_GUARD, useClass: AuthorizationGuard}, // 6th priority guard.
+    {provide: APP_GUARD, useClass: LimitLoginByIpGuard}, // 2nd priority guard.
+    {provide: APP_GUARD, useClass: LimitLoginByUserGuard}, // 3nd priority guard.
+    {provide: APP_GUARD, useClass: AuthenticationGuard}, // 4rd priority guard.
+    {provide: APP_GUARD, useClass: AuthorizationGuard}, // 5th priority guard.
 
     JwtStrategy,
     PasswordAuthStrategy,
@@ -44,14 +40,9 @@ import {
     UuidAuthStrategy,
     VerificationCodeAuthStrategy,
 
-    LimitAccessByIpService,
     LimitLoginByIpService,
     LimitLoginByUserService,
   ],
-  exports: [
-    LimitAccessByIpService,
-    LimitLoginByIpService,
-    LimitLoginByUserService,
-  ],
+  exports: [LimitLoginByIpService, LimitLoginByUserService],
 })
 export class SecurityModule {}
