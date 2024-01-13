@@ -1,4 +1,4 @@
-const bcrypt = require('bcryptjs');
+import * as bcrypt from 'bcrypt';
 
 export function generateRandomNumbers(length = 6): string {
   let result = '';
@@ -31,11 +31,8 @@ export function generateRandomCode(length = 6): string {
 }
 
 export async function generateHash(password: string): Promise<string> {
-  // The type of env variable is string.
-  const saltRounds = parseInt(
-    process.env.BCRYPT_SALT_ROUNDS ? process.env.BCRYPT_SALT_ROUNDS : '10'
-  );
-  return await bcrypt.hash(password, saltRounds);
+  const salt = await bcrypt.genSalt();
+  return await bcrypt.hash(password, salt);
 }
 
 export async function compareHash(

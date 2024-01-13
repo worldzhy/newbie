@@ -26,9 +26,6 @@ export default registerAs('toolkit', () => ({
       publish_add_queue: process.env.PUBLISH_ADD_QUEUE || 'default',
     },
   },
-  bcrypt: {
-    saltRounds: process.env.BCRYPT_SALT_ROUNDS,
-  },
   elastic: {
     node: process.env.ELASTICSEARCH_NODE || 'http://127.0.0.1',
     username: process.env.ELASTICSEARCH_USERNAME,
