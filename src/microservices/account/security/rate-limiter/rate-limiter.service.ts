@@ -1,9 +1,71 @@
 import {Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
-import {RateLimiterMemory} from 'rate-limiter-flexible';
+import {RateLimiterMemory, RateLimiterRedis} from 'rate-limiter-flexible';
+import {Redis} from 'ioredis';
+
+enum LimiterType {
+  IP_ACCESS = 'ip-access',
+  IP_LOGIN = 'ip-login',
+  USER_LOGIN = 'user-login',
+}
 
 abstract class RateLimiterService {
-  protected limiter: RateLimiterMemory;
+  private limiter: RateLimiterMemory | RateLimiterRedis;
+  private points: number;
+  private duration: number;
+
+  constructor(
+    private readonly config: ConfigService,
+    limiterType: LimiterType
+  ) {
+    switch (limiterType) {
+      case LimiterType.IP_ACCESS:
+        this.points = this.config.getOrThrow<number>(
+          'microservice.account.security.ipAccessLimiter.points'
+        );
+        this.duration = this.config.getOrThrow<number>(
+          'microservice.account.security.ipAccessLimiter.durationSeconds'
+        );
+        break;
+      case LimiterType.IP_LOGIN:
+        this.points = this.config.getOrThrow<number>(
+          'microservice.account.security.ipLoginLimiter.points'
+        );
+        this.duration = this.config.getOrThrow<number>(
+          'microservice.account.security.ipLoginLimiter.durationSeconds'
+        );
+        break;
+      case LimiterType.USER_LOGIN:
+        this.points = this.config.getOrThrow<number>(
+          'microservice.account.security.userLoginLimiter.points'
+        );
+        this.duration = this.config.getOrThrow<number>(
+          'microservice.account.security.userLoginLimiter.durationSeconds'
+        );
+        break;
+    }
+
+    const redisHost = this.config.get<string>('server.redis.host');
+    const redisPort = this.config.get<number>('server.redis.port');
+    const redisPassword = this.config.get<string>('server.redis.password');
+    if (redisHost && redisPort) {
+      this.limiter = new RateLimiterRedis({
+        storeClient: new Redis({
+          host: redisHost,
+          port: redisPort,
+          password: redisPassword,
+          keyPrefix: limiterType + '-',
+        }),
+        points: this.points,
+        duration: this.duration,
+      });
+    } else {
+      this.limiter = new RateLimiterMemory({
+        points: this.points,
+        duration: this.duration,
+      });
+    }
+  }
 
   async isAllowed(key: string): Promise<boolean> {
     const res = await this.limiter.get(key);
@@ -21,61 +83,22 @@ abstract class RateLimiterService {
 }
 
 @Injectable()
-export class LimitLoginByIpService extends RateLimiterService {
-  private points: number;
-  private duration: number;
-
+export class LimitAccessByIpService extends RateLimiterService {
   constructor(private readonly configService: ConfigService) {
-    super();
-    this.points = this.configService.getOrThrow<number>(
-      'microservice.account.security.ipLoginLimiter.points'
-    );
-    this.duration = this.configService.getOrThrow<number>(
-      'microservice.account.security.ipLoginLimiter.durationSeconds'
-    );
-    this.limiter = new RateLimiterMemory({
-      points: this.points,
-      duration: this.duration,
-    });
+    super(configService, LimiterType.IP_ACCESS);
+  }
+}
+
+@Injectable()
+export class LimitLoginByIpService extends RateLimiterService {
+  constructor(private readonly configService: ConfigService) {
+    super(configService, LimiterType.IP_LOGIN);
   }
 }
 
 @Injectable()
 export class LimitLoginByUserService extends RateLimiterService {
-  private points: number;
-  private duration: number;
-
   constructor(private readonly configService: ConfigService) {
-    super();
-    this.points = this.configService.getOrThrow<number>(
-      'microservice.account.security.userLoginLimiter.points'
-    );
-    this.duration = this.configService.getOrThrow<number>(
-      'microservice.account.security.userLoginLimiter.durationSeconds'
-    );
-    this.limiter = new RateLimiterMemory({
-      points: this.points,
-      duration: this.duration,
-    });
-  }
-}
-
-@Injectable()
-export class LimitAccessByIpService extends RateLimiterService {
-  private points: number;
-  private duration: number;
-
-  constructor(private readonly configService: ConfigService) {
-    super();
-    this.points = this.configService.getOrThrow<number>(
-      'microservice.account.security.ipAccessLimiter.points'
-    );
-    this.duration = this.configService.getOrThrow<number>(
-      'microservice.account.security.ipAccessLimiter.durationSeconds'
-    );
-    this.limiter = new RateLimiterMemory({
-      points: this.points,
-      duration: this.duration,
-    });
+    super(configService, LimiterType.USER_LOGIN);
   }
 }

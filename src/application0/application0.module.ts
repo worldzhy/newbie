@@ -20,6 +20,7 @@ import {ProjectManagementModule} from '@microservices/project-mgmt/project-mgmt.
 import {QueueModule} from '@microservices/queue/queue.module';
 import {StockManagementModule} from '@microservices/stock-mgmt/stock-mgmt.module';
 import {TagModule} from '@microservices/tag/tag.module';
+import {TokenModule} from '@microservices/token/token.module';
 import {WorkflowModule} from '@microservices/workflow/workflow.module';
 
 // Toolkit and microservice controllers
@@ -60,6 +61,7 @@ import {WorkflowRouteController} from './workflow/workflow-route.controller';
     QueueModule,
     StockManagementModule,
     TagModule,
+    TokenModule,
     WorkflowModule,
   ],
   controllers: [
