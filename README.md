@@ -49,11 +49,9 @@
 > [Install CLI] https://www.pulumi.com/docs/get-started/install/
 
 > [Fix NotFound] Add the pulumi CLI path "~/.pulumi/bin" to $PATH.
-
-```bash
-PATH=~/.pulumi/bin:$PATH
-export PATH
-```
+> Add below to ~/.bashrc file.
+export PULUMI_HOME="~/.pulumi/bin"
+export PATH="$PATH:$PULUMI_HOME"
 
 > [Install Plugin] https://www.pulumi.com/docs/reference/cli/pulumi_plugin/
 

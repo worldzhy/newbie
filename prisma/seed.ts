@@ -1,5 +1,5 @@
 /* eslint-disable node/no-unpublished-import */
-import {seedForAircruiser} from './seed/demo.seed';
+import {seedForAircruiser} from './seed/aircruiser.seed';
 import {seedForRecruitment} from './seed/recruitment.seed';
 import {seedForSolidcore} from './seed/solidcore.seed';
 

@@ -75,10 +75,10 @@ export class ProjectInfrastructureController {
         summary: '2. Pulumi stack',
         value: {
           manager: InfrastructureStackManager.Pulumi,
-          type: PulumiStackType.AWS_RDS,
+          type: PulumiStackType.AWS_S3,
           params: {
-            instanceName: 'postgres-001',
-            instanceType: 'db.t3.micro',
+            bucketName: 'example-bucket',
+            isPublic: false,
           },
           environmentId: 1,
         },

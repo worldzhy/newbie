@@ -13,7 +13,7 @@ export async function seedForAircruiser() {
   console.log('- Creating roles, permissions and users...');
   const user = await prisma.user.create({
     data: {
-      email: 'henry@inceptionpad.com',
+      email: 'admin@inceptionpad.com',
       password: 'Abc1234!',
     },
   });
