@@ -6,13 +6,13 @@ import {RateLimiterGuard} from './rate-limiter/rate-limiter.guard';
 import {PassportGuard} from './passport/passport.guard';
 import {AuthorizationGuard} from './authorization/authorization.guard';
 
-import {NoAuthStrategy} from './passport/public/public.strategy';
+import {NoStrategy} from './passport/public/public.strategy';
 import {JwtStrategy} from './passport/jwt/jwt.strategy';
-import {PasswordAuthStrategy} from './passport/password/password.strategy';
-import {ProfileAuthStrategy} from './passport/profile/profile.strategy';
-import {RefreshTokenAuthStrategy} from './passport/refresh-token/refresh-token.strategy';
-import {UuidAuthStrategy} from './passport/uuid/uuid.strategy';
-import {VerificationCodeAuthStrategy} from './passport/verification-code/verification-code.strategy';
+import {PasswordStrategy} from './passport/password/password.strategy';
+import {ProfileStrategy} from './passport/profile/profile.strategy';
+import {RefreshTokenStrategy} from './passport/refresh-token/refresh-token.strategy';
+import {UuidStrategy} from './passport/uuid/uuid.strategy';
+import {VerificationCodeStrategy} from './passport/verification-code/verification-code.strategy';
 
 import {
   LimitAccessByIpService,
@@ -33,13 +33,13 @@ import {
     {provide: APP_GUARD, useClass: PassportGuard}, // 3rd priority guard.
     {provide: APP_GUARD, useClass: AuthorizationGuard}, // 4th priority guard.
 
-    NoAuthStrategy,
+    NoStrategy,
     JwtStrategy,
-    PasswordAuthStrategy,
-    ProfileAuthStrategy,
-    RefreshTokenAuthStrategy,
-    UuidAuthStrategy,
-    VerificationCodeAuthStrategy,
+    PasswordStrategy,
+    ProfileStrategy,
+    RefreshTokenStrategy,
+    UuidStrategy,
+    VerificationCodeStrategy,
 
     LimitAccessByIpService,
     LimitLoginByIpService,

@@ -5,7 +5,7 @@ import {Request} from 'express';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @Injectable()
-export class ProfileAuthStrategy extends PassportStrategy(
+export class ProfileStrategy extends PassportStrategy(
   Strategy,
   'custom.user-profile'
 ) {

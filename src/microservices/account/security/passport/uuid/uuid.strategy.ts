@@ -6,10 +6,7 @@ import {verifyUuid} from '@toolkit/validators/user.validator';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @Injectable()
-export class UuidAuthStrategy extends PassportStrategy(
-  Strategy,
-  'custom.uuid'
-) {
+export class UuidStrategy extends PassportStrategy(Strategy, 'custom.uuid') {
   constructor(private readonly prisma: PrismaService) {
     super();
   }

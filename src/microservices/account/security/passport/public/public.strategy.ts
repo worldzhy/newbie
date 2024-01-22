@@ -3,10 +3,7 @@ import {PassportStrategy} from '@nestjs/passport';
 import {Strategy} from 'passport-custom';
 
 @Injectable()
-export class NoAuthStrategy extends PassportStrategy(
-  Strategy,
-  'custom.no-auth'
-) {
+export class NoStrategy extends PassportStrategy(Strategy, 'custom.no-auth') {
   constructor() {
     super();
   }
