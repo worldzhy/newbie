@@ -2,7 +2,7 @@ import {Controller, Post, Body, Res} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Response} from 'express';
 import {AccountService} from '@microservices/account/account.service';
-import {LoggingInByVerificationCode} from '@microservices/account/security/authentication/verification-code/verification-code.decorator';
+import {GuardByVerificationCode} from '@microservices/account/security/passport/verification-code/verification-code.decorator';
 import {AccessToken} from '@prisma/client';
 
 @ApiTags('Account')
@@ -18,7 +18,7 @@ export class LoginByVerificationCodeController {
    * [1] email
    * [2] phone
    */
-  @LoggingInByVerificationCode()
+  @GuardByVerificationCode()
   @Post('login-by-verification-code')
   @ApiBearerAuth()
   @ApiBody({

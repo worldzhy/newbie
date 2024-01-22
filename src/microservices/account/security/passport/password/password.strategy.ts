@@ -7,7 +7,7 @@ import {UserService} from '@microservices/account/user.service';
 @Injectable()
 export class PasswordAuthStrategy extends PassportStrategy(
   Strategy,
-  'passport-local.password'
+  'local.password'
 ) {
   constructor(private readonly userService: UserService) {
     super({usernameField: 'account', passwordField: 'password'});

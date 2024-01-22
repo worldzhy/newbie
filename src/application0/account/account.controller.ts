@@ -12,7 +12,7 @@ import {Prisma, VerificationCodeUse} from '@prisma/client';
 import {Request} from 'express';
 import {AccountService} from '@microservices/account/account.service';
 import {VerificationCodeService} from '@microservices/account/verification-code.service';
-import {Public} from '@microservices/account/security/authentication/public/public.decorator';
+import {NoGuard} from '@microservices/account/security/passport/public/public.decorator';
 import {verifyEmail, verifyPhone} from '@toolkit/validators/user.validator';
 import {compareHash} from '@toolkit/utilities/common.util';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
@@ -149,7 +149,7 @@ export class AccountController {
     });
   }
 
-  @Public()
+  @NoGuard()
   @Post('send-verification-code')
   @ApiBody({
     description: '',
@@ -195,7 +195,7 @@ export class AccountController {
     }
   }
 
-  @Public()
+  @NoGuard()
   @Post('reset-password')
   @ApiBody({
     description: '',

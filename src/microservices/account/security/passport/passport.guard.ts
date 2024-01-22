@@ -2,6 +2,7 @@ import {Injectable, ExecutionContext} from '@nestjs/common';
 import {Reflector} from '@nestjs/core';
 import {ConfigService} from '@nestjs/config';
 import {AuthGuard} from '@nestjs/passport';
+import {NoAuthGuard} from './public/public.guard';
 import {JwtAuthGuard} from './jwt/jwt.guard';
 import {PasswordAuthGuard} from './password/password.guard';
 import {ProfileAuthGuard} from './profile/profile.guard';
@@ -16,7 +17,7 @@ import {IS_LOGGING_IN_VERIFICATION_CODE_KEY} from './verification-code/verificat
 import {IS_REFRESHING_ACCESS_TOKEN} from './refresh-token/refresh-token.decorator';
 
 @Injectable()
-export class AuthenticationGuard extends AuthGuard('global-guard') {
+export class PassportGuard extends AuthGuard('authentication') {
   private allowedOrigins: string[];
 
   constructor(
@@ -36,16 +37,16 @@ export class AuthenticationGuard extends AuthGuard('global-guard') {
       return false;
     }
 
-    // Use @Public() for non-authentication
+    // Use @NoGuard() for non-authentication
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
     if (isPublic) {
-      return true;
+      return new NoAuthGuard().canActivate(context);
     }
 
-    // Use @LoggingInByPassword() for local.password strategy authentication
+    // Use @GuardByPassword() for local.password strategy authentication
     const isLoggingInByPassword = this.reflector.getAllAndOverride<boolean>(
       IS_LOGGING_IN_PASSWORD_KEY,
       [context.getHandler(), context.getClass()]
@@ -54,7 +55,7 @@ export class AuthenticationGuard extends AuthGuard('global-guard') {
       return new PasswordAuthGuard().canActivate(context);
     }
 
-    // Use @LoggingInByProfile() for custom.profile strategy authentication
+    // Use @GuardByProfile() for custom.profile strategy authentication
     const isLoggingInByProfile = this.reflector.getAllAndOverride<boolean>(
       IS_LOGGING_IN_PROFILE_KEY,
       [context.getHandler(), context.getClass()]
@@ -63,7 +64,7 @@ export class AuthenticationGuard extends AuthGuard('global-guard') {
       return new ProfileAuthGuard().canActivate(context);
     }
 
-    // Use @LoggingInByUuid() for custom.uuid strategy authentication
+    // Use @GuardByUuid() for custom.uuid strategy authentication
     const isLoggingInByUuid = this.reflector.getAllAndOverride<boolean>(
       IS_LOGGING_IN_UUID_KEY,
       [context.getHandler(), context.getClass()]
@@ -72,7 +73,7 @@ export class AuthenticationGuard extends AuthGuard('global-guard') {
       return new UuidAuthGuard().canActivate(context);
     }
 
-    // Use @LoggingInByVerificationCode() for local.verification-code strategy authentication
+    // Use @GuardByVerificationCode() for local.verification-code strategy authentication
     const isLoggingInByVerificationCode =
       this.reflector.getAllAndOverride<boolean>(
         IS_LOGGING_IN_VERIFICATION_CODE_KEY,
@@ -82,7 +83,7 @@ export class AuthenticationGuard extends AuthGuard('global-guard') {
       return new VerificationCodeAuthGuard().canActivate(context);
     }
 
-    // Use @RefreshingAccessToken() for refresh endpoint authentication
+    // Use @GuardByRefreshToken() for refresh endpoint authentication
     const isRefreshingAccessToken = this.reflector.getAllAndOverride<boolean>(
       IS_REFRESHING_ACCESS_TOKEN,
       [context.getHandler(), context.getClass()]

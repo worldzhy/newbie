@@ -1,7 +1,7 @@
 import {Controller, Post, Body, BadRequestException} from '@nestjs/common';
 import {ApiTags, ApiBody} from '@nestjs/swagger';
 import {Prisma, User} from '@prisma/client';
-import {Public} from '@microservices/account/security/authentication/public/public.decorator';
+import {NoGuard} from '@microservices/account/security/passport/public/public.decorator';
 import {
   verifyEmail,
   verifyPassword,
@@ -21,7 +21,7 @@ export class SignupController {
    *
    * [Constraint] 'password' is required if neither email nor phone is provided.
    */
-  @Public()
+  @NoGuard()
   @Post('signup')
   @ApiBody({
     description:

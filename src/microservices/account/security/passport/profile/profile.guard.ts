@@ -2,6 +2,4 @@ import {Injectable} from '@nestjs/common';
 import {AuthGuard} from '@nestjs/passport';
 
 @Injectable()
-export class RefreshTokenAuthGuard extends AuthGuard(
-  'passport-custom.refresh'
-) {}
+export class ProfileAuthGuard extends AuthGuard('custom.user-profile') {}

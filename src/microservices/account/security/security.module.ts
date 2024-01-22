@@ -2,19 +2,20 @@ import {Module} from '@nestjs/common';
 import {APP_GUARD} from '@nestjs/core';
 import {ThrottlerGuard, ThrottlerModule} from '@nestjs/throttler';
 
-import {AuthenticationGuard} from './authentication/authentication.guard';
+import {RateLimiterGuard} from './rate-limiter/rate-limiter.guard';
+import {PassportGuard} from './passport/passport.guard';
 import {AuthorizationGuard} from './authorization/authorization.guard';
-import {LimitLoginByIpGuard} from './rate-limiter/rate-limiter-ip-login.guard';
-import {LimitLoginByUserGuard} from './rate-limiter/rate-limiter-user-login.guard';
 
-import {JwtStrategy} from './authentication/jwt/jwt.strategy';
-import {PasswordAuthStrategy} from './authentication/password/password.strategy';
-import {ProfileAuthStrategy} from './authentication/profile/profile.strategy';
-import {RefreshTokenAuthStrategy} from './authentication/refresh-token/refresh-token.strategy';
-import {UuidAuthStrategy} from './authentication/uuid/uuid.strategy';
-import {VerificationCodeAuthStrategy} from './authentication/verification-code/verification-code.strategy';
+import {NoAuthStrategy} from './passport/public/public.strategy';
+import {JwtStrategy} from './passport/jwt/jwt.strategy';
+import {PasswordAuthStrategy} from './passport/password/password.strategy';
+import {ProfileAuthStrategy} from './passport/profile/profile.strategy';
+import {RefreshTokenAuthStrategy} from './passport/refresh-token/refresh-token.strategy';
+import {UuidAuthStrategy} from './passport/uuid/uuid.strategy';
+import {VerificationCodeAuthStrategy} from './passport/verification-code/verification-code.strategy';
 
 import {
+  LimitAccessByIpService,
   LimitLoginByIpService,
   LimitLoginByUserService,
 } from './rate-limiter/rate-limiter.service';
@@ -28,11 +29,11 @@ import {
   ],
   providers: [
     {provide: APP_GUARD, useClass: ThrottlerGuard}, // 1st priority guard.
-    {provide: APP_GUARD, useClass: LimitLoginByIpGuard}, // 2nd priority guard.
-    {provide: APP_GUARD, useClass: LimitLoginByUserGuard}, // 3nd priority guard.
-    {provide: APP_GUARD, useClass: AuthenticationGuard}, // 4rd priority guard.
-    {provide: APP_GUARD, useClass: AuthorizationGuard}, // 5th priority guard.
+    {provide: APP_GUARD, useClass: RateLimiterGuard}, // 2nd priority guard.
+    {provide: APP_GUARD, useClass: PassportGuard}, // 3rd priority guard.
+    {provide: APP_GUARD, useClass: AuthorizationGuard}, // 4th priority guard.
 
+    NoAuthStrategy,
     JwtStrategy,
     PasswordAuthStrategy,
     ProfileAuthStrategy,
@@ -40,9 +41,14 @@ import {
     UuidAuthStrategy,
     VerificationCodeAuthStrategy,
 
+    LimitAccessByIpService,
     LimitLoginByIpService,
     LimitLoginByUserService,
   ],
-  exports: [LimitLoginByIpService, LimitLoginByUserService],
+  exports: [
+    LimitAccessByIpService,
+    LimitLoginByIpService,
+    LimitLoginByUserService,
+  ],
 })
 export class SecurityModule {}

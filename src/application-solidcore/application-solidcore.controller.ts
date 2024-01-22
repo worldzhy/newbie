@@ -1,11 +1,11 @@
 import {Controller, Get} from '@nestjs/common';
 import {ApiTags} from '@nestjs/swagger';
-import {Public} from '@microservices/account/security/authentication/public/public.decorator';
+import {NoGuard} from '@microservices/account/security/passport/public/public.decorator';
 
 @ApiTags('[Solidcore]')
 @Controller()
 export class ApplicationSolidcoreController {
-  @Public()
+  @NoGuard()
   @Get('')
   hello(): string {
     return '<h1>Welcome to Solidcore!</h1>';

@@ -2,8 +2,8 @@ import {Controller, Post, Body, Res} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Response} from 'express';
 import {AccountService} from '@microservices/account/account.service';
-import {LoggingInByProfile} from '@microservices/account/security/authentication/profile/profile.decorator';
-import {LoggingInByUuid} from '@microservices/account/security/authentication/uuid/uuid.decorator';
+import {GuardByProfile} from '@microservices/account/security/passport/profile/profile.decorator';
+import {GuardByUuid} from '@microservices/account/security/passport/uuid/uuid.decorator';
 import {AccessToken} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
@@ -20,7 +20,7 @@ export class LoginByProfileController {
    * a JWT to declare the user is authenticated.
    */
   @Post('login-by-profile')
-  @LoggingInByProfile()
+  @GuardByProfile()
   @ApiBearerAuth()
   @ApiBody({
     description:
@@ -78,7 +78,7 @@ export class LoginByProfileController {
   }
 
   @Post('login-by-uuid')
-  @LoggingInByUuid()
+  @GuardByUuid()
   @ApiBearerAuth()
   @ApiBody({
     description: 'Verfiy account by uuid.',

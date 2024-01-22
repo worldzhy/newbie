@@ -9,7 +9,7 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 @Injectable()
 export class RefreshTokenAuthStrategy extends PassportStrategy(
   Strategy,
-  'passport-custom.refresh'
+  'custom.refresh-token'
 ) {
   constructor(
     private readonly prisma: PrismaService,

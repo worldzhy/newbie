@@ -6,7 +6,7 @@ import {
   LimitLoginByIp,
   LimitLoginByUser,
 } from '@microservices/account/security/rate-limiter/rate-limiter.decorator';
-import {LoggingInByPassword} from '@microservices/account/security/authentication/password/password.decorator';
+import {GuardByPassword} from '@microservices/account/security/passport/password/password.decorator';
 import {AccessToken} from '@prisma/client';
 
 @ApiTags('Account')
@@ -26,7 +26,7 @@ export class LoginByPasswordController {
   @Post('login-by-password')
   @LimitLoginByIp()
   @LimitLoginByUser()
-  @LoggingInByPassword()
+  @GuardByPassword()
   @ApiBearerAuth()
   @ApiBody({
     description:

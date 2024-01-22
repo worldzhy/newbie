@@ -8,7 +8,7 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 @Injectable()
 export class UuidAuthStrategy extends PassportStrategy(
   Strategy,
-  'passport-custom.uuid'
+  'custom.uuid'
 ) {
   constructor(private readonly prisma: PrismaService) {
     super();

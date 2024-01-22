@@ -7,7 +7,7 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 @Injectable()
 export class ProfileAuthStrategy extends PassportStrategy(
   Strategy,
-  'passport-custom.user-profile'
+  'custom.user-profile'
 ) {
   constructor(private readonly prisma: PrismaService) {
     super();
