@@ -12,11 +12,10 @@ import {
   StreamableFile,
   BadRequestException,
 } from '@nestjs/common';
-import type {Response} from 'express';
+import {Express, Request as ExpressRequest, Response} from 'express';
 import {FileInterceptor} from '@nestjs/platform-express';
 import {ApiBearerAuth, ApiBody, ApiParam, ApiTags} from '@nestjs/swagger';
 import {ConfigService} from '@nestjs/config';
-import {Express} from 'express';
 import {createReadStream} from 'fs';
 import {diskStorage} from 'multer';
 import {AccessTokenService} from '@microservices/token/access-token/access-token.service';
@@ -130,7 +129,7 @@ export class FileManagementController {
     example: 'd8141ece-f242-4288-a60a-8675538549cd',
   })
   async getFileUrl(
-    @Request() request: Request,
+    @Request() request: ExpressRequest,
     @Param('fileId') fileId: string
   ) {
     // [step 1] Get the file information.

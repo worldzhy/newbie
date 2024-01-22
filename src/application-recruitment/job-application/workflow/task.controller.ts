@@ -20,8 +20,8 @@ import {
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
 import {AccessTokenService} from '@microservices/token/access-token/access-token.service';
 import {JobApplicationWorkflowService} from './workflow.service';
-import {UserService} from '@microservices/account/user.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {Request as ExpressRequest} from 'express';
 
 @ApiTags('Recruitment / Job Application / Workflow Task')
 @ApiBearerAuth()
@@ -29,7 +29,6 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 export class JobApplicationWorkflowTaskController {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly userService: UserService,
     private readonly accessTokenService: AccessTokenService,
     private readonly jobApplicationWorkflowService: JobApplicationWorkflowService
   ) {}
@@ -53,7 +52,7 @@ export class JobApplicationWorkflowTaskController {
     },
   })
   async createJobApplicationWorkflowTask(
-    @Request() request: Request,
+    @Request() request: ExpressRequest,
     @Body()
     body: Prisma.JobApplicationWorkflowTaskUncheckedCreateInput
   ): Promise<JobApplicationWorkflowTask> {
@@ -67,9 +66,7 @@ export class JobApplicationWorkflowTaskController {
     }
 
     // [step 2] Get reporter user.
-    const {userId} = this.accessTokenService.decodeToken(
-      this.accessTokenService.getTokenFromHttpRequest(request)
-    ) as {userId: string};
+    const userId = this.accessTokenService.getUserIdFromHttpRequest(request);
     const reporterUser = await this.prisma.user.findUniqueOrThrow({
       where: {id: userId},
       include: {profile: {select: {fullName: true}}},
@@ -96,16 +93,14 @@ export class JobApplicationWorkflowTaskController {
   async getJobApplicationWorkflowTasks(
     @Query('page') page: number,
     @Query('pageSize') pageSize: number,
-    @Request() request: Request,
+    @Request() request: ExpressRequest,
     @Query('assignedToMe') assignedToMe?: string
   ) {
     // [step 1] Construct where argument.
     let where: Prisma.JobApplicationWorkflowTaskWhereInput | undefined =
       undefined;
     if (assignedToMe && assignedToMe.trim()) {
-      const {userId} = this.accessTokenService.decodeToken(
-        this.accessTokenService.getTokenFromHttpRequest(request)
-      ) as {userId: string};
+      const userId = this.accessTokenService.getUserIdFromHttpRequest(request);
       where = {assigneeUserId: userId};
     }
 

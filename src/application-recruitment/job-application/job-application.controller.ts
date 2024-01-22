@@ -11,7 +11,6 @@ import {
   Request,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-
 import {
   JobApplication,
   JobType,
@@ -25,6 +24,7 @@ import {RequirePermission} from '@microservices/account/security/authorization/a
 import {AccessTokenService} from '@microservices/token/access-token/access-token.service';
 import {UserService} from '@microservices/account/user.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {Request as ExpressRequest} from 'express';
 
 @ApiTags('Recruitment / Job Application')
 @ApiBearerAuth()
@@ -57,7 +57,7 @@ export class JobApplicationController {
     },
   })
   async createJobApplication(
-    @Request() request: Request,
+    @Request() request: ExpressRequest,
     @Body()
     body: Prisma.JobApplicationUncheckedCreateInput
   ): Promise<JobApplication> {
@@ -67,9 +67,7 @@ export class JobApplicationController {
     }
 
     // [step 2] Create job application.
-    const {userId} = this.accessTokenService.decodeToken(
-      this.accessTokenService.getTokenFromHttpRequest(request)
-    ) as {userId: string};
+    const userId = this.accessTokenService.getUserIdFromHttpRequest(request);
     const user = await this.prisma.user.findUniqueOrThrow({
       where: {id: userId},
       include: {profile: {select: {fullName: true}}},
@@ -113,7 +111,9 @@ export class JobApplicationController {
 
   @Get('count')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.JobApplication)
-  async countJobApplications(@Request() request: Request): Promise<number> {
+  async countJobApplications(
+    @Request() request: ExpressRequest
+  ): Promise<number> {
     // [step 1] Get role permission to filter data.
     const permissions = await this.getResourcePermissionsFromHttpRequest(
       request,
@@ -141,7 +141,7 @@ export class JobApplicationController {
   @Get('')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.JobApplication)
   async getJobApplications(
-    @Request() request: Request,
+    @Request() request: ExpressRequest,
     @Query('page') page: number,
     @Query('pageSize') pageSize: number
   ) {
@@ -184,12 +184,10 @@ export class JobApplicationController {
   @Get('processed/count')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.JobApplication)
   async countProcessedJobApplications(
-    @Request() request: Request
+    @Request() request: ExpressRequest
   ): Promise<number> {
     // [step 1] Get userId from http request header.
-    const {userId} = this.accessTokenService.decodeToken(
-      this.accessTokenService.getTokenFromHttpRequest(request)
-    ) as {userId: string};
+    const userId = this.accessTokenService.getUserIdFromHttpRequest(request);
 
     // [step 2] Return count of job applications.
     return await this.prisma.jobApplication.count({
@@ -202,14 +200,12 @@ export class JobApplicationController {
   @Get('processed')
   @RequirePermission(PermissionAction.List, Prisma.ModelName.JobApplication)
   async getProcessedJobApplications(
-    @Request() request: Request,
+    @Request() request: ExpressRequest,
     @Query('page') page: number,
     @Query('pageSize') pageSize: number
   ) {
     // [step 1] Get userId from http request header.
-    const {userId} = this.accessTokenService.decodeToken(
-      this.accessTokenService.getTokenFromHttpRequest(request)
-    ) as {userId: string};
+    const userId = this.accessTokenService.getUserIdFromHttpRequest(request);
 
     // [step 2] Return job applications.
     return await this.prisma.findManyInManyPages({
@@ -372,14 +368,12 @@ export class JobApplicationController {
   }
 
   private async getResourcePermissionsFromHttpRequest(
-    request: Request,
+    request: ExpressRequest,
     resource: Prisma.ModelName
   ): Promise<Permission[]> {
     let additionalPermission: object | undefined = undefined;
 
-    const {userId} = this.accessTokenService.decodeToken(
-      this.accessTokenService.getTokenFromHttpRequest(request)
-    ) as {userId: string};
+    const userId = this.accessTokenService.getUserIdFromHttpRequest(request);
     const user = await this.prisma.user.findUniqueOrThrow({
       where: {id: userId},
       include: {roles: true},
@@ -414,10 +408,10 @@ export class JobApplicationController {
     return permissions;
   }
 
-  private async getRoleIdsFromHttpRequest(request: Request): Promise<string[]> {
-    const {userId} = this.accessTokenService.decodeToken(
-      this.accessTokenService.getTokenFromHttpRequest(request)
-    ) as {userId: string};
+  private async getRoleIdsFromHttpRequest(
+    request: ExpressRequest
+  ): Promise<string[]> {
+    const userId = this.accessTokenService.getUserIdFromHttpRequest(request);
     const user = await this.prisma.user.findUniqueOrThrow({
       where: {id: userId},
       include: {roles: true},

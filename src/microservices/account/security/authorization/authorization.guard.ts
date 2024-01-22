@@ -31,9 +31,11 @@ export class AuthorizationGuard implements CanActivate {
 
     // [step 2] Parse JWT.
     const req = context.switchToHttp().getRequest();
-    const payload = this.accessTokenService.decodeToken(
-      this.accessTokenService.getTokenFromHttpRequest(req)
-    ) as {
+    const accessToken = this.accessTokenService.getTokenFromHttpRequest(req);
+    if (accessToken === undefined) {
+      return false;
+    }
+    const payload = this.accessTokenService.decodeToken(accessToken) as {
       userId: string;
       sub: string;
     };

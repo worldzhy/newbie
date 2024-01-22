@@ -1,10 +1,14 @@
-import {Injectable} from '@nestjs/common';
+import {BadRequestException, Injectable} from '@nestjs/common';
 import {JwtService, JwtSignOptions} from '@nestjs/jwt';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 import * as express from 'express';
 
 @Injectable()
 export class AccessTokenService {
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService
+  ) {}
 
   sign(payload: Buffer | object, options?: JwtSignOptions): string {
     return this.jwtService.sign(payload, options);
@@ -18,7 +22,20 @@ export class AccessTokenService {
     return this.jwtService.verify(token);
   }
 
-  getTokenFromHttpRequest(request: Request | express.Request): string {
-    return request.headers['authorization'].split(' ')[1];
+  getTokenFromHttpRequest(request: express.Request): string | undefined {
+    const [type, token] = request.headers.authorization?.split(' ') ?? [];
+    return type === 'Bearer' ? token : undefined;
+  }
+
+  getUserIdFromHttpRequest(request: express.Request) {
+    const accessToken = this.getTokenFromHttpRequest(request);
+    if (accessToken === undefined) {
+      throw new BadRequestException('No access token.');
+    }
+    const {userId} = this.decodeToken(accessToken) as {
+      userId: string;
+    };
+
+    return userId;
   }
 }

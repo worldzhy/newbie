@@ -10,7 +10,6 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-
 import {
   JobApplicationWorkflowNote,
   PermissionAction,
@@ -20,6 +19,7 @@ import {RequirePermission} from '@microservices/account/security/authorization/a
 import {AccessTokenService} from '@microservices/token/access-token/access-token.service';
 import {JobApplicationWorkflowService} from './workflow.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {Request as ExpressRequest} from 'express';
 
 @ApiTags('Recruitment / Job Application / Workflow Note')
 @ApiBearerAuth()
@@ -49,7 +49,7 @@ export class JobApplicationWorkflowNoteController {
     },
   })
   async createJobApplicationWorkflowNote(
-    @Request() request: Request,
+    @Request() request: ExpressRequest,
     @Body()
     body: Prisma.JobApplicationWorkflowNoteUncheckedCreateInput
   ): Promise<JobApplicationWorkflowNote> {
@@ -63,9 +63,7 @@ export class JobApplicationWorkflowNoteController {
     }
 
     // [step 2] Get user.
-    const {userId} = this.accessTokenService.decodeToken(
-      this.accessTokenService.getTokenFromHttpRequest(request)
-    ) as {userId: string};
+    const userId = this.accessTokenService.getUserIdFromHttpRequest(request);
     const user = await this.prisma.user.findUniqueOrThrow({
       where: {id: userId},
       include: {profile: {select: {fullName: true}}},

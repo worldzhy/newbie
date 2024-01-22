@@ -13,6 +13,7 @@ import {JobApplicationWorkflow, PermissionAction, Prisma} from '@prisma/client';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
 import {AccessTokenService} from '@microservices/token/access-token/access-token.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {Request as ExpressRequest} from 'express';
 
 @ApiTags('Recruitment / Job Application / Workflow')
 @ApiBearerAuth()
@@ -191,7 +192,7 @@ export class JobApplicationWorkflowController {
     },
   })
   async updateJobApplicationWorkflow(
-    @Request() request: Request,
+    @Request() request: ExpressRequest,
     @Param('workflowId') workflowId: string,
     @Body()
     body: {
@@ -214,9 +215,7 @@ export class JobApplicationWorkflowController {
     );
 
     // [step 2] Get current user's id.
-    const {userId} = this.accessTokenService.decodeToken(
-      this.accessTokenService.getTokenFromHttpRequest(request)
-    ) as {userId: string};
+    const userId = this.accessTokenService.getUserIdFromHttpRequest(request);
 
     // [step 3] Get workflow route.
     const route = await this.prisma.workflowRoute.findUniqueOrThrow({
@@ -324,12 +323,10 @@ export class JobApplicationWorkflowController {
     Prisma.ModelName.JobApplicationWorkflow
   )
   async lockJobApplication(
-    @Request() request: Request,
+    @Request() request: ExpressRequest,
     @Param('workflowId') workflowId: string
   ): Promise<JobApplicationWorkflow> {
-    const {userId} = this.accessTokenService.decodeToken(
-      this.accessTokenService.getTokenFromHttpRequest(request)
-    ) as {userId: string};
+    const userId = this.accessTokenService.getUserIdFromHttpRequest(request);
 
     return await this.prisma.jobApplicationWorkflow.update({
       where: {id: workflowId},
@@ -349,12 +346,10 @@ export class JobApplicationWorkflowController {
     Prisma.ModelName.JobApplicationWorkflow
   )
   async unlockJobApplication(
-    @Request() request: Request,
+    @Request() request: ExpressRequest,
     @Param('workflowId') workflowId: string
   ): Promise<JobApplicationWorkflow> {
-    const {userId} = this.accessTokenService.decodeToken(
-      this.accessTokenService.getTokenFromHttpRequest(request)
-    ) as {userId: string};
+    const userId = this.accessTokenService.getUserIdFromHttpRequest(request);
     const jobApplication =
       await this.prisma.jobApplicationWorkflow.findUniqueOrThrow({
         where: {id: workflowId},
