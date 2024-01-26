@@ -30,7 +30,12 @@ export default registerAs('microservice', () => ({
     awsCloudfrontDomain: process.env.FILE_MANAGEMENT_AWS_CLOUDFRONT_DOMAIN,
     localPath: process.env.FILE_MANAGEMENT_LOCAL_PATH || './uploaded-files',
   },
-  googleapis: {key: process.env.GOOGLE_API_KEY},
+  googleapis: {
+    credentials: {
+      apiKey: process.env.GOOGLE_CREDENTIALS_API_KEY,
+      serviceAccount: process.env.GOOGLE_CREDENTIALS_SERVICE_ACCOUNT,
+    },
+  },
   mindbody: {
     mbUrl: process.env.MINDBODY_URL,
     username: process.env.MINDBODY_USER,

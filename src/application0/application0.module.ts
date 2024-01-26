@@ -35,6 +35,7 @@ import {OrganizationController} from './account/organization/organization.contro
 import {PermissionController} from './account/permission/permission.controller';
 import {RoleController} from './account/role/role.controller';
 import {UserController} from './account/user/user.controller';
+import {GoogleDriveController} from './google-drive/google-drive.controller';
 import {NotificationController} from './notification/notification.controller';
 import {TagController} from './tag/tag.controller';
 import {TagGroupController} from './tag/tag-group.controller';
@@ -76,6 +77,7 @@ import {WorkflowRouteController} from './workflow/workflow-route.controller';
     // PermissionController,
     // RoleController,
     // UserController,
+    GoogleDriveController,
     NotificationController,
     TagController,
     TagGroupController,

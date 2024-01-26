@@ -9,17 +9,13 @@ import {ApiBearerAuth, ApiTags} from '@nestjs/swagger';
 import {FileInterceptor} from '@nestjs/platform-express';
 import {Express} from 'express';
 import {XLSXService} from '@toolkit/xlsx/xlsx.service';
-import {UserService} from '@microservices/account/user.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Coach')
 @ApiBearerAuth()
 @Controller('coaches')
 export class CoachInfoUploadController {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly userService: UserService
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Post('load-xlsx-file')
   @UseInterceptors(FileInterceptor('file'))

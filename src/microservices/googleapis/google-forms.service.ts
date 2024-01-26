@@ -1,20 +1,18 @@
 import {Injectable} from '@nestjs/common';
-import * as path from 'path';
 import * as google from '@googleapis/forms';
+import {ConfigService} from '@nestjs/config';
 
 @Injectable()
 export class GoogleFormsService {
   private auth;
 
-  constructor() {
+  constructor(private readonly configService: ConfigService) {
     // Create a new JWT client using the key file downloaded from the Google Developer Console.
     this.auth = new google.auth.GoogleAuth({
-      keyFile: path.join(
-        '/home/ec2-user/solidcore-backend',
-        'solidcore-90323-6889f2864714.json'
+      keyFile: configService.getOrThrow<string>(
+        'microservice.googleapis.credentials.serviceAccount'
       ),
       scopes: [
-        //https://developers.google.com/identity/protocols/oauth2/scopes
         'https://www.googleapis.com/auth/forms.body.readonly',
         'https://www.googleapis.com/auth/forms.responses.readonly',
       ],

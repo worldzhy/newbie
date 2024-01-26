@@ -41,3 +41,20 @@ export async function compareHash(
 ): Promise<boolean> {
   return await bcrypt.compare(password, hash);
 }
+
+/**
+ * 1=>A, 2=>B, 26=>Z, 52=>AZ
+ */
+export function number2letters(num: number) {
+  let n = num;
+  let letters = '';
+
+  while (n > 0) {
+    let m = n % 26;
+    if (m === 0) m = 26;
+    letters = String.fromCharCode(64 + m) + letters;
+    n = (n - m) / 26;
+  }
+
+  return letters;
+}
