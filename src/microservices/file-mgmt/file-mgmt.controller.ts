@@ -18,7 +18,7 @@ import {ApiBearerAuth, ApiBody, ApiParam, ApiTags} from '@nestjs/swagger';
 import {ConfigService} from '@nestjs/config';
 import {createReadStream} from 'fs';
 import {diskStorage} from 'multer';
-import {AccessTokenService} from '@microservices/token/access-token/access-token.service';
+import {AccessTokenService} from '@worldzhy/newbie-pkg';
 import {S3Service} from '@toolkit/aws/aws.s3.service';
 import {generateRandomLetters} from '@toolkit/utilities/common.util';
 import {PrismaService} from '@toolkit/prisma/prisma.service';

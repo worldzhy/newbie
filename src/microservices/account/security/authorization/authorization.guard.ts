@@ -7,7 +7,7 @@ import {
   TrustedEntityType,
 } from '@prisma/client';
 import {PERMISSION_KEY} from './authorization.decorator';
-import {AccessTokenService} from '@microservices/token/access-token/access-token.service';
+import {AccessTokenService} from '@worldzhy/newbie-pkg';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @Injectable()

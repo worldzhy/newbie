@@ -2,7 +2,7 @@ import {Controller, Get, Res} from '@nestjs/common';
 import {ApiTags, ApiCookieAuth} from '@nestjs/swagger';
 import {Response} from 'express';
 import {AccountService} from '@microservices/account/account.service';
-import {RefreshTokenService} from '@microservices/token/refresh-token/refresh-token.service';
+import {RefreshTokenService} from '@worldzhy/newbie-pkg';
 import {GuardByRefreshToken} from '@microservices/account/security/passport/refresh-token/refresh-token.decorator';
 import {Cookies} from '@_decorator/cookie.decorator';
 import {AccessToken} from '@prisma/client';

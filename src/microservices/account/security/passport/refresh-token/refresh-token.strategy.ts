@@ -3,7 +3,7 @@ import {PassportStrategy} from '@nestjs/passport';
 import {Strategy} from 'passport-custom';
 import {Request} from 'express';
 import {AccountService} from '@microservices/account/account.service';
-import {RefreshTokenService} from '@microservices/token/refresh-token/refresh-token.service';
+import {RefreshTokenService} from '@worldzhy/newbie-pkg';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @Injectable()
