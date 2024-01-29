@@ -1,6 +1,5 @@
 import {APP_FILTER} from '@nestjs/core';
 import {Module, MiddlewareConsumer} from '@nestjs/common';
-import {ConfigModule, ConfigService} from '@nestjs/config';
 
 import {AllExceptionFilter} from '@_filter/_all-exception.filter';
 import {HttpExceptionFilter} from '@_filter/_http-exception.filter';
@@ -21,8 +20,8 @@ import {ProjectManagementModule} from '@microservices/project-mgmt/project-mgmt.
 import {QueueModule} from '@microservices/queue/queue.module';
 import {StockManagementModule} from '@microservices/stock-mgmt/stock-mgmt.module';
 import {TagModule} from '@microservices/tag/tag.module';
-import {AccessTokenModule, RefreshTokenModule} from '@worldzhy/newbie-pkg';
 import {WorkflowModule} from '@microservices/workflow/workflow.module';
+import {MicroserviceModule} from '@microservices/microservices.module';
 
 // Toolkit and microservice controllers
 import {AccountController} from './account/account.controller';
@@ -63,35 +62,8 @@ import {WorkflowRouteController} from './workflow/workflow-route.controller';
     QueueModule,
     StockManagementModule,
     TagModule,
-    AccessTokenModule.registerAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.getOrThrow<string>(
-          'microservice.token.access.secret'
-        ),
-        signOptions: {
-          expiresIn: configService.getOrThrow<string>(
-            'microservice.token.access.expiresIn'
-          ),
-        },
-      }),
-    }),
-    RefreshTokenModule.registerAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.getOrThrow<string>(
-          'microservice.token.refresh.secret'
-        ),
-        signOptions: {
-          expiresIn: configService.getOrThrow<string>(
-            'microservice.token.refresh.expiresIn'
-          ),
-        },
-      }),
-    }),
     WorkflowModule,
+    MicroserviceModule,
   ],
   controllers: [
     AccountController,
