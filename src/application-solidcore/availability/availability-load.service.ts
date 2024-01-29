@@ -1,6 +1,6 @@
 import {Express} from 'express';
 import {forms_v1} from '@googleapis/forms';
-import {GoogleFormsService} from '@microservices/googleapis/google-forms.service';
+import {GoogleFormService} from '@microservices/googleapis/drive/form.service';
 import {BadRequestException, Injectable} from '@nestjs/common';
 import {
   firstDayOfMonth,
@@ -30,7 +30,7 @@ enum FormItemTitle {
 export class AvailabilityLoadService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly googleFormsService: GoogleFormsService
+    private readonly googleFormService: GoogleFormService
   ) {}
 
   async parseXLSXFile(
@@ -241,7 +241,7 @@ export class AvailabilityLoadService {
       forms_v1.Schema$Item
     > = {};
 
-    const formItems = await this.googleFormsService.getFormItems(FORM_ID);
+    const formItems = await this.googleFormService.getFormItems(FORM_ID);
     for (let i = 0; i < formItems.length; i++) {
       const formItem = formItems[i];
       const title = formItem.title;
@@ -350,7 +350,7 @@ export class AvailabilityLoadService {
 
     // [step 3] Process google form responses.
     const formResponses =
-      await this.googleFormsService.getFormResponses(FORM_ID);
+      await this.googleFormService.getFormResponses(FORM_ID);
     for (let i = 0; i < formResponses.length; i++) {
       const formResponse = formResponses[i];
       // ! The timestamp is required in a coach's response.

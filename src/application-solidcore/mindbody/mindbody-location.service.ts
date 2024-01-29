@@ -3,7 +3,7 @@ import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
 import {HttpService} from '@nestjs/axios';
 import {ConfigService} from '@nestjs/config';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {GoogleTimezoneService} from '@microservices/googleapis/google-timezone.service';
+import {GoogleTimezoneService} from '@microservices/googleapis/timezone/timezone.service';
 import {Prisma} from '@prisma/client';
 
 @Injectable()

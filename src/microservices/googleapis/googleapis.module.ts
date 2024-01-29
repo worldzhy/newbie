@@ -1,22 +1,11 @@
 import {Global, Module} from '@nestjs/common';
-import {GoogleDriveService} from './google-drive.service';
-import {GoogleFormsService} from './google-forms.service';
-import {GoogleSheetsService} from './google-sheets.service';
-import {GoogleTimezoneService} from './google-timezone.service';
+import {GoogleFormService} from './drive/form.service';
+import {GoogleSheetService} from './drive/sheet.service';
+import {GoogleTimezoneService} from './timezone/timezone.service';
 
 @Global()
 @Module({
-  providers: [
-    GoogleDriveService,
-    GoogleFormsService,
-    GoogleSheetsService,
-    GoogleTimezoneService,
-  ],
-  exports: [
-    GoogleDriveService,
-    GoogleFormsService,
-    GoogleSheetsService,
-    GoogleTimezoneService,
-  ],
+  providers: [GoogleFormService, GoogleSheetService, GoogleTimezoneService],
+  exports: [GoogleFormService, GoogleSheetService, GoogleTimezoneService],
 })
 export class GoogleAPIsModule {}

@@ -1,22 +1,13 @@
 import {Injectable} from '@nestjs/common';
 import * as google from '@googleapis/forms';
 import {ConfigService} from '@nestjs/config';
+import {GoogleDriveService} from './drive.service';
+import {GoogleMimeType} from '../enum';
 
 @Injectable()
-export class GoogleFormsService {
-  private auth;
-
+export class GoogleFormService extends GoogleDriveService {
   constructor(private readonly configService: ConfigService) {
-    // Create a new JWT client using the key file downloaded from the Google Developer Console.
-    this.auth = new google.auth.GoogleAuth({
-      keyFile: configService.getOrThrow<string>(
-        'microservice.googleapis.credentials.serviceAccount'
-      ),
-      scopes: [
-        'https://www.googleapis.com/auth/forms.body.readonly',
-        'https://www.googleapis.com/auth/forms.responses.readonly',
-      ],
-    });
+    super(configService, GoogleMimeType.Form);
   }
 
   async getFormItems(formId: string) {

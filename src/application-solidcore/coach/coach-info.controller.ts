@@ -1,5 +1,6 @@
 import {
   Controller,
+  Get,
   ParseFilePipeBuilder,
   Post,
   UploadedFile,
@@ -10,12 +11,25 @@ import {FileInterceptor} from '@nestjs/platform-express';
 import {Express} from 'express';
 import {XLSXService} from '@toolkit/xlsx/xlsx.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {GoogleSheetService} from '@microservices/googleapis/drive/sheet.service';
 
 @ApiTags('Coach')
 @ApiBearerAuth()
 @Controller('coaches')
 export class CoachInfoUploadController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly googleSheetService: GoogleSheetService
+  ) {}
+
+  @Get('export-google-sheet')
+  async exportGoogleSheet() {
+    const users = await this.prisma.user.findMany({include: {profile: true}});
+
+    for (let i = 0; i < users.length; i++) {
+      const user = users[i];
+    }
+  }
 
   @Post('load-xlsx-file')
   @UseInterceptors(FileInterceptor('file'))
