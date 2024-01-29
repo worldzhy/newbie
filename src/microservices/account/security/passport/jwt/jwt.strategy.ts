@@ -3,8 +3,8 @@ import {ConfigService} from '@nestjs/config';
 import {PassportStrategy} from '@nestjs/passport';
 import {ExtractJwt, Strategy} from 'passport-jwt';
 import {Request} from 'express';
-import {AccessTokenService} from '@microservices/token/access-token/access-token.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {AccessTokenService} from '@worldzhy/newbie-pkg';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
