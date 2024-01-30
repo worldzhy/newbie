@@ -48,13 +48,13 @@ export abstract class GoogleDriveService extends GoogleApisService {
     }
   }
 
-  protected async createFile(params: {name: string; folderId: string}) {
+  protected async createFile(params: {name: string; folderId?: string}) {
     try {
       const file = await this.drive.files.create({
         requestBody: {
           mimeType: this.mimeType,
           name: params.name,
-          parents: [params.folderId],
+          parents: params.folderId ? [params.folderId] : undefined,
         },
       });
       return file.data;

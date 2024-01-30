@@ -1,17 +1,19 @@
 import {
+  Body,
   Controller,
-  Get,
   ParseFilePipeBuilder,
   Post,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import {ApiBearerAuth, ApiTags} from '@nestjs/swagger';
+import {ApiBearerAuth, ApiBody, ApiTags} from '@nestjs/swagger';
 import {FileInterceptor} from '@nestjs/platform-express';
 import {Express} from 'express';
 import {XLSXService} from '@toolkit/xlsx/xlsx.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {GoogleSheetService} from '@microservices/googleapis/drive/sheet.service';
+import {GoogleAccountRole} from '@microservices/googleapis/enum';
+import {Prisma} from '@prisma/client';
 
 @ApiTags('Coach')
 @ApiBearerAuth()
@@ -22,12 +24,77 @@ export class CoachInfoUploadController {
     private readonly googleSheetService: GoogleSheetService
   ) {}
 
-  @Get('export-google-sheet')
+  @Post('export-google-sheet')
   async exportGoogleSheet() {
+    const spreadsheetId = await this.googleSheetService.create({
+      name: 'Coach Info',
+      headings: ['Email', 'First name', 'Middle name', 'Last name'],
+    });
+    const rows: any[][] = [];
     const users = await this.prisma.user.findMany({include: {profile: true}});
 
     for (let i = 0; i < users.length; i++) {
       const user = users[i];
+      rows.push([
+        user.id,
+        user.email,
+        user.profile?.firstName,
+        user.profile?.middleName,
+        user.profile?.lastName,
+        user.profile?.coachingTenure,
+        user.profile?.quotaOfWeek,
+        user.profile?.quotaOfWeekMinPreference,
+        user.profile?.quotaOfWeekMaxPreference,
+      ]);
+    }
+
+    await this.googleSheetService.appendRows({
+      spreadsheetId,
+      data: rows,
+    });
+
+    await this.googleSheetService.share({
+      fileId: spreadsheetId,
+      gmail: 'worldzhy@gmail.com',
+      role: GoogleAccountRole.Writer,
+    });
+
+    return spreadsheetId;
+  }
+
+  @Post('import-google-sheet')
+  @ApiBody({
+    description: '',
+    examples: {
+      a: {
+        summary: '1. Import',
+        value: {url: ''},
+      },
+    },
+  })
+  async importGoogleSheet(@Body() body: {url: string}) {
+    const users: Prisma.UserUpdateArgs[] = [];
+    const fileId = body.url.split('/d/')[1].split('/')[0];
+    const rows = await this.googleSheetService.getRows({
+      fileId: fileId,
+    });
+
+    if (rows && rows.length > 1) {
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        users.push({
+          where: {email: row[0]},
+          data: {
+            profile: {
+              update: {
+                quotaOfWeek: row[1],
+                quotaOfWeekMinPreference: row[2],
+                quotaOfWeekMaxPreference: row[3],
+              },
+            },
+          },
+        });
+      }
     }
   }
 

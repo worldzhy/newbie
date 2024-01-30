@@ -43,7 +43,7 @@ export class GoogleDriveController {
     return this.googleSheetService.createFolder(body);
   }
 
-  @Post('create-spreadsheet')
+  @Post('create-sheet')
   @ApiBody({
     description: '',
     examples: {
@@ -60,7 +60,7 @@ export class GoogleDriveController {
     });
   }
 
-  @Post('update-spreadsheet-headings')
+  @Post('update-sheet-headings')
   @ApiBody({
     description: '',
     examples: {
@@ -76,20 +76,20 @@ export class GoogleDriveController {
     return this.googleSheetService.updateHeadings(body);
   }
 
-  @Post('update-spreadsheet-data')
+  @Post('append-sheet-data')
   @ApiBody({
     description: '',
     examples: {
       a: {
         summary: '1. Update',
-        value: {spreadsheetId: '', headings: ['name', 'gender', 'age', 'role']},
+        value: {spreadsheetId: '', data: ['name', 'gender', 'age', 'role']},
       },
     },
   })
-  async updateSpreadsheetData(
-    @Body() body: {spreadsheetId: string; headings: string[]}
+  async appendSpreadsheetData(
+    @Body() body: {spreadsheetId: string; data: any[][]}
   ) {
-    return this.googleSheetService.updateData(body);
+    return await this.googleSheetService.appendRows(body);
   }
 
   /* End */
