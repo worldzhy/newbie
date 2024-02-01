@@ -1,13 +1,17 @@
 import {Injectable} from '@nestjs/common';
 import * as google from '@googleapis/forms';
 import {ConfigService} from '@nestjs/config';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {GoogleDriveService} from './drive.service';
-import {GoogleMimeType} from '../enum';
+import {GoogleFileType} from '../enum';
 
 @Injectable()
 export class GoogleFormService extends GoogleDriveService {
-  constructor(private readonly configService: ConfigService) {
-    super(configService, GoogleMimeType.Form);
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly prismaService: PrismaService
+  ) {
+    super(configService, prismaService, GoogleFileType.Form);
   }
 
   async getFormItems(formId: string) {

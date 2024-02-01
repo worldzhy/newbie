@@ -1,8 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {SnowflakeService} from '@toolkit/snowflake/snowflake.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-
-const ROLE_NAME_COACH = 'Coach';
+import {UserRoleName} from '../coach/enum';
 
 @Injectable()
 export class RawDataCoachService {
@@ -44,7 +43,7 @@ export class RawDataCoachService {
           await this.prisma.user.create({
             data: {
               email: coach.TREMAILNAME,
-              roles: {connect: {name: ROLE_NAME_COACH}},
+              roles: {connect: {name: UserRoleName.Coach}},
               profile: {
                 create: {
                   firstName: coach.TRFIRSTNAME,
@@ -86,7 +85,7 @@ export class RawDataCoachService {
 
     // [step 2] Get all the coaches. The total count of coaches is about x thousands.
     const coaches = await this.prisma.user.findMany({
-      where: {email: {not: null}, roles: {some: {name: ROLE_NAME_COACH}}},
+      where: {email: {not: null}, roles: {some: {name: UserRoleName.Coach}}},
       select: {
         email: true,
         profile: {select: {id: true, eventVenueIds: true}},

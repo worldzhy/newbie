@@ -1,5 +1,9 @@
 import * as bcrypt from 'bcrypt';
 
+export function generateRandomNumber(max: number): number {
+  return Math.ceil(Math.random() * max);
+}
+
 export function generateRandomNumbers(length = 6): string {
   let result = '';
   const characters = '0123456789';

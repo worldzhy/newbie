@@ -49,14 +49,14 @@ export class GoogleDriveController {
     examples: {
       a: {
         summary: '1. Update',
-        value: {name: '', folderId: ''},
+        value: {name: '', parentId: ''},
       },
     },
   })
-  async createSpreadsheet(@Body() body: {name: string; folderId: string}) {
+  async createSpreadsheet(@Body() body: {name: string; parentId: string}) {
     return this.googleSheetService.create({
       name: body.name,
-      folderId: body.folderId,
+      parentId: body.parentId,
     });
   }
 
@@ -66,12 +66,12 @@ export class GoogleDriveController {
     examples: {
       a: {
         summary: '1. Update',
-        value: {spreadsheetId: '', headings: ['name', 'gender', 'age', 'role']},
+        value: {fileId: '', headings: ['name', 'gender', 'age', 'role']},
       },
     },
   })
   async updateSpreadsheetHeadings(
-    @Body() body: {spreadsheetId: string; headings: string[]}
+    @Body() body: {fileId: string; headings: string[]}
   ) {
     return this.googleSheetService.updateHeadings(body);
   }
@@ -82,13 +82,11 @@ export class GoogleDriveController {
     examples: {
       a: {
         summary: '1. Update',
-        value: {spreadsheetId: '', data: ['name', 'gender', 'age', 'role']},
+        value: {fileId: '', data: ['name', 'gender', 'age', 'role']},
       },
     },
   })
-  async appendSpreadsheetData(
-    @Body() body: {spreadsheetId: string; data: any[][]}
-  ) {
+  async appendSpreadsheetData(@Body() body: {fileId: string; data: any[][]}) {
     return await this.googleSheetService.appendRows(body);
   }
 
