@@ -1,6 +1,5 @@
 import {Injectable, ExecutionContext} from '@nestjs/common';
 import {Reflector} from '@nestjs/core';
-import {ConfigService} from '@nestjs/config';
 import {AuthGuard} from '@nestjs/passport';
 import {NoAuthGuard} from './public/public.guard';
 import {JwtAuthGuard} from './jwt/jwt.guard';
@@ -18,25 +17,11 @@ import {IS_REFRESHING_ACCESS_TOKEN} from './refresh-token/refresh-token.decorato
 
 @Injectable()
 export class PassportGuard extends AuthGuard('authentication') {
-  private allowedOrigins: string[];
-
-  constructor(
-    private readonly configService: ConfigService,
-    private reflector: Reflector
-  ) {
+  constructor(private reflector: Reflector) {
     super();
-    this.allowedOrigins = this.configService.getOrThrow<string[]>(
-      'server.allowedOrigins'
-    );
   }
 
   canActivate(context: ExecutionContext) {
-    // Allow only requests from allowed origins
-    const origin = context.switchToHttp().getRequest().headers.origin;
-    if (origin && !this.allowedOrigins.includes(origin)) {
-      return false;
-    }
-
     // Use @NoGuard() for non-authentication
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
