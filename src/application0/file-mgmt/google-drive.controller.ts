@@ -3,9 +3,9 @@ import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {GoogleSheetService} from '@microservices/googleapis/drive/sheet.service';
 import {GoogleAccountRole} from '@microservices/googleapis/enum';
 
-@ApiTags('Google Drive')
+@ApiTags('File Management')
 @ApiBearerAuth()
-@Controller('google-drive')
+@Controller('file-mgmt/google-drive')
 export class GoogleDriveController {
   constructor(private readonly googleSheetService: GoogleSheetService) {}
 

@@ -10,48 +10,23 @@ import {CustomLoggerModule} from './logger/logger.module';
 import {PrismaModule} from './prisma/prisma.module';
 import {SnowflakeModule} from './snowflake/snowflake.module';
 import {XLSXModule} from './xlsx/xlsx.module';
-import ServerConfiguration from '@_config/server.config';
-import MicroservicesConfiguration from '@_config/microservice.config';
-import ToolkitConfiguration from '@_config/toolkit.config';
+import ToolkitConfiguration from './toolkit.config';
 
 @Global()
 @Module({
   imports: getModules(),
-  exports: [
-    HttpModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        timeout: configService.get('server.httpTimeout'),
-        maxRedirects: configService.get('server.httpMaxRedirects'),
-      }),
-      inject: [ConfigService],
-    }),
-  ],
+  exports: [HttpModule],
 })
 export class ToolkitModule {}
 
 function getModules() {
   const modules = [
-    ConfigModule.forRoot({
-      load: [
-        ServerConfiguration,
-        MicroservicesConfiguration,
-        ToolkitConfiguration,
-      ],
-      isGlobal: true,
-    }),
-    HttpModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        timeout: configService.get('server.httpTimeout'),
-        maxRedirects: configService.get('server.httpMaxRedirects'),
-      }),
-      inject: [ConfigService],
-    }),
-    EventEmitterModule.forRoot(),
     AwsModule,
-    ElasticModule,
+    ConfigModule.forRoot({load: [ToolkitConfiguration], isGlobal: true}),
     CustomLoggerModule,
+    ElasticModule,
+    EventEmitterModule.forRoot(),
+    HttpModule,
     PrismaModule,
     SnowflakeModule,
     XLSXModule,
@@ -62,8 +37,8 @@ function getModules() {
         imports: [ConfigModule],
         useFactory: async (configService: ConfigService) => ({
           store: redisStore,
-          host: configService.get('server.redis.host'),
-          port: configService.get('server.redis.port'),
+          host: configService.get('toolkit.cache.redis.host'),
+          port: configService.get('toolkit.cache.redis.port'),
           ttl: configService.get('toolkit.cache.redis.ttl'), // cache-manamger v4 => seconds, v5 => milliseconds
         }),
         inject: [ConfigService],

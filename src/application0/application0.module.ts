@@ -1,27 +1,15 @@
 import {APP_FILTER} from '@nestjs/core';
 import {Module, MiddlewareConsumer} from '@nestjs/common';
 
-import {AllExceptionFilter} from '@_filter/_all-exception.filter';
-import {HttpExceptionFilter} from '@_filter/_http-exception.filter';
-import {PrismaExceptionFilter} from '@_filter/_prisma-exception.filter';
-import {ThrottlerExceptionFilter} from '@_filter/_throttler-exception.filter';
-import {HttpMiddleware} from '@_middleware/_http.middleware';
+import {AllExceptionFilter} from './_filter/_all-exception.filter';
+import {HttpExceptionFilter} from './_filter/_http-exception.filter';
+import {PrismaExceptionFilter} from './_filter/_prisma-exception.filter';
+import {ThrottlerExceptionFilter} from './_filter/_throttler-exception.filter';
+import {HttpMiddleware} from './_middleware/_http.middleware';
 
 // Toolkit and microservice modules
+import {MicroserviceModule} from '@microservices/microservice.module';
 import {ToolkitModule} from '@toolkit/toolkit.module';
-import {AccountModule} from '@microservices/account/account.module';
-import {EventSchedulingModule} from '@microservices/event-scheduling/event-scheduling.module';
-import {GoogleAPIsModule} from '@microservices/googleapis/googleapis.module';
-import {FileManagementModule} from '@microservices/file-mgmt/file-mgmt.module';
-import {MapModule} from '@microservices/map/map.module';
-import {NotificationModule} from '@microservices/notification/notification.module';
-import {OrderManagementModule} from '@microservices/order-mgmt/order-mgmt.module';
-import {ProjectManagementModule} from '@microservices/project-mgmt/project-mgmt.module';
-import {QueueModule} from '@microservices/queue/queue.module';
-import {StockManagementModule} from '@microservices/stock-mgmt/stock-mgmt.module';
-import {TagModule} from '@microservices/tag/tag.module';
-import {TokenModule} from '@microservices/token/token.module';
-import {WorkflowModule} from '@microservices/workflow/workflow.module';
 
 // Toolkit and microservice controllers
 import {AccountController} from './account/account.controller';
@@ -35,7 +23,7 @@ import {OrganizationController} from './account/organization/organization.contro
 import {PermissionController} from './account/permission/permission.controller';
 import {RoleController} from './account/role/role.controller';
 import {UserController} from './account/user/user.controller';
-import {GoogleDriveController} from './google-drive/google-drive.controller';
+import {GoogleDriveController} from './file-mgmt/google-drive.controller';
 import {NotificationController} from './notification/notification.controller';
 import {TagController} from './tag/tag.controller';
 import {TagGroupController} from './tag/tag-group.controller';
@@ -44,26 +32,16 @@ import {WorkflowStateController} from './workflow/workflow-state.controller';
 import {WorkflowViewController} from './workflow/workflow-view.controller';
 import {WorkflowViewComponentController} from './workflow/workflow-view-component.controller';
 import {WorkflowRouteController} from './workflow/workflow-route.controller';
+import ApplicationConfiguration from 'src/config';
+import {ConfigModule} from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({load: [ApplicationConfiguration]}),
+    // Microservices (Global modules)
+    MicroserviceModule,
     // Toolkit (Global modules)
     ToolkitModule,
-
-    // Microservices (Global modules)
-    AccountModule,
-    EventSchedulingModule,
-    GoogleAPIsModule,
-    FileManagementModule,
-    MapModule,
-    NotificationModule,
-    OrderManagementModule,
-    ProjectManagementModule,
-    QueueModule,
-    StockManagementModule,
-    TagModule,
-    TokenModule,
-    WorkflowModule,
   ],
   controllers: [
     AccountController,

@@ -122,7 +122,7 @@ $ npm run start:dev
 ### Install dependencies
 
 ```bash
-$ npm install --production
+$ npm install --omit=dev
 $ npm install --save-dev tsconfig-paths
 $ cp .env.example .env
 

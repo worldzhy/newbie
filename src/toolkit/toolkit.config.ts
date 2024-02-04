@@ -26,6 +26,18 @@ export default registerAs('toolkit', () => ({
       publish_add_queue: process.env.PUBLISH_ADD_QUEUE || 'default',
     },
   },
+  cache: {
+    memory: {
+      ttl: 3600, // cache-manamger v4 => seconds, v5 => milliseconds
+      max: 1000, // maximum number of items in cache
+    },
+    redis: {
+      host: process.env.REDIS_HOST,
+      port: parseInt(process.env.REDIS_PORT ?? '6379'),
+      password: process.env.REDIS_PASSWORD,
+      ttl: 86400, // cache-manamger v4 => seconds, v5 => milliseconds
+    },
+  },
   elastic: {
     node: process.env.ELASTICSEARCH_NODE || 'http://127.0.0.1',
     username: process.env.ELASTICSEARCH_USERNAME,
@@ -51,15 +63,6 @@ export default registerAs('toolkit', () => ({
       acquireTimeoutMillis: 120000,
       evictionRunIntervalMillis: 60000,
       idleTimeoutMillis: 120000,
-    },
-  },
-  cache: {
-    memory: {
-      ttl: 3600, // cache-manamger v4 => seconds, v5 => milliseconds
-      max: 1000, // maximum number of items in cache
-    },
-    redis: {
-      ttl: 86400, // cache-manamger v4 => seconds, v5 => milliseconds
     },
   },
 }));

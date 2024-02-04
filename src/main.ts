@@ -9,12 +9,14 @@ import {
   SwaggerModule,
   SwaggerCustomOptions,
 } from '@nestjs/swagger';
-import {NodeClusterService} from './node-cluster';
 // import {ApplicationAircruiserModule as ApplicationModule} from './application-aircruiser/application-aircruiser.module';
 // import {ApplicationBasketModule as ApplicationModule} from './application-basket/application-basket.module';
 // import {ApplicationEnginedModule as ApplicationModule} from './application-engined/application-engined.module';
 // import {ApplicationRecruitmentModule as ApplicationModule} from './application-recruitment/application-recruitment.module';
 import {ApplicationSolidcoreModule as ApplicationModule} from './application-solidcore/application-solidcore.module';
+
+const nodeCluster = require('node:cluster');
+const numCPUs = require('node:os').availableParallelism();
 
 async function bootstrap() {
   // [step 1] Create a nestjs application.
@@ -90,5 +92,30 @@ async function bootstrap() {
 
   console.log(`Application is running on: ${await app.getUrl()}`);
 }
+
+function clusterize(callback: Function): void {
+  if (nodeCluster.isPrimary) {
+    console.log(`MASTER SERVER IS RUNNING`);
+
+    for (let i = 0; i < numCPUs; i++) {
+      nodeCluster.fork();
+    }
+
+    nodeCluster.on('online', (worker: {id: any}, code: any, signal: any) => {
+      console.log(`WORKER SERVER ${worker.id} IS ONLINE`);
+    });
+
+    nodeCluster.on('exit', (worker: {id: any}, code: any, signal: any) => {
+      console.log(`WORKER SERVER ${worker.id} EXITED`);
+      nodeCluster.fork();
+    });
+  } else {
+    callback();
+  }
+}
+
+// * Start single node.
 bootstrap();
-// NodeClusterService.clusterize(bootstrap);
+
+// * Start node cluster.
+// clusterize(bootstrap);

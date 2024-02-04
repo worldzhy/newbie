@@ -18,10 +18,6 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@_config/*": ["src/_config/*"],
-      "@_decorator/*": ["src/_decorator/*"],
-      "@_filter/*": ["src/_filter/*"],
-      "@_middleware/*": ["src/_middleware/*"],
       "@application0/*": ["src/application0/*"],
       "@microservices/*": ["src/microservices/*"],
       "@toolkit/*": ["src/toolkit/*"]
