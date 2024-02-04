@@ -1,19 +1,19 @@
 import {Global, Module} from '@nestjs/common';
-import {AccountModule} from '@microservices/account/account.module';
-import {EventSchedulingModule} from '@microservices/event-scheduling/event-scheduling.module';
-import {GoogleAPIsModule} from '@microservices/googleapis/googleapis.module';
-import {FileManagementModule} from '@microservices/file-mgmt/file-mgmt.module';
-import {MapModule} from '@microservices/map/map.module';
-import {NotificationModule} from '@microservices/notification/notification.module';
-import {OrderManagementModule} from '@microservices/order-mgmt/order-mgmt.module';
-import {ProjectManagementModule} from '@microservices/project-mgmt/project-mgmt.module';
-import {QueueModule} from '@microservices/queue/queue.module';
-import {StockManagementModule} from '@microservices/stock-mgmt/stock-mgmt.module';
-import {TagModule} from '@microservices/tag/tag.module';
-import {TokenModule} from '@microservices/token/token.module';
-import {WorkflowModule} from '@microservices/workflow/workflow.module';
 import {ConfigModule} from '@nestjs/config';
-import MicroserviceConfiguration from '@microservices/microservice.config';
+import {AccountModule} from './account/account.module';
+import {EventSchedulingModule} from './event-scheduling/event-scheduling.module';
+import {GoogleAPIsModule} from './googleapis/googleapis.module';
+import {FileManagementModule} from './file-mgmt/file-mgmt.module';
+import {MapModule} from './map/map.module';
+import {NotificationModule} from './notification/notification.module';
+import {OrderManagementModule} from './order-mgmt/order-mgmt.module';
+import {ProjectManagementModule} from './project-mgmt/project-mgmt.module';
+import {QueueModule} from './queue/queue.module';
+import {StockManagementModule} from './stock-mgmt/stock-mgmt.module';
+import {TagModule} from './tag/tag.module';
+import {TokenModule} from './token/token.module';
+import {WorkflowModule} from './workflow/workflow.module';
+import MicroserviceConfiguration from './microservice.config';
 
 @Global()
 @Module({
