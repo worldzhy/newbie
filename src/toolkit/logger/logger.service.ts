@@ -1,85 +1,27 @@
 import {ConsoleLogger, Injectable} from '@nestjs/common';
-import {SqsService} from '@toolkit/aws/aws.sqs.service';
-import {ConfigService} from '@nestjs/config';
 
-/**
- * [1] Logs in development environment will output to stdout.
- * [2] Logs in production environment will output to SQS to S3.
- *
- * @export
- * @class CustomLoggerService
- * @extends {ConsoleLogger}
- */
 @Injectable()
 export class CustomLoggerService extends ConsoleLogger {
-  private environment: string;
-
-  constructor(
-    private readonly configService: ConfigService,
-    private readonly sqsService: SqsService
-  ) {
+  constructor() {
     super();
-
-    this.environment =
-      this.configService.getOrThrow<string>('server.environment');
   }
 
-  // stdout
   debug(message: any, context?: string) {
     super.debug(message, context);
   }
 
   log(message: any, context?: string) {
-    if (this.environment === 'development') {
-      super.log(message, context);
-    } else {
-      this.sqsService.sendMessage({
-        queueUrl: this.configService.getOrThrow<string>(
-          'toolkit.logger.awsSqsQueueUrl'
-        )!,
-        body: {
-          message: message,
-          context: this.context,
-        },
-      });
-    }
+    super.log(message, context);
   }
 
   warn(message: any, context?: string) {
-    if (this.environment === 'development') {
-      super.warn(message, context);
-    } else {
-      this.sqsService.sendMessage({
-        queueUrl: this.configService.getOrThrow<string>(
-          'toolkit.logger.awsSqsQueueUrl'
-        )!,
-        body: {
-          message: message,
-          context: context,
-          level: 'warn',
-        },
-      });
-    }
+    super.warn(message, context);
   }
 
   error(message: any, context?: string) {
-    if (this.environment === 'development') {
-      super.error(message, context);
-    } else {
-      this.sqsService.sendMessage({
-        queueUrl: this.configService.getOrThrow<string>(
-          'toolkit.logger.awsSqsQueueUrl'
-        )!,
-        body: {
-          message: message,
-          context: context,
-          level: 'error',
-        },
-      });
-    }
+    super.error(message, context);
   }
 
-  // stdout
   verbose(message: any, context?: string) {
     super.verbose(message, context);
   }

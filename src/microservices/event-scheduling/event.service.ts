@@ -9,7 +9,6 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {constructDateTime, daysOfMonth} from '@toolkit/utilities/datetime.util';
 import * as _ from 'lodash';
 import {EventIssueService} from './event-issue.service';
-import {Datasource} from '../../application-solidcore/schedule/schedule.enum';
 
 @Injectable()
 export class EventService {
@@ -72,7 +71,7 @@ export class EventService {
                 event.timeZone
               );
 
-              const targetEvent: any = {
+              const targetEvent = {
                 hostUserId: event.hostUserId,
                 datetimeOfStart: datetimeOfStart,
                 isLocked: false,
@@ -84,9 +83,7 @@ export class EventService {
                 typeId: event.typeId,
                 venueId: event.venueId,
               };
-              if (datasource === Datasource.Ai) {
-                targetEvent.aiInfo = event.aiInfo;
-              }
+
               targetEvents.push(targetEvent);
             }
           }

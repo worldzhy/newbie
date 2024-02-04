@@ -2,7 +2,6 @@ import {Inject, Injectable, forwardRef} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import {
   Prisma,
-  EventIssue,
   EventIssueType,
   Event,
   User,
