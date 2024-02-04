@@ -1,5 +1,6 @@
 import {Global, Module} from '@nestjs/common';
 import {ConfigModule} from '@nestjs/config';
+import {ToolkitModule} from '@toolkit/toolkit.module';
 import {AccountModule} from './account/account.module';
 import {EventSchedulingModule} from './event-scheduling/event-scheduling.module';
 import {GoogleAPIsModule} from './googleapis/googleapis.module';
@@ -18,6 +19,8 @@ import MicroserviceConfiguration from './microservice.config';
 @Global()
 @Module({
   imports: [
+    ToolkitModule,
+
     ConfigModule.forRoot({load: [MicroserviceConfiguration], isGlobal: true}),
     AccountModule,
     EventSchedulingModule,

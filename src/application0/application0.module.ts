@@ -9,7 +9,6 @@ import {HttpMiddleware} from './_middleware/_http.middleware';
 
 // Toolkit and microservice modules
 import {MicroserviceModule} from '@microservices/microservice.module';
-import {ToolkitModule} from '@toolkit/toolkit.module';
 
 // Toolkit and microservice controllers
 import {AccountController} from './account/account.controller';
@@ -40,8 +39,6 @@ import {ConfigModule} from '@nestjs/config';
     ConfigModule.forRoot({load: [ApplicationConfiguration]}),
     // Microservices (Global modules)
     MicroserviceModule,
-    // Toolkit (Global modules)
-    ToolkitModule,
   ],
   controllers: [
     AccountController,
