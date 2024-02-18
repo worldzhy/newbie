@@ -136,6 +136,21 @@ export function constructDateTime(
   } else {
     const tmpDate = new Date(year, month - 1, dayOfMonth, hour, minute);
     offset = getTimeZoneOffset(tmpDate, timeZone);
+    const tmpDate2 = new Date(
+      year +
+        '-' +
+        month +
+        '-' +
+        dayOfMonth +
+        ' ' +
+        hour +
+        ':' +
+        minute +
+        ':' +
+        second +
+        offset
+    );
+    offset = getTimeZoneOffset(tmpDate2, timeZone);
   }
 
   return new Date(
