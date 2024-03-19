@@ -4,7 +4,7 @@ import {AvailabilityService} from '@microservices/event-scheduling/availability.
 import {ceilByMinutes, floorByMinutes} from '@toolkit/utilities/datetime.util';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
-const ROLE_NAME_COACH = 'Coach';
+const ROLE_NAME_EVENT_HOST = 'Event Host';
 const userSelectArgs: Prisma.UserSelect = {
   id: true,
   profile: {
@@ -19,7 +19,7 @@ const userSelectArgs: Prisma.UserSelect = {
 };
 
 @Injectable()
-export class CoachService {
+export class EventHostService {
   private MINUTES_Of_TIMESLOT_UNIT: number;
 
   constructor(
@@ -49,7 +49,7 @@ export class CoachService {
     // [step 1] Get coaches for the specific venue.
     const coaches = await this.prisma.user.findMany({
       where: {
-        roles: {some: {name: ROLE_NAME_COACH}},
+        roles: {some: {name: ROLE_NAME_EVENT_HOST}},
         profile: {
           eventVenueIds: {has: event.venueId},
           eventTypeIds: {has: event.typeId},
@@ -212,7 +212,7 @@ export class CoachService {
     // [step 1] Get coaches for the specific venue.
     const coaches = await this.prisma.user.findMany({
       where: {
-        roles: {some: {name: ROLE_NAME_COACH}},
+        roles: {some: {name: ROLE_NAME_EVENT_HOST}},
         profile: {
           eventVenueIds: {has: event.venueId},
           eventTypeIds: {has: event.typeId},

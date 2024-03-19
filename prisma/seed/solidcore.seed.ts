@@ -14,8 +14,8 @@ export async function seedForSolidcore() {
 
   const RoleName = {
     Admin: 'Admin',
-    Manager: 'Area Manager',
-    Coach: 'Coach',
+    EventManager: 'Event Manager',
+    EventHost: 'Event Host',
   };
 
   const permissions = {
@@ -31,8 +31,8 @@ export async function seedForSolidcore() {
 
   const roles = [
     {name: RoleName.Admin},
-    {name: RoleName.Manager},
-    {name: RoleName.Coach},
+    {name: RoleName.EventManager},
+    {name: RoleName.EventHost},
   ];
   for (let i = 0; i < roles.length; i++) {
     const role = await prisma.role.create({data: roles[i]});

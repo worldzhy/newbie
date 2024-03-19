@@ -1,4 +1,4 @@
-import {Inject, Injectable, forwardRef} from '@nestjs/common';
+import {Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import {
   Prisma,
@@ -6,6 +6,7 @@ import {
   Event,
   User,
   EventIssueStatus,
+  EventStatus,
 } from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {
@@ -34,9 +35,7 @@ export class EventIssueService {
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly prisma: PrismaService,
-    @Inject(forwardRef(() => EventService))
-    private readonly eventService: EventService
+    private readonly prisma: PrismaService
   ) {
     this.MINUTES_Of_TIMESLOT_UNIT = this.configService.getOrThrow<number>(
       'microservice.eventScheduling.minutesOfTimeslotUnit'
@@ -45,7 +44,7 @@ export class EventIssueService {
 
   async check(event: Event) {
     // [solidcore only, 2023-11-20] Do not check locked event or event with TBD coach.
-    if (event.isLocked) {
+    if (event.status === EventStatus.LOCKED) {
       return;
     }
     const tag = await this.prisma.tag.findFirst({
@@ -190,7 +189,7 @@ export class EventIssueService {
         month: container.month,
         weekOfMonth,
         deletedAt: null,
-        isLocked: false,
+        status: EventStatus.EDITING,
       },
     });
 
@@ -234,7 +233,7 @@ export class EventIssueService {
       for (let i = 0; i < events.length; i++) {
         const event = events[i];
         // [solidcore only, 2023-11-20] Do not check locked event or event with TBD coach.
-        if (event.isLocked) {
+        if (event.status === EventStatus.LOCKED) {
           continue;
         }
 

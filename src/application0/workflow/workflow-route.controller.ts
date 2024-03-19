@@ -12,7 +12,7 @@ import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {WorkflowRoute, Prisma} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
-@ApiTags('Workflow Route')
+@ApiTags('Workflow / Route')
 @ApiBearerAuth()
 @Controller('workflow-routes')
 export class WorkflowRouteController {

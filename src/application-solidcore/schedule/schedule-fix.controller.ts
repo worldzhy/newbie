@@ -7,8 +7,8 @@ import {
   EventIssueStatus,
   EventIssueType,
 } from '@prisma/client';
-import {CoachService} from '../coach/coach.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {EventHostService} from '@microservices/event-scheduling/event-host.service';
 
 @ApiTags('Event Container')
 @ApiBearerAuth()
@@ -16,7 +16,7 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 export class EventFixController {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly coachService: CoachService
+    private readonly coachService: EventHostService
   ) {}
 
   @Get(':eventContainerId/fix')

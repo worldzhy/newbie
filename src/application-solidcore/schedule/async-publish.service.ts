@@ -4,7 +4,7 @@ import {
   Prisma,
   AsyncPublish,
   AsyncEventStatus,
-  EventPublishStatus,
+  EventStatus,
 } from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {EventEmitter2} from '@nestjs/event-emitter';
@@ -85,19 +85,6 @@ export class AsyncPublishService {
   async publishContainer(body) {
     const {containerId} = body;
 
-    // const publishStatus = await this.getPublishStatus(body);
-
-    // if (publishStatus) {
-    //   const cur = _.get(publishStatus, 'asyncPublish.curEventsCnt');
-    //   const total = _.get(publishStatus, 'asyncPublish.eventsCnt');
-
-    //   if (!goingon && cur !== total) {
-    //     throw new BadRequestException(
-    //       `This container has a uncompleted publishment: ${cur}/${total} `
-    //     );
-    //   }
-    // }
-
     const container = await this.prisma.eventContainer.findFirstOrThrow({
       where: {
         id: containerId,
@@ -113,7 +100,6 @@ export class AsyncPublishService {
         year: container.year,
         month: container.month,
         deletedAt: null,
-        isPublished: false,
       },
     });
 
@@ -162,7 +148,7 @@ export class AsyncPublishService {
     await this.prisma.asyncPublish.update({
       where,
       data: {
-        status: AsyncEventStatus.PENDING,
+        status: AsyncEventStatus.PUBLISHING,
         eventsCnt,
       },
     });
@@ -220,7 +206,7 @@ export class AsyncPublishService {
       where: {
         containerId,
         deletedAt: null,
-        publishStatus: EventPublishStatus.PENDING,
+        status: EventStatus.PUBLISHING,
       },
     });
 
@@ -238,130 +224,7 @@ export class AsyncPublishService {
     return resp;
   }
 
-  async removeSchdules(params) {
-    console.log('removeSchdules', params);
-    // const {asyncPublishId} = params;
-    // const asyncPublish = await this.prisma.asyncPublish.findFirstOrThrow({
-    //   where: {
-    //     id: asyncPublishId,
-    //   },
-    // });
-
-    // const where = {
-    //   id: asyncPublishId,
-    // };
-    // await this.prisma.asyncPublish.update({
-    //   where,
-    //   data: {
-    //     status: AsyncEventStatus.REMOVING,
-    //   },
-    // });
-
-    // const {containerId} = asyncPublish;
-
-    // const container = await this.prisma.eventContainer.findFirstOrThrow({
-    //   where: {
-    //     id: containerId,
-    //   },
-    //   include: {
-    //     venue: true,
-    //   },
-    // });
-
-    // const {year, month, venue} = container;
-
-    // const studioId = venue.external_studioId || 0;
-    // const locationId = venue.external_locationId || 0;
-
-    // const startDateTime = moment()
-    //   .year(year)
-    //   .month(month - 1)
-    //   .startOf('month')
-    //   .format('YYYY-MM-DD');
-    // const endDateTime = moment()
-    //   .year(year)
-    //   .month(month - 1)
-    //   .endOf('month')
-    //   .format('YYYY-MM-DD');
-
-    // const schEndDate = moment().add(2, 'years').endOf('years').toISOString();
-
-    // const schParams = {
-    //   page: 1,
-    //   pageSize: 1000,
-    //   studioId,
-    //   locationIds: locationId,
-    //   startDateTime,
-    //   endDateTime,
-    // };
-
-    // const {data} = await this.mindbodyService.getClasses(schParams);
-
-    // await this.prisma.asyncPublish.update({
-    //   where,
-    //   data: {
-    //     oldEvents: data.Classes.length,
-    //   },
-    // });
-
-    // for (const _class of []) {
-    // for (const _class of data.Classes) {
-    //   const {ClassScheduleId} = _class;
-    //   const schParams = {
-    //     studioId,
-    //     locationId,
-    //     classScheduleIds: ClassScheduleId,
-    //     endDate: schEndDate,
-    //   };
-    //   const schResp = await this.mindbodyService.getClassSchedules(schParams);
-
-    //   const _sch = _.get(schResp, 'data.ClassSchedules[0]');
-
-    //   const rmSchParams = {
-    //     studioId,
-    //     locationId,
-    //     scheduleId: ClassScheduleId,
-    //   };
-
-    //   const endDate = moment(_sch.EndDate);
-    //   const startDate = moment(_sch.StartDate);
-
-    //   const endOf2023 = moment('2023-12-31').endOf('year');
-    //   const endOf2023_string = endOf2023.toISOString();
-
-    //   let resp = {};
-
-    //   const mboLogData: any = {
-    //     containerId,
-    //     locationId,
-    //     studioId,
-    //     asyncPublishId,
-    //     params: rmSchParams,
-    //   };
-
-    //   if (endDate.isAfter(endOf2023) && startDate.isBefore(endOf2023)) {
-    //     mboLogData.funcName = 'endClassSchduleById';
-    //     resp = await this.mindbodyService.endClassSchduleById(
-    //       rmSchParams,
-    //       endOf2023_string
-    //     );
-    //   } else {
-    //     mboLogData.funcName = 'endClassFeatureSchduleById';
-    //     resp =
-    //       await this.mindbodyService.endClassFeatureSchduleById(rmSchParams);
-    //   }
-
-    //   mboLogData.resp = resp;
-    //   await this.prisma.mboLog.create({data: mboLogData});
-    //   // await sleep(1000);
-    // }
-
-    // await this.prisma.asyncPublish.update({
-    //   where,
-    //   data: {
-    //     status: AsyncEventStatus.REMOVED,
-    //   },
-    // });
+  async removeSchdules(params: any) {
     this.addSchdules(params);
   }
 
@@ -396,21 +259,19 @@ export class AsyncPublishService {
         year: container.year,
         month: container.month,
         deletedAt: null,
-        isPublished: false,
       },
       include: {type: true},
     });
 
     await this.prisma.event.updateMany({
       data: {
-        publishStatus: EventPublishStatus.PENDING,
+        status: EventStatus.PUBLISHING,
       },
       where: {
         containerId: container.id,
         year: container.year,
         month: container.month,
         deletedAt: null,
-        isPublished: false,
       },
     });
 
@@ -440,12 +301,6 @@ export class AsyncPublishService {
   async addSchduleOne(payload) {
     const {eventId, asyncPublishId} = payload;
 
-    // const where = {
-    //   id: asyncPublishId,
-    // };
-
-    console.log('addSchduleOne eventId:', eventId);
-
     const asyncPublish = await this.prisma.asyncPublish.findFirstOrThrow({
       where: {
         id: asyncPublishId,
@@ -466,7 +321,7 @@ export class AsyncPublishService {
       include: {type: true, venue: true, changeLogs: true},
     });
 
-    if (event.isPublished) {
+    if (event.status === EventStatus.PUBLISHED) {
       throw new BadRequestException('This event is already published.');
     }
 
@@ -481,10 +336,6 @@ export class AsyncPublishService {
       event,
     });
     await scToMbService.eventCheck(_event, _body);
-
-    // const resp1 = scToMbService.getResult();
-    // console.log(resp1.currentClass);
-    // return;
     await scToMbService.eventPublish();
     const resp = scToMbService.getResult();
     const mboResp = scToMbService.getMboResult();
@@ -501,28 +352,6 @@ export class AsyncPublishService {
     };
     await this.prisma.mboLog.create({data: mboLogData});
 
-    // const asyncPublish2 = await this.prisma.asyncPublish.findFirstOrThrow({
-    //   where: {
-    //     id: asyncPublishId,
-    //   },
-    // });
-
-    // const {curEventsCnt, eventsCnt} = asyncPublish2;
-
-    // const data: any = {
-    //   curEventsCnt: curEventsCnt + 1,
-    // };
-
-    // console.log('curEventsCnt', curEventsCnt);
-    // if (eventsCnt === curEventsCnt + 1) {
-    //   data.status = AsyncEventStatus.COMPLETED;
-    // }
-
-    // await this.prisma.asyncPublish.update({
-    //   where,
-    //   data,
-    // });
-
     const classScheduleId = _.get(resp, 'mboResp.data.ClassId');
     const mboData = {
       resp: mboResp,
@@ -531,21 +360,20 @@ export class AsyncPublishService {
     if (!resp.success) {
       await this.prisma.event.update({
         where: {id: eventId},
-        data: {mboData, publishStatus: EventPublishStatus.FAILED},
+        data: {mboData, status: EventStatus.EDITING},
       });
       return resp;
     }
 
-    // // [step 2] Modify coaches' availability status
+    // [step 2] Modify coaches' availability status
     await this.availabilityService.checkinTimeslots(event);
 
-    // // [step 2] Update event status.
+    // [step 2] Update event status.
     await this.prisma.event.update({
       where: {id: eventId},
       data: {
-        isPublished: true,
         mboData,
-        publishStatus: EventPublishStatus.COMPLETED,
+        status: EventStatus.PUBLISHED,
       },
     });
     return resp;

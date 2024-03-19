@@ -12,7 +12,7 @@ import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Prisma, EventChangeLog} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
-@ApiTags('Event Change Log')
+@ApiTags('Event Scheduling / Event Change Log')
 @ApiBearerAuth()
 @Controller('event-changelogs')
 export class EventChangeLogController {

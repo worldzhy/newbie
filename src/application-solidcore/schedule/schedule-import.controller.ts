@@ -14,6 +14,7 @@ import {
   Event,
   EventContainerStatus,
   EventContainerOrigin,
+  EventStatus,
 } from '@prisma/client';
 import {EventService} from '@microservices/event-scheduling/event.service';
 import {daysOfMonth} from '@toolkit/utilities/datetime.util';
@@ -65,7 +66,9 @@ export class EventCopyController {
           origin: EventContainerOrigin.INTERNAL,
           status: EventContainerStatus.PUBLISHED,
         },
-        include: {events: {where: {isPublished: true, deletedAt: null}}},
+        include: {
+          events: {where: {status: EventStatus.PUBLISHED, deletedAt: null}},
+        },
       });
       if (sourceContainer) {
         sourceEvents = sourceContainer['events'];
@@ -110,22 +113,19 @@ export class EventCopyController {
 
       targetEvents.push(
         ...this.eventService
-          .copyMany(
-            {
-              events: sourceEvents,
-              from: {
-                year: fromYear,
-                month: fromMonth,
-                week: fromWeek, // The first week may be a semi week but the 2nd week must be a full week.
-              },
-              to: {
-                year: targetContainer.year,
-                month: targetContainer.month,
-                week: i + 1,
-              },
+          .copyMany({
+            events: sourceEvents,
+            from: {
+              year: fromYear,
+              month: fromMonth,
+              week: fromWeek, // The first week may be a semi week but the 2nd week must be a full week.
             },
-            {datasource}
-          )
+            to: {
+              year: targetContainer.year,
+              month: targetContainer.month,
+              week: i + 1,
+            },
+          })
           .map(event => {
             event.containerId = eventContainerId;
             return event;
@@ -137,7 +137,7 @@ export class EventCopyController {
     await this.prisma.event.deleteMany({
       where: {
         containerId: eventContainerId,
-        isPublished: false,
+        status: EventStatus.EDITING,
       },
     });
     await this.prisma.event.createMany({data: targetEvents});
@@ -226,24 +226,11 @@ export class EventCopyController {
       where: {
         containerId: eventContainerId,
         id: {in: needRemoveEventIds},
-        isPublished: false,
+        status: EventStatus.EDITING,
       },
     });
 
     await this.prisma.event.createMany({data: events});
-
-    // await this.eventContainerService.update({
-    //   where: {id: eventContainerId},
-    //   data: {
-    //     events: {
-    //       deleteMany: {
-    //         containerId: eventContainerId,
-    //         id: {in: needRemoveEventIds},
-    //       },
-    //       create: events,
-    //     },
-    //   },
-    // });
   }
 
   /* End */

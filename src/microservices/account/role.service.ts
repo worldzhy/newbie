@@ -5,8 +5,8 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 export class RoleService {
   static RoleName = {
     ADMIN: 'Admin',
-    AREA_MANAGER: 'Area Manager',
-    COACH: 'Coach',
+    EVENT_HOST: 'Event Host',
+    EVENT_MANAGER: 'Event Manager',
   };
 
   constructor(private readonly prisma: PrismaService) {}

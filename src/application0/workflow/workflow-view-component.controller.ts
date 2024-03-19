@@ -15,7 +15,7 @@ import {
 } from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
-@ApiTags('Workflow View Component')
+@ApiTags('Workflow / View Component')
 @ApiBearerAuth()
 @Controller('workflow-view-components')
 export class WorkflowViewComponentController {

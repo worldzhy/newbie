@@ -3,7 +3,7 @@ import {ApiTags, ApiBody, ApiBearerAuth} from '@nestjs/swagger';
 import {Prisma} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
-@ApiTags('User / Profile')
+@ApiTags('Account / User Profile')
 @Controller('')
 export class ProfileController {
   constructor(private readonly prisma: PrismaService) {}

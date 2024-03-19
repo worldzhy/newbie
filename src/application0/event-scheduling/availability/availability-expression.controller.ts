@@ -31,7 +31,7 @@ enum QUARTER {
   Q4 = 'Q4',
 }
 
-@ApiTags('Availability Expression')
+@ApiTags('Event Scheduling / Availability Expression')
 @ApiBearerAuth()
 @Controller('availability-expressions')
 export class AvailabilityExpressionController {

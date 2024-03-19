@@ -4,6 +4,7 @@ import {
   Event,
   EventChangeLogType,
   EventIssueStatus,
+  EventStatus,
 } from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {constructDateTime, daysOfMonth} from '@toolkit/utilities/datetime.util';
@@ -17,23 +18,19 @@ export class EventService {
     private readonly eventIssueService: EventIssueService
   ) {}
 
-  copyMany(
-    params: {
-      events: Event[];
-      from: {
-        year: number;
-        month: number;
-        week: number; // The number of week in a month, 1~6.
-      };
-      to: {
-        year: number;
-        month: number;
-        week: number; // The number of week in a month, 1~6.
-      };
-    },
-    options: any = {}
-  ) {
-    const {datasource} = options;
+  copyMany(params: {
+    events: Event[];
+    from: {
+      year: number;
+      month: number;
+      week: number; // The number of week in a month, 1~6.
+    };
+    to: {
+      year: number;
+      month: number;
+      week: number; // The number of week in a month, 1~6.
+    };
+  }) {
     const calendarOfSourceContainer = daysOfMonth(
       params.from.year,
       params.from.month
@@ -116,7 +113,7 @@ export class EventService {
             hour: oldEvent.hour,
             minute: oldEvent.minute,
             dayOfWeek: oldEvent.dayOfWeek,
-            isPublished: false,
+            status: EventStatus.EDITING,
           },
         }))
       );
@@ -159,10 +156,11 @@ export class EventService {
     });
 
     if (newEvent.hostUserId) {
-      newEvent['hostUser'] = await this.prisma.userSingleProfile.findUniqueOrThrow({
-        where: {userId: newEvent.hostUserId},
-        select: {userId: true, fullName: true, coachingTenure: true},
-      });
+      newEvent['hostUser'] =
+        await this.prisma.userSingleProfile.findUniqueOrThrow({
+          where: {userId: newEvent.hostUserId},
+          select: {userId: true, fullName: true, coachingTenure: true},
+        });
     }
 
     // [step 5] Duplicate events.

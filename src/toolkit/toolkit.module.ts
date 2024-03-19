@@ -3,7 +3,6 @@ import {ConfigModule, ConfigService} from '@nestjs/config';
 import {CacheModule} from '@nestjs/cache-manager';
 import * as redisStore from 'cache-manager-redis-store';
 import {HttpModule} from '@nestjs/axios';
-import {EventEmitterModule} from '@nestjs/event-emitter';
 import {AwsModule} from './aws/aws.module';
 import {ElasticModule} from './elastic/elastic.module';
 import {CustomLoggerModule} from './logger/logger.module';
@@ -25,7 +24,6 @@ function getModules() {
     ConfigModule.forRoot({load: [ToolkitConfiguration], isGlobal: true}),
     CustomLoggerModule,
     ElasticModule,
-    EventEmitterModule.forRoot(),
     HttpModule,
     PrismaModule,
     SnowflakeModule,

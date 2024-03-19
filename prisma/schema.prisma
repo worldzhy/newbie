@@ -72,10 +72,10 @@ model User {
   // [2] The 'User' is designed for long-term use and the 'VerificationCode' is designed for short-term use.
   // [3] Actually, the 'User' model should be named 'UserPassword' and the 'VerificationCode' should be named 'UserVerificationCode'.
   id               String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  status           UserStatus               @default(ACTIVE)
   email            String?                  @unique
   phone            String?                  @unique
   password         String? // automatic hashing
-  status           UserStatus               @default(ACTIVE)
   lastLoginAt      DateTime?
   createdAt        DateTime                 @default(now())
   updatedAt        DateTime                 @updatedAt
@@ -278,6 +278,7 @@ model CronTask {
 // * EventContainer                                                //
 // * EventType                                                     //
 // * EventVenue                                                    //
+// * EventIssue                                                    //
 // * Event                                                         //
 // * Reservation                                                   //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
@@ -329,18 +330,18 @@ enum EventContainerStatus {
   @@schema("microservice/event-scheduling")
 }
 
-enum EventPublishStatus {
-  INIT
-  PENDING
-  COMPLETED
-  FAILED
+enum EventChangeLogType {
+  SYSTEM
+  USER
 
   @@schema("microservice/event-scheduling")
 }
 
-enum EventChangeLogType {
-  SYSTEM
-  USER
+enum EventStatus {
+  EDITING
+  LOCKED
+  PUBLISHING
+  PUBLISHED
 
   @@schema("microservice/event-scheduling")
 }
@@ -383,11 +384,9 @@ model AvailabilityTimeslot {
 
 // todo: datetimeOfStart, datetimeOfEnd, week, dayOfWeek should be generated in prisma middleware.
 model Event {
-  id                Int                @id @default(autoincrement())
-  isLocked          Boolean            @default(false)
-  isPublished       Boolean            @default(false)
-  publishStatus     EventPublishStatus @default(INIT)
-  hostUserId        String?            @db.Uuid
+  id                Int              @id @default(autoincrement())
+  status            EventStatus      @default(EDITING)
+  hostUserId        String?          @db.Uuid
   datetimeOfStart   DateTime
   datetimeOfEnd     DateTime
   timeZone          String
@@ -402,16 +401,16 @@ model Event {
   minutesOfDuration Int
   mboData           Json?
   aiInfo            Json?
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
   deletedAt         DateTime? // Support soft deletion
   changeLogs        EventChangeLog[]
   issues            EventIssue[]
-  type              EventType          @relation(fields: [typeId], references: [id], onDelete: Cascade)
+  type              EventType        @relation(fields: [typeId], references: [id], onDelete: Cascade)
   typeId            Int
-  venue             EventVenue         @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  venue             EventVenue       @relation(fields: [venueId], references: [id], onDelete: Cascade)
   venueId           Int
-  container         EventContainer     @relation(fields: [containerId], references: [id], onDelete: Cascade)
+  container         EventContainer   @relation(fields: [containerId], references: [id], onDelete: Cascade)
   containerId       Int
   reservations      Reservation[]
 
@@ -481,7 +480,6 @@ model EventVenue {
   external_waitlistCapacity           Int?             @default(10)
   external_webCapacity                Int?             @default(10)
 
-  @@unique([external_studioId, external_locationId])
   @@schema("microservice/event-scheduling")
 }
 
