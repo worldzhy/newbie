@@ -102,7 +102,7 @@ export class EventController {
     event['issues'] = await this.prisma.eventIssue.findMany({
       where: {status: EventIssueStatus.UNREPAIRED, eventId: event.id},
     });
-    event['hostUser'] = await this.prisma.userProfile.findUniqueOrThrow({
+    event['hostUser'] = await this.prisma.userSingleProfile.findUniqueOrThrow({
       where: {userId: body.hostUserId},
       select: {userId: true, fullName: true, coachingTenure: true},
     });
@@ -205,7 +205,7 @@ export class EventController {
         return event.hostUserId;
       })
       .filter(coachId => coachId !== null) as string[];
-    const coachProfiles = await this.prisma.userProfile.findMany({
+    const coachProfiles = await this.prisma.userSingleProfile.findMany({
       where: {userId: {in: coachIds}},
       select: {userId: true, fullName: true, coachingTenure: true},
     });

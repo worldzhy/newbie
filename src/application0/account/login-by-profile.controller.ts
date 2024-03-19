@@ -60,7 +60,7 @@ export class LoginByProfileController {
   ): Promise<AccessToken> {
     // [step 1] It has been confirmed there is only one profile.
     const {firstName, middleName, lastName, suffix, dateOfBirth} = body;
-    const profiles = await this.prisma.userProfile.findMany({
+    const profiles = await this.prisma.userSingleProfile.findMany({
       where: {firstName, middleName, lastName, suffix, dateOfBirth},
     });
 

@@ -53,7 +53,7 @@ export class EventIssueService {
     });
     if (tag && event.hostUserId) {
       if (
-        (await this.prisma.userProfile.count({
+        (await this.prisma.userSingleProfile.count({
           where: {userId: event.hostUserId, tagIds: {has: tag.id}},
         })) > 0
       ) {
@@ -214,13 +214,15 @@ export class EventIssueService {
         },
       });
 
-      const userProfilesByUserId = await this.prisma.userProfile.findMany({
-        where: {
-          userId: {
-            in: hostUserIds as string[],
+      const userProfilesByUserId = await this.prisma.userSingleProfile.findMany(
+        {
+          where: {
+            userId: {
+              in: hostUserIds as string[],
+            },
           },
-        },
-      });
+        }
+      );
 
       const hostUsersById: User[] = await this.prisma.user.findMany({
         where: {id: {in: hostUserIds as string[]}},

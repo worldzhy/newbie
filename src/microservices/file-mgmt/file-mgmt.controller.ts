@@ -56,7 +56,7 @@ export class FileManagementController {
   ) {
     // [step 1] Get workflow folder.
     const folder = await this.prisma.folder.findUniqueOrThrow({
-      where: {id: parseInt(body.folderId)},
+      where: {id: body.folderId},
     });
 
     // [step 2] Generate file name and put file to AWS S3.
@@ -80,7 +80,7 @@ export class FileManagementController {
         s3Bucket: bucket,
         s3Key: s3Key,
         s3Response: output as object,
-        folderId: parseInt(body.folderId),
+        folderId: body.folderId,
       },
     });
   }

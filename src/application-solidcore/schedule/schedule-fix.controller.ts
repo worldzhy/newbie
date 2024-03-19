@@ -77,12 +77,11 @@ export class EventFixController {
         case EventIssueType.ERROR_UNAVAILABLE_EVENT_TYPE:
         case EventIssueType.ERROR_UNAVAILABLE_EVENT_VENUE: {
           if (event.hostUserId) {
-            const userProfile = await this.prisma.userProfile.findUniqueOrThrow(
-              {
+            const userProfile =
+              await this.prisma.userSingleProfile.findUniqueOrThrow({
                 where: {userId: event.hostUserId},
                 select: {fullName: true},
-              }
-            );
+              });
             description =
               'Coach changed: ' +
               userProfile.fullName +

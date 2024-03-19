@@ -208,7 +208,7 @@ export class AvailabilityLoadService {
       });
 
       // [step 2-5] Update coach profile.
-      await this.prisma.userProfile.update({
+      await this.prisma.userSingleProfile.update({
         where: {userId: coach.id},
         data: {
           eventVenueIds: coachLocationIds,
@@ -422,7 +422,7 @@ export class AvailabilityLoadService {
             mappingQuestion_NumberItem[questionId].title ===
             FormItemTitle.MinimumPreferredQuota
           ) {
-            await this.prisma.userProfile.update({
+            await this.prisma.userSingleProfile.update({
               where: {userId: coach.id},
               data: {
                 quotaOfWeekMinPreference: parseInt(
@@ -434,7 +434,7 @@ export class AvailabilityLoadService {
             mappingQuestion_NumberItem[questionId].title ===
             FormItemTitle.MaximumPreferredQuota
           ) {
-            await this.prisma.userProfile.update({
+            await this.prisma.userSingleProfile.update({
               where: {userId: coach.id},
               data: {
                 quotaOfWeekMaxPreference: parseInt(

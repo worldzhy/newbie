@@ -1,0 +1,1403 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+
+  // Enable Full-Text Search which is only available for PostgreSQL.
+  previewFeatures = ["fullTextSearch"]
+
+  // For production deployment.
+  // binaryTargets   = ["native", "rhel-openssl-1.0.x"]
+  binaryTargets = ["native", "linux-arm64-openssl-1.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// !! ------------------------------------------------------------ //
+// !!            [Microservice] Location models                    //
+// !! ------------------------------------------------------------ //
+// * Location                                                      //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
+
+model Location {
+  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  site        String?
+  address     String?
+  address2    String?
+  city        String?
+  state       String?
+  zipcode     String?
+  geoJSON     Json? // https://datatracker.ietf.org/doc/html/rfc7946
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  user        User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String?    @db.Uuid
+  candidate   Candidate? @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  candidateId String?    @unique @db.Uuid
+  job         Job?       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobId       String?    @unique @db.Uuid
+
+  // @@schema("microservice/account")
+}
+
+// !! ------------------------------------------------------------ //
+// !!            [Microservice] Notification models                //
+// !! ------------------------------------------------------------ //
+// * EmailNotification                                             //
+// * SmsNotification                                               //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
+
+model EmailNotification {
+  id                Int      @id @default(autoincrement())
+  payload           Json //  The notification content for one email address.
+  pinpointRequestId String? // RequestId is the Pinpoint request id. One request can contain multiple text messages.
+  pinpointMessageId String? // MessageId is the email message id.
+  pinpointResponse  Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // @@schema("microservice/notification")
+}
+
+model SmsNotification {
+  id                Int      @id @default(autoincrement())
+  payload           Json //  The notification content for one phone.
+  pinpointRequestId String? // RequestId is the Pinpoint request id. One request can contain multiple text messages.
+  pinpointMessageId String? // MessageId is the text message id.
+  pinpointResponse  Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // @@schema("microservice/notification")
+}
+
+// ! ------------------------------------------------------------ //
+// !           [Microservice] Task Management models              //
+// ! ------------------------------------------------------------ //
+// * Task                                                         //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
+
+model Task {
+  id           Int       @id @default(autoincrement())
+  type         TaskType
+  group        String? // Provided by task microservice's client.
+  payload      Json // Task content
+  state        TaskState @default(PENDING)
+  sqsMessageId String?
+  sqsResponse  Json?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // @@schema("microservice/task")
+}
+
+enum TaskType {
+  DATATRANS_BATCH_PROCESSING
+  DATATRANS_STREAM_PROCESSING
+
+  // @@schema("microservice/task")
+}
+
+enum TaskState {
+  PENDING
+  SUCCEEDED
+  FAILED
+  CANCELED
+
+  // @@schema("microservice/task")
+}
+
+// ! ------------------------------------------------------------ //
+// !           [Microservice] Verification Code models            //
+// ! ------------------------------------------------------------ //
+// * VerificationCode                                             //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
+
+model VerificationCode {
+  id        Int                    @id @default(autoincrement())
+  email     String?
+  phone     String?
+  code      String
+  status    VerificationCodeStatus
+  use       VerificationCodeUse
+  expiredAt DateTime
+  createdAt DateTime               @default(now())
+  updatedAt DateTime               @updatedAt
+
+  // @@schema("microservice/verification-code")
+}
+
+enum VerificationCodeStatus {
+  ACTIVE
+  INACTIVE
+
+  // @@schema("microservice/verification-code")
+}
+
+enum VerificationCodeUse {
+  UNKNOWN
+  // For generating JWT.
+  LOGIN_BY_EMAIL
+  LOGIN_BY_PHONE
+  // For closing and recovering account.
+  CLOSE_ACCOUNT_BY_EMAIL
+  CLOSE_ACCOUNT_BY_PHONE
+  RECOVER_ACCOUNT_BY_EMAIL
+  RECOVER_ACCOUNT_BY_PHONE
+  // For other operations
+  BIND_EMAIL
+  BIND_PHONE
+  CHANGE_PASSWORD
+  RESET_PASSWORD
+
+  // @@schema("microservice/verification-code")
+}
+
+enum OrganizationStatus {
+  ACTIVE
+  INACTIVE
+
+  // @@schema("application/account")
+}
+
+// ! ------------------------------------------------------------ //
+// !                [Application] Account models                  //
+// ! ------------------------------------------------------------ //
+// * Organization                                                 //
+// * UserToRole                                                   //
+// * Role                                                         //
+// * User                                                         //
+// * UserJwt                                                      //
+// * UserProfile                                                  //
+// * RoutePermission(unused)                                      //
+// * ComponentPermission(unused)                                  //
+// * EndpointPermission(unused)                                   //
+// * Permission                                                   //
+// * UserToRole                                                   //
+// * UserToPermission                                             //
+// * RoleToPermission                                             //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
+
+model Organization {
+  id        String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  status    OrganizationStatus @default(ACTIVE)
+  roles     OrganizationRole[]
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  // @@schema("application/account")
+  Candidate                  Candidate[]
+  JobApplication             JobApplication[]
+  JobApplicationWorkflowFile JobApplicationWorkflowFile[]
+  JobApplicationWorkflowNote JobApplicationWorkflowNote[]
+  JobApplicationWorkflowTask JobApplicationWorkflowTask[]
+  Document                   Document[]
+  DocumentTemplate           DocumentTemplate[]
+}
+
+model OrganizationRole {
+  // A role is a subgroup of a user group with some specified permissions.
+  id             String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String
+  description    String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  organization   Organization?      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String?            @db.Uuid
+  profiles       UserMultiProfile[]
+
+  @@unique([name, organizationId])
+}
+
+model Role {
+  // A role is a subgroup of a user group with some specified permissions.
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  users     User[]
+
+  // @@schema("application/account")
+}
+
+model User {
+  // [1] The 'User' and 'VerificationCode' models are both used for logging in.
+  // [2] The 'User' is designed for long-term use and the 'VerificationCode' is designed for short-term use.
+  // [3] Actually, the 'User' model should be named 'UserPassword' and the 'VerificationCode' should be named 'UserVerificationCode'.
+
+  id               String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email            String?                  @unique
+  phone            String?                  @unique
+  username         String?                  @unique
+  password         String? // automatic hashing
+  status           UserStatus               @default(ACTIVE)
+  lastLoginAt      DateTime?
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
+  profile          UserSingleProfile? // Single profile is designed for single organization.
+  profiles         UserMultiProfile[] // Multiple profiles is designed for multiple organizations.
+  roles            Role[]
+  locations        Location[]
+  holdingWorkflows JobApplicationWorkflow[]
+
+  // @@schema("application/account")
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+
+  // @@schema("application/account")
+}
+
+model UserToken {
+  id        Int             @id @default(autoincrement())
+  userId    String          @db.Uuid
+  token     String
+  status    UserTokenStatus @default(ACTIVE)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  // @@schema("application/account")
+}
+
+enum UserTokenStatus {
+  ACTIVE
+  INACTIVE
+
+  // @@schema("application/account")
+}
+
+model UserSingleProfile {
+  // !!! Customize this model for your specific application.
+  id                       String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  prefix                   String?
+  fullName                 String?
+  firstName                String?
+  middleName               String?
+  lastName                 String?
+  suffix                   String?
+  dateOfBirth              DateTime?          @db.Date
+  gender                   UserProfileGender?
+  emails                   Json[]
+  phones                   Json[]
+  websites                 Json? // {'facebook': 'https://www.facebook.com/elonmusk', 'twitter': 'https://twitter.com/elonmusk'}
+  picture                  String?
+  tagIds                   Int[]
+  createdAt                DateTime           @default(now())
+  updatedAt                DateTime           @updatedAt
+  user                     User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                   String             @unique @db.Uuid
+  // For fitness application
+  eventVenueIds            Int[] // event venue ids
+  eventTypeIds             Int[] // event type ids
+  coachingTenure           Int? // 5:Senior Master Coach, 4:Pro, 3:Senior, 2:Standard, 1:New
+  quotaOfWeekMinPreference Int?
+  quotaOfWeekMaxPreference Int?
+  quotaOfWeek              Int? // The number of classes a coach should teach at least in a week.
+  quotaOfWeekMax           Int?
+  payRate                  Int? // [1,10]
+
+  @@index([userId])
+}
+
+model UserMultiProfile {
+  // !!! Customize this model for your specific application.
+  id             String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  prefix         String?
+  fullName       String?
+  firstName      String?
+  middleName     String?
+  lastName       String?
+  suffix         String?
+  dateOfBirth    DateTime?          @db.Date
+  gender         UserProfileGender?
+  emails         Json[]
+  phones         Json[]
+  websites       Json? // {'facebook': 'https://www.facebook.com/elonmusk', 'twitter': 'https://twitter.com/elonmusk'}
+  picture        String?
+  tagIds         Int[]
+  organizationId String?            @db.Uuid
+  roles          OrganizationRole[]
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String             @db.Uuid
+
+  @@index([userId])
+}
+
+enum UserProfileGender {
+  Male
+  Female
+  Intersex
+}
+
+model RoutePermission {
+  id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  route             String
+  trustedEntityType TrustedEntityType
+  trustedEntityId   String            @db.Uuid
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  // @@schema("application/account")
+}
+
+model ComponentPermission {
+  id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  component         String
+  trustedEntityType TrustedEntityType
+  trustedEntityId   String            @db.Uuid
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  // @@schema("application/account")
+}
+
+model EndpointPermission {
+  id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  endpoint          String
+  trustedEntityType TrustedEntityType
+  trustedEntityId   String            @db.Uuid
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  // @@schema("application/account")
+}
+
+model Permission {
+  // Permission of Resource
+  id                Int               @id @default(autoincrement())
+  action            PermissionAction
+  resource          String
+  where             Json? // an object of where expression meets the Prisma syntax.
+  inverted          Boolean? // indicates whether rule allows or forbids something
+  reason            String? // message which explains why rule is forbidden
+  trustedEntityType TrustedEntityType
+  trustedEntityId   String            @db.Uuid
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  // @@schema("application/account")
+}
+
+enum PermissionAction {
+  Manage
+  List
+  Get
+  Create
+  Update
+  Delete
+}
+
+enum TrustedEntityType {
+  ORGANIZATION
+  ROLE
+  USER
+
+  // @@schema("application/account")
+}
+
+// !! ------------------------------------------------------------ //
+// !!            [Application] File Management models             //
+// !! ------------------------------------------------------------ //
+// * File                                                          //
+// * Folder                                                        //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
+
+model File {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  originalName String
+  mimeType     String
+  size         Int
+  localPath    String? // Contains path and filename.
+  localName    String?
+  s3Bucket     String
+  s3Key        String // File name in S3 bucket.
+  s3Response   Json
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  folder       Folder?  @relation(fields: [folderId], references: [id])
+  folderId     String?  @db.Uuid
+
+  // @@schema("application/fmgmt")
+  Document Document[]
+}
+
+model Folder {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  parentId  String?  @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  files     File[]
+
+  // @@schema("application/fmgmt")
+}
+
+model GoogleFile {
+  id        String   @id // Generated by google
+  name      String
+  type      String
+  parentId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ! ------------------------------------------------------------ //
+// !             [Application] Recruitment models                 //
+// ! ------------------------------------------------------------ //
+// * Candidate                                                    //
+// * CandidateLocation                                            //
+// * CandidateProfile                                             //
+// * CandidateCertification                                       //
+// * CandidateTraining                                            //
+// * Job                                                          //
+// * JobApplication                                               //
+// * JobApplicationNote                                           //
+// * JobApplicationTask                                           //
+// * JobApplicationTesting                                        //
+// * JobApplicationTestingAttachment                              //
+// * JobApplicationTestingLog                                     //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
+
+model Candidate {
+  id              String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  status          CandidateStatus          @default(ACTIVE)
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+  profile         CandidateProfile?
+  location        Location?
+  certifications  CandidateCertification[]
+  trainings       CandidateTraining[]
+  jobApplications JobApplication[]
+  organization    Organization?            @relation(fields: [organizationId], references: [id])
+  organizationId  String?                  @db.Uuid
+
+  // @@schema("application/recruitment")
+}
+
+enum CandidateStatus {
+  ACTIVE
+  INACTIVE
+
+  // @@schema("application/recruitment")
+}
+
+model CandidateProfile {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  uniqueNumber      String
+  givenName         String
+  middleName        String?
+  familyName        String
+  fullName          String?
+  birthday          DateTime?
+  gender            String?
+  email             String?
+  primaryPhone      String
+  primaryPhoneExt   String?
+  alternatePhone    String?
+  alternatePhoneExt String?
+  websites          Json? // {'facebook': 'https://www.facebook.com/grace', 'twitter': 'https://twitter.com/elonmusk'}
+  picture           String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  candidate         Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  candidateId       String    @unique @db.Uuid
+
+  // @@schema("application/recruitment")
+}
+
+model CandidateCertification {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  candidateId String    @db.Uuid
+
+  // @@schema("application/recruitment")
+}
+
+model CandidateTraining {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  candidateId String    @db.Uuid
+
+  // @@schema("application/recruitment")
+}
+
+model Job {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code        String
+  type        String
+  position    String
+  description String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  location    Location?
+
+  // @@schema("application/recruitment")
+}
+
+enum JobType {
+  Hourly
+  Salaried
+
+  // @@schema("application/recruitment")
+}
+
+model JobApplication {
+  id             String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  state          String?
+  jobType        String
+  jobCode        String?
+  jobSite        String
+  jobTitle       String?
+  testTypes      String[]
+  referredBy     String // This field should user.name or user.id
+  createdAt      DateTime                 @default(now())
+  updatedAt      DateTime                 @updatedAt
+  candidate      Candidate                @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  candidateId    String                   @db.Uuid
+  workflows      JobApplicationWorkflow[]
+  organization   Organization?            @relation(fields: [organizationId], references: [id])
+  organizationId String?                  @db.Uuid
+
+  // @@schema("application/recruitment")  
+}
+
+model JobApplicationWorkflow {
+  id                 String                         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt          DateTime                       @default(now())
+  updatedAt          DateTime                       @updatedAt
+  jobApplication     JobApplication                 @relation(fields: [jobApplicationId], references: [id], onDelete: Cascade)
+  jobApplicationId   String                         @db.Uuid
+  beingHeldByUser    User?                          @relation(fields: [beingHeldByUserId], references: [id])
+  beingHeldByUserId  String?                        @db.Uuid
+  steps              JobApplicationWorkflowStep[]
+  payload            JobApplicationWorkflowPayload? // workflow payload
+  files              JobApplicationWorkflowFile[] // work payload
+  notes              JobApplicationWorkflowNote[] // workflow payload
+  tasks              JobApplicationWorkflowTask[] // workflow payload
+  // Below fields copy from latest workflow step.
+  state              String
+  nextStep           String
+  nextRoleId         String?
+  processedByUserIds String[] // Store id of users who have processed this workflow.
+  archived           Boolean                        @default(false)
+
+  // @@schema("application/recruitment")
+}
+
+model JobApplicationWorkflowStep {
+  id                Int                    @id @default(autoincrement())
+  step              String
+  state             String // The state that is selected in this step.
+  nextStep          String
+  nextRoleId        String?                @db.Uuid // The role who will process the next step.
+  processedByUserId String                 @db.Uuid // The user who processed this step.
+  comment           String?
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  workflow          JobApplicationWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId        String                 @db.Uuid
+
+  // @@schema("application/recruitment")
+}
+
+model JobApplicationWorkflowPayload {
+  id                  Int                    @id @default(autoincrement())
+  testType            String?
+  testSite            String?
+  appointmentStartsAt DateTime?
+  appointmentEndsAt   DateTime?
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+  workflow            JobApplicationWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId          String                 @unique @db.Uuid
+
+  // @@schema("application/recruitment")
+}
+
+model JobApplicationWorkflowFile {
+  id             Int                    @id @default(autoincrement())
+  fileId         String                 @db.Uuid
+  originalName   String
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+  workflow       JobApplicationWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId     String                 @db.Uuid
+  workflowStepId Int
+  organization   Organization?          @relation(fields: [organizationId], references: [id])
+  organizationId String?                @db.Uuid
+
+  // @@schema("application/recruitment")
+}
+
+model JobApplicationWorkflowNote {
+  id              Int                    @id @default(autoincrement())
+  reporter        String?
+  reporterUserId  String                 @db.Uuid
+  reporterComment String
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+  workflow        JobApplicationWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId      String                 @db.Uuid
+  organization    Organization?          @relation(fields: [organizationId], references: [id])
+  organizationId  String?                @db.Uuid
+
+  // @@schema("application/recruitment")
+}
+
+model JobApplicationWorkflowTask {
+  id              Int                             @id @default(autoincrement())
+  state           JobApplicationWorkflowTaskState @default(PENDING)
+  reporter        String?
+  reporterUserId  String                          @db.Uuid
+  reporterComment String
+  assignee        String?
+  assignees       String[]
+  assigneeUserId  String?
+  assigneeUserIds String[]
+  createdAt       DateTime                        @default(now())
+  updatedAt       DateTime                        @updatedAt
+  workflow        JobApplicationWorkflow?         @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId      String?                         @db.Uuid
+  organization    Organization?                   @relation(fields: [organizationId], references: [id])
+  organizationId  String?                         @db.Uuid
+
+  // @@schema("application/recruitment")
+}
+
+enum JobApplicationWorkflowTaskState {
+  PENDING
+  DONE
+
+  // @@schema("application/recruitment")
+}
+
+model Document {
+  id                 String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  type               DocumentTypes     @default(DRAFT)
+  status             DocumentStatus    @default(ACTIVE)
+  title              String?
+  templateType       String?
+  description        String?
+  validStartsAt      DateTime?
+  validEndsAt        DateTime?
+  approvalDate       DateTime?
+  approvalName       String?
+  organization       Organization?     @relation(fields: [organizationId], references: [id])
+  organizationId     String?           @db.Uuid
+  documentTemplate   DocumentTemplate? @relation(fields: [documentTemplateId], references: [id])
+  documentTemplateId String?           @db.Uuid
+  history            DocumentHistory[]
+  file               File?             @relation(fields: [fileId], references: [id])
+  fileId             String?           @db.Uuid
+  sourceDocumentId   String?
+  content            DocumentContent?
+}
+
+model DocumentContent {
+  id                String                             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  company           String?
+  deptArea          String?
+  location          String?
+  familyDept        String?
+  jobAddress        String?
+  jobAnalyst        String?
+  jobSummary        String?
+  patientFacing     String?
+  dateOfAnalysis    DateTime?
+  createdAt         DateTime                           @default(now())
+  updatedAt         DateTime                           @updatedAt
+  jobCode           DocumentContentJobCode[]
+  essentialFunction DocumentContentEssentialFunction[]
+  document          Document?                          @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId        String?                            @unique @db.Uuid
+}
+
+model DocumentContentJobCode {
+  id                String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title             String
+  content           String
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  documentContent   DocumentContent? @relation(fields: [documentContentId], references: [id])
+  documentContentId String?          @db.Uuid
+}
+
+model DocumentContentEssentialFunction {
+  id                String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title             String
+  content           String
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  documentContent   DocumentContent? @relation(fields: [documentContentId], references: [id])
+  documentContentId String?          @db.Uuid
+}
+
+model DocumentHistory {
+  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  document           Document? @relation(fields: [documentId], references: [id])
+  documentId         String    @db.Uuid
+  newContent         Json
+  oldContent         Json?
+  processedByUserIds String[]
+}
+
+model DocumentTemplate {
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  name           String
+  path           String
+  schemaJson     Json?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String?       @db.Uuid
+  Document       Document[]
+}
+
+enum DocumentStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum DocumentTypes {
+  DRAFT
+  PUBLISHED
+}
+
+// !! ------------------------------------------------------------ //
+// !!            [Microservice] Event scheduling models            //
+// !! ------------------------------------------------------------ //
+// * AvailabilityExpression                                        //
+// * AvailabilityTimeslot                                          //
+// * EventContainer                                                //
+// * EventType                                                     //
+// * EventVenue                                                    //
+// * Event                                                         //
+// * Reservation                                                   //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
+enum AvailabilityExpressionStatus {
+  EDITING
+  PUBLISHING
+  PUBLISHED
+}
+
+enum AvailabilityTimeslotStatus {
+  USABLE
+  USED
+}
+
+enum EventIssueType {
+  ERROR_NONEXISTENT_COACH
+  ERROR_UNCONFIGURED_COACH
+  ERROR_UNAVAILABLE_EVENT_TIME
+  ERROR_CONFLICTING_EVENT_TIME
+  ERROR_UNAVAILABLE_EVENT_TYPE
+  ERROR_UNAVAILABLE_EVENT_VENUE
+  WARNING_HAS_MORE_SUITABLE_COACH
+}
+
+enum EventIssueStatus {
+  UNREPAIRED
+  REPAIRED
+}
+
+enum EventContainerOrigin {
+  EXTERNAL
+  INTERNAL
+}
+
+enum EventContainerStatus {
+  EDITING
+  PUBLISHED
+}
+
+enum EventPublishStatus {
+  INIT
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum EventChangeLogType {
+  SYSTEM
+  USER
+}
+
+model AvailabilityExpression {
+  id                                     Int                          @id @default(autoincrement())
+  name                                   String?
+  status                                 AvailabilityExpressionStatus @default(EDITING)
+  hostUserId                             String                       @db.Uuid
+  venueIds                               Int[]
+  cronExpressionsOfAvailableTimePoints   String[]
+  cronExpressionsOfUnavailableTimePoints String[]
+  dateOfOpening                          DateTime
+  dateOfClosure                          DateTime?
+  minutesOfDuration                      Int // Generally it should be 30 or 60
+  reportedAt                             DateTime
+  createdAt                              DateTime                     @default(now())
+  updatedAt                              DateTime                     @updatedAt
+  timeslots                              AvailabilityTimeslot[]
+}
+
+model AvailabilityTimeslot {
+  id                Int                        @id @default(autoincrement())
+  status            AvailabilityTimeslotStatus @default(USABLE)
+  hostUserId        String                     @db.Uuid
+  venueIds          Int[]
+  datetimeOfStart   DateTime
+  datetimeOfEnd     DateTime
+  minutesOfTimeslot Int                        @default(5)
+  createdAt         DateTime                   @default(now())
+  updatedAt         DateTime                   @updatedAt
+  expression        AvailabilityExpression     @relation(fields: [expressionId], references: [id], onDelete: Cascade)
+  expressionId      Int
+
+  @@index([hostUserId, venueIds, datetimeOfStart, datetimeOfEnd])
+}
+
+// todo: datetimeOfStart, datetimeOfEnd, week, dayOfWeek should be generated in prisma middleware.
+model Event {
+  id                Int                @id @default(autoincrement())
+  isLocked          Boolean            @default(false)
+  isPublished       Boolean            @default(false)
+  publishStatus     EventPublishStatus @default(INIT)
+  hostUserId        String?            @db.Uuid
+  datetimeOfStart   DateTime
+  datetimeOfEnd     DateTime
+  timeZone          String
+  year              Int
+  month             Int
+  dayOfMonth        Int
+  hour              Int
+  minute            Int
+  dayOfWeek         Int
+  weekOfMonth       Int // The number of week in a month, it will be 1 to 6.
+  weekOfYear        Int // The number of week in a month, it will be 1 to 53.
+  minutesOfDuration Int
+  mboData           Json?
+  aiInfo            Json?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  deletedAt         DateTime? // Support soft deletion
+  changeLogs        EventChangeLog[]
+  issues            EventIssue[]
+  type              EventType          @relation(fields: [typeId], references: [id], onDelete: Cascade)
+  typeId            Int
+  venue             EventVenue         @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  venueId           Int
+  container         EventContainer     @relation(fields: [containerId], references: [id], onDelete: Cascade)
+  containerId       Int
+  reservations      Reservation[]
+
+  @@index([containerId, year, month, weekOfMonth, deletedAt])
+  @@index([hostUserId, venueId, datetimeOfStart, datetimeOfEnd, deletedAt])
+  @@index([deletedAt])
+}
+
+model EventIssue {
+  id          Int              @id @default(autoincrement())
+  type        EventIssueType
+  status      EventIssueStatus @default(UNREPAIRED)
+  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  event       Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId     Int
+}
+
+model EventType {
+  id                        Int      @id @default(autoincrement())
+  name                      String
+  aliases                   String[]
+  minutesOfDuration         Int
+  minutesOfBreak            Int?
+  minutesInAdvanceToReserve Int?
+  minutesInAdvanceToCancel  Int?
+  tagId                     Int?
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+  events                    Event[]
+}
+
+model EventVenue {
+  id                                  Int              @id @default(autoincrement())
+  name                                String
+  numberOfSeats                       Int              @default(1)
+  minutesOfBreak                      Int              @default(0)
+  hourOfDayStart                      Int              @default(6)
+  hourOfDayEnd                        Int              @default(22)
+  minuteOfDayStart                    Int              @default(0)
+  minuteOfDayEnd                      Int              @default(0)
+  tagIds                              Int[]
+  placeId                             Int? // Map module
+  createdAt                           DateTime         @default(now())
+  updatedAt                           DateTime         @updatedAt
+  containers                          EventContainer[]
+  events                              Event[]
+  // For solidcore mindbody fields
+  similarVenueIds                     Int[]
+  preferredProgramId                  Int?
+  external_studioName                 String?
+  external_studioId                   Int?
+  external_locationId                 Int?
+  external_resourceId                 Int?             @default(1)
+  external_staffPayRate               Int?             @default(10)
+  external_maxCapacity                Int?             @default(20)
+  external_pricingOptionsProductIds   Int[]            @default([1])
+  external_allowDateForwardEnrollment Boolean?         @default(true)
+  external_allowOpenEnrollment        Boolean?         @default(true)
+  external_bookingStatus              String?          @default("Free")
+  external_waitlistCapacity           Int?             @default(10)
+  external_webCapacity                Int?             @default(10)
+
+  @@unique([external_studioId, external_locationId])
+}
+
+model EventContainer {
+  id            Int                  @id @default(autoincrement())
+  name          String?
+  origin        EventContainerOrigin @default(INTERNAL)
+  status        EventContainerStatus @default(EDITING)
+  dateOfOpening DateTime? // Use dateOfOpening and dateOfClosure together
+  dateOfClosure DateTime?
+  year          Int // Use year and month together
+  month         Int
+  timezone      String? // https://www.iplocate.com/en/resources/timezones/list-of-timezones
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  venue         EventVenue           @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  venueId       Int
+  events        Event[]
+}
+
+model EventChangeLog {
+  id               Int                @id @default(autoincrement())
+  type             EventChangeLogType @default(USER)
+  description      String
+  notedByUserId    String?            @db.Uuid
+  eventContainerId Int
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  event            Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId          Int
+}
+
+model Reservation {
+  id           Int      @id @default(autoincrement())
+  clientUserId String   @db.Uuid
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId      Int
+}
+
+// ! ------------------------------------------------------------ //
+// !          [Microservice] Project Management models             //
+// ! ------------------------------------------------------------ //
+// * Project                                                      //
+// * ProjectNote                                                  //
+// * ProjectCheckpoint                                            //
+// * ProjectEnvironment                                           //
+// * InfrastructureStack                                          //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
+
+enum ProjectState {
+  PLANNING
+  DESIGNING
+  DEVELOPING
+  DONE
+}
+
+enum ProjectCheckpointState {
+  TODO
+  PROCESSING
+  DONE
+}
+
+enum ProjectCheckpointType {
+  MANAGER_PRODUCT_REQUIREMENTS
+  MANAGER_PROJECT_KANBAN
+  DESIGNER_WIREFRAMES
+  DESIGNER_PROTOTYPES
+  DEVELOPER_ACCOUNT_APPLE
+  DEVELOPER_ACCOUNT_GOOGLE
+  DEVELOPER_BACKEND_REPO
+  DEVELOPER_BACKEND_FRAMEWORK
+  DEVELOPER_BACKEND_DATABASE
+  DEVELOPER_BACKEND_API
+  DEVELOPER_FRONTEND_REPO
+  DEVELOPER_FRONTEND_FRAMEWORK
+  DEVELOPER_INFRASTRUCTURE
+}
+
+enum InfrastructureStackManager {
+  CloudFormation
+  Pulumi
+}
+
+enum InfrastructureStackState {
+  PENDING
+  BUILD_PROCESSING
+  BUILD_SUCCEEDED
+  BUILD_FAILED
+  DESTROY_PROCESSING
+  DESTROY_SUCCEEDED
+  DESTROY_FAILED
+}
+
+model Project {
+  id           String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String               @unique
+  state        ProjectState         @default(PLANNING)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  notes        ProjectNote[]
+  checkpoints  ProjectCheckpoint[]
+  environments ProjectEnvironment[]
+}
+
+model ProjectNote {
+  id        Int      @id @default(autoincrement())
+  section   String?
+  label     String
+  content   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String?  @db.Uuid
+}
+
+model ProjectCheckpoint {
+  id        Int                    @id @default(autoincrement())
+  type      ProjectCheckpointType
+  state     ProjectCheckpointState @default(TODO)
+  createdAt DateTime               @default(now())
+  updatedAt DateTime               @updatedAt
+  Project   Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String                 @db.Uuid
+
+  @@unique([type, projectId])
+}
+
+model ProjectEnvironment {
+  id                   Int                   @id @default(autoincrement())
+  name                 String
+  awsAccountId         String?
+  awsProfile           String?
+  awsAccessKeyId       String?
+  awsSecretAccessKey   String? // automatic hashing
+  awsRegion            String?
+  s3ForCloudformation  String?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  project              Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId            String                @db.Uuid
+  infrastructureStacks InfrastructureStack[]
+}
+
+model InfrastructureStack {
+  id                  String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                String?                    @unique // Set default value via prisma middleware.
+  manager             InfrastructureStackManager
+  type                String
+  params              Json?
+  state               InfrastructureStackState   @default(PENDING)
+  createStackOutput   Json?
+  describeStackOutput Json?
+  deleteStackOutput   Json?
+  createdAt           DateTime                   @default(now())
+  updatedAt           DateTime                   @updatedAt
+  environment         ProjectEnvironment         @relation(fields: [environmentId], references: [id], onDelete: Cascade)
+  environmentId       Int
+}
+
+// !! ------------------------------------------------------------ //
+// !!            [Microservice] Order models                       //
+// !! ------------------------------------------------------------ //
+// * Order                                                         //
+// * OrderItem                                                     //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
+
+model Order {
+  id                  String                @id @default(cuid())
+  status              String?
+  totalPrice          Float
+  totalTax            Float?
+  currency            String
+  note                String?
+  items               OrderItem[]
+  stripePaymentIntent StripePaymentIntent[]
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+}
+
+model OrderItem {
+  id         String   @id @default(cuid())
+  name       String
+  totalPrice Float
+  totalTax   Float?
+  pieces     Int?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId    String
+}
+
+model StripePaymentIntent {
+  id           String   @id
+  status       String
+  amount       Float
+  clientSecret String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  order        Order?   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId      String?
+}
+
+// !! ------------------------------------------------------------ //
+// !!            [Microservice] Map models                         //
+// !! ------------------------------------------------------------ //
+// * Place                                                         //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
+
+model Place {
+  id                   Int      @id @default(autoincrement())
+  name                 String?
+  address              String?
+  city                 String?
+  state                String?
+  country              String?
+  timeZone             String? // https://www.iplocate.com/en/resources/timezones/list-of-timezones
+  googleMapPlaceId     String?
+  googleMapPlaceResult Json?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+// ! ------------------------------------------------------------ //
+// !           [Microservice] Tag  models                         //
+// ! ------------------------------------------------------------ //
+// * Tag                                                          //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
+
+model Tag {
+  id        Int       @id @default(autoincrement())
+  name      String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  group     TagGroup? @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId   Int?
+}
+
+model TagGroup {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tags      Tag[]
+}
+
+// ! ------------------------------------------------------------ //
+// !           [Microservice] Cron models                         //
+// ! ------------------------------------------------------------ //
+// * CronTask (This is an example model.)                             //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
+
+model CronTask {
+  id         Int      @id @default(autoincrement())
+  name       String   @unique
+  expression String
+  command    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// ! ------------------------------------------------------------ //
+// !           [Microservice] Token models                        //
+// ! ------------------------------------------------------------ //
+// * AccessToken                                                  //
+// * RefreshToken                                                 //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
+
+model AccessToken {
+  id        Int      @id @default(autoincrement())
+  userId    String   @db.Uuid
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  userId    String   @db.Uuid
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ! ------------------------------------------------------------ //
+// !             [Microservice] Workflow models                   //
+// ! ------------------------------------------------------------ //
+// * Workflow                                                     //
+// * WorkflowView                                                 //
+// * WorkflowViewComponent                                        //
+// * WorkflowState                                                //
+// * WorkflowRoute                                                //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
+model Workflow {
+  id          String          @id @default(uuid())
+  name        String          @unique
+  description String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  views       WorkflowView[]
+  states      WorkflowState[]
+}
+
+model WorkflowView {
+  id             Int                     @id @default(autoincrement())
+  name           String
+  description    String?
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  components     WorkflowViewComponent[]
+  outboundRoutes WorkflowRoute[]         @relation("outboundRoutes")
+  inboundRoutes  WorkflowRoute[]         @relation("inboundRoutes")
+  workflow       Workflow                @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId     String
+
+  @@unique([name, workflowId])
+}
+
+model WorkflowViewComponent {
+  id         Int                       @id @default(autoincrement())
+  type       WorkflowViewComponentType
+  sort       Int
+  properties Json
+  createdAt  DateTime                  @default(now())
+  updatedAt  DateTime                  @updatedAt
+  view       WorkflowView              @relation(fields: [viewId], references: [id], onDelete: Cascade)
+  viewId     Int
+}
+
+enum WorkflowViewComponentType {
+  INFO_Title
+  INFO_Description
+  INFO_Image
+  INPUT_String
+  INPUT_Number
+  INPUT_Date
+  INPUT_File
+}
+
+enum WorkflowViewComponentTypePrefix {
+  INFO
+  INPUT
+}
+
+model WorkflowState {
+  id          Int             @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  routes      WorkflowRoute[]
+  workflow    Workflow        @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId  String
+
+  @@unique([name, workflowId])
+}
+
+model WorkflowRoute {
+  id         Int           @id @default(autoincrement())
+  startSign  Boolean       @default(false)
+  view       WorkflowView  @relation("outboundRoutes", fields: [viewId], references: [id], onDelete: Cascade)
+  viewId     Int
+  state      WorkflowState @relation(fields: [stateId], references: [id], onDelete: Cascade)
+  stateId    Int
+  nextView   WorkflowView  @relation("inboundRoutes", fields: [nextViewId], references: [id], onDelete: Cascade)
+  nextViewId Int
+  nextRoleId String?       @db.Uuid // The next role to take over the next step.
+  nextUserId String?       @db.Uuid // The next user to take over the next step.
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@unique([viewId, stateId])
+}
+
+// ! ------------------------------------------------------------ //
+// !             [Application] Solidcore models                   //
+// ! ------------------------------------------------------------ //
+// * MindbodySite                                                 //
+// * AsyncPublish                                                 //
+// * mboLog                                                       //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
+
+enum AsyncEventStatus {
+  INIT
+  PENDING
+  REMOVING
+  REMOVED
+  PUBLISHING
+  COMPLETED
+  FAILED
+}
+
+model MindbodySite {
+  id        Int      @id @default(autoincrement())
+  siteId    Int      @unique
+  siteName  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AsyncPublish {
+  id           Int              @id @default(autoincrement())
+  status       AsyncEventStatus @default(INIT)
+  containerId  Int
+  curOldEvents Int              @default(0)
+  oldEvents    Int              @default(0)
+  curEventsCnt Int              @default(0)
+  eventsCnt    Int              @default(0)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+}
+
+model mboLog {
+  id             Int      @id @default(autoincrement())
+  asyncPublishId Int?
+  containerId    Int?
+  eventId        Int?
+  funcName       String?
+  studioId       Int
+  locationId     Int
+  params         Json?
+  resp           Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([funcName])
+  @@index([containerId])
+  @@index([studioId, locationId])
+}

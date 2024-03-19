@@ -27,7 +27,7 @@ export class ProfileStrategy extends PassportStrategy(
     }
 
     // [step 2] Get profiles.
-    const profiles = await this.prisma.userProfile.findMany({
+    const profiles = await this.prisma.userSingleProfile.findMany({
       where: {firstName, middleName, lastName, suffix, dateOfBirth},
     });
     if (profiles.length !== 1) {

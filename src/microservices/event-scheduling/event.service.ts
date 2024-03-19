@@ -159,7 +159,7 @@ export class EventService {
     });
 
     if (newEvent.hostUserId) {
-      newEvent['hostUser'] = await this.prisma.userProfile.findUniqueOrThrow({
+      newEvent['hostUser'] = await this.prisma.userSingleProfile.findUniqueOrThrow({
         where: {userId: newEvent.hostUserId},
         select: {userId: true, fullName: true, coachingTenure: true},
       });

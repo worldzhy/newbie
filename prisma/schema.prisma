@@ -41,13 +41,31 @@ datasource db {
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
 model Organization {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id        String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  roles     Role[]
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  roles     OrganizationRole[]
   users     User[]
 
+  documents         Document[]
+  documentTemplates DocumentTemplate[]
+  Candidate         Candidate[]
+
+  @@schema("microservice/account")
+}
+
+model OrganizationRole {
+  // A role is a subgroup of a user group with some specified permissions.
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String
+  description    String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String?       @db.Uuid
+
+  @@unique([name, organizationId])
   @@schema("microservice/account")
 }
 
@@ -63,14 +81,14 @@ model User {
   lastLoginAt      DateTime?
   createdAt        DateTime                 @default(now())
   updatedAt        DateTime                 @updatedAt
-  organization     Organization?            @relation(fields: [organizationId], references: [id])
-  organizationId   String?                  @db.Uuid
-  profile          UserProfile?
+  profile          UserSingleProfile?
+  profiles         UserMultiProfile[]
   roles            Role[]
   // For recruitment application
   jobApplications  JobApplication[]
   holdingWorkflows JobApplicationWorkflow[]
-  certifications   Certification[]
+  organization     Organization?            @relation(fields: [organizationId], references: [id])
+  organizationId   String?                  @db.Uuid
 
   @@schema("microservice/account")
 }
@@ -82,7 +100,7 @@ enum UserStatus {
   @@schema("microservice/account")
 }
 
-model UserProfile {
+model UserSingleProfile {
   // !!! Customize this model for your specific application.
   id                       String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   prefix                   String?
@@ -116,6 +134,32 @@ model UserProfile {
   @@schema("microservice/account")
 }
 
+model UserMultiProfile {
+  // !!! Customize this model for your specific application.
+  id             String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  prefix         String?
+  fullName       String?
+  firstName      String?
+  middleName     String?
+  lastName       String?
+  suffix         String?
+  dateOfBirth    DateTime?          @db.Date
+  gender         UserProfileGender?
+  emails         Json[]
+  phones         Json[]
+  websites       Json? // {'facebook': 'https://www.facebook.com/elonmusk', 'twitter': 'https://twitter.com/elonmusk'}
+  picture        String?
+  tagIds         Int[]
+  organizationId String?            @db.Uuid
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String             @db.Uuid
+
+  @@index([userId])
+  @@schema("microservice/account")
+}
+
 enum UserProfileGender {
   Male
   Female
@@ -126,16 +170,13 @@ enum UserProfileGender {
 
 model Role {
   // A role is a subgroup of a user group with some specified permissions.
-  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name           String        @unique
-  description    String?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  organization   Organization? @relation(fields: [organizationId], references: [id])
-  organizationId String?       @db.Uuid
-  users          User[]
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  users       User[]
 
-  @@unique([name, organizationId])
   @@schema("microservice/account")
 }
 
@@ -498,7 +539,7 @@ model Reservation {
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
 
 model File {
-  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   originalName String
   mimeType     String
   size         Int?
@@ -507,16 +548,17 @@ model File {
   s3Bucket     String
   s3Key        String // File name in S3 bucket.
   s3Response   Json
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  folder       Folder?  @relation(fields: [folderId], references: [id])
-  folderId     Int?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  folder       Folder?    @relation(fields: [folderId], references: [id])
+  folderId     String?
+  Document     Document[]
 
   @@schema("microservice/file-mgmt")
 }
 
 model Folder {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name      String
   parentId  String?  @db.Uuid
   createdAt DateTime @default(now())
@@ -548,9 +590,11 @@ model Place {
   id                   Int      @id @default(autoincrement())
   name                 String?
   address              String?
+  address2             String?
   city                 String?
   state                String?
   country              String?
+  zipCode              String?
   timeZone             String? // https://www.iplocate.com/en/resources/timezones/list-of-timezones
   googleMapPlaceId     String?
   googleMapPlaceResult Json?
@@ -1391,14 +1435,73 @@ enum ElasticsearchDataboardColumnFormatter {
 // * JobApplicationTestingLog                                     //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
-model Certification {
-  id              Int      @id @default(autoincrement())
-  name            String
-  description     String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  candidateUser   User     @relation(fields: [candidateUserId], references: [id])
-  candidateUserId String   @db.Uuid
+model Candidate {
+  id              String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  status          CandidateStatus          @default(ACTIVE)
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+  profile         CandidateProfile?
+  placeId         Int? // Map module
+  certifications  CandidateCertification[]
+  trainings       CandidateTraining[]
+  jobApplications JobApplication[]
+  organization    Organization?            @relation(fields: [organizationId], references: [id])
+  organizationId  String?                  @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+enum CandidateStatus {
+  ACTIVE
+  INACTIVE
+
+  @@schema("application/recruitment")
+}
+
+model CandidateProfile {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  uniqueNumber      String
+  givenName         String
+  middleName        String?
+  familyName        String
+  fullName          String?
+  birthday          DateTime?
+  gender            String?
+  email             String?
+  primaryPhone      String
+  primaryPhoneExt   String?
+  alternatePhone    String?
+  alternatePhoneExt String?
+  websites          Json? // {'facebook': 'https://www.facebook.com/grace', 'twitter': 'https://twitter.com/elonmusk'}
+  picture           String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  candidate         Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  candidateId       String    @unique @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+model CandidateCertification {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  candidateId String    @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+model CandidateTraining {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  candidateId String    @db.Uuid
 
   @@schema("application/recruitment")
 }
@@ -1436,6 +1539,8 @@ model JobApplication {
   workflows       JobApplicationWorkflow[]
   candidateUser   User                     @relation(fields: [candidateUserId], references: [id])
   candidateUserId String                   @db.Uuid
+  candidate       Candidate?               @relation(fields: [candidateId], references: [id])
+  candidateId     String?                  @db.Uuid
 
   @@schema("application/recruitment")
 }
@@ -1537,6 +1642,118 @@ model JobApplicationWorkflowTask {
 enum JobApplicationWorkflowTaskState {
   PENDING
   DONE
+
+  @@schema("application/recruitment")
+}
+
+model Document {
+  id                 String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  type               DocumentTypes     @default(DRAFT)
+  status             DocumentStatus    @default(ACTIVE)
+  title              String?
+  templateType       String?
+  description        String?
+  validStartsAt      DateTime?
+  validEndsAt        DateTime?
+  approvalDate       DateTime?
+  approvalName       String?
+  organization       Organization?     @relation(fields: [organizationId], references: [id])
+  organizationId     String?           @db.Uuid
+  documentTemplate   DocumentTemplate? @relation(fields: [documentTemplateId], references: [id])
+  documentTemplateId String?           @db.Uuid
+  history            DocumentHistory[]
+  file               File?             @relation(fields: [fileId], references: [id])
+  fileId             String?           @db.Uuid
+  sourceDocumentId   String?
+  content            DocumentContent?
+
+  @@schema("application/recruitment")
+}
+
+model DocumentContent {
+  id                String                             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  company           String?
+  deptArea          String?
+  location          String?
+  familyDept        String?
+  jobAddress        String?
+  jobAnalyst        String?
+  jobSummary        String?
+  patientFacing     String?
+  dateOfAnalysis    DateTime?
+  createdAt         DateTime                           @default(now())
+  updatedAt         DateTime                           @updatedAt
+  jobCode           DocumentContentJobCode[]
+  essentialFunction DocumentContentEssentialFunction[]
+  document          Document?                          @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId        String?                            @unique @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+model DocumentContentJobCode {
+  id                String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title             String
+  content           String
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  documentContent   DocumentContent? @relation(fields: [documentContentId], references: [id])
+  documentContentId String?          @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+model DocumentContentEssentialFunction {
+  id                String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title             String
+  content           String
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  documentContent   DocumentContent? @relation(fields: [documentContentId], references: [id])
+  documentContentId String?          @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+model DocumentHistory {
+  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  document           Document? @relation(fields: [documentId], references: [id])
+  documentId         String    @db.Uuid
+  newContent         Json
+  oldContent         Json?
+  processedByUserIds String[]
+
+  @@schema("application/recruitment")
+}
+
+model DocumentTemplate {
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String
+  path           String
+  schemaJson     Json?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String?       @db.Uuid
+  documents      Document[]
+
+  @@schema("application/recruitment")
+}
+
+enum DocumentStatus {
+  ACTIVE
+  INACTIVE
+
+  @@schema("application/recruitment")
+}
+
+enum DocumentTypes {
+  DRAFT
+  PUBLISHED
 
   @@schema("application/recruitment")
 }

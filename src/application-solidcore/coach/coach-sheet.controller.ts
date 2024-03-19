@@ -109,7 +109,7 @@ export class CoachInfoUploadController {
     });
     for (let i = 0; i < managers.length; i++) {
       const manager = managers[i];
-      if (manager.email && 1) {
+      if (manager.email) {
         await this.googleSheet.share({
           fileId: sheet.id,
           gmail: manager.email,
@@ -137,7 +137,7 @@ export class CoachInfoUploadController {
     if (rows && rows.length > 1) {
       for (let i = 1; i < rows.length; i++) {
         const row = rows[i];
-        await this.prisma.userProfile.update({
+        await this.prisma.userSingleProfile.update({
           where: {userId: row[9]},
           data: {
             firstName: row[1],
@@ -263,7 +263,7 @@ export class CoachInfoUploadController {
       });
 
       // [step 4] Update coach profile.
-      await this.prisma.userProfile.update({
+      await this.prisma.userSingleProfile.update({
         where: {userId: coach.id},
         data: {
           eventVenueIds:

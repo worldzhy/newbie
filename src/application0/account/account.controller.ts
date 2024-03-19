@@ -5,10 +5,9 @@ import {
   Post,
   Get,
   Req,
-  Patch,
 } from '@nestjs/common';
 import {ApiTags, ApiBody, ApiBearerAuth} from '@nestjs/swagger';
-import {Prisma, VerificationCodeUse} from '@prisma/client';
+import {VerificationCodeUse} from '@prisma/client';
 import {Request} from 'express';
 import {AccountService} from '@microservices/account/account.service';
 import {VerificationCodeService} from '@microservices/account/verification-code.service';
@@ -30,65 +29,6 @@ export class AccountController {
   @ApiBearerAuth()
   async getCurrentUser(@Req() request: Request) {
     return await this.accountService.me(request);
-  }
-
-  @Patch('me')
-  @ApiBearerAuth()
-  @ApiBody({
-    description:
-      'Set roleIds with an empty array to remove all the roles of the user.',
-    examples: {
-      a: {
-        summary: '1. Update',
-        value: {
-          email: 'email@example.com',
-          phone: '13960068008',
-          profile: {
-            update: {
-              firstName: 'Robert',
-              middleName: 'William',
-              lastName: 'Smith',
-            },
-          },
-        },
-      },
-    },
-  })
-  async editMe(
-    @Req() request: Request,
-    @Body()
-    body: Prisma.UserUpdateInput
-  ) {
-    const user = await this.accountService.me(request);
-
-    if (!user['profile'] && body.profile) {
-      await this.prisma.userProfile.create({
-        data: {
-          userId: user.id,
-          firstName: body.profile.update?.firstName as
-            | string
-            | null
-            | undefined,
-          middleName: body.profile.update?.middleName as
-            | string
-            | null
-            | undefined,
-          lastName: body.profile.update?.lastName as string | null | undefined,
-        },
-      });
-      delete body.profile;
-    }
-
-    return await this.prisma.user.update({
-      where: {id: user.id},
-      data: body,
-      select: {
-        id: true,
-        email: true,
-        phone: true,
-        profile: true,
-      },
-    });
   }
 
   @ApiBearerAuth()

@@ -22,6 +22,7 @@ import {OrganizationController} from './account/organization/organization.contro
 import {PermissionController} from './account/permission/permission.controller';
 import {RoleController} from './account/role/role.controller';
 import {UserController} from './account/user/user.controller';
+import {ProfileController} from './account/user/profile.controller';
 import {GoogleDriveController} from './file-mgmt/google-drive.controller';
 import {NotificationController} from './notification/notification.controller';
 import {TagController} from './tag/tag.controller';
@@ -52,6 +53,7 @@ import {ConfigModule} from '@nestjs/config';
     // PermissionController,
     // RoleController,
     // UserController,
+    ProfileController,
     GoogleDriveController,
     NotificationController,
     TagController,

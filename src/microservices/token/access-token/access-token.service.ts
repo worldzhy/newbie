@@ -1,14 +1,10 @@
 import {BadRequestException, Injectable} from '@nestjs/common';
 import {JwtService, JwtSignOptions} from '@nestjs/jwt';
-import {PrismaService} from '@toolkit/prisma/prisma.service';
 import * as express from 'express';
 
 @Injectable()
 export class AccessTokenService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly jwtService: JwtService
-  ) {}
+  constructor(private readonly jwtService: JwtService) {}
 
   sign(payload: Buffer | object, options?: JwtSignOptions): string {
     return this.jwtService.sign(payload, options);

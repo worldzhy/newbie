@@ -143,7 +143,7 @@ export class RawDataCoachService {
     // [step 5] Update coach eventVenueIds.
     for (const email in emailAndLocationIdsMapping) {
       if (emailAndLocationIdsMapping[email].length > 0) {
-        await this.prisma.userProfile.update({
+        await this.prisma.userSingleProfile.update({
           where: {id: emailAndProfileIdMapping[email]},
           data: {eventVenueIds: emailAndLocationIdsMapping[email]},
         });

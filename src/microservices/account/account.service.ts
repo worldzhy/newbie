@@ -37,12 +37,18 @@ export class AccountService {
     });
 
     // [step 3] Get user.
-    const user = await this.prisma.user.findUniqueOrThrow({
+    return await this.prisma.user.findUniqueOrThrow({
       where: {id: userToken.userId},
-      include: {roles: true, profile: true},
+      select: {
+        id: true,
+        email: true,
+        phone: true,
+        roles: true,
+        profile: true,
+        profiles: true,
+        organization: true,
+      },
     });
-
-    return this.userService.withoutPassword(user);
   }
 
   async login(account: string) {

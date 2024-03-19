@@ -49,7 +49,10 @@ export async function prismaMiddleware(
       default:
         return next(params);
     }
-  } else if (params.model === Prisma.ModelName.UserProfile) {
+  } else if (
+    params.model === Prisma.ModelName.UserSingleProfile ||
+    params.model === Prisma.ModelName.UserMultiProfile
+  ) {
     switch (params.action) {
       case 'create':
       case 'update':
