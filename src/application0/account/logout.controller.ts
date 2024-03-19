@@ -35,7 +35,7 @@ export class LogoutController {
     // [step 2] Clear cookie
     response.clearCookie(
       this.refreshTokenService.cookieName,
-      this.refreshTokenService.getCookieConfig()
+      this.refreshTokenService.getCookieOptions()
     );
 
     // [step 3] Always return success no matter if the user exists.

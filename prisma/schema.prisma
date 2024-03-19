@@ -29,8 +29,6 @@ datasource db {
 // ! ------------------------------------------------------------ //
 // * Organization                                                 //
 // * User                                                         //
-// * UserAccessToken                                              //
-// * UserRefreshToken                                             //
 // * UserProfile                                                  //
 // * Role                                                         //
 // * RoutePermission(unused)                                      //
@@ -551,7 +549,7 @@ model File {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
   folder       Folder?    @relation(fields: [folderId], references: [id])
-  folderId     String?
+  folderId     String?    @db.Uuid
   Document     Document[]
 
   @@schema("microservice/file-mgmt")

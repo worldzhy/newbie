@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {JwtService, JwtSignOptions} from '@nestjs/jwt';
 import * as express from 'express';
-import {convertUnixToDate} from '@toolkit/utilities/datetime.util';
+import {dateOfUnixTimestamp} from '@toolkit/utilities/datetime.util';
 
 @Injectable()
 export class RefreshTokenService {
@@ -14,6 +14,11 @@ export class RefreshTokenService {
   }
 
   decodeToken(token: string): string | {[key: string]: any} | null {
+    /**
+     * return an object including:
+     * - iat: 1710845599 (was issued at)
+     * - exp: 1710846199 (will expire at)
+     */
     return this.jwtService.decode(token);
   }
 
@@ -21,8 +26,8 @@ export class RefreshTokenService {
     return this.jwtService.verify(token);
   }
 
-  getCookieConfig(refreshToken?: string): express.CookieOptions {
-    const baseConfig: express.CookieOptions = {
+  getCookieOptions(refreshToken?: string): express.CookieOptions {
+    const baseOptions: express.CookieOptions = {
       sameSite: 'strict',
       secure: true,
       httpOnly: true,
@@ -33,11 +38,11 @@ export class RefreshTokenService {
         exp: number; // Expiry is expressed in unix timestamp
       };
       return {
-        expires: convertUnixToDate(data.exp),
-        ...baseConfig,
+        expires: dateOfUnixTimestamp(data.exp),
+        ...baseOptions,
       };
     } else {
-      return baseConfig;
+      return baseOptions;
     }
   }
 }

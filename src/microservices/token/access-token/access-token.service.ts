@@ -11,6 +11,11 @@ export class AccessTokenService {
   }
 
   decodeToken(token: string): string | {[key: string]: any} | null {
+    /**
+     * return an object including:
+     * - iat: 1710845599 (was issued at)
+     * - exp: 1710846199 (will expire at)
+     */
     return this.jwtService.decode(token);
   }
 

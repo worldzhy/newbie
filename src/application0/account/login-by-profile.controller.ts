@@ -70,8 +70,8 @@ export class LoginByProfileController {
     );
 
     // [step 3] Send refresh token to cookie.
-    const {name, token, cookieConfig} = refreshToken;
-    response.cookie(name, token, cookieConfig);
+    const {token, cookie} = refreshToken;
+    response.cookie(cookie.name, token, cookie.options);
 
     // [step 4] Send access token as response.
     return accessToken;
@@ -101,8 +101,8 @@ export class LoginByProfileController {
     );
 
     // [step 2] Send refresh token to cookie.
-    const {name, token, cookieConfig} = refreshToken;
-    response.cookie(name, token, cookieConfig);
+    const {token, cookie} = refreshToken;
+    response.cookie(cookie.name, token, cookie.options);
 
     // [step 3] Send access token as response.
     return accessToken;

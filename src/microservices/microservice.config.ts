@@ -69,11 +69,11 @@ export default registerAs('microservice', () => ({
   },
   token: {
     access: {
-      expiresIn: '600s',
+      expiresIn: '10m',
       secret: process.env.ACCESS_TOKEN_SECRET,
     },
     refresh: {
-      expiresIn: '86400s',
+      expiresIn: '1440m',
       secret: process.env.REFRESH_TOKEN_SECRET,
     },
   },

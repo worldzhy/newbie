@@ -1,12 +1,12 @@
 import * as moment from 'moment';
 
-// !>>> Unix date
-export function getSecondsUntilunixTimestamp(unixTimestamp: number): number {
+// !>>> Unix timestamp
+export function secondsUntilUnixTimestamp(unixTimestamp: number): number {
   const unixNow = moment().unix();
   return unixTimestamp - unixNow;
 }
 
-export function convertUnixToDate(unixTimestamp: number): Date {
+export function dateOfUnixTimestamp(unixTimestamp: number): Date {
   return moment.unix(unixTimestamp).toDate();
 }
 

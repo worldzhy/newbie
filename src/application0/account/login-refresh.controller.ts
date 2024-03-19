@@ -6,6 +6,7 @@ import {RefreshTokenService} from '@microservices/token/refresh-token/refresh-to
 import {GuardByRefreshToken} from '@microservices/account/security/passport/refresh-token/refresh-token.decorator';
 import {Cookies} from '@toolkit/cookie/cookie.decorator';
 import {AccessToken} from '@prisma/client';
+import {secondsUntilUnixTimestamp} from '@toolkit/utilities/datetime.util';
 
 @ApiTags('Account')
 @Controller('account')
@@ -23,24 +24,25 @@ export class LoginRefreshController {
     @Res({passthrough: true}) response: Response
   ): Promise<AccessToken> {
     // [step 1] Validate refresh token
-    const userData = this.refreshTokenService.decodeToken(refreshToken) as {
+    const tokenInfo = this.refreshTokenService.decodeToken(refreshToken) as {
       userId: string;
       sub: string;
-      exp: number;
+      exp: number; // The timestamp of expiresIn. It is a future timestamp.
     };
 
     // [step 2] Invalidate existing tokens
-    await this.accountService.invalidateTokens(userData.userId);
+    await this.accountService.invalidateTokens(tokenInfo.userId);
 
     // [step 3] Generate new tokens
     const {accessToken, refreshToken: newRefreshToken} =
-      await this.accountService.generateTokens(userData.userId, userData.sub, {
-        refreshTokenExpiryUnix: userData.exp,
-      });
+      await this.accountService.generateTokens(
+        {userId: tokenInfo.userId, sub: tokenInfo.sub},
+        {expiresIn: secondsUntilUnixTimestamp(tokenInfo.exp)}
+      );
 
     // [step 4] Send refresh token to cookie.
-    const {name, token, cookieConfig} = newRefreshToken;
-    response.cookie(name, token, cookieConfig);
+    const {token, cookie} = newRefreshToken;
+    response.cookie(cookie.name, token, cookie.options);
 
     // [step 5] Send access token as response.
     return accessToken;
