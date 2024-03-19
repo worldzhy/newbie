@@ -13,6 +13,7 @@ import {RefreshTokenService} from '@microservices/token/refresh-token/refresh-to
 import {getSecondsUntilunixTimestamp} from '@toolkit/utilities/datetime.util';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {Request} from 'express';
+import {RoleService} from './role.service';
 
 @Injectable()
 export class AccountService {
@@ -49,6 +50,27 @@ export class AccountService {
         organization: true,
       },
     });
+  }
+
+  async isAdmin(request: Request) {
+    // [step 1] Parse token from http request header.
+    const accessToken =
+      this.accessTokenService.getTokenFromHttpRequest(request);
+
+    // [step 2] Get UserToken record.
+    const userToken = await this.prisma.accessToken.findFirstOrThrow({
+      where: {token: accessToken},
+    });
+
+    // [step 3] Get user.
+    const count = await this.prisma.user.count({
+      where: {
+        id: userToken.userId,
+        roles: {some: {name: RoleService.RoleName.ADMIN}},
+      },
+    });
+
+    return count > 0 ? true : false;
   }
 
   async login(account: string) {

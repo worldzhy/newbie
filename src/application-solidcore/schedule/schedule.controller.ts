@@ -8,6 +8,7 @@ import {
   Param,
   Query,
   BadRequestException,
+  Req,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {
@@ -18,10 +19,13 @@ import {
   EventContainerOrigin,
   EventIssueStatus,
 } from '@prisma/client';
-import {EventService} from '@microservices/event-scheduling/event.service';
 import {EventIssueService} from '@microservices/event-scheduling/event-issue.service';
 import {datePlusMinutes, daysOfMonth} from '@toolkit/utilities/datetime.util';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {AccountService} from '@microservices/account/account.service';
+import {RoleService} from '@microservices/account/role.service';
+import {Request} from 'express';
+import _ from 'lodash';
 
 @ApiTags('Event Container')
 @ApiBearerAuth()
@@ -29,7 +33,8 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 export class EventContainerController {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly eventService: EventService,
+    private readonly accountService: AccountService,
+    private readonly roleService: RoleService,
     private readonly eventIssueService: EventIssueService
   ) {}
 
@@ -60,7 +65,88 @@ export class EventContainerController {
       data: body,
     });
   }
+  @Post('filter')
+  async getEventContainersByFilter(
+    @Req() req: Request,
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number,
+    @Body()
+    body?: {
+      name?: string;
+      muiFilter?: {
+        items: {
+          field: string;
+          operator: string;
+          id: number;
+          value: string;
+          fromInput: string;
+        }[];
+        logicOperator: string;
+        quickFilterValues: [];
+        quickFilterLogicOperator: string;
+      };
+    }
+  ) {
+    const user = await this.accountService.me(req);
+    const isAdmin = await this.roleService.isAdmin(user.id);
 
+    // [step 1] Construct where argument.
+    const searchFilter = {};
+    if (body) {
+      if (body.name) {
+        const name = body.name.trim();
+        if (name.length > 0) {
+          searchFilter['name'] = {contains: name, mode: 'insensitive'};
+        }
+      }
+      if (body.muiFilter) {
+        for (let i = 0; i < body.muiFilter.items.length; i++) {
+          const item = body.muiFilter.items[i];
+          if (item.field === 'venue' && item.value) {
+            const venues = await this.prisma.eventVenue.findMany({
+              where: {name: {[item.operator]: item.value, mode: 'insensitive'}},
+              select: {id: true},
+            });
+            searchFilter['venueId'] = {in: venues.map(d => d.id)};
+          } else {
+            searchFilter['venueId'] = undefined;
+          }
+        }
+      }
+    }
+
+    if (isAdmin === false) {
+      if (
+        !user.profile ||
+        (user.profile && user.profile.eventVenueIds.length === 0)
+      ) {
+        return [];
+      } else {
+        if (searchFilter['venueId']) {
+          searchFilter['venueId'] = {
+            in: _.intersection(
+              user.profile.eventVenueIds,
+              searchFilter['venueId'].in
+            ),
+          };
+        } else {
+          searchFilter['venueId'] = {in: user.profile.eventVenueIds};
+        }
+      }
+    } else {
+      // Do nothing if the user is an admin.
+    }
+
+    // [step 2] Get event containers.
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.EventContainer,
+      pagination: {page, pageSize},
+      findManyArgs: {
+        where: {...searchFilter},
+        orderBy: {updatedAt: 'desc'},
+      },
+    });
+  }
   @Get('')
   async getEventContainers(
     @Query('page') page: number,

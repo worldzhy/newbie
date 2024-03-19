@@ -65,7 +65,7 @@ export class CoachController {
     const userCreateInput: Prisma.UserCreateInput = body;
 
     // Construct roles.
-    userCreateInput.roles = {connect: {name: RoleService.names.COACH}};
+    userCreateInput.roles = {connect: {name: RoleService.RoleName.COACH}};
 
     return await this.prisma.user.create({
       data: userCreateInput,
@@ -100,7 +100,7 @@ export class CoachController {
     }
   ) {
     // [step 1] Construct where argument.
-    const roleFilter = {roles: {some: {name: RoleService.names.COACH}}};
+    const roleFilter = {roles: {some: {name: RoleService.RoleName.COACH}}};
     const searchFilter = {};
     if (body) {
       if (body.name) {
@@ -202,7 +202,7 @@ export class CoachController {
     let where: Prisma.UserWhereInput | undefined;
     const whereConditions: object[] = [];
 
-    whereConditions.push({roles: {some: {name: RoleService.names.COACH}}});
+    whereConditions.push({roles: {some: {name: RoleService.RoleName.COACH}}});
     if (name) {
       name = name.trim();
       if (name.length > 0) {
@@ -293,7 +293,7 @@ export class CoachController {
     // [step 1] Get user info.
     const user: any = await this.accountService.me(request);
     const isAdmin = !!user?.roles?.find(
-      ({name}) => name === RoleService.names.ADMIN
+      ({name}) => name === RoleService.RoleName.ADMIN
     );
     const eventVenueIds = user?.profile?.eventVenueIds ?? [];
 
@@ -304,7 +304,7 @@ export class CoachController {
     // [step 2] Get coaches.
     const result: User[] = await this.prisma.user.findMany({
       where: {
-        roles: {some: {name: RoleService.names.COACH}},
+        roles: {some: {name: RoleService.RoleName.COACH}},
         profile: {eventVenueIds: {has: venueId}},
       },
       include: {profile: true},
@@ -385,7 +385,7 @@ export class CoachController {
   @Patch(':userId/role-area-manager')
   async addAreaManagerRole(@Param('userId') userId: string) {
     const role = await this.prisma.role.findUniqueOrThrow({
-      where: {name: RoleService.names.AREA_MANAGER},
+      where: {name: RoleService.RoleName.AREA_MANAGER},
     });
 
     return await this.prisma.user.update({

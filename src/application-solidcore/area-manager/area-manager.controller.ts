@@ -52,7 +52,9 @@ export class AreaManagerController {
   ) {
     const userCreateInput: Prisma.UserCreateInput = body;
     // Construct roles.
-    userCreateInput.roles = {connect: {name: RoleService.names.AREA_MANAGER}};
+    userCreateInput.roles = {
+      connect: {name: RoleService.RoleName.AREA_MANAGER},
+    };
 
     return await this.prisma.user.create({
       data: userCreateInput,
@@ -77,7 +79,7 @@ export class AreaManagerController {
     const whereConditions: object[] = [];
 
     whereConditions.push({
-      roles: {some: {name: RoleService.names.AREA_MANAGER}},
+      roles: {some: {name: RoleService.RoleName.AREA_MANAGER}},
     });
     if (name) {
       name = name.trim();
