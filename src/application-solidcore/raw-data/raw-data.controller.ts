@@ -4,7 +4,7 @@ import {RawDataCoachService} from './raw-data-coach.service';
 import {RawDataLocationService} from './raw-data-location.service';
 import {RawDataSchedulingService} from './raw-data-scheduling.service';
 
-@ApiTags('Raw Data')
+@ApiTags('Solidcore / Raw Data')
 @ApiBearerAuth()
 @Controller('raw-data')
 export class RawDataController {

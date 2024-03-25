@@ -40,7 +40,7 @@ const COACH_SHEET_HEADINGS = [
   'ID',
 ];
 
-@ApiTags('Coach')
+@ApiTags('Solidcore / Coach')
 @ApiBearerAuth()
 @Controller('coaches')
 export class CoachInfoUploadController {

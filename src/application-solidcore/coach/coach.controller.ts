@@ -23,7 +23,7 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 const DEFAULT_PASSWORD = 'x8nwFP814HIk!';
 
-@ApiTags('Coach')
+@ApiTags('Solidcore / Coach')
 @ApiBearerAuth()
 @Controller('coaches')
 export class CoachController {

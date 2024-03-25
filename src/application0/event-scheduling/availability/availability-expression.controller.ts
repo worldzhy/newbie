@@ -22,7 +22,6 @@ import {QueueService} from '@microservices/queue/queue.service';
 import {CACHE_MANAGER} from '@nestjs/cache-manager';
 import {Cache} from 'cache-manager';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {AvailabilityService} from '@microservices/event-scheduling/availability.service';
 
 enum QUARTER {
   Q1 = 'Q1',
@@ -38,7 +37,6 @@ export class AvailabilityExpressionController {
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly prisma: PrismaService,
-    private readonly availabilityService: AvailabilityService,
     private readonly accountService: AccountService,
     private readonly queueService: QueueService
   ) {}
@@ -185,39 +183,20 @@ export class AvailabilityExpressionController {
     });
   }
 
-  @Patch(':availabilityExpressionId/parse')
-  async parseAvailabilityExpression(
+  @Patch(':availabilityExpressionId/process')
+  async processAvailabilityExpression(
     @Param('availabilityExpressionId') availabilityExpressionId: number
   ) {
-    // [step 1] Parse expression to timeslots.
-    const availabilityTimeslots =
-      await this.availabilityService.parseAvailabilityExpression(
-        availabilityExpressionId
-      );
-
-    if (availabilityTimeslots.length === 0) {
-      return;
-    }
-
-    // [step 2] Delete and create timeslots.
-    await this.prisma.availabilityTimeslot.deleteMany({
-      where: {expressionId: availabilityExpressionId},
-    });
-    await this.prisma.availabilityTimeslot.createMany({
-      data: availabilityTimeslots,
-    });
-
-    // [step 3] Update expression status.
-    return await this.prisma.availabilityExpression.update({
-      where: {id: availabilityExpressionId},
-      data: {
-        status: AvailabilityExpressionStatus.PUBLISHED,
-      },
-    });
+    await this.queueService.addJob({availabilityExpressionId});
   }
 
-  @Post('add-queue-jobs')
-  async sendAvailabilityExpressionsToQueue() {
+  @Post('process')
+  async processAvailabilityExpressions() {
+    // [step 0] Clear useless expressions.
+    await this.prisma.availabilityExpression.deleteMany({
+      where: {dateOfClosure: {lt: new Date()}},
+    });
+
     // [step 1] Get unpublished expressions.
     const exps = await this.prisma.availabilityExpression.findMany({
       where: {status: AvailabilityExpressionStatus.EDITING},

@@ -2,22 +2,63 @@ import {Controller, Get, Param, Query} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth} from '@nestjs/swagger';
 import {
   Event,
-  EventChangeLogType,
   EventIssue,
   EventIssueStatus,
   EventIssueType,
+  EventChangeLogType,
 } from '@prisma/client';
-import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {EventHostService} from '@microservices/event-scheduling/event-host.service';
+import {EventIssueService} from '@microservices/event-scheduling/event-issue.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
+import _ from 'lodash';
 
-@ApiTags('Event Container')
+@ApiTags('Event Scheduling / Event Issue')
 @ApiBearerAuth()
-@Controller('event-containers')
-export class EventFixController {
+@Controller('event-issues')
+export class EventIssueController {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly coachService: EventHostService
+    private readonly eventHostService: EventHostService,
+    private readonly eventIssueService: EventIssueService
   ) {}
+
+  @Get(':eventContainerId/check')
+  async checkEventContainerOld(
+    @Param('eventContainerId') eventContainerId: number,
+    @Query('weekOfMonth') weekOfMonth: number
+  ) {
+    // Get event container.
+    const container = await this.prisma.eventContainer.findUniqueOrThrow({
+      where: {id: eventContainerId},
+    });
+
+    const events = await this.prisma.event.findMany({
+      where: {
+        containerId: eventContainerId,
+        year: container.year,
+        month: container.month,
+        weekOfMonth,
+        deletedAt: null,
+      },
+    });
+
+    // Check each issue.
+    for (let i = 0; i < events.length; i++) {
+      await this.eventIssueService.check(events[i]);
+    }
+
+    return await this.prisma.eventIssue.findMany({
+      where: {
+        status: EventIssueStatus.UNREPAIRED,
+        event: {
+          containerId: eventContainerId,
+          year: container.year,
+          month: container.month,
+          weekOfMonth,
+        },
+      },
+    });
+  }
 
   @Get(':eventContainerId/fix')
   async fixEventContainer(
@@ -50,10 +91,10 @@ export class EventFixController {
     }
   }
 
-  async fixIssue(event: Event, issue: EventIssue) {
+  private async fixIssue(event: Event, issue: EventIssue) {
     // [step 1] Get and set suitable coach.
     const coaches =
-      await this.coachService.getSortedCoachesWithQuotaLimit(event);
+      await this.eventHostService.getSortedCoachesWithQuotaLimit(event);
     if (coaches.length > 0) {
       await this.prisma.event.update({
         where: {id: event.id},

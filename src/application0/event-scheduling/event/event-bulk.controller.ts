@@ -7,12 +7,13 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {Prisma, EventContainerStatus} from '@prisma/client';
+import {Prisma, EventStatus, EventContainerStatus} from '@prisma/client';
 import {EventService} from '@microservices/event-scheduling/event.service';
 import * as _ from 'lodash';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {datePlusMinutes} from '@toolkit/utilities/datetime.util';
 
-@ApiTags('Event Scheduling / Event Container')
+@ApiTags('Event Scheduling / Event Bulk Operations')
 @ApiBearerAuth()
 @Controller('event-containers')
 export class EventCopyController {
@@ -21,7 +22,7 @@ export class EventCopyController {
     private readonly eventService: EventService
   ) {}
 
-  @Patch(':eventContainerId/copy')
+  @Patch(':eventContainerId/bulk-copy')
   @ApiBody({
     description: 'The week number is from 1 to 6',
     examples: {
@@ -34,7 +35,7 @@ export class EventCopyController {
       },
     },
   })
-  async copyWeeklyEvents(
+  async bulkCopy(
     @Param('eventContainerId') eventContainerId: number,
     @Body() body: {fromWeekNumber: number; toWeekNumbers: number[]}
   ) {
@@ -100,5 +101,47 @@ export class EventCopyController {
     await this.prisma.event.createMany({data: newEvents});
   }
 
+  @Patch(':eventContainerId/bulk-move')
+  @ApiBody({
+    description: 'Bulk move events in the container.',
+    examples: {
+      a: {summary: '1. Move forward', value: {minutesOfMove: 15}},
+      b: {summary: '1. Move backward', value: {minutesOfMove: -15}},
+    },
+  })
+  async bulkMove(
+    @Param('eventContainerId') eventContainerId: number,
+    @Body()
+    body: {minutesOfMove: number}
+  ) {
+    const events = await this.prisma.event.findMany({
+      where: {
+        containerId: eventContainerId,
+        deletedAt: null,
+        status: EventStatus.EDITING,
+      },
+    });
+
+    for (let i = 0; i < events.length; i++) {
+      const event = events[i];
+      const newDatetimeOfStart = datePlusMinutes(
+        event.datetimeOfStart,
+        body.minutesOfMove
+      );
+      const newDatetimeOfEnd = datePlusMinutes(
+        event.datetimeOfEnd,
+        body.minutesOfMove
+      );
+
+      await this.prisma.event.update({
+        where: {id: event.id},
+        data: {
+          datetimeOfStart: newDatetimeOfStart,
+          datetimeOfEnd: newDatetimeOfEnd,
+          timeZone: event.timeZone,
+        },
+      });
+    }
+  }
   /* End */
 }

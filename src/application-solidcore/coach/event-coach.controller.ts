@@ -7,7 +7,7 @@ import {EventHostService} from '@microservices/event-scheduling/event-host.servi
 
 const ROLE_NAME_COACH = 'Coach';
 
-@ApiTags('Coach')
+@ApiTags('Solidcore / Coach')
 @ApiBearerAuth()
 @Controller('event-coaches')
 export class EventCoachController {

@@ -15,7 +15,7 @@ const HOUR_OF_OPENING = 5;
 const HOUR_OF_CLOSURE = 22;
 const MINUTES_OF_TIMESLOT = 60;
 
-@ApiTags('Event Scheduling / Availability')
+@ApiTags('Event Scheduling / Availability Heatmap')
 @ApiBearerAuth()
 @Controller('availability-heatmap')
 @UseInterceptors(CacheInterceptor)

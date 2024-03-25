@@ -99,15 +99,5 @@ export class EventTypeController {
     });
   }
 
-  @Get('class-installments')
-  async getClassInstallments() {
-    return await this.prisma.findManyInOnePage({
-      model: Prisma.ModelName.Tag,
-      findManyArgs: {
-        where: {group: {name: {contains: 'installment', mode: 'insensitive'}}},
-      },
-    });
-  }
-
   /* End */
 }

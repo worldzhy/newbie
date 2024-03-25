@@ -14,7 +14,7 @@ import {RoleService} from '@microservices/account/role.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {UserService} from '@microservices/account/user.service';
 
-@ApiTags('Area Manager')
+@ApiTags('Solidcore / Area Manager')
 @ApiBearerAuth()
 @Controller('area-managers')
 export class AreaManagerController {

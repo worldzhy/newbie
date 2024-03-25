@@ -17,11 +17,8 @@ import {
   EventContainer,
   EventContainerStatus,
   EventContainerOrigin,
-  EventIssueStatus,
-  EventStatus,
 } from '@prisma/client';
-import {EventIssueService} from '@microservices/event-scheduling/event-issue.service';
-import {datePlusMinutes, daysOfMonth} from '@toolkit/utilities/datetime.util';
+import {daysOfMonth} from '@toolkit/utilities/datetime.util';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {AccountService} from '@microservices/account/account.service';
 import {RoleService} from '@microservices/account/role.service';
@@ -35,8 +32,7 @@ export class EventContainerController {
   constructor(
     private readonly prisma: PrismaService,
     private readonly accountService: AccountService,
-    private readonly roleService: RoleService,
-    private readonly eventIssueService: EventIssueService
+    private readonly roleService: RoleService
   ) {}
 
   @Get('days-of-month')
@@ -66,6 +62,7 @@ export class EventContainerController {
       data: body,
     });
   }
+
   @Post('filter')
   async getEventContainersByFilter(
     @Req() req: Request,
@@ -148,6 +145,7 @@ export class EventContainerController {
       },
     });
   }
+
   @Get('')
   async getEventContainers(
     @Query('page') page: number,
@@ -233,98 +231,6 @@ export class EventContainerController {
     return await this.prisma.eventContainer.delete({
       where: {id: eventContainerId},
     });
-  }
-
-  @Get(':eventContainerId/checkOld')
-  async checkEventContainerOld(
-    @Param('eventContainerId') eventContainerId: number,
-    @Query('weekOfMonth') weekOfMonth: number
-  ) {
-    // Get event container.
-    const container = await this.prisma.eventContainer.findUniqueOrThrow({
-      where: {id: eventContainerId},
-    });
-
-    const events = await this.prisma.event.findMany({
-      where: {
-        containerId: eventContainerId,
-        year: container.year,
-        month: container.month,
-        weekOfMonth,
-        deletedAt: null,
-      },
-    });
-
-    // Check each issue.
-    for (let i = 0; i < events.length; i++) {
-      await this.eventIssueService.check(events[i]);
-    }
-
-    return await this.prisma.eventIssue.findMany({
-      where: {
-        status: EventIssueStatus.UNREPAIRED,
-        event: {
-          containerId: eventContainerId,
-          year: container.year,
-          month: container.month,
-          weekOfMonth,
-        },
-      },
-    });
-  }
-
-  @Get(':eventContainerId/check')
-  async checkEventContainer(
-    @Param('eventContainerId') eventContainerId: number,
-    @Query('weekOfMonth') weekOfMonth: number
-  ) {
-    return await this.eventIssueService.checkContainer({
-      eventContainerId,
-      weekOfMonth,
-    });
-  }
-
-  @Patch(':eventContainerId/bulk-move')
-  @ApiBody({
-    description: 'Bulk move events in the container.',
-    examples: {
-      a: {summary: '1. Move forward', value: {minutesOfMove: 15}},
-      b: {summary: '1. Move backward', value: {minutesOfMove: -15}},
-    },
-  })
-  async bulkMove(
-    @Param('eventContainerId') eventContainerId: number,
-    @Body()
-    body: {minutesOfMove: number}
-  ) {
-    const events = await this.prisma.event.findMany({
-      where: {
-        containerId: eventContainerId,
-        deletedAt: null,
-        status: EventStatus.EDITING,
-      },
-    });
-
-    for (let i = 0; i < events.length; i++) {
-      const event = events[i];
-      const newDatetimeOfStart = datePlusMinutes(
-        event.datetimeOfStart,
-        body.minutesOfMove
-      );
-      const newDatetimeOfEnd = datePlusMinutes(
-        event.datetimeOfEnd,
-        body.minutesOfMove
-      );
-
-      await this.prisma.event.update({
-        where: {id: event.id},
-        data: {
-          datetimeOfStart: newDatetimeOfStart,
-          datetimeOfEnd: newDatetimeOfEnd,
-          timeZone: event.timeZone,
-        },
-      });
-    }
   }
 
   @Patch(':eventContainerId/publish')

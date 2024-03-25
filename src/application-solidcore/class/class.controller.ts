@@ -1,12 +1,17 @@
-import {Controller, Post, Body} from '@nestjs/common';
+import {Controller, Post, Body, Get} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
+import {Prisma} from '@prisma/client';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {ClassService} from './class.service';
 
-@ApiTags('Class')
+@ApiTags('Solidcore / Class')
 @ApiBearerAuth()
 @Controller('classes')
 export class ClassController {
-  constructor(private readonly classService: ClassService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly classService: ClassService
+  ) {}
 
   @Post('merge')
   @ApiBody({
@@ -30,5 +35,14 @@ export class ClassController {
     );
   }
 
+  @Get('installments')
+  async getClassInstallments() {
+    return await this.prisma.findManyInOnePage({
+      model: Prisma.ModelName.Tag,
+      findManyArgs: {
+        where: {group: {name: {contains: 'installment', mode: 'insensitive'}}},
+      },
+    });
+  }
   /* End */
 }

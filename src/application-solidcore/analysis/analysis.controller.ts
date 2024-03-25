@@ -5,7 +5,7 @@ import {Prisma} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {UserRoleName} from '../coach/enum';
 
-@ApiTags('Analysis')
+@ApiTags('Solidcore / Analysis')
 @ApiBearerAuth()
 @Controller('analysis')
 export class AnalysisController {

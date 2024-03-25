@@ -25,7 +25,7 @@ export class EventChangeLogController {
       a: {
         summary: '1. Create',
         value: {
-          description: 'a note',
+          description: 'a change log',
           userId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
           containerId: 1,
         },
@@ -93,14 +93,14 @@ export class EventChangeLogController {
     return result;
   }
 
-  @Patch(':noteId')
+  @Patch(':changeLogId')
   @ApiBody({
     description: '',
     examples: {
       a: {
         summary: '1. Update',
         value: {
-          description: 'a note',
+          description: 'a change log',
           userId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
           containerId: 1,
         },
@@ -108,22 +108,22 @@ export class EventChangeLogController {
     },
   })
   async updateEventChangeLog(
-    @Param('noteId') noteId: number,
+    @Param('changeLogId') changeLogId: number,
     @Body()
     body: Prisma.EventChangeLogUncheckedUpdateInput
   ): Promise<EventChangeLog> {
     return await this.prisma.eventChangeLog.update({
-      where: {id: noteId},
+      where: {id: changeLogId},
       data: body,
     });
   }
 
-  @Delete(':noteId')
+  @Delete(':changeLogId')
   async deleteEventChangeLog(
-    @Param('noteId') noteId: number
+    @Param('changeLogId') changeLogId: number
   ): Promise<EventChangeLog> {
     return await this.prisma.eventChangeLog.delete({
-      where: {id: noteId},
+      where: {id: changeLogId},
     });
   }
 

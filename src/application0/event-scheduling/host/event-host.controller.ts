@@ -8,14 +8,12 @@ import {
   Delete,
   Controller,
 } from '@nestjs/common';
-import {datePlusMinutes, splitDateTime} from '@toolkit/utilities/datetime.util';
 import {Prisma, User} from '@prisma/client';
 import {verifyEmail} from '@toolkit/validators/user.validator';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {UserService} from '@microservices/account/user.service';
 import {RoleService} from '@microservices/account/role.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {EventHostService} from '@microservices/event-scheduling/event-host.service';
 
 @ApiTags('Event Scheduling / Event Host')
 @ApiBearerAuth()
@@ -23,8 +21,7 @@ import {EventHostService} from '@microservices/event-scheduling/event-host.servi
 export class EventHostController {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly userService: UserService,
-    private readonly eventHostService: EventHostService
+    private readonly userService: UserService
   ) {}
 
   @Post('')

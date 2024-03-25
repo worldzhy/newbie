@@ -2,13 +2,11 @@
 import {
   Controller,
   Get,
-  Patch,
-  Body,
   Param,
   Query,
   BadRequestException,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth} from '@nestjs/swagger';
 import {
   Prisma,
   Event,
@@ -24,7 +22,7 @@ import * as moment from 'moment';
 import {Datasource} from 'src/application-solidcore/schedule/schedule.enum';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
-@ApiTags('Event Container')
+@ApiTags('Solidcore / Event Container')
 @ApiBearerAuth()
 @Controller('event-containers')
 export class EventCopyController {
@@ -141,96 +139,6 @@ export class EventCopyController {
       },
     });
     await this.prisma.event.createMany({data: targetEvents});
-  }
-
-  @Patch(':eventContainerId/overwrite')
-  @ApiBody({
-    description: 'The week number is from 1 to 6',
-    examples: {
-      a: {
-        summary: '1. Overwrite',
-        value: {
-          fromWeekNumber: 1,
-          toWeekNumbers: [2, 3],
-        },
-      },
-    },
-  })
-  async overwriteEventContainer(
-    @Param('eventContainerId') eventContainerId: number,
-    @Body() body: {fromWeekNumber: number; toWeekNumbers: number[]}
-  ) {
-    const {fromWeekNumber, toWeekNumbers} = body;
-
-    // [step 1] Get the container.
-    const container = await this.prisma.eventContainer.findUniqueOrThrow({
-      where: {id: eventContainerId},
-      include: {events: true},
-    });
-
-    if (container.status === EventContainerStatus.PUBLISHED) {
-      throw new BadRequestException('Already published.');
-    }
-
-    const sourceEvents = await this.prisma.event.findMany({
-      where: {
-        containerId: container.id,
-        year: container.year,
-        month: container.month,
-        weekOfMonth: fromWeekNumber,
-        deletedAt: null,
-      },
-    });
-
-    if (sourceEvents.length === 0) {
-      return;
-    }
-
-    // [step 2] Generate events.
-    const events: any[] = [];
-    let needRemoveEventIds: any[] = [];
-    for (let i = 0; i < toWeekNumbers.length; i++) {
-      events.push(
-        ...this.eventService
-          .copyMany({
-            events: sourceEvents,
-            from: {
-              year: container.year,
-              month: container.month,
-              week: fromWeekNumber,
-            },
-            to: {
-              year: container.year,
-              month: container.month,
-              week: toWeekNumbers[i],
-            },
-          })
-          .map(event => {
-            event.containerId = eventContainerId;
-            return event;
-          })
-      );
-
-      const _needRemoveEventIds = (container['events'] as Event[])
-        .filter(e => {
-          return e.weekOfMonth === toWeekNumbers[i];
-        })
-        .map(event => {
-          return event.id;
-        });
-      needRemoveEventIds = _.concat(needRemoveEventIds, _needRemoveEventIds);
-    }
-
-    // [step 3] Create events.
-    await this.prisma.event.deleteMany({
-      where: {
-        containerId: eventContainerId,
-        id: {in: needRemoveEventIds},
-        status: EventStatus.EDITING,
-      },
-    });
-
-    await this.prisma.event.createMany({data: events});
   }
 
   /* End */
