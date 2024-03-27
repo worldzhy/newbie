@@ -3,7 +3,7 @@ import * as google from '@googleapis/sheets';
 import {ConfigService} from '@nestjs/config';
 import {
   generateRandomNumber,
-  number2letters,
+  number2alphabet,
 } from '@toolkit/utilities/common.util';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {GoogleDriveService} from './drive.service';
@@ -25,7 +25,7 @@ import {GoogleFileType} from '../enum';
  */
 
 @Injectable()
-export class GoogleSheetService extends GoogleDriveService {
+export class GoogleSpreadsheetService extends GoogleDriveService {
   private client: google.sheets_v4.Sheets;
 
   constructor(
@@ -36,43 +36,67 @@ export class GoogleSheetService extends GoogleDriveService {
     this.client = google.sheets({version: 'v4', auth: this.auth});
   }
 
+  async createSpreadsheet(params: {name: string; parentId?: string}) {
+    return await this.createFile(params);
+  }
+
   /**************************************
-   * Sheet Operations                     *
+   * Sheet Operations                   *
    **************************************/
 
-  async create(params: {name: string; parentId?: string; headings?: string[]}) {
-    const file = await this.createFile({
-      name: params.name,
-      parentId: params.parentId,
+  async addSheet(params: {
+    fileId: string;
+    properties: google.sheets_v4.Schema$SheetProperties;
+    headings?: string[];
+  }) {
+    const response = await this.client.spreadsheets.batchUpdate({
+      spreadsheetId: params.fileId,
+      requestBody: {
+        requests: [{addSheet: {properties: params.properties}}],
+      },
     });
-
-    if (params.headings && params.headings.length > 0) {
-      await this.updateRow({
-        fileId: file.id,
-        rowIndex: 1,
-        rowData: params.headings,
-      });
-    }
-
-    return file;
+    console.log(response);
+    // if (params.headings && params.headings.length > 0) {
+    //   await this.updateRow({
+    //     fileId: file.id,
+    //     rowIndex: 1,
+    //     rowData: params.headings,
+    //   });
+    // }
   }
 
-  async clearSheet(fileId: string) {
-    const spreadsheet = await this.client.spreadsheets.get({
-      spreadsheetId: fileId,
-    });
-    if (!spreadsheet.data.sheets || spreadsheet.data.sheets.length === 0) {
-      throw new InternalServerErrorException('Get google sheet failed');
-    }
-    const sheet = spreadsheet.data.sheets[0];
-
+  async clearSheet(params: {fileId: string; sheetTitle: string}) {
     await this.client.spreadsheets.values.clear({
-      spreadsheetId: fileId,
-      range: sheet.properties?.title!,
+      spreadsheetId: params.fileId,
+      range: params.sheetTitle,
     });
   }
 
-  async updateHeadings(params: {fileId: string; headings: string[]}) {
+  async getSheetId(params: {fileId: string; sheetTitle: string}) {
+    const response = await this.client.spreadsheets.get({
+      spreadsheetId: params.fileId,
+    });
+    if (response.data.sheets) {
+      for (let i = 0; i < response.data.sheets.length; i++) {
+        const sheet = response.data.sheets[i];
+        if (sheet.properties?.title === params.sheetTitle) {
+          return sheet.properties.sheetId;
+        }
+      }
+    }
+  }
+
+  async updateHeadings(params: {
+    fileId: string;
+    sheetTitle: string;
+    headings: string[];
+  }) {
+    // [step 0] Get sheet id.
+    const sheetId = await this.getSheetId({
+      fileId: params.fileId,
+      sheetTitle: params.sheetTitle,
+    });
+
     // [step 1] Update format.
     await this.client.spreadsheets.batchUpdate({
       spreadsheetId: params.fileId,
@@ -80,7 +104,11 @@ export class GoogleSheetService extends GoogleDriveService {
         requests: [
           {
             repeatCell: {
-              range: {sheetId: 0, startRowIndex: 0, endRowIndex: 1},
+              range: {
+                sheetId: sheetId,
+                startRowIndex: 0,
+                endRowIndex: 1,
+              },
               cell: {
                 userEnteredFormat: {
                   backgroundColorStyle: {themeColor: 'BACKGROUND'},
@@ -99,7 +127,10 @@ export class GoogleSheetService extends GoogleDriveService {
           },
           {
             updateSheetProperties: {
-              properties: {sheetId: 0, gridProperties: {frozenRowCount: 1}},
+              properties: {
+                sheetId: sheetId,
+                gridProperties: {frozenRowCount: 1},
+              },
               fields: 'gridProperties.frozenRowCount',
             },
           },
@@ -110,6 +141,7 @@ export class GoogleSheetService extends GoogleDriveService {
     // [step 2] Update data.
     await this.updateRow({
       fileId: params.fileId,
+      sheetTitle: params.sheetTitle,
       rowIndex: 1,
       rowData: params.headings,
     });
@@ -119,32 +151,31 @@ export class GoogleSheetService extends GoogleDriveService {
    * Row Operations                     *
    **************************************/
 
-  async getRows(params: {fileId: string; startIndex?: number; count?: number}) {
-    const spreadsheet = await this.client.spreadsheets.get({
-      spreadsheetId: params.fileId,
-    });
-    if (!spreadsheet.data.sheets || spreadsheet.data.sheets.length === 0) {
-      throw new InternalServerErrorException('Get google sheet failed');
+  async getRows(params: {fileId: string; sheetTitle: string}) {
+    try {
+      const response = await this.client.spreadsheets.values.get({
+        spreadsheetId: params.fileId,
+        range: `${params.sheetTitle}`,
+      });
+      return response.data.values;
+    } catch (err) {
+      throw err;
     }
-    const sheet = spreadsheet.data.sheets[0];
-
-    const file = await this.client.spreadsheets.values.get({
-      spreadsheetId: params.fileId,
-      range: sheet.properties?.title!,
-    });
-
-    return file.data.values;
   }
 
-  async appendRows(params: {fileId: string; data: any[][]}) {
+  async appendRows(params: {
+    fileId: string;
+    sheetTitle: string;
+    data: any[][];
+  }) {
     try {
-      const spreadsheet = await this.client.spreadsheets.values.append({
+      const response = await this.client.spreadsheets.values.append({
         spreadsheetId: params.fileId,
         valueInputOption: 'RAW',
-        range: 'A1',
+        range: `${params.sheetTitle}!A1`,
         requestBody: {values: params.data},
       });
-      return spreadsheet.data.spreadsheetId;
+      return response.data.spreadsheetId;
     } catch (err) {
       throw err;
     }
@@ -152,19 +183,20 @@ export class GoogleSheetService extends GoogleDriveService {
 
   async updateRow(params: {
     fileId: string;
+    sheetTitle: string;
     rowIndex: number;
     rowData: string[];
   }) {
     try {
-      const columnLetter = number2letters(params.rowData.length);
-      const spreadsheet = await this.client.spreadsheets.values.update({
+      const columnLetter = number2alphabet(params.rowData.length);
+      const response = await this.client.spreadsheets.values.update({
         spreadsheetId: params.fileId,
         valueInputOption: 'RAW',
-        range: `A${params.rowIndex}:${columnLetter}${params.rowIndex}`,
+        range: `${params.sheetTitle}!A${params.rowIndex}:${columnLetter}${params.rowIndex}`,
         requestBody: {values: [params.rowData]},
       });
 
-      return spreadsheet.data.spreadsheetId;
+      return response.data.spreadsheetId;
     } catch (err) {
       throw err;
     }

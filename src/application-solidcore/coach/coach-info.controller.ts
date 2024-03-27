@@ -7,14 +7,12 @@ import {
 } from '@nestjs/common';
 import {ApiBearerAuth, ApiTags} from '@nestjs/swagger';
 import {FileInterceptor} from '@nestjs/platform-express';
-import {ConfigService} from '@nestjs/config';
-import {GoogleFile} from '@prisma/client';
 import {Express} from 'express';
 import {XLSXService} from '@toolkit/xlsx/xlsx.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {GoogleSheetService} from '@microservices/googleapis/drive/sheet.service';
+import {CoachInfoService} from './coach-info.service';
+import {GoogleSpreadsheetService} from '@microservices/googleapis/drive/spreadsheet.service';
 import {GoogleAccountRole} from '@microservices/googleapis/enum';
-import {UserRoleName} from './enum';
 
 enum Columns {
   Email1 = 'MBO Email addresss',
@@ -26,133 +24,61 @@ enum Columns {
   PayRate = 'Coach Pay rate as of 12/28/23',
 }
 
-const COACH_SHEET_NAME = 'Solidcore Coach List';
-const COACH_SHEET_HEADINGS = [
-  'Email',
-  'First Name',
-  'Middle Name',
-  'Last Name',
-  'Quota Of Week',
-  'Max Quota Of Week',
-  'Min Preferred Quota',
-  'Max Preferred Quota',
-  'Pay Rate',
-  'ID',
-];
-
-@ApiTags('Solidcore / Coach')
+@ApiTags('Coach')
 @ApiBearerAuth()
 @Controller('coaches')
-export class CoachInfoUploadController {
+export class CoachInfoController {
   constructor(
-    private readonly googleSheet: GoogleSheetService,
-    private readonly prisma: PrismaService,
-    private readonly configService: ConfigService
+    private readonly coachInfoService: CoachInfoService,
+    private readonly googleSpreadsheet: GoogleSpreadsheetService,
+    private readonly prisma: PrismaService
   ) {}
 
   @Post('export-google-sheet')
-  async exportGoogleSheet() {
-    // [step 1] Get the google sheet.
-    let sheet: GoogleFile | null;
-    let sheetName: string;
-    if ('production' === this.configService.get('server.environment')) {
-      sheetName = '[PROD] ' + COACH_SHEET_NAME;
-    } else {
-      sheetName = '[QA] ' + COACH_SHEET_NAME;
-    }
-
-    sheet = await this.googleSheet.findOne(sheetName);
-    if (!sheet) {
-      sheet = await this.googleSheet.create({name: sheetName});
-    }
-
-    // [step 2] Prepare data.
-    const sheetData: any[][] = [];
-    const users = await this.prisma.user.findMany({include: {profile: true}});
-    for (let i = 0; i < users.length; i++) {
-      const user = users[i];
-      const profile = user.profile;
-      if (!profile) {
-        continue;
-      }
-
-      sheetData.push([
-        user.email,
-        profile.firstName,
-        profile.middleName,
-        profile.lastName,
-        profile.quotaOfWeekMin,
-        profile.quotaOfWeekMax,
-        profile.eventHostPayRate,
-        user.id,
-      ]);
-    }
-
-    // [step 3] Write data into the sheet.
-    await this.googleSheet.clearSheet(sheet.id);
-    await this.googleSheet.updateHeadings({
-      fileId: sheet.id,
-      headings: COACH_SHEET_HEADINGS,
-    });
-    await this.googleSheet.appendRows({fileId: sheet.id, data: sheetData});
-    await this.googleSheet.resizeColumms({
-      fileId: sheet.id,
-      startIndex: 0,
-      endIndex: 9,
-    });
+  async exportCoachInfoToGoogleSheet() {
+    const file = await this.coachInfoService.exportSpreadsheet();
 
     // [step 4] Share the google sheet with area managers.
-    const managers = await this.prisma.user.findMany({
-      where: {roles: {some: {name: UserRoleName.Manager}}},
+    // const managers = await this.prisma.user.findMany({
+    //   where: {roles: {some: {name: UserRoleName.Manager}}},
+    // });
+    // for (let i = 0; i < managers.length; i++) {
+    //   const manager = managers[i];
+    //   if (manager.email && 1) {
+    //     await this.googleSpreadsheet.share({
+    //       fileId: sheet.id,
+    //       gmail: manager.email,
+    //       role: GoogleAccountRole.Writer,
+    //     });
+    //   }
+    // }
+
+    await this.googleSpreadsheet.share({
+      fileId: file.id,
+      gmail: 'tanlu@inceptionpad.com',
+      role: GoogleAccountRole.Writer,
     });
-    for (let i = 0; i < managers.length; i++) {
-      const manager = managers[i];
-      if (manager.email) {
-        await this.googleSheet.share({
-          fileId: sheet.id,
-          gmail: manager.email,
-          role: GoogleAccountRole.Writer,
-        });
-      }
-    }
+    await this.googleSpreadsheet.share({
+      fileId: file.id,
+      gmail: 'liyue@inceptionpad.com',
+      role: GoogleAccountRole.Writer,
+    });
+    await this.googleSpreadsheet.share({
+      fileId: file.id,
+      gmail: 'worldzhy@gmail.com',
+      role: GoogleAccountRole.Writer,
+    });
   }
 
   @Post('import-google-sheet')
-  async importGoogleSheet() {
-    let sheetName: string;
-    if ('production' === this.configService.get('server.environment')) {
-      sheetName = '[PROD] ' + COACH_SHEET_NAME;
-    } else {
-      sheetName = '[QA] ' + COACH_SHEET_NAME;
-    }
-
-    let sheet = await this.googleSheet.findOne(sheetName);
-    if (!sheet) {
-      return;
-    }
-
-    const rows = await this.googleSheet.getRows({fileId: sheet.id});
-    if (rows && rows.length > 1) {
-      for (let i = 1; i < rows.length; i++) {
-        const row = rows[i];
-        await this.prisma.userSingleProfile.update({
-          where: {userId: row[9]},
-          data: {
-            firstName: row[1],
-            middleName: row[2],
-            lastName: row[3],
-            quotaOfWeekMin: row[4] ? parseInt(row[4]) : undefined,
-            quotaOfWeekMax: row[5] ? parseInt(row[5]) : undefined,
-            eventHostPayRate: row[8] ? parseInt(row[8]) : undefined,
-          },
-        });
-      }
-    }
+  async importCoachInfoFromSpreadsheet0() {
+    await this.coachInfoService.importSpreadsheet_Index0();
+    await this.coachInfoService.importSpreadsheet_Index2();
   }
 
   @Post('load-xlsx-file')
   @UseInterceptors(FileInterceptor('file'))
-  async loadAvailabilityFile(
+  async importCoachInfoFromLocalFile(
     @UploadedFile(
       new ParseFilePipeBuilder()
         .addFileTypeValidator({
@@ -202,9 +128,8 @@ export class CoachInfoUploadController {
         // 1) Process coach locations if the coach doesn't have locations.
         if (
           key === Columns.Locations &&
-          coach.profile &&
-          (coach.profile.eventVenueIds === undefined ||
-            coach.profile.eventVenueIds.length === 0)
+          (coach.profile!.eventVenueIds === undefined ||
+            coach.profile!.eventVenueIds.length === 0)
         ) {
           row[key].split(';').map((location: string) => {
             location = location.replace(' -', ',').replace(' & ', '&').trim();

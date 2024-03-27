@@ -49,16 +49,47 @@ export async function compareHash(
 /**
  * 1=>A, 2=>B, 26=>Z, 52=>AZ
  */
-export function number2letters(num: number) {
+export function number2alphabet(num: number) {
   let n = num;
-  let letters = '';
+  let alphabet = '';
 
   while (n > 0) {
     let m = n % 26;
     if (m === 0) m = 26;
-    letters = String.fromCharCode(64 + m) + letters;
+    alphabet = String.fromCharCode(64 + m) + alphabet;
     n = (n - m) / 26;
   }
 
-  return letters;
+  return alphabet;
+}
+
+/**
+ * A=>1, B=>2, Z=>26, AZ=>52
+ */
+export function alphabet2number(alphabet: string) {
+  let num = 0;
+
+  while (alphabet.length > 0) {
+    num *= 26;
+    num += alphabet.charCodeAt(0) - 'A'.charCodeAt(0) + 1;
+    alphabet = alphabet.slice(1);
+  }
+
+  return num;
+}
+
+/**
+ * 'Hello, 123 world! How are you 456' => [123, 456]
+ */
+export function extractNumbersFromString(str: string) {
+  const numbers: number[] = [];
+
+  let matches = str.match(/\d+/g);
+  if (matches) {
+    for (let i = 0; i < matches.length; i++) {
+      numbers.push(parseInt(matches[i]));
+    }
+  }
+
+  return numbers;
 }

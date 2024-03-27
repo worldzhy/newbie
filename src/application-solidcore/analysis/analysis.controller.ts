@@ -3,7 +3,7 @@ import {ApiTags, ApiBearerAuth} from '@nestjs/swagger';
 import {daysOfMonth} from '@toolkit/utilities/datetime.util';
 import {Prisma} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {UserRoleName} from '../coach/enum';
+import {RoleService} from '@microservices/account/role.service';
 
 @ApiTags('Solidcore / Analysis')
 @ApiBearerAuth()
@@ -40,7 +40,7 @@ export class AnalysisController {
     });
     const coaches = await this.prisma.user.findMany({
       where: {
-        roles: {some: {name: UserRoleName.Coach}},
+        roles: {some: {name: RoleService.RoleName.EVENT_HOST}},
         profile: {eventVenueIds: {has: container.venueId}},
       },
       select: userSelectArgs,

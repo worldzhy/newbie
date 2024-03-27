@@ -22,17 +22,19 @@ export abstract class GoogleDriveService extends GoogleApisService {
     gmail: string;
     role: GoogleAccountRole;
   }) {
-    const permission = await this.drive.permissions.create({
-      fileId: params.fileId,
-      sendNotificationEmail: true,
-      requestBody: {
-        type: 'user',
-        emailAddress: params.gmail,
-        role: params.role,
-      },
-    });
-
-    return permission.data;
+    try {
+      return await this.drive.permissions.create({
+        fileId: params.fileId,
+        sendNotificationEmail: true,
+        requestBody: {
+          type: 'user',
+          emailAddress: params.gmail,
+          role: params.role,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   async findOne(name: string) {

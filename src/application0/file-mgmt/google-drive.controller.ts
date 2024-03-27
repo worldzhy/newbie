@@ -1,13 +1,13 @@
 import {Post, Body, Controller} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {GoogleSheetService} from '@microservices/googleapis/drive/sheet.service';
+import {GoogleSpreadsheetService} from '@microservices/googleapis/drive/spreadsheet.service';
 import {GoogleAccountRole} from '@microservices/googleapis/enum';
 
 @ApiTags('File Management')
 @ApiBearerAuth()
 @Controller('file-mgmt/google-drive')
 export class GoogleDriveController {
-  constructor(private readonly googleSheetService: GoogleSheetService) {}
+  constructor(private readonly spreadsheetService: GoogleSpreadsheetService) {}
 
   @Post('share')
   @ApiBody({
@@ -26,7 +26,7 @@ export class GoogleDriveController {
   async share(
     @Body() body: {fileId: string; gmail: string; role: GoogleAccountRole}
   ) {
-    return this.googleSheetService.share(body);
+    return this.spreadsheetService.share(body);
   }
 
   @Post('create-folder')
@@ -40,10 +40,10 @@ export class GoogleDriveController {
     },
   })
   async createFolder(@Body() body: {name: string; parentFolderId?: string}) {
-    return this.googleSheetService.createFolder(body);
+    return this.spreadsheetService.createFolder(body);
   }
 
-  @Post('create-sheet')
+  @Post('create-spreadsheet')
   @ApiBody({
     description: '',
     examples: {
@@ -54,7 +54,7 @@ export class GoogleDriveController {
     },
   })
   async createSpreadsheet(@Body() body: {name: string; parentId: string}) {
-    return this.googleSheetService.create({
+    return this.spreadsheetService.createSpreadsheet({
       name: body.name,
       parentId: body.parentId,
     });
@@ -66,14 +66,18 @@ export class GoogleDriveController {
     examples: {
       a: {
         summary: '1. Update',
-        value: {fileId: '', headings: ['name', 'gender', 'age', 'role']},
+        value: {
+          fileId: '',
+          sheetTitle: 'Sheet1',
+          headings: ['name', 'gender', 'age', 'role'],
+        },
       },
     },
   })
   async updateSpreadsheetHeadings(
-    @Body() body: {fileId: string; headings: string[]}
+    @Body() body: {fileId: string; sheetTitle: string; headings: string[]}
   ) {
-    return this.googleSheetService.updateHeadings(body);
+    return this.spreadsheetService.updateHeadings(body);
   }
 
   @Post('append-sheet-data')
@@ -82,12 +86,18 @@ export class GoogleDriveController {
     examples: {
       a: {
         summary: '1. Update',
-        value: {fileId: '', data: ['name', 'gender', 'age', 'role']},
+        value: {
+          fileId: '',
+          sheetTitle: 'Sheet1',
+          data: ['name', 'gender', 'age', 'role'],
+        },
       },
     },
   })
-  async appendSpreadsheetData(@Body() body: {fileId: string; data: any[][]}) {
-    return await this.googleSheetService.appendRows(body);
+  async appendSpreadsheetData(
+    @Body() body: {fileId: string; sheetTitle: string; data: any[][]}
+  ) {
+    return await this.spreadsheetService.appendRows(body);
   }
 
   /* End */
