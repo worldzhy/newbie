@@ -314,13 +314,6 @@ enum EventIssueStatus {
   @@schema("microservice/event-scheduling")
 }
 
-enum EventContainerOrigin {
-  EXTERNAL
-  INTERNAL
-
-  @@schema("microservice/event-scheduling")
-}
-
 enum EventContainerStatus {
   EDITING
   PUBLISHED
@@ -484,7 +477,6 @@ model EventVenue {
 model EventContainer {
   id            Int                  @id @default(autoincrement())
   name          String?
-  origin        EventContainerOrigin @default(INTERNAL)
   status        EventContainerStatus @default(EDITING)
   dateOfOpening DateTime? // Use dateOfOpening and dateOfClosure together
   dateOfClosure DateTime?

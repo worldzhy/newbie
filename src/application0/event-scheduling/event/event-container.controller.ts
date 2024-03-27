@@ -11,13 +11,7 @@ import {
   Req,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {
-  Prisma,
-  Event,
-  EventContainer,
-  EventContainerStatus,
-  EventContainerOrigin,
-} from '@prisma/client';
+import {Prisma, EventContainer} from '@prisma/client';
 import {daysOfMonth} from '@toolkit/utilities/datetime.util';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {AccountService} from '@microservices/account/account.service';
@@ -161,7 +155,6 @@ export class EventContainerController {
     if (venueId) where.venueId = venueId;
     if (year) where.year = year;
     if (month) where.month = month;
-    where.origin = EventContainerOrigin.INTERNAL;
 
     // const orderBy: Prisma.EventContainerOrderByWithRelationAndSearchRelevanceInput =
     //   {year: 'desc', month: 'desc', name: 'asc'};
@@ -230,33 +223,6 @@ export class EventContainerController {
   ): Promise<EventContainer> {
     return await this.prisma.eventContainer.delete({
       where: {id: eventContainerId},
-    });
-  }
-
-  @Patch(':eventContainerId/publish')
-  async publishEventContainer(
-    @Param('eventContainerId') eventContainerId: number
-  ) {
-    // [step 1] Get the record.
-    const container = await this.prisma.eventContainer.findUniqueOrThrow({
-      where: {id: eventContainerId},
-      include: {events: true},
-    });
-    const events = container['events'] as Event[];
-
-    if (container.status === EventContainerStatus.PUBLISHED) {
-      throw new BadRequestException('This schedule has been published.');
-    }
-
-    if (events.length === 0) {
-      throw new BadRequestException('There are no classes to publish.');
-    }
-
-    // [step 2] Post schedule to Mindbody.
-
-    return await this.prisma.eventContainer.update({
-      where: {id: eventContainerId},
-      data: {status: EventContainerStatus.PUBLISHED},
     });
   }
 

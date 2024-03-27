@@ -1,34 +1,113 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  Controller,
-  Patch,
-  Body,
-  Param,
-  BadRequestException,
-} from '@nestjs/common';
+import {Controller, Body, BadRequestException, Post} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Prisma, EventStatus, EventContainerStatus} from '@prisma/client';
 import {EventService} from '@microservices/event-scheduling/event.service';
 import * as _ from 'lodash';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {datePlusMinutes} from '@toolkit/utilities/datetime.util';
+import {datePlusMinutes, daysOfMonth} from '@toolkit/utilities/datetime.util';
 
 @ApiTags('Event Scheduling / Event Bulk Operations')
 @ApiBearerAuth()
-@Controller('event-containers')
-export class EventCopyController {
+@Controller('events')
+export class EventBulkOperationController {
   constructor(
     private readonly prisma: PrismaService,
     private readonly eventService: EventService
   ) {}
 
-  @Patch(':eventContainerId/bulk-copy')
+  @Post('import')
+  async importEventContainer(
+    @Body()
+    body: {
+      eventContainerId: number;
+      year: number;
+      month: number;
+      weekOfMonth: number;
+    }
+  ) {
+    let fromMonth = body.month;
+    let fromYear = body.year;
+    const fromWeek = body.weekOfMonth ? body.weekOfMonth : 2;
+    // [step 1] Get target container.
+    const targetContainer = await this.prisma.eventContainer.findUniqueOrThrow({
+      where: {id: body.eventContainerId},
+    });
+    if (targetContainer.status === EventContainerStatus.PUBLISHED) {
+      throw new BadRequestException('Already published.');
+    }
+
+    // [step 2] Get the source container we want to copy its events.
+    const sourceContainer = await this.prisma.eventContainer.findFirst({
+      where: {
+        year: fromYear,
+        month: fromMonth,
+        venueId: targetContainer.venueId,
+        status: EventContainerStatus.PUBLISHED,
+      },
+      include: {
+        events: {where: {status: EventStatus.PUBLISHED, deletedAt: null}},
+      },
+    });
+    if (!sourceContainer || sourceContainer.events.length <= 0) {
+      throw new BadRequestException(
+        'There are no history schedules for the month.'
+      );
+    }
+
+    // [step 3] Generate events for target container.
+    const targetEvents: Prisma.EventCreateManyInput[] = [];
+
+    const weeksOfTargetContainer = daysOfMonth(
+      targetContainer.year,
+      targetContainer.month
+    );
+
+    for (let i = 0; i < weeksOfTargetContainer.length; i++) {
+      if (weeksOfTargetContainer[i].length === 0) {
+        continue;
+      }
+
+      targetEvents.push(
+        ...this.eventService
+          .copyMany({
+            events: sourceContainer.events,
+            from: {
+              year: fromYear,
+              month: fromMonth,
+              week: fromWeek, // The first week may be a semi week but the 2nd week must be a full week.
+            },
+            to: {
+              year: targetContainer.year,
+              month: targetContainer.month,
+              week: i + 1,
+            },
+          })
+          .map(event => {
+            event.containerId = body.eventContainerId;
+            return event;
+          })
+      );
+    }
+
+    // [step 4] Delete old events and create new events.
+    await this.prisma.event.deleteMany({
+      where: {
+        containerId: body.eventContainerId,
+        status: EventStatus.EDITING,
+      },
+    });
+    await this.prisma.event.createMany({data: targetEvents});
+  }
+
+  @Post('bulk-copy')
   @ApiBody({
     description: 'The week number is from 1 to 6',
     examples: {
       a: {
         summary: '1. Overwrite',
         value: {
+          eventContainerId: 1,
           fromWeekNumber: 1,
           toWeekNumbers: [2, 3],
         },
@@ -36,14 +115,18 @@ export class EventCopyController {
     },
   })
   async bulkCopy(
-    @Param('eventContainerId') eventContainerId: number,
-    @Body() body: {fromWeekNumber: number; toWeekNumbers: number[]}
+    @Body()
+    body: {
+      eventContainerId: number;
+      fromWeekNumber: number;
+      toWeekNumbers: number[];
+    }
   ) {
     const {fromWeekNumber, toWeekNumbers} = body;
 
     // [step 1] Get the container.
     const container = await this.prisma.eventContainer.findUniqueOrThrow({
-      where: {id: eventContainerId},
+      where: {id: body.eventContainerId},
       include: {events: true},
     });
 
@@ -76,7 +159,7 @@ export class EventCopyController {
             },
           })
           .map(event => {
-            event.containerId = eventContainerId;
+            event.containerId = body.eventContainerId;
             return event;
           })
       );
@@ -101,22 +184,30 @@ export class EventCopyController {
     await this.prisma.event.createMany({data: newEvents});
   }
 
-  @Patch(':eventContainerId/bulk-move')
+  @Post('bulk-move')
   @ApiBody({
     description: 'Bulk move events in the container.',
     examples: {
-      a: {summary: '1. Move forward', value: {minutesOfMove: 15}},
-      b: {summary: '1. Move backward', value: {minutesOfMove: -15}},
+      a: {
+        summary: '1. Move forward',
+        value: {eventContainerId: 1, minutesOfMove: 15},
+      },
+      b: {
+        summary: '1. Move backward',
+        value: {eventContainerId: 1, minutesOfMove: -15},
+      },
     },
   })
   async bulkMove(
-    @Param('eventContainerId') eventContainerId: number,
     @Body()
-    body: {minutesOfMove: number}
+    body: {
+      eventContainerId: number;
+      minutesOfMove: number;
+    }
   ) {
     const events = await this.prisma.event.findMany({
       where: {
-        containerId: eventContainerId,
+        containerId: body.eventContainerId,
         deletedAt: null,
         status: EventStatus.EDITING,
       },
@@ -143,5 +234,27 @@ export class EventCopyController {
       });
     }
   }
+
+  @Post('bulk-publish')
+  async publishEventContainer(@Body() body: {eventContainerId: number}) {
+    const container = await this.prisma.eventContainer.findUniqueOrThrow({
+      where: {id: body.eventContainerId},
+      include: {events: true},
+    });
+
+    if (container.status === EventContainerStatus.PUBLISHED) {
+      throw new BadRequestException('This schedule has been published.');
+    }
+
+    if (container.events.length === 0) {
+      throw new BadRequestException('There are no classes to publish.');
+    }
+
+    return await this.prisma.eventContainer.update({
+      where: {id: body.eventContainerId},
+      data: {status: EventContainerStatus.PUBLISHED},
+    });
+  }
+
   /* End */
 }
