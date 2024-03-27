@@ -18,7 +18,7 @@ import {
 } from '@prisma/client';
 import {Request} from 'express';
 import {AccountService} from '@microservices/account/account.service';
-import {QueueService} from '@microservices/queue/queue.service';
+import {JobQueueService} from '@microservices/job-queue/job-queue.service';
 import {CACHE_MANAGER} from '@nestjs/cache-manager';
 import {Cache} from 'cache-manager';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
@@ -38,7 +38,7 @@ export class AvailabilityExpressionController {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly prisma: PrismaService,
     private readonly accountService: AccountService,
-    private readonly queueService: QueueService
+    private readonly jobQueueService: JobQueueService
   ) {}
 
   @Post('')
@@ -187,7 +187,7 @@ export class AvailabilityExpressionController {
   async processAvailabilityExpression(
     @Param('availabilityExpressionId') availabilityExpressionId: number
   ) {
-    await this.queueService.addJob({availabilityExpressionId});
+    await this.jobQueueService.addJob({availabilityExpressionId});
   }
 
   @Post('process')
@@ -208,7 +208,7 @@ export class AvailabilityExpressionController {
       // Clean queue jobs and http response cache.
       await this.cacheManager.reset();
 
-      await this.queueService.addJobs(
+      await this.jobQueueService.addJobs(
         exps.map(exp => {
           return {availabilityExpressionId: exp.id};
         })

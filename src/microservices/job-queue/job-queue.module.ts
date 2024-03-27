@@ -1,7 +1,7 @@
 import {Global, Module} from '@nestjs/common';
 import {ConfigModule, ConfigService} from '@nestjs/config';
 import {BullModule} from '@nestjs/bull';
-import {QueueName, QueueService} from './queue.service';
+import {QueueName, JobQueueService} from './job-queue.service';
 
 @Global()
 @Module({
@@ -19,7 +19,7 @@ import {QueueName, QueueService} from './queue.service';
     }),
     BullModule.registerQueue({name: QueueName.DEFAULT}),
   ],
-  providers: [QueueService],
-  exports: [QueueService],
+  providers: [JobQueueService],
+  exports: [JobQueueService],
 })
-export class QueueModule {}
+export class JobQueueModule {}

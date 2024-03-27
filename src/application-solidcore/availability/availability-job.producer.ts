@@ -5,7 +5,7 @@ import {Cache} from 'cache-manager';
 import {Cron} from '@nestjs/schedule';
 import {AvailabilityLoadService} from './availability-load.service';
 import {AvailabilityExpressionStatus} from '@prisma/client';
-import {QueueService} from '@microservices/queue/queue.service';
+import {JobQueueService} from '@microservices/job-queue/job-queue.service';
 
 import {currentQuarter} from '@toolkit/utilities/datetime.util';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
@@ -21,7 +21,7 @@ export class AvailabilityJobProducer {
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
     private readonly availabilityLoadService: AvailabilityLoadService,
-    private readonly queueService: QueueService
+    private readonly jobQueueService: JobQueueService
   ) {}
 
   @Cron('1 1 1 1 *')
@@ -75,7 +75,7 @@ export class AvailabilityJobProducer {
       // Clean queue jobs and http response cache.
       await this.cacheManager.reset();
 
-      await this.queueService.addJobs(
+      await this.jobQueueService.addJobs(
         exps.map(exp => {
           return {availabilityExpressionId: exp.id};
         })

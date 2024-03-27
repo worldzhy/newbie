@@ -7,7 +7,7 @@ export enum QueueName {
 }
 
 @Injectable()
-export class QueueService {
+export class JobQueueService {
   constructor(
     @InjectQueue(QueueName.DEFAULT) private defaultQueue: BullQueue
   ) {}
