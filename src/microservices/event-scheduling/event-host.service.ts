@@ -10,10 +10,9 @@ const userSelectArgs: Prisma.UserSelect = {
   profile: {
     select: {
       fullName: true,
-      coachingTenure: true,
-      quotaOfWeek: true,
-      quotaOfWeekMinPreference: true,
-      quotaOfWeekMaxPreference: true,
+      eventHostTitle: true,
+      quotaOfWeekMin: true,
+      quotaOfWeekMax: true,
     },
   },
 };
@@ -87,11 +86,11 @@ export class EventHostService {
     const sortedAvailableCoaches: {
       hostUserId: string;
       remainingQuota: number;
-      remainingQuotaOfMinPreference: number;
-      remainingQuotaOfMaxPreference: number;
+      remainingQuotaOfMin: number;
+      remainingQuotaOfMax: number;
       quotaOfWeek: number;
-      quotaOfWeekMinPreference: number;
-      quotaOfWeekMaxPreference: number;
+      quotaOfWeekMin: number;
+      quotaOfWeekMax: number;
     }[] = [];
     for (let i = 0; i < coaches.length; i++) {
       const coach = coaches[i];
@@ -114,19 +113,17 @@ export class EventHostService {
         });
 
         // ! A coach can not be dispatched more classes than his/her max preference.
-        if (coach['profile']?.quotaOfWeekMaxPreference! - countOfEvents > 0) {
+        if (coach['profile']?.quotaOfWeekMax! - countOfEvents > 0) {
           sortedAvailableCoaches.push({
             hostUserId: coach.id,
-            remainingQuota: coach['profile']?.quotaOfWeek! - countOfEvents,
-            remainingQuotaOfMinPreference:
-              coach['profile']?.quotaOfWeekMinPreference! - countOfEvents,
-            remainingQuotaOfMaxPreference:
-              coach['profile']?.quotaOfWeekMaxPreference! - countOfEvents,
-            quotaOfWeek: coach['profile']?.quotaOfWeek!,
-            quotaOfWeekMinPreference:
-              coach['profile']?.quotaOfWeekMinPreference!,
-            quotaOfWeekMaxPreference:
-              coach['profile']?.quotaOfWeekMaxPreference!,
+            remainingQuota: coach['profile']?.quotaOfWeekMin! - countOfEvents,
+            remainingQuotaOfMin:
+              coach['profile']?.quotaOfWeekMin! - countOfEvents,
+            remainingQuotaOfMax:
+              coach['profile']?.quotaOfWeekMax! - countOfEvents,
+            quotaOfWeek: coach['profile']?.quotaOfWeekMin!,
+            quotaOfWeekMin: coach['profile']?.quotaOfWeekMin!,
+            quotaOfWeekMax: coach['profile']?.quotaOfWeekMax!,
           });
 
           // Count of coach's events in all locations.
@@ -148,32 +145,26 @@ export class EventHostService {
           return 1; // b is in front of a
         }
       } else if (a.remainingQuota <= 0 && b.remainingQuota <= 0) {
-        if (
-          a.remainingQuotaOfMinPreference > 0 &&
-          b.remainingQuotaOfMinPreference > 0
-        ) {
+        if (a.remainingQuotaOfMin > 0 && b.remainingQuotaOfMin > 0) {
           if (
-            a.remainingQuotaOfMinPreference / a.quotaOfWeekMinPreference >=
-            b.remainingQuotaOfMinPreference / b.quotaOfWeekMinPreference
+            a.remainingQuotaOfMin / a.quotaOfWeekMin >=
+            b.remainingQuotaOfMin / b.quotaOfWeekMin
           ) {
             return -1;
           } else {
             return 1;
           }
-        } else if (
-          a.remainingQuotaOfMinPreference <= 0 &&
-          b.remainingQuotaOfMinPreference <= 0
-        ) {
-          // ! The remainingQuotaOfMaxPreference must be larger than 0.
+        } else if (a.remainingQuotaOfMin <= 0 && b.remainingQuotaOfMin <= 0) {
+          // ! The remainingQuotaOfMax must be larger than 0.
           if (
-            a.remainingQuotaOfMaxPreference / a.quotaOfWeekMaxPreference >=
-            b.remainingQuotaOfMaxPreference / b.quotaOfWeekMaxPreference
+            a.remainingQuotaOfMax / a.quotaOfWeekMax >=
+            b.remainingQuotaOfMax / b.quotaOfWeekMax
           ) {
             return -1;
           } else {
             return 1;
           }
-        } else if (a.remainingQuotaOfMinPreference > 0) {
+        } else if (a.remainingQuotaOfMin > 0) {
           return -1;
         } else {
           return 1;
@@ -273,14 +264,14 @@ export class EventHostService {
 
       coach.profile!['quotaOfUsed'] = countOfEvents;
       coach.profile!['remainingQuota'] =
-        coach.profile!.quotaOfWeek! - countOfEvents;
-      coach.profile!['remainingQuotaOfMinPreference'] =
-        coach.profile!.quotaOfWeekMinPreference! - countOfEvents;
-      coach.profile!['remainingQuotaOfMaxPreference'] =
-        coach.profile!.quotaOfWeekMaxPreference! - countOfEvents;
+        coach.profile!.quotaOfWeekMin! - countOfEvents;
+      coach.profile!['remainingQuotaOfMin'] =
+        coach.profile!.quotaOfWeekMin! - countOfEvents;
+      coach.profile!['remainingQuotaOfMax'] =
+        coach.profile!.quotaOfWeekMax! - countOfEvents;
 
       // [RC 2023-11-21] A coach is available even she/he has been scheduled more than max preferred number of classes.
-      // if (countOfEvents >= coach['profile'].quotaOfWeekMaxPreference) {
+      // if (countOfEvents >= coach['profile'].quotaOfWeekMax) {
       //   coach['profile']['isAvailable'] = false;
       // }
     }
@@ -291,40 +282,37 @@ export class EventHostService {
       const b = coachB.profile!;
       if (a['remainingQuota'] > 0 && b['remainingQuota'] > 0) {
         if (
-          a['remainingQuota'] / a.quotaOfWeek! >=
-          b['remainingQuota'] / b.quotaOfWeek!
+          a['remainingQuota'] / a.quotaOfWeekMin! >=
+          b['remainingQuota'] / b.quotaOfWeekMin!
         ) {
           return -1; // a is in front of b
         } else {
           return 1; // b is in front of a
         }
       } else if (a['remainingQuota'] <= 0 && b['remainingQuota'] <= 0) {
-        if (
-          a['remainingQuotaOfMinPreference'] > 0 &&
-          b['remainingQuotaOfMinPreference'] > 0
-        ) {
+        if (a['remainingQuotaOfMin'] > 0 && b['remainingQuotaOfMin'] > 0) {
           if (
-            a['remainingQuotaOfMinPreference'] / a.quotaOfWeekMinPreference! >=
-            b['remainingQuotaOfMinPreference'] / b.quotaOfWeekMinPreference!
+            a['remainingQuotaOfMin'] / a.quotaOfWeekMin! >=
+            b['remainingQuotaOfMin'] / b.quotaOfWeekMin!
           ) {
             return -1;
           } else {
             return 1;
           }
         } else if (
-          a['remainingQuotaOfMinPreference'] <= 0 &&
-          b['remainingQuotaOfMinPreference'] <= 0
+          a['remainingQuotaOfMin'] <= 0 &&
+          b['remainingQuotaOfMin'] <= 0
         ) {
-          // ! The remainingQuotaOfMaxPreference must be larger than 0.
+          // ! The remainingQuotaOfMax must be larger than 0.
           if (
-            a['remainingQuotaOfMaxPreference'] / a.quotaOfWeekMaxPreference! >=
-            b['remainingQuotaOfMaxPreference'] / b.quotaOfWeekMaxPreference!
+            a['remainingQuotaOfMax'] / a.quotaOfWeekMax! >=
+            b['remainingQuotaOfMax'] / b.quotaOfWeekMax!
           ) {
             return -1;
           } else {
             return 1;
           }
-        } else if (a['remainingQuotaOfMinPreference'] > 0) {
+        } else if (a['remainingQuotaOfMin'] > 0) {
           return -1;
         } else {
           return 1;

@@ -96,7 +96,7 @@ export class EventController {
     });
     event['hostUser'] = await this.prisma.userSingleProfile.findUniqueOrThrow({
       where: {userId: body.hostUserId},
-      select: {userId: true, fullName: true, coachingTenure: true},
+      select: {userId: true, fullName: true, eventHostTitle: true},
     });
 
     // [step 5] Duplicate events.
@@ -198,7 +198,7 @@ export class EventController {
       .filter(coachId => coachId !== null) as string[];
     const coachProfiles = await this.prisma.userSingleProfile.findMany({
       where: {userId: {in: coachIds}},
-      select: {userId: true, fullName: true, coachingTenure: true},
+      select: {userId: true, fullName: true, eventHostTitle: true},
     });
     const coachProfilesMapping = coachProfiles.reduce(
       (obj, item) => ({

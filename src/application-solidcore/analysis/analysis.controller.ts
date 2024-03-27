@@ -25,9 +25,8 @@ export class AnalysisController {
       profile: {
         select: {
           fullName: true,
-          quotaOfWeek: true,
-          quotaOfWeekMaxPreference: true,
-          quotaOfWeekMinPreference: true,
+          quotaOfWeekMax: true,
+          quotaOfWeekMin: true,
         },
       },
     };
@@ -54,8 +53,7 @@ export class AnalysisController {
     // [step 2] Analyse coaches.
     const calendar = daysOfMonth(container.year, container.month);
     const coachesUnderQuota: UserResult[] = [];
-    const coachesUnderPreferredQuota: UserResult[] = [];
-    const coachesOverPreferredQuota: UserResult[] = [];
+    const coachesOverQuota: UserResult[] = [];
     const coachScheduledMost: {
       coach: UserResult;
       countOfScheduledClass: number;
@@ -67,9 +65,8 @@ export class AnalysisController {
 
     for (let i = 0; i < coaches.length; i++) {
       const coach = coaches[i];
-      const quotaOfWeek = coach.profile!.quotaOfWeek!;
-      const quotaOfWeekMinPreference = coach.profile!.quotaOfWeekMinPreference!;
-      const quotaOfWeekMaxPreference = coach.profile!.quotaOfWeekMaxPreference!;
+      const quotaOfWeekMin = coach.profile!.quotaOfWeekMin!;
+      const quotaOfWeekMax = coach.profile!.quotaOfWeekMax!;
 
       for (let indexOfWeek = 0; indexOfWeek < calendar.length; indexOfWeek++) {
         if (calendar[indexOfWeek].length === 7) {
@@ -83,7 +80,7 @@ export class AnalysisController {
           });
           coach.profile!['countOfScheduledClass'] = countOfScheduledClass;
 
-          if (countOfScheduledClass < quotaOfWeek) {
+          if (countOfScheduledClass < quotaOfWeekMin) {
             let existed = false;
             for (let r = 0; r < coachesUnderQuota.length; r++) {
               const element = coachesUnderQuota[r];
@@ -95,28 +92,16 @@ export class AnalysisController {
               coachesUnderQuota.push(coach);
             }
           }
-          if (countOfScheduledClass < quotaOfWeekMinPreference) {
+          if (countOfScheduledClass > quotaOfWeekMax) {
             let existed = false;
-            for (let s = 0; s < coachesUnderPreferredQuota.length; s++) {
-              const element = coachesUnderPreferredQuota[s];
+            for (let s = 0; s < coachesOverQuota.length; s++) {
+              const element = coachesOverQuota[s];
               if (element.id === coach.id) {
                 existed = true;
               }
             }
             if (!existed) {
-              coachesUnderPreferredQuota.push(coach);
-            }
-          }
-          if (countOfScheduledClass > quotaOfWeekMaxPreference) {
-            let existed = false;
-            for (let s = 0; s < coachesOverPreferredQuota.length; s++) {
-              const element = coachesOverPreferredQuota[s];
-              if (element.id === coach.id) {
-                existed = true;
-              }
-            }
-            if (!existed) {
-              coachesOverPreferredQuota.push(coach);
+              coachesOverQuota.push(coach);
             }
           }
           if (
@@ -145,12 +130,12 @@ export class AnalysisController {
       {
         id: 2,
         description: 'The coaches under preferred minimum quota',
-        data: coachesUnderPreferredQuota,
+        data: coachesUnderQuota,
       },
       {
         id: 3,
         description: 'The coaches over preferred maximum quota',
-        data: coachesOverPreferredQuota,
+        data: coachesOverQuota,
       },
       {
         id: 4,

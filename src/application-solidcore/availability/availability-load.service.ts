@@ -212,10 +212,8 @@ export class AvailabilityLoadService {
         where: {userId: coach.id},
         data: {
           eventVenueIds: coachLocationIds,
-          quotaOfWeekMinPreference:
-            row['Select minimum # of preferred classes:'],
-          quotaOfWeekMaxPreference:
-            row['Select maximum # of preferred classes:'],
+          quotaOfWeekMin: row['Select minimum # of preferred classes:'],
+          quotaOfWeekMax: row['Select maximum # of preferred classes:'],
         },
       });
     }
@@ -425,9 +423,7 @@ export class AvailabilityLoadService {
             await this.prisma.userSingleProfile.update({
               where: {userId: coach.id},
               data: {
-                quotaOfWeekMinPreference: parseInt(
-                  answer.textAnswers.answers[0].value
-                ),
+                quotaOfWeekMin: parseInt(answer.textAnswers.answers[0].value),
               },
             });
           } else if (
@@ -437,9 +433,7 @@ export class AvailabilityLoadService {
             await this.prisma.userSingleProfile.update({
               where: {userId: coach.id},
               data: {
-                quotaOfWeekMaxPreference: parseInt(
-                  answer.textAnswers.answers[0].value
-                ),
+                quotaOfWeekMax: parseInt(answer.textAnswers.answers[0].value),
               },
             });
           }

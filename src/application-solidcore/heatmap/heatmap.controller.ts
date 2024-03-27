@@ -97,10 +97,9 @@ export class HeatmapController {
           profile: {
             select: {
               fullName: true,
-              coachingTenure: true,
-              quotaOfWeek: true,
-              quotaOfWeekMinPreference: true,
-              quotaOfWeekMaxPreference: true,
+              eventHostTitle: true,
+              quotaOfWeekMin: true,
+              quotaOfWeekMax: true,
             },
           },
         },

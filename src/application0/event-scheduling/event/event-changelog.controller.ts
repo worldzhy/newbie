@@ -70,7 +70,7 @@ export class EventChangeLogController {
       .filter(coachId => coachId !== null) as string[];
     const coachProfiles = await this.prisma.userSingleProfile.findMany({
       where: {userId: {in: coachIds}},
-      select: {userId: true, fullName: true, coachingTenure: true},
+      select: {userId: true, fullName: true, eventHostTitle: true},
     });
     const coachProfilesMapping = coachProfiles.reduce(
       (obj, item) => ({

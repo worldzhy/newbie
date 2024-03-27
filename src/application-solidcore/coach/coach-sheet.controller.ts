@@ -81,11 +81,9 @@ export class CoachInfoUploadController {
         profile.firstName,
         profile.middleName,
         profile.lastName,
-        profile.quotaOfWeek,
+        profile.quotaOfWeekMin,
         profile.quotaOfWeekMax,
-        profile.quotaOfWeekMinPreference,
-        profile.quotaOfWeekMaxPreference,
-        profile.payRate,
+        profile.eventHostPayRate,
         user.id,
       ]);
     }
@@ -143,11 +141,9 @@ export class CoachInfoUploadController {
             firstName: row[1],
             middleName: row[2],
             lastName: row[3],
-            quotaOfWeek: row[4] ? parseInt(row[4]) : undefined,
+            quotaOfWeekMin: row[4] ? parseInt(row[4]) : undefined,
             quotaOfWeekMax: row[5] ? parseInt(row[5]) : undefined,
-            quotaOfWeekMinPreference: row[6] ? parseInt(row[6]) : undefined,
-            quotaOfWeekMaxPreference: row[7] ? parseInt(row[7]) : undefined,
-            payRate: row[8] ? parseInt(row[8]) : undefined,
+            eventHostPayRate: row[8] ? parseInt(row[8]) : undefined,
           },
         });
       }
@@ -269,13 +265,13 @@ export class CoachInfoUploadController {
           eventVenueIds:
             coachLocationIds.length > 0 ? coachLocationIds : undefined,
           eventTypeIds: eventTypeIds.length > 0 ? eventTypeIds : undefined,
-          quotaOfWeek: Number.isInteger(row[Columns.QuotaOfWeek])
+          quotaOfWeekMin: Number.isInteger(row[Columns.QuotaOfWeek])
             ? row[Columns.QuotaOfWeek]
             : undefined,
           quotaOfWeekMax: Number.isInteger(row[Columns.QuotaOfWeekMax])
             ? row[Columns.QuotaOfWeekMax]
             : undefined,
-          payRate: payRate,
+          eventHostPayRate: payRate,
         },
       });
     }
