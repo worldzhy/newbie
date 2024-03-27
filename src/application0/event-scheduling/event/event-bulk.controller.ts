@@ -16,6 +16,42 @@ export class EventBulkOperationController {
     private readonly eventService: EventService
   ) {}
 
+  @Post('published-months')
+  async getImportList(@Body() body: {eventContainerId: number}) {
+    const container = await this.prisma.eventContainer.findUniqueOrThrow({
+      where: {id: body.eventContainerId},
+      select: {venueId: true},
+    });
+    const date = new Date();
+    const currentYear = date.getFullYear();
+    const currentMonth = date.getMonth() + 1;
+    const result: {year: number; month: number}[] = [];
+
+    for (let i = 0; i < 12; i++) {
+      let year = currentYear;
+      let month = currentMonth - i;
+      if (month <= 0) {
+        month += 12;
+        year = year - 1;
+      }
+
+      result.push({year, month});
+      const count = await this.prisma.eventContainer.count({
+        where: {
+          venueId: container.venueId,
+          year,
+          month,
+          status: EventContainerStatus.PUBLISHED,
+        },
+      });
+      if (count > 0) {
+        result.push({year, month});
+      }
+    }
+
+    return result;
+  }
+
   @Post('import')
   async importEventContainer(
     @Body()
