@@ -16,7 +16,7 @@ export class EventBulkOperationController {
     private readonly eventService: EventService
   ) {}
 
-  @Post('published-months')
+  @Post('import/months')
   async getImportList(@Body() body: {eventContainerId: number}) {
     const container = await this.prisma.eventContainer.findUniqueOrThrow({
       where: {id: body.eventContainerId},
