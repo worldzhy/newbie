@@ -43,17 +43,31 @@ export class GoogleDriveController {
     examples: {
       a: {
         summary: '1. Create',
-        value: {name: '', parentFolderId: '[Optional]'},
+        value: {name: '', parentId: '[Optional]'},
       },
     },
   })
-  async createFolder(@Body() body: {name: string; parentFolderId?: string}) {
+  async createFolder(@Body() body: {name: string; parentId?: string}) {
     return this.googleDrive.createFolder(body);
   }
 
   @Delete('folders/:fileId')
   async deleteFolder(@Param('fileId') fileId: string) {
     return await this.googleDrive.deleteFile(fileId);
+  }
+
+  @Post('search')
+  @ApiBody({
+    description: '',
+    examples: {
+      a: {
+        summary: '1. Search',
+        value: {name: ''},
+      },
+    },
+  })
+  async searchFiles(@Body() body: {name: string}) {
+    return await this.googleDrive.searchFiles(body);
   }
 
   @Post('list')

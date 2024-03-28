@@ -4,6 +4,10 @@ import {ConfigService} from '@nestjs/config';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {GoogleAccountRole, GoogleFileType, GoogleMimeType} from '../enum';
 
+/**
+ * Note: In this service, assume "files" means both files and folders.
+ * Folders are files that only contain metadata and can be used to organize files in Drive.
+ */
 @Injectable()
 export class GoogleDriveService {
   private drive: google.drive_v3.Drive;
@@ -46,15 +50,20 @@ export class GoogleDriveService {
   }
 
   async getFile(name: string) {
-    const file = await this.prisma.googleFile.findFirst({where: {name}});
-    if (file) {
-      const response = await this.drive.files.get({fileId: file.id});
-      if (!response.data) {
-        throw new InternalServerErrorException('Not found on google drive.');
-      }
-    }
+    return await this.prisma.googleFile.findFirst({where: {name}});
+  }
 
-    return file;
+  async searchFiles(params: {name: string}) {
+    // supported syntax - https://developers.google.com/drive/api/guides/search-files
+    const q = params.name ? `name contains '${params.name}'` : undefined;
+
+    try {
+      const response = await this.drive.files.list({q});
+      return response.data;
+    } catch (error) {
+      // TODO (developer) - Handle exception
+      throw error;
+    }
   }
 
   async listFiles(params: {parentId?: string}) {
@@ -110,15 +119,37 @@ export class GoogleDriveService {
     }
   }
 
+  /**
+   * Note: If you're deleting a folder, all descendants owned by the user are also deleted.
+   * https://developers.google.com/drive/api/guides/delete
+   */
   async deleteFile(fileId: string) {
     try {
       const response = await this.drive.files.delete({fileId});
       if (response.status >= 200 && response.status < 300) {
-        return await this.prisma.googleFile.delete({
-          where: {id: fileId},
-        });
+        await this.deleteFileRecursively(fileId);
       } else {
         throw new InternalServerErrorException('Delete google file failed.');
+      }
+    } catch (error) {
+      // TODO (developer) - Handle exception
+      throw error;
+    }
+  }
+
+  async trashFile(fileId: string) {
+    try {
+      const response = await this.drive.files.update({
+        fileId,
+        requestBody: {trashed: true},
+      });
+      if (response.status >= 200 && response.status < 300) {
+        return await this.prisma.googleFile.update({
+          where: {id: fileId},
+          data: {trashed: true},
+        });
+      } else {
+        throw new InternalServerErrorException('Trash google file failed.');
       }
     } catch (error) {
       // TODO (developer) - Handle exception
@@ -154,6 +185,24 @@ export class GoogleDriveService {
     } catch (error) {
       // TODO (developer) - Handle exception
       throw error;
+    }
+  }
+
+  /**
+   * Remove directories and their contents recursively
+   */
+  private async deleteFileRecursively(fileId: string) {
+    // [step 1] Delete file.
+    await this.prisma.googleFile.delete({where: {id: fileId}});
+
+    // [step 2] Delete files in the folder.
+    const filesInFolder = await this.prisma.googleFile.findMany({
+      where: {parentId: fileId},
+      select: {id: true},
+    });
+
+    for (let i = 0; i < filesInFolder.length; i++) {
+      await this.deleteFileRecursively(filesInFolder[i].id);
     }
   }
 
