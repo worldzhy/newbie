@@ -1,20 +1,26 @@
+import {Injectable, InternalServerErrorException} from '@nestjs/common';
 import * as google from '@googleapis/drive';
 import {ConfigService} from '@nestjs/config';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {GoogleApisService} from '../googleapis.service';
 import {GoogleAccountRole, GoogleFileType, GoogleMimeType} from '../enum';
-import {InternalServerErrorException} from '@nestjs/common';
 
-export abstract class GoogleDriveService extends GoogleApisService {
+@Injectable()
+export class GoogleDriveService {
   private drive: google.drive_v3.Drive;
 
   constructor(
     private readonly config: ConfigService,
-    private readonly prisma: PrismaService,
-    private readonly fileType: GoogleFileType
+    private readonly prisma: PrismaService
   ) {
-    super(config);
-    this.drive = google.drive({version: 'v3', auth: this.auth});
+    // Create a new JWT client using the key file downloaded from the Google Developer Console.
+    const auth = new google.auth.GoogleAuth({
+      keyFile: this.config.getOrThrow<string>(
+        'microservice.googleapis.credentials.serviceAccount'
+      ),
+      scopes: ['https://www.googleapis.com/auth/drive'],
+    });
+
+    this.drive = google.drive({version: 'v3', auth: auth});
   }
 
   async share(params: {
@@ -23,7 +29,7 @@ export abstract class GoogleDriveService extends GoogleApisService {
     role: GoogleAccountRole;
   }) {
     try {
-      return await this.drive.permissions.create({
+      const response = await this.drive.permissions.create({
         fileId: params.fileId,
         sendNotificationEmail: true,
         requestBody: {
@@ -32,52 +38,95 @@ export abstract class GoogleDriveService extends GoogleApisService {
           role: params.role,
         },
       });
+      return response.data;
     } catch (error) {
-      console.log(error);
+      // TODO (developer) - Handle exception
+      throw error;
     }
   }
 
-  async findOne(name: string) {
-    return await this.prisma.googleFile.findFirst({where: {name}});
+  async getFile(name: string) {
+    const file = await this.prisma.googleFile.findFirst({where: {name}});
+    if (file) {
+      const response = await this.drive.files.get({fileId: file.id});
+      if (!response.data) {
+        throw new InternalServerErrorException('Not found on google drive.');
+      }
+    }
+
+    return file;
   }
 
-  async findMany(name: string) {
-    return await this.prisma.googleFile.findMany({where: {name}});
+  async listFiles(params: {parentId?: string}) {
+    // supported syntax - https://developers.google.com/drive/api/guides/search-files
+    const q = params.parentId
+      ? `'${params.parentId}' in parents`
+      : `'root' in parents`;
+
+    try {
+      const response = await this.drive.files.list({q});
+      return response.data;
+    } catch (error) {
+      // TODO (developer) - Handle exception
+      throw error;
+    }
   }
 
   async createFolder(params: {name: string; parentId?: string}) {
     try {
-      return await this.newFile({
+      return await this.createFile({
         name: params.name,
         type: GoogleFileType.Folder,
         parentId: params.parentId,
       });
-    } catch (err) {
-      return err;
-    }
-  }
-
-  protected async createFile(params: {name: string; parentId?: string}) {
-    return await this.newFile({
-      name: params.name,
-      type: this.fileType,
-      parentId: params.parentId,
-    });
-  }
-
-  protected async delete(fileId: string) {
-    try {
-      await this.drive.files.delete({fileId});
-      return await this.prisma.googleFile.delete({
-        where: {id: fileId},
-      });
-    } catch (err) {
+    } catch (error) {
       // TODO (developer) - Handle exception
-      throw err;
+      throw error;
     }
   }
 
-  private async newFile(params: {
+  async createDocument(params: {name: string; parentId?: string}) {
+    try {
+      return await this.createFile({
+        name: params.name,
+        type: GoogleFileType.Document,
+        parentId: params.parentId,
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async createSheet(params: {name: string; parentId?: string}) {
+    try {
+      return await this.createFile({
+        name: params.name,
+        type: GoogleFileType.Sheet,
+        parentId: params.parentId,
+      });
+    } catch (error) {
+      // TODO (developer) - Handle exception
+      throw error;
+    }
+  }
+
+  async deleteFile(fileId: string) {
+    try {
+      const response = await this.drive.files.delete({fileId});
+      if (response.status >= 200 && response.status < 300) {
+        return await this.prisma.googleFile.delete({
+          where: {id: fileId},
+        });
+      } else {
+        throw new InternalServerErrorException('Delete google file failed.');
+      }
+    } catch (error) {
+      // TODO (developer) - Handle exception
+      throw error;
+    }
+  }
+
+  private async createFile(params: {
     name: string;
     type: GoogleFileType;
     parentId?: string;
@@ -90,22 +139,21 @@ export abstract class GoogleDriveService extends GoogleApisService {
           parents: params.parentId ? [params.parentId] : undefined,
         },
       });
-
-      if (file.data.id) {
-        return await this.prisma.googleFile.create({
-          data: {
-            id: file.data.id,
-            name: params.name,
-            type: params.type,
-            parentId: params.parentId,
-          },
-        });
-      } else {
+      if (!file.data.id) {
         throw new InternalServerErrorException('Create google file failed.');
       }
-    } catch (err) {
+
+      return await this.prisma.googleFile.create({
+        data: {
+          id: file.data.id,
+          name: params.name,
+          type: params.type,
+          parentId: params.parentId,
+        },
+      });
+    } catch (error) {
       // TODO (developer) - Handle exception
-      throw err;
+      throw error;
     }
   }
 

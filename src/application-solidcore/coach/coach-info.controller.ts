@@ -11,8 +11,8 @@ import {Express} from 'express';
 import {XLSXService} from '@toolkit/xlsx/xlsx.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {CoachInfoService} from './coach-info.service';
-import {GoogleSpreadsheetService} from '@microservices/googleapis/drive/spreadsheet.service';
 import {GoogleAccountRole} from '@microservices/googleapis/enum';
+import {GoogleDriveService} from '@microservices/googleapis/drive/drive.service';
 
 enum Columns {
   Email1 = 'MBO Email addresss',
@@ -30,7 +30,7 @@ enum Columns {
 export class CoachInfoController {
   constructor(
     private readonly coachInfoService: CoachInfoService,
-    private readonly googleSpreadsheet: GoogleSpreadsheetService,
+    private readonly googleDrive: GoogleDriveService,
     private readonly prisma: PrismaService
   ) {}
 
@@ -53,17 +53,17 @@ export class CoachInfoController {
     //   }
     // }
 
-    await this.googleSpreadsheet.share({
+    await this.googleDrive.share({
       fileId: file.id,
       gmail: 'tanlu@inceptionpad.com',
       role: GoogleAccountRole.Writer,
     });
-    await this.googleSpreadsheet.share({
+    await this.googleDrive.share({
       fileId: file.id,
       gmail: 'liyue@inceptionpad.com',
       role: GoogleAccountRole.Writer,
     });
-    await this.googleSpreadsheet.share({
+    await this.googleDrive.share({
       fileId: file.id,
       gmail: 'worldzhy@gmail.com',
       role: GoogleAccountRole.Writer,

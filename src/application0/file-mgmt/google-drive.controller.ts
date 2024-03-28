@@ -1,20 +1,28 @@
-import {Post, Body, Controller} from '@nestjs/common';
+import {
+  Post,
+  Body,
+  Controller,
+  Delete,
+  Param,
+  Get,
+  Query,
+} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {GoogleSpreadsheetService} from '@microservices/googleapis/drive/spreadsheet.service';
+import {GoogleDriveService} from '@microservices/googleapis/drive/drive.service';
 import {GoogleAccountRole} from '@microservices/googleapis/enum';
 
 @ApiTags('File Management')
 @ApiBearerAuth()
-@Controller('file-mgmt/google-drive')
+@Controller('google-drive')
 export class GoogleDriveController {
-  constructor(private readonly spreadsheetService: GoogleSpreadsheetService) {}
+  constructor(private readonly googleDrive: GoogleDriveService) {}
 
   @Post('share')
   @ApiBody({
     description: '',
     examples: {
       a: {
-        summary: '1. Update',
+        summary: '1. Share',
         value: {
           fileId: '',
           gmail: 'worldzhy@gmail.com',
@@ -26,78 +34,79 @@ export class GoogleDriveController {
   async share(
     @Body() body: {fileId: string; gmail: string; role: GoogleAccountRole}
   ) {
-    return this.spreadsheetService.share(body);
+    return this.googleDrive.share(body);
   }
 
-  @Post('create-folder')
+  @Post('folders')
   @ApiBody({
     description: '',
     examples: {
       a: {
-        summary: '1. Update',
+        summary: '1. Create',
         value: {name: '', parentFolderId: '[Optional]'},
       },
     },
   })
   async createFolder(@Body() body: {name: string; parentFolderId?: string}) {
-    return this.spreadsheetService.createFolder(body);
+    return this.googleDrive.createFolder(body);
   }
 
-  @Post('create-spreadsheet')
+  @Delete('folders/:fileId')
+  async deleteFolder(@Param('fileId') fileId: string) {
+    return await this.googleDrive.deleteFile(fileId);
+  }
+
+  @Post('files')
   @ApiBody({
     description: '',
     examples: {
       a: {
-        summary: '1. Update',
+        summary: '1. List',
+        value: {parentId: '[Optional]'},
+      },
+    },
+  })
+  async listFiles(@Body() body: {parentId?: string}) {
+    return await this.googleDrive.listFiles(body);
+  }
+
+  @Post('files/document')
+  @ApiBody({
+    description: '',
+    examples: {
+      a: {
+        summary: '1. Create',
         value: {name: '', parentId: ''},
       },
     },
   })
-  async createSpreadsheet(@Body() body: {name: string; parentId: string}) {
-    return this.spreadsheetService.createSpreadsheet({
+  async createDocument(@Body() body: {name: string; parentId: string}) {
+    return this.googleDrive.createDocument({
       name: body.name,
       parentId: body.parentId,
     });
   }
 
-  @Post('update-sheet-headings')
+  @Post('files/spreadsheet')
   @ApiBody({
     description: '',
     examples: {
       a: {
-        summary: '1. Update',
-        value: {
-          fileId: '',
-          sheetTitle: 'Sheet1',
-          headings: ['name', 'gender', 'age', 'role'],
-        },
+        summary: '1. Create',
+        value: {name: '', parentId: ''},
       },
     },
   })
-  async updateSpreadsheetHeadings(
-    @Body() body: {fileId: string; sheetTitle: string; headings: string[]}
-  ) {
-    return this.spreadsheetService.updateHeadings(body);
+  async createSpreadsheet(@Body() body: {name: string; parentId: string}) {
+    return this.googleDrive.createSheet({
+      name: body.name,
+      parentId: body.parentId,
+    });
   }
 
-  @Post('append-sheet-data')
-  @ApiBody({
-    description: '',
-    examples: {
-      a: {
-        summary: '1. Update',
-        value: {
-          fileId: '',
-          sheetTitle: 'Sheet1',
-          data: ['name', 'gender', 'age', 'role'],
-        },
-      },
-    },
-  })
-  async appendSpreadsheetData(
-    @Body() body: {fileId: string; sheetTitle: string; data: any[][]}
-  ) {
-    return await this.spreadsheetService.appendRows(body);
+  @Delete('files/:fileId')
+  async deleteFile(@Param('fileId') fileId: string) {
+    return await this.googleDrive.deleteFile(fileId);
   }
 
   /* End */

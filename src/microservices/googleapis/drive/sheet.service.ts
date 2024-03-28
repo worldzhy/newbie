@@ -1,13 +1,10 @@
-import {Injectable, InternalServerErrorException} from '@nestjs/common';
+import {Injectable} from '@nestjs/common';
 import * as google from '@googleapis/sheets';
 import {ConfigService} from '@nestjs/config';
 import {
   generateRandomNumber,
   number2alphabet,
 } from '@toolkit/utilities/common.util';
-import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {GoogleDriveService} from './drive.service';
-import {GoogleFileType} from '../enum';
 
 /**
  * API parameters introduction
@@ -25,19 +22,19 @@ import {GoogleFileType} from '../enum';
  */
 
 @Injectable()
-export class GoogleSpreadsheetService extends GoogleDriveService {
+export class GoogleSheetService {
   private client: google.sheets_v4.Sheets;
 
-  constructor(
-    private readonly configService: ConfigService,
-    private readonly prismaService: PrismaService
-  ) {
-    super(configService, prismaService, GoogleFileType.Sheet);
-    this.client = google.sheets({version: 'v4', auth: this.auth});
-  }
+  constructor(private readonly config: ConfigService) {
+    // Create a new JWT client using the key file downloaded from the Google Developer Console.
+    const auth = new google.auth.GoogleAuth({
+      keyFile: this.config.getOrThrow<string>(
+        'microservice.googleapis.credentials.serviceAccount'
+      ),
+      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+    });
 
-  async createSpreadsheet(params: {name: string; parentId?: string}) {
-    return await this.createFile(params);
+    this.client = google.sheets({version: 'v4', auth: auth});
   }
 
   /**************************************

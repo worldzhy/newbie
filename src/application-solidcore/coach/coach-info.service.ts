@@ -1,5 +1,4 @@
 import {Injectable} from '@nestjs/common';
-import {GoogleSpreadsheetService} from '@microservices/googleapis/drive/spreadsheet.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {
   alphabet2number,
@@ -7,6 +6,8 @@ import {
 } from '@toolkit/utilities/common.util';
 import {GoogleFile, Prisma, UserStatus} from '@prisma/client';
 import {ConfigService} from '@nestjs/config';
+import {GoogleDriveService} from '@microservices/googleapis/drive/drive.service';
+import {GoogleSheetService} from '@microservices/googleapis/drive/sheet.service';
 import {verifyEmail, verifyUuid} from '@toolkit/validators/user.validator';
 
 const EXPORT_SPREADSHEET_NAME = 'Solidcore Coach List';
@@ -35,7 +36,8 @@ export class CoachInfoService {
   protected exportedSheetName: string;
   protected importedSpreadsheetId: string;
   constructor(
-    private readonly googleSheet: GoogleSpreadsheetService,
+    private readonly googleDrive: GoogleDriveService,
+    private readonly googleSheet: GoogleSheetService,
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService
   ) {
@@ -52,9 +54,9 @@ export class CoachInfoService {
     // [step 1] Get the google spreadsheet.
     let spreadsheet: GoogleFile | null;
 
-    spreadsheet = await this.googleSheet.findOne(this.exportedSheetName);
+    spreadsheet = await this.googleDrive.getFile(this.exportedSheetName);
     if (!spreadsheet) {
-      spreadsheet = await this.googleSheet.createSpreadsheet({
+      spreadsheet = await this.googleDrive.createSheet({
         name: this.exportedSheetName,
       });
     }

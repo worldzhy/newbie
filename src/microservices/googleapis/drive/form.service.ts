@@ -1,43 +1,52 @@
 import {Injectable} from '@nestjs/common';
 import * as google from '@googleapis/forms';
 import {ConfigService} from '@nestjs/config';
-import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {GoogleDriveService} from './drive.service';
-import {GoogleFileType} from '../enum';
 
 @Injectable()
-export class GoogleFormService extends GoogleDriveService {
-  constructor(
-    private readonly configService: ConfigService,
-    private readonly prismaService: PrismaService
-  ) {
-    super(configService, prismaService, GoogleFileType.Form);
+export class GoogleFormService {
+  private client: google.forms_v1.Forms;
+
+  constructor(private readonly config: ConfigService) {
+    // Create a new JWT client using the key file downloaded from the Google Developer Console.
+    const auth = new google.auth.GoogleAuth({
+      keyFile: this.config.getOrThrow<string>(
+        'microservice.googleapis.credentials.serviceAccount'
+      ),
+      scopes: ['https://www.googleapis.com/auth/forms'],
+    });
+
+    this.client = google.forms({version: 'v1', auth: auth});
   }
 
   async getFormItems(formId: string) {
-    const forms = google.forms({version: 'v1', auth: this.auth});
-    const result = await forms.forms.get({formId});
-
-    return result.data.items || [];
+    try {
+      const result = await this.client.forms.get({formId});
+      return result.data.items || [];
+    } catch (error) {
+      throw error;
+    }
   }
 
   async getFormResponses(formId: string) {
-    const forms = google.forms({version: 'v1', auth: this.auth});
-    const result = await forms.forms.responses.list({formId});
+    try {
+      const result = await this.client.forms.responses.list({formId});
 
-    const responses = result.data.responses;
-    if (responses) {
-      for (let i = 0; i < responses.length; i++) {
-        const response = responses[i];
-        const answers = response.answers;
-        for (let key in answers) {
-          const answer = answers[key];
-          answer.questionId;
+      const responses = result.data.responses;
+      if (responses) {
+        for (let i = 0; i < responses.length; i++) {
+          const response = responses[i];
+          const answers = response.answers;
+          for (let key in answers) {
+            const answer = answers[key];
+            answer.questionId;
+          }
         }
       }
-    }
 
-    return responses || [];
+      return responses || [];
+    } catch (error) {
+      throw error;
+    }
   }
 
   /* End */
