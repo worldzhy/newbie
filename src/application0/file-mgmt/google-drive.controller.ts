@@ -56,7 +56,7 @@ export class GoogleDriveController {
     return await this.googleDrive.deleteFile(fileId);
   }
 
-  @Post('files')
+  @Post('list')
   @ApiBody({
     description: '',
     examples: {
