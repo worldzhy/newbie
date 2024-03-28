@@ -137,26 +137,6 @@ export class GoogleDriveService {
     }
   }
 
-  async trashFile(fileId: string) {
-    try {
-      const response = await this.drive.files.update({
-        fileId,
-        requestBody: {trashed: true},
-      });
-      if (response.status >= 200 && response.status < 300) {
-        return await this.prisma.googleFile.update({
-          where: {id: fileId},
-          data: {trashed: true},
-        });
-      } else {
-        throw new InternalServerErrorException('Trash google file failed.');
-      }
-    } catch (error) {
-      // TODO (developer) - Handle exception
-      throw error;
-    }
-  }
-
   private async createFile(params: {
     name: string;
     type: GoogleFileType;
