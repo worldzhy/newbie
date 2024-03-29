@@ -197,7 +197,7 @@ export class GoogleDriveService {
   }
 
   private async getFilePathRecursively(fileId: string) {
-    const path: any[] = [];
+    const path: object[] = [];
 
     // [step 1] Get current file.
     const file = await this.prisma.googleFile.findFirstOrThrow({

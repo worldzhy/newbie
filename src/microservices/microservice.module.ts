@@ -2,6 +2,7 @@ import {Global, Module} from '@nestjs/common';
 import {ConfigModule} from '@nestjs/config';
 import {ToolkitModule} from '@toolkit/toolkit.module';
 import {AccountModule} from './account/account.module';
+import {CronTaskModule} from './cron/cron.module';
 import {EventSchedulingModule} from './event-scheduling/event-scheduling.module';
 import {FileManagementModule} from './file-mgmt/file-mgmt.module';
 import {GoogleAPIsModule} from './googleapis/googleapis.module';
@@ -23,6 +24,7 @@ import MicroserviceConfiguration from './microservice.config';
 
     ConfigModule.forRoot({load: [MicroserviceConfiguration], isGlobal: true}),
     AccountModule,
+    CronTaskModule,
     EventSchedulingModule,
     FileManagementModule,
     GoogleAPIsModule,

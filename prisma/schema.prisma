@@ -258,12 +258,12 @@ enum VerificationCodeUse {
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
 model CronTask {
-  id         Int      @id @default(autoincrement())
-  name       String   @unique
-  expression String
-  command    String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  cronTime  String
+  command   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@schema("microservice/cron")
 }
