@@ -7,7 +7,7 @@ import {
 import {GoogleFile, Prisma, UserStatus} from '@prisma/client';
 import {ConfigService} from '@nestjs/config';
 import {GoogleDriveService} from '@microservices/googleapis/drive/drive.service';
-import {GoogleSheetService} from '@microservices/googleapis/drive/sheet.service';
+import {GoogleSheetService} from '@microservices/googleapis/sheet/sheet.service';
 import {verifyEmail, verifyUuid} from '@toolkit/validators/user.validator';
 
 const EXPORT_SPREADSHEET_NAME = 'Solidcore Coach List';

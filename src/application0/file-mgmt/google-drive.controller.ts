@@ -1,4 +1,4 @@
-import {Post, Body, Controller, Delete, Param} from '@nestjs/common';
+import {Post, Body, Controller, Delete, Param, Get} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {GoogleDriveService} from '@microservices/googleapis/drive/drive.service';
 import {GoogleAccountRole} from '@microservices/googleapis/enum';
@@ -57,6 +57,11 @@ export class GoogleDriveController {
     });
   }
 
+  @Get('files/:fileId/path')
+  async getFilePath(@Param('fileId') fileId: string) {
+    return await this.googleDrive.getFilePath(fileId);
+  }
+
   @Delete('files/:fileId')
   async deleteFile(@Param('fileId') fileId: string) {
     return await this.googleDrive.deleteFile(fileId);
@@ -90,7 +95,7 @@ export class GoogleDriveController {
     return await this.googleDrive.searchFiles(body);
   }
 
-  @Post('share')
+  @Post('permissions/share')
   @ApiBody({
     description: '',
     examples: {
@@ -109,5 +114,6 @@ export class GoogleDriveController {
   ) {
     return this.googleDrive.share(body);
   }
+
   /* End */
 }
