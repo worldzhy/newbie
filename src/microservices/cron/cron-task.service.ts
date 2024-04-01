@@ -39,7 +39,11 @@ export class CronTaskService {
   async delete(id: number) {
     const cron = await this.prisma.cronTask.delete({where: {id: id}});
 
-    this.schedulerRegistry.deleteCronJob(cron.name);
+    try {
+      this.schedulerRegistry.deleteCronJob(cron.name);
+    } catch (error) {
+      console.log(error);
+    }
 
     return cron;
   }
