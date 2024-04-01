@@ -77,7 +77,13 @@ export class CronTaskService {
   }
 
   runningInfo(name: string) {
-    const cron = this.schedulerRegistry.getCronJob(name);
+    let cron: CronJob;
+    try {
+      cron = this.schedulerRegistry.getCronJob(name);
+    } catch (error) {
+      return null;
+    }
+
     let nextDate: Date | string;
     try {
       nextDate = cron.nextDate().toJSDate();

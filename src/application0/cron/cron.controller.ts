@@ -33,18 +33,11 @@ export class CronController {
 
     for (let i = 0; i < result.records.length; i++) {
       const cron = result.records[i];
-
       const runningInfo = this.cronService.runningInfo(cron.name);
-      if (runningInfo.running !== cron.running) {
-        cron.running = runningInfo.running;
-        await this.prisma.cronTask.update({
-          where: {id: cron.id},
-          data: {running: runningInfo.running},
-        });
+      if (runningInfo) {
+        cron['lastDate'] = runningInfo.lastDate;
+        cron['nextDate'] = runningInfo.nextDate;
       }
-
-      cron['lastDate'] = runningInfo.lastDate;
-      cron['nextDate'] = runningInfo.nextDate;
     }
 
     return result;
