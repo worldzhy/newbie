@@ -32,9 +32,9 @@ export class GoogleDriveService {
     this.drive = google.drive({version: 'v3', auth: auth});
   }
 
-  async share(params: {
+  async createPermission(params: {
     fileId: string;
-    gmail: string;
+    email: string;
     role: GoogleAccountRole;
   }) {
     try {
@@ -43,11 +43,35 @@ export class GoogleDriveService {
         sendNotificationEmail: true,
         requestBody: {
           type: 'user',
-          emailAddress: params.gmail,
+          emailAddress: params.email,
           role: params.role,
         },
       });
       return response.data;
+    } catch (error) {
+      // TODO (developer) - Handle exception
+      throw error;
+    }
+  }
+
+  async deletePermission(params: {fileId: string; permissionId: string}) {
+    try {
+      const response = await this.drive.permissions.delete(params);
+      return response.data;
+    } catch (error) {
+      // TODO (developer) - Handle exception
+      throw error;
+    }
+  }
+
+  async listPermissions(params: {fileId: string}) {
+    try {
+      const response = await this.drive.permissions.list({
+        fileId: params.fileId,
+      });
+      return response.data.permissions?.map(permission => {
+        return {email: permission.emailAddress, role: permission.role};
+      });
     } catch (error) {
       // TODO (developer) - Handle exception
       throw error;

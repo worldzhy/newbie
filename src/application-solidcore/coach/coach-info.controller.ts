@@ -45,27 +45,27 @@ export class CoachInfoController {
     // for (let i = 0; i < managers.length; i++) {
     //   const manager = managers[i];
     //   if (manager.email && 1) {
-    //     await this.googleSpreadsheet.share({
+    //     await this.googleSpreadsheet.createPermission({
     //       fileId: sheet.id,
-    //       gmail: manager.email,
+    //       email: manager.email,
     //       role: GoogleAccountRole.Writer,
     //     });
     //   }
     // }
 
-    await this.googleDrive.share({
+    await this.googleDrive.createPermission({
       fileId: file.id,
-      gmail: 'tanlu@inceptionpad.com',
+      email: 'tanlu@inceptionpad.com',
       role: GoogleAccountRole.Writer,
     });
-    await this.googleDrive.share({
+    await this.googleDrive.createPermission({
       fileId: file.id,
-      gmail: 'liyue@inceptionpad.com',
+      email: 'liyue@inceptionpad.com',
       role: GoogleAccountRole.Writer,
     });
-    await this.googleDrive.share({
+    await this.googleDrive.createPermission({
       fileId: file.id,
-      gmail: 'worldzhy@gmail.com',
+      email: 'worldzhy@gmail.com',
       role: GoogleAccountRole.Writer,
     });
   }
