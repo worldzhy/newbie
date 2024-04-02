@@ -4,7 +4,6 @@ import {
 } from '@aws-sdk/client-cloudformation';
 import {BadRequestException, Injectable} from '@nestjs/common';
 import {AwsResourceManager, AwsResourceStackState} from '@prisma/client';
-import {DestroyResult, UpResult} from '@pulumi/pulumi/automation';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {
   CloudFormationStackService,
@@ -61,7 +60,7 @@ export class AwsIaaSService {
     // }
 
     // [step 2] Build the infrastructure stack.
-    let output: CreateStackCommandOutput | UpResult;
+    let output: CreateStackCommandOutput;
     let state: AwsResourceStackState;
     if (stack.manager === AwsResourceManager.CloudFormation) {
       if (
@@ -114,7 +113,7 @@ export class AwsIaaSService {
     // }
 
     // [step 2] Delete the stack on AWS CloudFormation.
-    let output: DeleteStackCommandOutput | DestroyResult;
+    let output: DeleteStackCommandOutput;
     let state: AwsResourceStackState;
     if (stack.manager === AwsResourceManager.CloudFormation) {
       output = await this.cloudformationStackService.destroyResources(stack);
