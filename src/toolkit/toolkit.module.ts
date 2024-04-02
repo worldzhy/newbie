@@ -3,7 +3,6 @@ import {ConfigModule, ConfigService} from '@nestjs/config';
 import {CacheModule} from '@nestjs/cache-manager';
 import * as redisStore from 'cache-manager-redis-store';
 import {HttpModule} from '@nestjs/axios';
-import {AwsModule} from './aws/aws.module';
 import {ElasticModule} from './elastic/elastic.module';
 import {CustomLoggerModule} from './logger/logger.module';
 import {PrismaModule} from './prisma/prisma.module';
@@ -20,7 +19,6 @@ export class ToolkitModule {}
 
 function getModules() {
   const modules = [
-    AwsModule,
     ConfigModule.forRoot({load: [ToolkitConfiguration], isGlobal: true}),
     CustomLoggerModule,
     ElasticModule,

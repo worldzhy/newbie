@@ -3,7 +3,7 @@ import {ConfigService} from '@nestjs/config';
 import {SendMessagesCommandOutput} from '@aws-sdk/client-pinpoint';
 import {EmailNotification, SmsNotification} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {PinpointService} from '@toolkit/aws/aws.pinpoint.service';
+import {AwsPinpointService} from '@microservices/cloud/saas/aws/aws-pinpoint.service';
 
 @Injectable()
 export class NotificationService {
@@ -16,7 +16,7 @@ export class NotificationService {
   constructor(
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
-    private readonly pinpointService: PinpointService
+    private readonly pinpointService: AwsPinpointService
   ) {
     this.emailPinpointApplicationId = this.configService.getOrThrow<string>(
       'microservice.notification.email.awsPinpointApplicationId'

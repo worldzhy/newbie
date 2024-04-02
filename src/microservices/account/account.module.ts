@@ -1,5 +1,4 @@
 import {Global, Module} from '@nestjs/common';
-
 import {AccountService} from './account.service';
 import {RoleService} from './role.service';
 import {UserService} from './user.service';

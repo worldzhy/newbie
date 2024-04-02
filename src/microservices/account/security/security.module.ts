@@ -20,12 +20,17 @@ import {
   LimitLoginByUserService,
 } from './rate-limiter/rate-limiter.service';
 
+import {AccessTokenModule} from './token/access-token.module';
+import {RefreshTokenModule} from './token/refresh-token.module';
+
 @Module({
   imports: [
     ThrottlerModule.forRoot({
       // Maximum of 10000 requests / 1000 milliseconds for each endpoint.
       throttlers: [{limit: 10000, ttl: 1000}],
     }),
+    AccessTokenModule,
+    RefreshTokenModule,
   ],
   providers: [
     {provide: APP_GUARD, useClass: ThrottlerGuard}, // 1st priority guard.

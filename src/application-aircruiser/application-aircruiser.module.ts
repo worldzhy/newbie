@@ -2,11 +2,10 @@ import {Module} from '@nestjs/common';
 import {Application0Module} from '@application0/application0.module';
 
 import {ApplicationAircruiserController} from './application-aircruiser.controller';
-import {ProjectCheckpointController} from './project-mgmt/checkpoint.controller';
-import {ProjectEnvironmentController} from './project-mgmt/environment.controller';
-import {ProjectInfrastructureController} from './project-mgmt/infrastructure.controller';
-import {ProjectNoteController} from './project-mgmt/note.controller';
-import {ProjectController} from './project-mgmt/project.controller';
+import {AwsEnvironmentController} from './cloud/environment.controller';
+import {AwsResourceStackController} from './cloud/resource-stack.controller';
+import {ProjectNoteController} from './project/note.controller';
+import {ProjectController} from './project/project.controller';
 
 @Module({
   imports: [
@@ -14,9 +13,8 @@ import {ProjectController} from './project-mgmt/project.controller';
   ],
   controllers: [
     ApplicationAircruiserController,
-    ProjectCheckpointController,
-    ProjectEnvironmentController,
-    ProjectInfrastructureController,
+    AwsEnvironmentController,
+    AwsResourceStackController,
     ProjectNoteController,
     ProjectController,
   ],

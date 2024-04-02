@@ -3,18 +3,18 @@ import {ConfigService} from '@nestjs/config';
 import {PassportStrategy} from '@nestjs/passport';
 import {ExtractJwt, Strategy} from 'passport-jwt';
 import {Request} from 'express';
-import {AccessTokenService} from '@microservices/token/access-token/access-token.service';
+import {AccessTokenService} from '@microservices/account/security/token/access-token.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
-    private readonly configService: ConfigService,
+    private readonly config: ConfigService,
     private readonly prisma: PrismaService,
     private readonly accessTokenService: AccessTokenService
   ) {
-    const secret = configService.getOrThrow<string>(
-      'microservice.token.access.secret'
+    const secret = config.getOrThrow<string>(
+      'microservice.token.userAccess.secret'
     );
 
     super({

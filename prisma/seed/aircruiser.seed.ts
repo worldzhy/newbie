@@ -59,18 +59,6 @@ export async function seedForAircruiser() {
     });
   }
 
-  console.log('- Creating project...');
-  const projectCreateInputs = [{name: 'A Demo'}];
-  for (const projectCreateInput of projectCreateInputs) {
-    const project = await prisma.project.create({data: projectCreateInput});
-    await prisma.projectEnvironment.createMany({
-      data: [
-        {name: 'Development', projectId: project.id},
-        {name: 'Production', projectId: project.id},
-      ],
-    });
-  }
-
   console.log('- Creating workflow...');
   const workflow = await prisma.workflow.create({
     data: {name: 'A Workflow'},

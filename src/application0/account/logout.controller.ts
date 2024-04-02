@@ -2,7 +2,7 @@ import {Controller, Post, Body, Res} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Response} from 'express';
 import {AccountService} from '@microservices/account/account.service';
-import {RefreshTokenService} from '@microservices/token/refresh-token/refresh-token.service';
+import {RefreshTokenService} from '@microservices/account/security/token/refresh-token.service';
 
 @ApiTags('Account')
 @Controller('account')

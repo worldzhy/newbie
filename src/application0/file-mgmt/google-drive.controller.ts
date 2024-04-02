@@ -1,13 +1,25 @@
-import {Post, Body, Controller, Delete, Param, Get} from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {GoogleDriveService} from '@microservices/googleapis/drive/drive.service';
-import {GoogleAccountRole} from '@microservices/googleapis/enum';
+import {
+  Post,
+  Body,
+  Controller,
+  Delete,
+  Param,
+  Get,
+  Query,
+} from '@nestjs/common';
+import {ApiTags, ApiBearerAuth, ApiBody, ApiQuery} from '@nestjs/swagger';
+import {GoogleDriveService} from '@microservices/cloud/saas/google/google-drive.service';
+import {GoogleAccountRole} from '@microservices/cloud/saas/google/enum';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('File Management')
 @ApiBearerAuth()
 @Controller('google-drive')
 export class GoogleDriveController {
-  constructor(private readonly googleDrive: GoogleDriveService) {}
+  constructor(
+    private readonly googleDrive: GoogleDriveService,
+    private readonly prisma: PrismaService
+  ) {}
 
   @Post('files/folder')
   @ApiBody({
@@ -17,7 +29,7 @@ export class GoogleDriveController {
     },
   })
   async createFolder(@Body() body: {name: string; parentId?: string}) {
-    return this.googleDrive.createFolder(body);
+    return await this.googleDrive.createFolder(body);
   }
 
   @Post('files/document')
@@ -28,7 +40,7 @@ export class GoogleDriveController {
     },
   })
   async createDocument(@Body() body: {name: string; parentId?: string}) {
-    return this.googleDrive.createDocument({
+    return await this.googleDrive.createDocument({
       name: body.name,
       parentId: body.parentId,
     });
@@ -42,7 +54,7 @@ export class GoogleDriveController {
     },
   })
   async createSpreadsheet(@Body() body: {name: string; parentId?: string}) {
-    return this.googleDrive.createSheet({
+    return await this.googleDrive.createSheet({
       name: body.name,
       parentId: body.parentId,
     });
@@ -58,25 +70,23 @@ export class GoogleDriveController {
     return await this.googleDrive.deleteFile(fileId);
   }
 
-  @Post('list')
+  @Post('files/list')
   @ApiBody({
     description: '',
-    examples: {a: {summary: '1. List', value: {parentId: '[Optional]'}}},
+    examples: {
+      a: {
+        summary: '1. List',
+        value: {page: 0, pageSize: 10, parentId: '[Optional]'},
+      },
+    },
   })
-  async listFiles(@Body() body: {parentId?: string}) {
+  async listFiles(
+    @Body() body: {page: number; pageSize: number; parentId?: string}
+  ) {
     return await this.googleDrive.listFiles(body);
   }
 
-  @Post('search')
-  @ApiBody({
-    description: '',
-    examples: {a: {summary: '1. Search', value: {name: ''}}},
-  })
-  async searchFiles(@Body() body: {name: string}) {
-    return await this.googleDrive.searchFiles(body);
-  }
-
-  @Post('permissions/create')
+  @Post('permissions')
   @ApiBody({
     description: '',
     examples: {
@@ -93,27 +103,19 @@ export class GoogleDriveController {
   async createPermission(
     @Body() body: {fileId: string; email: string; role: GoogleAccountRole}
   ) {
-    return this.googleDrive.createPermission(body);
+    return await this.googleDrive.createPermission(body);
   }
 
-  @Post('permissions/list')
-  @ApiBody({
-    description: '',
-    examples: {a: {summary: '1. List', value: {fileId: ''}}},
-  })
-  async listPermissions(@Body() body: {fileId: string}) {
-    return this.googleDrive.listPermissions(body);
+  @Get('permissions')
+  async listPermissions(@Query('fileId') fileId: string) {
+    return await this.prisma.googleFilePermission.findMany({
+      where: {fileId: fileId},
+    });
   }
 
-  @Post('permissions/delete')
-  @ApiBody({
-    description: '',
-    examples: {
-      a: {summary: '1. Delete', value: {fileId: '', permissionId: ''}},
-    },
-  })
-  async deletePermission(@Body() body: {fileId: string; permissionId: string}) {
-    return this.googleDrive.deletePermission(body);
+  @Delete('permissions/:permissionId')
+  async deletePermission(@Param('permissionId') permissionId: string) {
+    return await this.googleDrive.deletePermission(permissionId);
   }
 
   /* End */

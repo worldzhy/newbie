@@ -25,7 +25,6 @@ import {
 import {PDFEngine} from 'chromiumly';
 import type {Response} from 'express';
 import {createReadStream} from 'fs';
-import {DocumentTemplateService} from '../document-temps/document-temps.service';
 import {DocumentService} from './document.service';
 const Docxtemplater = require('docxtemplater');
 import PizZip = require('pizzip');
@@ -33,7 +32,7 @@ import path = require('path');
 import fs = require('fs');
 import {replace} from 'lodash';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
-import {S3Service} from '@toolkit/aws/aws.s3.service';
+import {AwsS3Service} from '@microservices/cloud/saas/aws/aws-s3.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {AccountService} from '@microservices/account/account.service';
 import {Request} from 'express';
@@ -46,8 +45,7 @@ export class DocumentController {
     private prisma: PrismaService,
     private accountService: AccountService,
     private documentService: DocumentService,
-    private documentTemplateService: DocumentTemplateService,
-    private s3Service: S3Service
+    private s3: AwsS3Service
   ) {}
 
   @Post('')
@@ -803,7 +801,7 @@ export class DocumentController {
     })) as Document & {content: DocumentContent} & {file: File};
 
     if (doc && doc.fileId) {
-      const output = await this.s3Service.getObject({
+      const output = await this.s3.getObject({
         Bucket: doc.file.s3Bucket,
         Key: doc.file.s3Key,
       });
@@ -813,7 +811,7 @@ export class DocumentController {
           doc.file.mimeType ===
           'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         ) {
-          const output = await this.s3Service.getObject({
+          const output = await this.s3.getObject({
             Bucket: doc.file.s3Bucket,
             Key: doc.file.s3Key,
           });
@@ -877,7 +875,7 @@ export class DocumentController {
             'Content-Disposition':
               'attachment; filename=' + doc.file.originalName,
           });
-          const output = await this.s3Service.getObject({
+          const output = await this.s3.getObject({
             Bucket: doc.file.s3Bucket,
             Key: doc.file.s3Key,
           });

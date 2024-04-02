@@ -18,8 +18,8 @@ import {ApiBearerAuth, ApiBody, ApiParam, ApiTags} from '@nestjs/swagger';
 import {ConfigService} from '@nestjs/config';
 import {createReadStream} from 'fs';
 import {diskStorage} from 'multer';
-import {AccessTokenService} from '@microservices/token/access-token/access-token.service';
-import {S3Service} from '@toolkit/aws/aws.s3.service';
+import {AccessTokenService} from '@microservices/account/security/token/access-token.service';
+import {AwsS3Service} from '@microservices/cloud/saas/aws/aws-s3.service';
 import {generateRandomLetters} from '@toolkit/utilities/common.util';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
@@ -28,10 +28,10 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 @Controller('file-mgmt')
 export class FileManagementController {
   constructor(
+    private readonly config: ConfigService,
     private readonly prisma: PrismaService,
-    private readonly accessTokenService: AccessTokenService,
-    private readonly s3Service: S3Service,
-    private readonly configService: ConfigService
+    private readonly s3: AwsS3Service,
+    private readonly accessTokenService: AccessTokenService
   ) {}
 
   @Post('upload-to-cloud')
@@ -61,11 +61,11 @@ export class FileManagementController {
 
     // [step 2] Generate file name and put file to AWS S3.
     const filename = Date.now() + generateRandomLetters(4);
-    const bucket = this.configService.getOrThrow<string>(
+    const bucket = this.config.getOrThrow<string>(
       'microservice.file-mgmt.awsS3Bucket'
     );
     const s3Key = folder.name + '/' + filename;
-    const output = await this.s3Service.putObject({
+    const output = await this.s3.putObject({
       Bucket: bucket,
       Key: s3Key,
       Body: file.buffer,
@@ -108,7 +108,7 @@ export class FileManagementController {
     });
 
     // [step 3] Return file.
-    const output = await this.s3Service.getObject({
+    const output = await this.s3.getObject({
       Bucket: file.s3Bucket,
       Key: file.s3Key,
     });
@@ -144,7 +144,7 @@ export class FileManagementController {
       ...file,
       url:
         'https://' +
-        this.configService.getOrThrow<string>(
+        this.config.getOrThrow<string>(
           'microservice.file-mgmt.awsCloudfrontDomain'
         ) +
         '/' +
@@ -157,7 +157,7 @@ export class FileManagementController {
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
-        destination: process.env.FILE_MANAGEMENT_LOCAL_PATH, // ! Why configService can not be used here?
+        destination: process.env.FILE_MANAGEMENT_LOCAL_PATH, // ! Why config can not be used here?
       }),
     })
   )

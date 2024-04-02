@@ -1,9 +1,9 @@
 import {Injectable} from '@nestjs/common';
-import {SqsService} from '@toolkit/aws/aws.sqs.service';
+import {AwsSqsService} from '@microservices/cloud/saas/aws/aws-sqs.service';
 
 @Injectable()
 export class Notification2Service {
-  constructor(private readonly sqs: SqsService) {}
+  constructor(private readonly sqs: AwsSqsService) {}
 
   async sendEmail(params: {
     queueUrl: string;

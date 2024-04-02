@@ -161,7 +161,7 @@ export class AsyncPublishService {
     // const MessageDeduplicationId = `${asyncPublish.id}-remove-${timestamp}`;
 
     // const queueUrl = this.configService.get(
-    //   'toolkit.aws.sqs.publish_remove_queue'
+    //   'microservice.aws.sqs.publish_remove_queue'
     // );
     // // console.log('queueUrl', queueUrl);
 
