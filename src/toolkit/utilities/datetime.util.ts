@@ -90,9 +90,13 @@ export function quarterOfMonth(month: number): number {
  */
 export function weekOfMonth(year: number, month: number, day: number) {
   const date = new Date(year, month - 1, day);
-  const dayOfWeek = date.getDay();
   const dayOfMonth = date.getDate();
-  return Math.ceil((dayOfMonth + (dayOfWeek === 0 ? 0 : 6 - dayOfWeek)) / 7);
+
+  const firstDate = new Date(year, month - 1, 1);
+  const dayOfFirstDate = firstDate.getDay() === 0 ? 7 : firstDate.getDay(); // Sunday is the last day of week.
+  // const dayOfFirstDate = firstDate.getDay() + 1; // Sunday is the first day of week.
+
+  return Math.ceil((dayOfMonth + dayOfFirstDate - 1) / 7);
 }
 
 /**
