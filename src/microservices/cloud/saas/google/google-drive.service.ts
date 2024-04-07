@@ -183,6 +183,26 @@ export class GoogleDriveService {
     }
   }
 
+  async renameFile(params: {fileId: string; name: string}) {
+    try {
+      const response = await this.drive.files.update({
+        fileId: params.fileId,
+        requestBody: {name: params.name},
+      });
+      if (response.status >= 200 && response.status < 300) {
+        return await this.prisma.googleFile.update({
+          where: {id: params.fileId},
+          data: {name: params.name},
+        });
+      } else {
+        throw new InternalServerErrorException('Rename google file failed.');
+      }
+    } catch (error) {
+      // TODO (developer) - Handle exception
+      throw error;
+    }
+  }
+
   private async createFile(params: {
     name: string;
     type: GoogleFileType;

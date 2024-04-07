@@ -6,6 +6,7 @@ import {
   Param,
   Get,
   Query,
+  Patch,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {GoogleDriveService} from '@microservices/cloud/saas/google/google-drive.service';
@@ -63,6 +64,20 @@ export class GoogleDriveController {
   @Get('files/:fileId/path')
   async getFilePath(@Param('fileId') fileId: string) {
     return await this.googleDrive.getFilePath(fileId);
+  }
+
+  @Patch('files/:fileId/rename')
+  @ApiBody({
+    description: '',
+    examples: {
+      a: {summary: '1. Update', value: {name: ''}},
+    },
+  })
+  async renameFile(
+    @Param('fileId') fileId: string,
+    @Body() body: {name: string}
+  ) {
+    return await this.googleDrive.renameFile({fileId, name: body.name});
   }
 
   @Delete('files/:fileId')
