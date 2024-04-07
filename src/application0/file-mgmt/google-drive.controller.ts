@@ -7,7 +7,7 @@ import {
   Get,
   Query,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiBody, ApiQuery} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {GoogleDriveService} from '@microservices/cloud/saas/google/google-drive.service';
 import {GoogleAccountRole} from '@microservices/cloud/saas/google/enum';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
@@ -114,7 +114,7 @@ export class GoogleDriveController {
   }
 
   @Delete('permissions/:permissionId')
-  async deletePermission(@Param('permissionId') permissionId: string) {
+  async deletePermission(@Param('permissionId') permissionId: number) {
     return await this.googleDrive.deletePermission(permissionId);
   }
 

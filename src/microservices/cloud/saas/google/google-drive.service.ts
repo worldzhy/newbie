@@ -51,7 +51,7 @@ export class GoogleDriveService {
 
       return await this.prisma.googleFilePermission.create({
         data: {
-          id: response.data.id!,
+          permissionId: response.data.id!,
           type: 'user',
           role: params.role,
           email: params.email,
@@ -64,7 +64,7 @@ export class GoogleDriveService {
     }
   }
 
-  async deletePermission(id: string) {
+  async deletePermission(id: number) {
     try {
       const permission = await this.prisma.googleFilePermission.delete({
         where: {id},
@@ -72,7 +72,7 @@ export class GoogleDriveService {
 
       await this.drive.permissions.delete({
         fileId: permission.fileId,
-        permissionId: permission.id,
+        permissionId: permission.permissionId,
       });
     } catch (error) {
       // TODO (developer) - Handle exception
