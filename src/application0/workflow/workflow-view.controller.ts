@@ -46,7 +46,7 @@ export class WorkflowViewController {
       findManyArgs: {
         where: {
           workflowId: workflowId,
-          inboundRoutes: {some: {startSign: true}},
+          outboundRoutes: {some: {startSign: true}},
         },
         include: {
           components: {orderBy: {sort: 'asc'}},
