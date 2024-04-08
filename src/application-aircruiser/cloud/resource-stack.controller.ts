@@ -10,17 +10,12 @@ import {
   Query,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {
-  AwsResourceStack,
-  AwsResourceManager,
-  AwsResourceStackState,
-  Prisma,
-} from '@prisma/client';
+import {AwsResourceStack, AwsResourceStackState, Prisma} from '@prisma/client';
 import {CloudFormationStackType} from '@microservices/cloud/iaas/aws/cloudformation/cloudformation.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {AwsIaaSService} from '@microservices/cloud/iaas/aws/service';
 
-@ApiTags('AWS Resource Stack')
+@ApiTags('Cloud Resource Stack')
 @ApiBearerAuth()
 @Controller('aws-resource-stacks')
 export class AwsResourceStackController {
@@ -29,17 +24,12 @@ export class AwsResourceStackController {
     private readonly awsIaaSService: AwsIaaSService
   ) {}
 
-  @Get('managers')
-  listStackManagers() {
-    return this.awsIaaSService.listManagers();
+  @Get('types')
+  listStackTypes() {
+    return this.awsIaaSService.listStackTypes();
   }
 
-  @Get('stacks/types')
-  listStackTypes(@Query('manager') manager: string) {
-    return this.awsIaaSService.listStackTypes(manager);
-  }
-
-  @Get('stacks/params')
+  @Get('params')
   async getStackParams(
     @Query('type') type: string,
     @Query('manager') manager: string
@@ -47,14 +37,13 @@ export class AwsResourceStackController {
     return this.awsIaaSService.getStackParams({manager, type});
   }
 
-  @Post('stacks')
+  @Post('')
   @ApiBody({
     description: 'Create infrastructure stack.',
     examples: {
       a: {
         summary: '1. CloudFormation stack',
         value: {
-          manager: AwsResourceManager.CloudFormation,
           type: CloudFormationStackType.MESSAGE_TRACKER,
           params: {
             DatabaseHost:
@@ -79,7 +68,7 @@ export class AwsResourceStackController {
     return await this.prisma.awsResourceStack.create({data: body});
   }
 
-  @Get('stacks')
+  @Get('')
   async getStacks(@Query('environmentId') environmentId: number) {
     return await this.prisma.findManyInOnePage({
       model: Prisma.ModelName.AwsResourceStack,
@@ -87,14 +76,14 @@ export class AwsResourceStackController {
     });
   }
 
-  @Get('stacks/:stackId')
+  @Get(':stackId')
   async getStack(@Param('stackId') stackId: string): Promise<AwsResourceStack> {
     return await this.prisma.awsResourceStack.findUniqueOrThrow({
       where: {id: stackId},
     });
   }
 
-  @Patch('stacks/:stackId')
+  @Patch(':stackId')
   @ApiBody({
     description: 'Update infrastructure stack.',
     examples: {
@@ -129,7 +118,7 @@ export class AwsResourceStackController {
     });
   }
 
-  @Delete('stacks/:stackId')
+  @Delete(':stackId')
   async deleteStack(
     @Param('stackId')
     stackId: string
@@ -153,7 +142,7 @@ export class AwsResourceStackController {
   }
 
   //* Create resources
-  @Post('stacks/:stackId/create-resources')
+  @Post(':stackId/create-resources')
   async createResources(
     @Param('stackId')
     stackId: string
@@ -162,7 +151,7 @@ export class AwsResourceStackController {
   }
 
   //* Destroy resources
-  @Post('stacks/:stackId/destroy-resources')
+  @Post(':stackId/destroy-resources')
   async destroyResources(
     @Param('stackId')
     stackId: string

@@ -279,13 +279,6 @@ model RefreshToken {
 // * InfrastructureStack                                          //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
-enum AwsResourceManager {
-  CloudFormation
-  Pulumi
-
-  @@schema("microservice/cloud")
-}
-
 enum AwsResourceStackState {
   PENDING
   BUILD_PROCESSING
@@ -316,7 +309,6 @@ model AwsEnvironment {
 model AwsResourceStack {
   id                  String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name                String?               @unique // Set default value via prisma middleware.
-  manager             AwsResourceManager
   type                String
   params              Json?
   state               AwsResourceStackState @default(PENDING)

@@ -13,7 +13,7 @@ import {Prisma, AwsEnvironment} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {AwsEnvironmentService} from '@microservices/cloud/iaas/aws/environment/environment.service';
 
-@ApiTags('Aws Environment')
+@ApiTags('Cloud Environment')
 @ApiBearerAuth()
 @Controller('aws-environments')
 export class AwsEnvironmentController {

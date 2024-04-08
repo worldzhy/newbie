@@ -3,7 +3,7 @@ import {
   DeleteStackCommandOutput,
 } from '@aws-sdk/client-cloudformation';
 import {BadRequestException, Injectable} from '@nestjs/common';
-import {AwsResourceManager, AwsResourceStackState} from '@prisma/client';
+import {AwsResourceStackState} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {
   CloudFormationStackService,
@@ -17,32 +17,12 @@ export class AwsIaaSService {
     private readonly cloudformationStackService: CloudFormationStackService
   ) {}
 
-  listManagers() {
-    return Object.values(AwsResourceManager);
-  }
-
-  listStackTypes(manager: string) {
-    if (manager === AwsResourceManager.CloudFormation) {
-      return Object.values(CloudFormationStackType);
-    } else if (manager === AwsResourceManager.Pulumi) {
-      throw new BadRequestException(
-        'Pulumi has been deprecated because it is not a formal product.'
-      );
-    } else {
-      throw new BadRequestException('The infrastructure manager is invalid.');
-    }
+  listStackTypes() {
+    return Object.values(CloudFormationStackType);
   }
 
   getStackParams(params: {manager: string; type: string}) {
-    if (params.manager === AwsResourceManager.CloudFormation) {
-      return this.cloudformationStackService.getStackParams(params.type);
-    } else if (params.manager === AwsResourceManager.Pulumi) {
-      throw new BadRequestException(
-        'Pulumi has been deprecated because it is not a formal product.'
-      );
-    } else {
-      throw new BadRequestException('The infrastructure manager is invalid.');
-    }
+    return this.cloudformationStackService.getStackParams(params.type);
   }
 
   async createStack(stackId: string) {
@@ -62,28 +42,20 @@ export class AwsIaaSService {
     // [step 2] Build the infrastructure stack.
     let output: CreateStackCommandOutput;
     let state: AwsResourceStackState;
-    if (stack.manager === AwsResourceManager.CloudFormation) {
-      if (
-        false ===
-        this.cloudformationStackService.checkStackParams({
-          stackType: stack.type,
-          stackParams: stack.params as object,
-        })
-      ) {
-        throw new BadRequestException(
-          'This infrastructure stack parameters are not ready.'
-        );
-      }
-
-      output = await this.cloudformationStackService.createResources(stack);
-      state = AwsResourceStackState.BUILD_PROCESSING;
-    } else if (stack.manager === AwsResourceManager.Pulumi) {
+    if (
+      false ===
+      this.cloudformationStackService.checkStackParams({
+        stackType: stack.type,
+        stackParams: stack.params as object,
+      })
+    ) {
       throw new BadRequestException(
-        'Pulumi has been deprecated because it is not a formal product.'
+        'This infrastructure stack parameters are not ready.'
       );
-    } else {
-      throw new BadRequestException('The infrastructure manager is invalid.');
     }
+
+    output = await this.cloudformationStackService.createResources(stack);
+    state = AwsResourceStackState.BUILD_PROCESSING;
 
     return await this.prisma.awsResourceStack.update({
       where: {id: stack.id},
@@ -115,16 +87,8 @@ export class AwsIaaSService {
     // [step 2] Delete the stack on AWS CloudFormation.
     let output: DeleteStackCommandOutput;
     let state: AwsResourceStackState;
-    if (stack.manager === AwsResourceManager.CloudFormation) {
-      output = await this.cloudformationStackService.destroyResources(stack);
-      state = AwsResourceStackState.DESTROY_PROCESSING;
-    } else if (stack.manager === AwsResourceManager.Pulumi) {
-      throw new BadRequestException(
-        'Pulumi has been deprecated because it is not a formal product.'
-      );
-    } else {
-      throw new BadRequestException('The infrastructure manager is invalid.');
-    }
+    output = await this.cloudformationStackService.destroyResources(stack);
+    state = AwsResourceStackState.DESTROY_PROCESSING;
 
     return await this.prisma.awsResourceStack.update({
       where: {id: stack.id},
