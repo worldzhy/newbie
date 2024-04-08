@@ -3,12 +3,7 @@ import * as google from '@googleapis/drive';
 import {ConfigService} from '@nestjs/config';
 import {Prisma} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {
-  GoogleAccountRole,
-  GoogleFileBaseURL,
-  GoogleFileType,
-  GoogleMimeType,
-} from './enum';
+import {GoogleFileBaseURL, GoogleFileType, GoogleMimeType} from './enum';
 
 /**
  * Note: In this service, assume "files" means both files and folders.
@@ -33,76 +28,12 @@ export class GoogleDriveService {
     this.drive = google.drive({version: 'v3', auth: auth});
   }
 
-  async createPermission(params: {
-    fileId: string;
-    email: string;
-    role: GoogleAccountRole;
-  }) {
-    try {
-      const response = await this.drive.permissions.create({
-        fileId: params.fileId,
-        sendNotificationEmail: true,
-        requestBody: {
-          type: 'user',
-          emailAddress: params.email,
-          role: params.role,
-        },
-      });
-
-      return await this.prisma.googleFilePermission.create({
-        data: {
-          permissionId: response.data.id!,
-          type: 'user',
-          role: params.role,
-          email: params.email,
-          fileId: params.fileId,
-        },
-      });
-    } catch (error) {
-      // TODO (developer) - Handle exception
-      throw error;
-    }
-  }
-
-  async deletePermission(id: number) {
-    try {
-      const permission = await this.prisma.googleFilePermission.delete({
-        where: {id},
-      });
-
-      await this.drive.permissions.delete({
-        fileId: permission.fileId,
-        permissionId: permission.permissionId,
-      });
-    } catch (error) {
-      // TODO (developer) - Handle exception
-      throw error;
-    }
-  }
-
-  async listPermissions(params: {fileId: string}) {
-    try {
-      const response = await this.drive.permissions.list({
-        fileId: params.fileId,
-      });
-
-      const permissions = response.data.permissions;
-      if (permissions === undefined) {
-        return [];
-      }
-
-      return Promise.all(
-        permissions.map(async permission => {
-          return await this.drive.permissions.get({
-            fileId: params.fileId,
-            permissionId: permission.id!,
-          });
-        })
-      );
-    } catch (error) {
-      // TODO (developer) - Handle exception
-      throw error;
-    }
+  async uploadFile(size: number) {
+    const response = await this.drive.files.create(
+      {uploadType: 'resumable'},
+      {headers: {'Content-Length': size}}
+    );
+    console.log(response);
   }
 
   async getFile(name: string) {

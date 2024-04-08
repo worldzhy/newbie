@@ -5,4 +5,4 @@ import {GoogleSheetController} from './google-sheet.controller';
 @Module({
   controllers: [GoogleDriveController, GoogleSheetController],
 })
-export class App0FileManagementModule {}
+export class App0GoogleDriveModule {}

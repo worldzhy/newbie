@@ -12,7 +12,7 @@ import {XLSXService} from '@toolkit/xlsx/xlsx.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {CoachInfoService} from './coach-info.service';
 import {GoogleAccountRole} from '@microservices/cloud/saas/google/enum';
-import {GoogleDriveService} from '@microservices/cloud/saas/google/google-drive.service';
+import {GoogleDrivePermissionService} from '@microservices/cloud/saas/google/google-drive-permission.service';
 
 enum Columns {
   Email1 = 'MBO Email addresss',
@@ -30,7 +30,7 @@ enum Columns {
 export class CoachInfoController {
   constructor(
     private readonly coachInfoService: CoachInfoService,
-    private readonly googleDrive: GoogleDriveService,
+    private readonly googleDrivePermission: GoogleDrivePermissionService,
     private readonly prisma: PrismaService
   ) {}
 
@@ -53,17 +53,17 @@ export class CoachInfoController {
     //   }
     // }
 
-    await this.googleDrive.createPermission({
+    await this.googleDrivePermission.createPermission({
       fileId: file.id,
       email: 'tanlu@inceptionpad.com',
       role: GoogleAccountRole.Writer,
     });
-    await this.googleDrive.createPermission({
+    await this.googleDrivePermission.createPermission({
       fileId: file.id,
       email: 'liyue@inceptionpad.com',
       role: GoogleAccountRole.Writer,
     });
-    await this.googleDrive.createPermission({
+    await this.googleDrivePermission.createPermission({
       fileId: file.id,
       email: 'worldzhy@gmail.com',
       role: GoogleAccountRole.Writer,

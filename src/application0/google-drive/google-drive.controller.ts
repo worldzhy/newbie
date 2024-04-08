@@ -7,20 +7,42 @@ import {
   Get,
   Query,
   Patch,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import {FileInterceptor} from '@nestjs/platform-express';
+import {Express} from 'express';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {GoogleDriveService} from '@microservices/cloud/saas/google/google-drive.service';
 import {GoogleAccountRole} from '@microservices/cloud/saas/google/enum';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {GoogleDrivePermissionService} from '@microservices/cloud/saas/google/google-drive-permission.service';
 
-@ApiTags('File Management')
+@ApiTags('Google Drive')
 @ApiBearerAuth()
 @Controller('google-drive')
 export class GoogleDriveController {
   constructor(
     private readonly googleDrive: GoogleDriveService,
+    private readonly googleDrivePermission: GoogleDrivePermissionService,
     private readonly prisma: PrismaService
   ) {}
+
+  @Post('files/upload')
+  @UseInterceptors(FileInterceptor('file'))
+  async loadAvailabilityFile(
+    // @UploadedFile(
+    //   new ParseFilePipeBuilder()
+    //     .addFileTypeValidator({
+    //       fileType:
+    //         'text/csv|application/vnd.ms-excel|application/msexcel|application/xls|application/x-xls|application/x-excel|application/x-dos_ms_excel|application/x-ms-excel|application/x-msexcel|application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    //     })
+    //     .build()
+    // )
+    @UploadedFile() file: Express.Multer.File
+  ) {
+    await this.googleDrive.uploadFile(file.size);
+  }
 
   @Post('files/folder')
   @ApiBody({
@@ -118,7 +140,7 @@ export class GoogleDriveController {
   async createPermission(
     @Body() body: {fileId: string; email: string; role: GoogleAccountRole}
   ) {
-    return await this.googleDrive.createPermission(body);
+    return await this.googleDrivePermission.createPermission(body);
   }
 
   @Get('permissions')
@@ -130,7 +152,7 @@ export class GoogleDriveController {
 
   @Delete('permissions/:permissionId')
   async deletePermission(@Param('permissionId') permissionId: number) {
-    return await this.googleDrive.deletePermission(permissionId);
+    return await this.googleDrivePermission.deletePermission(permissionId);
   }
 
   /* End */
