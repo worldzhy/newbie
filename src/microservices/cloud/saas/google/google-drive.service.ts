@@ -3,7 +3,7 @@ import * as google from '@googleapis/drive';
 import {ConfigService} from '@nestjs/config';
 import {Prisma} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {GoogleFileBaseURL, GoogleFileType, GoogleMimeType} from './enum';
+import {GoogleFileType, GoogleMimeType} from './enum';
 
 /**
  * Note: In this service, assume "files" means both files and folders.
@@ -26,14 +26,6 @@ export class GoogleDriveService {
     });
 
     this.drive = google.drive({version: 'v3', auth: auth});
-  }
-
-  async uploadFile(size: number) {
-    const response = await this.drive.files.create(
-      {uploadType: 'resumable'},
-      {headers: {'Content-Length': size}}
-    );
-    console.log(response);
   }
 
   async getFile(name: string) {
@@ -134,12 +126,51 @@ export class GoogleDriveService {
     }
   }
 
+  async uploadFile(params: {file: Express.Multer.File; parentId?: string}) {
+    try {
+      // Create google file.
+      const file = await this.drive.files.create({
+        uploadType: 'media',
+        media: {body: params.file.stream},
+        requestBody: {
+          name: params.file.filename,
+          parents: params.parentId ? [params.parentId] : undefined,
+        },
+      });
+      if (!file.data.id) {
+        throw new InternalServerErrorException('Create google file failed.');
+      }
+
+      // Get google file information.
+      const fileInfo = await this.drive.files.get({
+        fileId: file.data.id,
+        fields: 'iconLink, webViewLink, webContentLink',
+      });
+
+      // Save to database.
+      return await this.prisma.googleFile.create({
+        data: {
+          id: file.data.id,
+          name: params.file.originalname,
+          type: file.data.mimeType,
+          webViewLink: fileInfo.data.webViewLink,
+          webContentLink: fileInfo.data.webContentLink,
+          parentId: params.parentId,
+        },
+      });
+    } catch (error) {
+      // TODO (developer) - Handle exception
+      throw error;
+    }
+  }
+
   private async createFile(params: {
     name: string;
     type: GoogleFileType;
     parentId?: string;
   }) {
     try {
+      // Create google file.
       const file = await this.drive.files.create({
         requestBody: {
           mimeType: GoogleMimeType[params.type],
@@ -151,12 +182,20 @@ export class GoogleDriveService {
         throw new InternalServerErrorException('Create google file failed.');
       }
 
+      // Get google file information.
+      const fileInfo = await this.drive.files.get({
+        fileId: file.data.id,
+        fields: 'iconLink, webViewLink, webContentLink',
+      });
+
+      // Save to database.
       return await this.prisma.googleFile.create({
         data: {
           id: file.data.id,
           name: params.name,
           type: params.type,
-          url: GoogleFileBaseURL[params.type] + file.data.id,
+          webViewLink: fileInfo.data.webViewLink,
+          webContentLink: fileInfo.data.webContentLink,
           parentId: params.parentId,
         },
       });

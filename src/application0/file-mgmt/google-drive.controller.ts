@@ -18,7 +18,7 @@ import {GoogleAccountRole} from '@microservices/cloud/saas/google/enum';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {GoogleDrivePermissionService} from '@microservices/cloud/saas/google/google-drive-permission.service';
 
-@ApiTags('Google Drive')
+@ApiTags('File Management / Google Drive')
 @ApiBearerAuth()
 @Controller('google-drive')
 export class GoogleDriveController {
@@ -30,7 +30,7 @@ export class GoogleDriveController {
 
   @Post('files/upload')
   @UseInterceptors(FileInterceptor('file'))
-  async loadAvailabilityFile(
+  async uploadFile(
     // @UploadedFile(
     //   new ParseFilePipeBuilder()
     //     .addFileTypeValidator({
@@ -38,10 +38,28 @@ export class GoogleDriveController {
     //         'text/csv|application/vnd.ms-excel|application/msexcel|application/xls|application/x-xls|application/x-excel|application/x-dos_ms_excel|application/x-ms-excel|application/x-msexcel|application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     //     })
     //     .build()
-    // )
-    @UploadedFile() file: Express.Multer.File
+    // ) file: Express.Multer.File,
+    @UploadedFile() file: Express.Multer.File,
+    @Body() body: {parentId?: string}
   ) {
-    await this.googleDrive.uploadFile(file.size);
+    await this.googleDrive.uploadFile({file, parentId: body.parentId});
+  }
+
+  @Get('files/:fileId/download')
+  @UseInterceptors(FileInterceptor('file'))
+  async downloadFile(
+    // @UploadedFile(
+    //   new ParseFilePipeBuilder()
+    //     .addFileTypeValidator({
+    //       fileType:
+    //         'text/csv|application/vnd.ms-excel|application/msexcel|application/xls|application/x-xls|application/x-excel|application/x-dos_ms_excel|application/x-ms-excel|application/x-msexcel|application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    //     })
+    //     .build()
+    // ) file: Express.Multer.File,
+    @UploadedFile() file: Express.Multer.File,
+    @Body() body: {parentId?: string}
+  ) {
+    await this.googleDrive.uploadFile({file, parentId: body.parentId});
   }
 
   @Post('files/folder')

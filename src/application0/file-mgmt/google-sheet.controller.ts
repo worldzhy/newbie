@@ -2,7 +2,7 @@ import {Post, Body, Controller} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {GoogleSheetService} from '@microservices/cloud/saas/google/google-sheet.service';
 
-@ApiTags('File Management')
+@ApiTags('File Management / Google Drive')
 @ApiBearerAuth()
 @Controller('google-sheet')
 export class GoogleSheetController {
