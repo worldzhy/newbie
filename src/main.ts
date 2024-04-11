@@ -53,6 +53,10 @@ async function bootstrap() {
        * to a number if we specified the id type as a number (in the method signature).
        */
       transform: true,
+      /**
+       * If set to true, validator will strip validated (returned) object of any properties that do not use any validation decorators.
+       */
+      whitelist: true,
     })
   );
 
@@ -76,6 +80,7 @@ async function bootstrap() {
       .build();
     const document = SwaggerModule.createDocument(app, config);
     const customOptions: SwaggerCustomOptions = {
+      explorer: true,
       swaggerOptions: {
         persistAuthorization: true,
         tagsSorter: 'alpha',
