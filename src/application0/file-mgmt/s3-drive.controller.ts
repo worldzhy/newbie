@@ -25,12 +25,17 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 @ApiBearerAuth()
 @Controller('s3-drive')
 export class S3DriveController {
+  private s3Bucket: string;
   constructor(
     private readonly config: ConfigService,
     private readonly prisma: PrismaService,
     private readonly s3: AwsS3Service,
     private readonly accessTokenService: AccessTokenService
-  ) {}
+  ) {
+    this.s3Bucket = this.config.getOrThrow<string>(
+      'microservice.file-mgmt.awsS3Bucket'
+    );
+  }
 
   @Post('files/upload')
   @ApiBody({
@@ -38,13 +43,13 @@ export class S3DriveController {
     examples: {
       a: {
         summary: 'Upload file',
-        value: {folderId: 1},
+        value: {parentId: '189df21a-e601-487a-bdc8-edc044d37a42'},
       },
     },
   })
   @UseInterceptors(FileInterceptor('file')) // Receive file
   async uploadFile(
-    @Body() body: {folderId: string},
+    @Body() body: {parentId: string},
     @UploadedFile(
       new ParseFilePipeBuilder()
         .addFileTypeValidator({fileType: 'pdf|doc|png|jpg|jpeg'})
@@ -53,32 +58,30 @@ export class S3DriveController {
     file: Express.Multer.File
   ) {
     // [step 1] Get workflow folder.
-    const folder = await this.prisma.folder.findUniqueOrThrow({
-      where: {id: body.folderId},
+    const folder = await this.prisma.s3File.findUniqueOrThrow({
+      where: {id: body.parentId},
+      select: {name: true},
     });
 
     // [step 2] Generate file name and put file to AWS S3.
     const filename = Date.now() + generateRandomLetters(4);
-    const bucket = this.config.getOrThrow<string>(
-      'microservice.file-mgmt.awsS3Bucket'
-    );
     const s3Key = folder.name + '/' + filename;
     const output = await this.s3.putObject({
-      Bucket: bucket,
+      Bucket: this.s3Bucket,
       Key: s3Key,
       Body: file.buffer,
     });
 
     // [step 3] Create a record.
-    return await this.prisma.file.create({
+    return await this.prisma.s3File.create({
       data: {
-        originalName: file.originalname,
-        mimeType: file.mimetype,
+        name: file.originalname,
+        type: file.mimetype,
         size: file.size,
-        s3Bucket: bucket,
+        s3Bucket: this.s3Bucket,
         s3Key: s3Key,
         s3Response: output as object,
-        folderId: body.folderId,
+        parentId: body.parentId,
       },
     });
   }
@@ -151,5 +154,29 @@ export class S3DriveController {
     };
   }
 
+  @Post('files/folder')
+  @ApiBody({
+    description: '',
+    examples: {
+      a: {summary: '1. Create', value: {name: '', parentId: '[Optional]'}},
+    },
+  })
+  async createFolder(@Body() body: {name: string; parentId?: string}) {
+    return await this.prisma.s3File.create({
+      data: {
+        name: body.name,
+        type: '',
+        s3Bucket: this.s3Bucket,
+        s3Key: '',
+        s3Response: '',
+        parentId: body.parentId,
+      },
+    });
+  }
+
+  @Get('files/:fileId/path')
+  async getFilePath(@Param('fileId') fileId: string) {
+    return await this.s3.getFilePath(fileId);
+  }
   /* End */
 }

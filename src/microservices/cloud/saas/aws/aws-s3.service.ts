@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
-
+import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {
   CreateBucketCommand,
   DeleteBucketCommand,
@@ -18,16 +18,17 @@ import {
 export class AwsS3Service {
   private client: S3Client;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly config: ConfigService,
+    private readonly prisma: PrismaService
+  ) {
     this.client = new S3Client({
-      region: this.configService.getOrThrow<string>(
-        'microservice.aws.s3.region'
-      ),
+      region: this.config.getOrThrow<string>('microservice.aws.s3.region'),
       credentials: {
-        accessKeyId: this.configService.getOrThrow<string>(
+        accessKeyId: this.config.getOrThrow<string>(
           'microservice.aws.s3.accessKeyId'
         )!,
-        secretAccessKey: this.configService.getOrThrow<string>(
+        secretAccessKey: this.config.getOrThrow<string>(
           'microservice.aws.s3.secretAccessKey'
         )!,
       },
@@ -78,5 +79,29 @@ export class AwsS3Service {
       }
     }
     return objects;
+  }
+
+  async getFilePath(fileId: string) {
+    return await this.getFilePathRecursively(fileId);
+  }
+
+  private async getFilePathRecursively(fileId: string) {
+    const path: object[] = [];
+
+    // [step 1] Get current file.
+    const file = await this.prisma.s3File.findFirstOrThrow({
+      where: {id: fileId},
+      select: {id: true, name: true, type: true, parentId: true},
+    });
+    path.push(file);
+
+    // [step 2] Get parent file.
+    if (file.parentId) {
+      path.push(...(await this.getFilePathRecursively(file.parentId)));
+    } else {
+      // Do nothing.
+    }
+
+    return path;
   }
 }

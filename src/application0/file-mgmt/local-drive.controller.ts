@@ -27,7 +27,7 @@ export class LocalDriveController {
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
-        destination: process.env.FILE_MANAGEMENT_LOCAL_PATH, // ! Why config can not be used here?
+        destination: process.env.FILE_MANAGEMENT_LOCAL_DRIVE_PATH, // ! Why config can not be used here?
       }),
     })
   )

@@ -144,7 +144,7 @@ export class GoogleDriveService {
       // Get google file information.
       const fileInfo = await this.drive.files.get({
         fileId: file.data.id,
-        fields: 'iconLink, webViewLink, webContentLink',
+        fields: 'size, iconLink, webViewLink, webContentLink',
       });
 
       // Save to database.
@@ -153,6 +153,8 @@ export class GoogleDriveService {
           id: file.data.id,
           name: params.file.originalname,
           type: file.data.mimeType,
+          size: fileInfo.data.size ? parseInt(fileInfo.data.size) : undefined,
+          iconLink: fileInfo.data.iconLink,
           webViewLink: fileInfo.data.webViewLink,
           webContentLink: fileInfo.data.webContentLink,
           parentId: params.parentId,
@@ -185,7 +187,7 @@ export class GoogleDriveService {
       // Get google file information.
       const fileInfo = await this.drive.files.get({
         fileId: file.data.id,
-        fields: 'iconLink, webViewLink, webContentLink',
+        fields: 'size, iconLink, webViewLink, webContentLink',
       });
 
       // Save to database.
@@ -194,6 +196,8 @@ export class GoogleDriveService {
           id: file.data.id,
           name: params.name,
           type: params.type,
+          size: fileInfo.data.size ? parseInt(fileInfo.data.size) : undefined,
+          iconLink: fileInfo.data.iconLink,
           webViewLink: fileInfo.data.webViewLink,
           webContentLink: fileInfo.data.webContentLink,
           parentId: params.parentId,
