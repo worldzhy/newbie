@@ -9,19 +9,41 @@ import {
   Res,
   StreamableFile,
   BadRequestException,
+  Body,
 } from '@nestjs/common';
 import {Express, Response} from 'express';
 import {FileInterceptor} from '@nestjs/platform-express';
-import {ApiBearerAuth, ApiParam, ApiTags} from '@nestjs/swagger';
+import {ApiBearerAuth, ApiBody, ApiParam, ApiTags} from '@nestjs/swagger';
 import {createReadStream} from 'fs';
 import {diskStorage} from 'multer';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {Prisma} from '@prisma/client';
 
 @ApiTags('File Management / Local Drive')
 @ApiBearerAuth()
 @Controller('local-drive')
 export class LocalDriveController {
   constructor(private readonly prisma: PrismaService) {}
+
+  @Post('files/list')
+  @ApiBody({
+    description: '',
+    examples: {
+      a: {
+        summary: '1. List',
+        value: {page: 0, pageSize: 10, parentId: '[Optional]'},
+      },
+    },
+  })
+  async listFiles(
+    @Body() body: {page: number; pageSize: number; parentId?: string}
+  ) {
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.File,
+      pagination: {page: body.page, pageSize: body.pageSize},
+      findManyArgs: {where: {parentId: body.parentId ?? null}},
+    });
+  }
 
   @Post('files/upload')
   @UseInterceptors(

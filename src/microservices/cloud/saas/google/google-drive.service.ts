@@ -42,14 +42,6 @@ export class GoogleDriveService {
     return await this.getFilePathRecursively(fileId);
   }
 
-  async listFiles(params: {page: number; pageSize: number; parentId?: string}) {
-    return await this.prisma.findManyInManyPages({
-      model: Prisma.ModelName.GoogleFile,
-      pagination: {page: params.page, pageSize: params.pageSize},
-      findManyArgs: {where: {parentId: params.parentId ?? null}},
-    });
-  }
-
   async createFolder(params: {name: string; parentId?: string}) {
     try {
       return await this.createFile({

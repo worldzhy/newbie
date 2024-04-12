@@ -17,6 +17,7 @@ import {GoogleDriveService} from '@microservices/cloud/saas/google/google-drive.
 import {GoogleAccountRole} from '@microservices/cloud/saas/google/enum';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {GoogleDrivePermissionService} from '@microservices/cloud/saas/google/google-drive-permission.service';
+import {Prisma} from '@prisma/client';
 
 @ApiTags('File Management / Google Drive')
 @ApiBearerAuth()
@@ -27,6 +28,26 @@ export class GoogleDriveController {
     private readonly googleDrivePermission: GoogleDrivePermissionService,
     private readonly prisma: PrismaService
   ) {}
+
+  @Post('files/list')
+  @ApiBody({
+    description: '',
+    examples: {
+      a: {
+        summary: '1. List',
+        value: {page: 0, pageSize: 10, parentId: '[Optional]'},
+      },
+    },
+  })
+  async listFiles(
+    @Body() body: {page: number; pageSize: number; parentId?: string}
+  ) {
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.GoogleFile,
+      pagination: {page: body.page, pageSize: body.pageSize},
+      findManyArgs: {where: {parentId: body.parentId ?? null}},
+    });
+  }
 
   @Post('files/upload')
   @UseInterceptors(FileInterceptor('file'))
@@ -123,22 +144,6 @@ export class GoogleDriveController {
   @Delete('files/:fileId')
   async deleteFile(@Param('fileId') fileId: string) {
     return await this.googleDrive.deleteFile(fileId);
-  }
-
-  @Post('files/list')
-  @ApiBody({
-    description: '',
-    examples: {
-      a: {
-        summary: '1. List',
-        value: {page: 0, pageSize: 10, parentId: '[Optional]'},
-      },
-    },
-  })
-  async listFiles(
-    @Body() body: {page: number; pageSize: number; parentId?: string}
-  ) {
-    return await this.googleDrive.listFiles(body);
   }
 
   @Post('permissions')

@@ -20,6 +20,7 @@ import {AccessTokenService} from '@microservices/account/security/token/access-t
 import {AwsS3Service} from '@microservices/cloud/saas/aws/aws-s3.service';
 import {generateRandomLetters} from '@toolkit/utilities/common.util';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {Prisma} from '@prisma/client';
 
 @ApiTags('File Management / S3 Drive')
 @ApiBearerAuth()
@@ -35,6 +36,26 @@ export class S3DriveController {
     this.s3Bucket = this.config.getOrThrow<string>(
       'microservice.file-mgmt.awsS3Bucket'
     );
+  }
+
+  @Post('files/list')
+  @ApiBody({
+    description: '',
+    examples: {
+      a: {
+        summary: '1. List',
+        value: {page: 0, pageSize: 10, parentId: '[Optional]'},
+      },
+    },
+  })
+  async listFiles(
+    @Body() body: {page: number; pageSize: number; parentId?: string}
+  ) {
+    return await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.S3File,
+      pagination: {page: body.page, pageSize: body.pageSize},
+      findManyArgs: {where: {parentId: body.parentId ?? null}},
+    });
   }
 
   @Post('files/upload')
