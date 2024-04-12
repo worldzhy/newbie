@@ -1,12 +1,13 @@
 import {Processor, Process, OnQueueCompleted} from '@nestjs/bull';
 import {Job} from 'bull';
-import {QueueName} from '@microservices/job-queue/job-queue.service';
 import {AvailabilityExpressionStatus} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {AvailabilityService} from '@microservices/event-scheduling/availability.service';
 
-@Processor(QueueName.DEFAULT)
-export class AvailabilityJobConsumer {
+export const EventSchedulingQueue = 'event-scheduling';
+
+@Processor(EventSchedulingQueue)
+export class AvailabilityJobProcessor {
   constructor(
     private readonly prisma: PrismaService,
     private availabilityService: AvailabilityService

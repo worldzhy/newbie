@@ -1,6 +1,7 @@
 import {Module} from '@nestjs/common';
 import {AvailabilityExpressionController} from './availability/availability-expression.controller';
 import {AvailabilityHeatmapController} from './availability/availability-heatmap.controller';
+import {AvailabilityQueueController} from './availability/availability-queue.controller';
 import {EventBulkOperationController} from './event/event-bulk.controller';
 import {EventChangeLogController} from './event/event-changelog.controller';
 import {EventController} from './event/event.controller';
@@ -14,6 +15,7 @@ import {EventVenueController} from './venue/event-venue.controller';
   controllers: [
     AvailabilityExpressionController,
     AvailabilityHeatmapController,
+    AvailabilityQueueController,
     EventBulkOperationController,
     EventChangeLogController,
     EventContainerController,

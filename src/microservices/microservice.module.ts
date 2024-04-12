@@ -7,7 +7,6 @@ import {AwsSaaSModule} from './cloud/saas/aws/module';
 import {GoogleSaaSModule} from './cloud/saas/google/module';
 import {CronTaskModule} from './cron/cron.module';
 import {EventSchedulingModule} from './event-scheduling/event-scheduling.module';
-import {JobQueueModule} from './job-queue/job-queue.module';
 import {MapModule} from './map/map.module';
 import {NotificationModule} from './notification/notification.module';
 import {OrderManagementModule} from './order-mgmt/order-mgmt.module';
@@ -28,7 +27,6 @@ import MicroserviceConfiguration from './microservice.config';
     GoogleSaaSModule,
     CronTaskModule,
     EventSchedulingModule,
-    JobQueueModule,
     MapModule,
     NotificationModule,
     OrderManagementModule,

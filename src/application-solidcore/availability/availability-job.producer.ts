@@ -5,10 +5,12 @@ import {Cache} from 'cache-manager';
 import {Cron} from '@nestjs/schedule';
 import {AvailabilityLoadService} from './availability-load.service';
 import {AvailabilityExpressionStatus} from '@prisma/client';
-import {JobQueueService} from '@microservices/job-queue/job-queue.service';
 
 import {currentQuarter} from '@toolkit/utilities/datetime.util';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {InjectQueue} from '@nestjs/bull';
+import {Queue} from 'bull';
+import {EventSchedulingQueue} from '@microservices/event-scheduling/availability.processor';
 
 const cluster = require('node:cluster');
 
@@ -18,10 +20,10 @@ const LAST_DAY_FOR_EACH_QUARTER = 10;
 export class AvailabilityJobProducer {
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    @InjectQueue(EventSchedulingQueue) private queue: Queue,
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
-    private readonly availabilityLoadService: AvailabilityLoadService,
-    private readonly jobQueueService: JobQueueService
+    private readonly availabilityLoadService: AvailabilityLoadService
   ) {}
 
   @Cron('1 1 1 1 *')
@@ -75,11 +77,11 @@ export class AvailabilityJobProducer {
       // Clean queue jobs and http response cache.
       await this.cacheManager.reset();
 
-      await this.jobQueueService.addJobs(
+      await this.queue.addBulk(
         exps.map(exp => {
-          return {availabilityExpressionId: exp.id};
+          return {data: {availabilityExpressionId: exp.id}, delay: 1000};
         })
-      );
+      ); // Delay the start of a job for 1 second.
     }
   }
 }

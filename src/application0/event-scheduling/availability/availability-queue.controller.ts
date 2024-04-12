@@ -1,22 +1,23 @@
-import {JobQueueService} from '@microservices/job-queue/job-queue.service';
+import {EventSchedulingQueue} from '@microservices/event-scheduling/availability.processor';
+import {InjectQueue} from '@nestjs/bull';
 import {Controller, Post, Body} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {Job, JobStatus} from 'bull';
+import {Job, JobStatus, Queue} from 'bull';
 
-@ApiTags('Job Queue')
+@ApiTags('Event Scheduling / Queue')
 @ApiBearerAuth()
-@Controller('job-queue')
-export class JobQueueController {
-  constructor(private readonly jobQueueService: JobQueueService) {}
+@Controller('availability-queue')
+export class AvailabilityQueueController {
+  constructor(@InjectQueue(EventSchedulingQueue) private queue: Queue) {}
 
   @Post('pause')
   async pause() {
-    await this.jobQueueService.pause();
+    await this.queue.pause();
   }
 
   @Post('resume')
   async resume() {
-    await this.jobQueueService.resume();
+    await this.queue.resume();
   }
 
   @Post('add-job')
@@ -32,7 +33,7 @@ export class JobQueueController {
     },
   })
   async addJob(@Body() body: {data: object}): Promise<Job> {
-    return await this.jobQueueService.addJob(body.data); // Delay the start of a job for 1 second.
+    return await this.queue.add(body.data); // Delay the start of a job for 1 second.
   }
 
   @Post('add-jobs')
@@ -50,8 +51,23 @@ export class JobQueueController {
       },
     },
   })
-  async addJobs(@Body() body: {dataArray: object[]}): Promise<Job[]> {
-    return await this.jobQueueService.addJobs(body.dataArray); // Delay the start of a job for 1 second.
+  async addJobs(
+    @Body()
+    body: {
+      data:
+        | {availabilityExpressionId: number}[]
+        | {availabilityExpressionId: number};
+    }
+  ): Promise<Job[] | Job> {
+    if (Array.isArray(body.data)) {
+      return await this.queue.addBulk(
+        body.data.map(item => {
+          return {data: item, delay: 1000}; // Delay the start of a job for 1 second.
+        })
+      );
+    }
+
+    return await this.queue.add(body.data); // Delay the start of a job for 1 second.
   }
 
   @Post('get-jobs')
@@ -74,7 +90,7 @@ export class JobQueueController {
     },
   })
   async getJobs(@Body() body: {types: JobStatus[]}) {
-    return await this.jobQueueService.getJobs(body.types);
+    return await this.queue.getJobs(body.types);
   }
 
   /* End */

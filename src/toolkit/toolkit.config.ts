@@ -7,11 +7,13 @@ export default registerAs('toolkit', () => ({
       max: 1000, // maximum number of items in cache
     },
     redis: {
-      host: process.env.REDIS_HOST,
-      port: parseInt(process.env.REDIS_PORT ?? '6379'),
-      password: process.env.REDIS_PASSWORD,
       ttl: 86400, // cache-manamger v4 => seconds, v5 => milliseconds
     },
+  },
+  redis: {
+    host: process.env.REDIS_HOST,
+    port: parseInt(process.env.REDIS_PORT ?? '6379'),
+    password: process.env.REDIS_PASSWORD,
   },
   elastic: {
     node: process.env.ELASTICSEARCH_NODE || 'http://127.0.0.1',

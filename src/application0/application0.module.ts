@@ -17,7 +17,6 @@ import {App0AccountModule} from './account/account.module';
 import {App0CronModule} from './cron/cron.module';
 import {App0EventSchedulingModule} from './event-scheduling/event-scheduling.module';
 import {App0FileManagementModule} from './file-mgmt/file-mgmt.module';
-import {App0JobQueueModule} from './job-queue/job-queue.module';
 import {App0NotificationModule} from './notification/notification.module';
 import {App0TagModule} from './tag/tag.module';
 import {App0WorkflowModule} from './workflow/workflow.module';
@@ -32,7 +31,6 @@ import {App0WorkflowModule} from './workflow/workflow.module';
     App0CronModule,
     App0EventSchedulingModule,
     App0FileManagementModule,
-    App0JobQueueModule,
     App0NotificationModule,
     App0TagModule,
     App0WorkflowModule,

@@ -18,9 +18,11 @@ import {
 } from '@prisma/client';
 import {Request} from 'express';
 import {AccountService} from '@microservices/account/account.service';
-import {JobQueueService} from '@microservices/job-queue/job-queue.service';
 import {CACHE_MANAGER} from '@nestjs/cache-manager';
 import {Cache} from 'cache-manager';
+import {InjectQueue} from '@nestjs/bull';
+import {Queue} from 'bull';
+import {EventSchedulingQueue} from '@microservices/event-scheduling/availability.processor';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 enum QUARTER {
@@ -36,9 +38,9 @@ enum QUARTER {
 export class AvailabilityExpressionController {
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    @InjectQueue(EventSchedulingQueue) private queue: Queue,
     private readonly prisma: PrismaService,
-    private readonly accountService: AccountService,
-    private readonly jobQueueService: JobQueueService
+    private readonly accountService: AccountService
   ) {}
 
   @Post('')
@@ -187,7 +189,7 @@ export class AvailabilityExpressionController {
   async processAvailabilityExpression(
     @Param('availabilityExpressionId') availabilityExpressionId: number
   ) {
-    await this.jobQueueService.addJob({availabilityExpressionId});
+    await this.queue.add({availabilityExpressionId}, {delay: 1000}); // Delay the start of a job for 1 second.
   }
 
   @Post('process')
@@ -208,11 +210,11 @@ export class AvailabilityExpressionController {
       // Clean queue jobs and http response cache.
       await this.cacheManager.reset();
 
-      await this.jobQueueService.addJobs(
+      await this.queue.addBulk(
         exps.map(exp => {
-          return {availabilityExpressionId: exp.id};
+          return {data: {availabilityExpressionId: exp.id}, delay: 1000};
         })
-      );
+      ); // Delay the start of a job for 1 second.
     }
   }
 

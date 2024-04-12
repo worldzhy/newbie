@@ -9,6 +9,7 @@ import {PrismaModule} from './prisma/prisma.module';
 import {SnowflakeModule} from './snowflake/snowflake.module';
 import {XLSXModule} from './xlsx/xlsx.module';
 import ToolkitConfiguration from './toolkit.config';
+import {BullModule} from '@nestjs/bull';
 
 @Global()
 @Module({
@@ -33,12 +34,25 @@ function getModules() {
         imports: [ConfigModule],
         useFactory: async (configService: ConfigService) => ({
           store: redisStore,
-          host: configService.get('toolkit.cache.redis.host'),
-          port: configService.get('toolkit.cache.redis.port'),
+          host: configService.get('toolkit.redis.host'),
+          port: configService.get('toolkit.redis.port'),
           ttl: configService.get('toolkit.cache.redis.ttl'), // cache-manamger v4 => seconds, v5 => milliseconds
         }),
         inject: [ConfigService],
         isGlobal: true,
+      })
+    );
+    modules.push(
+      BullModule.forRootAsync({
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: (configService: ConfigService) => ({
+          redis: {
+            host: configService.get('toolkit.redis.host'),
+            port: configService.get('toolkit.redis.port'),
+            password: configService.get('toolkit.redis.password'),
+          },
+        }),
       })
     );
   } else {
