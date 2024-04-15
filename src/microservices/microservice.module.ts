@@ -13,6 +13,7 @@ import {OrderManagementModule} from './order-mgmt/order-mgmt.module';
 import {StockManagementModule} from './stock-mgmt/stock-mgmt.module';
 import {TagModule} from './tag/tag.module';
 import {WorkflowModule} from './workflow/workflow.module';
+import {VoilaNorbertModule} from './cloud/saas/voila-norbert/module';
 import MicroserviceConfiguration from './microservice.config';
 
 @Global()
@@ -33,6 +34,7 @@ import MicroserviceConfiguration from './microservice.config';
     StockManagementModule,
     TagModule,
     WorkflowModule,
+    VoilaNorbertModule,
   ],
 })
 export class MicroserviceModule {}

@@ -99,4 +99,7 @@ export default registerAs('microservice', () => ({
       secret: process.env.AWS_SECRETKEY_TOKEN_SECRET,
     },
   },
+  voilanorbert: {
+    apiKey: process.env.VOILANORBERT_API_KEY,
+  },
 }));
