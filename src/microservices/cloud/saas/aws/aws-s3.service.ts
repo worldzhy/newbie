@@ -82,10 +82,6 @@ export class AwsS3Service {
   }
 
   async getFilePath(fileId: string) {
-    return await this.getFilePathRecursively(fileId);
-  }
-
-  private async getFilePathRecursively(fileId: string) {
     const path: object[] = [];
 
     // [step 1] Get current file.
@@ -97,7 +93,27 @@ export class AwsS3Service {
 
     // [step 2] Get parent file.
     if (file.parentId) {
-      path.push(...(await this.getFilePathRecursively(file.parentId)));
+      path.push(...(await this.getFilePath(file.parentId)));
+    } else {
+      // Do nothing.
+    }
+
+    return path;
+  }
+
+  async getFilePathString(fileId: string) {
+    let path = '';
+
+    // [step 1] Get current file.
+    let file = await this.prisma.s3File.findFirstOrThrow({
+      where: {id: fileId},
+      select: {id: true, name: true, type: true, parentId: true},
+    });
+    path = file.name;
+
+    // [step 2] Get parent file.
+    if (file.parentId) {
+      path = (await this.getFilePathString(file.parentId)) + '/' + path;
     } else {
       // Do nothing.
     }

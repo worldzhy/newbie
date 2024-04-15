@@ -70,23 +70,17 @@ export class S3DriveController {
   })
   @UseInterceptors(FileInterceptor('file')) // Receive file
   async uploadFile(
-    @Body() body: {parentId: string},
-    @UploadedFile(
-      new ParseFilePipeBuilder()
-        .addFileTypeValidator({fileType: 'pdf|doc|png|jpg|jpeg'})
-        .build()
-    )
-    file: Express.Multer.File
+    @UploadedFile() file: Express.Multer.File,
+    @Body() body: {parentId: string}
   ) {
     // [step 1] Get workflow folder.
-    const folder = await this.prisma.s3File.findUniqueOrThrow({
-      where: {id: body.parentId},
-      select: {name: true},
-    });
+    let s3Key: string = file.fieldname;
+    if (body.parentId) {
+      s3Key =
+        (await this.s3.getFilePathString(body.parentId)) + '/' + file.filename;
+    }
 
     // [step 2] Generate file name and put file to AWS S3.
-    const filename = Date.now() + generateRandomLetters(4);
-    const s3Key = folder.name + '/' + filename;
     const output = await this.s3.putObject({
       Bucket: this.s3Bucket,
       Key: s3Key,
@@ -183,13 +177,24 @@ export class S3DriveController {
     },
   })
   async createFolder(@Body() body: {name: string; parentId?: string}) {
+    let s3Key = body.name;
+    if (body.parentId) {
+      s3Key =
+        (await this.s3.getFilePathString(body.parentId)) + '/' + body.name;
+    }
+
+    const output = await this.s3.putObject({
+      Bucket: this.s3Bucket,
+      Key: s3Key + '/',
+    });
+
     return await this.prisma.s3File.create({
       data: {
         name: body.name,
-        type: '',
+        type: 'Folder',
         s3Bucket: this.s3Bucket,
-        s3Key: '',
-        s3Response: '',
+        s3Key: s3Key,
+        s3Response: output as object,
         parentId: body.parentId,
       },
     });

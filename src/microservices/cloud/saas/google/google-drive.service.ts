@@ -1,7 +1,6 @@
 import {Injectable, InternalServerErrorException} from '@nestjs/common';
 import * as google from '@googleapis/drive';
 import {ConfigService} from '@nestjs/config';
-import {Prisma} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {GoogleFileType, GoogleMimeType} from './enum';
 
@@ -36,10 +35,6 @@ export class GoogleDriveService {
     }
 
     return file;
-  }
-
-  async getFilePath(fileId: string) {
-    return await this.getFilePathRecursively(fileId);
   }
 
   async createFolder(params: {name: string; parentId?: string}) {
@@ -201,6 +196,26 @@ export class GoogleDriveService {
     }
   }
 
+  async getFilePath(fileId: string) {
+    const path: object[] = [];
+
+    // [step 1] Get current file.
+    const file = await this.prisma.googleFile.findFirstOrThrow({
+      where: {id: fileId},
+      select: {id: true, name: true, type: true, parentId: true},
+    });
+    path.push(file);
+
+    // [step 2] Get parent file.
+    if (file.parentId) {
+      path.push(...(await this.getFilePath(file.parentId)));
+    } else {
+      // Do nothing.
+    }
+
+    return path;
+  }
+
   /**
    * Remove directories and their contents recursively
    */
@@ -217,26 +232,6 @@ export class GoogleDriveService {
     for (let i = 0; i < filesInFolder.length; i++) {
       await this.deleteFileRecursively(filesInFolder[i].id);
     }
-  }
-
-  private async getFilePathRecursively(fileId: string) {
-    const path: object[] = [];
-
-    // [step 1] Get current file.
-    const file = await this.prisma.googleFile.findFirstOrThrow({
-      where: {id: fileId},
-      select: {id: true, name: true, type: true, parentId: true},
-    });
-    path.push(file);
-
-    // [step 2] Get parent file.
-    if (file.parentId) {
-      path.push(...(await this.getFilePathRecursively(file.parentId)));
-    } else {
-      // Do nothing.
-    }
-
-    return path;
   }
 
   private async listFilesOnCloud(params: {parentId?: string}) {
