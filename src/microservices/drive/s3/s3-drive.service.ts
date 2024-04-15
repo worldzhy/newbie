@@ -13,7 +13,7 @@ import {
 } from '@aws-sdk/client-s3';
 
 @Injectable()
-export class AwsS3Service {
+export class S3DriveService {
   private client: S3Client;
 
   constructor(

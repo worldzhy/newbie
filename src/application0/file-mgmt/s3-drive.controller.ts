@@ -17,7 +17,7 @@ import {FileInterceptor} from '@nestjs/platform-express';
 import {ApiBearerAuth, ApiBody, ApiParam, ApiTags} from '@nestjs/swagger';
 import {ConfigService} from '@nestjs/config';
 import {AccessTokenService} from '@microservices/account/security/token/access-token.service';
-import {AwsS3Service} from '@microservices/cloud/saas/aws/aws-s3.service';
+import {S3DriveService} from '@microservices/drive/s3/s3-drive.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {Prisma} from '@prisma/client';
 
@@ -29,7 +29,7 @@ export class S3DriveController {
   constructor(
     private readonly config: ConfigService,
     private readonly prisma: PrismaService,
-    private readonly s3: AwsS3Service,
+    private readonly s3: S3DriveService,
     private readonly accessTokenService: AccessTokenService
   ) {
     this.s3Bucket = this.config.getOrThrow<string>(
@@ -91,14 +91,14 @@ export class S3DriveController {
     @Param('fileId') fileId: string
   ) {
     // [step 1] Get the file information.
-    const file = await this.prisma.file.findUniqueOrThrow({
+    const file = await this.prisma.s3File.findUniqueOrThrow({
       where: {id: fileId},
     });
 
     // [step 2] Set http response headers.
     response.set({
-      'Content-Type': file.mimeType,
-      'Content-Disposition': 'attachment; filename=' + file.originalName,
+      'Content-Type': file.type,
+      'Content-Disposition': 'attachment; filename=' + file.name,
     });
 
     // [step 3] Return file.
@@ -127,9 +127,8 @@ export class S3DriveController {
     @Param('fileId') fileId: string
   ) {
     // [step 1] Get the file information.
-    const file = await this.prisma.file.findUniqueOrThrow({
+    const file = await this.prisma.s3File.findUniqueOrThrow({
       where: {id: fileId},
-      include: {folder: true},
     });
 
     const token = this.accessTokenService.getTokenFromHttpRequest(request);

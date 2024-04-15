@@ -6,6 +6,7 @@ import {AwsIaaSModule} from './cloud/iaas/aws/module';
 import {AwsSaaSModule} from './cloud/saas/aws/module';
 import {GoogleSaaSModule} from './cloud/saas/google/module';
 import {CronTaskModule} from './cron/cron.module';
+import {DriveModule} from './drive/drive.module';
 import {EventSchedulingModule} from './event-scheduling/event-scheduling.module';
 import {MapModule} from './map/map.module';
 import {NotificationModule} from './notification/notification.module';
@@ -24,6 +25,7 @@ import MicroserviceConfiguration from './microservice.config';
     AccountModule,
     AwsIaaSModule,
     AwsSaaSModule,
+    DriveModule,
     GoogleSaaSModule,
     CronTaskModule,
     EventSchedulingModule,

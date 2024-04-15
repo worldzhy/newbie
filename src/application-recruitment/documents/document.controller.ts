@@ -32,7 +32,7 @@ import path = require('path');
 import fs = require('fs');
 import {replace} from 'lodash';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
-import {AwsS3Service} from '@microservices/cloud/saas/aws/aws-s3.service';
+import {S3DriveService} from '@microservices/drive/s3/s3-drive.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {AccountService} from '@microservices/account/account.service';
 import {Request} from 'express';
@@ -45,7 +45,7 @@ export class DocumentController {
     private prisma: PrismaService,
     private accountService: AccountService,
     private documentService: DocumentService,
-    private s3: AwsS3Service
+    private s3: S3DriveService
   ) {}
 
   @Post('')

@@ -2,7 +2,7 @@ import {Injectable, InternalServerErrorException} from '@nestjs/common';
 import * as google from '@googleapis/drive';
 import {ConfigService} from '@nestjs/config';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {GoogleFileType, GoogleMimeType} from './enum';
+import {GoogleFileType, GoogleMimeType} from './google-drive.enum';
 
 /**
  * Note: In this service, assume "files" means both files and folders.

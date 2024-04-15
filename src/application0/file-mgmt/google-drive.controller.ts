@@ -13,10 +13,10 @@ import {
 import {FileInterceptor} from '@nestjs/platform-express';
 import {Express} from 'express';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {GoogleDriveService} from '@microservices/cloud/saas/google/google-drive.service';
-import {GoogleAccountRole} from '@microservices/cloud/saas/google/enum';
+import {GoogleDriveService} from '@microservices/drive/google/google-drive.service';
+import {GoogleAccountRole} from '@microservices/drive/google/google-drive.enum';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {GoogleDrivePermissionService} from '@microservices/cloud/saas/google/google-drive-permission.service';
+import {GoogleDrivePermissionService} from '@microservices/drive/google/google-drive-permission.service';
 import {Prisma} from '@prisma/client';
 
 @ApiTags('File Management / Google Drive')
@@ -122,11 +122,6 @@ export class GoogleDriveController {
     });
   }
 
-  @Get('files/:fileId/path')
-  async getFilePath(@Param('fileId') fileId: string) {
-    return await this.googleDrive.getFilePath(fileId);
-  }
-
   @Patch('files/:fileId/rename')
   @ApiBody({
     description: '',
@@ -144,6 +139,11 @@ export class GoogleDriveController {
   @Delete('files/:fileId')
   async deleteFile(@Param('fileId') fileId: string) {
     return await this.googleDrive.deleteFile(fileId);
+  }
+
+  @Get('files/:fileId/path')
+  async getFilePath(@Param('fileId') fileId: string) {
+    return await this.googleDrive.getFilePath(fileId);
   }
 
   @Post('permissions')

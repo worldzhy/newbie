@@ -1,29 +1,29 @@
 import {
   Controller,
-  ParseFilePipeBuilder,
   Post,
   UploadedFile,
   UseInterceptors,
   Get,
   Param,
   Res,
-  StreamableFile,
-  BadRequestException,
   Body,
 } from '@nestjs/common';
 import {Express, Response} from 'express';
 import {FileInterceptor} from '@nestjs/platform-express';
 import {ApiBearerAuth, ApiBody, ApiParam, ApiTags} from '@nestjs/swagger';
-import {createReadStream} from 'fs';
 import {diskStorage} from 'multer';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {Prisma} from '@prisma/client';
+import {LocalDriveService} from '@microservices/drive/local/local-drive.service';
 
 @ApiTags('File Management / Local Drive')
 @ApiBearerAuth()
 @Controller('local-drive')
 export class LocalDriveController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly localDrive: LocalDriveService
+  ) {}
 
   @Post('files/list')
   @ApiBody({
@@ -39,7 +39,7 @@ export class LocalDriveController {
     @Body() body: {page: number; pageSize: number; parentId?: string}
   ) {
     return await this.prisma.findManyInManyPages({
-      model: Prisma.ModelName.File,
+      model: Prisma.ModelName.LocalFile,
       pagination: {page: body.page, pageSize: body.pageSize},
       findManyArgs: {where: {parentId: body.parentId ?? null}},
     });
@@ -53,26 +53,13 @@ export class LocalDriveController {
       }),
     })
   )
-  async localUploadFile(
-    @UploadedFile(
-      new ParseFilePipeBuilder()
-        .addFileTypeValidator({
-          fileType: 'pdf|doc|png|jpg|jpeg',
-        })
-        .build()
-    )
-    file: Express.Multer.File
-  ) {
-    return await this.prisma.file.create({
+  async localUploadFile(@UploadedFile() file: Express.Multer.File) {
+    return await this.prisma.localFile.create({
       data: {
-        originalName: file.originalname,
-        mimeType: file.mimetype,
+        name: file.originalname,
+        type: file.mimetype,
         size: file.size,
-        localPath: file.path,
-        localName: file.filename,
-        s3Bucket: '',
-        s3Key: '',
-        s3Response: '',
+        parentId: file.path,
       },
     });
   }
@@ -89,25 +76,23 @@ export class LocalDriveController {
     @Param('fileId') fileId: string
   ) {
     // [step 1] Get the file information.
-    const file = await this.prisma.file.findUniqueOrThrow({
+    const file = await this.prisma.localFile.findUniqueOrThrow({
       where: {id: fileId},
     });
 
     // [step 2] Set http response headers.
     response.set({
-      'Content-Type': file.mimeType,
-      'Content-Disposition': 'attachment; filename=' + file.originalName,
+      'Content-Type': file.type,
+      'Content-Disposition': 'attachment; filename=' + file.name,
     });
 
     // [step 3] Return file.
-    if (file.localPath) {
-      const stream = createReadStream(file.localPath);
-      return new StreamableFile(stream);
-    } else {
-      throw new BadRequestException(
-        'Did not find the file. Please contact administrator.'
-      );
-    }
+    return await this.localDrive.downloadFile(fileId);
+  }
+
+  @Get('files/:fileId/path')
+  async getFilePath(@Param('fileId') fileId: string) {
+    return await this.localDrive.getFilePath(fileId);
   }
 
   /* End */
