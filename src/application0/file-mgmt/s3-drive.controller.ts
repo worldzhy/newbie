@@ -1,6 +1,5 @@
 import {
   Controller,
-  ParseFilePipeBuilder,
   Post,
   UploadedFile,
   UseInterceptors,
@@ -11,6 +10,7 @@ import {
   Res,
   StreamableFile,
   BadRequestException,
+  Delete,
 } from '@nestjs/common';
 import {Express, Request as ExpressRequest, Response} from 'express';
 import {FileInterceptor} from '@nestjs/platform-express';
@@ -18,7 +18,6 @@ import {ApiBearerAuth, ApiBody, ApiParam, ApiTags} from '@nestjs/swagger';
 import {ConfigService} from '@nestjs/config';
 import {AccessTokenService} from '@microservices/account/security/token/access-token.service';
 import {AwsS3Service} from '@microservices/cloud/saas/aws/aws-s3.service';
-import {generateRandomLetters} from '@toolkit/utilities/common.util';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {Prisma} from '@prisma/client';
 
@@ -73,31 +72,10 @@ export class S3DriveController {
     @UploadedFile() file: Express.Multer.File,
     @Body() body: {parentId: string}
   ) {
-    // [step 1] Get workflow folder.
-    let s3Key: string = file.fieldname;
-    if (body.parentId) {
-      s3Key =
-        (await this.s3.getFilePathString(body.parentId)) + '/' + file.filename;
-    }
-
-    // [step 2] Generate file name and put file to AWS S3.
-    const output = await this.s3.putObject({
-      Bucket: this.s3Bucket,
-      Key: s3Key,
-      Body: file.buffer,
-    });
-
-    // [step 3] Create a record.
-    return await this.prisma.s3File.create({
-      data: {
-        name: file.originalname,
-        type: file.mimetype,
-        size: file.size,
-        s3Bucket: this.s3Bucket,
-        s3Key: s3Key,
-        s3Response: output as object,
-        parentId: body.parentId,
-      },
+    return await this.s3.uploadFile({
+      bucket: this.s3Bucket,
+      file,
+      parentId: body.parentId,
     });
   }
 
@@ -177,32 +155,21 @@ export class S3DriveController {
     },
   })
   async createFolder(@Body() body: {name: string; parentId?: string}) {
-    let s3Key = body.name;
-    if (body.parentId) {
-      s3Key =
-        (await this.s3.getFilePathString(body.parentId)) + '/' + body.name;
-    }
-
-    const output = await this.s3.putObject({
-      Bucket: this.s3Bucket,
-      Key: s3Key + '/',
-    });
-
-    return await this.prisma.s3File.create({
-      data: {
-        name: body.name,
-        type: 'Folder',
-        s3Bucket: this.s3Bucket,
-        s3Key: s3Key,
-        s3Response: output as object,
-        parentId: body.parentId,
-      },
+    return await this.s3.createFolder({
+      bucket: this.s3Bucket,
+      name: body.name,
+      parentId: body.parentId,
     });
   }
 
   @Get('files/:fileId/path')
   async getFilePath(@Param('fileId') fileId: string) {
     return await this.s3.getFilePath(fileId);
+  }
+
+  @Delete('files/:fileId')
+  async deleteFile(@Param('fileId') fileId: string) {
+    return await this.s3.deleteFile(fileId);
   }
   /* End */
 }

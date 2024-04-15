@@ -120,7 +120,7 @@ export class GoogleDriveService {
         uploadType: 'media',
         media: {body: params.file.stream},
         requestBody: {
-          name: params.file.filename,
+          name: params.file.originalname,
           parents: params.parentId ? [params.parentId] : undefined,
         },
       });

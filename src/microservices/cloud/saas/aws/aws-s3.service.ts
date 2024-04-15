@@ -4,13 +4,11 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {
   CreateBucketCommand,
   DeleteBucketCommand,
-  DeleteObjectCommand,
-  DeleteObjectCommandInput,
   DeleteObjectsCommand,
   GetObjectCommand,
   GetObjectCommandInput,
+  ListObjectsV2Command,
   PutObjectCommand,
-  PutObjectCommandInput,
   S3Client,
 } from '@aws-sdk/client-s3';
 
@@ -47,38 +45,93 @@ export class AwsS3Service {
     );
   }
 
-  async putObject(params: PutObjectCommandInput) {
-    const {Bucket, Key, Body} = params;
-    return await this.client.send(new PutObjectCommand({Bucket, Key, Body}));
-  }
-
   async getObject(params: GetObjectCommandInput) {
     const {Bucket, Key} = params;
     return await this.client.send(new GetObjectCommand({Bucket, Key}));
   }
 
-  async deleteObject(params: DeleteObjectCommandInput) {
-    const {Bucket, Key} = params;
-    return await this.client.send(new DeleteObjectCommand({Bucket, Key}));
-  }
-
-  async deleteObjects(params: {
-    Bucket: string;
-    Delete: {Objects: [{Key: string}]};
+  async createFolder(params: {
+    bucket: string;
+    name: string;
+    parentId?: string;
   }) {
-    const {Bucket, Delete} = params;
-    return await this.client.send(new DeleteObjectsCommand({Bucket, Delete}));
+    let s3Key = params.name;
+    if (params.parentId) {
+      s3Key =
+        (await this.getFilePathString(params.parentId)) + '/' + params.name;
+    }
+
+    const output = await this.client.send(
+      new PutObjectCommand({
+        Bucket: params.bucket,
+        Key: s3Key + '/',
+      })
+    );
+
+    return await this.prisma.s3File.create({
+      data: {
+        name: params.name,
+        type: 'Folder',
+        s3Bucket: params.bucket,
+        s3Key: s3Key,
+        s3Response: output as object,
+        parentId: params.parentId,
+      },
+    });
   }
 
-  getLinesFromFile(file) {
-    const objects = Array(Object);
-    const strings = file.Body.toString().split('\n');
-    for (const str of strings) {
-      if (str.length > 0) {
-        objects.push(JSON.parse(str));
-      }
+  async uploadFile(params: {
+    bucket: string;
+    file: Express.Multer.File;
+    parentId?: string;
+  }) {
+    // [step 1] Get workflow folder.
+    let s3Key: string = params.file.originalname;
+    if (params.parentId) {
+      s3Key =
+        (await this.getFilePathString(params.parentId)) +
+        '/' +
+        params.file.originalname;
     }
-    return objects;
+
+    // [step 2] Put file to AWS S3.
+    const output = await this.client.send(
+      new PutObjectCommand({
+        Bucket: params.bucket,
+        Key: s3Key,
+        Body: params.file.buffer,
+      })
+    );
+
+    // [step 3] Create a record.
+    return await this.prisma.s3File.create({
+      data: {
+        name: params.file.originalname,
+        type: params.file.mimetype,
+        size: params.file.size,
+        s3Bucket: params.bucket,
+        s3Key: s3Key,
+        s3Response: output as object,
+        parentId: params.parentId,
+      },
+    });
+  }
+
+  async deleteFile(fileId: string) {
+    const file = await this.prisma.s3File.findFirstOrThrow({
+      where: {id: fileId},
+    });
+
+    try {
+      await this.deleteFileInS3Recursively({
+        bucket: file.s3Bucket,
+        key: file.s3Key,
+      });
+      await this.deleteFileInDatabaseRecursively(fileId);
+    } catch (error) {
+      // TODO (developer) - Handle exception
+      throw error;
+    }
   }
 
   async getFilePath(fileId: string) {
@@ -101,7 +154,64 @@ export class AwsS3Service {
     return path;
   }
 
-  async getFilePathString(fileId: string) {
+  /**
+   * Remove directories and their contents recursively
+   */
+  private async deleteFileInS3Recursively(params: {
+    bucket: string;
+    key: string;
+  }) {
+    try {
+      // [step 1] List objects
+      const listResponse = await this.client.send(
+        new ListObjectsV2Command({Bucket: params.bucket, Prefix: params.key})
+      );
+      if (!listResponse.Contents || listResponse.Contents.length === 0) {
+        return;
+      }
+
+      // [step 2] Delete objects
+      await this.client.send(
+        new DeleteObjectsCommand({
+          Bucket: params.bucket,
+          Delete: {
+            Objects: listResponse.Contents.map(content => {
+              return {Key: content.Key};
+            }),
+          },
+        })
+      );
+
+      // https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html
+      // IsTruncated: Set to false if all of the results were returned. Set to true if more keys are available to return. If the number of results exceeds that specified by MaxKeys, all of the results might not be returned.
+      if (listResponse.IsTruncated) {
+        await this.deleteFileInS3Recursively(params);
+      }
+    } catch (error) {
+      // TODO (developer) - Handle exception
+      throw error;
+    }
+  }
+
+  /**
+   * Remove directories and their contents recursively
+   */
+  private async deleteFileInDatabaseRecursively(fileId: string) {
+    // [step 1] Delete file.
+    await this.prisma.s3File.delete({where: {id: fileId}});
+
+    // [step 2] Delete files in the folder.
+    const filesInFolder = await this.prisma.s3File.findMany({
+      where: {parentId: fileId},
+      select: {id: true},
+    });
+
+    for (let i = 0; i < filesInFolder.length; i++) {
+      await this.deleteFileInDatabaseRecursively(filesInFolder[i].id);
+    }
+  }
+
+  private async getFilePathString(fileId: string) {
     let path = '';
 
     // [step 1] Get current file.
