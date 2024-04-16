@@ -1,12 +1,7 @@
 import {HttpService} from '@nestjs/axios';
 import {Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
-import {
-  SearchNameResDto,
-  SearchNameReqDto,
-  SearchNameHttpResDto,
-} from './volia-norbert.dto';
-import {reject} from 'lodash';
+import {SearchNameReqDto, SearchNameHttpResDto} from './volia-norbert.dto';
 
 const baseUrl = 'https://api.voilanorbert.com/2018-01-08';
 @Injectable()

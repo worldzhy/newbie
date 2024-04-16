@@ -102,4 +102,7 @@ export default registerAs('microservice', () => ({
   voilanorbert: {
     apiKey: process.env.VOILANORBERT_API_KEY,
   },
+  proxycurl: {
+    apiKey: process.env.PROXYCURL_API_KEY,
+  },
 }));
