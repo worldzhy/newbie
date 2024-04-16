@@ -11,6 +11,10 @@ import {
   LIMIT_LOGIN_BY_IP,
   LIMIT_LOGIN_BY_USER,
 } from './rate-limiter.decorator';
+import {
+  NewbieException,
+  NewbieExceptionStatus,
+} from '@toolkit/nestjs/exception/newbie.exception';
 
 @Injectable()
 export class RateLimiterGuard {
@@ -31,13 +35,12 @@ export class RateLimiterGuard {
     if (limitAccessByIp) {
       const ipAddress = context.switchToHttp().getRequest()
         .socket.remoteAddress;
-      const isIpAllowed =
-        await this.limitAccessByIpService.isAllowed(ipAddress);
+      const isAllowed = await this.limitAccessByIpService.isAllowed(ipAddress);
 
-      if (isIpAllowed) {
+      if (isAllowed) {
         await this.limitAccessByIpService.increment(ipAddress);
       } else {
-        return false;
+        throw new NewbieException(NewbieExceptionStatus.Access_HighFrequency);
       }
     }
 
@@ -49,12 +52,12 @@ export class RateLimiterGuard {
     if (limitLoginByIp) {
       const ipAddress = context.switchToHttp().getRequest()
         .socket.remoteAddress;
-      const isIpAllowed = await this.limitLoginByIpService.isAllowed(ipAddress);
+      const isAllowed = await this.limitLoginByIpService.isAllowed(ipAddress);
 
-      if (isIpAllowed) {
+      if (isAllowed) {
         await this.limitLoginByIpService.increment(ipAddress);
       } else {
-        return false;
+        throw new NewbieException(NewbieExceptionStatus.Login_HighFrequency);
       }
     }
 
@@ -68,14 +71,14 @@ export class RateLimiterGuard {
       const user = await this.userService.findByAccount(account);
 
       if (user) {
-        const isIpAllowed = await this.limitLoginByUserService.isAllowed(
-          user.id
-        );
+        const isAllowed = await this.limitLoginByUserService.isAllowed(user.id);
 
-        if (isIpAllowed) {
+        if (isAllowed) {
           await this.limitLoginByUserService.increment(user.id);
         } else {
-          return false;
+          throw new NewbieException(
+            NewbieExceptionStatus.Login_ExceededAttempts
+          );
         }
       }
     }

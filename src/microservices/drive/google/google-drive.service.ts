@@ -99,6 +99,7 @@ export class GoogleDriveService {
         fileId: params.fileId,
         requestBody: {name: params.name},
       });
+
       if (response.status >= 200 && response.status < 300) {
         return await this.prisma.googleFile.update({
           where: {id: params.fileId},

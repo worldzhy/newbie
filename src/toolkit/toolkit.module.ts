@@ -10,6 +10,7 @@ import {SnowflakeModule} from './snowflake/snowflake.module';
 import {XLSXModule} from './xlsx/xlsx.module';
 import ToolkitConfiguration from './toolkit.config';
 import {BullModule} from '@nestjs/bull';
+import {NestJsModule} from './nestjs/nestjs.module';
 
 @Global()
 @Module({
@@ -24,6 +25,7 @@ function getModules() {
     CustomLoggerModule,
     ElasticModule,
     HttpModule,
+    NestJsModule,
     PrismaModule,
     SnowflakeModule,
     XLSXModule,

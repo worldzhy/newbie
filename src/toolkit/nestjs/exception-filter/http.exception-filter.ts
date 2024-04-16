@@ -3,6 +3,7 @@ import {
   ArgumentsHost,
   ExceptionFilter,
   HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import {Request, Response} from 'express';
 import {CustomLoggerService} from '@toolkit/logger/logger.service';
@@ -14,34 +15,30 @@ export class HttpExceptionFilter implements ExceptionFilter {
   constructor(private readonly logger: CustomLoggerService) {}
 
   catch(exception: HttpException, host: ArgumentsHost) {
-    const statusCode = exception.getStatus(); // such as: 401
-    const statusName = exception.name; // such as: UnauthorizedException
-    const message = exception.message;
-
     const request = host.switchToHttp().getRequest<Request>();
     const response = host.switchToHttp().getResponse<Response>();
+    const httpStatus = exception.getStatus(); // such as: 401
+    const message = exception.message;
 
     // [step 1] Assemble log content.
-    let content = `${statusCode} ${statusName} >> ${request.method} ${request.url}`;
-
+    let content = `${request.method} ${request.url}`;
     if (request.body && Object.keys(request.body).length > 0) {
       content += ` ${JSON.stringify(request.body)}`;
     }
     content += ` >> ${message}`;
 
     // [step 2] Write log.
-    if (statusCode >= 500) {
+    if (httpStatus >= 500) {
       this.logger.error(content, this.loggerContext);
-    } else if (statusCode >= 400) {
+    } else if (httpStatus >= 400) {
       this.logger.warn(content, this.loggerContext);
     } else {
       this.logger.log(content, this.loggerContext);
     }
 
     // [step 3] Response.
-    response.status(statusCode).json({
-      message: message,
-      statusCode: statusCode,
-    });
+    response
+      .status(httpStatus)
+      .json({status: 'HTTP ' + httpStatus, error: {message}, data: null});
   }
 }
