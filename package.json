@@ -78,6 +78,7 @@
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
     "pdf-lib": "^1.17.1",
+    "peopledatalabs": "^8.0.1",
     "pizzip": "^3.1.6",
     "proxycurl-js-linkedin-profile-scraper": "^1.0.2",
     "rate-limiter-flexible": "^3.0.4",

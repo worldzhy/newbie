@@ -1,7 +1,7 @@
 import {ApiProperty} from '@nestjs/swagger';
-import {IsNumber, IsNotEmpty, IsString, IsOptional} from 'class-validator';
+import {IsString, IsOptional} from 'class-validator';
 
-export class SearchNameReqDto {
+export class SearchNameByDomainReqDto {
   @ApiProperty({
     type: String,
   })

@@ -1,7 +1,10 @@
 import {HttpService} from '@nestjs/axios';
 import {Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
-import {SearchNameReqDto, SearchNameHttpResDto} from './volia-norbert.dto';
+import {
+  SearchNameByDomainReqDto,
+  SearchNameHttpResDto,
+} from './volia-norbert.dto';
 
 const baseUrl = 'https://api.voilanorbert.com/2018-01-08';
 @Injectable()
@@ -25,7 +28,7 @@ export class VoilaNorbertService {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
     };
-    // this.searchName({
+    // this.searchNameByDomain({
     //   name: 'yiwen',
     //   company: 'inceptionpad',
     //   domain: 'inceptionpad.com',
@@ -38,13 +41,13 @@ export class VoilaNorbertService {
   /**
    * This endpoint is limited to 300 requests per minutes, and up to 100,000 requests per day max
    */
-  async searchName({
+  async searchNameByDomain({
     name,
     company,
     domain,
     // webhook,
     // list_id,
-  }: SearchNameReqDto): Promise<SearchNameHttpResDto> {
+  }: SearchNameByDomainReqDto): Promise<SearchNameHttpResDto> {
     const url = `${baseUrl}/search/name`;
     const data = {
       name,
@@ -54,13 +57,7 @@ export class VoilaNorbertService {
     return this.httpService.axiosRef.post(url, data, this.reqConfig);
   }
 
-  async verifyEmail({
-    email,
-    webhook,
-  }: {
-    email: string;
-    webhook: string;
-  }): Promise<any> {
+  async verifyEmail({email, webhook}: {email: string; webhook: string}) {
     const url = `${baseUrl}/verifier/upload`;
     const data = {
       email,

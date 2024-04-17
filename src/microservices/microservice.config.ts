@@ -105,4 +105,7 @@ export default registerAs('microservice', () => ({
   proxycurl: {
     apiKey: process.env.PROXYCURL_API_KEY,
   },
+  peopledatalabs: {
+    apiKey: process.env.PDL_API_KEY,
+  },
 }));
