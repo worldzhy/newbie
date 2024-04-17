@@ -1,35 +1,37 @@
 import {HttpException, HttpStatus} from '@nestjs/common';
 
 export class NewbieException extends HttpException {
-  constructor(status: NewbieExceptionStatus) {
-    const exception = NewbieExceptionMap.get(status);
+  constructor(type: NewbieExceptionType) {
+    const exception = NewbieExceptionMap.get(type);
     if (exception) {
       super({status: exception.status, error: exception.error}, HttpStatus.OK);
     }
   }
 }
 
-export enum NewbieExceptionStatus {
+export enum NewbieExceptionType {
   Login_WrongInput,
   Login_NoPassword,
   Login_ExceededAttempts,
   Login_HighFrequency,
+  ResetPassword_WrongInput,
+  ResetPassword_InvalidCode,
   Access_HighFrequency,
 }
 
 const NewbieExceptionMap = new Map<
-  NewbieExceptionStatus,
+  NewbieExceptionType,
   {status: string; error: object}
 >([
   [
-    NewbieExceptionStatus.Login_WrongInput,
+    NewbieExceptionType.Login_WrongInput,
     {
       status: 'L1001',
       error: {message: 'Invalid combination of account and password'},
     },
   ],
   [
-    NewbieExceptionStatus.Login_NoPassword,
+    NewbieExceptionType.Login_NoPassword,
     {
       status: 'L1002',
       error: {
@@ -39,7 +41,7 @@ const NewbieExceptionMap = new Map<
     },
   ],
   [
-    NewbieExceptionStatus.Login_ExceededAttempts,
+    NewbieExceptionType.Login_ExceededAttempts,
     {
       status: 'L1003',
       error: {
@@ -50,7 +52,7 @@ const NewbieExceptionMap = new Map<
     },
   ],
   [
-    NewbieExceptionStatus.Login_HighFrequency,
+    NewbieExceptionType.Login_HighFrequency,
     {
       status: 'L1004',
       error: {
@@ -61,7 +63,15 @@ const NewbieExceptionMap = new Map<
     },
   ],
   [
-    NewbieExceptionStatus.Access_HighFrequency,
+    NewbieExceptionType.ResetPassword_WrongInput,
+    {status: 'L1005', error: {message: 'Invalid email or phone'}},
+  ],
+  [
+    NewbieExceptionType.ResetPassword_InvalidCode,
+    {status: 'L1006', error: {message: 'Invalid verification code'}},
+  ],
+  [
+    NewbieExceptionType.Access_HighFrequency,
     {
       status: 'L2001',
       error: {

@@ -169,7 +169,7 @@ export class AccountService {
     email?: string;
     phone?: string;
     use: VerificationCodeUse;
-  }): Promise<boolean> {
+  }): Promise<{secondsOfCountdown: number}> {
     if (params.email) {
       // [step 1] Check if the account exists.
       const user = await this.userService.findByAccount(params.email);
@@ -218,7 +218,9 @@ export class AccountService {
       throw new BadRequestException('The email or phone is invalid.');
     }
 
-    return true;
+    return {
+      secondsOfCountdown: this.verificationCodeService.timeoutMinutes * 60,
+    };
   }
 
   /* End */

@@ -13,7 +13,7 @@ import {
 } from './rate-limiter.decorator';
 import {
   NewbieException,
-  NewbieExceptionStatus,
+  NewbieExceptionType,
 } from '@toolkit/nestjs/exception/newbie.exception';
 
 @Injectable()
@@ -40,7 +40,7 @@ export class RateLimiterGuard {
       if (isAllowed) {
         await this.limitAccessByIpService.increment(ipAddress);
       } else {
-        throw new NewbieException(NewbieExceptionStatus.Access_HighFrequency);
+        throw new NewbieException(NewbieExceptionType.Access_HighFrequency);
       }
     }
 
@@ -57,7 +57,7 @@ export class RateLimiterGuard {
       if (isAllowed) {
         await this.limitLoginByIpService.increment(ipAddress);
       } else {
-        throw new NewbieException(NewbieExceptionStatus.Login_HighFrequency);
+        throw new NewbieException(NewbieExceptionType.Login_HighFrequency);
       }
     }
 
@@ -76,9 +76,7 @@ export class RateLimiterGuard {
         if (isAllowed) {
           await this.limitLoginByUserService.increment(user.id);
         } else {
-          throw new NewbieException(
-            NewbieExceptionStatus.Login_ExceededAttempts
-          );
+          throw new NewbieException(NewbieExceptionType.Login_ExceededAttempts);
         }
       }
     }

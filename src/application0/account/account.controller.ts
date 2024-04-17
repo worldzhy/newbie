@@ -15,6 +15,10 @@ import {NoGuard} from '@microservices/account/security/passport/public/public.de
 import {verifyEmail, verifyPhone} from '@toolkit/validators/user.validator';
 import {compareHash} from '@toolkit/utilities/common.util';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {
+  NewbieException,
+  NewbieExceptionType,
+} from '@toolkit/nestjs/exception/newbie.exception';
 
 @ApiTags('Account')
 @Controller('account')
@@ -119,7 +123,7 @@ export class AccountController {
   })
   async sendVerificationCode(
     @Body() body: {email?: string; phone?: string; use: VerificationCodeUse}
-  ): Promise<boolean> {
+  ): Promise<{secondsOfCountdown: number}> {
     if (body.email && verifyEmail(body.email)) {
       return await this.accountService.sendVerificationCode({
         email: body.email,
@@ -131,7 +135,7 @@ export class AccountController {
         use: body.use,
       });
     } else {
-      return false;
+      throw new NewbieException(NewbieExceptionType.ResetPassword_WrongInput);
     }
   }
 
@@ -179,6 +183,10 @@ export class AccountController {
           data: {password: body.newPassword},
           select: {id: true, email: true, phone: true},
         });
+      } else {
+        throw new NewbieException(
+          NewbieExceptionType.ResetPassword_InvalidCode
+        );
       }
     } else if (body.phone && verifyPhone(body.phone)) {
       if (
@@ -192,12 +200,14 @@ export class AccountController {
           data: {password: body.newPassword},
           select: {id: true, email: true, phone: true},
         });
+      } else {
+        throw new NewbieException(
+          NewbieExceptionType.ResetPassword_InvalidCode
+        );
       }
     }
 
-    throw new BadRequestException(
-      'The email or verification code is incorrect.'
-    );
+    throw new NewbieException(NewbieExceptionType.ResetPassword_WrongInput);
   }
 
   /* End */

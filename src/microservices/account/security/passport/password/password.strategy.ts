@@ -5,7 +5,7 @@ import {compareHash} from '@toolkit/utilities/common.util';
 import {UserService} from '@microservices/account/user.service';
 import {
   NewbieException,
-  NewbieExceptionStatus,
+  NewbieExceptionType,
 } from '@toolkit/nestjs/exception/newbie.exception';
 
 @Injectable()
@@ -30,18 +30,18 @@ export class PasswordStrategy extends PassportStrategy(
     // [step 1] Get the user.
     const user = await this.userService.findByAccount(account);
     if (!user) {
-      throw new NewbieException(NewbieExceptionStatus.Login_WrongInput);
+      throw new NewbieException(NewbieExceptionType.Login_WrongInput);
     }
 
     // [step 2] Handle no password situation.
     if (!user.password) {
-      throw new NewbieException(NewbieExceptionStatus.Login_NoPassword);
+      throw new NewbieException(NewbieExceptionType.Login_NoPassword);
     }
 
     // [step 3] Validate password.
     const match = await compareHash(password, user.password);
     if (match !== true) {
-      throw new NewbieException(NewbieExceptionStatus.Login_WrongInput);
+      throw new NewbieException(NewbieExceptionType.Login_WrongInput);
     }
 
     // [step 4] OK.

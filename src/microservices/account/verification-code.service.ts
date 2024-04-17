@@ -13,8 +13,8 @@ import {generateRandomNumbers} from '@toolkit/utilities/common.util';
 
 @Injectable()
 export class VerificationCodeService {
-  private timeoutMinutes: number; // The verification code will be invalid after x minutes.
-  private resendMinutes: number; // The verification code can be resend after y minute.
+  public timeoutMinutes: number; // The verification code will be invalid after x minutes.
+  public resendMinutes: number; // The verification code can be resend after y minute.
 
   constructor(
     private readonly configService: ConfigService,
