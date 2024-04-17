@@ -50,11 +50,6 @@ export default registerAs('microservice', () => ({
     },
   },
   eventScheduling: {minutesOfTimeslotUnit: 5},
-  'file-mgmt': {
-    awsS3Bucket: process.env.FILE_MANAGEMENT_AWS_S3_BUCKET,
-    awsCloudfrontDomain: process.env.FILE_MANAGEMENT_AWS_CLOUDFRONT_DOMAIN,
-    localPath: process.env.FILE_MANAGEMENT_LOCAL_PATH || './uploaded-files',
-  },
   googleapis: {
     credentials: {
       apiKey: process.env.GOOGLE_CREDENTIALS_API_KEY,
@@ -82,6 +77,11 @@ export default registerAs('microservice', () => ({
       awsPinpointSenderId:
         process.env.NOTIFICATION_SMS_AWS_PINPOINT_SENDER_ID || 'default',
     },
+  },
+  storage: {
+    awsS3Bucket: process.env.STORAGE_AWS_S3_BUCKET,
+    awsCloudfrontDomain: process.env.STORAGE_AWS_CLOUDFRONT_DOMAIN,
+    localPath: process.env.FILE_MANAGEMENT_LOCAL_PATH || './storage',
   },
   task: {
     awsSqsQueueUrl: process.env.TASK_AWS_SQS_QUEUE_URL || 'default',
