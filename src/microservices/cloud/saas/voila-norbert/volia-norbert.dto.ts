@@ -53,7 +53,7 @@ export class SearchNameResDto {
     description:
       'When searching, this data is set to null. Once the search is done, if we found the corresponding email, the email becomes an object containing information including the email value and the score related to this email.',
   })
-  email: string | null;
+  email: EmailDto | null;
 
   @ApiProperty({
     type: String,
