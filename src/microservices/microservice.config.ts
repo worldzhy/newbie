@@ -20,7 +20,7 @@ export default registerAs('microservice', () => ({
       },
     },
     verificationCode: {
-      timeoutMinutes: 10, // The verification code will be invalid after 10 minutes.
+      timeoutMinutes: 1, // The verification code will be invalid after 1 minutes.
       resendMinutes: 1, // The verification code can be resend after 1 minute.
     },
   },

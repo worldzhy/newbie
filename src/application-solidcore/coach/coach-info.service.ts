@@ -6,7 +6,7 @@ import {
 } from '@toolkit/utilities/common.util';
 import {GoogleFile, Prisma, UserStatus} from '@prisma/client';
 import {ConfigService} from '@nestjs/config';
-import {GoogleDriveService} from '@microservices/drive/google/google-drive.service';
+import {GoogleDriveService} from '@microservices/storage/google-drive/google-drive.service';
 import {GoogleSheetService} from '@microservices/cloud/saas/google/google-sheet.service';
 import {verifyEmail, verifyUuid} from '@toolkit/validators/user.validator';
 

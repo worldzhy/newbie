@@ -32,7 +32,7 @@ import path = require('path');
 import fs = require('fs');
 import {replace} from 'lodash';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
-import {S3DriveService} from '@microservices/drive/s3/s3-drive.service';
+import {S3DriveService} from '@microservices/storage/s3/s3-drive.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {AccountService} from '@microservices/account/account.service';
 import {Request} from 'express';

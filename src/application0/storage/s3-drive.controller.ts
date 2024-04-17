@@ -17,7 +17,7 @@ import {FileInterceptor} from '@nestjs/platform-express';
 import {ApiBearerAuth, ApiBody, ApiParam, ApiTags} from '@nestjs/swagger';
 import {ConfigService} from '@nestjs/config';
 import {AccessTokenService} from '@microservices/account/security/token/access-token.service';
-import {S3DriveService} from '@microservices/drive/s3/s3-drive.service';
+import {S3DriveService} from '@microservices/storage/s3/s3-drive.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {Prisma} from '@prisma/client';
 

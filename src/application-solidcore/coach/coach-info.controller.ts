@@ -11,8 +11,8 @@ import {Express} from 'express';
 import {XLSXService} from '@toolkit/xlsx/xlsx.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {CoachInfoService} from './coach-info.service';
-import {GoogleAccountRole} from '@microservices/drive/google/google-drive.enum';
-import {GoogleDrivePermissionService} from '@microservices/drive/google/google-drive-permission.service';
+import {GoogleAccountRole} from '@microservices/storage/google-drive/google-drive.enum';
+import {GoogleDrivePermissionService} from '@microservices/storage/google-drive/google-drive-permission.service';
 
 enum Columns {
   Email1 = 'MBO Email addresss',

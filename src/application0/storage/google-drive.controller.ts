@@ -13,10 +13,10 @@ import {
 import {FileInterceptor} from '@nestjs/platform-express';
 import {Express} from 'express';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {GoogleDriveService} from '@microservices/drive/google/google-drive.service';
-import {GoogleAccountRole} from '@microservices/drive/google/google-drive.enum';
+import {GoogleDriveService} from '@microservices/storage/google-drive/google-drive.service';
+import {GoogleAccountRole} from '@microservices/storage/google-drive/google-drive.enum';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {GoogleDrivePermissionService} from '@microservices/drive/google/google-drive-permission.service';
+import {GoogleDrivePermissionService} from '@microservices/storage/google-drive/google-drive-permission.service';
 import {Prisma} from '@prisma/client';
 
 @ApiTags('File Management / Google Drive')

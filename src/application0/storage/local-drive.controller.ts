@@ -14,7 +14,7 @@ import {ApiBearerAuth, ApiBody, ApiParam, ApiTags} from '@nestjs/swagger';
 import {diskStorage} from 'multer';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {Prisma} from '@prisma/client';
-import {LocalDriveService} from '@microservices/drive/local/local-drive.service';
+import {LocalDriveService} from '@microservices/storage/local/local-drive.service';
 
 @ApiTags('File Management / Local Drive')
 @ApiBearerAuth()

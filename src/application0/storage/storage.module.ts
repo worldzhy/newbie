@@ -12,4 +12,4 @@ import {LocalDriveController} from './local-drive.controller';
     LocalDriveController,
   ],
 })
-export class App0FileManagementModule {}
+export class App0StorageModule {}

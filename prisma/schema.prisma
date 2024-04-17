@@ -21,7 +21,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["microservice/account", "microservice/cloud", "microservice/cron", "microservice/drive", "microservice/event-scheduling", "microservice/map", "microservice/notification", "microservice/order-mgmt", "microservice/project-mgmt", "microservice/queue", "microservice/stock-mgmt", "microservice/tag", "microservice/token", "microservice/workflow", "application/engined", "application/recruitment", "application/solidcore", "application/tc-request"]
+  schemas  = ["microservice/account", "microservice/cloud", "microservice/cron", "microservice/event-scheduling", "microservice/map", "microservice/notification", "microservice/order-mgmt", "microservice/project-mgmt", "microservice/queue", "microservice/stock-mgmt", "microservice/storage", "microservice/tag", "microservice/token", "microservice/workflow", "application/engined", "application/recruitment", "application/solidcore", "application/tc-request"]
 }
 
 // ! ------------------------------------------------------------ //
@@ -609,7 +609,7 @@ model LocalFile {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  @@schema("microservice/drive")
+  @@schema("microservice/storage")
 }
 
 model GoogleFile {
@@ -625,7 +625,7 @@ model GoogleFile {
   updatedAt      DateTime               @updatedAt
   permissions    GoogleFilePermission[]
 
-  @@schema("microservice/drive")
+  @@schema("microservice/storage")
 }
 
 model GoogleFilePermission {
@@ -639,7 +639,7 @@ model GoogleFilePermission {
   file         GoogleFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
   fileId       String
 
-  @@schema("microservice/drive")
+  @@schema("microservice/storage")
 }
 
 model S3File {
@@ -654,7 +654,16 @@ model S3File {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  @@schema("microservice/drive")
+  @@schema("microservice/storage")
+}
+
+model S3Bucket {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@schema("microservice/storage")
 }
 
 // !! ------------------------------------------------------------ //
