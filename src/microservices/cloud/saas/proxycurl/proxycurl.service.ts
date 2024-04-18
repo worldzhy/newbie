@@ -3,6 +3,7 @@ import {ConfigService} from '@nestjs/config';
 import * as ProxycurlApi from 'proxycurl-js-linkedin-profile-scraper';
 import {
   SearchUserLinkedinReqDto,
+  SearchUserByLinkedinRes,
   SearchUserByLinkedinResDto,
   SearchUserLinkedinResDto,
   SearchUserByLinkedinReqDto,
@@ -42,7 +43,7 @@ export class ProxycurlService {
     lastName,
     location,
   }: SearchUserLinkedinReqDto): Promise<SearchUserLinkedinResDto> {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
       this.api.personLookupEndpoint(
         domain,
         firstName,
@@ -54,10 +55,18 @@ export class ProxycurlService {
         (error, data, response) => {
           // data {url:string}
           if (error) {
-            reject(error);
+            const resError = {error};
+            resolve({error: resError});
+            console.log(
+              'Proxycurl searchUserLinkedin error: ' + JSON.stringify(resError)
+            );
           } else {
             // response.body has more details
-            resolve(response.body);
+            resolve({res: response.body});
+            console.log(
+              'Proxycurl searchUserLinkedin success: ' +
+                JSON.stringify(response.body)
+            );
           }
         }
       );
@@ -74,7 +83,7 @@ export class ProxycurlService {
     personalEmail,
     personalContactNumber,
   }: SearchUserByLinkedinReqDto): Promise<SearchUserByLinkedinResDto> {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
       this.api.personProfileEndpoint(
         linkedinUrl,
         'on-error',
@@ -84,12 +93,19 @@ export class ProxycurlService {
           // Costs an extra `1` credit per number returned on top of the cost of the base endpoint (if data is available).
           personalContactNumber,
         },
-        (error, data) => {
+        (error, data: SearchUserByLinkedinRes) => {
           if (error) {
-            reject(error);
+            const resError = {error};
+            resolve({error: resError});
+            console.log(
+              'Proxycurl searchUserByLinkedin error: ' +
+                JSON.stringify(resError)
+            );
           } else {
-            resolve(data);
-            console.log('API called successfully. Returned data: ' + data);
+            resolve({res: data});
+            console.log(
+              'Proxycurl searchUserByLinkedin success: ' + JSON.stringify(data)
+            );
           }
         }
       );

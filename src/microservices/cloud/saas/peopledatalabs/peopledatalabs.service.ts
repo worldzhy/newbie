@@ -34,16 +34,16 @@ export class PeopledatalabsService {
    * 1 credit
    */
   async searchUserByDomain({
-    fullName,
-    domain,
+    name,
+    companyDomain,
   }: SearchUserByDomainReqDto): Promise<SearchUserResDto> {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
       const esQuery = {
         query: {
           bool: {
             must: [
-              {term: {full_name: fullName}},
-              {term: {job_company_website: domain}},
+              {term: {full_name: name}},
+              {term: {job_company_website: companyDomain}},
             ],
           },
         },
@@ -56,10 +56,19 @@ export class PeopledatalabsService {
       this.api.person.search
         .elastic(params)
         .then(data => {
-          resolve(data.data);
+          resolve({res: data.data});
+          console.log(
+            'Peopledatalabs searchUserByDomain success: ' +
+              JSON.stringify(data.data)
+          );
         })
         .catch(error => {
-          reject(error);
+          const resError = {error};
+          resolve({error: resError});
+          console.log(
+            'Peopledatalabs searchUserByDomain error: ' +
+              JSON.stringify(resError)
+          );
         });
     });
   }
@@ -74,7 +83,7 @@ export class PeopledatalabsService {
   async searchUserByLinkedin({
     linkedinUrl,
   }: SearchUserByLinkedinReqDto): Promise<SearchUserResDto> {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
       const params = {
         profile: linkedinUrl,
       };
@@ -83,10 +92,19 @@ export class PeopledatalabsService {
       this.api.person
         .enrichment(params)
         .then(jsonResponse => {
-          resolve(jsonResponse.data);
+          resolve({res: jsonResponse.data});
+          console.log(
+            'Peopledatalabs searchUserByLinkedin success: ' +
+              JSON.stringify(jsonResponse.data)
+          );
         })
         .catch(error => {
-          reject(error);
+          const resError = {error};
+          resolve({error: resError});
+          console.log(
+            'Peopledatalabs searchUserByLinkedin error: ' +
+              JSON.stringify(resError)
+          );
         });
     });
   }

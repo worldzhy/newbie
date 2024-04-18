@@ -2,9 +2,11 @@ import {HttpService} from '@nestjs/axios';
 import {Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import {
-  SearchNameByDomainReqDto,
-  SearchNameHttpResDto,
+  SearchEmailByDomainReqDto,
+  SearchEmailResDto,
+  SearchEmailThirdResDto,
 } from './volia-norbert.dto';
+export * from './volia-norbert.dto';
 
 const baseUrl = 'https://api.voilanorbert.com/2018-01-08';
 @Injectable()
@@ -28,7 +30,7 @@ export class VoilaNorbertService {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
     };
-    // this.searchNameByDomain({
+    // this.SearchEmailByDomain({
     //   name: 'yiwen',
     //   company: 'inceptionpad',
     //   domain: 'inceptionpad.com',
@@ -41,34 +43,55 @@ export class VoilaNorbertService {
   /**
    * This endpoint is limited to 300 requests per minutes, and up to 100,000 requests per day max
    */
-  async searchNameByDomain({
+  async searchEmailByDomain({
     name,
     company,
-    domain,
-    // webhook,
+    companyDomain,
+    webhook,
     // list_id,
-  }: SearchNameByDomainReqDto): Promise<SearchNameHttpResDto> {
+  }: SearchEmailByDomainReqDto): Promise<SearchEmailResDto> {
     const url = `${baseUrl}/search/name`;
-    const data = {
-      name,
-      company,
-      domain,
-    };
-    return this.httpService.axiosRef.post(url, data, this.reqConfig);
+    return new Promise(resolve => {
+      const data = {
+        name,
+        company,
+        domain: companyDomain,
+        webhook,
+      };
+      this.httpService.axiosRef
+        .post<SearchEmailByDomainReqDto, SearchEmailThirdResDto>(
+          url,
+          data,
+          this.reqConfig
+        )
+        .then(res => {
+          resolve({res});
+          console.log(
+            'VoliaNorbert searchUserLinkedin success: ' + JSON.stringify(res)
+          );
+        })
+        .catch(e => {
+          const resError = {error: e};
+          resolve({error: resError});
+          console.log(
+            'VoliaNorbert searchUserLinkedin error: ' + JSON.stringify(resError)
+          );
+        });
+    });
   }
 
-  async verifyEmail({email, webhook}: {email: string; webhook: string}) {
-    const url = `${baseUrl}/verifier/upload`;
-    const data = {
-      email,
-      webhook,
-    };
+  // async verifyEmail({email, webhook}: {email: string; webhook: string}) {
+  //   const url = `${baseUrl}/verifier/upload`;
+  //   const data = {
+  //     email,
+  //     webhook,
+  //   };
 
-    const response = await this.httpService.axiosRef
-      .post(url, data, this.reqConfig)
-      .catch(err => {
-        console.log(err);
-      });
-    if (response) return response.data;
-  }
+  //   const response = await this.httpService.axiosRef
+  //     .post(url, data, this.reqConfig)
+  //     .catch(err => {
+  //       console.log(err);
+  //     });
+  //   if (response) return response.data;
+  // }
 }

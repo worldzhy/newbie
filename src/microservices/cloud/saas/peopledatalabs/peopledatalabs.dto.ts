@@ -1,25 +1,36 @@
 import {ApiProperty} from '@nestjs/swagger';
 import {IsString} from 'class-validator';
 
+class CommonResDto {
+  error?: unknown;
+  res?: unknown;
+}
+class CommonErrorResDto {
+  error: unknown;
+}
 export class SearchUserByDomainReqDto {
   @ApiProperty({
     type: String,
   })
   @IsString()
-  fullName: string;
+  name: string;
 
   @ApiProperty({
     type: String,
   })
   @IsString()
-  domain: string;
+  companyDomain: string;
 }
 
 export class SearchUserByLinkedinReqDto {
   linkedinUrl: string;
 }
 
-export class SearchUserResDto {
+export class SearchUserResDto implements CommonResDto {
+  error?: CommonErrorResDto;
+  res?: SearchUserThirdResDto;
+}
+export class SearchUserThirdResDto {
   phone_numbers: string[];
   phones: Phone[];
   emails: Email[];

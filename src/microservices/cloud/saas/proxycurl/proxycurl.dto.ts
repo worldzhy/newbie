@@ -1,6 +1,13 @@
 import {ApiProperty} from '@nestjs/swagger';
 import {IsString} from 'class-validator';
 
+class CommonResDto {
+  error?: unknown;
+  res?: unknown;
+}
+class CommonErrorResDto {
+  error: unknown;
+}
 export class SearchUserLinkedinReqDto {
   @ApiProperty({
     type: String,
@@ -31,12 +38,16 @@ export class SearchUserLinkedinReqDto {
   location?: string;
 }
 
-export class SearchUserLinkedinResDto {
+export class SearchUserLinkedinRes {
   url: string;
   company_similarity_score: number;
   location_similarity_score: number;
   name_similarity_score: number;
   title_similarity_score: number;
+}
+export class SearchUserLinkedinResDto implements CommonResDto {
+  error?: CommonErrorResDto;
+  res?: SearchUserLinkedinRes;
 }
 
 export class SearchUserByLinkedinReqDto {
@@ -53,7 +64,7 @@ export class SearchUserByLinkedinReqDto {
   personalContactNumber?: 'exclude' | 'include';
 }
 
-export class SearchUserByLinkedinResDto {
+export class SearchUserByLinkedinRes {
   personalEmails: string[];
   personalNumbers: string[];
 
@@ -96,4 +107,9 @@ export class SearchUserByLinkedinResDto {
   industry?: string;
   interests?: string[];
   extra?: unknown;
+}
+
+export class SearchUserByLinkedinResDto implements CommonResDto {
+  error?: CommonErrorResDto;
+  res?: SearchUserByLinkedinRes;
 }

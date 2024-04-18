@@ -1,7 +1,15 @@
 import {ApiProperty} from '@nestjs/swagger';
 import {IsString, IsOptional} from 'class-validator';
 
-export class SearchNameByDomainReqDto {
+class CommonResDto {
+  error?: unknown;
+  res?: unknown;
+}
+class CommonErrorResDto {
+  error: unknown;
+}
+
+export class SearchEmailByDomainReqDto {
   @ApiProperty({
     type: String,
   })
@@ -10,23 +18,23 @@ export class SearchNameByDomainReqDto {
 
   @ApiProperty({
     type: String,
-  })
-  @IsString()
-  company: string;
-
-  @ApiProperty({
-    type: String,
-  })
-  @IsString()
-  domain: string;
-
-  @ApiProperty({
-    type: String,
     required: false,
   })
   @IsString()
   @IsOptional()
-  webhook?: string;
+  company?: string;
+
+  @ApiProperty({
+    type: String,
+  })
+  @IsString()
+  companyDomain: string;
+
+  @ApiProperty({
+    type: String,
+  })
+  @IsString()
+  webhook: string;
 
   @ApiProperty({
     type: Number,
@@ -47,7 +55,7 @@ export class EmailDto {
   score: number;
 }
 
-export class SearchNameResDto {
+export class SearchEmailContentResDto {
   @ApiProperty({
     type: EmailDto,
     description:
@@ -68,7 +76,12 @@ export class SearchNameResDto {
   searching: boolean;
 }
 
-export class SearchNameHttpResDto {
+export class SearchEmailThirdResDto {
   status: 200 | 400;
-  data: SearchNameResDto;
+  data: SearchEmailContentResDto;
+}
+
+export class SearchEmailResDto implements CommonResDto {
+  error?: CommonErrorResDto;
+  res?: SearchEmailThirdResDto;
 }
