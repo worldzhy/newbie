@@ -70,7 +70,7 @@ export class ProxycurlService {
           } else {
             // response.body has more details
             resolve({res: response.body});
-            this.logger.error(
+            this.logger.log(
               'Proxycurl searchPeopleLinkedin success: ' +
                 JSON.stringify(response.body),
               this.loggerContext
@@ -105,15 +105,17 @@ export class ProxycurlService {
           if (error) {
             const resError = {error};
             resolve({error: resError});
-            console.log(
+            this.logger.error(
               'Proxycurl searchPeopleByLinkedin error: ' +
-                JSON.stringify(resError)
+                JSON.stringify(resError),
+              this.loggerContext
             );
           } else {
             resolve({res: data});
-            console.log(
+            this.logger.log(
               'Proxycurl searchPeopleByLinkedin success: ' +
-                JSON.stringify(data)
+                JSON.stringify(data),
+              this.loggerContext
             );
           }
         }

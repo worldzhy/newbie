@@ -62,7 +62,7 @@ export class PeopledatalabsService {
         .elastic(params)
         .then(data => {
           resolve({res: data.data});
-          this.logger.error(
+          this.logger.log(
             'Peopledatalabs searchPeopleByDomain success: ' +
               JSON.stringify(data.data),
             this.loggerContext
@@ -100,7 +100,7 @@ export class PeopledatalabsService {
         .enrichment(params)
         .then(jsonResponse => {
           resolve({res: jsonResponse.data});
-          this.logger.error(
+          this.logger.log(
             'Peopledatalabs searchPeopleByLinkedin success: ' +
               JSON.stringify(jsonResponse.data),
             this.loggerContext

@@ -69,7 +69,7 @@ export class VoilaNorbertService {
         )
         .then(res => {
           resolve({res});
-          this.logger.error(
+          this.logger.log(
             'VoliaNorbert searchEmailByDomain success: ' + JSON.stringify(res),
             this.loggerContext
           );
