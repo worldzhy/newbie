@@ -5,8 +5,12 @@ import {CustomLoggerService} from '@toolkit/logger/logger.service';
 import {
   SearchPeopleByDomainReqDto,
   SearchPeopleResDto,
+  SearchPeopleArrayResDto,
   SearchPeopleByLinkedinReqDto,
+  PeopledatalabsStatus,
 } from './peopledatalabs.dto';
+
+export * from './peopledatalabs.dto';
 
 @Injectable()
 export class PeopledatalabsService {
@@ -41,7 +45,7 @@ export class PeopledatalabsService {
   async searchPeopleByDomain({
     name,
     companyDomain,
-  }: SearchPeopleByDomainReqDto): Promise<SearchPeopleResDto> {
+  }: SearchPeopleByDomainReqDto): Promise<SearchPeopleArrayResDto> {
     return new Promise(resolve => {
       const esQuery = {
         query: {
@@ -60,13 +64,23 @@ export class PeopledatalabsService {
       };
       this.api.person.search
         .elastic(params)
-        .then(data => {
-          resolve({res: data.data});
-          this.logger.log(
-            'Peopledatalabs searchPeopleByDomain success: ' +
-              JSON.stringify(data.data),
-            this.loggerContext
-          );
+        .then(res => {
+          if (res.status === PeopledatalabsStatus.SUCCESS) {
+            resolve({res: res});
+            this.logger.log(
+              'Peopledatalabs searchPeopleByDomain success: ' +
+                JSON.stringify(res),
+              this.loggerContext
+            );
+          } else {
+            const resError = {error: res.status, ctx: res};
+            resolve({error: resError});
+            this.logger.error(
+              'Peopledatalabs searchPeopleByDomain error: ' +
+                JSON.stringify(resError),
+              this.loggerContext
+            );
+          }
         })
         .catch(error => {
           const resError = {error};
@@ -98,13 +112,23 @@ export class PeopledatalabsService {
       // Pass the parameters object to the Person Enrichment API
       this.api.person
         .enrichment(params)
-        .then(jsonResponse => {
-          resolve({res: jsonResponse.data});
-          this.logger.log(
-            'Peopledatalabs searchPeopleByLinkedin success: ' +
-              JSON.stringify(jsonResponse.data),
-            this.loggerContext
-          );
+        .then(res => {
+          if (res.status === PeopledatalabsStatus.SUCCESS) {
+            resolve({res});
+            this.logger.log(
+              'Peopledatalabs searchPeopleByLinkedin success: ' +
+                JSON.stringify(res),
+              this.loggerContext
+            );
+          } else {
+            const resError = {error: res.status, ctx: res};
+            resolve({error: resError});
+            this.logger.error(
+              'Peopledatalabs searchPeopleByLinkedin error: ' +
+                JSON.stringify(resError),
+              this.loggerContext
+            );
+          }
         })
         .catch(error => {
           const resError = {error};

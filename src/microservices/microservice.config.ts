@@ -108,4 +108,7 @@ export default registerAs('microservice', () => ({
   peopledatalabs: {
     apiKey: process.env.PDL_API_KEY,
   },
+  self: {
+    domain: process.env.SELF_DOMAIN,
+  },
 }));

@@ -1157,6 +1157,7 @@ model ContactSearch {
   source     String
   sourceMode String
   taskId     String?
+  spent     Int? 
   status     String // pending | completed | failed
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt

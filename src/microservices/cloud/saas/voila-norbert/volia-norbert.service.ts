@@ -6,6 +6,7 @@ import {
   SearchEmailByDomainReqDto,
   SearchEmailResDto,
   SearchEmailThirdResDto,
+  VoliaNorbertStatus,
 } from './volia-norbert.dto';
 export * from './volia-norbert.dto';
 
@@ -67,15 +68,26 @@ export class VoilaNorbertService {
           data,
           this.reqConfig
         )
-        .then(res => {
-          resolve({res});
-          this.logger.log(
-            'VoliaNorbert searchEmailByDomain success: ' + JSON.stringify(res),
-            this.loggerContext
-          );
+        .then((res: SearchEmailThirdResDto) => {
+          if (res.status === VoliaNorbertStatus.SUCCESS) {
+            resolve({res: res.data});
+            this.logger.log(
+              'VoliaNorbert searchEmailByDomain success: ' +
+                JSON.stringify(res.data),
+              this.loggerContext
+            );
+          } else {
+            const resError = {error: res.data, status: res.status};
+            resolve({error: resError});
+            this.logger.error(
+              'VoliaNorbert searchEmailByDomain error: ' +
+                JSON.stringify(resError),
+              this.loggerContext
+            );
+          }
         })
         .catch(e => {
-          const resError = {error: e};
+          const resError = {error: e.response.data};
           resolve({error: resError});
           this.logger.error(
             'VoliaNorbert searchEmailByDomain error: ' +

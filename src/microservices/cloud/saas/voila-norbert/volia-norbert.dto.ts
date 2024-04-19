@@ -1,6 +1,11 @@
 import {ApiProperty} from '@nestjs/swagger';
 import {IsString, IsOptional} from 'class-validator';
 
+export enum VoliaNorbertStatus {
+  SUCCESS = 200,
+  INVALID_REQUEST_ERROR = 400,
+  INSUFFICIENT_CREDITS = 402,
+}
 class CommonResDto {
   error?: unknown;
   res?: unknown;
@@ -74,14 +79,27 @@ export class SearchEmailContentResDto {
       'The searching boolean returned by the server will let you know if the server is searching for that contact of it has already been found',
   })
   searching: boolean;
+
+  company: {
+    name: string;
+    title: string;
+    url: string;
+  };
+  created: number;
+  id: number;
+  is_new: boolean;
+  lists: unknown[]; // Adjust the type accordingly
+  status: string;
 }
 
 export class SearchEmailThirdResDto {
-  status: 200 | 400;
+  status: VoliaNorbertStatus;
   data: SearchEmailContentResDto;
+  // [request, header, config]
+  [x: string]: unknown;
 }
 
 export class SearchEmailResDto implements CommonResDto {
   error?: CommonErrorResDto;
-  res?: SearchEmailThirdResDto;
+  res?: SearchEmailContentResDto;
 }

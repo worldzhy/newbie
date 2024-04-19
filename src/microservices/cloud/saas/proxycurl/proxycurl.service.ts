@@ -58,10 +58,18 @@ export class ProxycurlService {
           lastName,
         },
         (error, data, response) => {
+          let spent = 0;
+          if (response.header['x-proxycurl-credit-cost']) {
+            try {
+              spent = Number(response.header['x-proxycurl-credit-cost']);
+            } catch (e) {
+              spent = 0;
+            }
+          }
           // data {url:string}
           if (error) {
             const resError = {error};
-            resolve({error: resError});
+            resolve({error: resError, spent});
             this.logger.error(
               'Proxycurl searchPeopleLinkedin error: ' +
                 JSON.stringify(resError),
@@ -69,7 +77,7 @@ export class ProxycurlService {
             );
           } else {
             // response.body has more details
-            resolve({res: response.body});
+            resolve({res: response.body, spent});
             this.logger.log(
               'Proxycurl searchPeopleLinkedin success: ' +
                 JSON.stringify(response.body),
@@ -101,17 +109,25 @@ export class ProxycurlService {
           // Costs an extra `1` credit per number returned on top of the cost of the base endpoint (if data is available).
           personalContactNumber,
         },
-        (error, data: SearchPeopleByLinkedinRes) => {
+        (error, data: SearchPeopleByLinkedinRes, response) => {
+          let spent = 0;
+          if (response.header['x-proxycurl-credit-cost']) {
+            try {
+              spent = Number(response.header['x-proxycurl-credit-cost']);
+            } catch (e) {
+              spent = 0;
+            }
+          }
           if (error) {
             const resError = {error};
-            resolve({error: resError});
+            resolve({error: resError, spent});
             this.logger.error(
               'Proxycurl searchPeopleByLinkedin error: ' +
                 JSON.stringify(resError),
               this.loggerContext
             );
           } else {
-            resolve({res: data});
+            resolve({res: data, spent});
             this.logger.log(
               'Proxycurl searchPeopleByLinkedin success: ' +
                 JSON.stringify(data),

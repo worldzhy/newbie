@@ -48,6 +48,7 @@ export class SearchPeopleLinkedinRes {
 export class SearchPeopleLinkedinResDto implements CommonResDto {
   error?: CommonErrorResDto;
   res?: SearchPeopleLinkedinRes;
+  spent: number;
 }
 
 export class SearchPeopleByLinkedinReqDto {
@@ -65,45 +66,45 @@ export class SearchPeopleByLinkedinReqDto {
 }
 
 export class SearchPeopleByLinkedinRes {
-  personalEmails: string[];
-  personalNumbers: string[];
+  personal_emails: string[];
+  personal_numbers: string[];
 
-  publicIdentifier?: string;
-  profilePicUrl?: string;
-  backgroundCoverImageUrl?: string;
-  firstName?: string;
-  lastName?: string;
-  fullName?: string;
+  public_identifier?: string;
+  profile_pic_url?: string;
+  background_cover_image_url?: string;
+  first_name?: string;
+  last_name?: string;
+  full_name?: string;
   occupation?: string;
   headline?: string;
   summary?: string;
   country?: string;
-  countryFullName?: string;
+  country_full_name?: string;
   city?: string;
   state?: string;
   experiences?: unknown[];
   education?: unknown[];
   languages?: string[];
-  accomplishmentOrganisations?: unknown[];
-  accomplishmentPublications?: unknown[];
-  accomplishmentHonorsAwards?: unknown[];
-  accomplishmentPatents?: unknown[];
-  accomplishmentCourses?: unknown[];
-  accomplishmentProjects?: unknown[];
-  accomplishmentTestScores?: unknown[];
-  volunteerWork?: unknown[];
+  accomplishment_organisations?: unknown[];
+  accomplishment_publications?: unknown[];
+  accomplishment_honors_awards?: unknown[];
+  accomplishment_patents?: unknown[];
+  accomplishment_courses?: unknown[];
+  accomplishment_projects?: unknown[];
+  accomplishment_test_scores?: unknown[];
+  volunteer_work?: unknown[];
   certifications?: unknown[];
   connections?: number;
-  peopleAlsoViewed?: unknown[];
+  people_also_viewed?: unknown[];
   recommendations?: string[];
   activities?: unknown[];
-  similarlyNamedProfiles?: unknown[];
+  similarly_named_profiles?: unknown[];
   articles?: unknown[];
   groups?: unknown[];
   skills?: string[];
-  inferredSalary?: unknown;
+  inferred_salary?: unknown;
   gender?: string;
-  birthDate?: unknown;
+  birth_date?: unknown;
   industry?: string;
   interests?: string[];
   extra?: unknown;
@@ -112,4 +113,5 @@ export class SearchPeopleByLinkedinRes {
 export class SearchPeopleByLinkedinResDto implements CommonResDto {
   error?: CommonErrorResDto;
   res?: SearchPeopleByLinkedinRes;
+  spent: number;
 }

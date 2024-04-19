@@ -1,12 +1,24 @@
 import {ApiProperty} from '@nestjs/swagger';
 import {IsString} from 'class-validator';
 
+export enum PeopledatalabsStatus {
+  SUCCESS = 200,
+  INVALID_REQUEST_ERROR = 400,
+  AUTHENTICATION_ERROR = 401,
+  PAYMENT_REQUIRED = 402,
+  NOT_FOUND = 404,
+  METHOD_NOT_ALLOWED = 405,
+  RATE_LIMIT_ERROR = 429,
+  API_ERROR = 500,
+}
+
 class CommonResDto {
   error?: unknown;
   res?: unknown;
 }
 class CommonErrorResDto {
   error: unknown;
+  ctx?: SearchPeopleThirdResDto | SearchPeopleThirdResDto[];
 }
 export class SearchPeopleByDomainReqDto {
   @ApiProperty({
@@ -31,6 +43,40 @@ export class SearchPeopleResDto implements CommonResDto {
   res?: SearchPeopleThirdResDto;
 }
 export class SearchPeopleThirdResDto {
+  data: SearchPeopleThirdResDataDto;
+  scroll_token: string;
+  status: PeopledatalabsStatus;
+  total: number;
+  rateLimit: RateLimitInfo;
+}
+export class SearchPeopleArrayResDto implements CommonResDto {
+  error?: CommonErrorResDto;
+  res?: SearchPeopleThirdArrayResDto;
+}
+export class SearchPeopleThirdArrayResDto {
+  data: SearchPeopleThirdResDataDto[];
+  scroll_token: string;
+  status: PeopledatalabsStatus;
+  total: number;
+  rateLimit: RateLimitInfo;
+}
+
+interface RateLimit {
+  minute: number;
+}
+
+interface RateLimitInfo {
+  rateLimitRemaining: RateLimit;
+  rateLimitReset: string;
+  rateLimitLimit: RateLimit;
+  totalLimitOveragesRemaining: number;
+  totalLimitPurchasedRemaining: number;
+  totalLimitRemaining: number;
+  callCreditsType: string;
+  callCreditsSpent: number;
+  lifetimeUsed: number;
+}
+export class SearchPeopleThirdResDataDto {
   phone_numbers: string[];
   phones: Phone[];
   emails: Email[];
