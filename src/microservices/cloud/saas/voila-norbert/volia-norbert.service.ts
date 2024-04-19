@@ -1,6 +1,7 @@
 import {HttpService} from '@nestjs/axios';
 import {Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
+import {CustomLoggerService} from '@toolkit/logger/logger.service';
 import {
   SearchEmailByDomainReqDto,
   SearchEmailResDto,
@@ -13,10 +14,12 @@ const baseUrl = 'https://api.voilanorbert.com/2018-01-08';
 export class VoilaNorbertService {
   private apiKey;
   private reqConfig;
+  private loggerContext = 'Voilanorbert';
 
   constructor(
     private httpService: HttpService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private readonly logger: CustomLoggerService
   ) {
     this.apiKey = this.configService.getOrThrow<string>(
       'microservice.voilanorbert.apiKey'
@@ -66,15 +69,18 @@ export class VoilaNorbertService {
         )
         .then(res => {
           resolve({res});
-          console.log(
-            'VoliaNorbert searchUserLinkedin success: ' + JSON.stringify(res)
+          this.logger.error(
+            'VoliaNorbert searchEmailByDomain success: ' + JSON.stringify(res),
+            this.loggerContext
           );
         })
         .catch(e => {
           const resError = {error: e};
           resolve({error: resError});
-          console.log(
-            'VoliaNorbert searchUserLinkedin error: ' + JSON.stringify(resError)
+          this.logger.error(
+            'VoliaNorbert searchEmailByDomain error: ' +
+              JSON.stringify(resError),
+            this.loggerContext
           );
         });
     });

@@ -2,7 +2,7 @@ import {ApiProperty} from '@nestjs/swagger';
 import {IsString, IsArray, IsOptional} from 'class-validator';
 import {PeopleSearchPlatforms} from './constants';
 
-export class ContactSearchUserDto {
+export class ContactSearchPeopleDto {
   @ApiProperty({
     type: String,
     required: false,
@@ -77,9 +77,9 @@ export class ContactSearchReqDto {
   platforms: string;
 
   @ApiProperty({
-    type: ContactSearchUserDto,
+    type: ContactSearchPeopleDto,
     isArray: true,
   })
   @IsArray()
-  users: ContactSearchUserDto[];
+  peoples: ContactSearchPeopleDto[];
 }

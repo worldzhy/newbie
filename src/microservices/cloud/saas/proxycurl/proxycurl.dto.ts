@@ -8,7 +8,7 @@ class CommonResDto {
 class CommonErrorResDto {
   error: unknown;
 }
-export class SearchUserLinkedinReqDto {
+export class SearchPeopleLinkedinReqDto {
   @ApiProperty({
     type: String,
   })
@@ -38,19 +38,19 @@ export class SearchUserLinkedinReqDto {
   location?: string;
 }
 
-export class SearchUserLinkedinRes {
+export class SearchPeopleLinkedinRes {
   url: string;
   company_similarity_score: number;
   location_similarity_score: number;
   name_similarity_score: number;
   title_similarity_score: number;
 }
-export class SearchUserLinkedinResDto implements CommonResDto {
+export class SearchPeopleLinkedinResDto implements CommonResDto {
   error?: CommonErrorResDto;
-  res?: SearchUserLinkedinRes;
+  res?: SearchPeopleLinkedinRes;
 }
 
-export class SearchUserByLinkedinReqDto {
+export class SearchPeopleByLinkedinReqDto {
   linkedinUrl: string;
   /**
    * default value: exclude
@@ -64,7 +64,7 @@ export class SearchUserByLinkedinReqDto {
   personalContactNumber?: 'exclude' | 'include';
 }
 
-export class SearchUserByLinkedinRes {
+export class SearchPeopleByLinkedinRes {
   personalEmails: string[];
   personalNumbers: string[];
 
@@ -109,7 +109,7 @@ export class SearchUserByLinkedinRes {
   extra?: unknown;
 }
 
-export class SearchUserByLinkedinResDto implements CommonResDto {
+export class SearchPeopleByLinkedinResDto implements CommonResDto {
   error?: CommonErrorResDto;
-  res?: SearchUserByLinkedinRes;
+  res?: SearchPeopleByLinkedinRes;
 }

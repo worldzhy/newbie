@@ -2,7 +2,7 @@ import {Controller, Post, Body, Query} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {Prisma} from '@prisma/client';
-import {ContactSearchReqDto, ContactSearchUserDto} from './people-search.dto';
+import {ContactSearchReqDto, ContactSearchPeopleDto} from './people-search.dto';
 import {PeopleSearchPlatforms, PeopleSearchStatus} from './constants';
 import {
   VoilaNorbertService,
@@ -22,7 +22,7 @@ export class PeopleSearchController {
     private readonly peopledatalabsService: PeopledatalabsService
   ) {}
 
-  getCommonContactSearch = (user: ContactSearchUserDto) => {
+  getCommonContactSearch = (user: ContactSearchPeopleDto) => {
     return {
       userId: user.userId,
       userSource: user.userSource,
@@ -39,7 +39,7 @@ export class PeopleSearchController {
      * voilanorbert
      */
     [PeopleSearchPlatforms.voilanorbert]: async (
-      user: ContactSearchUserDto
+      user: ContactSearchPeopleDto
     ) => {
       const {name, companyDomain} = user;
       if (!name || !companyDomain) return;
@@ -61,19 +61,21 @@ export class PeopleSearchController {
     /**
      * proxycurl
      */
-    [PeopleSearchPlatforms.proxycurl]: async (user: ContactSearchUserDto) => {
+    [PeopleSearchPlatforms.proxycurl]: async (user: ContactSearchPeopleDto) => {
       if (user.linkedin) {
         const newRecord = await this.prisma.contactSearch.create({
           data: {
             ...this.getCommonContactSearch(user),
-            sourceMode: 'searchUserByLinkedin',
+            sourceMode: 'searchPeopleByLinkedin',
             source: PeopleSearchPlatforms.proxycurl,
             status: PeopleSearchStatus.pending,
           },
         });
-        const {res, error} = await this.proxycurlService.searchUserByLinkedin({
-          linkedinUrl: user.linkedin,
-        });
+        const {res, error} = await this.proxycurlService.searchPeopleByLinkedin(
+          {
+            linkedinUrl: user.linkedin,
+          }
+        );
         const updateData: Prisma.ContactSearchUpdateInput = {};
         if (error) {
           updateData.status = PeopleSearchStatus.failed;
@@ -94,19 +96,19 @@ export class PeopleSearchController {
      * peopledatalabs
      */
     [PeopleSearchPlatforms.peopledatalabs]: async (
-      user: ContactSearchUserDto
+      user: ContactSearchPeopleDto
     ) => {
       if (user.linkedin) {
         const newRecord = await this.prisma.contactSearch.create({
           data: {
             ...this.getCommonContactSearch(user),
-            sourceMode: 'searchUserByLinkedin',
+            sourceMode: 'searchPeopleByLinkedin',
             source: PeopleSearchPlatforms.peopledatalabs,
             status: PeopleSearchStatus.pending,
           },
         });
         const {error, res} =
-          await this.peopledatalabsService.searchUserByLinkedin({
+          await this.peopledatalabsService.searchPeopleByLinkedin({
             linkedinUrl: user.linkedin,
           });
         const updateData: Prisma.ContactSearchUpdateInput = {};
@@ -127,13 +129,13 @@ export class PeopleSearchController {
         const newRecord = await this.prisma.contactSearch.create({
           data: {
             ...this.getCommonContactSearch(user),
-            sourceMode: 'searchUserByDomain',
+            sourceMode: 'searchPeopleByDomain',
             source: PeopleSearchPlatforms.peopledatalabs,
             status: PeopleSearchStatus.pending,
           },
         });
         const {error, res} =
-          await this.peopledatalabsService.searchUserByDomain({
+          await this.peopledatalabsService.searchPeopleByDomain({
             companyDomain: user.companyDomain,
             name: user.name,
           });
@@ -163,13 +165,13 @@ export class PeopleSearchController {
     @Body()
     body: ContactSearchReqDto
   ) {
-    const {platforms, users} = body;
-    for (let i = 0; i < users.length; i++) {
+    const {platforms, peoples} = body;
+    for (let i = 0; i < peoples.length; i++) {
       for (let platI = 0; platI < platforms.length; platI++) {
         const platform = platforms[platI];
-        const user = users[i];
-        // todo: [throttle] Check if the current user has records on the current platform and filter out users with records
-        await this.platformSearch[platform](user);
+        const people = peoples[i];
+        // todo: [throttle] Check if the current people has records on the current platform and filter out peoples with records
+        await this.platformSearch[platform](people);
       }
     }
     // return await this.voilaNorbertService;

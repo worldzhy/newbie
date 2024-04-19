@@ -8,7 +8,7 @@ class CommonResDto {
 class CommonErrorResDto {
   error: unknown;
 }
-export class SearchUserByDomainReqDto {
+export class SearchPeopleByDomainReqDto {
   @ApiProperty({
     type: String,
   })
@@ -22,15 +22,15 @@ export class SearchUserByDomainReqDto {
   companyDomain: string;
 }
 
-export class SearchUserByLinkedinReqDto {
+export class SearchPeopleByLinkedinReqDto {
   linkedinUrl: string;
 }
 
-export class SearchUserResDto implements CommonResDto {
+export class SearchPeopleResDto implements CommonResDto {
   error?: CommonErrorResDto;
-  res?: SearchUserThirdResDto;
+  res?: SearchPeopleThirdResDto;
 }
-export class SearchUserThirdResDto {
+export class SearchPeopleThirdResDto {
   phone_numbers: string[];
   phones: Phone[];
   emails: Email[];

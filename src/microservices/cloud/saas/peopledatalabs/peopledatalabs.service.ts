@@ -1,29 +1,34 @@
 import {Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import * as PDLJS from 'peopledatalabs';
+import {CustomLoggerService} from '@toolkit/logger/logger.service';
 import {
-  SearchUserByDomainReqDto,
-  SearchUserResDto,
-  SearchUserByLinkedinReqDto,
+  SearchPeopleByDomainReqDto,
+  SearchPeopleResDto,
+  SearchPeopleByLinkedinReqDto,
 } from './peopledatalabs.dto';
 
 @Injectable()
 export class PeopledatalabsService {
   private apiKey;
   private api;
+  private loggerContext = 'Peopledatalabs';
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly logger: CustomLoggerService
+  ) {
     this.apiKey = this.configService.getOrThrow<string>(
       'microservice.peopledatalabs.apiKey'
     );
     // @ts-ignore
     this.api = new PDLJS({apiKey: this.apiKey});
 
-    // this.searchUserByDomain({
+    // this.searchPeopleByDomain({
     //   fullName: 'Jovan Bethell',
     //   domain: 'pioneerinterests.com',
     // });
-    // this.searchUserByLinkedin({
+    // this.searchPeopleByLinkedin({
     //   linkedinUrl: 'https://www.linkedin.com/in/yiwen-mu',
     // });
   }
@@ -33,10 +38,10 @@ export class PeopledatalabsService {
    * https://docs.peopledatalabs.com/docs/quickstart-person-enrichment-api
    * 1 credit
    */
-  async searchUserByDomain({
+  async searchPeopleByDomain({
     name,
     companyDomain,
-  }: SearchUserByDomainReqDto): Promise<SearchUserResDto> {
+  }: SearchPeopleByDomainReqDto): Promise<SearchPeopleResDto> {
     return new Promise(resolve => {
       const esQuery = {
         query: {
@@ -57,17 +62,19 @@ export class PeopledatalabsService {
         .elastic(params)
         .then(data => {
           resolve({res: data.data});
-          console.log(
-            'Peopledatalabs searchUserByDomain success: ' +
-              JSON.stringify(data.data)
+          this.logger.error(
+            'Peopledatalabs searchPeopleByDomain success: ' +
+              JSON.stringify(data.data),
+            this.loggerContext
           );
         })
         .catch(error => {
           const resError = {error};
           resolve({error: resError});
-          console.log(
-            'Peopledatalabs searchUserByDomain error: ' +
-              JSON.stringify(resError)
+          this.logger.error(
+            'Peopledatalabs searchPeopleByDomain error: ' +
+              JSON.stringify(resError),
+            this.loggerContext
           );
         });
     });
@@ -80,9 +87,9 @@ export class PeopledatalabsService {
    * https://docs.peopledatalabs.com/docs/quickstart-person-enrichment-api
    * 1 credit
    */
-  async searchUserByLinkedin({
+  async searchPeopleByLinkedin({
     linkedinUrl,
-  }: SearchUserByLinkedinReqDto): Promise<SearchUserResDto> {
+  }: SearchPeopleByLinkedinReqDto): Promise<SearchPeopleResDto> {
     return new Promise(resolve => {
       const params = {
         profile: linkedinUrl,
@@ -93,17 +100,19 @@ export class PeopledatalabsService {
         .enrichment(params)
         .then(jsonResponse => {
           resolve({res: jsonResponse.data});
-          console.log(
-            'Peopledatalabs searchUserByLinkedin success: ' +
-              JSON.stringify(jsonResponse.data)
+          this.logger.error(
+            'Peopledatalabs searchPeopleByLinkedin success: ' +
+              JSON.stringify(jsonResponse.data),
+            this.loggerContext
           );
         })
         .catch(error => {
           const resError = {error};
           resolve({error: resError});
-          console.log(
-            'Peopledatalabs searchUserByLinkedin error: ' +
-              JSON.stringify(resError)
+          this.logger.error(
+            'Peopledatalabs searchPeopleByLinkedin error: ' +
+              JSON.stringify(resError),
+            this.loggerContext
           );
         });
     });

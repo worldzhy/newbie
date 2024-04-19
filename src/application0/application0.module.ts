@@ -20,6 +20,7 @@ import {App0FileManagementModule} from './file-mgmt/file-mgmt.module';
 import {App0NotificationModule} from './notification/notification.module';
 import {App0TagModule} from './tag/tag.module';
 import {App0WorkflowModule} from './workflow/workflow.module';
+import {App0PeopleSearchModule} from './people-search/people-search.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import {App0WorkflowModule} from './workflow/workflow.module';
     App0NotificationModule,
     App0TagModule,
     App0WorkflowModule,
+    App0PeopleSearchModule,
   ],
   providers: [
     // Filters
