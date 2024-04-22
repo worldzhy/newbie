@@ -19,10 +19,10 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {GoogleDrivePermissionService} from '@microservices/storage/google-drive/google-drive-permission.service';
 import {Prisma} from '@prisma/client';
 
-@ApiTags('File Management / Google Drive')
+@ApiTags('Storage / Managed Google Drive')
 @ApiBearerAuth()
 @Controller('google-drive')
-export class GoogleDriveController {
+export class ManagedGoogleDriveController {
   constructor(
     private readonly googleDrive: GoogleDriveService,
     private readonly googleDrivePermission: GoogleDrivePermissionService,

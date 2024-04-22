@@ -17,19 +17,19 @@ import {FileInterceptor} from '@nestjs/platform-express';
 import {ApiBearerAuth, ApiBody, ApiParam, ApiTags} from '@nestjs/swagger';
 import {ConfigService} from '@nestjs/config';
 import {AccessTokenService} from '@microservices/account/security/token/access-token.service';
-import {S3DriveService} from '@microservices/storage/s3/s3-drive.service';
+import {S3Service} from '@microservices/storage/s3/s3.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {Prisma} from '@prisma/client';
 
-@ApiTags('File Management / S3 Drive')
+@ApiTags('Storage / Mounted S3')
 @ApiBearerAuth()
-@Controller('s3-drive')
-export class S3DriveController {
+@Controller('mounted-s3-drive')
+export class MountedS3Controller {
   private s3Bucket: string;
   constructor(
     private readonly config: ConfigService,
     private readonly prisma: PrismaService,
-    private readonly s3: S3DriveService,
+    private readonly s3: S3Service,
     private readonly accessTokenService: AccessTokenService
   ) {
     this.s3Bucket = this.config.getOrThrow<string>(

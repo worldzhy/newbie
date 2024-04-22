@@ -1,14 +1,14 @@
 import {Module} from '@nestjs/common';
-import {GoogleDriveController} from './google-drive.controller';
-import {GoogleSheetController} from './google-sheet.controller';
-import {S3DriveController} from './s3-drive.controller';
-import {LocalDriveController} from './local-drive.controller';
+import {ManagedGoogleDriveController} from './managed-google-drive.controller';
+import {ManagedS3Controller} from './managed-s3.controller';
+import {LocalDriveController} from './local.controller';
+import {MountedS3Controller} from './mounted-s3.controller';
 
 @Module({
   controllers: [
-    GoogleDriveController,
-    GoogleSheetController,
-    S3DriveController,
+    ManagedGoogleDriveController,
+    ManagedS3Controller,
+    MountedS3Controller,
     LocalDriveController,
   ],
 })

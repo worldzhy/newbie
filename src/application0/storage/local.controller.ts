@@ -16,7 +16,7 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {Prisma} from '@prisma/client';
 import {LocalDriveService} from '@microservices/storage/local/local-drive.service';
 
-@ApiTags('File Management / Local Drive')
+@ApiTags('Storage / Local')
 @ApiBearerAuth()
 @Controller('local-drive')
 export class LocalDriveController {

@@ -21,7 +21,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["microservice/account", "microservice/cloud", "microservice/cron", "microservice/event-scheduling", "microservice/file-mgmt", "microservice/map", "microservice/notification", "microservice/order-mgmt", "microservice/project-mgmt", "microservice/queue", "microservice/stock-mgmt", "microservice/tag", "microservice/token", "microservice/workflow", "microservice/people-search", "application/engined", "application/recruitment", "application/solidcore", "application/tc-request"]
+  schemas  = ["microservice/account", "microservice/cloud", "microservice/cron", "microservice/event-scheduling", "microservice/map", "microservice/notification", "microservice/order-mgmt", "microservice/project-mgmt", "microservice/queue", "microservice/stock-mgmt", "microservice/storage", "microservice/tag", "microservice/token", "microservice/workflow", "microservice/people-search", "application/engined", "application/recruitment", "application/solidcore", "application/tc-request"]
 }
 
 // ! ------------------------------------------------------------ //
@@ -1150,7 +1150,7 @@ model ContactSearch {
   source     String
   sourceMode String
   taskId     String?
-  spent     Int? 
+  spent      Int?
   status     String // pending | completed | failed
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt

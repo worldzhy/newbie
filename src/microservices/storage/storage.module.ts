@@ -2,7 +2,7 @@ import {Global, Module} from '@nestjs/common';
 import {LocalDriveService} from './local/local-drive.service';
 import {GoogleDriveService} from './google-drive/google-drive.service';
 import {GoogleDrivePermissionService} from './google-drive/google-drive-permission.service';
-import {S3DriveService} from './s3/s3-drive.service';
+import {S3Service} from './s3/s3.service';
 
 @Global()
 @Module({
@@ -10,13 +10,13 @@ import {S3DriveService} from './s3/s3-drive.service';
     LocalDriveService,
     GoogleDriveService,
     GoogleDrivePermissionService,
-    S3DriveService,
+    S3Service,
   ],
   exports: [
     LocalDriveService,
     GoogleDriveService,
     GoogleDrivePermissionService,
-    S3DriveService,
+    S3Service,
   ],
 })
 export class StorageModule {}
