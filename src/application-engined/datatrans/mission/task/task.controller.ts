@@ -18,7 +18,7 @@ import {
   ElasticsearchDatasourceIndex,
   PostgresqlDatasourceConstraintKeyType,
 } from '@prisma/client';
-import {SqsService} from '@toolkit/aws/aws.sqs.service';
+import {AwsSqsService} from '@microservices/cloud/saas/aws/aws-sqs.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {ConfigService} from '@nestjs/config';
 
@@ -27,7 +27,7 @@ import {ConfigService} from '@nestjs/config';
 @Controller('datatrans-tasks')
 export class DatatransTaskController {
   constructor(
-    private readonly sqsService: SqsService,
+    private readonly sqs: AwsSqsService,
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService
   ) {}
@@ -176,7 +176,7 @@ export class DatatransTaskController {
     });
 
     // [step 2] Send task to queue.
-    const output = await this.sqsService.sendMessage({
+    const output = await this.sqs.sendMessage({
       queueUrl: this.configService.getOrThrow<string>(
         'microservices.task.sqsQueueUrl'
       ),

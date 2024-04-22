@@ -20,16 +20,36 @@ export default registerAs('microservice', () => ({
       },
     },
     verificationCode: {
-      timeoutMinutes: 10, // The verification code will be invalid after 10 minutes.
+      timeoutMinutes: 1, // The verification code will be invalid after 1 minutes.
       resendMinutes: 1, // The verification code can be resend after 1 minute.
     },
   },
-  eventScheduling: {minutesOfTimeslotUnit: 5},
-  'file-mgmt': {
-    awsS3Bucket: process.env.FILE_MANAGEMENT_AWS_S3_BUCKET,
-    awsCloudfrontDomain: process.env.FILE_MANAGEMENT_AWS_CLOUDFRONT_DOMAIN,
-    localPath: process.env.FILE_MANAGEMENT_LOCAL_PATH || './uploaded-files',
+  aws: {
+    accountId: process.env.AWS_ACCOUNT_ID,
+    profile: process.env.AWS_PROFILE,
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    region: process.env.AWS_REGION,
+    s3ForCloudformation: process.env.AWS_S3_FOR_CLOUDFORMATION,
+    pinpoint: {
+      accessKeyId: process.env.AWS_PINPOINT_ACCESS_KEY_ID || 'default',
+      secretAccessKey: process.env.AWS_PINPOINT_SECRET_ACCESS_KEY || 'default',
+      region: process.env.AWS_PINPOINT_REGION || 'default',
+    },
+    s3: {
+      accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID || 'default',
+      secretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY || 'default',
+      region: process.env.AWS_S3_REGION || 'default',
+    },
+    sqs: {
+      accessKeyId: process.env.AWS_SQS_ACCESS_KEY_ID || 'default',
+      secretAccessKey: process.env.AWS_SQS_SECRET_ACCESS_KEY || 'default',
+      region: process.env.AWS_SQS_REGION || 'default',
+      publish_remove_queue: process.env.PUBLISH_REMOVE_QUEUE || 'default',
+      publish_add_queue: process.env.PUBLISH_ADD_QUEUE || 'default',
+    },
   },
+  eventScheduling: {minutesOfTimeslotUnit: 5},
   googleapis: {
     credentials: {
       apiKey: process.env.GOOGLE_CREDENTIALS_API_KEY,
@@ -58,23 +78,37 @@ export default registerAs('microservice', () => ({
         process.env.NOTIFICATION_SMS_AWS_PINPOINT_SENDER_ID || 'default',
     },
   },
-  'project-mgmt': {
-    pulumi: {
-      awsVersion: process.env.PULUMI_AWS_VERSION,
-      accessToken: process.env.PULUMI_ACCESS_TOKEN,
-    },
+  storage: {
+    awsS3Bucket: process.env.STORAGE_AWS_S3_BUCKET,
+    awsCloudfrontDomain: process.env.STORAGE_AWS_CLOUDFRONT_DOMAIN,
+    localPath: process.env.FILE_MANAGEMENT_LOCAL_PATH || './storage',
   },
   task: {
     awsSqsQueueUrl: process.env.TASK_AWS_SQS_QUEUE_URL || 'default',
   },
   token: {
-    access: {
-      expiresIn: '600s',
-      secret: process.env.ACCESS_TOKEN_SECRET,
+    userAccess: {
+      expiresIn: '10m',
+      secret: process.env.USER_ACCESS_TOKEN_SECRET,
     },
-    refresh: {
-      expiresIn: '86400s',
-      secret: process.env.REFRESH_TOKEN_SECRET,
+    userRefresh: {
+      expiresIn: '1440m',
+      secret: process.env.USER_REFRESH_TOKEN_SECRET,
     },
+    awsSecretKey: {
+      secret: process.env.AWS_SECRETKEY_TOKEN_SECRET,
+    },
+  },
+  voilanorbert: {
+    apiKey: process.env.VOILANORBERT_API_KEY,
+  },
+  proxycurl: {
+    apiKey: process.env.PROXYCURL_API_KEY,
+  },
+  peopledatalabs: {
+    apiKey: process.env.PDL_API_KEY,
+  },
+  self: {
+    domain: process.env.SELF_DOMAIN,
   },
 }));

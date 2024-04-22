@@ -177,7 +177,7 @@ export class UserController {
     @Param('userId') userId: string,
     @Body()
     body: Prisma.UserUpdateInput & {roles?: Role[]}
-  ): Promise<User> {
+  ) {
     const {roles, ...user} = body;
     const userUpdateInput: Prisma.UserUpdateInput = user;
 

@@ -2,7 +2,7 @@ import {DataGenerationService} from 'src/application-solidcore/schedule/machine-
 import {Body, Controller, Post} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth} from '@nestjs/swagger';
 
-@ApiTags('Event Container')
+@ApiTags('Solidcore / Event Container')
 @ApiBearerAuth()
 @Controller('schedule-prediction')
 export class SchedulePredictionController {

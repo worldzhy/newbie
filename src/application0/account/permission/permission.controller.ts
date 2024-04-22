@@ -40,7 +40,7 @@ export class PermissionController {
       a: {
         summary: '1. Create',
         value: {
-          resource: Prisma.ModelName.UserProfile,
+          resource: Prisma.ModelName.User,
           action: PermissionAction.Get,
           where: {state: {in: ['StateA', 'StateB']}},
           trustedEntityType: TrustedEntityType.USER,

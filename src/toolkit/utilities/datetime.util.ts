@@ -1,12 +1,12 @@
 import * as moment from 'moment';
 
-// !>>> Unix date
-export function getSecondsUntilunixTimestamp(unixTimestamp: number): number {
+// !>>> Unix timestamp
+export function secondsUntilUnixTimestamp(unixTimestamp: number): number {
   const unixNow = moment().unix();
   return unixTimestamp - unixNow;
 }
 
-export function convertUnixToDate(unixTimestamp: number): Date {
+export function dateOfUnixTimestamp(unixTimestamp: number): Date {
   return moment.unix(unixTimestamp).toDate();
 }
 
@@ -90,9 +90,13 @@ export function quarterOfMonth(month: number): number {
  */
 export function weekOfMonth(year: number, month: number, day: number) {
   const date = new Date(year, month - 1, day);
-  const dayOfWeek = date.getDay();
   const dayOfMonth = date.getDate();
-  return Math.ceil((dayOfMonth + (dayOfWeek === 0 ? 0 : 6 - dayOfWeek)) / 7);
+
+  const firstDate = new Date(year, month - 1, 1);
+  const dayOfFirstDate = firstDate.getDay() === 0 ? 7 : firstDate.getDay(); // Sunday is the last day of week.
+  // const dayOfFirstDate = firstDate.getDay() + 1; // Sunday is the first day of week.
+
+  return Math.ceil((dayOfMonth + dayOfFirstDate - 1) / 7);
 }
 
 /**
@@ -136,6 +140,21 @@ export function constructDateTime(
   } else {
     const tmpDate = new Date(year, month - 1, dayOfMonth, hour, minute);
     offset = getTimeZoneOffset(tmpDate, timeZone);
+    const tmpDate2 = new Date(
+      year +
+        '-' +
+        month +
+        '-' +
+        dayOfMonth +
+        ' ' +
+        hour +
+        ':' +
+        minute +
+        ':' +
+        second +
+        offset
+    );
+    offset = getTimeZoneOffset(tmpDate2, timeZone);
   }
 
   return new Date(

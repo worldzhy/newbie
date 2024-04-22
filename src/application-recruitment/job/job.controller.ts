@@ -8,7 +8,7 @@ import {
   Param,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {Prisma, Job, PermissionAction, JobType} from '@prisma/client';
+import {Prisma, Job, PermissionAction} from '@prisma/client';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
@@ -17,11 +17,6 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 @Controller('recruitment-jobs')
 export class JobController {
   constructor(private prisma: PrismaService) {}
-
-  @Get('types')
-  listJobTypes(): string[] {
-    return Object.keys(JobType);
-  }
 
   @Get('sites')
   listJobSites(): string[] {

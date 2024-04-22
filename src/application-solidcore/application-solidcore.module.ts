@@ -13,7 +13,6 @@ import {AnalysisController} from './analysis/analysis.controller';
 import {AreaManagerController} from './area-manager/area-manager.controller';
 import {HeatmapController} from './heatmap/heatmap.controller';
 import {LocationController} from './location/location.controller';
-import {TagController} from './tag/tag.controller';
 
 @Module({
   imports: [
@@ -31,7 +30,6 @@ import {TagController} from './tag/tag.controller';
     AreaManagerController,
     HeatmapController,
     LocationController,
-    TagController,
   ],
 })
 export class ApplicationSolidcoreModule {}

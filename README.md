@@ -4,7 +4,6 @@
 ![GitHub](https://img.shields.io/github/license/worldzhy/newbie?style=flat-square)
 ![GitHub package.json dependency version (prod)](https://img.shields.io/github/package-json/dependency-version/worldzhy/newbie/@nestjs/core?style=flat-square)
 ![GitHub package.json dependency version (prod)](https://img.shields.io/github/package-json/dependency-version/worldzhy/newbie/@prisma/client?style=flat-square)
-![GitHub package.json dependency version (prod)](https://img.shields.io/github/package-json/dependency-version/worldzhy/newbie/@pulumi/pulumi?style=flat-square)
 ![GitHub package.json dependency version (prod)](https://img.shields.io/github/package-json/dependency-version/worldzhy/newbie/passport?style=flat-square)
 ![GitHub package.json dependency version (prod)](https://img.shields.io/github/package-json/dependency-version/worldzhy/newbie/validator?style=flat-square)
 
@@ -12,17 +11,13 @@
 
 ## Description
 
-[Newbie](https://github.com/worldzhy/newbie) is a [Node.js](http://nodejs.org) project development framework based on [Nest](https://github.com/nestjs/nest), [Prisma](https://github.com/prisma/prisma), [Pulumi](https://github.com/pulumi/pulumi).
+[Newbie](https://github.com/worldzhy/newbie) is a [Node.js](http://nodejs.org) project development framework based on [Nest](https://github.com/nestjs/nest), [Prisma](https://github.com/prisma/prisma).
 
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo_text.svg" width="320" alt="Nest Logo" /></a>
 </p>
   
 ![Prisma](https://i.imgur.com/h6UIYTu.png)
-
-<p align="center">
-  <a href="https://www.pulumi.com?utm_campaign=pulumi-pulumi-github-repo&utm_source=github.com&utm_medium=top-logo" title="Pulumi - Modern Infrastructure as Code - AWS Azure Kubernetes Containers Serverless"><img src="https://www.pulumi.com/images/logo/logo-on-white-box.svg?" width="350"></a>
-</p>
 
 ## Environment
 
@@ -43,23 +38,6 @@
 #### Nestjs
 
 > https://docs.nestjs.com/first-steps
-
-#### Pulumi
-
-> [Install CLI] https://www.pulumi.com/docs/get-started/install/
-
-> [Fix NotFound] Add the pulumi CLI path "~/.pulumi/bin" to $PATH.
-> Add below to ~/.bashrc file.
-export PULUMI_HOME="~/.pulumi/bin"
-export PATH="$PATH:$PULUMI_HOME"
-
-> [Install Plugin] https://www.pulumi.com/docs/reference/cli/pulumi_plugin/
-
-```bash
-$ pulumi plugin install resource aws
-$ pulumi plugin install resource awsx v1.0.0-beta.5
-$ pulumi plugin ls
-```
 
 ## For development
 
@@ -89,7 +67,10 @@ $ npx gts init
 ### Install husky
 
 ```bash
-$ npx husky install
+$ npm install --save-dev husky commitizen @commitlint/{cli,config-conventional}
+$ npx husky init
+$ npx commitizen init cz-conventional-changelog --save-dev --save-exact
+$ echo "module.exports = {extends: ['@commitlint/config-conventional']};" > commitlint.config.js
 ```
 
 ### Test

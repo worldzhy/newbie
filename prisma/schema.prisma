@@ -21,7 +21,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["microservice/account", "microservice/cron", "microservice/event-scheduling", "microservice/file-mgmt", "microservice/map", "microservice/notification", "microservice/order-mgmt", "microservice/project-mgmt", "microservice/queue", "microservice/stock-mgmt", "microservice/tag", "microservice/token", "microservice/workflow", "application/engined", "application/recruitment", "application/solidcore", "application/tc-request"]
+  schemas  = ["microservice/account", "microservice/cloud", "microservice/cron", "microservice/event-scheduling", "microservice/map", "microservice/notification", "microservice/order-mgmt", "microservice/project-mgmt", "microservice/queue", "microservice/stock-mgmt", "microservice/storage", "microservice/tag", "microservice/token", "microservice/workflow", "microservice/people-search", "application/engined", "application/recruitment", "application/solidcore", "application/tc-request"]
 }
 
 // ! ------------------------------------------------------------ //
@@ -29,8 +29,6 @@ datasource db {
 // ! ------------------------------------------------------------ //
 // * Organization                                                 //
 // * User                                                         //
-// * UserAccessToken                                              //
-// * UserRefreshToken                                             //
 // * UserProfile                                                  //
 // * Role                                                         //
 // * RoutePermission(unused)                                      //
@@ -38,16 +36,36 @@ datasource db {
 // * EndpointPermission(unused)                                   //
 // * Permission                                                   //
 // * VerificationCode                                             //
+// * AccessToken                                                  //
+// * RefreshToken                                                 //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
 model Organization {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id        String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  roles     Role[]
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  roles     OrganizationRole[]
   users     User[]
 
+  documents         Document[]
+  documentTemplates DocumentTemplate[]
+  Candidate         Candidate[]
+
+  @@schema("microservice/account")
+}
+
+model OrganizationRole {
+  // A role is a subgroup of a user group with some specified permissions.
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String
+  description    String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String?       @db.Uuid
+
+  @@unique([name, organizationId])
   @@schema("microservice/account")
 }
 
@@ -56,21 +74,21 @@ model User {
   // [2] The 'User' is designed for long-term use and the 'VerificationCode' is designed for short-term use.
   // [3] Actually, the 'User' model should be named 'UserPassword' and the 'VerificationCode' should be named 'UserVerificationCode'.
   id               String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  status           UserStatus               @default(ACTIVE)
   email            String?                  @unique
   phone            String?                  @unique
   password         String? // automatic hashing
-  status           UserStatus               @default(ACTIVE)
   lastLoginAt      DateTime?
   createdAt        DateTime                 @default(now())
   updatedAt        DateTime                 @updatedAt
-  organization     Organization?            @relation(fields: [organizationId], references: [id])
-  organizationId   String?                  @db.Uuid
-  profile          UserProfile?
+  profile          UserSingleProfile?
+  profiles         UserMultiProfile[]
   roles            Role[]
   // For recruitment application
   jobApplications  JobApplication[]
   holdingWorkflows JobApplicationWorkflow[]
-  certifications   Certification[]
+  organization     Organization?            @relation(fields: [organizationId], references: [id])
+  organizationId   String?                  @db.Uuid
 
   @@schema("microservice/account")
 }
@@ -82,35 +100,59 @@ enum UserStatus {
   @@schema("microservice/account")
 }
 
-model UserProfile {
+model UserSingleProfile {
   // !!! Customize this model for your specific application.
-  id                       String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  prefix                   String?
-  fullName                 String?
-  firstName                String?
-  middleName               String?
-  lastName                 String?
-  suffix                   String?
-  dateOfBirth              DateTime?          @db.Date
-  gender                   UserProfileGender?
-  emails                   Json[]
-  phones                   Json[]
-  websites                 Json? // {'facebook': 'https://www.facebook.com/elonmusk', 'twitter': 'https://twitter.com/elonmusk'}
-  picture                  String?
-  tagIds                   Int[]
-  createdAt                DateTime           @default(now())
-  updatedAt                DateTime           @updatedAt
-  user                     User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId                   String             @unique @db.Uuid
+  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  prefix           String?
+  fullName         String?
+  firstName        String?
+  middleName       String?
+  lastName         String?
+  suffix           String?
+  dateOfBirth      DateTime?          @db.Date
+  gender           UserProfileGender?
+  emails           Json[]
+  phones           Json[]
+  websites         Json? // {'facebook': 'https://www.facebook.com/elonmusk', 'twitter': 'https://twitter.com/elonmusk'}
+  picture          String?
+  tagIds           Int[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId           String             @unique @db.Uuid
   // For fitness application
-  eventVenueIds            Int[] // event venue ids
-  eventTypeIds             Int[] // event type ids
-  coachingTenure           Int? // 5:Senior Master Coach, 4:Pro, 3:Senior, 2:Standard, 1:New
-  quotaOfWeekMinPreference Int?
-  quotaOfWeekMaxPreference Int?
-  quotaOfWeek              Int? // The number of classes a coach should teach at least in a week.
-  quotaOfWeekMax           Int?
-  payRate                  Int? // [1,10]
+  eventVenueIds    Int[] // event venue ids
+  eventTypeIds     Int[] // event type ids
+  eventHostTitle   String? // Senior Master Coach, Pro, Senior, Standard, New
+  eventHostPayRate Int? // [1,10]
+  quotaOfWeekMin   Int? // The number of classes a coach should teach at least in a week.
+  quotaOfWeekMax   Int?
+
+  @@index([userId])
+  @@schema("microservice/account")
+}
+
+model UserMultiProfile {
+  // !!! Customize this model for your specific application.
+  id             String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  prefix         String?
+  fullName       String?
+  firstName      String?
+  middleName     String?
+  lastName       String?
+  suffix         String?
+  dateOfBirth    DateTime?          @db.Date
+  gender         UserProfileGender?
+  emails         Json[]
+  phones         Json[]
+  websites       Json? // {'facebook': 'https://www.facebook.com/elonmusk', 'twitter': 'https://twitter.com/elonmusk'}
+  picture        String?
+  tagIds         Int[]
+  organizationId String?            @db.Uuid
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String             @db.Uuid
 
   @@index([userId])
   @@schema("microservice/account")
@@ -126,16 +168,13 @@ enum UserProfileGender {
 
 model Role {
   // A role is a subgroup of a user group with some specified permissions.
-  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name           String        @unique
-  description    String?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  organization   Organization? @relation(fields: [organizationId], references: [id])
-  organizationId String?       @db.Uuid
-  users          User[]
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  users       User[]
 
-  @@unique([name, organizationId])
   @@schema("microservice/account")
 }
 
@@ -214,6 +253,76 @@ enum VerificationCodeUse {
   @@schema("microservice/account")
 }
 
+model AccessToken {
+  id        Int      @id @default(autoincrement())
+  userId    String   @db.Uuid
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@schema("microservice/account")
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  userId    String   @db.Uuid
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@schema("microservice/account")
+}
+
+// ! ------------------------------------------------------------ //
+// !          [Microservice] Cloud resource models                //
+// ! ------------------------------------------------------------ //
+// * InfrastructureStack                                          //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
+
+enum AwsResourceStackState {
+  PENDING
+  BUILD_PROCESSING
+  BUILD_SUCCEEDED
+  BUILD_FAILED
+  DESTROY_PROCESSING
+  DESTROY_SUCCEEDED
+  DESTROY_FAILED
+
+  @@schema("microservice/cloud")
+}
+
+model AwsEnvironment {
+  id                  String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                String
+  awsAccountId        String?
+  awsAccessKeyId      String
+  awsSecretAccessKey  String // automatic hashing
+  awsRegion           String
+  s3ForCloudformation String?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  stacks              AwsResourceStack[]
+
+  @@schema("microservice/cloud")
+}
+
+model AwsResourceStack {
+  id                  String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                String?               @unique // Set default value via prisma middleware.
+  type                String
+  params              Json?
+  state               AwsResourceStackState @default(PENDING)
+  createStackOutput   Json?
+  describeStackOutput Json?
+  deleteStackOutput   Json?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  environment         AwsEnvironment        @relation(fields: [environmentId], references: [id], onDelete: Cascade)
+  environmentId       String                @db.Uuid
+
+  @@schema("microservice/cloud")
+}
+
 // ! ------------------------------------------------------------ //
 // !           [Microservice] Cron models                         //
 // ! ------------------------------------------------------------ //
@@ -221,12 +330,13 @@ enum VerificationCodeUse {
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
 model CronTask {
-  id         Int      @id @default(autoincrement())
-  name       String   @unique
-  expression String
-  command    String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  cronTime  String
+  running   Boolean  @default(false)
+  command   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@schema("microservice/cron")
 }
@@ -239,6 +349,7 @@ model CronTask {
 // * EventContainer                                                //
 // * EventType                                                     //
 // * EventVenue                                                    //
+// * EventIssue                                                    //
 // * Event                                                         //
 // * Reservation                                                   //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
@@ -276,13 +387,6 @@ enum EventIssueStatus {
   @@schema("microservice/event-scheduling")
 }
 
-enum EventContainerOrigin {
-  EXTERNAL
-  INTERNAL
-
-  @@schema("microservice/event-scheduling")
-}
-
 enum EventContainerStatus {
   EDITING
   PUBLISHED
@@ -290,18 +394,18 @@ enum EventContainerStatus {
   @@schema("microservice/event-scheduling")
 }
 
-enum EventPublishStatus {
-  INIT
-  PENDING
-  COMPLETED
-  FAILED
+enum EventChangeLogType {
+  SYSTEM
+  USER
 
   @@schema("microservice/event-scheduling")
 }
 
-enum EventChangeLogType {
-  SYSTEM
-  USER
+enum EventStatus {
+  EDITING
+  LOCKED
+  PUBLISHING
+  PUBLISHED
 
   @@schema("microservice/event-scheduling")
 }
@@ -344,11 +448,9 @@ model AvailabilityTimeslot {
 
 // todo: datetimeOfStart, datetimeOfEnd, week, dayOfWeek should be generated in prisma middleware.
 model Event {
-  id                Int                @id @default(autoincrement())
-  isLocked          Boolean            @default(false)
-  isPublished       Boolean            @default(false)
-  publishStatus     EventPublishStatus @default(INIT)
-  hostUserId        String?            @db.Uuid
+  id                Int              @id @default(autoincrement())
+  status            EventStatus      @default(EDITING)
+  hostUserId        String?          @db.Uuid
   datetimeOfStart   DateTime
   datetimeOfEnd     DateTime
   timeZone          String
@@ -363,16 +465,16 @@ model Event {
   minutesOfDuration Int
   mboData           Json?
   aiInfo            Json?
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
   deletedAt         DateTime? // Support soft deletion
   changeLogs        EventChangeLog[]
   issues            EventIssue[]
-  type              EventType          @relation(fields: [typeId], references: [id], onDelete: Cascade)
+  type              EventType        @relation(fields: [typeId], references: [id], onDelete: Cascade)
   typeId            Int
-  venue             EventVenue         @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  venue             EventVenue       @relation(fields: [venueId], references: [id], onDelete: Cascade)
   venueId           Int
-  container         EventContainer     @relation(fields: [containerId], references: [id], onDelete: Cascade)
+  container         EventContainer   @relation(fields: [containerId], references: [id], onDelete: Cascade)
   containerId       Int
   reservations      Reservation[]
 
@@ -442,14 +544,12 @@ model EventVenue {
   external_waitlistCapacity           Int?             @default(10)
   external_webCapacity                Int?             @default(10)
 
-  @@unique([external_studioId, external_locationId])
   @@schema("microservice/event-scheduling")
 }
 
 model EventContainer {
   id            Int                  @id @default(autoincrement())
   name          String?
-  origin        EventContainerOrigin @default(INTERNAL)
   status        EventContainerStatus @default(EDITING)
   dateOfOpening DateTime? // Use dateOfOpening and dateOfClosure together
   dateOfClosure DateTime?
@@ -493,49 +593,77 @@ model Reservation {
 // !! ------------------------------------------------------------ //
 // !!            [Microservice] File Management models             //
 // !! ------------------------------------------------------------ //
-// * File                                                          //
-// * Folder                                                        //
+// * LocalFile                                                     //
+// * GoogleFile                                                    //
+// * GoogleFilePermission                                          //
+// * S3File                                                        //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
 
-model File {
+model LocalFile {
   id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  originalName String
-  mimeType     String
-  size         Int?
-  localPath    String? // Contains path and filename.
-  localName    String?
-  s3Bucket     String
-  s3Key        String // File name in S3 bucket.
-  s3Response   Json
+  name         String
+  originalName String?
+  type         String // could be 'Folder'
+  size         Int? // in bytes
+  parentId     String?  @db.Uuid
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-  folder       Folder?  @relation(fields: [folderId], references: [id])
-  folderId     Int?
 
-  @@schema("microservice/file-mgmt")
-}
-
-model Folder {
-  id        Int      @id @default(autoincrement())
-  name      String
-  parentId  String?  @db.Uuid
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  files     File[]
-
-  @@unique([name, parentId])
-  @@schema("microservice/file-mgmt")
+  @@schema("microservice/storage")
 }
 
 model GoogleFile {
-  id        String   @id // Generated by google
+  id             String                 @id // Generated by google
+  name           String
+  type           String?
+  size           Int? // in bytes
+  iconLink       String?
+  webViewLink    String?
+  webContentLink String?
+  parentId       String?
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+  permissions    GoogleFilePermission[]
+
+  @@schema("microservice/storage")
+}
+
+model GoogleFilePermission {
+  id           Int        @id @default(autoincrement())
+  permissionId String // Generated by google, (permissionId + fileId) is unique.
+  type         String
+  role         String
+  email        String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  file         GoogleFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  fileId       String
+
+  @@schema("microservice/storage")
+}
+
+model S3File {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String
+  type       String // could be 'Folder'
+  size       Int? // in bytes
+  s3Bucket   String
+  s3Key      String // File name in S3 bucket.
+  s3Response Json?
+  parentId   String?  @db.Uuid
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@schema("microservice/storage")
+}
+
+model S3Bucket {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name      String
-  type      String
-  parentId  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@schema("microservice/file-mgmt")
+  @@schema("microservice/storage")
 }
 
 // !! ------------------------------------------------------------ //
@@ -548,9 +676,11 @@ model Place {
   id                   Int      @id @default(autoincrement())
   name                 String?
   address              String?
+  address2             String?
   city                 String?
   state                String?
   country              String?
+  zipCode              String?
   timeZone             String? // https://www.iplocate.com/en/resources/timezones/list-of-timezones
   googleMapPlaceId     String?
   googleMapPlaceResult Json?
@@ -645,74 +775,33 @@ model StripePaymentIntent {
 // ! ------------------------------------------------------------ //
 // * Project                                                      //
 // * ProjectNote                                                  //
-// * ProjectCheckpoint                                            //
 // * ProjectEnvironment                                           //
-// * InfrastructureStack                                          //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
-enum ProjectState {
-  PLANNING
-  DESIGNING
-  DEVELOPING
-  DONE
+// enum ProjectCheckpoint {
+//   MANAGER_PRODUCT_REQUIREMENTS
+//   MANAGER_PROJECT_KANBAN
+//   DESIGNER_WIREFRAMES
+//   DESIGNER_PROTOTYPES
+//   DEVELOPER_ACCOUNT_APPLE
+//   DEVELOPER_ACCOUNT_GOOGLE
+//   DEVELOPER_BACKEND_REPO
+//   DEVELOPER_BACKEND_FRAMEWORK
+//   DEVELOPER_BACKEND_DATABASE
+//   DEVELOPER_BACKEND_API
+//   DEVELOPER_FRONTEND_REPO
+//   DEVELOPER_FRONTEND_FRAMEWORK
+//   DEVELOPER_INFRASTRUCTURE
 
-  @@schema("microservice/project-mgmt")
-}
-
-enum ProjectCheckpointState {
-  TODO
-  PROCESSING
-  DONE
-
-  @@schema("microservice/project-mgmt")
-}
-
-enum ProjectCheckpointType {
-  MANAGER_PRODUCT_REQUIREMENTS
-  MANAGER_PROJECT_KANBAN
-  DESIGNER_WIREFRAMES
-  DESIGNER_PROTOTYPES
-  DEVELOPER_ACCOUNT_APPLE
-  DEVELOPER_ACCOUNT_GOOGLE
-  DEVELOPER_BACKEND_REPO
-  DEVELOPER_BACKEND_FRAMEWORK
-  DEVELOPER_BACKEND_DATABASE
-  DEVELOPER_BACKEND_API
-  DEVELOPER_FRONTEND_REPO
-  DEVELOPER_FRONTEND_FRAMEWORK
-  DEVELOPER_INFRASTRUCTURE
-
-  @@schema("microservice/project-mgmt")
-}
-
-enum InfrastructureStackManager {
-  CloudFormation
-  Pulumi
-
-  @@schema("microservice/project-mgmt")
-}
-
-enum InfrastructureStackState {
-  PENDING
-  BUILD_PROCESSING
-  BUILD_SUCCEEDED
-  BUILD_FAILED
-  DESTROY_PROCESSING
-  DESTROY_SUCCEEDED
-  DESTROY_FAILED
-
-  @@schema("microservice/project-mgmt")
-}
+//   @@schema("microservice/project-mgmt")
+// }
 
 model Project {
-  id           String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name         String               @unique
-  state        ProjectState         @default(PLANNING)
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
-  notes        ProjectNote[]
-  checkpoints  ProjectCheckpoint[]
-  environments ProjectEnvironment[]
+  id        String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String        @unique
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  notes     ProjectNote[]
 
   @@schema("microservice/project-mgmt")
 }
@@ -726,55 +815,6 @@ model ProjectNote {
   updatedAt DateTime @updatedAt
   project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId String?  @db.Uuid
-
-  @@schema("microservice/project-mgmt")
-}
-
-model ProjectCheckpoint {
-  id        Int                    @id @default(autoincrement())
-  type      ProjectCheckpointType
-  state     ProjectCheckpointState @default(TODO)
-  createdAt DateTime               @default(now())
-  updatedAt DateTime               @updatedAt
-  Project   Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  projectId String                 @db.Uuid
-
-  @@unique([type, projectId])
-  @@schema("microservice/project-mgmt")
-}
-
-model ProjectEnvironment {
-  id                   Int                   @id @default(autoincrement())
-  name                 String
-  awsAccountId         String?
-  awsProfile           String?
-  awsAccessKeyId       String?
-  awsSecretAccessKey   String? // automatic hashing
-  awsRegion            String?
-  s3ForCloudformation  String?
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  project              Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  projectId            String                @db.Uuid
-  infrastructureStacks InfrastructureStack[]
-
-  @@schema("microservice/project-mgmt")
-}
-
-model InfrastructureStack {
-  id                  String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                String?                    @unique // Set default value via prisma middleware.
-  manager             InfrastructureStackManager
-  type                String
-  params              Json?
-  state               InfrastructureStackState   @default(PENDING)
-  createStackOutput   Json?
-  describeStackOutput Json?
-  deleteStackOutput   Json?
-  createdAt           DateTime                   @default(now())
-  updatedAt           DateTime                   @updatedAt
-  environment         ProjectEnvironment         @relation(fields: [environmentId], references: [id], onDelete: Cascade)
-  environmentId       Int
 
   @@schema("microservice/project-mgmt")
 }
@@ -990,33 +1030,6 @@ model TagGroup {
 }
 
 // ! ------------------------------------------------------------ //
-// !           [Microservice] Token models                        //
-// ! ------------------------------------------------------------ //
-// * AccessToken                                                  //
-// * RefreshToken                                                 //
-// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
-
-model AccessToken {
-  id        Int      @id @default(autoincrement())
-  userId    String   @db.Uuid
-  token     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@schema("microservice/token")
-}
-
-model RefreshToken {
-  id        Int      @id @default(autoincrement())
-  userId    String   @db.Uuid
-  token     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@schema("microservice/token")
-}
-
-// ! ------------------------------------------------------------ //
 // !             [Microservice] Workflow models                   //
 // ! ------------------------------------------------------------ //
 // * Workflow                                                     //
@@ -1115,6 +1128,34 @@ model WorkflowRoute {
 
   @@unique([viewId, stateId])
   @@schema("microservice/workflow")
+}
+
+// ! ------------------------------------------------------------ //
+// !             [Microservice] people-search models              //
+// ! ------------------------------------------------------------ //
+// * ContactSearch                                                //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
+model ContactSearch {
+  id         Int      @id @default(autoincrement())
+  userId     String?
+  userSource String?
+  name       String?
+  firstName  String?
+  middleName String?
+  lastName   String?
+  linkedin   String?
+  emails     Json?
+  phones     Json?
+  ctx        Json?
+  source     String
+  sourceMode String
+  taskId     String?
+  spent      Int?
+  status     String // pending | completed | failed
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@schema("microservice/people-search")
 }
 
 // ! ------------------------------------------------------------ //
@@ -1391,14 +1432,73 @@ enum ElasticsearchDataboardColumnFormatter {
 // * JobApplicationTestingLog                                     //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
-model Certification {
-  id              Int      @id @default(autoincrement())
-  name            String
-  description     String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  candidateUser   User     @relation(fields: [candidateUserId], references: [id])
-  candidateUserId String   @db.Uuid
+model Candidate {
+  id              String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  status          CandidateStatus          @default(ACTIVE)
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+  profile         CandidateProfile?
+  placeId         Int? // Map module
+  certifications  CandidateCertification[]
+  trainings       CandidateTraining[]
+  jobApplications JobApplication[]
+  organization    Organization?            @relation(fields: [organizationId], references: [id])
+  organizationId  String?                  @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+enum CandidateStatus {
+  ACTIVE
+  INACTIVE
+
+  @@schema("application/recruitment")
+}
+
+model CandidateProfile {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  uniqueNumber      String
+  givenName         String
+  middleName        String?
+  familyName        String
+  fullName          String?
+  birthday          DateTime?
+  gender            String?
+  email             String?
+  primaryPhone      String
+  primaryPhoneExt   String?
+  alternatePhone    String?
+  alternatePhoneExt String?
+  websites          Json? // {'facebook': 'https://www.facebook.com/grace', 'twitter': 'https://twitter.com/elonmusk'}
+  picture           String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  candidate         Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  candidateId       String    @unique @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+model CandidateCertification {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  candidateId String    @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+model CandidateTraining {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  candidateId String    @db.Uuid
 
   @@schema("application/recruitment")
 }
@@ -1436,6 +1536,8 @@ model JobApplication {
   workflows       JobApplicationWorkflow[]
   candidateUser   User                     @relation(fields: [candidateUserId], references: [id])
   candidateUserId String                   @db.Uuid
+  candidate       Candidate?               @relation(fields: [candidateId], references: [id])
+  candidateId     String?                  @db.Uuid
 
   @@schema("application/recruitment")
 }
@@ -1541,6 +1643,149 @@ enum JobApplicationWorkflowTaskState {
   @@schema("application/recruitment")
 }
 
+model File {
+  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  originalName String
+  mimeType     String
+  size         Int?
+  localPath    String? // Contains path and filename.
+  localName    String?
+  s3Bucket     String
+  s3Key        String // File name in S3 bucket.
+  s3Response   Json
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  folder       Folder?    @relation(fields: [folderId], references: [id])
+  folderId     String?    @db.Uuid
+  Document     Document[]
+
+  @@schema("application/recruitment")
+}
+
+model Folder {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  parentId  String?  @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  files     File[]
+
+  @@unique([name, parentId])
+  @@schema("application/recruitment")
+}
+
+model Document {
+  id                 String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  type               DocumentTypes     @default(DRAFT)
+  status             DocumentStatus    @default(ACTIVE)
+  title              String?
+  templateType       String?
+  description        String?
+  validStartsAt      DateTime?
+  validEndsAt        DateTime?
+  approvalDate       DateTime?
+  approvalName       String?
+  organization       Organization?     @relation(fields: [organizationId], references: [id])
+  organizationId     String?           @db.Uuid
+  documentTemplate   DocumentTemplate? @relation(fields: [documentTemplateId], references: [id])
+  documentTemplateId String?           @db.Uuid
+  history            DocumentHistory[]
+  file               File?             @relation(fields: [fileId], references: [id])
+  fileId             String?           @db.Uuid
+  sourceDocumentId   String?
+  content            DocumentContent?
+
+  @@schema("application/recruitment")
+}
+
+model DocumentContent {
+  id                String                             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  company           String?
+  deptArea          String?
+  location          String?
+  familyDept        String?
+  jobAddress        String?
+  jobAnalyst        String?
+  jobSummary        String?
+  patientFacing     String?
+  dateOfAnalysis    DateTime?
+  createdAt         DateTime                           @default(now())
+  updatedAt         DateTime                           @updatedAt
+  jobCode           DocumentContentJobCode[]
+  essentialFunction DocumentContentEssentialFunction[]
+  document          Document?                          @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId        String?                            @unique @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+model DocumentContentJobCode {
+  id                String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title             String
+  content           String
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  documentContent   DocumentContent? @relation(fields: [documentContentId], references: [id])
+  documentContentId String?          @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+model DocumentContentEssentialFunction {
+  id                String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title             String
+  content           String
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  documentContent   DocumentContent? @relation(fields: [documentContentId], references: [id])
+  documentContentId String?          @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+model DocumentHistory {
+  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  document           Document? @relation(fields: [documentId], references: [id])
+  documentId         String    @db.Uuid
+  newContent         Json
+  oldContent         Json?
+  processedByUserIds String[]
+
+  @@schema("application/recruitment")
+}
+
+model DocumentTemplate {
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String
+  path           String
+  schemaJson     Json?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String?       @db.Uuid
+  documents      Document[]
+
+  @@schema("application/recruitment")
+}
+
+enum DocumentStatus {
+  ACTIVE
+  INACTIVE
+
+  @@schema("application/recruitment")
+}
+
+enum DocumentTypes {
+  DRAFT
+  PUBLISHED
+
+  @@schema("application/recruitment")
+}
+
 // ! ------------------------------------------------------------ //
 // !             [Application] Solidcore models                   //
 // ! ------------------------------------------------------------ //
@@ -1618,7 +1863,7 @@ model TcWorkflow {
   orderId                    String? // Payment order
   status                     String
   reasonForRefusal           String?
-  folderId                   Int
+  parentId                   Int
   fileIdForCertificate       String?
   // VIEW1_DETAILS
   title                      String?

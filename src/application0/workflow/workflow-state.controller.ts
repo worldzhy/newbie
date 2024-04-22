@@ -12,7 +12,7 @@ import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {WorkflowState, Prisma} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
-@ApiTags('Workflow State')
+@ApiTags('Workflow / State')
 @ApiBearerAuth()
 @Controller('workflow-states')
 export class WorkflowStateController {

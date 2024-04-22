@@ -10,7 +10,7 @@ import {groupClassesByDate} from './util';
 import * as _ from 'lodash';
 import {MindbodyLocationService} from './mindbody-location.service';
 
-@ApiTags('Mindbody')
+@ApiTags('Solidcore / Mindbody')
 @ApiBearerAuth()
 @Controller('mindbody')
 export class MindbodyController {

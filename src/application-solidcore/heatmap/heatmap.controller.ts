@@ -17,7 +17,7 @@ const HOUR_OF_OPENING = 5;
 const HOUR_OF_CLOSURE = 22;
 const MINUTES_OF_TIMESLOT = 60;
 
-@ApiTags('Heatmap')
+@ApiTags('Solidcore / Heatmap')
 @ApiBearerAuth()
 @Controller('heatmap')
 @UseInterceptors(CacheInterceptor)
@@ -97,10 +97,9 @@ export class HeatmapController {
           profile: {
             select: {
               fullName: true,
-              coachingTenure: true,
-              quotaOfWeek: true,
-              quotaOfWeekMinPreference: true,
-              quotaOfWeekMaxPreference: true,
+              eventHostTitle: true,
+              quotaOfWeekMin: true,
+              quotaOfWeekMax: true,
             },
           },
         },

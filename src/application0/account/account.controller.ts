@@ -5,10 +5,9 @@ import {
   Post,
   Get,
   Req,
-  Patch,
 } from '@nestjs/common';
 import {ApiTags, ApiBody, ApiBearerAuth} from '@nestjs/swagger';
-import {Prisma, VerificationCodeUse} from '@prisma/client';
+import {VerificationCodeUse} from '@prisma/client';
 import {Request} from 'express';
 import {AccountService} from '@microservices/account/account.service';
 import {VerificationCodeService} from '@microservices/account/verification-code.service';
@@ -16,6 +15,10 @@ import {NoGuard} from '@microservices/account/security/passport/public/public.de
 import {verifyEmail, verifyPhone} from '@toolkit/validators/user.validator';
 import {compareHash} from '@toolkit/utilities/common.util';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {
+  NewbieException,
+  NewbieExceptionType,
+} from '@toolkit/nestjs/exception/newbie.exception';
 
 @ApiTags('Account')
 @Controller('account')
@@ -30,65 +33,6 @@ export class AccountController {
   @ApiBearerAuth()
   async getCurrentUser(@Req() request: Request) {
     return await this.accountService.me(request);
-  }
-
-  @Patch('me')
-  @ApiBearerAuth()
-  @ApiBody({
-    description:
-      'Set roleIds with an empty array to remove all the roles of the user.',
-    examples: {
-      a: {
-        summary: '1. Update',
-        value: {
-          email: 'email@example.com',
-          phone: '13960068008',
-          profile: {
-            update: {
-              firstName: 'Robert',
-              middleName: 'William',
-              lastName: 'Smith',
-            },
-          },
-        },
-      },
-    },
-  })
-  async editMe(
-    @Req() request: Request,
-    @Body()
-    body: Prisma.UserUpdateInput
-  ) {
-    const user = await this.accountService.me(request);
-
-    if (!user['profile'] && body.profile) {
-      await this.prisma.userProfile.create({
-        data: {
-          userId: user.id,
-          firstName: body.profile.update?.firstName as
-            | string
-            | null
-            | undefined,
-          middleName: body.profile.update?.middleName as
-            | string
-            | null
-            | undefined,
-          lastName: body.profile.update?.lastName as string | null | undefined,
-        },
-      });
-      delete body.profile;
-    }
-
-    return await this.prisma.user.update({
-      where: {id: user.id},
-      data: body,
-      select: {
-        id: true,
-        email: true,
-        phone: true,
-        profile: true,
-      },
-    });
   }
 
   @ApiBearerAuth()
@@ -179,7 +123,7 @@ export class AccountController {
   })
   async sendVerificationCode(
     @Body() body: {email?: string; phone?: string; use: VerificationCodeUse}
-  ): Promise<boolean> {
+  ): Promise<{secondsOfCountdown: number}> {
     if (body.email && verifyEmail(body.email)) {
       return await this.accountService.sendVerificationCode({
         email: body.email,
@@ -191,7 +135,7 @@ export class AccountController {
         use: body.use,
       });
     } else {
-      return false;
+      throw new NewbieException(NewbieExceptionType.ResetPassword_WrongInput);
     }
   }
 
@@ -239,6 +183,10 @@ export class AccountController {
           data: {password: body.newPassword},
           select: {id: true, email: true, phone: true},
         });
+      } else {
+        throw new NewbieException(
+          NewbieExceptionType.ResetPassword_InvalidCode
+        );
       }
     } else if (body.phone && verifyPhone(body.phone)) {
       if (
@@ -252,12 +200,14 @@ export class AccountController {
           data: {password: body.newPassword},
           select: {id: true, email: true, phone: true},
         });
+      } else {
+        throw new NewbieException(
+          NewbieExceptionType.ResetPassword_InvalidCode
+        );
       }
     }
 
-    throw new BadRequestException(
-      'The email or verification code is incorrect.'
-    );
+    throw new NewbieException(NewbieExceptionType.ResetPassword_WrongInput);
   }
 
   /* End */

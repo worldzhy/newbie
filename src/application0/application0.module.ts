@@ -1,76 +1,35 @@
-import {APP_FILTER} from '@nestjs/core';
 import {Module, MiddlewareConsumer} from '@nestjs/common';
-
-import {AllExceptionFilter} from './_filter/_all-exception.filter';
-import {HttpExceptionFilter} from './_filter/_http-exception.filter';
-import {PrismaExceptionFilter} from './_filter/_prisma-exception.filter';
-import {ThrottlerExceptionFilter} from './_filter/_throttler-exception.filter';
-import {HttpMiddleware} from './_middleware/_http.middleware';
+import {ConfigModule} from '@nestjs/config';
+import ApplicationConfiguration from '../config';
 
 // Toolkit and microservice modules
+import {HttpMiddleware} from '@toolkit/nestjs/middleware/http.middleware';
 import {MicroserviceModule} from '@microservices/microservice.module';
-import {ToolkitModule} from '@toolkit/toolkit.module';
 
-// Toolkit and microservice controllers
-import {AccountController} from './account/account.controller';
-import {LoginByPasswordController} from './account/login-by-password.controller';
-import {LoginByProfileController} from './account/login-by-profile.controller';
-import {LoginByVerificationCodeController} from './account/login-by-verificationcode.controller';
-import {LoginRefreshController} from './account/login-refresh.controller';
-import {LogoutController} from './account/logout.controller';
-import {SignupController} from './account/signup.controller';
-import {OrganizationController} from './account/organization/organization.controller';
-import {PermissionController} from './account/permission/permission.controller';
-import {RoleController} from './account/role/role.controller';
-import {UserController} from './account/user/user.controller';
-import {GoogleDriveController} from './file-mgmt/google-drive.controller';
-import {NotificationController} from './notification/notification.controller';
-import {TagController} from './tag/tag.controller';
-import {TagGroupController} from './tag/tag-group.controller';
-import {WorkflowController} from './workflow/workflow.controller';
-import {WorkflowStateController} from './workflow/workflow-state.controller';
-import {WorkflowViewController} from './workflow/workflow-view.controller';
-import {WorkflowViewComponentController} from './workflow/workflow-view-component.controller';
-import {WorkflowRouteController} from './workflow/workflow-route.controller';
-import ApplicationConfiguration from 'src/config';
-import {ConfigModule} from '@nestjs/config';
+// Application0 controllers
+import {App0AccountModule} from './account/account.module';
+import {App0CronModule} from './cron/cron.module';
+import {App0EventSchedulingModule} from './event-scheduling/event-scheduling.module';
+import {App0NotificationModule} from './notification/notification.module';
+import {App0StorageModule} from './storage/storage.module';
+import {App0TagModule} from './tag/tag.module';
+import {App0WorkflowModule} from './workflow/workflow.module';
+import {App0PeopleSearchModule} from './people-search/people-search.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({load: [ApplicationConfiguration]}),
     // Microservices (Global modules)
     MicroserviceModule,
-    // Toolkit (Global modules)
-    ToolkitModule,
-  ],
-  controllers: [
-    AccountController,
-    LoginByPasswordController,
-    LoginByProfileController,
-    LoginByVerificationCodeController,
-    LoginRefreshController,
-    LogoutController,
-    SignupController,
-    // OrganizationController,
-    // PermissionController,
-    // RoleController,
-    // UserController,
-    GoogleDriveController,
-    NotificationController,
-    TagController,
-    TagGroupController,
-    WorkflowController,
-    WorkflowStateController,
-    WorkflowViewController,
-    WorkflowViewComponentController,
-    WorkflowRouteController,
-  ],
-  providers: [
-    // Filters
-    {provide: APP_FILTER, useClass: AllExceptionFilter}, // 4th priority for all exceptions.
-    {provide: APP_FILTER, useClass: PrismaExceptionFilter}, // 3rd priority for exceptions thrown by services.
-    {provide: APP_FILTER, useClass: HttpExceptionFilter}, // 2nd priority for exceptions thrown by controllers.
-    {provide: APP_FILTER, useClass: ThrottlerExceptionFilter}, // 1st priority for exceptions thrown by throttler (rate limit).
+    // Application0
+    App0AccountModule,
+    App0CronModule,
+    App0EventSchedulingModule,
+    App0NotificationModule,
+    App0StorageModule,
+    App0TagModule,
+    App0WorkflowModule,
+    App0PeopleSearchModule,
   ],
 })
 export class Application0Module {

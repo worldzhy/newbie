@@ -18,7 +18,7 @@ import * as _ from 'lodash';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {MindbodyService} from '../mindbody/mindbody.service';
 
-@ApiTags('Location')
+@ApiTags('Solidcore / Location')
 @ApiBearerAuth()
 @Controller('locations')
 export class LocationController {

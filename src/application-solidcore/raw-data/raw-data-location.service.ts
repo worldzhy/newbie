@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {SnowflakeService} from '@toolkit/snowflake/snowflake.service';
-import {GoogleTimezoneService} from '@microservices/googleapis/timezone/timezone.service';
+import {GoogleTimezoneService} from '@microservices/cloud/saas/google/google-timezone.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @Injectable()

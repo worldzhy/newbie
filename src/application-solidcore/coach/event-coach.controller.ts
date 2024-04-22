@@ -2,18 +2,18 @@ import {Body, Controller, Post} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Prisma} from '@prisma/client';
 import {datePlusMinutes, splitDateTime} from '@toolkit/utilities/datetime.util';
-import {CoachService} from './coach.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {EventHostService} from '@microservices/event-scheduling/event-host.service';
 
 const ROLE_NAME_COACH = 'Coach';
 
-@ApiTags('Coach')
+@ApiTags('Solidcore / Coach')
 @ApiBearerAuth()
 @Controller('event-coaches')
 export class EventCoachController {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly coachService: CoachService
+    private readonly coachService: EventHostService
   ) {}
 
   @Post('')
@@ -89,10 +89,9 @@ export class EventCoachController {
             fullName: true,
             eventVenueIds: true,
             eventTypeIds: true,
-            coachingTenure: true,
-            quotaOfWeek: true,
-            quotaOfWeekMinPreference: true,
-            quotaOfWeekMaxPreference: true,
+            eventHostTitle: true,
+            quotaOfWeekMin: true,
+            quotaOfWeekMax: true,
           },
         },
       },

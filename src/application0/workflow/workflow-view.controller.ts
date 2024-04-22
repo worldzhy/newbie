@@ -12,7 +12,7 @@ import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {WorkflowView, Prisma} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
-@ApiTags('Workflow View')
+@ApiTags('Workflow / View')
 @ApiBearerAuth()
 @Controller('workflow-views')
 export class WorkflowViewController {
@@ -46,7 +46,7 @@ export class WorkflowViewController {
       findManyArgs: {
         where: {
           workflowId: workflowId,
-          inboundRoutes: {some: {startSign: true}},
+          outboundRoutes: {some: {startSign: true}},
         },
         include: {
           components: {orderBy: {sort: 'asc'}},

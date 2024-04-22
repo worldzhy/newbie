@@ -49,7 +49,10 @@ export async function prismaMiddleware(
       default:
         return next(params);
     }
-  } else if (params.model === Prisma.ModelName.UserProfile) {
+  } else if (
+    params.model === Prisma.ModelName.UserSingleProfile ||
+    params.model === Prisma.ModelName.UserMultiProfile
+  ) {
     switch (params.action) {
       case 'create':
       case 'update':
@@ -58,11 +61,24 @@ export async function prismaMiddleware(
             params.args['data']['dateOfBirth'].toString()
           );
         }
+
+        if (
+          params.args['data']['firstName'] &&
+          params.args['data']['lastName']
+        ) {
+          params.args['data']['fullName'] =
+            params.args['data']['firstName'] +
+            ' ' +
+            (params.args['data']['middleName']
+              ? params.args['data']['middleName'] + ' '
+              : '') +
+            params.args['data']['lastName'];
+        }
         return next(params);
       default:
         return next(params);
     }
-  } else if (params.model === Prisma.ModelName.InfrastructureStack) {
+  } else if (params.model === Prisma.ModelName.AwsResourceStack) {
     // [middleware] Set the default stack name. AWS Infrastructure stack name must satisfy regular expression pattern: "[a-zA-Z][-a-zA-Z0-9]*".
     if (params.action === 'create') {
       if (!params.args['data']['name']) {

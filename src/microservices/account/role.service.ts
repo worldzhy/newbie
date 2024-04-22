@@ -3,10 +3,10 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @Injectable()
 export class RoleService {
-  static names = {
+  static RoleName = {
     ADMIN: 'Admin',
-    AREA_MANAGER: 'Area Manager',
-    COACH: 'Coach',
+    EVENT_HOST: 'Event Host',
+    EVENT_MANAGER: 'Event Manager',
   };
 
   constructor(private readonly prisma: PrismaService) {}
@@ -14,11 +14,12 @@ export class RoleService {
   async isAdmin(userId: string) {
     const count = await this.prisma.role.count({
       where: {
-        name: RoleService.names.ADMIN,
+        name: RoleService.RoleName.ADMIN,
         users: {some: {id: userId}},
       },
     });
-    return count > 0;
+
+    return count > 0 ? true : false;
   }
 
   /* End */

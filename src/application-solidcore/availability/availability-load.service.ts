@@ -1,6 +1,6 @@
 import {Express} from 'express';
 import {forms_v1} from '@googleapis/forms';
-import {GoogleFormService} from '@microservices/googleapis/drive/form.service';
+import {GoogleFormService} from '@microservices/cloud/saas/google/google-form.service';
 import {BadRequestException, Injectable} from '@nestjs/common';
 import {
   firstDayOfMonth,
@@ -208,14 +208,12 @@ export class AvailabilityLoadService {
       });
 
       // [step 2-5] Update coach profile.
-      await this.prisma.userProfile.update({
+      await this.prisma.userSingleProfile.update({
         where: {userId: coach.id},
         data: {
           eventVenueIds: coachLocationIds,
-          quotaOfWeekMinPreference:
-            row['Select minimum # of preferred classes:'],
-          quotaOfWeekMaxPreference:
-            row['Select maximum # of preferred classes:'],
+          quotaOfWeekMin: row['Select minimum # of preferred classes:'],
+          quotaOfWeekMax: row['Select maximum # of preferred classes:'],
         },
       });
     }
@@ -422,24 +420,20 @@ export class AvailabilityLoadService {
             mappingQuestion_NumberItem[questionId].title ===
             FormItemTitle.MinimumPreferredQuota
           ) {
-            await this.prisma.userProfile.update({
+            await this.prisma.userSingleProfile.update({
               where: {userId: coach.id},
               data: {
-                quotaOfWeekMinPreference: parseInt(
-                  answer.textAnswers.answers[0].value
-                ),
+                quotaOfWeekMin: parseInt(answer.textAnswers.answers[0].value),
               },
             });
           } else if (
             mappingQuestion_NumberItem[questionId].title ===
             FormItemTitle.MaximumPreferredQuota
           ) {
-            await this.prisma.userProfile.update({
+            await this.prisma.userSingleProfile.update({
               where: {userId: coach.id},
               data: {
-                quotaOfWeekMaxPreference: parseInt(
-                  answer.textAnswers.answers[0].value
-                ),
+                quotaOfWeekMax: parseInt(answer.textAnswers.answers[0].value),
               },
             });
           }

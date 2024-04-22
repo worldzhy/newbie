@@ -11,7 +11,7 @@ import {ApiBearerAuth, ApiBody, ApiTags} from '@nestjs/swagger';
 import {FileInterceptor} from '@nestjs/platform-express';
 import {AvailabilityLoadService} from './availability-load.service';
 
-@ApiTags('Availability')
+@ApiTags('Solidcore / Availability')
 @ApiBearerAuth()
 @Controller('availability')
 export class AvailabilityLoadController {

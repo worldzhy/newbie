@@ -8,11 +8,11 @@ import {UserService} from './user.service';
 import {VerificationCodeService} from './verification-code.service';
 import {LimitLoginByUserService} from './security/rate-limiter/rate-limiter.service';
 import {NotificationService} from '@microservices/notification/notification.service';
-import {AccessTokenService} from '@microservices/token/access-token/access-token.service';
-import {RefreshTokenService} from '@microservices/token/refresh-token/refresh-token.service';
-import {getSecondsUntilunixTimestamp} from '@toolkit/utilities/datetime.util';
+import {AccessTokenService} from '@microservices/account/security/token/access-token.service';
+import {RefreshTokenService} from '@microservices/account/security/token/refresh-token.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {Request} from 'express';
+import {RoleService} from './role.service';
 
 @Injectable()
 export class AccountService {
@@ -37,12 +37,39 @@ export class AccountService {
     });
 
     // [step 3] Get user.
-    const user = await this.prisma.user.findUniqueOrThrow({
+    return await this.prisma.user.findUniqueOrThrow({
       where: {id: userToken.userId},
-      include: {roles: true, profile: true},
+      select: {
+        id: true,
+        email: true,
+        phone: true,
+        roles: true,
+        profile: true,
+        profiles: true,
+        organization: true,
+      },
+    });
+  }
+
+  async isAdmin(request: Request) {
+    // [step 1] Parse token from http request header.
+    const accessToken =
+      this.accessTokenService.getTokenFromHttpRequest(request);
+
+    // [step 2] Get UserToken record.
+    const userToken = await this.prisma.accessToken.findFirstOrThrow({
+      where: {token: accessToken},
     });
 
-    return this.userService.withoutPassword(user);
+    // [step 3] Get user.
+    const count = await this.prisma.user.count({
+      where: {
+        id: userToken.userId,
+        roles: {some: {name: RoleService.RoleName.ADMIN}},
+      },
+    });
+
+    return count > 0 ? true : false;
   }
 
   async login(account: string) {
@@ -69,7 +96,7 @@ export class AccountService {
     });
 
     // [step 5] Generate new tokens.
-    return await this.generateTokens(user.id, account);
+    return await this.generateTokens({userId: user.id, sub: account});
   }
 
   async logout(userId: string) {
@@ -92,48 +119,45 @@ export class AccountService {
   }
 
   async generateTokens(
-    userId: string,
-    sub: string,
-    opt?: {refreshTokenExpiryUnix: number}
+    payload: {
+      userId: string;
+      sub: string;
+    },
+    refreshTokenOptions?: {expiresIn: number}
   ) {
-    // [step 1] Generate JWT payload
-    const jwtPayload = {
-      userId: userId,
-      sub: sub,
-    };
-
-    // [step 2] Set refresh token options.
-    const refreshTokenOptions = {
-      // If refreshTokenExpiryUnix has value, use it to calculte the expiry. Otherwise, use default expiry (24 hours).
-      ...(opt?.refreshTokenExpiryUnix && {
-        expiresIn: getSecondsUntilunixTimestamp(opt?.refreshTokenExpiryUnix),
-      }),
-    };
-
-    // [step 3] Generate tokens
+    // [step 1] Generate tokens
     const [accessToken, refreshToken] = await Promise.all([
       this.prisma.accessToken.create({
         data: {
-          userId: userId,
-          token: this.accessTokenService.sign(jwtPayload),
+          userId: payload.userId,
+          token: this.accessTokenService.sign(payload),
         },
       }),
       this.prisma.refreshToken.create({
         data: {
-          userId: userId,
-          token: this.refreshTokenService.sign(jwtPayload, refreshTokenOptions),
+          userId: payload.userId,
+          token: this.refreshTokenService.sign(payload, refreshTokenOptions),
         },
       }),
     ]);
+
+    // [step 2] Parse access token to get the expiry.
+    const accessTokenInfo = this.accessTokenService.decodeToken(
+      accessToken.token
+    ) as {iat: number; exp: number};
+    accessToken['tokenExpiresInSeconds'] =
+      accessTokenInfo.exp - accessTokenInfo.iat;
 
     return {
       accessToken,
       refreshToken: {
         ...refreshToken,
-        name: this.refreshTokenService.cookieName,
-        cookieConfig: this.refreshTokenService.getCookieConfig(
-          refreshToken.token
-        ),
+        cookie: {
+          name: this.refreshTokenService.cookieName,
+          options: this.refreshTokenService.getCookieOptions(
+            refreshToken.token
+          ),
+        },
       },
     };
   }
@@ -145,7 +169,7 @@ export class AccountService {
     email?: string;
     phone?: string;
     use: VerificationCodeUse;
-  }): Promise<boolean> {
+  }): Promise<{secondsOfCountdown: number}> {
     if (params.email) {
       // [step 1] Check if the account exists.
       const user = await this.userService.findByAccount(params.email);
@@ -194,7 +218,9 @@ export class AccountService {
       throw new BadRequestException('The email or phone is invalid.');
     }
 
-    return true;
+    return {
+      secondsOfCountdown: this.verificationCodeService.timeoutMinutes * 60,
+    };
   }
 
   /* End */

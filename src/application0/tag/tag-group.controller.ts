@@ -12,7 +12,7 @@ import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {TagGroup, Prisma} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
-@ApiTags('Tag Group')
+@ApiTags('Tag / Group')
 @ApiBearerAuth()
 @Controller('tag-groups')
 export class TagGroupController {

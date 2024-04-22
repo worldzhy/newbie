@@ -7,7 +7,7 @@ import {
   TrustedEntityType,
 } from '@prisma/client';
 import {PERMISSION_KEY} from './authorization.decorator';
-import {AccessTokenService} from '@microservices/token/access-token/access-token.service';
+import {AccessTokenService} from '@microservices/account/security/token/access-token.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @Injectable()
@@ -43,32 +43,35 @@ export class AuthorizationGuard implements CanActivate {
     // [step 3] Get user with organization and roles.
     const user = await this.prisma.user.findUniqueOrThrow({
       where: {id: payload.userId},
-      include: {roles: true},
+      include: {roles: true, profiles: true},
     });
 
     // [step 4-1] Get organization permissions.
-    if (user.organizationId) {
-      const organizationPermissions = await this.prisma.permission.findMany({
-        where: {
-          trustedEntityType: TrustedEntityType.ORGANIZATION,
-          trustedEntityId: user.organizationId,
-        },
-      });
+    for (let i = 0; i < user.profiles.length; i++) {
+      const profile = user.profiles[i];
+      if (profile.organizationId) {
+        const organizationPermissions = await this.prisma.permission.findMany({
+          where: {
+            trustedEntityType: TrustedEntityType.ORGANIZATION,
+            trustedEntityId: profile.organizationId,
+          },
+        });
 
-      for (let i = 0; i < organizationPermissions.length; i++) {
-        const permission = organizationPermissions[i];
-        if (
-          permission.resource === requiredPermission.resource &&
-          (permission.action === requiredPermission.action ||
-            permission.action === PermissionAction.Manage)
-        ) {
-          return true;
+        for (let i = 0; i < organizationPermissions.length; i++) {
+          const permission = organizationPermissions[i];
+          if (
+            permission.resource === requiredPermission.resource &&
+            (permission.action === requiredPermission.action ||
+              permission.action === PermissionAction.Manage)
+          ) {
+            return true;
+          }
         }
       }
     }
 
     // [step 4-2] Get roles' permissions.
-    const roleIds = user['roles'].map((role: Role) => {
+    const roleIds = user.roles.map((role: Role) => {
       return role.id;
     });
     if (roleIds) {

@@ -16,7 +16,7 @@ import {
   Prisma,
 } from '@prisma/client';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
-import {AccessTokenService} from '@microservices/token/access-token/access-token.service';
+import {AccessTokenService} from '@microservices/account/security/token/access-token.service';
 import {JobApplicationWorkflowService} from './workflow.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {Request as ExpressRequest} from 'express';
