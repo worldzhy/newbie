@@ -5,33 +5,33 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {CustomLoggerService} from '@toolkit/logger/logger.service';
 import {NoGuard} from '@microservices/account/security/passport/public/public.decorator';
 import {Prisma} from '@prisma/client';
-import {ContactSearchReqDto, ContactSearchPeopleDto} from './people-search.dto';
-import {PeopleSearchPlatforms, PeopleSearchStatus} from './constants';
+import {ContactSearchReqDto, ContactSearchPeopleDto} from './people-finder.dto';
 import {
-  VoilaNorbertService,
   SearchEmailThirdResDto,
   SearchEmailContentResDto,
-} from '@microservices/cloud/saas/voila-norbert/volia-norbert.service';
-import {ProxycurlService} from '@microservices/cloud/saas/proxycurl/proxycurl.service';
-import {PeopledatalabsService} from '@microservices/cloud/saas/peopledatalabs/peopledatalabs.service';
+} from '@microservices/people-finder/voila-norbert/volia-norbert.service';
 
-@ApiTags('People-search')
+import {
+  PeopleFinderService,
+  PeopleFinderPlatforms,
+  PeopleFinderStatus,
+} from '@microservices/people-finder/people-finder.service';
+
+@ApiTags('People-finder')
 @ApiBearerAuth()
-@Controller('people-search')
-export class PeopleSearchController {
-  private loggerContext = 'PeopleSearch';
-  selfDomain;
+@Controller('people-finder')
+export class PeopleFinderController {
+  private loggerContext = 'PeopleFinder';
+  callBackOrigin: string;
 
   constructor(
     private readonly configService: ConfigService,
+    private readonly peopleFinder: PeopleFinderService,
     private readonly logger: CustomLoggerService,
-    private readonly prisma: PrismaService,
-    private readonly voilaNorbertService: VoilaNorbertService,
-    private readonly proxycurlService: ProxycurlService,
-    private readonly peopledatalabsService: PeopledatalabsService
+    private readonly prisma: PrismaService
   ) {
-    this.selfDomain = this.configService.getOrThrow<string>(
-      'microservice.self.domain'
+    this.callBackOrigin = this.configService.getOrThrow<string>(
+      'microservice.peopleFinder.voilanorbert.callbackOrigin'
     );
   }
 
@@ -51,7 +51,7 @@ export class PeopleSearchController {
     /**
      * voilanorbert
      */
-    [PeopleSearchPlatforms.voilanorbert]: async (
+    [PeopleFinderPlatforms.voilanorbert]: async (
       user: ContactSearchPeopleDto
     ) => {
       const {name, companyDomain} = user;
@@ -59,48 +59,49 @@ export class PeopleSearchController {
       const newRecord = await this.prisma.contactSearch.create({
         data: {
           ...this.getCommonContactSearch(user),
-          source: PeopleSearchPlatforms.voilanorbert,
+          source: PeopleFinderPlatforms.voilanorbert,
           sourceMode: 'searchEmailByDomain',
-          status: PeopleSearchStatus.pending,
+          status: PeopleFinderStatus.pending,
         },
       });
       // todo spent
-      const {res, error} = await this.voilaNorbertService.searchEmailByDomain({
-        name,
-        companyDomain,
-        webhook:
-          this.selfDomain +
-          '/people-search/voilanorbert-hook?contactSearchId=' +
-          newRecord.id, // todo
-      });
+      const {res, error} =
+        await this.peopleFinder.voilaNorbert.searchEmailByDomain({
+          name,
+          companyDomain,
+          webhook:
+            this.callBackOrigin +
+            '/people-finder/voilanorbert-hook?contactSearchId=' +
+            newRecord.id, // todo
+        });
       await this.voilanorbertContactSearchCallback(newRecord.id, res, error);
     },
     /**
      * proxycurl
      */
-    [PeopleSearchPlatforms.proxycurl]: async (user: ContactSearchPeopleDto) => {
+    [PeopleFinderPlatforms.proxycurl]: async (user: ContactSearchPeopleDto) => {
       if (user.linkedin) {
         const newRecord = await this.prisma.contactSearch.create({
           data: {
             ...this.getCommonContactSearch(user),
             sourceMode: 'searchPeopleByLinkedin',
-            source: PeopleSearchPlatforms.proxycurl,
-            status: PeopleSearchStatus.pending,
+            source: PeopleFinderPlatforms.proxycurl,
+            status: PeopleFinderStatus.pending,
           },
         });
         const {res, error, spent} =
-          await this.proxycurlService.searchPeopleByLinkedin({
+          await this.peopleFinder.proxycurl.searchPeopleByLinkedin({
             linkedinUrl: user.linkedin,
           });
         const updateData: Prisma.ContactSearchUpdateInput = {};
         if (error) {
-          updateData.status = PeopleSearchStatus.failed;
-          updateData.ctx = JSON.stringify(error);
+          updateData.status = PeopleFinderStatus.failed;
+          updateData.ctx = error as object;
         } else if (res) {
-          updateData.emails = JSON.stringify(res.personal_emails);
-          updateData.phones = JSON.stringify(res.personal_numbers);
-          updateData.status = PeopleSearchStatus.completed;
-          updateData.ctx = JSON.stringify(res);
+          updateData.emails = res.personal_emails;
+          updateData.phones = res.personal_numbers;
+          updateData.status = PeopleFinderStatus.completed;
+          updateData.ctx = res as object;
         }
         updateData.spent = spent;
         await this.prisma.contactSearch.update({
@@ -112,7 +113,7 @@ export class PeopleSearchController {
     /**
      * peopledatalabs
      */
-    [PeopleSearchPlatforms.peopledatalabs]: async (
+    [PeopleFinderPlatforms.peopledatalabs]: async (
       user: ContactSearchPeopleDto
     ) => {
       if (user.linkedin) {
@@ -120,33 +121,33 @@ export class PeopleSearchController {
           data: {
             ...this.getCommonContactSearch(user),
             sourceMode: 'searchPeopleByLinkedin',
-            source: PeopleSearchPlatforms.peopledatalabs,
-            status: PeopleSearchStatus.pending,
+            source: PeopleFinderPlatforms.peopledatalabs,
+            status: PeopleFinderStatus.pending,
           },
         });
         const {error, res} =
-          await this.peopledatalabsService.searchPeopleByLinkedin({
+          await this.peopleFinder.peopledatalabs.searchPeopleByLinkedin({
             linkedinUrl: user.linkedin,
           });
         const updateData: Prisma.ContactSearchUpdateInput = {};
         if (error) {
-          updateData.status = PeopleSearchStatus.failed;
-          updateData.ctx = JSON.stringify(error);
+          updateData.status = PeopleFinderStatus.failed;
+          updateData.ctx = error as object;
         } else if (res) {
           updateData.spent = res.rateLimit.callCreditsSpent;
           if (res.data) {
-            updateData.emails = JSON.stringify(res.data.emails);
-            updateData.phones = JSON.stringify(
-              res.data.mobile_phone ? [res.data.mobile_phone] : []
-            );
-            updateData.status = PeopleSearchStatus.completed;
-            updateData.ctx = JSON.stringify(res);
+            updateData.emails = res.data.emails as object;
+            updateData.phones = res.data.mobile_phone
+              ? [res.data.mobile_phone]
+              : [];
+            updateData.status = PeopleFinderStatus.completed;
+            updateData.ctx = res as object;
           } else {
-            updateData.status = PeopleSearchStatus.failed;
-            updateData.ctx = JSON.stringify({
+            updateData.status = PeopleFinderStatus.failed;
+            updateData.ctx = {
               msg: 'No data records were found for this person',
-              res,
-            });
+              res: res as object,
+            };
           }
         }
         await this.prisma.contactSearch.update({
@@ -158,35 +159,35 @@ export class PeopleSearchController {
           data: {
             ...this.getCommonContactSearch(user),
             sourceMode: 'searchPeopleByDomain',
-            source: PeopleSearchPlatforms.peopledatalabs,
-            status: PeopleSearchStatus.pending,
+            source: PeopleFinderPlatforms.peopledatalabs,
+            status: PeopleFinderStatus.pending,
           },
         });
         const {error, res} =
-          await this.peopledatalabsService.searchPeopleByDomain({
+          await this.peopleFinder.peopledatalabs.searchPeopleByDomain({
             companyDomain: user.companyDomain,
             name: user.name,
           });
         const updateData: Prisma.ContactSearchUpdateInput = {};
         if (error) {
-          updateData.status = PeopleSearchStatus.failed;
-          updateData.ctx = JSON.stringify(error);
+          updateData.status = PeopleFinderStatus.failed;
+          updateData.ctx = error as object;
         } else if (res) {
           updateData.spent = res.rateLimit.callCreditsSpent;
           const dataArray = res.data;
           if (dataArray.length) {
-            updateData.emails = JSON.stringify(dataArray[0].emails);
-            updateData.phones = JSON.stringify(
-              dataArray[0].mobile_phone ? [dataArray[0].mobile_phone] : []
-            );
-            updateData.status = PeopleSearchStatus.completed;
-            updateData.ctx = JSON.stringify(res);
+            updateData.emails = dataArray[0].emails as object;
+            updateData.phones = dataArray[0].mobile_phone
+              ? [dataArray[0].mobile_phone]
+              : [];
+            updateData.status = PeopleFinderStatus.completed;
+            updateData.ctx = res as object;
           } else if (!dataArray || !dataArray.length) {
-            updateData.status = PeopleSearchStatus.failed;
-            updateData.ctx = JSON.stringify({
+            updateData.status = PeopleFinderStatus.failed;
+            updateData.ctx = {
               msg: 'No data records were found for this person',
-              res,
-            });
+              res: res as object,
+            };
           }
         }
         await this.prisma.contactSearch.update({
@@ -247,14 +248,14 @@ export class PeopleSearchController {
   ) {
     const updateData: Prisma.ContactSearchUpdateInput = {};
     if (error) {
-      updateData.status = PeopleSearchStatus.failed;
-      updateData.ctx = JSON.stringify(error);
+      updateData.status = PeopleFinderStatus.failed;
+      updateData.ctx = error;
     } else if (data) {
       if (!data.searching) {
-        updateData.emails = JSON.stringify(data.email ? [data.email] : []);
-        updateData.status = PeopleSearchStatus.completed;
+        updateData.emails = data.email ? [data.email as object] : [];
+        updateData.status = PeopleFinderStatus.completed;
       }
-      updateData.ctx = JSON.stringify(data);
+      updateData.ctx = data as object;
     }
     await this.prisma.contactSearch.update({
       where: {id: contactSearchId},

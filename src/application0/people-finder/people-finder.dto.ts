@@ -1,6 +1,6 @@
 import {ApiProperty} from '@nestjs/swagger';
 import {IsString, IsArray, IsOptional} from 'class-validator';
-import {PeopleSearchPlatforms} from './constants';
+import {PeopleFinderPlatforms} from '@microservices/people-finder/constants';
 
 export class ContactSearchPeopleDto {
   @ApiProperty({
@@ -70,7 +70,7 @@ export class ContactSearchPeopleDto {
 export class ContactSearchReqDto {
   @ApiProperty({
     type: String,
-    enum: PeopleSearchPlatforms,
+    enum: PeopleFinderPlatforms,
   })
   @IsArray()
   @IsString({each: true})

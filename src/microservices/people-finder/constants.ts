@@ -1,9 +1,9 @@
-export enum PeopleSearchPlatforms {
+export enum PeopleFinderPlatforms {
   voilanorbert = 'voilanorbert',
   proxycurl = 'proxycurl',
   peopledatalabs = 'peopledatalabs',
 }
-export enum PeopleSearchStatus {
+export enum PeopleFinderStatus {
   pending = 'pending',
   completed = 'completed',
   failed = 'failed',

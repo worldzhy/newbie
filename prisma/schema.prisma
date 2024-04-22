@@ -1151,13 +1151,13 @@ model ContactSearch {
   middleName String?
   lastName   String?
   linkedin   String?
-  emails     Json?
-  phones     Json?
+  emails     Json[]
+  phones     Json[]
   ctx        Json?
   source     String
   sourceMode String
   taskId     String?
-  spent     Int? 
+  spent      Int?
   status     String // pending | completed | failed
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
