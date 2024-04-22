@@ -21,7 +21,7 @@ export class ProxycurlService {
     private readonly logger: CustomLoggerService
   ) {
     this.apiKey = this.configService.getOrThrow<string>(
-      'microservice.proxycurl.apiKey'
+      'microservice.people-finder.proxycurlApiKey'
     );
     const defaultClient = ProxycurlApi.ApiClient.instance;
     // Configure Bearer access token for authorization: BearerAuth

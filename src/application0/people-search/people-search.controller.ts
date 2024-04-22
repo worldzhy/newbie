@@ -31,7 +31,7 @@ export class PeopleSearchController {
     private readonly peopledatalabsService: PeopledatalabsService
   ) {
     this.selfDomain = this.configService.getOrThrow<string>(
-      'microservice.self.domain'
+      'microservice.people-finder.voilanorbertCallback'
     );
   }
 

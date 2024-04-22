@@ -23,7 +23,7 @@ export class PeopledatalabsService {
     private readonly logger: CustomLoggerService
   ) {
     this.apiKey = this.configService.getOrThrow<string>(
-      'microservice.peopledatalabs.apiKey'
+      'microservice.people-finder.peopledatalabsApiKey'
     );
     // @ts-ignore
     this.api = new PDLJS({apiKey: this.apiKey});

@@ -23,7 +23,7 @@ export class VoilaNorbertService {
     private readonly logger: CustomLoggerService
   ) {
     this.apiKey = this.configService.getOrThrow<string>(
-      'microservice.voilanorbert.apiKey'
+      'microservice.people-finder.voilanorbertApiKey'
     );
     this.reqConfig = {
       auth: {
