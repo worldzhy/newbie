@@ -14,7 +14,7 @@ import {App0NotificationModule} from './notification/notification.module';
 import {App0StorageModule} from './storage/storage.module';
 import {App0TagModule} from './tag/tag.module';
 import {App0WorkflowModule} from './workflow/workflow.module';
-import {App0PeopleSearchModule} from './people-search/people-search.module';
+import {App0PeopleFinderModule} from './people-finder/people-finder.module';
 
 @Module({
   imports: [
@@ -29,7 +29,7 @@ import {App0PeopleSearchModule} from './people-search/people-search.module';
     App0StorageModule,
     App0TagModule,
     App0WorkflowModule,
-    App0PeopleSearchModule,
+    App0PeopleFinderModule,
   ],
 })
 export class Application0Module {

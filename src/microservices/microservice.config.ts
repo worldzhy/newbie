@@ -99,16 +99,16 @@ export default registerAs('microservice', () => ({
       secret: process.env.AWS_SECRETKEY_TOKEN_SECRET,
     },
   },
-  voilanorbert: {
-    apiKey: process.env.VOILANORBERT_API_KEY,
-  },
-  proxycurl: {
-    apiKey: process.env.PROXYCURL_API_KEY,
-  },
-  peopledatalabs: {
-    apiKey: process.env.PDL_API_KEY,
-  },
-  self: {
-    domain: process.env.SELF_DOMAIN,
+  peopleFinder: {
+    voilanorbert: {
+      apiKey: process.env.PEOPLE_FINDER_VOILANORBERT_API_KEY,
+      callbackOrigin: process.env.PEOPLE_FINDER_VOILANORBERT_CALLBACK_ORIGIN,
+    },
+    proxycurl: {
+      apiKey: process.env.PEOPLE_FINDER_PROXYCURL_API_KEY,
+    },
+    peopledatalabs: {
+      apiKey: process.env.PEOPLE_FINDER_PEOPLEDATALABS_API_KEY,
+    },
   },
 }));
