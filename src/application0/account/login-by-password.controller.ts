@@ -34,11 +34,17 @@ export class LoginByPasswordController {
     examples: {
       a: {
         summary: '1. Log in with email',
-        value: {account: 'admin@inceptionpad.com', password: ''},
+        value: {
+          account: 'admin@inceptionpad.com',
+          password: process.env.USER_DEFAULT_PASSWORD,
+        },
       },
       b: {
         summary: '2. Log in with phone',
-        value: {account: '13960068008', password: ''},
+        value: {
+          account: '13960068008',
+          password: process.env.USER_DEFAULT_PASSWORD,
+        },
       },
     },
   })

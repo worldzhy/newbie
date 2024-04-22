@@ -36,7 +36,7 @@ export class UserController {
         value: {
           email: '',
           phone: '',
-          password: 'Abc1234!',
+          password: process.env.USER_DEFAULT_PASSWORD,
           status: UserStatus.ACTIVE,
           roles: [{id: '013f92b0-4a53-45cb-8eca-e66089a3919f'}],
           profile: {
@@ -233,15 +233,15 @@ export class UserController {
       a: {
         summary: '1. new password != current password',
         value: {
-          currentPassword: 'Abc1234!',
-          newPassword: 'Abc12345!',
+          currentPassword: process.env.USER_DEFAULT_PASSWORD,
+          newPassword: process.env.USER_DEFAULT_PASSWORD + '!',
         },
       },
       b: {
         summary: '2. new password == current password',
         value: {
-          currentPassword: 'Abc1234!',
-          newPassword: 'Abc1234!',
+          currentPassword: process.env.USER_DEFAULT_PASSWORD,
+          newPassword: process.env.USER_DEFAULT_PASSWORD,
         },
       },
     },

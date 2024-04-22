@@ -123,7 +123,7 @@ export class JobApplicationController {
     // [step 2] Fetch preset where regtax(in seed.ts) for each role.
     let where: Prisma.JobApplicationWhereInput | undefined;
     const whereConditions: object[] = [];
-    permissions.map(permission => {
+    permissions.forEach(permission => {
       if (permission.where) {
         whereConditions.push(permission.where as object);
       }
@@ -155,7 +155,7 @@ export class JobApplicationController {
       request,
       Prisma.ModelName.JobApplication
     );
-    permissions.map(permission => {
+    permissions.forEach(permission => {
       if (permission.where) {
         whereConditions.push(permission.where as object);
       }

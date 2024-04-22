@@ -353,7 +353,7 @@ export function removeClass(classNo, sch, frequency) {
       parseInt(d.startHour)
     );
 
-    cloneSch.map((d: any) => {
+    cloneSch.forEach((d: any) => {
       if (removeClassStartHours.indexOf(parseInt(d.startHour)) > -1) {
         d.aiInfo.type = AiType.REMOVE;
       }

@@ -148,8 +148,6 @@ export class DatatransTaskController {
           },
         });
 
-      constraint.keyColumn;
-
       for (let index = 0; index < fromTableRecords.length; index++) {
         const fromTableRecord = fromTableRecords[index];
         const childTableRecords: any[] = await this.prisma.$queryRawUnsafe(

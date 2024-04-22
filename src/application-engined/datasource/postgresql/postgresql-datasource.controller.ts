@@ -195,7 +195,7 @@ export class PostgresqlDatasourceController {
     // [step 4-4] Construct constraints.
     const constraints: Prisma.PostgresqlDatasourceConstraintCreateManyInput[] =
       [];
-    keyColumnUsages.map(keyColumnUsage => {
+    keyColumnUsages.forEach(keyColumnUsage => {
       // Prepare columnKeyType and foreignTable for a relation.
       let keyType: PostgresqlDatasourceConstraintKeyType;
       let foreignTable: string | undefined = undefined;

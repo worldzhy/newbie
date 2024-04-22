@@ -43,7 +43,7 @@ export class AwsPinpointService {
     const plainText = params.body.plainText;
     const html = params.body.html;
     const addresses: Record<string, AddressConfiguration> = {};
-    emails.map(email => {
+    emails.forEach(email => {
       addresses[email] = {
         ChannelType: 'EMAIL',
       };
@@ -91,7 +91,7 @@ export class AwsPinpointService {
     const keyword = undefined;
     const messageType = 'TRANSACTIONAL'; // 'TRANSACTIONAL' or 'PROMOTIONAL'
     const addresses: Record<string, AddressConfiguration> = {};
-    phones.map(phone => {
+    phones.forEach(phone => {
       addresses[phone] = {
         ChannelType: 'SMS',
       };

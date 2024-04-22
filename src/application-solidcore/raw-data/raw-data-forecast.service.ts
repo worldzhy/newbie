@@ -185,7 +185,6 @@ export class RawDataForecastService {
         );
         if (rateData) {
           const {deviationRate} = rateData;
-          classData.orgUtil = classData.orgUtil;
           classData.util = _.round((1 + deviationRate / 100) * classData.util);
         }
       }

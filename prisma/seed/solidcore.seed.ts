@@ -40,28 +40,28 @@ export async function seedForSolidcore() {
     if (role.name === RoleName.Admin) {
       await prisma.user.create({
         data: {
-          password: 'Abc1234!',
+          password: process.env.USER_DEFAULT_PASSWORD,
           email: 'admin@inceptionpad.com',
           roles: {connect: [{id: role.id}]},
         },
       });
       await prisma.user.create({
         data: {
-          password: 'Abc1234!',
+          password: process.env.USER_DEFAULT_PASSWORD,
           email: 'liyue@inceptionpad.com',
           roles: {connect: [{id: role.id}]},
         },
       });
       await prisma.user.create({
         data: {
-          password: 'Abc1234!',
+          password: process.env.USER_DEFAULT_PASSWORD,
           email: 'tan@inceptionpad.com',
           roles: {connect: [{id: role.id}]},
         },
       });
       await prisma.user.create({
         data: {
-          password: 'Abc1234!',
+          password: process.env.USER_DEFAULT_PASSWORD,
           email: 'chuck@inceptionpad.com',
           roles: {connect: [{id: role.id}]},
         },

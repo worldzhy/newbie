@@ -128,7 +128,7 @@ export class EventVenueController {
       },
     });
 
-    venues.records.map((venue: EventVenue & Place) => {
+    venues.records.forEach((venue: EventVenue & Place) => {
       const place: any = _.find(places, (p: Place) => {
         return p.id === (venue.placeId as number);
       });

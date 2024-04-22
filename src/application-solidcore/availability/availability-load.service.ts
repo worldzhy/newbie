@@ -161,7 +161,7 @@ export class AvailabilityLoadService {
           }
         }
         if (key.startsWith('Select additional studios')) {
-          row[key].split(';').map((location: string) => {
+          row[key].split(';').forEach((location: string) => {
             location = location.replace(' -', ',').replace(' & ', '&').trim();
             if (!coachLocationNames.includes(location)) {
               coachLocationNames.push(location);

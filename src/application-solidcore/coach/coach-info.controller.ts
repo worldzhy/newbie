@@ -131,7 +131,7 @@ export class CoachInfoController {
           (coach.profile!.eventVenueIds === undefined ||
             coach.profile!.eventVenueIds.length === 0)
         ) {
-          row[key].split(';').map((location: string) => {
+          row[key].split(';').forEach((location: string) => {
             location = location.replace(' -', ',').replace(' & ', '&').trim();
             if (!coachLocationNames.includes(location)) {
               coachLocationNames.push(location);
@@ -141,7 +141,7 @@ export class CoachInfoController {
 
         // 2) Process coach class installments.
         if (key === Columns.Installment) {
-          row[key].split(';').map((installment: string) => {
+          row[key].split(';').forEach((installment: string) => {
             installment = 'Installment ' + installment.trim();
             if (!coachInstallmentNames.includes(installment)) {
               coachInstallmentNames.push(installment);

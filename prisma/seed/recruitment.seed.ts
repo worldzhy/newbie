@@ -122,21 +122,21 @@ export async function seedForRecruitment() {
   //     // Create user with this role.
   //     await prisma.user.create({
   //       data: {
-  //         password: 'Abc1234!',
+  //         password: process.env.USER_DEFAULT_PASSWORD,
   //         email: 'admin@inceptionpad.com',
   //         roles: {connect: [{id: role.id}]},
   //       },
   //     });
   //     await prisma.user.create({
   //       data: {
-  //         password: 'Abc1234!',
+  //         password: process.env.USER_DEFAULT_PASSWORD,
   //         email: 'liyue@inceptionpad.com',
   //         roles: {connect: [{id: role.id}]},
   //       },
   //     });
   //     await prisma.user.create({
   //       data: {
-  //         password: 'Abc1234!',
+  //         password: process.env.USER_DEFAULT_PASSWORD,
   //         email: 'tan@inceptionpad.com',
   //         roles: {connect: [{id: role.id}]},
   //       },
@@ -173,7 +173,7 @@ export async function seedForRecruitment() {
       await prisma.user.create({
         data: {
           email: 'mcuAdmin@inceptionpad.com',
-          password: 'Abc1234!',
+          password: process.env.USER_DEFAULT_PASSWORD,
           roles: {connect: [{id: role.id}]},
         },
       });
@@ -182,7 +182,7 @@ export async function seedForRecruitment() {
       await prisma.user.create({
         data: {
           email: 'mcuSuperAdmin@inceptionpad.com',
-          password: 'Abc1234!',
+          password: process.env.USER_DEFAULT_PASSWORD,
           roles: {connect: [{id: role.id}]},
         },
       });
@@ -191,7 +191,7 @@ export async function seedForRecruitment() {
       await prisma.user.create({
         data: {
           email: 'mcuReviewer@inceptionpad.com',
-          password: 'Abc1234!',
+          password: process.env.USER_DEFAULT_PASSWORD,
           roles: {connect: [{id: role.id}]},
         },
       });
@@ -200,7 +200,7 @@ export async function seedForRecruitment() {
       await prisma.user.create({
         data: {
           email: 'admin@inceptionpad.com',
-          password: 'Abc1234!',
+          password: process.env.USER_DEFAULT_PASSWORD,
           roles: {connect: [{id: role.id}]},
         },
       });
@@ -209,7 +209,7 @@ export async function seedForRecruitment() {
       await prisma.user.create({
         data: {
           email: 'orgAdmin@inceptionpad.com',
-          password: 'Abc1234!',
+          password: process.env.USER_DEFAULT_PASSWORD,
           roles: {connect: [{id: role.id}]},
         },
       });
@@ -218,7 +218,7 @@ export async function seedForRecruitment() {
       await prisma.user.create({
         data: {
           email: 'recruiter@inceptionpad.com',
-          password: 'Abc1234!',
+          password: process.env.USER_DEFAULT_PASSWORD,
           roles: {connect: [{id: role.id}]},
         },
       });
@@ -227,7 +227,7 @@ export async function seedForRecruitment() {
       await prisma.user.create({
         data: {
           email: 'dispatcher@inceptionpad.com',
-          password: 'Abc1234!',
+          password: process.env.USER_DEFAULT_PASSWORD,
           roles: {connect: [{id: role.id}]},
         },
       });
@@ -292,7 +292,7 @@ export async function seedForRecruitment() {
       await prisma.user.create({
         data: {
           email: 'provider@inceptionpad.com',
-          password: 'Abc1234!',
+          password: process.env.USER_DEFAULT_PASSWORD,
           roles: {connect: [{id: role.id}]},
         },
       });
@@ -320,7 +320,7 @@ export async function seedForRecruitment() {
       await prisma.user.create({
         data: {
           email: 'reviewer@inceptionpad.com',
-          password: 'Abc1234!',
+          password: process.env.USER_DEFAULT_PASSWORD,
           roles: {connect: [{id: role.id}]},
         },
       });

@@ -14,7 +14,7 @@ export async function seedForAircruiser() {
   const user = await prisma.user.create({
     data: {
       email: 'admin@inceptionpad.com',
-      password: 'Abc1234!',
+      password: process.env.USER_DEFAULT_PASSWORD,
     },
   });
 
