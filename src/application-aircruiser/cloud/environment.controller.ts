@@ -70,7 +70,7 @@ export class AwsEnvironmentController {
         value: {
           awsAccountId: '929553487761',
           awsAccessKeyId: 'fakeAKIXXXXXQB3I56H72',
-          awsSecretAccessKey: 'fakeNyXXXXXXXXXrBJk7LUEhXBqHKxG4PiCJ6cQ',
+          awsSecretAccessKey: '',
           awsRegion: 'us-east-1',
         },
       },

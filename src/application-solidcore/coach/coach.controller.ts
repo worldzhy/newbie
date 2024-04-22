@@ -20,8 +20,7 @@ import {UserService} from '@microservices/account/user.service';
 import {RoleService} from '@microservices/account/role.service';
 import {AccountService} from '@microservices/account/account.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-
-const DEFAULT_PASSWORD = 'x8nwFP814HIk!';
+import {generateRandomLetters} from '@toolkit/utilities/common.util';
 
 @ApiTags('Solidcore / Coach')
 @ApiBearerAuth()
@@ -324,7 +323,7 @@ export class CoachController {
     return await this.prisma.user.update({
       where: {id: userId},
       data: {
-        password: DEFAULT_PASSWORD,
+        password: 'Aa' + generateRandomLetters(6) + '1' + '!',
         roles: {connect: {id: role.id}},
       },
       select: {

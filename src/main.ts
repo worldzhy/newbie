@@ -1,7 +1,6 @@
 import {INestApplication, ValidationPipe} from '@nestjs/common';
 import {NestFactory} from '@nestjs/core';
 import {ConfigService} from '@nestjs/config';
-import {FastifyAdapter, NestFastifyApplication} from '@nestjs/platform-fastify';
 import * as cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import {
@@ -20,16 +19,8 @@ const numCPUs = require('node:os').availableParallelism();
 
 async function bootstrap() {
   // [step 1] Create a nestjs application.
-  let app: INestApplication;
-  if (process.env.NODE_FRAMEWORK === 'fastify') {
-    app = await NestFactory.create<NestFastifyApplication>(
-      ApplicationModule,
-      new FastifyAdapter()
-    );
-  } else {
-    app = await NestFactory.create(ApplicationModule);
-    app.use(cookieParser());
-  }
+  const app: INestApplication = await NestFactory.create(ApplicationModule);
+  app.use(cookieParser());
 
   // [step 2] Check required environment variables.
   const configService = app.get<ConfigService>(ConfigService);
