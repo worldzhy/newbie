@@ -226,17 +226,14 @@ export class PeopleFinderController {
   @NoGuard()
   @Post('voilanorbert-hook')
   async voilanorbertHook(
-    @Query()
+    @Query('contactSearchId')
     contactSearchId: number,
     @Body()
-    res: SearchEmailThirdResDto
+    res: SearchEmailThirdResDto['data']
   ) {
-    await this.voilanorbertContactSearchCallback(
-      Number(contactSearchId),
-      res.data
-    );
+    await this.voilanorbertContactSearchCallback(Number(contactSearchId), res);
     this.logger.log(
-      'voilanorbert-hook:' + contactSearchId + ' [res.data]:' + res.data,
+      'voilanorbert-hook:' + contactSearchId + ' [res]:' + res,
       this.loggerContext
     );
     return 'ok';
