@@ -223,6 +223,7 @@ export class PeopleFinderController {
   /**
    * This is the interface for callback of third-party services
    */
+  @NoGuard()
   @Post('voilanorbert-hook')
   async voilanorbertHook(
     @Query()
