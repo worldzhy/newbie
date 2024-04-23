@@ -237,7 +237,7 @@ export class PeopleFinderController {
   ) {
     await this.voilanorbertContactSearchCallback(Number(contactSearchId), res);
     this.logger.log(
-      'voilanorbert-hook:' + contactSearchId + ' [res]:' + res,
+      'voilanorbert-hook:' + contactSearchId + ' [res]:' + JSON.stringify(res),
       this.loggerContext
     );
     return 'ok';

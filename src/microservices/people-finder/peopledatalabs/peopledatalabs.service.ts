@@ -37,6 +37,22 @@ export class PeopledatalabsService {
     // });
   }
 
+  catchErrorRes = ({
+    error,
+    errorTitle,
+    resolve,
+  }: {
+    error: unknown;
+    errorTitle: string;
+    resolve: (error: object) => void;
+  }) => {
+    const resError = {error};
+    resolve({error: resError});
+    this.logger.error(
+      errorTitle + JSON.stringify(resError),
+      this.loggerContext
+    );
+  };
   /**
    * rateLimitLimit:{minute: 10}
    * https://docs.peopledatalabs.com/docs/quickstart-person-enrichment-api
@@ -62,35 +78,41 @@ export class PeopledatalabsService {
         size: 1,
         pretty: true,
       };
-      this.api.person.search
-        .elastic(params)
-        .then(res => {
-          if (res.status === PeopledatalabsStatus.SUCCESS) {
-            resolve({res: res});
-            this.logger.log(
-              'Peopledatalabs searchPeopleByDomain success: ' +
-                JSON.stringify(res),
-              this.loggerContext
-            );
-          } else {
-            const resError = {error: res.status, ctx: res};
-            resolve({error: resError});
-            this.logger.error(
-              'Peopledatalabs searchPeopleByDomain error: ' +
-                JSON.stringify(resError),
-              this.loggerContext
-            );
-          }
-        })
-        .catch(error => {
-          const resError = {error};
-          resolve({error: resError});
-          this.logger.error(
-            'Peopledatalabs searchPeopleByDomain error: ' +
-              JSON.stringify(resError),
-            this.loggerContext
-          );
+      try {
+        this.api.person.search
+          .elastic(params)
+          .then(res => {
+            if (res.status === PeopledatalabsStatus.SUCCESS) {
+              resolve({res: res});
+              this.logger.log(
+                'Peopledatalabs searchPeopleByDomain success: ' +
+                  JSON.stringify(res),
+                this.loggerContext
+              );
+            } else {
+              const resError = {error: res.status, ctx: res};
+              resolve({error: resError});
+              this.logger.error(
+                'Peopledatalabs searchPeopleByDomain error: ' +
+                  JSON.stringify(resError),
+                this.loggerContext
+              );
+            }
+          })
+          .catch(error => {
+            this.catchErrorRes({
+              error,
+              errorTitle: 'Peopledatalabs searchPeopleByDomain error: ',
+              resolve,
+            });
+          });
+      } catch (error) {
+        this.catchErrorRes({
+          error,
+          errorTitle: 'Peopledatalabs searchPeopleByDomain error: ',
+          resolve,
         });
+      }
     });
   }
 
@@ -108,37 +130,42 @@ export class PeopledatalabsService {
       const params = {
         profile: linkedinUrl,
       };
-
-      // Pass the parameters object to the Person Enrichment API
-      this.api.person
-        .enrichment(params)
-        .then(res => {
-          if (res.status === PeopledatalabsStatus.SUCCESS) {
-            resolve({res});
-            this.logger.log(
-              'Peopledatalabs searchPeopleByLinkedin success: ' +
-                JSON.stringify(res),
-              this.loggerContext
-            );
-          } else {
-            const resError = {error: res.status, ctx: res};
-            resolve({error: resError});
-            this.logger.error(
-              'Peopledatalabs searchPeopleByLinkedin error: ' +
-                JSON.stringify(resError),
-              this.loggerContext
-            );
-          }
-        })
-        .catch(error => {
-          const resError = {error};
-          resolve({error: resError});
-          this.logger.error(
-            'Peopledatalabs searchPeopleByLinkedin error: ' +
-              JSON.stringify(resError),
-            this.loggerContext
-          );
+      try {
+        // Pass the parameters object to the Person Enrichment API
+        this.api.person
+          .enrichment(params)
+          .then(res => {
+            if (res.status === PeopledatalabsStatus.SUCCESS) {
+              resolve({res});
+              this.logger.log(
+                'Peopledatalabs searchPeopleByLinkedin success: ' +
+                  JSON.stringify(res),
+                this.loggerContext
+              );
+            } else {
+              const resError = {error: res.status, ctx: res};
+              resolve({error: resError});
+              this.logger.error(
+                'Peopledatalabs searchPeopleByLinkedin error: ' +
+                  JSON.stringify(resError),
+                this.loggerContext
+              );
+            }
+          })
+          .catch(error => {
+            this.catchErrorRes({
+              error,
+              errorTitle: 'Peopledatalabs searchPeopleByLinkedin error: ',
+              resolve,
+            });
+          });
+      } catch (error) {
+        this.catchErrorRes({
+          error,
+          errorTitle: 'Peopledatalabs searchPeopleByLinkedin error: ',
+          resolve,
         });
+      }
     });
   }
 }
