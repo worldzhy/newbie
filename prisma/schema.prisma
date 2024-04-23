@@ -21,7 +21,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["microservice/account", "microservice/cloud", "microservice/cron", "microservice/event-scheduling", "microservice/file-mgmt", "microservice/map", "microservice/notification", "microservice/order-mgmt", "microservice/project-mgmt", "microservice/queue", "microservice/stock-mgmt", "microservice/tag", "microservice/token", "microservice/workflow", "microservice/people-search", "application/engined", "application/recruitment", "application/solidcore", "application/tc-request"]
+  schemas  = ["microservice/account", "microservice/cloud", "microservice/cron", "microservice/event-scheduling", "microservice/file-mgmt", "microservice/map", "microservice/notification", "microservice/order-mgmt", "microservice/project-mgmt", "microservice/queue", "microservice/stock-mgmt", "microservice/tag", "microservice/token", "microservice/workflow", "microservice/people-finder", "application/engined", "application/recruitment", "application/solidcore", "application/tc-request"]
 }
 
 // ! ------------------------------------------------------------ //
@@ -1138,7 +1138,7 @@ model WorkflowRoute {
 }
 
 // ! ------------------------------------------------------------ //
-// !             [Microservice] people-search models              //
+// !             [Microservice] people-finder models              //
 // ! ------------------------------------------------------------ //
 // * ContactSearch                                                //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
@@ -1162,7 +1162,7 @@ model ContactSearch {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  @@schema("microservice/people-search")
+  @@schema("microservice/people-finder")
 }
 
 // ! ------------------------------------------------------------ //
