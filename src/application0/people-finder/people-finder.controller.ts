@@ -74,7 +74,11 @@ export class PeopleFinderController {
             '/people-finder/voilanorbert-hook?contactSearchId=' +
             newRecord.id, // todo
         });
-      await this.voilanorbertContactSearchCallback(newRecord.id, res, error);
+      return await this.voilanorbertContactSearchCallback(
+        newRecord.id,
+        res,
+        error
+      );
     },
     /**
      * proxycurl
@@ -104,7 +108,7 @@ export class PeopleFinderController {
           updateData.ctx = res as object;
         }
         updateData.spent = spent;
-        await this.prisma.contactSearch.update({
+        return await this.prisma.contactSearch.update({
           where: {id: newRecord.id},
           data: updateData,
         });
@@ -150,7 +154,7 @@ export class PeopleFinderController {
             };
           }
         }
-        await this.prisma.contactSearch.update({
+        return await this.prisma.contactSearch.update({
           where: {id: newRecord.id},
           data: updateData,
         });
@@ -190,7 +194,7 @@ export class PeopleFinderController {
             };
           }
         }
-        await this.prisma.contactSearch.update({
+        return await this.prisma.contactSearch.update({
           where: {id: newRecord.id},
           data: updateData,
         });
