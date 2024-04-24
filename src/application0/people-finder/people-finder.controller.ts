@@ -40,6 +40,7 @@ export class PeopleFinderController {
       userId: user.userId,
       userSource: user.userSource,
       name: user.name,
+      companyDomain: user.companyDomain,
       firstName: user.firstName,
       middleName: user.middleName,
       lastName: user.lastName,
@@ -96,6 +97,8 @@ export class PeopleFinderController {
         const {res, error, spent} =
           await this.peopleFinder.proxycurl.searchPeopleByLinkedin({
             linkedinUrl: user.linkedin,
+            personalEmail: 'include',
+            personalContactNumber: 'include',
           });
         const updateData: Prisma.ContactSearchUpdateInput = {};
         if (error) {
@@ -141,8 +144,8 @@ export class PeopleFinderController {
           updateData.spent = res.rateLimit.callCreditsSpent;
           if (res.data) {
             updateData.emails = res.data.emails as object;
-            updateData.phones = res.data.mobile_phone
-              ? [res.data.mobile_phone]
+            updateData.phones = res.data.phone_numbers
+              ? res.data.phone_numbers
               : [];
             updateData.status = PeopleFinderStatus.completed;
             updateData.ctx = res as object;
