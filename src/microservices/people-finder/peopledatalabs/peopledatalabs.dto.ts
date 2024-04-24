@@ -78,12 +78,12 @@ interface RateLimitInfo {
 }
 export class SearchPeopleThirdResDataDto {
   phone_numbers: string[];
+  mobile_phone: string;
   phones: Phone[];
   emails: Email[];
   work_email: string;
   personal_emails: string[];
   recommended_personal_email: string;
-  mobile_phone: string;
 
   id: string;
   full_name: string;

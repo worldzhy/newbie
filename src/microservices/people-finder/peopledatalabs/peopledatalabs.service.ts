@@ -67,8 +67,16 @@ export class PeopledatalabsService {
         query: {
           bool: {
             must: [
-              {term: {full_name: name}},
-              {term: {job_company_website: companyDomain}},
+              {
+                bool: {
+                  should: [
+                    {exists: {field: 'phone_numbers'}},
+                    {exists: {field: 'emails'}},
+                  ],
+                },
+              },
+              {match: {full_name: name}},
+              {match: {job_company_website: companyDomain}},
             ],
           },
         },
