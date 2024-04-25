@@ -115,6 +115,48 @@ export class PeopleFinderController {
           where: {id: newRecord.id},
           data: updateData,
         });
+      } else if (user.companyDomain && user.firstName) {
+        const newRecord = await this.prisma.contactSearch.create({
+          data: {
+            ...this.getCommonContactSearch(user),
+            sourceMode: 'searchPeopleLinkedin',
+            source: PeopleFinderPlatforms.proxycurl,
+            status: PeopleFinderStatus.pending,
+          },
+        });
+
+        const {res, error, spent} =
+          await this.peopleFinder.proxycurl.searchPeopleLinkedin({
+            firstName: user.firstName,
+            lastName: user.lastName,
+            companyDomain: user.companyDomain,
+          });
+        const updateData: Prisma.ContactSearchUpdateInput = {};
+
+        if (error) {
+          updateData.status = PeopleFinderStatus.failed;
+          updateData.ctx = error as object;
+        } else if (res && res.url) {
+          updateData.linkedin = res.url;
+          updateData.status = PeopleFinderStatus.completed;
+          updateData.ctx = res as object;
+        } else {
+          updateData.status = PeopleFinderStatus.failed;
+          updateData.ctx = res as object;
+        }
+        updateData.spent = spent;
+
+        await this.prisma.contactSearch.update({
+          where: {id: newRecord.id},
+          data: updateData,
+        });
+
+        if (res && res.url) {
+          await this.platformSearch[PeopleFinderPlatforms.proxycurl]({
+            ...user,
+            linkedin: res.url,
+          });
+        }
       }
     },
     /**
