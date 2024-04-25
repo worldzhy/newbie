@@ -7,4 +7,5 @@ export enum PeopleFinderStatus {
   pending = 'pending',
   completed = 'completed',
   failed = 'failed',
+  deleted = 'deleted',
 }
