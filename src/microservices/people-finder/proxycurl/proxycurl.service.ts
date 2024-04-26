@@ -60,14 +60,14 @@ export class ProxycurlService {
    */
   async searchPeopleLinkedin({
     firstName,
-    domain,
+    companyDomain,
     lastName,
     location,
   }: SearchPeopleLinkedinReqDto): Promise<SearchPeopleLinkedinResDto> {
     return new Promise(resolve => {
       try {
         this.api.personLookupEndpoint(
-          domain,
+          companyDomain,
           firstName,
           {
             location,

@@ -19,7 +19,7 @@ export class SearchPeopleLinkedinReqDto {
     type: String,
   })
   @IsString()
-  domain: string;
+  companyDomain: string;
 
   @ApiProperty({
     type: String,

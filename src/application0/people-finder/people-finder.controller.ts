@@ -1,4 +1,4 @@
-import {Controller, Post, Body, Query} from '@nestjs/common';
+import {Controller, Post, Body, Get, Query} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {ConfigService} from '@nestjs/config';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
@@ -16,6 +16,10 @@ import {
   PeopleFinderPlatforms,
   PeopleFinderStatus,
 } from '@microservices/people-finder/people-finder.service';
+
+type PeopleFinderError = {
+  error: {[x: string]: unknown};
+};
 
 @ApiTags('People-finder')
 @ApiBearerAuth()
@@ -101,6 +105,7 @@ export class PeopleFinderController {
             personalContactNumber: 'include',
           });
         const updateData: Prisma.ContactSearchUpdateInput = {};
+
         if (error) {
           updateData.status = PeopleFinderStatus.failed;
           updateData.ctx = error as object;
@@ -111,10 +116,53 @@ export class PeopleFinderController {
           updateData.ctx = res as object;
         }
         updateData.spent = spent;
+
         return await this.prisma.contactSearch.update({
           where: {id: newRecord.id},
           data: updateData,
         });
+      } else if (user.companyDomain && user.firstName) {
+        const newRecord = await this.prisma.contactSearch.create({
+          data: {
+            ...this.getCommonContactSearch(user),
+            sourceMode: 'searchPeopleLinkedin',
+            source: PeopleFinderPlatforms.proxycurl,
+            status: PeopleFinderStatus.pending,
+          },
+        });
+
+        const {res, error, spent} =
+          await this.peopleFinder.proxycurl.searchPeopleLinkedin({
+            firstName: user.firstName,
+            lastName: user.lastName,
+            companyDomain: user.companyDomain,
+          });
+        const updateData: Prisma.ContactSearchUpdateInput = {};
+
+        if (error) {
+          updateData.status = PeopleFinderStatus.failed;
+          updateData.ctx = error as object;
+        } else if (res && res.url) {
+          updateData.linkedin = res.url;
+          updateData.status = PeopleFinderStatus.completed;
+          updateData.ctx = res as object;
+        } else {
+          updateData.status = PeopleFinderStatus.failed;
+          updateData.ctx = res as object;
+        }
+        updateData.spent = spent;
+
+        await this.prisma.contactSearch.update({
+          where: {id: newRecord.id},
+          data: updateData,
+        });
+
+        if (res && res.url) {
+          await this.platformSearch[PeopleFinderPlatforms.proxycurl]({
+            ...user,
+            linkedin: res.url,
+          });
+        }
       }
     },
     /**
@@ -157,10 +205,22 @@ export class PeopleFinderController {
             };
           }
         }
-        return await this.prisma.contactSearch.update({
+        await this.prisma.contactSearch.update({
           where: {id: newRecord.id},
           data: updateData,
         });
+
+        // If not found, use domain query
+        if (
+          !res ||
+          ((!res.data.emails || !res.data.emails.length) &&
+            (!res.data.phone_numbers || !res.data.phone_numbers.length))
+        ) {
+          await this.platformSearch[PeopleFinderPlatforms.peopledatalabs]({
+            ...user,
+            linkedin: '',
+          });
+        }
       } else if (user.companyDomain && user.name) {
         const newRecord = await this.prisma.contactSearch.create({
           data: {
@@ -268,5 +328,215 @@ export class PeopleFinderController {
     });
   }
 
+  @NoGuard()
+  @Get('analysis')
+  async analysis() {
+    const res = await this.prisma.contactSearch.findMany({
+      distinct: ['userId', 'companyDomain', 'linkedin', 'source', 'sourceMode'],
+      where: {
+        status: {in: [PeopleFinderStatus.failed, PeopleFinderStatus.completed]},
+        id: {gt: 140},
+      },
+    });
+    const sourceMap = {
+      [PeopleFinderPlatforms.voilanorbert]: {
+        [PeopleFinderStatus.completed]: [],
+        [PeopleFinderStatus.failed]: [],
+      },
+      [PeopleFinderPlatforms.proxycurl]: {
+        [PeopleFinderStatus.completed]: [],
+        [PeopleFinderStatus.failed]: [],
+      },
+      [PeopleFinderPlatforms.peopledatalabs]: {
+        [PeopleFinderStatus.completed]: [],
+        [PeopleFinderStatus.failed]: [],
+      },
+    };
+    const userMap: {
+      [x: string]: {
+        [T in PeopleFinderPlatforms]?: {
+          list: typeof res;
+          completed: number;
+          failed: number;
+          total: number;
+        };
+      };
+    } = {};
+    res.forEach(item => {
+      sourceMap[item.source][item.status].push(item);
+      if (!userMap[item.userId!]) {
+        userMap[item.userId!] = {};
+      }
+      if (!userMap[item.userId!][item.source]) {
+        userMap[item.userId!][item.source] = {
+          list: [],
+          hasEmail: 0,
+          hasPhone: 0,
+          total: 0,
+        };
+      }
+      const dataIndex = userMap[item.userId!][item.source];
+      if (item.emails.length) {
+        dataIndex.hasEmail++;
+      }
+      if (item.phones.length) {
+        dataIndex.hasPhone++;
+      }
+      dataIndex.list.push(item);
+      dataIndex.total++;
+    });
+    const groupName = {
+      [PeopleFinderPlatforms.peopledatalabs.length +
+      PeopleFinderPlatforms.proxycurl.length]:
+        PeopleFinderPlatforms.peopledatalabs +
+        '+' +
+        PeopleFinderPlatforms.proxycurl,
+      [PeopleFinderPlatforms.voilanorbert.length +
+      PeopleFinderPlatforms.proxycurl.length]:
+        PeopleFinderPlatforms.voilanorbert +
+        '+' +
+        PeopleFinderPlatforms.proxycurl,
+      [PeopleFinderPlatforms.voilanorbert.length +
+      PeopleFinderPlatforms.peopledatalabs.length]:
+        PeopleFinderPlatforms.voilanorbert +
+        '+' +
+        PeopleFinderPlatforms.peopledatalabs,
+      [PeopleFinderPlatforms.voilanorbert.length +
+      PeopleFinderPlatforms.peopledatalabs.length +
+      PeopleFinderPlatforms.proxycurl.length]:
+        PeopleFinderPlatforms.voilanorbert +
+        '+' +
+        PeopleFinderPlatforms.peopledatalabs +
+        '+' +
+        PeopleFinderPlatforms.proxycurl,
+    };
+    const groupMap = {
+      [PeopleFinderPlatforms.peopledatalabs.length +
+      PeopleFinderPlatforms.proxycurl.length]: {
+        total: 0,
+        email: 0,
+        phone: 0,
+      },
+      [PeopleFinderPlatforms.voilanorbert.length +
+      PeopleFinderPlatforms.peopledatalabs.length]: {
+        total: 0,
+        email: 0,
+        phone: 0,
+      },
+      [PeopleFinderPlatforms.voilanorbert.length +
+      PeopleFinderPlatforms.proxycurl.length]: {
+        total: 0,
+        email: 0,
+        phone: 0,
+      },
+      [PeopleFinderPlatforms.voilanorbert.length +
+      PeopleFinderPlatforms.proxycurl.length +
+      PeopleFinderPlatforms.peopledatalabs.length]: {
+        total: 0,
+        email: 0,
+        phone: 0,
+      },
+    };
+    const twoPlatCount = (userId, platformA, platformB) => {
+      const groupKey = platformA.length + platformB.length;
+      groupMap[groupKey].total++;
+      if (
+        userMap[userId][platformA].hasEmail ||
+        userMap[userId][platformB].hasEmail
+      ) {
+        groupMap[groupKey].email++;
+      }
+      if (
+        userMap[userId][platformA].hasPhone ||
+        userMap[userId][platformB].hasPhone
+      ) {
+        groupMap[groupKey].phone++;
+      }
+    };
+    Object.keys(userMap).forEach(userId => {
+      const platforms = Object.keys(userMap[userId]);
+      if (platforms.length === 2) {
+        twoPlatCount(userId, platforms[0], platforms[1]);
+      }
+      if (platforms.length === 3) {
+        twoPlatCount(userId, platforms[0], platforms[1]);
+        twoPlatCount(userId, platforms[1], platforms[2]);
+        twoPlatCount(userId, platforms[0], platforms[2]);
+        const groupKey =
+          platforms[0].length + platforms[1].length + platforms[2].length;
+        groupMap[groupKey].total++;
+        if (
+          userMap[userId][platforms[0]].hasEmail ||
+          userMap[userId][platforms[1]].hasEmail ||
+          userMap[userId][platforms[2]].hasEmail
+        ) {
+          groupMap[groupKey].email++;
+        }
+        if (
+          userMap[userId][platforms[0]].hasPhone ||
+          userMap[userId][platforms[1]].hasPhone ||
+          userMap[userId][platforms[2]].hasPhone
+        ) {
+          groupMap[groupKey].phone++;
+        }
+      }
+    });
+    const groupResult = {};
+    Object.keys(groupMap).forEach(key => {
+      groupResult[groupName[key]] = {
+        ...groupMap[key],
+        phonePer: groupMap[key].phone / groupMap[key].total,
+        emailPer: groupMap[key].email / groupMap[key].total,
+      };
+    });
+    /* delete 402
+    const deletes: number[] = [];
+    sourceMap[PeopleFinderPlatforms.peopledatalabs] = sourceMap[
+      PeopleFinderPlatforms.peopledatalabs
+    ].filter((item: (typeof res)[0]) => {
+      // filter 402
+      if (
+        !item.ctx ||
+        // No balance
+        ((item.ctx as PeopleFinderError).error &&
+          (item.ctx as PeopleFinderError).error.status === 402)
+      ) {
+        deletes.push(item.id);
+        return false;
+      }
+      return true;
+    });
+    const xx = await this.prisma.contactSearch.updateMany({
+      where: {id: {in: deletes}},
+      data: {
+        status: PeopleFinderStatus.deleted,
+      },
+    });
+     */
+
+    const result = {};
+    Object.keys(sourceMap).forEach(key => {
+      if (!result[key]) {
+        result[key] = {
+          total: 0,
+          hasEmails: 0,
+          emailPer: 0,
+          hasPhones: 0,
+          phonePer: 0,
+          completed: sourceMap[key].completed.length,
+          failed: sourceMap[key].failed.length,
+        };
+      }
+      result[key].total =
+        sourceMap[key].completed.length + sourceMap[key].failed.length;
+      sourceMap[key].completed.forEach(item => {
+        if (item.emails.length) result[key].hasEmails++;
+        if (item.phones.length) result[key].hasPhones++;
+      });
+      result[key].emailPer = result[key].hasEmails / result[key].total;
+      result[key].phonePer = result[key].hasPhones / result[key].total;
+    });
+    return {result, groupResult};
+  }
   /* End */
 }
