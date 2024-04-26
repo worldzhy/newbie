@@ -105,6 +105,7 @@ export class PeopleFinderController {
             personalContactNumber: 'include',
           });
         const updateData: Prisma.ContactSearchUpdateInput = {};
+
         if (error) {
           updateData.status = PeopleFinderStatus.failed;
           updateData.ctx = error as object;
@@ -115,6 +116,7 @@ export class PeopleFinderController {
           updateData.ctx = res as object;
         }
         updateData.spent = spent;
+
         return await this.prisma.contactSearch.update({
           where: {id: newRecord.id},
           data: updateData,
@@ -203,10 +205,22 @@ export class PeopleFinderController {
             };
           }
         }
-        return await this.prisma.contactSearch.update({
+        await this.prisma.contactSearch.update({
           where: {id: newRecord.id},
           data: updateData,
         });
+
+        // If not found, use domain query
+        if (
+          !res ||
+          ((!res.data.emails || !res.data.emails.length) &&
+            (!res.data.phone_numbers || !res.data.phone_numbers.length))
+        ) {
+          await this.platformSearch[PeopleFinderPlatforms.peopledatalabs]({
+            ...user,
+            linkedin: '',
+          });
+        }
       } else if (user.companyDomain && user.name) {
         const newRecord = await this.prisma.contactSearch.create({
           data: {
