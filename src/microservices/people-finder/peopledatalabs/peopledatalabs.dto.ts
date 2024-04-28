@@ -1,5 +1,5 @@
 import {ApiProperty} from '@nestjs/swagger';
-import {IsString} from 'class-validator';
+import {IsString, IsBoolean, Is} from 'class-validator';
 
 export enum PeopledatalabsStatus {
   SUCCESS = 200,
@@ -32,6 +32,18 @@ export class SearchPeopleByDomainReqDto {
   })
   @IsString()
   companyDomain: string;
+
+  @ApiProperty({
+    type: Boolean,
+  })
+  @IsBoolean()
+  phone: boolean;
+
+  @ApiProperty({
+    type: Boolean,
+  })
+  @IsBoolean()
+  email: boolean;
 }
 
 export class SearchPeopleByLinkedinReqDto {

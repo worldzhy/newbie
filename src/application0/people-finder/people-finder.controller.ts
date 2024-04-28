@@ -17,9 +17,10 @@ import {
   PeopleFinderStatus,
 } from '@microservices/people-finder/people-finder.service';
 
-type PeopleFinderError = {
-  error: {[x: string]: unknown};
-};
+// type PeopleFinderError = {
+//   error: {[x: string]: unknown};
+// };
+type SearchFilter = {phone: boolean; email: boolean};
 
 @ApiTags('People-finder')
 @ApiBearerAuth()
@@ -54,7 +55,7 @@ export class PeopleFinderController {
 
   platformSearch = {
     /**
-     * voilanorbert
+     * voilanorbert [support: email]
      */
     [PeopleFinderPlatforms.voilanorbert]: async (
       user: ContactSearchPeopleDto
@@ -86,9 +87,12 @@ export class PeopleFinderController {
       );
     },
     /**
-     * proxycurl
+     * proxycurl [support: email,phone]
      */
-    [PeopleFinderPlatforms.proxycurl]: async (user: ContactSearchPeopleDto) => {
+    [PeopleFinderPlatforms.proxycurl]: async (
+      user: ContactSearchPeopleDto,
+      {phone, email}: SearchFilter
+    ) => {
       if (user.linkedin) {
         const newRecord = await this.prisma.contactSearch.create({
           data: {
@@ -101,8 +105,8 @@ export class PeopleFinderController {
         const {res, error, spent} =
           await this.peopleFinder.proxycurl.searchPeopleByLinkedin({
             linkedinUrl: user.linkedin,
-            personalEmail: 'include',
-            personalContactNumber: 'include',
+            personalEmail: email ? 'include' : 'exclude',
+            personalContactNumber: phone ? 'include' : 'exclude',
           });
         const updateData: Prisma.ContactSearchUpdateInput = {};
 
@@ -158,18 +162,22 @@ export class PeopleFinderController {
         });
 
         if (res && res.url) {
-          await this.platformSearch[PeopleFinderPlatforms.proxycurl]({
-            ...user,
-            linkedin: res.url,
-          });
+          await this.platformSearch[PeopleFinderPlatforms.proxycurl](
+            {
+              ...user,
+              linkedin: res.url,
+            },
+            {phone, email}
+          );
         }
       }
     },
     /**
-     * peopledatalabs
+     * peopledatalabs [support: email,phone]
      */
     [PeopleFinderPlatforms.peopledatalabs]: async (
-      user: ContactSearchPeopleDto
+      user: ContactSearchPeopleDto,
+      {phone, email}: SearchFilter
     ) => {
       if (user.linkedin) {
         const newRecord = await this.prisma.contactSearch.create({
@@ -216,10 +224,13 @@ export class PeopleFinderController {
           ((!res.data.emails || !res.data.emails.length) &&
             (!res.data.phone_numbers || !res.data.phone_numbers.length))
         ) {
-          await this.platformSearch[PeopleFinderPlatforms.peopledatalabs]({
-            ...user,
-            linkedin: '',
-          });
+          await this.platformSearch[PeopleFinderPlatforms.peopledatalabs](
+            {
+              ...user,
+              linkedin: '',
+            },
+            {phone, email}
+          );
         }
       } else if (user.companyDomain && user.name) {
         const newRecord = await this.prisma.contactSearch.create({
@@ -234,6 +245,8 @@ export class PeopleFinderController {
           await this.peopleFinder.peopledatalabs.searchPeopleByDomain({
             companyDomain: user.companyDomain,
             name: user.name,
+            phone: true,
+            email: true,
           });
         const updateData: Prisma.ContactSearchUpdateInput = {};
         if (error) {
@@ -280,11 +293,65 @@ export class PeopleFinderController {
       for (let platI = 0; platI < platforms.length; platI++) {
         const platform = platforms[platI];
         // todo: [throttle] Check if the current people has records on the current platform and filter out peoples with records
-        await this.platformSearch[platform](people);
+        if (platform === PeopleFinderPlatforms.voilanorbert) {
+          await this.platformSearch[platform](people);
+        }
+        if (platform === PeopleFinderPlatforms.proxycurl) {
+          await this.platformSearch[platform](people, {
+            phone: true,
+            email: true,
+          });
+        }
+        if (platform === PeopleFinderPlatforms.peopledatalabs) {
+          await this.platformSearch[platform](people, {
+            phone: true,
+            email: true,
+          });
+        }
       }
     }
     return 'ok';
-    // return await this.voilaNorbertService;
+  }
+
+  @NoGuard()
+  @Post('contact-search-phone')
+  @ApiBody({
+    description: '',
+  })
+  async contactSearchPhone(
+    @Body()
+    body: ContactSearchReqDto
+  ) {
+    const {peoples} = body;
+    for (let i = 0; i < peoples.length; i++) {
+      const people = peoples[i];
+      await this.platformSearch.peopledatalabs(people, {
+        phone: true,
+        email: false,
+      });
+    }
+    return 'ok';
+  }
+
+  @NoGuard()
+  @Post('contact-search-email')
+  @ApiBody({
+    description: '',
+  })
+  async contactSearchEmail(
+    @Body()
+    body: ContactSearchReqDto
+  ) {
+    const {peoples} = body;
+    for (let i = 0; i < peoples.length; i++) {
+      const people = peoples[i];
+      await this.platformSearch.voilanorbert(people);
+      await this.platformSearch.proxycurl(people, {
+        phone: false,
+        email: true,
+      });
+    }
+    return 'ok';
   }
 
   /**
