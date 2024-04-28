@@ -1,5 +1,5 @@
 import {ApiProperty} from '@nestjs/swagger';
-import {IsString, IsBoolean, Is} from 'class-validator';
+import {IsString, IsBoolean} from 'class-validator';
 
 export enum PeopledatalabsStatus {
   SUCCESS = 200,

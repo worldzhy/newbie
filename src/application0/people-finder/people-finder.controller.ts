@@ -1,10 +1,10 @@
 import {Controller, Post, Body, Get, Query} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {ConfigService} from '@nestjs/config';
+import {Prisma} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {CustomLoggerService} from '@toolkit/logger/logger.service';
 import {NoGuard} from '@microservices/account/security/passport/public/public.decorator';
-import {Prisma} from '@prisma/client';
 import {ContactSearchReqDto, ContactSearchPeopleDto} from './people-finder.dto';
 import {
   SearchEmailThirdResDto,
@@ -292,16 +292,26 @@ export class PeopleFinderController {
       const people = peoples[i];
       for (let platI = 0; platI < platforms.length; platI++) {
         const platform = platforms[platI];
-        // todo: [throttle] Check if the current people has records on the current platform and filter out peoples with records
+
+        // Check if the current personnel have records on the current platform, and do not execute those with records
+        const isExist = await this.peopleFinder.isExist({
+          platform,
+          userId: people.userId,
+          userSource: people.userSource,
+        });
+        if (isExist) continue;
+
         if (platform === PeopleFinderPlatforms.voilanorbert) {
           await this.platformSearch[platform](people);
         }
+
         if (platform === PeopleFinderPlatforms.proxycurl) {
           await this.platformSearch[platform](people, {
             phone: true,
             email: true,
           });
         }
+
         if (platform === PeopleFinderPlatforms.peopledatalabs) {
           await this.platformSearch[platform](people, {
             phone: true,
@@ -325,6 +335,15 @@ export class PeopleFinderController {
     const {peoples} = body;
     for (let i = 0; i < peoples.length; i++) {
       const people = peoples[i];
+
+      // Check if the current personnel have records on the current platform, and do not execute those with records
+      const isExist = await this.peopleFinder.isExist({
+        platform: PeopleFinderPlatforms.peopledatalabs,
+        userId: people.userId,
+        userSource: people.userSource,
+      });
+      if (isExist) continue;
+
       await this.platformSearch.peopledatalabs(people, {
         phone: true,
         email: false,
@@ -345,11 +364,29 @@ export class PeopleFinderController {
     const {peoples} = body;
     for (let i = 0; i < peoples.length; i++) {
       const people = peoples[i];
-      await this.platformSearch.voilanorbert(people);
-      await this.platformSearch.proxycurl(people, {
-        phone: false,
-        email: true,
+
+      // Check if the current personnel have records on the current platform, and do not execute those with records
+      const isExist = await this.peopleFinder.isExist({
+        platform: PeopleFinderPlatforms.voilanorbert,
+        userId: people.userId,
+        userSource: people.userSource,
       });
+      if (!isExist) {
+        await this.platformSearch.voilanorbert(people);
+      }
+
+      // Check if the current personnel have records on the current platform, and do not execute those with records
+      const isExist2 = await this.peopleFinder.isExist({
+        platform: PeopleFinderPlatforms.proxycurl,
+        userId: people.userId,
+        userSource: people.userSource,
+      });
+      if (!isExist2) {
+        await this.platformSearch.proxycurl(people, {
+          phone: false,
+          email: true,
+        });
+      }
     }
     return 'ok';
   }

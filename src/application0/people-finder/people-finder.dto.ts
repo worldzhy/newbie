@@ -5,19 +5,15 @@ import {PeopleFinderPlatforms} from '@microservices/people-finder/constants';
 export class ContactSearchPeopleDto {
   @ApiProperty({
     type: String,
-    required: false,
   })
   @IsString()
-  @IsOptional()
-  userId?: string;
+  userId: string;
 
   @ApiProperty({
     type: String,
-    required: false,
   })
   @IsString()
-  @IsOptional()
-  userSource?: string;
+  userSource: string;
 
   @ApiProperty({
     type: String,
@@ -74,7 +70,7 @@ export class ContactSearchReqDto {
   })
   @IsArray()
   @IsString({each: true})
-  platforms: string;
+  platforms: PeopleFinderPlatforms[];
 
   @ApiProperty({
     type: ContactSearchPeopleDto,
