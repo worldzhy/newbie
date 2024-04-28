@@ -335,7 +335,7 @@ export class PeopleFinderController {
       distinct: ['userId', 'companyDomain', 'linkedin', 'source', 'sourceMode'],
       where: {
         status: {in: [PeopleFinderStatus.failed, PeopleFinderStatus.completed]},
-        id: {gt: 140},
+        id: {gt: 1841},
       },
     });
     const sourceMap = {
@@ -536,7 +536,37 @@ export class PeopleFinderController {
       result[key].emailPer = result[key].hasEmails / result[key].total;
       result[key].phonePer = result[key].hasPhones / result[key].total;
     });
-    return {result, groupResult};
+
+    const exportData = res.map(item => {
+      if (item.emails && item.emails.length) {
+        if (item.source === PeopleFinderPlatforms.voilanorbert) {
+          item.emails = item.emails.map(
+            (emailCon: {email: string; score: number}) => emailCon.email
+          );
+        }
+        if (item.source === PeopleFinderPlatforms.peopledatalabs) {
+          item.emails = item.emails.map(
+            (emailCon: {address: string; type: string}) => emailCon.address
+          );
+        }
+        // @ts-ignore
+        item.emails = item.emails.join('|');
+      } else {
+        // @ts-ignore
+        item.emails = '';
+      }
+      if (item.phones && item.phones.length) {
+        // @ts-ignore
+        item.phones = item.phones.join('|');
+      } else {
+        // @ts-ignore
+        item.phones = '';
+      }
+      // @ts-ignore
+      delete item.ctx;
+      return item;
+    });
+    return {result, groupResult, exportData};
   }
   /* End */
 }
