@@ -2,10 +2,17 @@ import {Controller, Post, Body, Get, Query} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {ConfigService} from '@nestjs/config';
 import {Prisma} from '@prisma/client';
+import {Job, Queue} from 'bull';
+import {InjectQueue} from '@nestjs/bull';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {CustomLoggerService} from '@toolkit/logger/logger.service';
+import {generateRandomCode} from '@toolkit/utilities/common.util';
 import {NoGuard} from '@microservices/account/security/passport/public/public.decorator';
-import {ContactSearchReqDto, ContactSearchPeopleDto} from './people-finder.dto';
+import {
+  ContactSearchReqDto,
+  ContactSearchPeopleDto,
+  AddTaskContactSearchReqDto,
+} from './people-finder.dto';
 import {
   SearchEmailThirdResDto,
   SearchEmailContentResDto,
@@ -16,6 +23,8 @@ import {
   PeopleFinderPlatforms,
   PeopleFinderStatus,
 } from '@microservices/people-finder/people-finder.service';
+import {PeopleFinderBullJob} from '@microservices/people-finder/constants';
+import {PeopleFinderQueue} from '@microservices/people-finder/people-finder.processor';
 
 // type PeopleFinderError = {
 //   error: {[x: string]: unknown};
@@ -33,7 +42,8 @@ export class PeopleFinderController {
     private readonly configService: ConfigService,
     private readonly peopleFinder: PeopleFinderService,
     private readonly logger: CustomLoggerService,
-    private readonly prisma: PrismaService
+    private readonly prisma: PrismaService,
+    @InjectQueue(PeopleFinderQueue) public queue: Queue
   ) {
     this.callBackOrigin = this.configService.getOrThrow<string>(
       'microservice.peopleFinder.voilanorbert.callbackOrigin'
@@ -77,7 +87,7 @@ export class PeopleFinderController {
           companyDomain,
           webhook:
             this.callBackOrigin +
-            '/people-finder/voilanorbert-hook?contactSearchId=' +
+            '/people-finder/voilanorbert-hook?id=' +
             newRecord.id, // todo
         });
       return await this.voilanorbertContactSearchCallback(
@@ -324,6 +334,24 @@ export class PeopleFinderController {
   }
 
   @NoGuard()
+  @Post('add-task-contact-search')
+  @ApiBody({
+    description: '',
+  })
+  async addTaskcontactSearch(
+    @Body()
+    body: AddTaskContactSearchReqDto
+  ) {
+    const {peoples} = body;
+    const taskId = generateRandomCode(10);
+    return await this.addJobs(peoples.map(item => ({...item, taskId})));
+  }
+
+  async addJobs(data: PeopleFinderBullJob[]): Promise<Job[]> {
+    return await this.queue.addBulk(data.map(item => ({data: item})));
+  }
+
+  @NoGuard()
   @Post('contact-search-phone')
   @ApiBody({
     description: '',
@@ -397,21 +425,58 @@ export class PeopleFinderController {
   @NoGuard()
   @Post('voilanorbert-hook')
   async voilanorbertHook(
-    @Query('contactSearchId')
-    contactSearchId: number,
+    @Query('id')
+    id: number,
     @Body()
     res: SearchEmailThirdResDto['data']
   ) {
-    await this.voilanorbertContactSearchCallback(Number(contactSearchId), res);
+    const findRes = await this.peopleFinder.voilanorbertContactSearchCallback(
+      Number(id),
+      res
+    );
+
+    // searching completed && no email
+    if (findRes?.res?.searching === false && !findRes?.dataFlag.email) {
+      const record = await this.prisma.contactSearch.findFirst({
+        where: {id: Number(id)},
+      });
+      if (record && record.userId && record.userSource) {
+        // Check if the current personnel have records on the current platform, and do not execute those with records
+        const isExist = await this.peopleFinder.isExist({
+          platform: PeopleFinderPlatforms.proxycurl,
+          userId: record.userId,
+          userSource: record.userSource,
+        });
+        if (isExist) return {};
+
+        await this.peopleFinder.proxycurlFind(
+          {
+            userId: record.userId,
+            userSource: record.userSource,
+            linkedin: record.linkedin as string,
+            companyDomain: record.companyDomain as string,
+            name: record.name as string,
+            firstName: record.firstName as string,
+            middleName: record.middleName as string,
+            lastName: record.lastName as string,
+            taskId: record.taskId as string,
+          },
+          {
+            phone: true,
+            email: true,
+          }
+        );
+      }
+    }
     this.logger.log(
-      'voilanorbert-hook:' + contactSearchId + ' [res]:' + JSON.stringify(res),
+      'voilanorbert-hook:' + id + ' [res]:' + JSON.stringify(res),
       this.loggerContext
     );
     return 'ok';
   }
 
   async voilanorbertContactSearchCallback(
-    contactSearchId: number,
+    id: number,
     data?: SearchEmailContentResDto,
     error?: object
   ) {
@@ -427,7 +492,7 @@ export class PeopleFinderController {
       updateData.ctx = data as object;
     }
     await this.prisma.contactSearch.update({
-      where: {id: contactSearchId},
+      where: {id: id},
       data: updateData,
     });
   }

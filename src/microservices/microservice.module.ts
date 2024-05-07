@@ -13,9 +13,7 @@ import {OrderManagementModule} from './order-mgmt/order-mgmt.module';
 import {StockManagementModule} from './stock-mgmt/stock-mgmt.module';
 import {TagModule} from './tag/tag.module';
 import {WorkflowModule} from './workflow/workflow.module';
-import {VoilaNorbertModule} from './people-finder/voila-norbert/module';
-import {ProxycurlModule} from './people-finder/proxycurl/module';
-import {PeopledatalabsModule} from './people-finder/peopledatalabs/module';
+import {PeopleFinderModule} from './people-finder/people-finder.module';
 import MicroserviceConfiguration from './microservice.config';
 
 @Global()
@@ -36,9 +34,7 @@ import MicroserviceConfiguration from './microservice.config';
     StockManagementModule,
     TagModule,
     WorkflowModule,
-    VoilaNorbertModule,
-    ProxycurlModule,
-    PeopledatalabsModule,
+    PeopleFinderModule,
   ],
 })
 export class MicroserviceModule {}

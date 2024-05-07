@@ -8,4 +8,20 @@ export enum PeopleFinderStatus {
   completed = 'completed',
   failed = 'failed',
   deleted = 'deleted',
+  parameterError = 'parameterError',
 }
+
+export type PeopleFinderBullJob = {
+  email?: string;
+  phone?: string;
+  userId: string;
+  userSource: string;
+  name?: string;
+  firstName?: string;
+  lastName?: string;
+  companyDomain?: string;
+  linkedin?: string;
+  taskId: string;
+};
+
+export type SearchFilter = {phone: boolean; email: boolean};
