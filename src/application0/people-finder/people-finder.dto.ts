@@ -87,4 +87,12 @@ export class AddTaskContactSearchReqDto {
   })
   @IsArray()
   peoples: ContactSearchPeopleDto[];
+
+  @ApiProperty({
+    type: String,
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  taskId?: string;
 }
