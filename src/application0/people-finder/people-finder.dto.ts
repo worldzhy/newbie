@@ -62,6 +62,22 @@ export class ContactSearchPeopleDto {
   @IsString()
   @IsOptional()
   linkedin?: string;
+
+  @ApiProperty({
+    type: Boolean,
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  findPhone?: boolean;
+
+  @ApiProperty({
+    type: Boolean,
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  findEmail?: boolean;
 }
 export class ContactSearchReqDto {
   @ApiProperty({
