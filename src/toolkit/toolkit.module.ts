@@ -38,6 +38,7 @@ function getModules() {
           store: redisStore,
           host: configService.get('toolkit.redis.host'),
           port: configService.get('toolkit.redis.port'),
+          password: configService.get('toolkit.redis.password'),
           ttl: configService.get('toolkit.cache.redis.ttl'), // cache-manamger v4 => seconds, v5 => milliseconds
         }),
         inject: [ConfigService],
