@@ -96,3 +96,11 @@ export class AddTaskContactSearchReqDto {
   @IsOptional()
   taskId?: string;
 }
+
+export class AddTaskContactSearchResDto {
+  @ApiProperty({
+    type: String,
+  })
+  @IsString()
+  taskId: string;
+}
