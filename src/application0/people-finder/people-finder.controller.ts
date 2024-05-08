@@ -355,17 +355,12 @@ export class PeopleFinderController {
   ) {
     let {taskId} = body;
     if (!taskId) taskId = generateRandomCode(10);
-    await this.addJobs(
-      taskId,
-      body.peoples.map(item => ({...item, taskId: taskId!}))
-    );
+    await this.addJobs(body.peoples.map(item => ({...item, taskId: taskId!})));
     return {taskId};
   }
 
-  async addJobs(taskId, data: PeopleFinderBullJob[]): Promise<Job[]> {
-    return await this.queue.addBulk(
-      data.map(item => ({data: item, name: taskId}))
-    );
+  async addJobs(data: PeopleFinderBullJob[]): Promise<Job[]> {
+    return await this.queue.addBulk(data.map(item => ({data: item})));
   }
 
   @NoGuard()
@@ -399,7 +394,7 @@ export class PeopleFinderController {
         flag = false;
       }
     }
-    return allList.filter(item => item.name === query.taskId);
+    return allList.filter(item => item.data.taskId === query.taskId);
   }
 
   @NoGuard()

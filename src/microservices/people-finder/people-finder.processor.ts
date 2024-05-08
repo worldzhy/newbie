@@ -26,8 +26,7 @@ export class PeopleFinderJobProcessor {
     if (data) {
       let isGetEmail = false;
       const {...user} = data;
-      // if (mode === 'findPhone') {
-      if (!user.phone) {
+      if (user.findPhone) {
         // Check if the current personnel have records on the current platform, and do not execute those with records
         const isExist = await this.peopleFinder.isExist({
           platform: PeopleFinderPlatforms.peopledatalabs,
@@ -46,8 +45,7 @@ export class PeopleFinderJobProcessor {
         );
         if (findRes?.dataFlag.email) isGetEmail = findRes.dataFlag.email;
       }
-      // if (mode === 'findEmail') {
-      if (!user.email && !isGetEmail) {
+      if (user.findEmail && !isGetEmail) {
         // Check if the current personnel have records on the current platform, and do not execute those with records
         const isExist = await this.peopleFinder.isExist({
           platform: PeopleFinderPlatforms.voilanorbert,

@@ -12,8 +12,8 @@ export enum PeopleFinderStatus {
 }
 
 export type PeopleFinderBullJob = {
-  email?: string;
-  phone?: string;
+  findEmail?: boolean;
+  findPhone?: boolean;
   userId: string;
   userSource: string;
   name?: string;
