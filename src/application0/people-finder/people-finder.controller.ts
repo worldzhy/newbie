@@ -342,9 +342,10 @@ export class PeopleFinderController {
     @Body()
     body: AddTaskContactSearchReqDto
   ) {
-    const {peoples} = body;
-    const taskId = generateRandomCode(10);
-    return await this.addJobs(peoples.map(item => ({...item, taskId})));
+    let {taskId} = body;
+    if (!taskId) taskId = generateRandomCode(10);
+    await this.addJobs(body.peoples.map(item => ({...item, taskId: taskId!})));
+    return {taskId};
   }
 
   async addJobs(data: PeopleFinderBullJob[]): Promise<Job[]> {
