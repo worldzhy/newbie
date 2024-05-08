@@ -1,11 +1,18 @@
 import {Controller, Post, Body, Get, Query} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {ConfigService} from '@nestjs/config';
+import {Prisma} from '@prisma/client';
+import {Job, Queue} from 'bull';
+import {InjectQueue} from '@nestjs/bull';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {CustomLoggerService} from '@toolkit/logger/logger.service';
+import {generateRandomCode} from '@toolkit/utilities/common.util';
 import {NoGuard} from '@microservices/account/security/passport/public/public.decorator';
-import {Prisma} from '@prisma/client';
-import {ContactSearchReqDto, ContactSearchPeopleDto} from './people-finder.dto';
+import {
+  ContactSearchReqDto,
+  ContactSearchPeopleDto,
+  AddTaskContactSearchReqDto,
+} from './people-finder.dto';
 import {
   SearchEmailThirdResDto,
   SearchEmailContentResDto,
@@ -16,10 +23,13 @@ import {
   PeopleFinderPlatforms,
   PeopleFinderStatus,
 } from '@microservices/people-finder/people-finder.service';
+import {PeopleFinderBullJob} from '@microservices/people-finder/constants';
+import {PeopleFinderQueue} from '@microservices/people-finder/people-finder.processor';
 
-type PeopleFinderError = {
-  error: {[x: string]: unknown};
-};
+// type PeopleFinderError = {
+//   error: {[x: string]: unknown};
+// };
+type SearchFilter = {phone: boolean; email: boolean};
 
 @ApiTags('People-finder')
 @ApiBearerAuth()
@@ -32,7 +42,8 @@ export class PeopleFinderController {
     private readonly configService: ConfigService,
     private readonly peopleFinder: PeopleFinderService,
     private readonly logger: CustomLoggerService,
-    private readonly prisma: PrismaService
+    private readonly prisma: PrismaService,
+    @InjectQueue(PeopleFinderQueue) public queue: Queue
   ) {
     this.callBackOrigin = this.configService.getOrThrow<string>(
       'microservice.peopleFinder.voilanorbert.callbackOrigin'
@@ -54,7 +65,7 @@ export class PeopleFinderController {
 
   platformSearch = {
     /**
-     * voilanorbert
+     * voilanorbert [support: email]
      */
     [PeopleFinderPlatforms.voilanorbert]: async (
       user: ContactSearchPeopleDto
@@ -76,7 +87,7 @@ export class PeopleFinderController {
           companyDomain,
           webhook:
             this.callBackOrigin +
-            '/people-finder/voilanorbert-hook?contactSearchId=' +
+            '/people-finder/voilanorbert-hook?id=' +
             newRecord.id, // todo
         });
       return await this.voilanorbertContactSearchCallback(
@@ -86,9 +97,12 @@ export class PeopleFinderController {
       );
     },
     /**
-     * proxycurl
+     * proxycurl [support: email,phone]
      */
-    [PeopleFinderPlatforms.proxycurl]: async (user: ContactSearchPeopleDto) => {
+    [PeopleFinderPlatforms.proxycurl]: async (
+      user: ContactSearchPeopleDto,
+      {phone, email}: SearchFilter
+    ) => {
       if (user.linkedin) {
         const newRecord = await this.prisma.contactSearch.create({
           data: {
@@ -101,8 +115,8 @@ export class PeopleFinderController {
         const {res, error, spent} =
           await this.peopleFinder.proxycurl.searchPeopleByLinkedin({
             linkedinUrl: user.linkedin,
-            personalEmail: 'include',
-            personalContactNumber: 'include',
+            personalEmail: email ? 'include' : 'exclude',
+            personalContactNumber: phone ? 'include' : 'exclude',
           });
         const updateData: Prisma.ContactSearchUpdateInput = {};
 
@@ -158,18 +172,22 @@ export class PeopleFinderController {
         });
 
         if (res && res.url) {
-          await this.platformSearch[PeopleFinderPlatforms.proxycurl]({
-            ...user,
-            linkedin: res.url,
-          });
+          await this.platformSearch[PeopleFinderPlatforms.proxycurl](
+            {
+              ...user,
+              linkedin: res.url,
+            },
+            {phone, email}
+          );
         }
       }
     },
     /**
-     * peopledatalabs
+     * peopledatalabs [support: email,phone]
      */
     [PeopleFinderPlatforms.peopledatalabs]: async (
-      user: ContactSearchPeopleDto
+      user: ContactSearchPeopleDto,
+      {phone, email}: SearchFilter
     ) => {
       if (user.linkedin) {
         const newRecord = await this.prisma.contactSearch.create({
@@ -216,10 +234,13 @@ export class PeopleFinderController {
           ((!res.data.emails || !res.data.emails.length) &&
             (!res.data.phone_numbers || !res.data.phone_numbers.length))
         ) {
-          await this.platformSearch[PeopleFinderPlatforms.peopledatalabs]({
-            ...user,
-            linkedin: '',
-          });
+          await this.platformSearch[PeopleFinderPlatforms.peopledatalabs](
+            {
+              ...user,
+              linkedin: '',
+            },
+            {phone, email}
+          );
         }
       } else if (user.companyDomain && user.name) {
         const newRecord = await this.prisma.contactSearch.create({
@@ -234,6 +255,8 @@ export class PeopleFinderController {
           await this.peopleFinder.peopledatalabs.searchPeopleByDomain({
             companyDomain: user.companyDomain,
             name: user.name,
+            phone: true,
+            email: true,
           });
         const updateData: Prisma.ContactSearchUpdateInput = {};
         if (error) {
@@ -279,12 +302,121 @@ export class PeopleFinderController {
       const people = peoples[i];
       for (let platI = 0; platI < platforms.length; platI++) {
         const platform = platforms[platI];
-        // todo: [throttle] Check if the current people has records on the current platform and filter out peoples with records
-        await this.platformSearch[platform](people);
+
+        // Check if the current personnel have records on the current platform, and do not execute those with records
+        const isExist = await this.peopleFinder.isExist({
+          platform,
+          userId: people.userId,
+          userSource: people.userSource,
+        });
+        if (isExist) continue;
+
+        if (platform === PeopleFinderPlatforms.voilanorbert) {
+          await this.platformSearch[platform](people);
+        }
+
+        if (platform === PeopleFinderPlatforms.proxycurl) {
+          await this.platformSearch[platform](people, {
+            phone: true,
+            email: true,
+          });
+        }
+
+        if (platform === PeopleFinderPlatforms.peopledatalabs) {
+          await this.platformSearch[platform](people, {
+            phone: true,
+            email: true,
+          });
+        }
       }
     }
     return 'ok';
-    // return await this.voilaNorbertService;
+  }
+
+  @NoGuard()
+  @Post('add-task-contact-search')
+  @ApiBody({
+    description: '',
+  })
+  async addTaskcontactSearch(
+    @Body()
+    body: AddTaskContactSearchReqDto
+  ) {
+    const {peoples} = body;
+    const taskId = generateRandomCode(10);
+    return await this.addJobs(peoples.map(item => ({...item, taskId})));
+  }
+
+  async addJobs(data: PeopleFinderBullJob[]): Promise<Job[]> {
+    return await this.queue.addBulk(data.map(item => ({data: item})));
+  }
+
+  @NoGuard()
+  @Post('contact-search-phone')
+  @ApiBody({
+    description: '',
+  })
+  async contactSearchPhone(
+    @Body()
+    body: ContactSearchReqDto
+  ) {
+    const {peoples} = body;
+    for (let i = 0; i < peoples.length; i++) {
+      const people = peoples[i];
+
+      // Check if the current personnel have records on the current platform, and do not execute those with records
+      const isExist = await this.peopleFinder.isExist({
+        platform: PeopleFinderPlatforms.peopledatalabs,
+        userId: people.userId,
+        userSource: people.userSource,
+      });
+      if (isExist) continue;
+
+      await this.platformSearch.peopledatalabs(people, {
+        phone: true,
+        email: false,
+      });
+    }
+    return 'ok';
+  }
+
+  @NoGuard()
+  @Post('contact-search-email')
+  @ApiBody({
+    description: '',
+  })
+  async contactSearchEmail(
+    @Body()
+    body: ContactSearchReqDto
+  ) {
+    const {peoples} = body;
+    for (let i = 0; i < peoples.length; i++) {
+      const people = peoples[i];
+
+      // Check if the current personnel have records on the current platform, and do not execute those with records
+      const isExist = await this.peopleFinder.isExist({
+        platform: PeopleFinderPlatforms.voilanorbert,
+        userId: people.userId,
+        userSource: people.userSource,
+      });
+      if (!isExist) {
+        await this.platformSearch.voilanorbert(people);
+      }
+
+      // Check if the current personnel have records on the current platform, and do not execute those with records
+      const isExist2 = await this.peopleFinder.isExist({
+        platform: PeopleFinderPlatforms.proxycurl,
+        userId: people.userId,
+        userSource: people.userSource,
+      });
+      if (!isExist2) {
+        await this.platformSearch.proxycurl(people, {
+          phone: false,
+          email: true,
+        });
+      }
+    }
+    return 'ok';
   }
 
   /**
@@ -293,21 +425,58 @@ export class PeopleFinderController {
   @NoGuard()
   @Post('voilanorbert-hook')
   async voilanorbertHook(
-    @Query('contactSearchId')
-    contactSearchId: number,
+    @Query('id')
+    id: number,
     @Body()
     res: SearchEmailThirdResDto['data']
   ) {
-    await this.voilanorbertContactSearchCallback(Number(contactSearchId), res);
+    const findRes = await this.peopleFinder.voilanorbertContactSearchCallback(
+      Number(id),
+      res
+    );
+
+    // searching completed && no email
+    if (findRes?.res?.searching === false && !findRes?.dataFlag.email) {
+      const record = await this.prisma.contactSearch.findFirst({
+        where: {id: Number(id)},
+      });
+      if (record && record.userId && record.userSource) {
+        // Check if the current personnel have records on the current platform, and do not execute those with records
+        const isExist = await this.peopleFinder.isExist({
+          platform: PeopleFinderPlatforms.proxycurl,
+          userId: record.userId,
+          userSource: record.userSource,
+        });
+        if (isExist) return {};
+
+        await this.peopleFinder.proxycurlFind(
+          {
+            userId: record.userId,
+            userSource: record.userSource,
+            linkedin: record.linkedin as string,
+            companyDomain: record.companyDomain as string,
+            name: record.name as string,
+            firstName: record.firstName as string,
+            middleName: record.middleName as string,
+            lastName: record.lastName as string,
+            taskId: record.taskId as string,
+          },
+          {
+            phone: true,
+            email: true,
+          }
+        );
+      }
+    }
     this.logger.log(
-      'voilanorbert-hook:' + contactSearchId + ' [res]:' + JSON.stringify(res),
+      'voilanorbert-hook:' + id + ' [res]:' + JSON.stringify(res),
       this.loggerContext
     );
     return 'ok';
   }
 
   async voilanorbertContactSearchCallback(
-    contactSearchId: number,
+    id: number,
     data?: SearchEmailContentResDto,
     error?: object
   ) {
@@ -323,7 +492,7 @@ export class PeopleFinderController {
       updateData.ctx = data as object;
     }
     await this.prisma.contactSearch.update({
-      where: {id: contactSearchId},
+      where: {id: id},
       data: updateData,
     });
   }
@@ -335,7 +504,7 @@ export class PeopleFinderController {
       distinct: ['userId', 'companyDomain', 'linkedin', 'source', 'sourceMode'],
       where: {
         status: {in: [PeopleFinderStatus.failed, PeopleFinderStatus.completed]},
-        id: {gt: 140},
+        id: {gt: 1841},
       },
     });
     const sourceMap = {
@@ -536,7 +705,37 @@ export class PeopleFinderController {
       result[key].emailPer = result[key].hasEmails / result[key].total;
       result[key].phonePer = result[key].hasPhones / result[key].total;
     });
-    return {result, groupResult};
+
+    const exportData = res.map(item => {
+      if (item.emails && item.emails.length) {
+        if (item.source === PeopleFinderPlatforms.voilanorbert) {
+          item.emails = item.emails.map(
+            (emailCon: {email: string; score: number}) => emailCon.email
+          );
+        }
+        if (item.source === PeopleFinderPlatforms.peopledatalabs) {
+          item.emails = item.emails.map(
+            (emailCon: {address: string; type: string}) => emailCon.address
+          );
+        }
+        // @ts-ignore
+        item.emails = item.emails.join('|');
+      } else {
+        // @ts-ignore
+        item.emails = '';
+      }
+      if (item.phones && item.phones.length) {
+        // @ts-ignore
+        item.phones = item.phones.join('|');
+      } else {
+        // @ts-ignore
+        item.phones = '';
+      }
+      // @ts-ignore
+      delete item.ctx;
+      return item;
+    });
+    return {result, groupResult, exportData};
   }
   /* End */
 }

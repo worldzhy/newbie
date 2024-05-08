@@ -62,6 +62,8 @@ export class ContactSearchPeopleDto {
   @IsString()
   @IsOptional()
   linkedin?: string;
+
+  taskId: string;
 }
 export class ContactSearchReqDto {
   @ApiProperty({
@@ -72,15 +74,6 @@ export class ContactSearchReqDto {
   @IsString({each: true})
   platforms: PeopleFinderPlatforms[];
 
-  @ApiProperty({
-    type: ContactSearchPeopleDto,
-    isArray: true,
-  })
-  @IsArray()
-  peoples: ContactSearchPeopleDto[];
-}
-
-export class AddTaskContactSearchReqDto {
   @ApiProperty({
     type: ContactSearchPeopleDto,
     isArray: true,

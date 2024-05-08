@@ -61,7 +61,16 @@ export class PeopledatalabsService {
   async searchPeopleByDomain({
     name,
     companyDomain,
+    phone,
+    email,
   }: SearchPeopleByDomainReqDto): Promise<SearchPeopleArrayResDto> {
+    const should: {exists: {field: string}}[] = [];
+    if (phone) {
+      should.push({exists: {field: 'phone_numbers'}});
+    }
+    if (email) {
+      should.push({exists: {field: 'emails'}});
+    }
     return new Promise(resolve => {
       const esQuery = {
         query: {
@@ -69,10 +78,7 @@ export class PeopledatalabsService {
             must: [
               {
                 bool: {
-                  should: [
-                    {exists: {field: 'phone_numbers'}},
-                    {exists: {field: 'emails'}},
-                  ],
+                  should,
                 },
               },
               {match: {full_name: name}},
