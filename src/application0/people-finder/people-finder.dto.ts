@@ -104,3 +104,11 @@ export class AddTaskContactSearchResDto {
   @IsString()
   taskId: string;
 }
+
+export class GetTaskContactSearchReqDto {
+  @ApiProperty({
+    type: String,
+  })
+  @IsString()
+  taskId: string;
+}

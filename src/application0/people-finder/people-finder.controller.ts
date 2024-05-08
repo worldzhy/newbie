@@ -1,5 +1,11 @@
 import {Controller, Post, Body, Get, Query} from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiBody, ApiResponse} from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiBody,
+  ApiResponse,
+  ApiQuery,
+} from '@nestjs/swagger';
 import {ConfigService} from '@nestjs/config';
 import {Prisma} from '@prisma/client';
 import {Job, Queue} from 'bull';
@@ -13,6 +19,7 @@ import {
   ContactSearchPeopleDto,
   AddTaskContactSearchReqDto,
   AddTaskContactSearchResDto,
+  GetTaskContactSearchReqDto,
 } from './people-finder.dto';
 import {
   SearchEmailThirdResDto,
@@ -348,12 +355,51 @@ export class PeopleFinderController {
   ) {
     let {taskId} = body;
     if (!taskId) taskId = generateRandomCode(10);
-    await this.addJobs(body.peoples.map(item => ({...item, taskId: taskId!})));
+    await this.addJobs(
+      taskId,
+      body.peoples.map(item => ({...item, taskId: taskId!}))
+    );
     return {taskId};
   }
 
-  async addJobs(data: PeopleFinderBullJob[]): Promise<Job[]> {
-    return await this.queue.addBulk(data.map(item => ({data: item})));
+  async addJobs(taskId, data: PeopleFinderBullJob[]): Promise<Job[]> {
+    return await this.queue.addBulk(
+      data.map(item => ({data: item, name: taskId}))
+    );
+  }
+
+  @NoGuard()
+  @Get('get-task-contact-search')
+  @ApiQuery({
+    type: GetTaskContactSearchReqDto,
+  })
+  async getJobsByTaskId(
+    @Query()
+    query: {
+      taskId: string;
+    }
+  ): Promise<Job[]> {
+    const limit = 100;
+    let start = 0,
+      end = limit - 1,
+      allList: Job[] = [],
+      flag = true;
+
+    while (flag) {
+      const list = await this.queue.getJobs(
+        ['completed', 'waiting', 'active', 'delayed', 'failed', 'paused'],
+        start,
+        end
+      );
+      allList = allList.concat(list);
+      if (list.length && list.length === limit) {
+        start += limit;
+        end += limit;
+      } else {
+        flag = false;
+      }
+    }
+    return allList.filter(item => item.name === query.taskId);
   }
 
   @NoGuard()
