@@ -1,5 +1,5 @@
 import {Controller, Post, Body, Get, Query} from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody, ApiResponse} from '@nestjs/swagger';
 import {ConfigService} from '@nestjs/config';
 import {Prisma} from '@prisma/client';
 import {Job, Queue} from 'bull';
@@ -12,6 +12,7 @@ import {
   ContactSearchReqDto,
   ContactSearchPeopleDto,
   AddTaskContactSearchReqDto,
+  AddTaskContactSearchResDto,
 } from './people-finder.dto';
 import {
   SearchEmailThirdResDto,
@@ -291,7 +292,7 @@ export class PeopleFinderController {
   @NoGuard()
   @Post('contact-search')
   @ApiBody({
-    description: '',
+    type: ContactSearchReqDto,
   })
   async contactSearch(
     @Body()
@@ -336,7 +337,10 @@ export class PeopleFinderController {
   @NoGuard()
   @Post('add-task-contact-search')
   @ApiBody({
-    description: '',
+    type: AddTaskContactSearchReqDto,
+  })
+  @ApiResponse({
+    type: AddTaskContactSearchResDto,
   })
   async addTaskcontactSearch(
     @Body()
