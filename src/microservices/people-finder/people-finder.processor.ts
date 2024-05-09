@@ -25,7 +25,8 @@ export class PeopleFinderJobProcessor {
     const {data}: {data: PeopleFinderBullJob} = job;
     if (data) {
       let isGetEmail = false;
-      const {...user} = data;
+      const user = data;
+
       if (user.findPhone) {
         // Check if the current personnel have records on the current platform, and do not execute those with records
         const isExist = await this.peopleFinder.isExist({
@@ -43,6 +44,7 @@ export class PeopleFinderJobProcessor {
             email: false,
           }
         );
+
         if (findRes?.dataFlag.email) isGetEmail = findRes.dataFlag.email;
       }
       if (user.findEmail && !isGetEmail) {
@@ -58,6 +60,7 @@ export class PeopleFinderJobProcessor {
           user,
           this.callBackOrigin + '/people-finder/voilanorbert-hook?id='
         );
+
         // searching completed && no email
         if (findRes?.res?.searching === false && !findRes?.dataFlag.email) {
           // Check if the current personnel have records on the current platform, and do not execute those with records

@@ -65,12 +65,14 @@ export class PeopleFinderService {
         status: PeopleFinderStatus.pending,
       },
     });
+
     // todo spent
     const {res, error} = await this.voilaNorbert.searchEmailByDomain({
       name,
       companyDomain,
       webhook: webhook + newRecord.id,
     });
+
     return await this.voilanorbertContactSearchCallback(
       newRecord.id,
       res,
@@ -85,6 +87,7 @@ export class PeopleFinderService {
     const dataFlag = {
       email: false,
     };
+
     const updateData: Prisma.ContactSearchUpdateInput = {};
     if (error) {
       updateData.status = PeopleFinderStatus.failed;
@@ -99,10 +102,12 @@ export class PeopleFinderService {
       }
       updateData.ctx = data as object;
     }
+
     await this.prisma.contactSearch.update({
       where: {id},
       data: updateData,
     });
+
     return {error, res: data, dataFlag};
   }
   /**
@@ -171,6 +176,7 @@ export class PeopleFinderService {
         lastName: user.lastName,
         companyDomain: user.companyDomain,
       });
+
       const updateData: Prisma.ContactSearchUpdateInput = {};
 
       if (error) {
@@ -225,9 +231,11 @@ export class PeopleFinderService {
             status: PeopleFinderStatus.pending,
           },
         });
+
         const {error, res} = await this.peopledatalabs.searchPeopleByLinkedin({
           linkedinUrl: user.linkedin,
         });
+
         const updateData: Prisma.ContactSearchUpdateInput = {};
         if (error) {
           updateData.status = PeopleFinderStatus.failed;
@@ -256,6 +264,7 @@ export class PeopleFinderService {
             };
           }
         }
+
         await this.prisma.contactSearch.update({
           where: {id: newRecord.id},
           data: updateData,
@@ -298,12 +307,14 @@ export class PeopleFinderService {
             status: PeopleFinderStatus.pending,
           },
         });
+
         const {error, res} = await this.peopledatalabs.searchPeopleByDomain({
           companyDomain: user.companyDomain,
           name: user.name,
           phone,
           email,
         });
+
         const updateData: Prisma.ContactSearchUpdateInput = {};
         if (error) {
           updateData.status = PeopleFinderStatus.failed;
@@ -326,10 +337,12 @@ export class PeopleFinderService {
             };
           }
         }
+
         await this.prisma.contactSearch.update({
           where: {id: newRecord.id},
           data: updateData,
         });
+
         return {error, res, dataFlag};
       } else {
         await this.prisma.contactSearch.create({
@@ -340,6 +353,7 @@ export class PeopleFinderService {
             status: PeopleFinderStatus.parameterError,
           },
         });
+
         return {error: {error: 'Missing parameters'}, dataFlag};
       }
     }
