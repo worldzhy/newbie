@@ -25,7 +25,6 @@ import {
   SearchEmailThirdResDto,
   SearchEmailContentResDto,
 } from '@microservices/people-finder/voila-norbert/volia-norbert.service';
-
 import {
   PeopleFinderService,
   PeopleFinderPlatforms,
@@ -34,9 +33,6 @@ import {
 import {PeopleFinderBullJob} from '@microservices/people-finder/constants';
 import {PeopleFinderQueue} from '@microservices/people-finder/people-finder.processor';
 
-// type PeopleFinderError = {
-//   error: {[x: string]: unknown};
-// };
 type SearchFilter = {phone: boolean; email: boolean};
 
 @ApiTags('People-finder')
@@ -342,14 +338,14 @@ export class PeopleFinderController {
   }
 
   @NoGuard()
-  @Post('add-task-contact-search')
+  @Post('add-contact-search-task')
   @ApiBody({
     type: AddTaskContactSearchReqDto,
   })
   @ApiResponse({
     type: AddTaskContactSearchResDto,
   })
-  async addTaskcontactSearch(
+  async addContactSearchTask(
     @Body()
     body: AddTaskContactSearchReqDto
   ) {
@@ -364,15 +360,13 @@ export class PeopleFinderController {
   }
 
   @NoGuard()
-  @Get('get-task-contact-search')
+  @Get('get-contact-search-task-jobs')
   @ApiQuery({
     type: GetTaskContactSearchReqDto,
   })
   async getJobsByTaskId(
     @Query()
-    query: {
-      taskId: string;
-    }
+    query: GetTaskContactSearchReqDto
   ): Promise<Job[]> {
     const limit = 100;
     let start = 0,
@@ -398,71 +392,67 @@ export class PeopleFinderController {
   }
 
   @NoGuard()
-  @Post('contact-search-phone')
-  @ApiBody({
-    description: '',
+  @Get('get-contact-search-task-result')
+  @ApiQuery({
+    type: GetTaskContactSearchReqDto,
   })
-  async contactSearchPhone(
-    @Body()
-    body: ContactSearchReqDto
+  async getResultByTaskId(
+    @Query()
+    query: GetTaskContactSearchReqDto
   ) {
-    const {peoples} = body;
-    for (let i = 0; i < peoples.length; i++) {
-      const people = peoples[i];
+    const list = await this.prisma.contactSearch.findMany({
+      where: {
+        status: {in: [PeopleFinderStatus.failed, PeopleFinderStatus.completed]},
+        taskId: query.taskId,
+        OR: [
+          {
+            emails: {
+              isEmpty: false,
+            },
+          },
+          {
+            phones: {
+              isEmpty: false,
+            },
+          },
+        ],
+      },
+    });
 
-      // Check if the current personnel have records on the current platform, and do not execute those with records
-      const isExist = await this.peopleFinder.isExist({
-        platform: PeopleFinderPlatforms.peopledatalabs,
-        userId: people.userId,
-        userSource: people.userSource,
-      });
-      if (isExist) continue;
+    const userMap: {
+      [userId: string]: (typeof list)[0];
+    } = {};
+    list.forEach(item => {
+      if (!userMap[item.userId!]) {
+        userMap[item.userId!] = item;
+      } else {
+        const user = userMap[item.userId!];
+        if (item.emails) {
+          user.emails = user.emails.concat(item.emails);
+        }
 
-      await this.platformSearch.peopledatalabs(people, {
-        phone: true,
-        email: false,
-      });
-    }
-    return 'ok';
-  }
-
-  @NoGuard()
-  @Post('contact-search-email')
-  @ApiBody({
-    description: '',
-  })
-  async contactSearchEmail(
-    @Body()
-    body: ContactSearchReqDto
-  ) {
-    const {peoples} = body;
-    for (let i = 0; i < peoples.length; i++) {
-      const people = peoples[i];
-
-      // Check if the current personnel have records on the current platform, and do not execute those with records
-      const isExist = await this.peopleFinder.isExist({
-        platform: PeopleFinderPlatforms.voilanorbert,
-        userId: people.userId,
-        userSource: people.userSource,
-      });
-      if (!isExist) {
-        await this.platformSearch.voilanorbert(people);
+        if (item.phones) {
+          user.phones = user.phones.concat(item.phones);
+        }
       }
+    });
 
-      // Check if the current personnel have records on the current platform, and do not execute those with records
-      const isExist2 = await this.peopleFinder.isExist({
-        platform: PeopleFinderPlatforms.proxycurl,
-        userId: people.userId,
-        userSource: people.userSource,
+    const result: {
+      userId: string;
+      emails: unknown[];
+      phones: unknown[];
+    }[] = [];
+
+    Object.keys(userMap).forEach(key => {
+      const user = userMap[key];
+      result.push({
+        userId: user.userId!,
+        phones: user.phones,
+        emails: user.emails,
       });
-      if (!isExist2) {
-        await this.platformSearch.proxycurl(people, {
-          phone: false,
-          email: true,
-        });
-      }
-    }
-    return 'ok';
+    });
+
+    return result;
   }
 
   /**
