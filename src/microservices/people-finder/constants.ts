@@ -16,9 +16,7 @@ export enum PeopleFinderTaskStatus {
   completed = 'completed',
 }
 
-export type PeopleFinderBullJob = {
-  findEmail?: boolean;
-  findPhone?: boolean;
+export type PeopleFinderUserReq = {
   userId: string;
   userSource: string;
   name?: string;
@@ -28,5 +26,10 @@ export type PeopleFinderBullJob = {
   linkedin?: string;
   taskId: string;
 };
+
+export type PeopleFinderBullJob = {
+  findEmail?: boolean;
+  findPhone?: boolean;
+} & PeopleFinderUserReq;
 
 export type SearchFilter = {needPhone: boolean; needEmail: boolean};
