@@ -11,6 +11,7 @@ import {
   PeopleFinderPlatforms,
   PeopleFinderBullJob,
   PeopleFinderTaskStatus,
+  PeopleFinderUserReq,
 } from '@microservices/people-finder/constants';
 
 export const PeopleFinderQueue = 'people-finder';
@@ -38,21 +39,21 @@ export class PeopleFinderJobProcessor {
     const {data}: {data: PeopleFinderBullJob} = job;
     if (data) {
       let isGetEmail = false;
-      const user = data;
+      const {findEmail, findPhone, ...user} = data;
 
-      if (user.findPhone) {
-        const findPhoneRes = await this.findPhone(data);
+      if (findPhone) {
+        const findPhoneRes = await this.findPhone(user);
         isGetEmail = findPhoneRes.isGetEmail;
       }
-      if (user.findEmail && !isGetEmail) {
-        await this.findEmail(data);
+      if (findEmail && !isGetEmail) {
+        await this.findEmail(user);
       }
     }
 
     return {};
   }
 
-  private async findPhone(data: PeopleFinderBullJob) {
+  private async findPhone(data: PeopleFinderUserReq) {
     let isGetEmail = false;
     const newTask = await this.prisma.contactSearchTask.create({
       data: {
@@ -93,7 +94,7 @@ export class PeopleFinderJobProcessor {
     return {isGetEmail};
   }
 
-  private async findEmail(data: PeopleFinderBullJob) {
+  private async findEmail(data: PeopleFinderUserReq) {
     const newTask = await this.prisma.contactSearchTask.create({
       data: {
         taskId: data.taskId,
