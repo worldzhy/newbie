@@ -1134,27 +1134,41 @@ model WorkflowRoute {
 // !             [Microservice] people-finder models              //
 // ! ------------------------------------------------------------ //
 // * ContactSearch                                                //
+// * ContactSearchTask                                            //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 model ContactSearch {
-  id            Int      @id @default(autoincrement())
-  userId        String?
-  userSource    String?
-  name          String?
-  firstName     String?
-  middleName    String?
-  lastName      String?
-  companyDomain String?
-  linkedin      String?
-  emails        Json[]
-  phones        Json[]
-  ctx           Json?
-  source        String
-  sourceMode    String
-  taskId        String?
-  spent         Int?
-  status        String // pending | completed | failed
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id                Int                 @id @default(autoincrement())
+  userId            String?
+  userSource        String?
+  name              String?
+  firstName         String?
+  middleName        String?
+  lastName          String?
+  companyDomain     String?
+  linkedin          String?
+  emails            Json[]
+  phones            Json[]
+  ctx               Json?
+  source            String
+  sourceMode        String
+  taskId            String?
+  spent             Int?
+  status            String // pending | completed | failed
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  ContactSearchTask ContactSearchTask[]
+
+  @@schema("microservice/people-finder")
+}
+
+model ContactSearchTask {
+  id              Int           @id @default(autoincrement())
+  contactSearch   ContactSearch? @relation(fields: [contactSearchId], references: [id])
+  contactSearchId Int?
+  taskId          String
+  status          String // pending | completed
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
   @@schema("microservice/people-finder")
 }

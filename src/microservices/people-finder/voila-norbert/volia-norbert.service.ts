@@ -1,25 +1,37 @@
 import {HttpService} from '@nestjs/axios';
 import {Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {Prisma} from '@prisma/client';
 import {CustomLoggerService} from '@toolkit/logger/logger.service';
+import {ContactSearchPeopleDto} from '../people-finder.dto';
+import {PeopleFinderStatus, PeopleFinderPlatforms} from '../constants';
 import {
   SearchEmailByDomainReqDto,
   SearchEmailResDto,
   SearchEmailThirdResDto,
   VoliaNorbertStatus,
+  SearchEmailContentResDto,
 } from './volia-norbert.dto';
 export * from './volia-norbert.dto';
 
 const baseUrl = 'https://api.voilanorbert.com/2018-01-08';
 @Injectable()
 export class VoilaNorbertService {
-  private apiKey;
-  private reqConfig;
+  private apiKey: string;
+  private reqConfig: {
+    auth: {
+      username: string;
+      password: string;
+    };
+    headers: object;
+  };
   private loggerContext = 'Voilanorbert';
 
   constructor(
     private httpService: HttpService,
     private readonly configService: ConfigService,
+    private readonly prisma: PrismaService,
     private readonly logger: CustomLoggerService
   ) {
     this.apiKey = this.configService.getOrThrow<string>(
@@ -98,18 +110,65 @@ export class VoilaNorbertService {
     });
   }
 
-  // async verifyEmail({email, webhook}: {email: string; webhook: string}) {
-  //   const url = `${baseUrl}/verifier/upload`;
-  //   const data = {
-  //     email,
-  //     webhook,
-  //   };
+  /**
+   * voilanorbert [support: email]
+   * @param webhook: xxxx.com?id=
+   */
+  async find(user: ContactSearchPeopleDto, webhook: string) {
+    const {name, companyDomain} = user;
+    if (!name || !companyDomain) return;
+    const newRecord = await this.prisma.contactSearch.create({
+      data: {
+        ...user,
+        source: PeopleFinderPlatforms.voilanorbert,
+        sourceMode: 'searchEmailByDomain',
+        status: PeopleFinderStatus.pending,
+      },
+    });
 
-  //   const response = await this.httpService.axiosRef
-  //     .post(url, data, this.reqConfig)
-  //     .catch(err => {
-  //       console.log(err);
-  //     });
-  //   if (response) return response.data;
-  // }
+    // todo spent
+    const {res, error} = await this.searchEmailByDomain({
+      name,
+      companyDomain,
+      webhook: webhook + newRecord.id,
+    });
+
+    return await this.voilanorbertContactSearchCallback(
+      newRecord.id,
+      res,
+      error
+    );
+  }
+
+  async voilanorbertContactSearchCallback(
+    id: number,
+    data?: SearchEmailContentResDto,
+    error?: object
+  ) {
+    const dataFlag = {
+      email: false,
+    };
+
+    const updateData: Prisma.ContactSearchUpdateInput = {};
+    if (error) {
+      updateData.status = PeopleFinderStatus.failed;
+      updateData.ctx = error;
+    } else if (data) {
+      if (!data.searching) {
+        updateData.emails = data.email ? [data.email as object] : [];
+        updateData.status = PeopleFinderStatus.completed;
+
+        if (updateData.emails && updateData.emails.length)
+          dataFlag.email = true;
+      }
+      updateData.ctx = data as object;
+    }
+
+    await this.prisma.contactSearch.update({
+      where: {id},
+      data: updateData,
+    });
+
+    return {error, res: data, dataFlag, contactSearchId: id};
+  }
 }

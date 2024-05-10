@@ -37,13 +37,13 @@ export class SearchPeopleByDomainReqDto {
     type: Boolean,
   })
   @IsBoolean()
-  phone: boolean;
+  needPhone: boolean;
 
   @ApiProperty({
     type: Boolean,
   })
   @IsBoolean()
-  email: boolean;
+  needEmail: boolean;
 }
 
 export class SearchPeopleByLinkedinReqDto {

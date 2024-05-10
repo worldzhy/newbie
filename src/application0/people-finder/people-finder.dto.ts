@@ -106,11 +106,9 @@ export class AddTaskContactSearchReqDto {
 
   @ApiProperty({
     type: String,
-    required: false,
   })
   @IsString()
-  @IsOptional()
-  taskId?: string;
+  taskId: string;
 }
 
 export class AddTaskContactSearchResDto {
