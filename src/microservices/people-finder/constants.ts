@@ -11,6 +11,11 @@ export enum PeopleFinderStatus {
   parameterError = 'parameterError',
 }
 
+export enum PeopleFinderTaskStatus {
+  pending = 'pending',
+  completed = 'completed',
+}
+
 export type PeopleFinderBullJob = {
   findEmail?: boolean;
   findPhone?: boolean;
@@ -24,4 +29,4 @@ export type PeopleFinderBullJob = {
   taskId: string;
 };
 
-export type SearchFilter = {phone: boolean; email: boolean};
+export type SearchFilter = {needPhone: boolean; needEmail: boolean};

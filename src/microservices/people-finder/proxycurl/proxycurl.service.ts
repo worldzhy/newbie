@@ -1,7 +1,15 @@
 import {Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import {CustomLoggerService} from '@toolkit/logger/logger.service';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {Prisma} from '@prisma/client';
 import * as ProxycurlApi from 'proxycurl-js-linkedin-profile-scraper';
+import {ContactSearchPeopleDto} from '../people-finder.dto';
+import {
+  PeopleFinderStatus,
+  PeopleFinderPlatforms,
+  SearchFilter,
+} from '../constants';
 import {
   SearchPeopleLinkedinReqDto,
   SearchPeopleByLinkedinRes,
@@ -12,12 +20,13 @@ import {
 
 @Injectable()
 export class ProxycurlService {
-  private apiKey;
+  private apiKey: string;
   private api;
   private loggerContext = 'Proxycurl';
 
   constructor(
     private readonly configService: ConfigService,
+    private readonly prisma: PrismaService,
     private readonly logger: CustomLoggerService
   ) {
     this.apiKey = this.configService.getOrThrow<string>(
@@ -38,22 +47,6 @@ export class ProxycurlService {
     // });
   }
 
-  catchErrorRes = ({
-    error,
-    errorTitle,
-    resolve,
-  }: {
-    error: unknown;
-    errorTitle: string;
-    resolve: (error: object) => void;
-  }) => {
-    const resError = {error, spent: 0};
-    resolve({error: resError});
-    this.logger.error(
-      errorTitle + JSON.stringify(resError),
-      this.loggerContext
-    );
-  };
   /**
    * https://github.com/nubelaco/proxycurl-js-linkedin-profile-scraper/blob/main/docs/PeopleAPIApi.md
    * 1 credit
@@ -169,5 +162,130 @@ export class ProxycurlService {
         });
       }
     });
+  }
+  catchErrorRes = ({
+    error,
+    errorTitle,
+    resolve,
+  }: {
+    error: unknown;
+    errorTitle: string;
+    resolve: (error: object) => void;
+  }) => {
+    const resError = {error, spent: 0};
+    resolve({error: resError});
+    this.logger.error(
+      errorTitle + JSON.stringify(resError),
+      this.loggerContext
+    );
+  };
+
+  /**
+   * proxycurl [support: email,phone]
+   */
+  async find(
+    user: ContactSearchPeopleDto,
+    {needPhone, needEmail}: SearchFilter
+  ): Promise<{
+    res?: object;
+    error?: object;
+    dataFlag: {
+      email: boolean;
+      phone: boolean;
+    };
+    contactSearchId: number;
+  }> {
+    const dataFlag = {
+      email: false,
+      phone: false,
+    };
+    if (user.linkedin) {
+      const newRecord = await this.prisma.contactSearch.create({
+        data: {
+          ...user,
+          sourceMode: 'searchPeopleByLinkedin',
+          source: PeopleFinderPlatforms.proxycurl,
+          status: PeopleFinderStatus.pending,
+        },
+      });
+      const {res, error, spent} = await this.searchPeopleByLinkedin({
+        linkedinUrl: user.linkedin,
+        personalEmail: needEmail ? 'include' : 'exclude',
+        personalContactNumber: needPhone ? 'include' : 'exclude',
+      });
+      const updateData: Prisma.ContactSearchUpdateInput = {};
+
+      if (error) {
+        updateData.status = PeopleFinderStatus.failed;
+        updateData.ctx = error as object;
+      } else if (res) {
+        updateData.emails = res.personal_emails;
+        updateData.phones = res.personal_numbers;
+
+        if (updateData.emails && updateData.emails.length)
+          dataFlag.email = true;
+
+        if (updateData.phones && updateData.phones.length)
+          dataFlag.phone = true;
+
+        updateData.status = PeopleFinderStatus.completed;
+        updateData.ctx = res as object;
+      }
+      updateData.spent = spent;
+
+      await this.prisma.contactSearch.update({
+        where: {id: newRecord.id},
+        data: updateData,
+      });
+
+      return {res, error, dataFlag, contactSearchId: newRecord.id};
+    } else if (user.companyDomain && user.firstName) {
+      const newRecord = await this.prisma.contactSearch.create({
+        data: {
+          ...user,
+          sourceMode: 'searchPeopleLinkedin',
+          source: PeopleFinderPlatforms.proxycurl,
+          status: PeopleFinderStatus.pending,
+        },
+      });
+
+      const {res, error, spent} = await this.searchPeopleLinkedin({
+        firstName: user.firstName,
+        lastName: user.lastName,
+        companyDomain: user.companyDomain,
+      });
+
+      const updateData: Prisma.ContactSearchUpdateInput = {};
+
+      if (error) {
+        updateData.status = PeopleFinderStatus.failed;
+        updateData.ctx = error as object;
+      } else if (res && res.url) {
+        updateData.linkedin = res.url;
+        updateData.status = PeopleFinderStatus.completed;
+        updateData.ctx = res as object;
+      } else {
+        updateData.status = PeopleFinderStatus.failed;
+        updateData.ctx = res as object;
+      }
+      updateData.spent = spent;
+
+      await this.prisma.contactSearch.update({
+        where: {id: newRecord.id},
+        data: updateData,
+      });
+
+      if (res && res.url) {
+        return await this.find(
+          {
+            ...user,
+            linkedin: res.url,
+          },
+          {needPhone, needEmail}
+        );
+      }
+      return {res, error, dataFlag, contactSearchId: newRecord.id};
+    }
+    return {res: undefined, error: undefined, dataFlag, contactSearchId: 0};
   }
 }

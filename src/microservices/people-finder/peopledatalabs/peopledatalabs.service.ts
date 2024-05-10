@@ -1,7 +1,10 @@
 import {Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import * as PDLJS from 'peopledatalabs';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {Prisma} from '@prisma/client';
 import {CustomLoggerService} from '@toolkit/logger/logger.service';
+import {ContactSearchPeopleDto} from '../people-finder.dto';
 import {
   SearchPeopleByDomainReqDto,
   SearchPeopleResDto,
@@ -9,17 +12,23 @@ import {
   SearchPeopleByLinkedinReqDto,
   PeopledatalabsStatus,
 } from './peopledatalabs.dto';
+import {
+  PeopleFinderStatus,
+  PeopleFinderPlatforms,
+  SearchFilter,
+} from '../constants';
 
 export * from './peopledatalabs.dto';
 
 @Injectable()
 export class PeopledatalabsService {
-  private apiKey;
+  private apiKey: string;
   private api;
   private loggerContext = 'Peopledatalabs';
 
   constructor(
     private readonly configService: ConfigService,
+    private readonly prisma: PrismaService,
     private readonly logger: CustomLoggerService
   ) {
     this.apiKey = this.configService.getOrThrow<string>(
@@ -37,22 +46,6 @@ export class PeopledatalabsService {
     // });
   }
 
-  catchErrorRes = ({
-    error,
-    errorTitle,
-    resolve,
-  }: {
-    error: unknown;
-    errorTitle: string;
-    resolve: (error: object) => void;
-  }) => {
-    const resError = {error};
-    resolve({error: resError});
-    this.logger.error(
-      errorTitle + JSON.stringify(resError),
-      this.loggerContext
-    );
-  };
   /**
    * rateLimitLimit:{minute: 10}
    * https://docs.peopledatalabs.com/docs/quickstart-person-enrichment-api
@@ -61,14 +54,14 @@ export class PeopledatalabsService {
   async searchPeopleByDomain({
     name,
     companyDomain,
-    phone,
-    email,
+    needPhone,
+    needEmail,
   }: SearchPeopleByDomainReqDto): Promise<SearchPeopleArrayResDto> {
     const should: {exists: {field: string}}[] = [];
-    if (phone) {
+    if (needPhone) {
       should.push({exists: {field: 'phone_numbers'}});
     }
-    if (email) {
+    if (needEmail) {
       should.push({exists: {field: 'emails'}});
     }
     return new Promise(resolve => {
@@ -181,5 +174,180 @@ export class PeopledatalabsService {
         });
       }
     });
+  }
+
+  catchErrorRes = ({
+    error,
+    errorTitle,
+    resolve,
+  }: {
+    error: unknown;
+    errorTitle: string;
+    resolve: (error: object) => void;
+  }) => {
+    const resError = {error};
+    resolve({error: resError});
+    this.logger.error(
+      errorTitle + JSON.stringify(resError),
+      this.loggerContext
+    );
+  };
+
+  /**
+   * peopledatalabs [support: email,phone]
+   */
+  async find(
+    mode: 'byLinkedin' | 'byDomain',
+    user: ContactSearchPeopleDto,
+    {needPhone, needEmail}: SearchFilter
+  ) {
+    const dataFlag = {
+      email: false,
+      phone: false,
+    };
+    if (mode === 'byLinkedin') {
+      if (user.linkedin) {
+        const newRecord = await this.prisma.contactSearch.create({
+          data: {
+            ...user,
+            sourceMode: 'searchPeopleByLinkedin',
+            source: PeopleFinderPlatforms.peopledatalabs,
+            status: PeopleFinderStatus.pending,
+          },
+        });
+
+        const {error, res} = await this.searchPeopleByLinkedin({
+          linkedinUrl: user.linkedin,
+        });
+
+        const updateData: Prisma.ContactSearchUpdateInput = {};
+        if (error) {
+          updateData.status = PeopleFinderStatus.failed;
+          updateData.ctx = error as object;
+        } else if (res) {
+          updateData.spent = res.rateLimit.callCreditsSpent;
+          if (res.data) {
+            updateData.emails = res.data.emails as object[];
+            updateData.phones = res.data.phone_numbers
+              ? res.data.phone_numbers
+              : [];
+
+            if (updateData.emails && updateData.emails.length)
+              dataFlag.email = true;
+
+            if (updateData.phones && updateData.phones.length)
+              dataFlag.phone = true;
+
+            updateData.status = PeopleFinderStatus.completed;
+            updateData.ctx = res as object;
+          } else {
+            updateData.status = PeopleFinderStatus.failed;
+            updateData.ctx = {
+              msg: 'No data records were found for this person',
+              res: res as object,
+            };
+          }
+        }
+
+        await this.prisma.contactSearch.update({
+          where: {id: newRecord.id},
+          data: updateData,
+        });
+
+        return {error, res, dataFlag, contactSearchId: newRecord.id};
+      } else {
+        const newRecord = await this.prisma.contactSearch.create({
+          data: {
+            ...user,
+            sourceMode: 'searchPeopleByLinkedin',
+            source: PeopleFinderPlatforms.peopledatalabs,
+            status: PeopleFinderStatus.parameterError,
+          },
+        });
+        return {
+          error: {error: 'Missing parameters'},
+          dataFlag,
+          contactSearchId: newRecord.id,
+        };
+      }
+
+      // If not found, use domain query
+      // if (
+      //   !res ||
+      //   ((!res.data.emails || !res.data.emails.length) &&
+      //     (!res.data.phone_numbers || !res.data.phone_numbers.length))
+      // ) {
+      //   await this.peopledatalabs.searchPeopleByDomain({
+      //     companyDomain: user.companyDomain,
+      //     name: user.name,
+      //     phone,
+      //     email,
+      //   });
+      // }
+    }
+    if (mode === 'byDomain') {
+      if (user.companyDomain && user.name) {
+        const newRecord = await this.prisma.contactSearch.create({
+          data: {
+            ...user,
+            sourceMode: 'searchPeopleByDomain',
+            source: PeopleFinderPlatforms.peopledatalabs,
+            status: PeopleFinderStatus.pending,
+          },
+        });
+
+        const {error, res} = await this.searchPeopleByDomain({
+          companyDomain: user.companyDomain,
+          name: user.name,
+          needPhone,
+          needEmail,
+        });
+
+        const updateData: Prisma.ContactSearchUpdateInput = {};
+        if (error) {
+          updateData.status = PeopleFinderStatus.failed;
+          updateData.ctx = error as object;
+        } else if (res) {
+          updateData.spent = res.rateLimit.callCreditsSpent;
+          const dataArray = res.data;
+          if (dataArray.length) {
+            updateData.emails = dataArray[0].emails as object;
+            updateData.phones = dataArray[0].mobile_phone
+              ? [dataArray[0].mobile_phone]
+              : [];
+            updateData.status = PeopleFinderStatus.completed;
+            updateData.ctx = res as object;
+          } else if (!dataArray || !dataArray.length) {
+            updateData.status = PeopleFinderStatus.failed;
+            updateData.ctx = {
+              msg: 'No data records were found for this person',
+              res: res as object,
+            };
+          }
+        }
+
+        await this.prisma.contactSearch.update({
+          where: {id: newRecord.id},
+          data: updateData,
+        });
+
+        return {error, res, dataFlag, contactSearchId: newRecord.id};
+      } else {
+        const newRecord = await this.prisma.contactSearch.create({
+          data: {
+            ...user,
+            sourceMode: 'searchPeopleByDomain',
+            source: PeopleFinderPlatforms.peopledatalabs,
+            status: PeopleFinderStatus.parameterError,
+          },
+        });
+
+        return {
+          error: {error: 'Missing parameters'},
+          dataFlag,
+          contactSearchId: newRecord.id,
+        };
+      }
+    }
   }
 }
