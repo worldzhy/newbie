@@ -115,7 +115,7 @@ export class PeopleFinderJobProcessor {
       const findRes = await this.voilaNorbertService.find(
         data,
         this.callBackOrigin +
-          `/people-finder/voilanorbert-hook?taskId=${newTask.id}id=`
+          `/people-finder/voilanorbert-hook?taskId=${newTask.id}&id=`
       );
 
       // searching completed && no email
