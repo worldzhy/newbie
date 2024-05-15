@@ -1,8 +1,7 @@
 import {ApiProperty} from '@nestjs/swagger';
-import {IsString, IsArray, IsOptional} from 'class-validator';
-import {PeopleFinderPlatforms} from '@microservices/people-finder/constants';
+import {IsString, IsOptional} from 'class-validator';
 
-export class ContactSearchPeopleDto {
+export class ContactSearchPeopleBase {
   @ApiProperty({
     type: String,
   })
@@ -62,22 +61,7 @@ export class ContactSearchPeopleDto {
   @IsString()
   @IsOptional()
   linkedin?: string;
-
-  taskId: string;
 }
-export class ContactSearchReqDto {
-  @ApiProperty({
-    type: String,
-    enum: PeopleFinderPlatforms,
-  })
-  @IsArray()
-  @IsString({each: true})
-  platforms: PeopleFinderPlatforms[];
-
-  @ApiProperty({
-    type: ContactSearchPeopleDto,
-    isArray: true,
-  })
-  @IsArray()
-  peoples: ContactSearchPeopleDto[];
+export class ContactSearchPeopleDto extends ContactSearchPeopleBase {
+  taskId: string;
 }

@@ -1,68 +1,9 @@
 import {ApiProperty} from '@nestjs/swagger';
 import {IsString, IsArray, IsOptional} from 'class-validator';
 import {PeopleFinderPlatforms} from '@microservices/people-finder/constants';
+import {ContactSearchPeopleBase} from '@microservices/people-finder/people-finder.dto';
 
-export class ContactSearchPeopleDto {
-  @ApiProperty({
-    type: String,
-  })
-  @IsString()
-  userId: string;
-
-  @ApiProperty({
-    type: String,
-  })
-  @IsString()
-  userSource: string;
-
-  @ApiProperty({
-    type: String,
-    required: false,
-  })
-  @IsString()
-  @IsOptional()
-  name?: string;
-
-  @ApiProperty({
-    type: String,
-    required: false,
-  })
-  @IsString()
-  @IsOptional()
-  firstName?: string;
-
-  @ApiProperty({
-    type: String,
-    required: false,
-  })
-  @IsString()
-  @IsOptional()
-  middleName?: string;
-
-  @ApiProperty({
-    type: String,
-    required: false,
-  })
-  @IsString()
-  @IsOptional()
-  lastName?: string;
-
-  @ApiProperty({
-    type: String,
-    required: false,
-  })
-  @IsString()
-  @IsOptional()
-  companyDomain?: string;
-
-  @ApiProperty({
-    type: String,
-    required: false,
-  })
-  @IsString()
-  @IsOptional()
-  linkedin?: string;
-
+export class ContactSearchPeopleDto extends ContactSearchPeopleBase {
   @ApiProperty({
     type: Boolean,
     required: false,
@@ -125,4 +66,21 @@ export class GetTaskContactSearchReqDto {
   })
   @IsString()
   taskId: string;
+}
+
+export class GetTaskStatusResDto {
+  @ApiProperty({
+    type: Boolean,
+  })
+  completed: boolean;
+
+  @ApiProperty({
+    type: Number,
+  })
+  totalCompleted: number;
+
+  @ApiProperty({
+    type: Number,
+  })
+  total: number;
 }

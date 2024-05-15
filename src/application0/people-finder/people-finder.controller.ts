@@ -14,6 +14,7 @@ import {
   AddTaskContactSearchReqDto,
   AddTaskContactSearchResDto,
   GetTaskContactSearchReqDto,
+  GetTaskStatusResDto,
 } from './people-finder.dto';
 import {
   SearchEmailThirdResDto,
@@ -389,6 +390,33 @@ export class PeopleFinderController {
       }
     }
     return allList.filter(item => item.data.taskId === query.taskId);
+  }
+
+  @NoGuard()
+  @Get('get-contact-search-task-status')
+  @ApiResponse({
+    type: GetTaskStatusResDto,
+  })
+  async getStatusByTaskId(
+    @Query()
+    query: GetTaskContactSearchReqDto
+  ): Promise<GetTaskStatusResDto> {
+    const total = await this.prisma.contactSearchTask.count({
+      where: {
+        taskId: query.taskId,
+      },
+    });
+    const totalCompleted = await this.prisma.contactSearchTask.count({
+      where: {
+        status: PeopleFinderTaskStatus.completed,
+        taskId: query.taskId,
+      },
+    });
+    return {
+      totalCompleted,
+      total,
+      completed: totalCompleted === total,
+    };
   }
 
   @NoGuard()
