@@ -129,7 +129,11 @@ export class ProxycurlService {
           },
           (error, data: SearchPeopleByLinkedinRes, response) => {
             let spent = 0;
-            if (response.header['x-proxycurl-credit-cost']) {
+            if (
+              response &&
+              response.header &&
+              response.header['x-proxycurl-credit-cost']
+            ) {
               try {
                 spent = Number(response.header['x-proxycurl-credit-cost']);
               } catch (e) {
