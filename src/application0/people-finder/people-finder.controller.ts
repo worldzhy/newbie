@@ -20,14 +20,16 @@ import {
   SearchEmailThirdResDto,
   SearchEmailContentResDto,
 } from '@microservices/people-finder/voila-norbert/volia-norbert.service';
-import {PeopleFinderTaskStatus} from '@microservices/people-finder/constants';
+import {
+  PeopleFinderTaskStatus,
+  PeopleFinderStatus,
+} from '@microservices/people-finder/constants';
 import {VoilaNorbertService} from '@microservices/people-finder/voila-norbert/volia-norbert.service';
 import {ProxycurlService} from '@microservices/people-finder/proxycurl/proxycurl.service';
 import {PeopledatalabsService} from '@microservices/people-finder/peopledatalabs/peopledatalabs.service';
 import {
   PeopleFinderService,
   PeopleFinderPlatforms,
-  PeopleFinderStatus,
 } from '@microservices/people-finder/people-finder.service';
 import {PeopleFinderQueue} from './people-finder.processor';
 
@@ -410,6 +412,11 @@ export class PeopleFinderController {
       where: {
         status: PeopleFinderTaskStatus.completed,
         taskId: query.taskId,
+        contactSearch: {
+          status: {
+            in: [PeopleFinderStatus.completed, PeopleFinderStatus.failed],
+          },
+        },
       },
     });
     return {
