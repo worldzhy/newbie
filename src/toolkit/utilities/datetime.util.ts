@@ -50,7 +50,7 @@ export function firstDayOfMonth(year: number, month: number) {
 }
 
 export function lastDayOfMonth(year: number, month: number) {
-  return new Date(year, month, 0);
+  return new Date(year, month, 0, 23, 59, 59, 999);
 }
 
 export function currentQuarter(): number {
