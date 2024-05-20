@@ -51,7 +51,7 @@
     "@nestjs/jwt": "^10.2.0",
     "@nestjs/passport": "^10.0.2",
     "@nestjs/platform-express": "^10.2.10",
-    "@nestjs/platform-fastify": "^10.2.10",
+    "@nestjs/platform-fastify": "^10.3.8",
     "@nestjs/schedule": "^4.0.1",
     "@nestjs/swagger": "^7.1.16",
     "@nestjs/throttler": "^5.0.1",
