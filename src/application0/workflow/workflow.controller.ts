@@ -8,9 +8,16 @@ import {
   Param,
   Query,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiBody, ApiResponse} from '@nestjs/swagger';
 import {Workflow, Prisma} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {
+  WorkflowListReqDto,
+  WorkflowListResDto,
+  WorkflowDetailResDto,
+  WorkflowCreateReqDto,
+  WorkflowUpdateReqDto,
+} from './dto/workflow.dto';
 
 @ApiTags('Workflow')
 @ApiBearerAuth()
@@ -29,20 +36,27 @@ export class WorkflowController {
         },
       },
     },
+    type: WorkflowCreateReqDto,
+  })
+  @ApiResponse({
+    type: WorkflowDetailResDto,
   })
   async createWorkflow(
-    @Body() body: Prisma.WorkflowUncheckedCreateInput
-  ): Promise<Workflow> {
+    @Body() body: WorkflowCreateReqDto
+  ): Promise<WorkflowDetailResDto> {
     return await this.prisma.workflow.create({
       data: body,
     });
   }
 
   @Get('')
+  @ApiResponse({
+    type: WorkflowListResDto,
+  })
   async getWorkflows(
-    @Query('page') page: number,
-    @Query('pageSize') pageSize: number
-  ) {
+    @Query() query: WorkflowListReqDto
+  ): Promise<WorkflowListResDto> {
+    const {page, pageSize} = query;
     return await this.prisma.findManyInManyPages({
       model: Prisma.ModelName.Workflow,
       pagination: {page, pageSize},
@@ -70,12 +84,15 @@ export class WorkflowController {
         },
       },
     },
+    type: WorkflowUpdateReqDto,
+  })
+  @ApiResponse({
+    type: WorkflowDetailResDto,
   })
   async updateWorkflow(
     @Param('workflowId') workflowId: string,
-    @Body()
-    body: Prisma.WorkflowUpdateInput
-  ): Promise<Workflow> {
+    @Body() body: WorkflowUpdateReqDto
+  ): Promise<WorkflowDetailResDto> {
     return await this.prisma.workflow.update({
       where: {id: workflowId},
       data: body,
@@ -83,6 +100,9 @@ export class WorkflowController {
   }
 
   @Delete(':workflowId')
+  @ApiResponse({
+    type: WorkflowDetailResDto,
+  })
   async deleteWorkflow(
     @Param('workflowId') workflowId: string
   ): Promise<Workflow> {

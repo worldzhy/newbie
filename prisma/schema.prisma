@@ -21,7 +21,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["microservice/account", "microservice/cloud", "microservice/cron", "microservice/event-scheduling", "microservice/map", "microservice/notification", "microservice/order-mgmt", "microservice/project-mgmt", "microservice/queue", "microservice/stock-mgmt", "microservice/storage", "microservice/tag", "microservice/token", "microservice/workflow", "microservice/people-finder", "application/engined", "application/recruitment", "application/solidcore", "application/tc-request"]
+  schemas  = ["microservice/account", "microservice/cloud", "microservice/cron", "microservice/event-scheduling", "microservice/map", "microservice/notification", "microservice/order-mgmt", "microservice/project-mgmt", "microservice/queue", "microservice/stock-mgmt", "microservice/storage", "microservice/tag", "microservice/token", "microservice/workflow", "microservice/people-finder", "microservice/third-notification", "application/engined", "application/recruitment", "application/solidcore", "application/tc-request"]
 }
 
 // ! ------------------------------------------------------------ //
@@ -1162,15 +1162,63 @@ model ContactSearch {
 }
 
 model ContactSearchTask {
-  id              Int           @id @default(autoincrement())
+  id              Int            @id @default(autoincrement())
   contactSearch   ContactSearch? @relation(fields: [contactSearchId], references: [id])
   contactSearchId Int?
   taskId          String
   status          String // pending | completed
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 
   @@schema("microservice/people-finder")
+}
+
+// ! ------------------------------------------------------------ //
+// !             [Microservice] third-notification models         //
+// ! ------------------------------------------------------------ //
+// * ThirdNotificationAccount                                                //
+// * ThirdNotificationChannel                                            //
+// * ThirdNotificationRecord                                           //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
+model ThirdNotificationAccount {
+  id                       Int                        @id @default(autoincrement())
+  accessKey                String
+  remark                   String?
+  status                   String // normal | disabled
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime                   @updatedAt
+  thirdNotificationChannel ThirdNotificationChannel[]
+
+  @@schema("microservice/third-notification")
+}
+
+model ThirdNotificationChannel {
+  id                       Int                       @id @default(autoincrement())
+  thirdNotificationAccount ThirdNotificationAccount? @relation(fields: [accountId], references: [id])
+  accountId                Int
+  name                     String
+  desc                     String?
+  url                      String
+  platform                 String // feishu slack ...
+  status                   String // normal | deleted
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime                  @updatedAt
+  thirdNotificationRecord  ThirdNotificationRecord[]
+
+  @@schema("microservice/third-notification")
+}
+
+model ThirdNotificationRecord {
+  id                       Int                       @id @default(autoincrement())
+  thirdNotificationChannel ThirdNotificationChannel? @relation(fields: [channelId], references: [id])
+  channelId                Int
+  reqContext               String
+  resContext               String?
+  status                   String // pending success error
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime                  @updatedAt
+
+  @@schema("microservice/third-notification")
 }
 
 // ! ------------------------------------------------------------ //
