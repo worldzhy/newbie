@@ -1,5 +1,5 @@
 import {ApiProperty} from '@nestjs/swagger';
-import {IsString} from 'class-validator';
+import {IsObject, IsString} from 'class-validator';
 import {FeishuNotificationMsgType} from './constants';
 
 export class FeishuPostResDto {
@@ -27,9 +27,17 @@ export class FeishuPostBodyDto {
   @IsString()
   msg_type: string;
 
+  @ApiProperty({
+    type: Object,
+  })
+  @IsObject()
   content: any;
 }
 
 export class FeishuNotificationReqDto extends FeishuPostBodyDto {
+  @ApiProperty({
+    type: String,
+  })
+  @IsString()
   channelName: string;
 }

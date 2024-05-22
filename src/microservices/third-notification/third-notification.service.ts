@@ -3,8 +3,9 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {generateRandomCode} from '@toolkit/utilities/common.util';
 import {ThirdNotificationAccountStatus} from './constants';
 import {
-  ThirdNotificationAccountAddReqDto,
-  ThirdNotificationChannelAddReqDto,
+  ThirdNotificationAccountCreateReqDto,
+  ThirdNotificationAccountUpdateReqDto,
+  ThirdNotificationChannelCreateReqDto,
   ThirdNotificationChannelUpdateReqDto,
 } from './third-notification.dto';
 export * from './constants';
@@ -13,8 +14,8 @@ export * from './constants';
 export class ThirdNotificationService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async accountAdd(
-    body: ThirdNotificationAccountAddReqDto
+  async accountCreate(
+    body: ThirdNotificationAccountCreateReqDto
   ): Promise<{accessKey: string}> {
     const accessKey = generateRandomCode(10);
     const account = await this.prisma.thirdNotificationAccount.findFirst({
@@ -23,7 +24,7 @@ export class ThirdNotificationService {
       },
     });
     if (account) {
-      return await this.accountAdd(body);
+      return await this.accountCreate(body);
     }
 
     await this.prisma.thirdNotificationAccount.create({
@@ -36,12 +37,23 @@ export class ThirdNotificationService {
     return {accessKey};
   }
 
+  async accountUpdate(
+    body: ThirdNotificationAccountUpdateReqDto
+  ): Promise<{id: number}> {
+    const {id, ...data} = body;
+    await this.prisma.thirdNotificationAccount.update({
+      where: {id},
+      data,
+    });
+    return {id};
+  }
+
   async accountList() {
     return await this.prisma.thirdNotificationAccount.findMany();
   }
 
-  async channelAdd(
-    body: ThirdNotificationChannelAddReqDto
+  async channelCreate(
+    body: ThirdNotificationChannelCreateReqDto
   ): Promise<{id: number}> {
     const {name} = body;
     const channel = await this.prisma.thirdNotificationChannel.findFirst({

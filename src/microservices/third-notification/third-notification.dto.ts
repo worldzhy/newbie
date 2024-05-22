@@ -3,9 +3,10 @@ import {IsString, IsNumber, IsOptional} from 'class-validator';
 import {
   ThirdNotificationPlatform,
   ThirdNotificationChannelStatus,
+  ThirdNotificationAccountStatus,
 } from './constants';
 
-export class ThirdNotificationAccountAddReqDto {
+export class ThirdNotificationAccountCreateReqDto {
   @ApiProperty({
     type: String,
     required: false,
@@ -15,6 +16,22 @@ export class ThirdNotificationAccountAddReqDto {
   remark?: string;
 }
 
+export class ThirdNotificationAccountUpdateReqDto extends ThirdNotificationAccountCreateReqDto {
+  @ApiProperty({
+    type: Number,
+  })
+  @IsNumber()
+  id: number;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    enum: ThirdNotificationAccountStatus,
+  })
+  @IsString()
+  @IsOptional()
+  status?: string;
+}
 // @ApiProperty({
 //   type: String,
 // })
@@ -24,7 +41,7 @@ export class ThirdNotificationReqBaseDto {
   channelName: string;
 }
 
-export class ThirdNotificationChannelAddReqDto {
+export class ThirdNotificationChannelCreateReqDto {
   @ApiProperty({
     type: Number,
   })
