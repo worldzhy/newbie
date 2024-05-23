@@ -27,8 +27,7 @@ export class FeishuNotificationService {
   ) {}
 
   async send(body: FeishuNotificationReqDto) {
-    const {channelName, ...feishuParams} = body;
-    if (!channelName) return;
+    const {channelName, accessKey, ...feishuParams} = body;
     const channel = await this.prisma.thirdNotificationChannel.findFirst({
       where: {
         name: channelName,
@@ -40,6 +39,8 @@ export class FeishuNotificationService {
     });
 
     if (!channel) throw new BadRequestException('No channel found.');
+    if (channel.thirdNotificationAccount?.accessKey !== accessKey)
+      throw new BadRequestException('AccessKey Error.');
     if (
       channel.thirdNotificationAccount?.status ===
       ThirdNotificationAccountStatus.disabled

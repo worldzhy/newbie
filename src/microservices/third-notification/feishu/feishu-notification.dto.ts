@@ -40,4 +40,10 @@ export class FeishuNotificationReqDto extends FeishuPostBodyDto {
   })
   @IsString()
   channelName: string;
+
+  @ApiProperty({
+    type: String,
+  })
+  @IsString()
+  accessKey: string;
 }

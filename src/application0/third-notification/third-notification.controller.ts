@@ -22,6 +22,8 @@ import {
   ThirdNotificationAccountListResDto,
   ThirdNotificationChannelListReqDto,
   ThirdNotificationChannelListResDto,
+  ThirdNotificationRecordListReqDto,
+  ThirdNotificationRecordListResDto
 } from './third-notification.dto';
 
 @ApiTags('Third-notification')
@@ -116,6 +118,23 @@ export class ThirdNotificationController {
       findManyArgs: {
         where: {
           accountId,
+        },
+      },
+    });
+  }
+
+  @Get('record/list')
+  @ApiResponse({
+    type: ThirdNotificationRecordListResDto,
+  })
+  async recordList(@Query() query: ThirdNotificationRecordListReqDto) {
+    const {page, pageSize, channelId} = query;
+    return this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.ThirdNotificationRecord,
+      pagination: {page, pageSize},
+      findManyArgs: {
+        where: {
+          channelId,
         },
       },
     });
