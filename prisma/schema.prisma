@@ -21,7 +21,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["microservice/account", "microservice/cloud", "microservice/cron", "microservice/event-scheduling", "microservice/map", "microservice/notification", "microservice/order-mgmt", "microservice/project-mgmt", "microservice/queue", "microservice/stock-mgmt", "microservice/storage", "microservice/tag", "microservice/token", "microservice/workflow", "microservice/people-finder", "microservice/third-notification", "application/engined", "application/recruitment", "application/solidcore", "application/tc-request"]
+  schemas  = ["microservice/account", "microservice/cloud", "microservice/cron", "microservice/event-scheduling", "microservice/map", "microservice/notification", "microservice/order-mgmt", "microservice/project-mgmt", "microservice/queue", "microservice/stock-mgmt", "microservice/storage", "microservice/tag", "microservice/token", "microservice/workflow", "microservice/people-finder", "application/engined", "application/recruitment", "application/solidcore", "application/tc-request"]
 }
 
 // ! ------------------------------------------------------------ //
@@ -695,7 +695,104 @@ model Place {
 // !! ------------------------------------------------------------ //
 // * EmailNotification                                             //
 // * SmsNotification                                               //
+// * NotificationAccessKey                                         //
+// * NotificationSimpleEmailChannel                                //
+// * NotificationSimpleEmailRecord                                 //
+// * NotificationAdvancedEmailChannel                              //
+// * NotificationAdvancedEmailRecord                               //
+// * NotificationWebhookChannel                                    //
+// * NotificationWebhookRecord                                     //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
+
+model NotificationAccessKey {
+  id                    Int                                @id @default(autoincrement())
+  key                   String // Auto generated
+  description           String?
+  status                String
+  createdAt             DateTime                           @default(now())
+  updatedAt             DateTime                           @updatedAt
+  webhookChannels       NotificationWebhookChannel[]
+  simpleEmailChannels   NotificationSimpleEmailChannel[]
+  advancedEmailChannels NotificationAdvancedEmailChannel[]
+
+  @@schema("microservice/notification")
+}
+
+model NotificationSimpleEmailChannel {
+  id          Int                             @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime                        @default(now())
+  updatedAt   DateTime                        @updatedAt
+  records     NotificationSimpleEmailRecord[]
+  accessKey   NotificationAccessKey           @relation(fields: [accessKeyId], references: [id])
+  accessKeyId Int
+
+  @@schema("microservice/notification")
+}
+
+model NotificationSimpleEmailRecord {
+  id        Int                            @id @default(autoincrement())
+  status    String // pending, succeeded, failed
+  createdAt DateTime                       @default(now())
+  updatedAt DateTime                       @updatedAt
+  channel   NotificationSimpleEmailChannel @relation(fields: [channelId], references: [id])
+  channelId Int
+
+  @@schema("microservice/notification")
+}
+
+model NotificationAdvancedEmailChannel {
+  id          Int                               @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime                          @default(now())
+  updatedAt   DateTime                          @updatedAt
+  records     NotificationAdvancedEmailRecord[]
+  accessKey   NotificationAccessKey?            @relation(fields: [accessKeyId], references: [id])
+  accessKeyId Int?
+
+  @@schema("microservice/notification")
+}
+
+model NotificationAdvancedEmailRecord {
+  id        Int                              @id @default(autoincrement())
+  status    String // pending, succeeded, failed 
+  createdAt DateTime                         @default(now())
+  updatedAt DateTime                         @updatedAt
+  channel   NotificationAdvancedEmailChannel @relation(fields: [channelId], references: [id])
+  channelId Int
+
+  @@schema("microservice/notification")
+}
+
+model NotificationWebhookChannel {
+  id          Int                         @id @default(autoincrement())
+  name        String
+  description String?
+  webhook     String
+  platform    String // feishu, slack ...
+  createdAt   DateTime                    @default(now())
+  updatedAt   DateTime                    @updatedAt
+  records     NotificationWebhookRecord[]
+  accessKey   NotificationAccessKey?      @relation(fields: [accessKeyId], references: [id])
+  accessKeyId Int?
+
+  @@schema("microservice/notification")
+}
+
+model NotificationWebhookRecord {
+  id        Int                        @id @default(autoincrement())
+  request   Json
+  response  Json?
+  status    String // pending, succeeded, failed
+  createdAt DateTime                   @default(now())
+  updatedAt DateTime                   @updatedAt
+  channel   NotificationWebhookChannel @relation(fields: [channelId], references: [id])
+  channelId Int
+
+  @@schema("microservice/notification")
+}
 
 model EmailNotification {
   id                Int      @id @default(autoincrement())
@@ -1171,54 +1268,6 @@ model ContactSearchTask {
   updatedAt       DateTime       @updatedAt
 
   @@schema("microservice/people-finder")
-}
-
-// ! ------------------------------------------------------------ //
-// !             [Microservice] third-notification models         //
-// ! ------------------------------------------------------------ //
-// * ThirdNotificationAccount                                                //
-// * ThirdNotificationChannel                                            //
-// * ThirdNotificationRecord                                           //
-// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
-model ThirdNotificationAccount {
-  id                       Int                        @id @default(autoincrement())
-  accessKey                String
-  remark                   String?
-  status                   String // normal | disabled
-  createdAt                DateTime                   @default(now())
-  updatedAt                DateTime                   @updatedAt
-  thirdNotificationChannel ThirdNotificationChannel[]
-
-  @@schema("microservice/third-notification")
-}
-
-model ThirdNotificationChannel {
-  id                       Int                       @id @default(autoincrement())
-  thirdNotificationAccount ThirdNotificationAccount? @relation(fields: [accountId], references: [id])
-  accountId                Int
-  name                     String
-  desc                     String?
-  url                      String
-  platform                 String // feishu slack ...
-  status                   String // normal | deleted
-  createdAt                DateTime                  @default(now())
-  updatedAt                DateTime                  @updatedAt
-  thirdNotificationRecord  ThirdNotificationRecord[]
-
-  @@schema("microservice/third-notification")
-}
-
-model ThirdNotificationRecord {
-  id                       Int                       @id @default(autoincrement())
-  thirdNotificationChannel ThirdNotificationChannel? @relation(fields: [channelId], references: [id])
-  channelId                Int
-  reqContext               String
-  resContext               String?
-  status                   String // pending success error
-  createdAt                DateTime                  @default(now())
-  updatedAt                DateTime                  @updatedAt
-
-  @@schema("microservice/third-notification")
 }
 
 // ! ------------------------------------------------------------ //
