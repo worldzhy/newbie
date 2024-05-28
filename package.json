@@ -33,7 +33,7 @@
     "@aws-sdk/client-cloudformation": "^3.454.0",
     "@aws-sdk/client-pinpoint": "^3.454.0",
     "@aws-sdk/client-s3": "^3.456.0",
-    "@aws-sdk/client-sqs": "^3.454.0",
+    "@aws-sdk/client-sqs": "^3.569.0",
     "@aws-sdk/credential-providers": "^3.454.0",
     "@casl/prisma": "^1.4.1",
     "@elastic/elasticsearch": "^7.13.0",
