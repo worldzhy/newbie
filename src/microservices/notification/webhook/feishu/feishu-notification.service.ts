@@ -5,9 +5,8 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {CustomLoggerService} from '@toolkit/logger/logger.service';
 import {FeishuNotificationStatus} from './constants';
 import {
-  ThirdNotificationAccountStatus,
-  ThirdNotificationChannelStatus,
-  ThirdNotificationRecordStatus,
+  NotificationAccessStatus,
+  NotificationWebhookRecordStatus,
 } from '../constants';
 import {
   FeishuNotificationReqDto,
@@ -28,29 +27,25 @@ export class FeishuNotificationService {
 
   async send(body: FeishuNotificationReqDto) {
     const {channelName, accessKey, feishuParams} = body;
-    const channel = await this.prisma.thirdNotificationChannel.findFirst({
+    const channel = await this.prisma.notificationWebhookChannel.findFirst({
       where: {
         name: channelName,
-        status: ThirdNotificationChannelStatus.normal,
       },
       include: {
-        thirdNotificationAccount: true,
+        accessKey: true,
       },
     });
 
     if (!channel) throw new BadRequestException('No channel found.');
-    if (channel.thirdNotificationAccount?.accessKey !== accessKey)
+    if (channel.accessKey?.key !== accessKey)
       throw new BadRequestException('AccessKey Error.');
-    if (
-      channel.thirdNotificationAccount?.status ===
-      ThirdNotificationAccountStatus.disabled
-    )
-      throw new BadRequestException('Account disabled.');
+    if (channel.accessKey?.status === NotificationAccessStatus.inactive)
+      throw new BadRequestException('Account is inactive.');
 
-    const newRecord = await this.prisma.thirdNotificationRecord.create({
+    const newRecord = await this.prisma.notificationWebhookRecord.create({
       data: {
         channelId: channel.id,
-        status: ThirdNotificationRecordStatus.pending,
+        status: NotificationWebhookRecordStatus.pending,
         reqContext: JSON.stringify(feishuParams),
       },
     });
@@ -58,7 +53,7 @@ export class FeishuNotificationService {
     const result: {res?: FeishuPostResDto; error?: any} =
       await this.httpService.axiosRef
         .post<FeishuPostBodyDto, AxiosResponse<FeishuPostResDto>>(
-          channel.url,
+          channel.webhook,
           feishuParams
         )
         .then(res => {
@@ -89,13 +84,13 @@ export class FeishuNotificationService {
           return resError;
         });
 
-    await this.prisma.thirdNotificationRecord.update({
+    await this.prisma.notificationWebhookRecord.update({
       where: {id: newRecord.id},
       data: {
         resContext: JSON.stringify(result),
         status: result.error
-          ? ThirdNotificationRecordStatus.error
-          : ThirdNotificationRecordStatus.success,
+          ? NotificationWebhookRecordStatus.error
+          : NotificationWebhookRecordStatus.success,
       },
     });
     return result;
