@@ -1,8 +1,8 @@
 import {ApiProperty} from '@nestjs/swagger';
 import {IsNumber, IsNotEmpty, IsString, IsOptional} from 'class-validator';
 import {Type} from 'class-transformer';
-import {ThirdNotificationChannelCreateReqDto} from '@microservices/third-notification/third-notification.dto';
-import {ThirdNotificationRecordStatus} from '@microservices/third-notification/constants';
+import {NotificationWebhookChannelCreateReqDto} from '@microservices/notification/webhook/webhook.dto';
+import {NotificationWebhookRecordStatus} from '@microservices/notification/webhook/constants';
 
 // common
 export class PaginationResDto {
@@ -27,41 +27,7 @@ export class PaginationResDto {
   pageSize: number;
 }
 
-export class ThirdNotificationCreateReqDto {
-  @ApiProperty({
-    type: String,
-  })
-  @IsString()
-  name: string;
-
-  @ApiProperty({
-    type: String,
-    required: false,
-  })
-  @IsString()
-  @IsOptional()
-  description?: string;
-}
-
-export class ThirdNotificationUpdateReqDto {
-  @ApiProperty({
-    type: String,
-    required: false,
-  })
-  @IsString()
-  @IsOptional()
-  name?: string;
-
-  @ApiProperty({
-    type: String,
-    required: false,
-  })
-  @IsString()
-  @IsOptional()
-  description?: string;
-}
-
-export class ThirdNotificationAccountDetailResDto {
+export class NotificationAccessKeyDetailResDto {
   @ApiProperty({
     type: String,
   })
@@ -75,7 +41,7 @@ export class ThirdNotificationAccountDetailResDto {
   @ApiProperty({
     type: String,
   })
-  remark: string;
+  description: string;
 
   @ApiProperty({
     type: String,
@@ -112,7 +78,7 @@ export class CommonPage {
   page: number;
 }
 
-export class ThirdNotificationAccountListReqDto extends CommonPage {
+export class NotificationAccessKeyListReqDto extends CommonPage {
   @ApiProperty({
     type: Number,
     required: false,
@@ -123,7 +89,7 @@ export class ThirdNotificationAccountListReqDto extends CommonPage {
   id?: number;
 }
 
-export class ThirdNotificationChannelListReqDto extends CommonPage {
+export class NotificationWebhookChannelListReqDto extends CommonPage {
   @ApiProperty({
     type: Number,
   })
@@ -133,7 +99,7 @@ export class ThirdNotificationChannelListReqDto extends CommonPage {
   accountId: number;
 }
 
-export class ThirdNotificationRecordListReqDto extends CommonPage {
+export class NotificationWebhookRecordListReqDto extends CommonPage {
   @ApiProperty({
     type: Number,
   })
@@ -143,12 +109,12 @@ export class ThirdNotificationRecordListReqDto extends CommonPage {
   channelId: number;
 }
 
-export class ThirdNotificationAccountListResDto {
+export class NotificationAccessKeyListResDto {
   @ApiProperty({
-    type: ThirdNotificationAccountDetailResDto,
+    type: NotificationAccessKeyDetailResDto,
     isArray: true,
   })
-  records: ThirdNotificationAccountDetailResDto[];
+  records: NotificationAccessKeyDetailResDto[];
 
   @ApiProperty({
     type: PaginationResDto,
@@ -156,7 +122,7 @@ export class ThirdNotificationAccountListResDto {
   pagination: PaginationResDto;
 }
 
-export class ThirdNotificationChannelDetailResDto extends ThirdNotificationChannelCreateReqDto {
+export class NotificationWebhookChannelDetailResDto extends NotificationWebhookChannelCreateReqDto {
   @ApiProperty({
     type: String,
   })
@@ -173,12 +139,12 @@ export class ThirdNotificationChannelDetailResDto extends ThirdNotificationChann
   updatedAt: Date;
 }
 
-export class ThirdNotificationChannelListResDto {
+export class NotificationWebhookChannelListResDto {
   @ApiProperty({
-    type: ThirdNotificationChannelDetailResDto,
+    type: NotificationWebhookChannelDetailResDto,
     isArray: true,
   })
-  records: ThirdNotificationChannelDetailResDto[];
+  records: NotificationWebhookChannelDetailResDto[];
 
   @ApiProperty({
     type: PaginationResDto,
@@ -186,7 +152,7 @@ export class ThirdNotificationChannelListResDto {
   pagination: PaginationResDto;
 }
 
-export class ThirdNotificationRecordDetailResDto {
+export class NotificationWebhookRecordDetailResDto {
   @ApiProperty({
     type: String,
   })
@@ -212,7 +178,7 @@ export class ThirdNotificationRecordDetailResDto {
 
   @ApiProperty({
     type: String,
-    enum: ThirdNotificationRecordStatus,
+    enum: NotificationWebhookRecordStatus,
   })
   @IsString()
   status: string;
@@ -228,12 +194,12 @@ export class ThirdNotificationRecordDetailResDto {
   updatedAt: Date;
 }
 
-export class ThirdNotificationRecordListResDto {
+export class NotificationWebhookRecordListResDto {
   @ApiProperty({
-    type: ThirdNotificationRecordDetailResDto,
+    type: NotificationWebhookRecordDetailResDto,
     isArray: true,
   })
-  records: ThirdNotificationRecordDetailResDto[];
+  records: NotificationWebhookRecordDetailResDto[];
 
   @ApiProperty({
     type: PaginationResDto,

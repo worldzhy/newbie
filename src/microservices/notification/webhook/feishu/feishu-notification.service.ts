@@ -46,7 +46,7 @@ export class FeishuNotificationService {
       data: {
         channelId: channel.id,
         status: NotificationWebhookRecordStatus.pending,
-        reqContext: JSON.stringify(feishuParams),
+        request: feishuParams as object,
       },
     });
 
@@ -59,7 +59,7 @@ export class FeishuNotificationService {
         .then(res => {
           if (res.data.code === FeishuNotificationStatus.SUCCESS) {
             this.logger.log(
-              `FeishuNotification send [${channel.url}] success: ` +
+              `FeishuNotification send [${channel.webhook}] success: ` +
                 JSON.stringify(res.data),
               this.loggerContext
             );
@@ -67,7 +67,7 @@ export class FeishuNotificationService {
           } else {
             const resError = {error: res.data};
             this.logger.error(
-              `FeishuNotification send [${channel.url}] error: ` +
+              `FeishuNotification send [${channel.webhook}] error: ` +
                 JSON.stringify(resError),
               this.loggerContext
             );
@@ -77,7 +77,7 @@ export class FeishuNotificationService {
         .catch((e: AxiosError) => {
           const resError = {error: {message: e.message, response: e.response}};
           this.logger.error(
-            `FeishuNotification send [${channel.url}] error: ` +
+            `FeishuNotification send [${channel.webhook}] error: ` +
               JSON.stringify(resError),
             this.loggerContext
           );
@@ -87,7 +87,7 @@ export class FeishuNotificationService {
     await this.prisma.notificationWebhookRecord.update({
       where: {id: newRecord.id},
       data: {
-        resContext: JSON.stringify(result),
+        response: result as object,
         status: result.error
           ? NotificationWebhookRecordStatus.error
           : NotificationWebhookRecordStatus.success,

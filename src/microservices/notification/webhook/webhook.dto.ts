@@ -15,7 +15,7 @@ export class NotificationAccessKeyCreateReqDto {
   remark?: string;
 }
 
-export class NotificationWebhookAccountUpdateReqDto extends NotificationAccessKeyCreateReqDto {
+export class NotificationAccessKeyUpdateReqDto extends NotificationAccessKeyCreateReqDto {
   @ApiProperty({
     type: Number,
   })

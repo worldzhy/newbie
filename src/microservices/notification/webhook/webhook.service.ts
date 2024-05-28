@@ -4,7 +4,7 @@ import {generateRandomCode} from '@toolkit/utilities/common.util';
 import {NotificationAccessStatus} from './constants';
 import {
   NotificationAccessKeyCreateReqDto,
-  NotificationWebhookAccountUpdateReqDto,
+  NotificationAccessKeyUpdateReqDto,
   NotificationWebhookChannelCreateReqDto,
   NotificationWebhookChannelUpdateReqDto,
 } from './webhook.dto';
@@ -38,7 +38,7 @@ export class NotificationWebhookService {
   }
 
   async accountUpdate(
-    body: NotificationWebhookAccountUpdateReqDto
+    body: NotificationAccessKeyUpdateReqDto
   ): Promise<{id: number}> {
     const {id, ...data} = body;
     await this.prisma.notificationAccessKey.update({
