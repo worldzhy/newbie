@@ -4,7 +4,7 @@ import * as PDLJS from 'peopledatalabs';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {Prisma} from '@prisma/client';
 import {CustomLoggerService} from '@toolkit/logger/logger.service';
-import {ContactSearchPeopleDto} from '../people-finder.dto';
+import {PeopleFinderCallThirdPartyDto} from '../people-finder.dto';
 import {
   SearchPeopleByDomainReqDto,
   SearchPeopleResDto,
@@ -198,7 +198,7 @@ export class PeopledatalabsService {
    */
   async find(
     mode: 'byLinkedin' | 'byDomain',
-    user: ContactSearchPeopleDto,
+    user: PeopleFinderCallThirdPartyDto,
     {needPhone, needEmail}: SearchFilter
   ) {
     const dataFlag = {
@@ -207,7 +207,7 @@ export class PeopledatalabsService {
     };
     if (mode === 'byLinkedin') {
       if (user.linkedin) {
-        const newRecord = await this.prisma.contactSearch.create({
+        const newRecord = await this.prisma.peopleFinderCallThirdParty.create({
           data: {
             ...user,
             sourceMode: 'searchPeopleByLinkedin',
@@ -220,7 +220,7 @@ export class PeopledatalabsService {
           linkedinUrl: user.linkedin,
         });
 
-        const updateData: Prisma.ContactSearchUpdateInput = {};
+        const updateData: Prisma.PeopleFinderCallThirdPartyUpdateInput = {};
         if (error) {
           updateData.status = PeopleFinderStatus.failed;
           updateData.ctx = error as object;
@@ -249,14 +249,14 @@ export class PeopledatalabsService {
           }
         }
 
-        await this.prisma.contactSearch.update({
+        await this.prisma.peopleFinderCallThirdParty.update({
           where: {id: newRecord.id},
           data: updateData,
         });
 
-        return {error, res, dataFlag, contactSearchId: newRecord.id};
+        return {error, res, dataFlag, callThirdPartyId: newRecord.id};
       } else {
-        const newRecord = await this.prisma.contactSearch.create({
+        const newRecord = await this.prisma.peopleFinderCallThirdParty.create({
           data: {
             ...user,
             sourceMode: 'searchPeopleByLinkedin',
@@ -267,7 +267,7 @@ export class PeopledatalabsService {
         return {
           error: {error: 'Missing parameters'},
           dataFlag,
-          contactSearchId: newRecord.id,
+          callThirdPartyId: newRecord.id,
         };
       }
 
@@ -287,7 +287,7 @@ export class PeopledatalabsService {
     }
     if (mode === 'byDomain') {
       if (user.companyDomain && user.name) {
-        const newRecord = await this.prisma.contactSearch.create({
+        const newRecord = await this.prisma.peopleFinderCallThirdParty.create({
           data: {
             ...user,
             sourceMode: 'searchPeopleByDomain',
@@ -303,7 +303,7 @@ export class PeopledatalabsService {
           needEmail,
         });
 
-        const updateData: Prisma.ContactSearchUpdateInput = {};
+        const updateData: Prisma.PeopleFinderCallThirdPartyUpdateInput = {};
         if (error) {
           updateData.status = PeopleFinderStatus.failed;
           updateData.ctx = error as object;
@@ -326,14 +326,14 @@ export class PeopledatalabsService {
           }
         }
 
-        await this.prisma.contactSearch.update({
+        await this.prisma.peopleFinderCallThirdParty.update({
           where: {id: newRecord.id},
           data: updateData,
         });
 
-        return {error, res, dataFlag, contactSearchId: newRecord.id};
+        return {error, res, dataFlag, callThirdPartyId: newRecord.id};
       } else {
-        const newRecord = await this.prisma.contactSearch.create({
+        const newRecord = await this.prisma.peopleFinderCallThirdParty.create({
           data: {
             ...user,
             sourceMode: 'searchPeopleByDomain',
@@ -345,7 +345,7 @@ export class PeopledatalabsService {
         return {
           error: {error: 'Missing parameters'},
           dataFlag,
-          contactSearchId: newRecord.id,
+          callThirdPartyId: newRecord.id,
         };
       }
     }

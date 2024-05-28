@@ -4,7 +4,7 @@ import {ConfigService} from '@nestjs/config';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {Prisma} from '@prisma/client';
 import {CustomLoggerService} from '@toolkit/logger/logger.service';
-import {ContactSearchPeopleDto} from '../people-finder.dto';
+import {PeopleFinderCallThirdPartyDto} from '../people-finder.dto';
 import {PeopleFinderStatus, PeopleFinderPlatforms} from '../constants';
 import {
   SearchEmailByDomainReqDto,
@@ -114,10 +114,10 @@ export class VoilaNorbertService {
    * voilanorbert [support: email]
    * @param webhook: xxxx.com?id=
    */
-  async find(user: ContactSearchPeopleDto, webhook: string) {
+  async find(user: PeopleFinderCallThirdPartyDto, webhook: string) {
     const {name, companyDomain} = user;
     if (!name || !companyDomain) return;
-    const newRecord = await this.prisma.contactSearch.create({
+    const newRecord = await this.prisma.peopleFinderCallThirdParty.create({
       data: {
         ...user,
         source: PeopleFinderPlatforms.voilanorbert,
@@ -149,7 +149,7 @@ export class VoilaNorbertService {
       email: false,
     };
 
-    const updateData: Prisma.ContactSearchUpdateInput = {};
+    const updateData: Prisma.PeopleFinderCallThirdPartyUpdateInput = {};
     if (error) {
       updateData.status = PeopleFinderStatus.failed;
       updateData.ctx = error;
@@ -164,11 +164,11 @@ export class VoilaNorbertService {
       updateData.ctx = data as object;
     }
 
-    await this.prisma.contactSearch.update({
+    await this.prisma.peopleFinderCallThirdParty.update({
       where: {id},
       data: updateData,
     });
 
-    return {error, res: data, dataFlag, contactSearchId: id};
+    return {error, res: data, dataFlag, callThirdPartyId: id};
   }
 }

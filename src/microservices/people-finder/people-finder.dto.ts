@@ -1,5 +1,5 @@
 import {ApiProperty} from '@nestjs/swagger';
-import {IsString, IsOptional} from 'class-validator';
+import {IsString, IsOptional, IsArray} from 'class-validator';
 
 export class ContactSearchPeopleBase {
   @ApiProperty({
@@ -62,6 +62,45 @@ export class ContactSearchPeopleBase {
   @IsOptional()
   linkedin?: string;
 }
-export class ContactSearchPeopleDto extends ContactSearchPeopleBase {
-  taskId: string;
+export class PeopleFinderCallThirdPartyDto extends ContactSearchPeopleBase {}
+
+export class ContactSearchPeopleTaskDto extends ContactSearchPeopleBase {
+  @ApiProperty({
+    type: Boolean,
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  findPhone?: boolean;
+
+  @ApiProperty({
+    type: Boolean,
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  findEmail?: boolean;
+}
+
+export class CreateContactSearchTaskBranchReqDto {
+  @ApiProperty({
+    type: ContactSearchPeopleTaskDto,
+    isArray: true,
+  })
+  @IsArray()
+  peoples: ContactSearchPeopleTaskDto[];
+
+  @ApiProperty({
+    type: String,
+  })
+  @IsString()
+  branchId: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  callbackUrl?: string;
 }

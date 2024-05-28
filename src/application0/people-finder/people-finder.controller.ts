@@ -1,4 +1,11 @@
-import {Controller, Post, Body, Get, Query} from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Query,
+  BadRequestException,
+} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody, ApiResponse} from '@nestjs/swagger';
 import {ConfigService} from '@nestjs/config';
 import {Prisma} from '@prisma/client';
@@ -9,12 +16,9 @@ import {CustomLoggerService} from '@toolkit/logger/logger.service';
 import {generateRandomCode} from '@toolkit/utilities/common.util';
 import {NoGuard} from '@microservices/account/security/passport/public/public.decorator';
 import {
-  ContactSearchReqDto,
-  ContactSearchPeopleDto,
-  AddTaskContactSearchReqDto,
-  AddTaskContactSearchResDto,
-  GetTaskContactSearchReqDto,
-  GetTaskStatusResDto,
+  CreateContactSearchBranchResDto,
+  GetContactSearchBranchReqDto,
+  GetBranchStatusResDto,
 } from './people-finder.dto';
 import {
   SearchEmailThirdResDto,
@@ -23,17 +27,16 @@ import {
 import {
   PeopleFinderTaskStatus,
   PeopleFinderStatus,
+  PeopleFinderTaskBullJob,
 } from '@microservices/people-finder/constants';
 import {VoilaNorbertService} from '@microservices/people-finder/voila-norbert/volia-norbert.service';
 import {ProxycurlService} from '@microservices/people-finder/proxycurl/proxycurl.service';
-import {PeopledatalabsService} from '@microservices/people-finder/peopledatalabs/peopledatalabs.service';
+import {CreateContactSearchTaskBranchReqDto} from '@microservices/people-finder/people-finder.dto';
 import {
   PeopleFinderService,
   PeopleFinderPlatforms,
 } from '@microservices/people-finder/people-finder.service';
 import {PeopleFinderQueue} from './people-finder.processor';
-
-type SearchFilter = {needPhone: boolean; needEmail: boolean};
 
 @ApiTags('People-finder')
 @ApiBearerAuth()
@@ -46,7 +49,6 @@ export class PeopleFinderController {
     private readonly configService: ConfigService,
     private voilaNorbertService: VoilaNorbertService,
     private proxycurlService: ProxycurlService,
-    private peopledatalabsService: PeopledatalabsService,
     private readonly peopleFinder: PeopleFinderService,
     private readonly logger: CustomLoggerService,
     private readonly prisma: PrismaService,
@@ -57,319 +59,60 @@ export class PeopleFinderController {
     );
   }
 
-  getCommonContactSearch = (user: ContactSearchPeopleDto) => {
-    return {
-      userId: user.userId,
-      userSource: user.userSource,
-      name: user.name,
-      companyDomain: user.companyDomain,
-      firstName: user.firstName,
-      middleName: user.middleName,
-      lastName: user.lastName,
-      linkedin: user.linkedin,
-    };
-  };
-
-  platformSearch = {
-    /**
-     * voilanorbert [support: email]
-     */
-    [PeopleFinderPlatforms.voilanorbert]: async (
-      user: ContactSearchPeopleDto
-    ) => {
-      const {name, companyDomain} = user;
-      if (!name || !companyDomain) return;
-      const newRecord = await this.prisma.contactSearch.create({
-        data: {
-          ...this.getCommonContactSearch(user),
-          source: PeopleFinderPlatforms.voilanorbert,
-          sourceMode: 'searchEmailByDomain',
-          status: PeopleFinderStatus.pending,
-        },
-      });
-      // todo spent
-      const {res, error} = await this.voilaNorbertService.searchEmailByDomain({
-        name,
-        companyDomain,
-        webhook:
-          this.callBackOrigin +
-          '/people-finder/voilanorbert-hook?id=' +
-          newRecord.id, // todo
-      });
-      return await this.voilanorbertContactSearchCallback(
-        newRecord.id,
-        res,
-        error
-      );
-    },
-    /**
-     * proxycurl [support: email,phone]
-     */
-    [PeopleFinderPlatforms.proxycurl]: async (
-      user: ContactSearchPeopleDto,
-      {needPhone, needEmail}: SearchFilter
-    ) => {
-      if (user.linkedin) {
-        const newRecord = await this.prisma.contactSearch.create({
-          data: {
-            ...this.getCommonContactSearch(user),
-            sourceMode: 'searchPeopleByLinkedin',
-            source: PeopleFinderPlatforms.proxycurl,
-            status: PeopleFinderStatus.pending,
-          },
-        });
-        const {res, error, spent} =
-          await this.proxycurlService.searchPeopleByLinkedin({
-            linkedinUrl: user.linkedin,
-            personalEmail: needEmail ? 'include' : 'exclude',
-            personalContactNumber: needPhone ? 'include' : 'exclude',
-          });
-        const updateData: Prisma.ContactSearchUpdateInput = {};
-
-        if (error) {
-          updateData.status = PeopleFinderStatus.failed;
-          updateData.ctx = error as object;
-        } else if (res) {
-          updateData.emails = res.personal_emails;
-          updateData.phones = res.personal_numbers;
-          updateData.status = PeopleFinderStatus.completed;
-          updateData.ctx = res as object;
-        }
-        updateData.spent = spent;
-
-        return await this.prisma.contactSearch.update({
-          where: {id: newRecord.id},
-          data: updateData,
-        });
-      } else if (user.companyDomain && user.firstName) {
-        const newRecord = await this.prisma.contactSearch.create({
-          data: {
-            ...this.getCommonContactSearch(user),
-            sourceMode: 'searchPeopleLinkedin',
-            source: PeopleFinderPlatforms.proxycurl,
-            status: PeopleFinderStatus.pending,
-          },
-        });
-
-        const {res, error, spent} =
-          await this.proxycurlService.searchPeopleLinkedin({
-            firstName: user.firstName,
-            lastName: user.lastName,
-            companyDomain: user.companyDomain,
-          });
-        const updateData: Prisma.ContactSearchUpdateInput = {};
-
-        if (error) {
-          updateData.status = PeopleFinderStatus.failed;
-          updateData.ctx = error as object;
-        } else if (res && res.url) {
-          updateData.linkedin = res.url;
-          updateData.status = PeopleFinderStatus.completed;
-          updateData.ctx = res as object;
-        } else {
-          updateData.status = PeopleFinderStatus.failed;
-          updateData.ctx = res as object;
-        }
-        updateData.spent = spent;
-
-        await this.prisma.contactSearch.update({
-          where: {id: newRecord.id},
-          data: updateData,
-        });
-
-        if (res && res.url) {
-          await this.platformSearch[PeopleFinderPlatforms.proxycurl](
-            {
-              ...user,
-              linkedin: res.url,
-            },
-            {needPhone, needEmail}
-          );
-        }
-      }
-    },
-    /**
-     * peopledatalabs [support: email,phone]
-     */
-    [PeopleFinderPlatforms.peopledatalabs]: async (
-      user: ContactSearchPeopleDto,
-      {needPhone, needEmail}: SearchFilter
-    ) => {
-      if (user.linkedin) {
-        const newRecord = await this.prisma.contactSearch.create({
-          data: {
-            ...this.getCommonContactSearch(user),
-            sourceMode: 'searchPeopleByLinkedin',
-            source: PeopleFinderPlatforms.peopledatalabs,
-            status: PeopleFinderStatus.pending,
-          },
-        });
-        const {error, res} =
-          await this.peopledatalabsService.searchPeopleByLinkedin({
-            linkedinUrl: user.linkedin,
-          });
-        const updateData: Prisma.ContactSearchUpdateInput = {};
-        if (error) {
-          updateData.status = PeopleFinderStatus.failed;
-          updateData.ctx = error as object;
-        } else if (res) {
-          updateData.spent = res.rateLimit.callCreditsSpent;
-          if (res.data) {
-            updateData.emails = res.data.emails as object;
-            updateData.phones = res.data.phone_numbers
-              ? res.data.phone_numbers
-              : [];
-            updateData.status = PeopleFinderStatus.completed;
-            updateData.ctx = res as object;
-          } else {
-            updateData.status = PeopleFinderStatus.failed;
-            updateData.ctx = {
-              msg: 'No data records were found for this person',
-              res: res as object,
-            };
-          }
-        }
-        await this.prisma.contactSearch.update({
-          where: {id: newRecord.id},
-          data: updateData,
-        });
-
-        // If not found, use domain query
-        if (
-          !res ||
-          ((!res.data.emails || !res.data.emails.length) &&
-            (!res.data.phone_numbers || !res.data.phone_numbers.length))
-        ) {
-          await this.platformSearch[PeopleFinderPlatforms.peopledatalabs](
-            {
-              ...user,
-              linkedin: '',
-            },
-            {needPhone, needEmail}
-          );
-        }
-      } else if (user.companyDomain && user.name) {
-        const newRecord = await this.prisma.contactSearch.create({
-          data: {
-            ...this.getCommonContactSearch(user),
-            sourceMode: 'searchPeopleByDomain',
-            source: PeopleFinderPlatforms.peopledatalabs,
-            status: PeopleFinderStatus.pending,
-          },
-        });
-        const {error, res} =
-          await this.peopledatalabsService.searchPeopleByDomain({
-            companyDomain: user.companyDomain,
-            name: user.name,
-            needPhone: true,
-            needEmail: true,
-          });
-        const updateData: Prisma.ContactSearchUpdateInput = {};
-        if (error) {
-          updateData.status = PeopleFinderStatus.failed;
-          updateData.ctx = error as object;
-        } else if (res) {
-          updateData.spent = res.rateLimit.callCreditsSpent;
-          const dataArray = res.data;
-          if (dataArray.length) {
-            updateData.emails = dataArray[0].emails as object;
-            updateData.phones = dataArray[0].mobile_phone
-              ? [dataArray[0].mobile_phone]
-              : [];
-            updateData.status = PeopleFinderStatus.completed;
-            updateData.ctx = res as object;
-          } else if (!dataArray || !dataArray.length) {
-            updateData.status = PeopleFinderStatus.failed;
-            updateData.ctx = {
-              msg: 'No data records were found for this person',
-              res: res as object,
-            };
-          }
-        }
-        return await this.prisma.contactSearch.update({
-          where: {id: newRecord.id},
-          data: updateData,
-        });
-      }
-    },
-  };
-
   @NoGuard()
-  @Post('contact-search')
-  @ApiBody({
-    type: ContactSearchReqDto,
+  @Post('create-contact-search-branch-id')
+  @ApiResponse({
+    type: CreateContactSearchBranchResDto,
   })
-  async contactSearch(
-    @Body()
-    body: ContactSearchReqDto
-  ) {
-    const {platforms, peoples} = body;
-    for (let i = 0; i < peoples.length; i++) {
-      const people = peoples[i];
-      for (let platI = 0; platI < platforms.length; platI++) {
-        const platform = platforms[platI];
-
-        // Check if the current personnel have records on the current platform, and do not execute those with records
-        const isExist = await this.peopleFinder.isExist({
-          platform,
-          userId: people.userId,
-          userSource: people.userSource,
-        });
-        if (isExist) continue;
-
-        if (platform === PeopleFinderPlatforms.voilanorbert) {
-          await this.platformSearch[platform](people);
-        }
-
-        if (platform === PeopleFinderPlatforms.proxycurl) {
-          await this.platformSearch[platform](people, {
-            needPhone: true,
-            needEmail: true,
-          });
-        }
-
-        if (platform === PeopleFinderPlatforms.peopledatalabs) {
-          await this.platformSearch[platform](people, {
-            needPhone: true,
-            needEmail: true,
-          });
-        }
-      }
-    }
-    return 'ok';
+  async createContactSearchBranchId() {
+    const branchId = generateRandomCode(15);
+    const isExist = await this.prisma.peopleFinderTaskBranch.findFirst({
+      where: {
+        branchId,
+      },
+    });
+    if (isExist) return await this.createContactSearchBranchId();
+    return {branchId};
   }
 
   @NoGuard()
-  @Post('create-contact-search-task-id')
+  @Post('create-contact-search-branch')
   @ApiResponse({
-    type: AddTaskContactSearchResDto,
+    type: CreateContactSearchBranchResDto,
   })
-  async createContactSearchTaskId() {
-    const taskId = generateRandomCode(15);
-    return {taskId};
-  }
-
-  @NoGuard()
-  @Post('add-contact-search-task')
-  @ApiResponse({
-    type: AddTaskContactSearchResDto,
-  })
-  async addContactSearchTask(
+  async createContactSearchTaskBranch(
     @Body()
-    body: AddTaskContactSearchReqDto
+    body: CreateContactSearchTaskBranchReqDto
   ) {
-    const {taskId} = body;
-    await await this.queue.addBulk(
-      body.peoples.map(item => ({data: {...item, taskId: taskId!}}))
+    const {branchId} = body;
+    await this.peopleFinder.createTaskBranch(body);
+    const tasks = await this.peopleFinder.getTaskBrancTasks(branchId);
+    const datas: PeopleFinderTaskBullJob[] = tasks.map(
+      item =>
+        ({
+          id: item.id,
+          taskBranchId: item.taskBranchId,
+          userId: item.userId,
+          userSource: item.userSource,
+          name: item.name,
+          firstName: item.firstName,
+          middleName: item.middleName,
+          lastName: item.lastName,
+          companyDomain: item.companyDomain,
+          linkedin: item.linkedin,
+          findEmail: item.findEmail,
+          findPhone: item.findPhone,
+        }) as PeopleFinderTaskBullJob
     );
-    return {taskId};
+    await this.queue.addBulk(datas.map(item => ({data: item})));
+    return {branchId};
   }
 
   @NoGuard()
-  @Get('get-contact-search-task-jobs')
-  async getJobsByTaskId(
+  @Get('get-contact-search-branch-jobs')
+  async getJobsByBranchId(
     @Query()
-    query: GetTaskContactSearchReqDto
+    query: GetContactSearchBranchReqDto
   ): Promise<Job[]> {
     const limit = 100;
     let start = 0,
@@ -391,108 +134,90 @@ export class PeopleFinderController {
         flag = false;
       }
     }
-    return allList.filter(item => item.data.taskId === query.taskId);
+    return allList.filter(item => item.data.branchId === query.branchId);
   }
 
   @NoGuard()
-  @Get('get-contact-search-task-status')
+  @Get('get-contact-search-branch-status')
   @ApiResponse({
-    type: GetTaskStatusResDto,
+    type: GetBranchStatusResDto,
   })
-  async getStatusByTaskId(
+  async getStatusByBranchId(
     @Query()
-    query: GetTaskContactSearchReqDto
-  ): Promise<GetTaskStatusResDto> {
-    const total = await this.prisma.contactSearchTask.count({
-      where: {
-        taskId: query.taskId,
-      },
+    query: GetContactSearchBranchReqDto
+  ): Promise<GetBranchStatusResDto> {
+    return await this.peopleFinder.checkTaskBranchStatus({
+      branchId: query.branchId,
     });
-    const totalCompleted = await this.prisma.contactSearchTask.count({
-      where: {
-        status: PeopleFinderTaskStatus.completed,
-        taskId: query.taskId,
-        contactSearch: {
-          status: {
-            in: [PeopleFinderStatus.completed, PeopleFinderStatus.failed],
-          },
-        },
-      },
-    });
-    return {
-      totalCompleted,
-      total,
-      completed: totalCompleted === total,
-    };
   }
 
   @NoGuard()
-  @Get('get-contact-search-task-result')
-  async getResultByTaskId(
+  @Get('get-contact-search-branch-result')
+  async getResultByBranchId(
     @Query()
-    query: GetTaskContactSearchReqDto
+    query: GetContactSearchBranchReqDto
   ) {
-    const list = await this.prisma.contactSearchTask.findMany({
+    const taskBranch = await this.prisma.peopleFinderTaskBranch.findFirst({
+      where: {
+        branchId: query.branchId,
+      },
+    });
+    if (!taskBranch) {
+      throw new BadRequestException('BranchId not found.');
+    }
+    const list = await this.prisma.peopleFinderTask.findMany({
       where: {
         status: PeopleFinderTaskStatus.completed,
-        taskId: query.taskId,
-      },
-      include: {
-        contactSearch: {
-          where: {
-            OR: [
-              {
-                emails: {
-                  isEmpty: false,
-                },
-              },
-              {
-                phones: {
-                  isEmpty: false,
-                },
-              },
-            ],
+        taskBranchId: taskBranch.id,
+        OR: [
+          {
+            emails: {
+              isEmpty: false,
+            },
           },
-        },
+          {
+            phones: {
+              isEmpty: false,
+            },
+          },
+        ],
       },
     });
 
     const userMap: {
-      [userId: string]: (typeof list)[0]['contactSearch'];
+      [userId: string]: (typeof list)[0];
     } = {};
 
-    list
-      .map(item => item.contactSearch)
-      .forEach(item => {
-        if (item) {
-          // get email string
+    list.forEach(item => {
+      if (item) {
+        // get email string
+        // if (item.emails) {
+        //   if (item.source === PeopleFinderPlatforms.voilanorbert) {
+        //     item.emails = item.emails.map(
+        //       (emailCon: {email: string; score: number}) => emailCon.email
+        //     );
+        //   }
+        //   if (item.source === PeopleFinderPlatforms.peopledatalabs) {
+        //     item.emails = item.emails.map(
+        //       (emailCon: {address: string; type: string}) => emailCon.address
+        //     );
+        //   }
+        // }
+
+        if (!userMap[item.userId!]) {
+          userMap[item.userId!] = item;
+        } else {
+          const user = userMap[item.userId!]!;
           if (item.emails) {
-            if (item.source === PeopleFinderPlatforms.voilanorbert) {
-              item.emails = item.emails.map(
-                (emailCon: {email: string; score: number}) => emailCon.email
-              );
-            }
-            if (item.source === PeopleFinderPlatforms.peopledatalabs) {
-              item.emails = item.emails.map(
-                (emailCon: {address: string; type: string}) => emailCon.address
-              );
-            }
+            user.emails = user.emails.concat(item.emails);
           }
 
-          if (!userMap[item.userId!]) {
-            userMap[item.userId!] = item;
-          } else {
-            const user = userMap[item.userId!]!;
-            if (item.emails) {
-              user.emails = user.emails.concat(item.emails);
-            }
-
-            if (item.phones) {
-              user.phones = user.phones.concat(item.phones);
-            }
+          if (item.phones) {
+            user.phones = user.phones.concat(item.phones);
           }
         }
-      });
+      }
+    });
 
     const result: {
       userId: string;
@@ -533,7 +258,7 @@ export class PeopleFinderController {
 
     // searching completed && no email
     if (findRes?.res?.searching === false && !findRes?.dataFlag.email) {
-      const record = await this.prisma.contactSearch.findFirst({
+      const record = await this.prisma.peopleFinderCallThirdParty.findFirst({
         where: {id: Number(id)},
       });
       if (record && record.userId && record.userSource) {
@@ -544,10 +269,10 @@ export class PeopleFinderController {
           userSource: record.userSource,
         });
 
-        let contactSearchId;
+        let callThirdPartyId;
 
         if (isExistTaskId) {
-          contactSearchId = isExistTaskId;
+          callThirdPartyId = isExistTaskId;
         } else {
           const findRes = await this.proxycurlService.find(
             {
@@ -559,7 +284,6 @@ export class PeopleFinderController {
               firstName: record.firstName as string,
               middleName: record.middleName as string,
               lastName: record.lastName as string,
-              taskId: record.taskId as string,
             },
             {
               needPhone: true,
@@ -567,19 +291,34 @@ export class PeopleFinderController {
             }
           );
           if (findRes) {
-            contactSearchId = findRes.contactSearchId;
+            callThirdPartyId = findRes.callThirdPartyId;
           }
         }
 
-        await this.prisma.contactSearchTask.update({
+        const oldData = await this.prisma.peopleFinderTask.findFirst({
+          where: {id: Number(taskId)},
+        });
+
+        await this.prisma.peopleFinderTask.update({
           where: {id: Number(taskId)},
           data: {
-            contactSearchId,
-            status: PeopleFinderTaskStatus.completed,
+            callThirdPartyIds: oldData?.callThirdPartyIds.concat([
+              callThirdPartyId,
+            ]),
           },
         });
       }
     }
+
+    const taskRecord = await this.prisma.peopleFinderTask.update({
+      where: {id: Number(taskId)},
+      data: {
+        status: PeopleFinderTaskStatus.completed,
+      },
+    });
+    await this.peopleFinder.checkAndExecuteTaskBranchCallback(
+      taskRecord.taskBranchId!
+    );
     this.logger.log(
       'voilanorbert-hook:' + id + ' [res]:' + JSON.stringify(res),
       this.loggerContext
@@ -592,7 +331,7 @@ export class PeopleFinderController {
     data?: SearchEmailContentResDto,
     error?: object
   ) {
-    const updateData: Prisma.ContactSearchUpdateInput = {};
+    const updateData: Prisma.PeopleFinderCallThirdPartyUpdateInput = {};
     if (error) {
       updateData.status = PeopleFinderStatus.failed;
       updateData.ctx = error;
@@ -603,7 +342,7 @@ export class PeopleFinderController {
       }
       updateData.ctx = data as object;
     }
-    await this.prisma.contactSearch.update({
+    await this.prisma.peopleFinderCallThirdParty.update({
       where: {id: id},
       data: updateData,
     });
@@ -612,7 +351,7 @@ export class PeopleFinderController {
   @NoGuard()
   @Get('analysis')
   async analysis() {
-    const res = await this.prisma.contactSearch.findMany({
+    const res = await this.prisma.peopleFinderCallThirdParty.findMany({
       distinct: ['userId', 'companyDomain', 'linkedin', 'source', 'sourceMode'],
       where: {
         status: {in: [PeopleFinderStatus.failed, PeopleFinderStatus.completed]},
@@ -787,7 +526,7 @@ export class PeopleFinderController {
       }
       return true;
     });
-    const xx = await this.prisma.contactSearch.updateMany({
+    const xx = await this.prisma.peopleFinderCallThirdParty.updateMany({
       where: {id: {in: deletes}},
       data: {
         status: PeopleFinderStatus.deleted,

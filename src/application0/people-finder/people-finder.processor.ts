@@ -9,9 +9,9 @@ import {PeopledatalabsService} from '@microservices/people-finder/peopledatalabs
 import {PeopleFinderService} from '@microservices/people-finder/people-finder.service';
 import {
   PeopleFinderPlatforms,
-  PeopleFinderBullJob,
-  PeopleFinderTaskStatus,
+  PeopleFinderTaskBullJob,
   PeopleFinderUserReq,
+  PeopleFinderTaskStatus,
 } from '@microservices/people-finder/constants';
 
 export const PeopleFinderQueue = 'people-finder';
@@ -36,31 +36,45 @@ export class PeopleFinderJobProcessor {
 
   @Process({concurrency: 1})
   async peopleFinderProcess(job: Job) {
-    const {data}: {data: PeopleFinderBullJob} = job;
+    const {data}: {data: PeopleFinderTaskBullJob} = job;
     if (data) {
       let isGetEmail = false;
-      const {findEmail, findPhone, ...user} = data;
+      let isGetEmailIng = false;
+      const {
+        findEmail,
+        findPhone,
+        id: peopleFinderTaskId,
+        taskBranchId,
+        ...user
+      } = data;
 
       if (findPhone) {
-        const findPhoneRes = await this.findPhone(user);
+        const findPhoneRes = await this.findPhone(peopleFinderTaskId, user);
         isGetEmail = findPhoneRes.isGetEmail;
       }
       if (findEmail && !isGetEmail) {
-        await this.findEmail(user);
+        isGetEmailIng = await this.findEmail(peopleFinderTaskId, user);
+      }
+
+      if (!isGetEmailIng) {
+        await this.prisma.peopleFinderTask.update({
+          where: {id: Number(peopleFinderTaskId)},
+          data: {
+            status: PeopleFinderTaskStatus.completed,
+          },
+        });
+        await this.peopleFinder.checkAndExecuteTaskBranchCallback(taskBranchId);
       }
     }
 
     return {};
   }
 
-  private async findPhone(data: PeopleFinderUserReq) {
+  private async findPhone(
+    peopleFinderTaskId: number,
+    data: PeopleFinderUserReq
+  ) {
     let isGetEmail = false;
-    const newTask = await this.prisma.contactSearchTask.create({
-      data: {
-        taskId: data.taskId,
-        status: PeopleFinderTaskStatus.pending,
-      },
-    });
 
     // Check if the current personnel have records on the current platform, and do not execute those with records
     const isExistTaskId = await this.peopleFinder.isExist({
@@ -69,9 +83,9 @@ export class PeopleFinderJobProcessor {
       userSource: data.userSource,
     });
 
-    let contactSearchId;
+    let callThirdPartyId;
     if (isExistTaskId) {
-      contactSearchId = isExistTaskId;
+      callThirdPartyId = isExistTaskId;
     } else {
       const findRes = await this.peopledatalabsService.find('byDomain', data, {
         needPhone: true,
@@ -80,42 +94,45 @@ export class PeopleFinderJobProcessor {
 
       if (findRes) {
         if (findRes.dataFlag.email) isGetEmail = findRes.dataFlag.email;
-        contactSearchId = findRes.contactSearchId;
+        callThirdPartyId = findRes.callThirdPartyId;
       }
     }
 
-    await this.prisma.contactSearchTask.update({
-      where: {id: newTask.id},
+    const oldData = await this.prisma.peopleFinderTask.findFirst({
+      where: {id: peopleFinderTaskId},
+    });
+
+    await this.prisma.peopleFinderTask.update({
+      where: {id: peopleFinderTaskId},
       data: {
-        contactSearchId,
-        status: PeopleFinderTaskStatus.completed,
+        callThirdPartyIds: oldData?.callThirdPartyIds.concat([
+          callThirdPartyId,
+        ]),
       },
     });
+
     return {isGetEmail};
   }
 
-  private async findEmail(data: PeopleFinderUserReq) {
-    const newTask = await this.prisma.contactSearchTask.create({
-      data: {
-        taskId: data.taskId,
-        status: PeopleFinderTaskStatus.pending,
-      },
-    });
-
+  private async findEmail(
+    peopleFinderTaskId: number,
+    data: PeopleFinderUserReq
+  ) {
+    let isGetEmailIng = false;
     // Check if the current personnel have records on the current platform, and do not execute those with records
     const isExistVoilanorbertTaskId = await this.peopleFinder.isExist({
       platform: PeopleFinderPlatforms.voilanorbert,
       userId: data.userId,
       userSource: data.userSource,
     });
-    let contactSearchId;
+    let callThirdPartyId;
     if (isExistVoilanorbertTaskId) {
-      contactSearchId = isExistVoilanorbertTaskId;
+      callThirdPartyId = isExistVoilanorbertTaskId;
     } else {
       const findRes = await this.voilaNorbertService.find(
         data,
         this.callBackOrigin +
-          `/people-finder/voilanorbert-hook?taskId=${newTask.id}&id=`
+          `/people-finder/voilanorbert-hook?taskId=${peopleFinderTaskId}&id=`
       );
 
       // searching completed && no email
@@ -127,27 +144,37 @@ export class PeopleFinderJobProcessor {
           userSource: data.userSource,
         });
         if (isExistTaskId) {
-          contactSearchId = isExistTaskId;
+          callThirdPartyId = isExistTaskId;
         } else {
           const findRes2 = await this.proxycurlService.find(data, {
             needPhone: true,
             needEmail: true,
           });
           if (findRes2) {
-            contactSearchId = findRes2.contactSearchId;
+            callThirdPartyId = findRes2.callThirdPartyId;
           }
         }
       } else if (findRes) {
-        contactSearchId = findRes.contactSearchId;
+        callThirdPartyId = findRes.callThirdPartyId;
+      }
+
+      if (findRes?.res?.searching) {
+        isGetEmailIng = true;
       }
     }
 
-    await this.prisma.contactSearchTask.update({
-      where: {id: newTask.id},
+    const oldData = await this.prisma.peopleFinderTask.findFirst({
+      where: {id: peopleFinderTaskId},
+    });
+
+    await this.prisma.peopleFinderTask.update({
+      where: {id: peopleFinderTaskId},
       data: {
-        contactSearchId,
-        status: PeopleFinderTaskStatus.completed,
+        callThirdPartyIds: oldData?.callThirdPartyIds.concat([
+          callThirdPartyId,
+        ]),
       },
     });
+    return isGetEmailIng;
   }
 }

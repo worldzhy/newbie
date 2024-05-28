@@ -15,6 +15,17 @@ export enum PeopleFinderTaskStatus {
   pending = 'pending',
   completed = 'completed',
 }
+export enum PeopleFinderBranchTaskStatus {
+  pending = 'pending',
+  synchronizingData = 'synchronizingData',
+  completed = 'completed',
+}
+
+export enum PeopleFinderBranchTaskCallBackStatus {
+  pending = 'pending',
+  error = 'error',
+  completed = 'completed',
+}
 
 export type PeopleFinderUserReq = {
   userId: string;
@@ -24,10 +35,12 @@ export type PeopleFinderUserReq = {
   lastName?: string;
   companyDomain?: string;
   linkedin?: string;
-  taskId: string;
 };
 
-export type PeopleFinderBullJob = {
+export type PeopleFinderTaskBullJob = {
+  /** PeopleFinderTaskId */
+  id: number;
+  taskBranchId: number;
   findEmail?: boolean;
   findPhone?: boolean;
 } & PeopleFinderUserReq;

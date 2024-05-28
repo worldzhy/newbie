@@ -4,7 +4,7 @@ import {CustomLoggerService} from '@toolkit/logger/logger.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {Prisma} from '@prisma/client';
 import * as ProxycurlApi from 'proxycurl-js-linkedin-profile-scraper';
-import {ContactSearchPeopleDto} from '../people-finder.dto';
+import {PeopleFinderCallThirdPartyDto} from '../people-finder.dto';
 import {
   PeopleFinderStatus,
   PeopleFinderPlatforms,
@@ -188,7 +188,7 @@ export class ProxycurlService {
    * proxycurl [support: email,phone]
    */
   async find(
-    user: ContactSearchPeopleDto,
+    user: PeopleFinderCallThirdPartyDto,
     {needPhone, needEmail}: SearchFilter
   ): Promise<{
     res?: object;
@@ -197,14 +197,14 @@ export class ProxycurlService {
       email: boolean;
       phone: boolean;
     };
-    contactSearchId: number;
+    callThirdPartyId: number;
   }> {
     const dataFlag = {
       email: false,
       phone: false,
     };
     if (user.linkedin) {
-      const newRecord = await this.prisma.contactSearch.create({
+      const newRecord = await this.prisma.peopleFinderCallThirdParty.create({
         data: {
           ...user,
           sourceMode: 'searchPeopleByLinkedin',
@@ -217,7 +217,7 @@ export class ProxycurlService {
         personalEmail: needEmail ? 'include' : 'exclude',
         personalContactNumber: needPhone ? 'include' : 'exclude',
       });
-      const updateData: Prisma.ContactSearchUpdateInput = {};
+      const updateData: Prisma.PeopleFinderCallThirdPartyUpdateInput = {};
 
       if (error) {
         updateData.status = PeopleFinderStatus.failed;
@@ -237,14 +237,14 @@ export class ProxycurlService {
       }
       updateData.spent = spent;
 
-      await this.prisma.contactSearch.update({
+      await this.prisma.peopleFinderCallThirdParty.update({
         where: {id: newRecord.id},
         data: updateData,
       });
 
-      return {res, error, dataFlag, contactSearchId: newRecord.id};
+      return {res, error, dataFlag, callThirdPartyId: newRecord.id};
     } else if (user.companyDomain && user.firstName) {
-      const newRecord = await this.prisma.contactSearch.create({
+      const newRecord = await this.prisma.peopleFinderCallThirdParty.create({
         data: {
           ...user,
           sourceMode: 'searchPeopleLinkedin',
@@ -259,7 +259,7 @@ export class ProxycurlService {
         companyDomain: user.companyDomain,
       });
 
-      const updateData: Prisma.ContactSearchUpdateInput = {};
+      const updateData: Prisma.PeopleFinderCallThirdPartyUpdateInput = {};
 
       if (error) {
         updateData.status = PeopleFinderStatus.failed;
@@ -274,7 +274,7 @@ export class ProxycurlService {
       }
       updateData.spent = spent;
 
-      await this.prisma.contactSearch.update({
+      await this.prisma.peopleFinderCallThirdParty.update({
         where: {id: newRecord.id},
         data: updateData,
       });
@@ -288,8 +288,8 @@ export class ProxycurlService {
           {needPhone, needEmail}
         );
       }
-      return {res, error, dataFlag, contactSearchId: newRecord.id};
+      return {res, error, dataFlag, callThirdPartyId: newRecord.id};
     }
-    return {res: undefined, error: undefined, dataFlag, contactSearchId: 0};
+    return {res: undefined, error: undefined, dataFlag, callThirdPartyId: 0};
   }
 }
