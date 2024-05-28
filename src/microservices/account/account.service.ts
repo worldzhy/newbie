@@ -7,7 +7,8 @@ import {UserStatus, VerificationCodeUse} from '@prisma/client';
 import {UserService} from './user.service';
 import {VerificationCodeService} from './verification-code.service';
 import {LimitLoginByUserService} from './security/rate-limiter/rate-limiter.service';
-import {NotificationService} from '@microservices/notification/notification.service';
+import {SimpleEmailService} from '@microservices/notification/email/simple-email.service';
+import {SmsService} from '@microservices/notification/sms/sms.service';
 import {AccessTokenService} from '@microservices/account/security/token/access-token.service';
 import {RefreshTokenService} from '@microservices/account/security/token/refresh-token.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
@@ -22,7 +23,8 @@ export class AccountService {
     private readonly accessTokenService: AccessTokenService,
     private readonly refreshTokenService: RefreshTokenService,
     private readonly verificationCodeService: VerificationCodeService,
-    private readonly notificationService: NotificationService,
+    private readonly simpleEmailService: SimpleEmailService,
+    private readonly smsService: SmsService,
     private readonly limitLoginByUserService: LimitLoginByUserService
   ) {}
 
@@ -185,7 +187,7 @@ export class AccountService {
         );
 
       // [step 3] Send verification code.
-      await this.notificationService.sendEmail({
+      await this.simpleEmailService.send({
         email: params.email,
         subject: 'Your Verificaiton Code',
         plainText:
@@ -210,7 +212,7 @@ export class AccountService {
         );
 
       // [step 3] Send verification code.
-      await this.notificationService.sendSms({
+      await this.smsService.send({
         phone: params.phone,
         text: verificationCode.code,
       });

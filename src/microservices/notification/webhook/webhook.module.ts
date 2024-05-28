@@ -1,11 +1,10 @@
 import {Module, Global} from '@nestjs/common';
-import {FeishuNotificationModule} from './feishu/module';
 import {NotificationWebhookService} from './webhook.service';
+import {FeishuNotificationService} from './feishu/feishu-notification.service';
 
 @Global()
 @Module({
-  imports: [FeishuNotificationModule],
-  providers: [NotificationWebhookService],
-  exports: [NotificationWebhookService, FeishuNotificationModule],
+  providers: [NotificationWebhookService, FeishuNotificationService],
+  exports: [NotificationWebhookService, FeishuNotificationService],
 })
 export class NotificationWebhookModule {}

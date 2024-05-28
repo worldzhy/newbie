@@ -1,9 +1,13 @@
 import {Module} from '@nestjs/common';
-import {NotificationController} from './notification.controller';
-import {App0NotificationWebhookModule} from './webhook/webhook.module';
+import {SimpleEmailController} from './email/simple-email.controller';
+import {TraceableEmailController} from './email/traceable-email.controller';
+import {NotificationWebhookController} from './webhook/webhook.controller';
 
 @Module({
-  imports: [App0NotificationWebhookModule],
-  controllers: [NotificationController],
+  controllers: [
+    SimpleEmailController,
+    TraceableEmailController,
+    NotificationWebhookController,
+  ],
 })
 export class App0NotificationModule {}
