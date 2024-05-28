@@ -179,8 +179,8 @@ export class PeopleFinderService {
       await this.prisma.peopleFinderTask.update({
         where: {id: task.id},
         data: {
-          emails,
-          phones,
+          emails: Array.from(new Set(emails)),
+          phones: Array.from(new Set(phones)),
         },
       });
     }

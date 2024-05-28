@@ -190,20 +190,6 @@ export class PeopleFinderController {
 
     list.forEach(item => {
       if (item) {
-        // get email string
-        // if (item.emails) {
-        //   if (item.source === PeopleFinderPlatforms.voilanorbert) {
-        //     item.emails = item.emails.map(
-        //       (emailCon: {email: string; score: number}) => emailCon.email
-        //     );
-        //   }
-        //   if (item.source === PeopleFinderPlatforms.peopledatalabs) {
-        //     item.emails = item.emails.map(
-        //       (emailCon: {address: string; type: string}) => emailCon.address
-        //     );
-        //   }
-        // }
-
         if (!userMap[item.userId!]) {
           userMap[item.userId!] = item;
         } else {
@@ -229,8 +215,8 @@ export class PeopleFinderController {
       const user = userMap[key]!;
       result.push({
         userId: user.userId!,
-        phones: Array.from(new Set(user.phones)),
-        emails: Array.from(new Set(user.emails)),
+        phones: user.phones,
+        emails: user.emails,
       });
     });
 
