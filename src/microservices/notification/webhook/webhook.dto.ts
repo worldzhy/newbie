@@ -1,41 +1,7 @@
 import {ApiProperty} from '@nestjs/swagger';
 import {IsString, IsNumber, IsOptional} from 'class-validator';
-import {
-  NotificationWebhookPlatform,
-  NotificationAccessStatus,
-} from './constants';
+import {NotificationWebhookPlatform} from './constants';
 
-export class NotificationAccessKeyCreateReqDto {
-  @ApiProperty({
-    type: String,
-    required: false,
-  })
-  @IsString()
-  @IsOptional()
-  remark?: string;
-}
-
-export class NotificationAccessKeyUpdateReqDto extends NotificationAccessKeyCreateReqDto {
-  @ApiProperty({
-    type: Number,
-  })
-  @IsNumber()
-  id: number;
-
-  @ApiProperty({
-    type: String,
-    required: false,
-    enum: NotificationAccessStatus,
-  })
-  @IsString()
-  @IsOptional()
-  status?: string;
-}
-// @ApiProperty({
-//   type: String,
-// })
-// @IsString()
-// accessKey: string;
 export class NotificationWebhookReqBaseDto {
   channelName: string;
 }
@@ -45,7 +11,7 @@ export class NotificationWebhookChannelCreateReqDto {
     type: Number,
   })
   @IsNumber()
-  accountId: number;
+  accessKeyId: number;
 
   @ApiProperty({
     type: String,
@@ -65,7 +31,7 @@ export class NotificationWebhookChannelCreateReqDto {
   })
   @IsString()
   @IsOptional()
-  desc?: string;
+  description?: string;
 
   @ApiProperty({
     type: String,
@@ -88,7 +54,7 @@ export class NotificationWebhookChannelUpdateReqDto {
   })
   @IsString()
   @IsOptional()
-  desc?: string;
+  description?: string;
 
   @ApiProperty({
     type: String,

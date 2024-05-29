@@ -7,29 +7,24 @@ import {NoGuard} from '@microservices/account/security/passport/public/public.de
 import {
   FeishuNotificationService,
   FeishuNotificationReqDto,
-} from '@microservices/notification/webhook/feishu/feishu-notification.service';
+} from '@microservices/notification/webhook/feishu/feishu-webhook.service';
 import {NotificationWebhookService} from '@microservices/notification/webhook/webhook.service';
 import {
-  NotificationAccessKeyCreateReqDto,
-  NotificationAccessKeyUpdateReqDto,
   NotificationWebhookChannelCreateReqDto,
   NotificationWebhookChannelUpdateReqDto,
 } from '@microservices/notification/webhook/webhook.dto';
 import {
-  NotificationAccessKeyListReqDto,
-  NotificationAccessKeyListResDto,
   NotificationWebhookChannelListReqDto,
   NotificationWebhookChannelListResDto,
   NotificationWebhookRecordListReqDto,
   NotificationWebhookRecordListResDto,
 } from './webhook.dto';
 
-@ApiTags('Notification / Webhook')
+@ApiTags('Notification/Webhook')
 @ApiBearerAuth()
 @Controller('notification/webhook')
 export class NotificationWebhookController {
   private loggerContext = 'NotificationWebhook';
-  callBackOrigin: string;
 
   constructor(
     private feishuNotificationService: FeishuNotificationService,
@@ -37,45 +32,6 @@ export class NotificationWebhookController {
     private readonly prisma: PrismaService,
     private readonly logger: CustomLoggerService
   ) {}
-
-  @Get('account/list')
-  @ApiResponse({
-    type: NotificationAccessKeyListResDto,
-  })
-  async accountList(@Query() query: NotificationAccessKeyListReqDto) {
-    const {page, pageSize, id} = query;
-    return this.prisma.findManyInManyPages({
-      model: Prisma.ModelName.NotificationAccessKey,
-      pagination: {page, pageSize},
-      findManyArgs: {
-        where: {
-          id,
-        },
-      },
-    });
-  }
-
-  @Post('account/create')
-  @ApiBody({
-    type: NotificationAccessKeyCreateReqDto,
-  })
-  async accountCreate(
-    @Body()
-    body: NotificationAccessKeyCreateReqDto
-  ) {
-    return await this.notificationWebhookService.accountCreate(body);
-  }
-
-  @Post('account/update')
-  @ApiBody({
-    type: NotificationAccessKeyUpdateReqDto,
-  })
-  async accountUpdate(
-    @Body()
-    body: NotificationAccessKeyUpdateReqDto
-  ) {
-    return await this.notificationWebhookService.accountUpdate(body);
-  }
 
   @Post('channel/create')
   @ApiBody({
@@ -104,13 +60,13 @@ export class NotificationWebhookController {
     type: NotificationWebhookChannelListResDto,
   })
   async channelList(@Query() query: NotificationWebhookChannelListReqDto) {
-    const {page, pageSize, accountId} = query;
+    const {page, pageSize, accessKeyId} = query;
     return this.prisma.findManyInManyPages({
       model: Prisma.ModelName.NotificationWebhookChannel,
       pagination: {page, pageSize},
       findManyArgs: {
         where: {
-          accountId,
+          accessKeyId,
         },
       },
     });

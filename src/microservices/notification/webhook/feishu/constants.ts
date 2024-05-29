@@ -1,8 +1,8 @@
-export enum FeishuNotificationStatus {
+export enum FeishuWebhookStatus {
   SUCCESS = 0,
 }
 
-export enum FeishuNotificationMsgType {
+export enum FeishuWebhookMsgType {
   /** 文本 */
   text = 'text',
   /** 富文本 */

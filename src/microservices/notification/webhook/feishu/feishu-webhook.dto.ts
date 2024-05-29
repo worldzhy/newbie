@@ -1,9 +1,9 @@
 import {ApiProperty} from '@nestjs/swagger';
-import {IsObject, IsString} from 'class-validator';
+import {IsObject, IsString, ValidateNested, IsDefined} from 'class-validator';
 import {Type} from 'class-transformer';
-import {FeishuNotificationMsgType} from './constants';
+import {FeishuWebhookMsgType} from './constants';
 
-export class FeishuPostResDto {
+export class FeishuWebhookPostResDto {
   @ApiProperty({
     type: Number,
   })
@@ -20,10 +20,10 @@ export class FeishuPostResDto {
   data: unknown;
 }
 
-export class FeishuPostBodyDto {
+export class FeishuWebhookPostBodyDto {
   @ApiProperty({
     type: String,
-    enum: FeishuNotificationMsgType,
+    enum: FeishuWebhookMsgType,
   })
   @IsString()
   msg_type: string;
@@ -35,7 +35,7 @@ export class FeishuPostBodyDto {
   content: any;
 }
 
-export class FeishuNotificationReqDto {
+export class NotificationFeishuWebhookReqDto {
   @ApiProperty({
     type: String,
   })
@@ -49,8 +49,10 @@ export class FeishuNotificationReqDto {
   accessKey: string;
 
   @ApiProperty({
-    type: FeishuPostBodyDto,
+    type: FeishuWebhookPostBodyDto,
   })
-  @Type(() => FeishuPostBodyDto)
-  feishuParams: FeishuPostBodyDto;
+  @Type(() => FeishuWebhookPostBodyDto)
+  @ValidateNested()
+  @IsDefined()
+  feishuParams: FeishuWebhookPostBodyDto;
 }

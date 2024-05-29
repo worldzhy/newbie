@@ -3,21 +3,21 @@ import {AxiosResponse, AxiosError} from 'axios';
 import {Injectable, BadRequestException} from '@nestjs/common';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {CustomLoggerService} from '@toolkit/logger/logger.service';
-import {FeishuNotificationStatus} from './constants';
+import {FeishuWebhookStatus} from './constants';
 import {
   NotificationAccessStatus,
   NotificationWebhookRecordStatus,
 } from '../constants';
 import {
-  FeishuNotificationReqDto,
-  FeishuPostResDto,
-  FeishuPostBodyDto,
-} from './feishu-notification.dto';
-export * from './feishu-notification.dto';
+  NotificationFeishuWebhookReqDto,
+  FeishuWebhookPostResDto,
+  FeishuWebhookPostBodyDto,
+} from './feishu-webhook.dto';
+export * from './feishu-webhook.dto';
 
 @Injectable()
-export class FeishuNotificationService {
-  private loggerContext = 'feishu-notification';
+export class FeishuWebhookService {
+  private loggerContext = 'feishu-Webhook';
 
   constructor(
     private httpService: HttpService,
@@ -25,7 +25,7 @@ export class FeishuNotificationService {
     private readonly logger: CustomLoggerService
   ) {}
 
-  async send(body: FeishuNotificationReqDto) {
+  async send(body: NotificationFeishuWebhookReqDto) {
     const {channelName, accessKey, feishuParams} = body;
     const channel = await this.prisma.notificationWebhookChannel.findFirst({
       where: {
@@ -40,7 +40,7 @@ export class FeishuNotificationService {
     if (channel.accessKey?.key !== accessKey)
       throw new BadRequestException('AccessKey Error.');
     if (channel.accessKey?.status === NotificationAccessStatus.inactive)
-      throw new BadRequestException('Account is inactive.');
+      throw new BadRequestException('AccessKey is inactive.');
 
     const newRecord = await this.prisma.notificationWebhookRecord.create({
       data: {
@@ -50,14 +50,14 @@ export class FeishuNotificationService {
       },
     });
 
-    const result: {res?: FeishuPostResDto; error?: any} =
+    const result: {res?: FeishuWebhookPostResDto; error?: any} =
       await this.httpService.axiosRef
-        .post<FeishuPostBodyDto, AxiosResponse<FeishuPostResDto>>(
+        .post<FeishuWebhookPostBodyDto, AxiosResponse<FeishuWebhookPostResDto>>(
           channel.webhook,
           feishuParams
         )
         .then(res => {
-          if (res.data.code === FeishuNotificationStatus.SUCCESS) {
+          if (res.data.code === FeishuWebhookStatus.SUCCESS) {
             this.logger.log(
               `FeishuNotification send [${channel.webhook}] success: ` +
                 JSON.stringify(res.data),

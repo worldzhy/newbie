@@ -27,38 +27,6 @@ export class PaginationResDto {
   pageSize: number;
 }
 
-export class NotificationAccessKeyDetailResDto {
-  @ApiProperty({
-    type: String,
-  })
-  id: string;
-
-  @ApiProperty({
-    type: String,
-  })
-  accessKey: string;
-
-  @ApiProperty({
-    type: String,
-  })
-  description: string;
-
-  @ApiProperty({
-    type: String,
-  })
-  status: string;
-
-  @ApiProperty({
-    type: Date,
-  })
-  createdAt: Date;
-
-  @ApiProperty({
-    type: Date,
-  })
-  updatedAt: Date;
-}
-
 export class CommonPage {
   @ApiProperty({
     type: Number,
@@ -96,7 +64,7 @@ export class NotificationWebhookChannelListReqDto extends CommonPage {
   @IsNotEmpty()
   @IsNumber()
   @Type(() => Number)
-  accountId: number;
+  accessKeyId: number;
 }
 
 export class NotificationWebhookRecordListReqDto extends CommonPage {
@@ -107,19 +75,6 @@ export class NotificationWebhookRecordListReqDto extends CommonPage {
   @IsNumber()
   @Type(() => Number)
   channelId: number;
-}
-
-export class NotificationAccessKeyListResDto {
-  @ApiProperty({
-    type: NotificationAccessKeyDetailResDto,
-    isArray: true,
-  })
-  records: NotificationAccessKeyDetailResDto[];
-
-  @ApiProperty({
-    type: PaginationResDto,
-  })
-  pagination: PaginationResDto;
 }
 
 export class NotificationWebhookChannelDetailResDto extends NotificationWebhookChannelCreateReqDto {
