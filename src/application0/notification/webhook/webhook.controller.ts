@@ -5,8 +5,8 @@ import {Prisma} from '@prisma/client';
 import {CustomLoggerService} from '@toolkit/logger/logger.service';
 import {NoGuard} from '@microservices/account/security/passport/public/public.decorator';
 import {
-  FeishuNotificationService,
-  FeishuNotificationReqDto,
+  FeishuWebhookService,
+  NotificationFeishuWebhookReqDto,
 } from '@microservices/notification/webhook/feishu/feishu-webhook.service';
 import {NotificationWebhookService} from '@microservices/notification/webhook/webhook.service';
 import {
@@ -27,7 +27,7 @@ export class NotificationWebhookController {
   private loggerContext = 'NotificationWebhook';
 
   constructor(
-    private feishuNotificationService: FeishuNotificationService,
+    private feishuWebhookService: FeishuWebhookService,
     private notificationWebhookService: NotificationWebhookService,
     private readonly prisma: PrismaService,
     private readonly logger: CustomLoggerService
@@ -92,16 +92,16 @@ export class NotificationWebhookController {
   @NoGuard()
   @Post('feishu/webhook')
   @ApiBody({
-    type: FeishuNotificationReqDto,
+    type: NotificationFeishuWebhookReqDto,
   })
   async feishuWebhook(
     @Body()
-    body: FeishuNotificationReqDto
+    body: NotificationFeishuWebhookReqDto
   ) {
     this.logger.log(
       'feishu/webhook:' + JSON.stringify(body),
       this.loggerContext
     );
-    return await this.feishuNotificationService.send(body);
+    return await this.feishuWebhookService.send(body);
   }
 }
