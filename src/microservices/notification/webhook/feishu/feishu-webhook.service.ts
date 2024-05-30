@@ -3,16 +3,14 @@ import {AxiosResponse, AxiosError} from 'axios';
 import {Injectable, BadRequestException} from '@nestjs/common';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {CustomLoggerService} from '@toolkit/logger/logger.service';
-import {FeishuWebhookStatus} from './constants';
-import {
-  NotificationAccessStatus,
-  NotificationWebhookRecordStatus,
-} from '../constants';
+import {FeishuWebhookSendStatus} from './constants';
 import {
   NotificationFeishuWebhookReqDto,
   FeishuWebhookPostResDto,
   FeishuWebhookPostBodyDto,
 } from './feishu-webhook.dto';
+import {NotificationAccessKeyStatus} from '@microservices/notification/constants';
+import {NotificationWebhookRecordStatus} from '../constants';
 export * from './feishu-webhook.dto';
 
 @Injectable()
@@ -39,13 +37,13 @@ export class FeishuWebhookService {
     if (!channel) throw new BadRequestException('No channel found.');
     if (channel.accessKey?.key !== accessKey)
       throw new BadRequestException('AccessKey Error.');
-    if (channel.accessKey?.status === NotificationAccessStatus.inactive)
+    if (channel.accessKey?.status === NotificationAccessKeyStatus.Inactive)
       throw new BadRequestException('AccessKey is inactive.');
 
     const newRecord = await this.prisma.notificationWebhookRecord.create({
       data: {
         channelId: channel.id,
-        status: NotificationWebhookRecordStatus.pending,
+        status: NotificationWebhookRecordStatus.Pending,
         request: feishuParams as object,
       },
     });
@@ -57,7 +55,7 @@ export class FeishuWebhookService {
           feishuParams
         )
         .then(res => {
-          if (res.data.code === FeishuWebhookStatus.SUCCESS) {
+          if (res.data.code === FeishuWebhookSendStatus.Succeeded) {
             this.logger.log(
               `FeishuNotification send [${channel.webhook}] success: ` +
                 JSON.stringify(res.data),
@@ -89,8 +87,8 @@ export class FeishuWebhookService {
       data: {
         response: result as object,
         status: result.error
-          ? NotificationWebhookRecordStatus.error
-          : NotificationWebhookRecordStatus.success,
+          ? NotificationWebhookRecordStatus.Failed
+          : NotificationWebhookRecordStatus.Succeeded,
       },
     });
     return result;

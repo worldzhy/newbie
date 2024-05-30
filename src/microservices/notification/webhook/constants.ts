@@ -2,13 +2,8 @@ export enum NotificationWebhookPlatform {
   feishu = 'feishu',
 }
 
-export enum NotificationAccessStatus {
-  active = 'active',
-  inactive = 'inactive',
-}
-
 export enum NotificationWebhookRecordStatus {
-  pending = 'pending',
-  success = 'success',
-  error = 'error',
+  Pending = 'pending',
+  Succeeded = 'succeeded',
+  Failed = 'failed',
 }

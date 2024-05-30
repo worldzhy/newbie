@@ -1,7 +1,7 @@
 import {ApiProperty} from '@nestjs/swagger';
 import {IsObject, IsString, ValidateNested, IsDefined} from 'class-validator';
 import {Type} from 'class-transformer';
-import {FeishuWebhookMsgType} from './constants';
+import {FeishuWebhookMessageType} from './constants';
 
 export class FeishuWebhookPostResDto {
   @ApiProperty({
@@ -23,7 +23,7 @@ export class FeishuWebhookPostResDto {
 export class FeishuWebhookPostBodyDto {
   @ApiProperty({
     type: String,
-    enum: FeishuWebhookMsgType,
+    enum: FeishuWebhookMessageType,
   })
   @IsString()
   msg_type: string;

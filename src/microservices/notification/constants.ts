@@ -1,4 +1,4 @@
-export enum NotificationAccessStatus {
-  active = 'active',
-  inactive = 'inactive',
+export enum NotificationAccessKeyStatus {
+  Active = 'active',
+  Inactive = 'inactive',
 }

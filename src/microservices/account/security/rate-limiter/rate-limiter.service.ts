@@ -47,13 +47,11 @@ abstract class RateLimiterService {
 
     const redisHost = this.config.get<string>('server.redis.host');
     const redisPort = this.config.get<number>('server.redis.port');
-    const redisPassword = this.config.get<string>('server.redis.password');
     if (redisHost && redisPort) {
       this.limiter = new RateLimiterRedis({
         storeClient: new Redis({
           host: redisHost,
           port: redisPort,
-          password: redisPassword,
           keyPrefix: limiterType + '-',
         }),
         points: this.points,

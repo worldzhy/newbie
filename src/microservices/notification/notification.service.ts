@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {generateRandomCode} from '@toolkit/utilities/common.util';
-import {NotificationAccessStatus} from './constants';
+import {NotificationAccessKeyStatus} from './constants';
 import {
   NotificationAccessKeyCreateReqDto,
   NotificationAccessKeyUpdateReqDto,
@@ -26,7 +26,7 @@ export class NotificationService {
 
     await this.prisma.notificationAccessKey.create({
       data: {
-        status: NotificationAccessStatus.active,
+        status: NotificationAccessKeyStatus.Active,
         key,
         ...body,
       },

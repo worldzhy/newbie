@@ -1,6 +1,6 @@
 import {ApiProperty} from '@nestjs/swagger';
 import {IsString, IsNumber, IsOptional} from 'class-validator';
-import {NotificationAccessStatus} from './constants';
+import {NotificationAccessKeyStatus} from './constants';
 
 export class NotificationAccessKeyCreateReqDto {
   @ApiProperty({
@@ -22,7 +22,7 @@ export class NotificationAccessKeyUpdateReqDto extends NotificationAccessKeyCrea
   @ApiProperty({
     type: String,
     required: false,
-    enum: NotificationAccessStatus,
+    enum: NotificationAccessKeyStatus,
   })
   @IsString()
   @IsOptional()
