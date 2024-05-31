@@ -1134,7 +1134,7 @@ model WorkflowRoute {
 // !             [Microservice] people-finder models              //
 // ! ------------------------------------------------------------ //
 // * PeopleFinderCallThirdParty                                                //
-// * PeopleFinderTaskBranch                                            //
+// * PeopleFinderTaskBatch                                         //
 // * PeopleFinderTask                                            //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 model PeopleFinderCallThirdParty {
@@ -1160,9 +1160,9 @@ model PeopleFinderCallThirdParty {
   @@schema("microservice/people-finder")
 }
 
-model PeopleFinderTaskBranch {
+model PeopleFinderTaskBatch {
   id               Int                @id @default(autoincrement())
-  branchId         String
+  batchId          String
   callbackUrl      String?
   callbackStatus   String
   status           String // pending | completed
@@ -1174,10 +1174,10 @@ model PeopleFinderTaskBranch {
 }
 
 model PeopleFinderTask {
-  id                Int                     @id @default(autoincrement())
-  taskBranch        PeopleFinderTaskBranch? @relation(fields: [taskBranchId], references: [id])
+  id                Int                    @id @default(autoincrement())
+  taskBatch         PeopleFinderTaskBatch? @relation(fields: [taskBatchId], references: [id])
   callThirdPartyIds Int[]
-  taskBranchId      Int?
+  taskBatchId       Int?
   userId            String?
   userSource        String?
   name              String?
@@ -1191,8 +1191,8 @@ model PeopleFinderTask {
   emails            Json[]
   phones            Json[]
   status            String // pending | completed
-  createdAt         DateTime                @default(now())
-  updatedAt         DateTime                @updatedAt
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
 
   @@schema("microservice/people-finder")
 }

@@ -15,13 +15,13 @@ export enum PeopleFinderTaskStatus {
   pending = 'pending',
   completed = 'completed',
 }
-export enum PeopleFinderBranchTaskStatus {
+export enum PeopleFinderBatchTaskStatus {
   pending = 'pending',
   synchronizingData = 'synchronizingData',
   completed = 'completed',
 }
 
-export enum PeopleFinderBranchTaskCallBackStatus {
+export enum PeopleFinderBatchTaskCallBackStatus {
   pending = 'pending',
   error = 'error',
   completed = 'completed',
@@ -40,7 +40,7 @@ export type PeopleFinderUserReq = {
 export type PeopleFinderTaskBullJob = {
   /** PeopleFinderTaskId */
   id: number;
-  taskBranchId: number;
+  taskBatchId: number;
   findEmail?: boolean;
   findPhone?: boolean;
 } & PeopleFinderUserReq;

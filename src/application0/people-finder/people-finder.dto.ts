@@ -1,23 +1,23 @@
 import {ApiProperty} from '@nestjs/swagger';
 import {IsString} from 'class-validator';
 
-export class CreateContactSearchBranchResDto {
+export class CreateContactSearchBatchResDto {
   @ApiProperty({
     type: String,
   })
   @IsString()
-  branchId: string;
+  batchId: string;
 }
 
-export class GetContactSearchBranchReqDto {
+export class GetContactSearchBatchReqDto {
   @ApiProperty({
     type: String,
   })
   @IsString()
-  branchId: string;
+  batchId: string;
 }
 
-export class GetBranchStatusResDto {
+export class GetBatchStatusResDto {
   @ApiProperty({
     type: Boolean,
   })

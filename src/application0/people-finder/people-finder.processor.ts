@@ -44,7 +44,7 @@ export class PeopleFinderJobProcessor {
         findEmail,
         findPhone,
         id: peopleFinderTaskId,
-        taskBranchId,
+        taskBatchId,
         ...user
       } = data;
 
@@ -63,7 +63,7 @@ export class PeopleFinderJobProcessor {
             status: PeopleFinderTaskStatus.completed,
           },
         });
-        await this.peopleFinder.checkAndExecuteTaskBranchCallback(taskBranchId);
+        await this.peopleFinder.checkAndExecuteTaskBatchCallback(taskBatchId);
       }
     }
 
