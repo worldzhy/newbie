@@ -6,10 +6,10 @@ import {
   PeopleFinderStatus,
   PeopleFinderPlatforms,
   PeopleFinderTaskStatus,
-  PeopleFinderBranchTaskStatus,
-  PeopleFinderBranchTaskCallBackStatus,
+  PeopleFinderBatchTaskStatus,
+  PeopleFinderBatchTaskCallBackStatus,
 } from './constants';
-import {CreateContactSearchTaskBranchReqDto} from './people-finder.dto';
+import {CreateContactSearchTaskBatchReqDto} from './people-finder.dto';
 export * from './constants';
 
 @Injectable()
@@ -48,79 +48,79 @@ export class PeopleFinderService {
     return 0;
   }
 
-  async createTaskBranch({
-    branchId,
+  async createTaskBatch({
+    batchId,
     peoples,
     callbackUrl,
-  }: CreateContactSearchTaskBranchReqDto): Promise<{taskBranchId: number}> {
-    const taskBranch = await this.prisma.peopleFinderTaskBranch.findFirst({
+  }: CreateContactSearchTaskBatchReqDto): Promise<{taskBatchId: number}> {
+    const taskBatch = await this.prisma.peopleFinderTaskBatch.findFirst({
       where: {
-        branchId,
+        batchId,
       },
     });
-    if (taskBranch) {
-      throw new BadRequestException('BranchId already exists.');
+    if (taskBatch) {
+      throw new BadRequestException('BatchId already exists.');
     }
-    const newTaskBranch = await this.prisma.peopleFinderTaskBranch.create({
+    const newTaskBatch = await this.prisma.peopleFinderTaskBatch.create({
       data: {
-        branchId,
-        status: PeopleFinderBranchTaskStatus.pending,
+        batchId,
+        status: PeopleFinderBatchTaskStatus.pending,
         callbackUrl,
-        callbackStatus: PeopleFinderBranchTaskCallBackStatus.pending,
+        callbackStatus: PeopleFinderBatchTaskCallBackStatus.pending,
       },
     });
     await this.prisma.peopleFinderTask.createMany({
       data: peoples.map(item => ({
         ...item,
         status: PeopleFinderTaskStatus.pending,
-        taskBranchId: newTaskBranch.id,
+        taskBatchId: newTaskBatch.id,
       })),
     });
-    return {taskBranchId: newTaskBranch.id};
+    return {taskBatchId: newTaskBatch.id};
   }
 
-  async getTaskBrancTasks(branchId: string) {
-    const taskBranch = await this.prisma.peopleFinderTaskBranch.findFirst({
+  async getTaskBrancTasks(batchId: string) {
+    const taskBatch = await this.prisma.peopleFinderTaskBatch.findFirst({
       where: {
-        branchId,
+        batchId,
       },
     });
-    if (!taskBranch) {
-      throw new BadRequestException('Branch not found.');
+    if (!taskBatch) {
+      throw new BadRequestException('Batch not found.');
     }
     return await this.prisma.peopleFinderTask.findMany({
       where: {
-        taskBranchId: taskBranch.id,
+        taskBatchId: taskBatch.id,
       },
     });
   }
 
-  async checkTaskBranchStatus({
-    branchId,
-    taskBranchId,
+  async checkTaskBatchStatus({
+    batchId,
+    taskBatchId,
   }: {
-    branchId?: string;
-    taskBranchId?: number;
+    batchId?: string;
+    taskBatchId?: number;
   }) {
-    const taskBranch = await this.prisma.peopleFinderTaskBranch.findFirst({
-      where: taskBranchId
-        ? {id: taskBranchId}
+    const taskBatch = await this.prisma.peopleFinderTaskBatch.findFirst({
+      where: taskBatchId
+        ? {id: taskBatchId}
         : {
-            branchId,
+            batchId,
           },
     });
-    if (!taskBranch) {
-      throw new BadRequestException('BranchId not found.');
+    if (!taskBatch) {
+      throw new BadRequestException('BatchId not found.');
     }
     const total = await this.prisma.peopleFinderTask.count({
       where: {
-        taskBranchId: taskBranch.id,
+        taskBatchId: taskBatch.id,
       },
     });
     const totalCompleted = await this.prisma.peopleFinderTask.count({
       where: {
         status: PeopleFinderTaskStatus.completed,
-        taskBranchId: taskBranch.id,
+        taskBatchId: taskBatch.id,
       },
     });
     return {
@@ -130,22 +130,22 @@ export class PeopleFinderService {
     };
   }
 
-  async checkAndExecuteTaskBranchCallback(taskBranchId: number) {
-    const {completed} = await this.checkTaskBranchStatus({
-      taskBranchId: taskBranchId,
+  async checkAndExecuteTaskBatchCallback(taskBatchId: number) {
+    const {completed} = await this.checkTaskBatchStatus({
+      taskBatchId: taskBatchId,
     });
 
     if (!completed) return;
 
-    await this.prisma.peopleFinderTaskBranch.update({
-      where: {id: taskBranchId},
+    await this.prisma.peopleFinderTaskBatch.update({
+      where: {id: taskBatchId},
       data: {
-        status: PeopleFinderBranchTaskStatus.synchronizingData,
+        status: PeopleFinderBatchTaskStatus.synchronizingData,
       },
     });
 
     const list = await this.prisma.peopleFinderTask.findMany({
-      where: {taskBranchId},
+      where: {taskBatchId},
     });
 
     for (let i = 0; i < list.length; i++) {
@@ -185,42 +185,42 @@ export class PeopleFinderService {
       });
     }
 
-    const taskBranch = await this.prisma.peopleFinderTaskBranch.update({
-      where: {id: taskBranchId},
+    const taskBatch = await this.prisma.peopleFinderTaskBatch.update({
+      where: {id: taskBatchId},
       data: {
-        status: PeopleFinderBranchTaskStatus.completed,
+        status: PeopleFinderBatchTaskStatus.completed,
       },
     });
 
-    if (taskBranch?.callbackUrl) {
+    if (taskBatch?.callbackUrl) {
       this.httpService.axiosRef
-        .post<{branchId: string}, {status: number; data: string}>(
-          taskBranch?.callbackUrl,
-          {branchId: taskBranch.branchId}
+        .post<{batchId: string}, {status: number; data: string}>(
+          taskBatch?.callbackUrl,
+          {batchId: taskBatch.batchId}
         )
         .then(async res => {
           if (res.status === 200) {
-            await this.prisma.peopleFinderTaskBranch.update({
-              where: {id: taskBranchId},
+            await this.prisma.peopleFinderTaskBatch.update({
+              where: {id: taskBatchId},
               data: {
-                callbackStatus: PeopleFinderBranchTaskCallBackStatus.completed,
+                callbackStatus: PeopleFinderBatchTaskCallBackStatus.completed,
               },
             });
           }
           this.logger.log(
-            'checkAndExecuteTaskBranchCallback: ' + JSON.stringify(res),
+            'checkAndExecuteTaskBatchCallback: ' + JSON.stringify(res),
             this.loggerContext
           );
         })
         .catch(async e => {
-          await this.prisma.peopleFinderTaskBranch.update({
-            where: {id: taskBranchId},
+          await this.prisma.peopleFinderTaskBatch.update({
+            where: {id: taskBatchId},
             data: {
-              callbackStatus: PeopleFinderBranchTaskCallBackStatus.error,
+              callbackStatus: PeopleFinderBatchTaskCallBackStatus.error,
             },
           });
           this.logger.error(
-            'checkAndExecuteTaskBranchCallback catch: ' +
+            'checkAndExecuteTaskBatchCallback catch: ' +
               JSON.stringify({error: e}),
             this.loggerContext
           );

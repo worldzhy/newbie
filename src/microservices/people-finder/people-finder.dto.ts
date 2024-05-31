@@ -82,7 +82,7 @@ export class ContactSearchPeopleTaskDto extends ContactSearchPeopleBase {
   findEmail?: boolean;
 }
 
-export class CreateContactSearchTaskBranchReqDto {
+export class CreateContactSearchTaskBatchReqDto {
   @ApiProperty({
     type: ContactSearchPeopleTaskDto,
     isArray: true,
@@ -94,7 +94,7 @@ export class CreateContactSearchTaskBranchReqDto {
     type: String,
   })
   @IsString()
-  branchId: string;
+  batchId: string;
 
   @ApiProperty({
     type: String,

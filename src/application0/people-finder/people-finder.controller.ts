@@ -6,7 +6,7 @@ import {
   Query,
   BadRequestException,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiBody, ApiResponse} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiResponse} from '@nestjs/swagger';
 import {ConfigService} from '@nestjs/config';
 import {Prisma} from '@prisma/client';
 import {Job, Queue} from 'bull';
@@ -16,9 +16,9 @@ import {CustomLoggerService} from '@toolkit/logger/logger.service';
 import {generateRandomCode} from '@toolkit/utilities/common.util';
 import {NoGuard} from '@microservices/account/security/passport/public/public.decorator';
 import {
-  CreateContactSearchBranchResDto,
-  GetContactSearchBranchReqDto,
-  GetBranchStatusResDto,
+  CreateContactSearchBatchResDto,
+  GetContactSearchBatchReqDto,
+  GetBatchStatusResDto,
 } from './people-finder.dto';
 import {
   SearchEmailThirdResDto,
@@ -31,7 +31,7 @@ import {
 } from '@microservices/people-finder/constants';
 import {VoilaNorbertService} from '@microservices/people-finder/voila-norbert/volia-norbert.service';
 import {ProxycurlService} from '@microservices/people-finder/proxycurl/proxycurl.service';
-import {CreateContactSearchTaskBranchReqDto} from '@microservices/people-finder/people-finder.dto';
+import {CreateContactSearchTaskBatchReqDto} from '@microservices/people-finder/people-finder.dto';
 import {
   PeopleFinderService,
   PeopleFinderPlatforms,
@@ -60,38 +60,38 @@ export class PeopleFinderController {
   }
 
   @NoGuard()
-  @Post('create-contact-search-branch-id')
+  @Post('create-contact-search-batch-id')
   @ApiResponse({
-    type: CreateContactSearchBranchResDto,
+    type: CreateContactSearchBatchResDto,
   })
-  async createContactSearchBranchId() {
-    const branchId = generateRandomCode(15);
-    const isExist = await this.prisma.peopleFinderTaskBranch.findFirst({
+  async createContactSearchBatchId() {
+    const batchId = generateRandomCode(15);
+    const isExist = await this.prisma.peopleFinderTaskBatch.findFirst({
       where: {
-        branchId,
+        batchId,
       },
     });
-    if (isExist) return await this.createContactSearchBranchId();
-    return {branchId};
+    if (isExist) return await this.createContactSearchBatchId();
+    return {batchId};
   }
 
   @NoGuard()
-  @Post('create-contact-search-branch')
+  @Post('create-contact-search-batch')
   @ApiResponse({
-    type: CreateContactSearchBranchResDto,
+    type: CreateContactSearchBatchResDto,
   })
-  async createContactSearchTaskBranch(
+  async createContactSearchTaskBatch(
     @Body()
-    body: CreateContactSearchTaskBranchReqDto
+    body: CreateContactSearchTaskBatchReqDto
   ) {
-    const {branchId} = body;
-    await this.peopleFinder.createTaskBranch(body);
-    const tasks = await this.peopleFinder.getTaskBrancTasks(branchId);
+    const {batchId} = body;
+    await this.peopleFinder.createTaskBatch(body);
+    const tasks = await this.peopleFinder.getTaskBrancTasks(batchId);
     const datas: PeopleFinderTaskBullJob[] = tasks.map(
       item =>
         ({
           id: item.id,
-          taskBranchId: item.taskBranchId,
+          taskBatchId: item.taskBatchId,
           userId: item.userId,
           userSource: item.userSource,
           name: item.name,
@@ -105,14 +105,14 @@ export class PeopleFinderController {
         }) as PeopleFinderTaskBullJob
     );
     await this.queue.addBulk(datas.map(item => ({data: item})));
-    return {branchId};
+    return {batchId};
   }
 
   @NoGuard()
-  @Get('get-contact-search-branch-jobs')
-  async getJobsByBranchId(
+  @Get('get-contact-search-batch-jobs')
+  async getJobsByBatchId(
     @Query()
-    query: GetContactSearchBranchReqDto
+    query: GetContactSearchBatchReqDto
   ): Promise<Job[]> {
     const limit = 100;
     let start = 0,
@@ -134,41 +134,41 @@ export class PeopleFinderController {
         flag = false;
       }
     }
-    return allList.filter(item => item.data.branchId === query.branchId);
+    return allList.filter(item => item.data.batchId === query.batchId);
   }
 
   @NoGuard()
-  @Get('get-contact-search-branch-status')
+  @Get('get-contact-search-batch-status')
   @ApiResponse({
-    type: GetBranchStatusResDto,
+    type: GetBatchStatusResDto,
   })
-  async getStatusByBranchId(
+  async getStatusByBatchId(
     @Query()
-    query: GetContactSearchBranchReqDto
-  ): Promise<GetBranchStatusResDto> {
-    return await this.peopleFinder.checkTaskBranchStatus({
-      branchId: query.branchId,
+    query: GetContactSearchBatchReqDto
+  ): Promise<GetBatchStatusResDto> {
+    return await this.peopleFinder.checkTaskBatchStatus({
+      batchId: query.batchId,
     });
   }
 
   @NoGuard()
-  @Get('get-contact-search-branch-result')
-  async getResultByBranchId(
+  @Get('get-contact-search-batch-result')
+  async getResultByBatchId(
     @Query()
-    query: GetContactSearchBranchReqDto
+    query: GetContactSearchBatchReqDto
   ) {
-    const taskBranch = await this.prisma.peopleFinderTaskBranch.findFirst({
+    const taskBatch = await this.prisma.peopleFinderTaskBatch.findFirst({
       where: {
-        branchId: query.branchId,
+        batchId: query.batchId,
       },
     });
-    if (!taskBranch) {
-      throw new BadRequestException('BranchId not found.');
+    if (!taskBatch) {
+      throw new BadRequestException('BatchId not found.');
     }
     const list = await this.prisma.peopleFinderTask.findMany({
       where: {
         status: PeopleFinderTaskStatus.completed,
-        taskBranchId: taskBranch.id,
+        taskBatchId: taskBatch.id,
         OR: [
           {
             emails: {
@@ -302,8 +302,8 @@ export class PeopleFinderController {
         status: PeopleFinderTaskStatus.completed,
       },
     });
-    await this.peopleFinder.checkAndExecuteTaskBranchCallback(
-      taskRecord.taskBranchId!
+    await this.peopleFinder.checkAndExecuteTaskBatchCallback(
+      taskRecord.taskBatchId!
     );
     this.logger.log(
       'voilanorbert-hook:' + id + ' [res]:' + JSON.stringify(res),
