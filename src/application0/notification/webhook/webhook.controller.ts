@@ -55,6 +55,17 @@ export class NotificationWebhookController {
     return await this.notificationWebhookService.channelUpdate(body);
   }
 
+  @Post('channel/delete')
+  @ApiBody({
+    type: NotificationWebhookChannelUpdateReqDto,
+  })
+  async channelDelete(
+    @Body()
+    body: NotificationWebhookChannelUpdateReqDto
+  ) {
+    return await this.notificationWebhookService.channelDelete(body);
+  }
+
   @Get('channel/list')
   @ApiResponse({
     type: NotificationWebhookChannelListResDto,
@@ -66,6 +77,7 @@ export class NotificationWebhookController {
       pagination: {page, pageSize},
       findManyArgs: {
         where: {
+          deletedAt: null,
           accessKeyId,
         },
       },
@@ -85,6 +97,7 @@ export class NotificationWebhookController {
         where: {
           channelId,
         },
+        orderBy: {id: 'desc'},
       },
     });
   }

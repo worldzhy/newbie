@@ -39,7 +39,7 @@ export class NotificationAccessKeyDetailResDto {
   @ApiProperty({
     type: String,
   })
-  description: string;
+  name: string;
 
   @ApiProperty({
     type: String,

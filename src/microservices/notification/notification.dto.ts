@@ -5,19 +5,25 @@ import {NotificationAccessKeyStatus} from './constants';
 export class NotificationAccessKeyCreateReqDto {
   @ApiProperty({
     type: String,
-    required: false,
   })
   @IsString()
-  @IsOptional()
-  description?: string;
+  name: string;
 }
 
-export class NotificationAccessKeyUpdateReqDto extends NotificationAccessKeyCreateReqDto {
+export class NotificationAccessKeyUpdateReqDto {
   @ApiProperty({
     type: Number,
   })
   @IsNumber()
   id: number;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  name?: string;
 
   @ApiProperty({
     type: String,

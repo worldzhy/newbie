@@ -44,4 +44,17 @@ export class NotificationService {
     });
     return {id};
   }
+
+  async accessKeyDelete(
+    body: NotificationAccessKeyUpdateReqDto
+  ): Promise<{id: number}> {
+    const {id} = body;
+    await this.prisma.notificationAccessKey.update({
+      where: {id},
+      data: {
+        deletedAt: new Date(),
+      },
+    });
+    return {id};
+  }
 }

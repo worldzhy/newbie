@@ -32,6 +32,7 @@ export class NotificationController {
       pagination: {page, pageSize},
       findManyArgs: {
         where: {
+          deletedAt: null,
           id,
         },
       },
@@ -58,5 +59,16 @@ export class NotificationController {
     body: NotificationAccessKeyUpdateReqDto
   ) {
     return await this.notificationService.accessKeyUpdate(body);
+  }
+
+  @Post('accessKey/delete')
+  @ApiBody({
+    type: NotificationAccessKeyUpdateReqDto,
+  })
+  async accessKeyDelete(
+    @Body()
+    body: NotificationAccessKeyUpdateReqDto
+  ) {
+    return await this.notificationService.accessKeyDelete(body);
   }
 }

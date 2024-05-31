@@ -707,10 +707,11 @@ model Place {
 model NotificationAccessKey {
   id                    Int                                @id @default(autoincrement())
   key                   String // Auto generated
-  description           String?
+  name                  String
   status                String
   createdAt             DateTime                           @default(now())
   updatedAt             DateTime                           @updatedAt
+  deletedAt             DateTime?                           
   webhookChannels       NotificationWebhookChannel[]
   simpleEmailChannels   NotificationSimpleEmailChannel[]
   advancedEmailChannels NotificationAdvancedEmailChannel[]
@@ -774,6 +775,7 @@ model NotificationWebhookChannel {
   platform    String // feishu, slack ...
   createdAt   DateTime                    @default(now())
   updatedAt   DateTime                    @updatedAt
+  deletedAt             DateTime?
   records     NotificationWebhookRecord[]
   accessKey   NotificationAccessKey?      @relation(fields: [accessKeyId], references: [id])
   accessKeyId Int?

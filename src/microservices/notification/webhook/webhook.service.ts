@@ -35,7 +35,7 @@ export class NotificationWebhookService {
     body: NotificationWebhookChannelUpdateReqDto
   ): Promise<{id: number}> {
     const {id} = body;
-    const newChannel = await this.prisma.notificationWebhookChannel.update({
+    await this.prisma.notificationWebhookChannel.update({
       where: {
         id,
       },
@@ -43,6 +43,21 @@ export class NotificationWebhookService {
         ...body,
       },
     });
-    return {id: newChannel.id};
+    return {id};
+  }
+
+  async channelDelete(
+    body: NotificationWebhookChannelUpdateReqDto
+  ): Promise<{id: number}> {
+    const {id} = body;
+    await this.prisma.notificationWebhookChannel.update({
+      where: {
+        id,
+      },
+      data: {
+        deletedAt: new Date(),
+      },
+    });
+    return {id};
   }
 }
