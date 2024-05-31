@@ -1,29 +1,7 @@
 import {ApiProperty} from '@nestjs/swagger';
-import {IsNumber, IsNotEmpty, IsOptional} from 'class-validator';
+import {IsNumber, IsOptional} from 'class-validator';
+import {CommonPaginationReqDto, CommonPaginationResDto} from '@/dto/common';
 import {Type} from 'class-transformer';
-
-// common
-export class PaginationResDto {
-  @ApiProperty({
-    type: Number,
-  })
-  countOfCurrentPage: number;
-
-  @ApiProperty({
-    type: Number,
-  })
-  countOfTotal: number;
-
-  @ApiProperty({
-    type: Number,
-  })
-  page: number;
-
-  @ApiProperty({
-    type: Number,
-  })
-  pageSize: number;
-}
 
 export class NotificationAccessKeyDetailResDto {
   @ApiProperty({
@@ -57,25 +35,7 @@ export class NotificationAccessKeyDetailResDto {
   updatedAt: Date;
 }
 
-export class CommonPage {
-  @ApiProperty({
-    type: Number,
-  })
-  @IsNotEmpty()
-  @IsNumber()
-  @Type(() => Number)
-  pageSize: number;
-
-  @ApiProperty({
-    type: Number,
-  })
-  @IsNotEmpty()
-  @IsNumber()
-  @Type(() => Number)
-  page: number;
-}
-
-export class NotificationAccessKeyListReqDto extends CommonPage {
+export class NotificationAccessKeyListReqDto extends CommonPaginationReqDto {
   @ApiProperty({
     type: Number,
     required: false,
@@ -94,7 +54,7 @@ export class NotificationAccessKeyListResDto {
   records: NotificationAccessKeyDetailResDto[];
 
   @ApiProperty({
-    type: PaginationResDto,
+    type: CommonPaginationResDto,
   })
-  pagination: PaginationResDto;
+  pagination: CommonPaginationResDto;
 }

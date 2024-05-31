@@ -1,52 +1,11 @@
 import {ApiProperty} from '@nestjs/swagger';
 import {IsNumber, IsNotEmpty, IsString, IsOptional} from 'class-validator';
 import {Type} from 'class-transformer';
+import {CommonPaginationReqDto, CommonPaginationResDto} from '@/dto/common';
 import {NotificationWebhookChannelCreateReqDto} from '@microservices/notification/webhook/webhook.dto';
 import {NotificationWebhookRecordStatus} from '@microservices/notification/webhook/constants';
 
-// common
-export class PaginationResDto {
-  @ApiProperty({
-    type: Number,
-  })
-  countOfCurrentPage: number;
-
-  @ApiProperty({
-    type: Number,
-  })
-  countOfTotal: number;
-
-  @ApiProperty({
-    type: Number,
-  })
-  page: number;
-
-  @ApiProperty({
-    type: Number,
-  })
-  pageSize: number;
-}
-
-export class CommonPage {
-  @ApiProperty({
-    type: Number,
-  })
-  @IsNotEmpty()
-  @IsNumber()
-  // query参数实际都是字符串，这里需要转换下number
-  @Type(() => Number)
-  pageSize: number;
-
-  @ApiProperty({
-    type: Number,
-  })
-  @IsNotEmpty()
-  @IsNumber()
-  @Type(() => Number)
-  page: number;
-}
-
-export class NotificationAccessKeyListReqDto extends CommonPage {
+export class NotificationAccessKeyListReqDto extends CommonPaginationReqDto {
   @ApiProperty({
     type: Number,
     required: false,
@@ -57,7 +16,7 @@ export class NotificationAccessKeyListReqDto extends CommonPage {
   id?: number;
 }
 
-export class NotificationWebhookChannelListReqDto extends CommonPage {
+export class NotificationWebhookChannelListReqDto extends CommonPaginationReqDto {
   @ApiProperty({
     type: Number,
   })
@@ -67,7 +26,7 @@ export class NotificationWebhookChannelListReqDto extends CommonPage {
   accessKeyId: number;
 }
 
-export class NotificationWebhookRecordListReqDto extends CommonPage {
+export class NotificationWebhookRecordListReqDto extends CommonPaginationReqDto {
   @ApiProperty({
     type: Number,
   })
@@ -102,9 +61,9 @@ export class NotificationWebhookChannelListResDto {
   records: NotificationWebhookChannelDetailResDto[];
 
   @ApiProperty({
-    type: PaginationResDto,
+    type: CommonPaginationResDto,
   })
-  pagination: PaginationResDto;
+  pagination: CommonPaginationResDto;
 }
 
 export class NotificationWebhookRecordDetailResDto {
@@ -157,7 +116,7 @@ export class NotificationWebhookRecordListResDto {
   records: NotificationWebhookRecordDetailResDto[];
 
   @ApiProperty({
-    type: PaginationResDto,
+    type: CommonPaginationResDto,
   })
-  pagination: PaginationResDto;
+  pagination: CommonPaginationResDto;
 }

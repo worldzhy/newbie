@@ -1,29 +1,6 @@
 import {ApiProperty} from '@nestjs/swagger';
-import {IsNumber, IsNotEmpty, IsString, IsOptional} from 'class-validator';
-import {Type} from 'class-transformer';
-
-// common
-export class PaginationResDto {
-  @ApiProperty({
-    type: Number,
-  })
-  countOfCurrentPage: number;
-
-  @ApiProperty({
-    type: Number,
-  })
-  countOfTotal: number;
-
-  @ApiProperty({
-    type: Number,
-  })
-  page: number;
-
-  @ApiProperty({
-    type: Number,
-  })
-  pageSize: number;
-}
+import {IsString, IsOptional} from 'class-validator';
+import {CommonPaginationReqDto, CommonPaginationResDto} from '@/dto/common';
 
 export class WorkflowCreateReqDto {
   @ApiProperty({
@@ -86,24 +63,7 @@ export class WorkflowDetailResDto {
   updatedAt: Date;
 }
 
-export class WorkflowListReqDto {
-  @ApiProperty({
-    type: Number,
-  })
-  @IsNotEmpty()
-  @IsNumber()
-  // query参数实际都是字符串，这里需要转换下number
-  @Type(() => Number)
-  pageSize: number;
-
-  @ApiProperty({
-    type: Number,
-  })
-  @IsNotEmpty()
-  @IsNumber()
-  @Type(() => Number)
-  page: number;
-
+export class WorkflowListReqDto extends CommonPaginationReqDto {
   @ApiProperty({
     type: String,
     required: false,
@@ -121,7 +81,7 @@ export class WorkflowListResDto {
   records: WorkflowDetailResDto[];
 
   @ApiProperty({
-    type: PaginationResDto,
+    type: CommonPaginationResDto,
   })
-  pagination: PaginationResDto;
+  pagination: CommonPaginationResDto;
 }

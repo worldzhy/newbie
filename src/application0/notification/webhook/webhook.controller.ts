@@ -7,8 +7,10 @@ import {NoGuard} from '@microservices/account/security/passport/public/public.de
 import {
   FeishuWebhookService,
   NotificationFeishuWebhookReqDto,
+  NotificationFeishuWebhookResDto,
 } from '@microservices/notification/webhook/feishu/feishu-webhook.service';
 import {NotificationWebhookService} from '@microservices/notification/webhook/webhook.service';
+import {CommonCUDResDto} from '@/dto/common';
 import {
   NotificationWebhookChannelCreateReqDto,
   NotificationWebhookChannelUpdateReqDto,
@@ -37,6 +39,9 @@ export class NotificationWebhookController {
   @ApiBody({
     type: NotificationWebhookChannelCreateReqDto,
   })
+  @ApiResponse({
+    type: CommonCUDResDto,
+  })
   async channelCreate(
     @Body()
     body: NotificationWebhookChannelCreateReqDto
@@ -48,6 +53,9 @@ export class NotificationWebhookController {
   @ApiBody({
     type: NotificationWebhookChannelUpdateReqDto,
   })
+  @ApiResponse({
+    type: CommonCUDResDto,
+  })
   async channelUpdate(
     @Body()
     body: NotificationWebhookChannelUpdateReqDto
@@ -58,6 +66,9 @@ export class NotificationWebhookController {
   @Post('channel/delete')
   @ApiBody({
     type: NotificationWebhookChannelUpdateReqDto,
+  })
+  @ApiResponse({
+    type: CommonCUDResDto,
   })
   async channelDelete(
     @Body()
@@ -106,6 +117,9 @@ export class NotificationWebhookController {
   @Post('feishu/webhook')
   @ApiBody({
     type: NotificationFeishuWebhookReqDto,
+  })
+  @ApiResponse({
+    type: NotificationFeishuWebhookResDto,
   })
   async feishuWebhook(
     @Body()

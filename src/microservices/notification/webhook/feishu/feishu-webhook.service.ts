@@ -8,6 +8,7 @@ import {
   NotificationFeishuWebhookReqDto,
   FeishuWebhookPostResDto,
   FeishuWebhookPostBodyDto,
+  NotificationFeishuWebhookResDto,
 } from './feishu-webhook.dto';
 import {NotificationAccessKeyStatus} from '@microservices/notification/constants';
 import {NotificationWebhookRecordStatus} from '../constants';
@@ -48,7 +49,7 @@ export class FeishuWebhookService {
       },
     });
 
-    const result: {res?: FeishuWebhookPostResDto; error?: any} =
+    const result: NotificationFeishuWebhookResDto =
       await this.httpService.axiosRef
         .post<FeishuWebhookPostBodyDto, AxiosResponse<FeishuWebhookPostResDto>>(
           channel.webhook,

@@ -32,7 +32,7 @@ export class FeishuWebhookPostBodyDto {
     type: Object,
   })
   @IsObject()
-  content: any;
+  content: object;
 }
 
 export class NotificationFeishuWebhookReqDto {
@@ -55,4 +55,18 @@ export class NotificationFeishuWebhookReqDto {
   @ValidateNested()
   @IsDefined()
   feishuParams: FeishuWebhookPostBodyDto;
+}
+
+export class NotificationFeishuWebhookResDto {
+  @ApiProperty({
+    type: Object,
+    required: false,
+  })
+  res?: object;
+
+  @ApiProperty({
+    type: Object,
+    required: false,
+  })
+  error?: object;
 }

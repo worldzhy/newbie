@@ -7,6 +7,7 @@ import {
   NotificationAccessKeyCreateReqDto,
   NotificationAccessKeyUpdateReqDto,
 } from '@microservices/notification/notification.dto';
+import {CommonCUDResDto} from '@/dto/common';
 import {
   NotificationAccessKeyListReqDto,
   NotificationAccessKeyListResDto,
@@ -43,6 +44,9 @@ export class NotificationController {
   @ApiBody({
     type: NotificationAccessKeyCreateReqDto,
   })
+  @ApiResponse({
+    type: CommonCUDResDto,
+  })
   async accessKeyCreate(
     @Body()
     body: NotificationAccessKeyCreateReqDto
@@ -54,6 +58,9 @@ export class NotificationController {
   @ApiBody({
     type: NotificationAccessKeyUpdateReqDto,
   })
+  @ApiResponse({
+    type: CommonCUDResDto,
+  })
   async accessKeyUpdate(
     @Body()
     body: NotificationAccessKeyUpdateReqDto
@@ -64,6 +71,9 @@ export class NotificationController {
   @Post('accessKey/delete')
   @ApiBody({
     type: NotificationAccessKeyUpdateReqDto,
+  })
+  @ApiResponse({
+    type: CommonCUDResDto,
   })
   async accessKeyDelete(
     @Body()
