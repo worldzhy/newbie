@@ -3,7 +3,10 @@ import {IsNumber, IsNotEmpty, IsString, IsOptional} from 'class-validator';
 import {Type} from 'class-transformer';
 import {CommonPaginationReqDto, CommonPaginationResDto} from '@/dto/common';
 import {NotificationWebhookChannelCreateReqDto} from '@microservices/notification/webhook/webhook.dto';
-import {NotificationWebhookRecordStatus} from '@microservices/notification/webhook/constants';
+import {
+  NotificationWebhookRecordStatus,
+  NotificationWebhookPlatform,
+} from '@microservices/notification/webhook/constants';
 
 export class NotificationAccessKeyListReqDto extends CommonPaginationReqDto {
   @ApiProperty({
@@ -24,6 +27,13 @@ export class NotificationWebhookChannelListReqDto extends CommonPaginationReqDto
   @IsNumber()
   @Type(() => Number)
   accessKeyId: number;
+
+  @ApiProperty({
+    type: String,
+    enum: NotificationWebhookPlatform,
+  })
+  @IsString()
+  platform: string;
 }
 
 export class NotificationWebhookRecordListReqDto extends CommonPaginationReqDto {

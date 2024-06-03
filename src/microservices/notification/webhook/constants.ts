@@ -1,5 +1,6 @@
 export enum NotificationWebhookPlatform {
-  feishu = 'feishu',
+  Feishu = 'feishu',
+  Slack = 'slack',
 }
 
 export enum NotificationWebhookRecordStatus {

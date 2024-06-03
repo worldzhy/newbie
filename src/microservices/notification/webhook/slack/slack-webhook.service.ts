@@ -3,20 +3,20 @@ import {AxiosResponse, AxiosError} from 'axios';
 import {Injectable, BadRequestException} from '@nestjs/common';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {CustomLoggerService} from '@toolkit/logger/logger.service';
-import {FeishuWebhookSendStatus} from './constants';
 import {
-  NotificationFeishuWebhookReqDto,
-  FeishuWebhookPostResDto,
-  FeishuWebhookPostBodyDto,
-  NotificationFeishuWebhookResDto,
-} from './feishu-webhook.dto';
+  NotificationSlackWebhookReqDto,
+  SlackWebhookPostBodyDto,
+  NotificationSlackWebhookResDto,
+  SlackWebhookPostResDto,
+} from './slack-webhook.dto';
 import {NotificationAccessKeyStatus} from '@microservices/notification/constants';
 import {NotificationWebhookRecordStatus} from '../constants';
-export * from './feishu-webhook.dto';
+
+export * from './slack-webhook.dto';
 
 @Injectable()
-export class FeishuWebhookService {
-  private loggerContext = 'Feishu-Webhook';
+export class SlackWebhookService {
+  private loggerContext = 'Slack-Webhook';
 
   constructor(
     private httpService: HttpService,
@@ -24,8 +24,8 @@ export class FeishuWebhookService {
     private readonly logger: CustomLoggerService
   ) {}
 
-  async send(body: NotificationFeishuWebhookReqDto) {
-    const {channelName, accessKey, feishuParams} = body;
+  async send(body: NotificationSlackWebhookReqDto) {
+    const {channelName, accessKey, slackParams} = body;
     const channel = await this.prisma.notificationWebhookChannel.findFirst({
       where: {
         name: channelName,
@@ -45,38 +45,27 @@ export class FeishuWebhookService {
       data: {
         channelId: channel.id,
         status: NotificationWebhookRecordStatus.Pending,
-        request: feishuParams as object,
+        request: slackParams as object,
       },
     });
 
-    const result: NotificationFeishuWebhookResDto =
+    const result: NotificationSlackWebhookResDto =
       await this.httpService.axiosRef
-        .post<FeishuWebhookPostBodyDto, AxiosResponse<FeishuWebhookPostResDto>>(
+        .post<SlackWebhookPostBodyDto, AxiosResponse<SlackWebhookPostResDto>>(
           channel.webhook,
-          feishuParams
+          slackParams
         )
         .then(res => {
-          if (res.data.code === FeishuWebhookSendStatus.Succeeded) {
-            this.logger.log(
-              `FeishuNotification send [${channel.webhook}] success: ` +
-                JSON.stringify(res.data),
-              this.loggerContext
-            );
-            return {res: res.data};
-          } else {
-            const resError = {error: res.data};
-            this.logger.error(
-              `FeishuNotification send [${channel.webhook}] error: ` +
-                JSON.stringify(resError),
-              this.loggerContext
-            );
-            return resError;
-          }
+          this.logger.log(
+            `SlackNotification send [${channel.webhook}] success: ` + res,
+            this.loggerContext
+          );
+          return {res: res.data};
         })
         .catch((e: AxiosError) => {
-          const resError = {error: {message: e.message, response: e.response}};
+          const resError = {error: {message: e.response?.data}};
           this.logger.error(
-            `FeishuNotification send [${channel.webhook}] error: ` +
+            `SlackNotification send [${channel.webhook}] error: ` +
               JSON.stringify(resError),
             this.loggerContext
           );

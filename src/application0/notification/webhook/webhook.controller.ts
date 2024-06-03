@@ -1,5 +1,5 @@
 import {Controller, Post, Body, Get, Query} from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiBody, ApiResponse} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiResponse} from '@nestjs/swagger';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {Prisma} from '@prisma/client';
 import {CustomLoggerService} from '@toolkit/logger/logger.service';
@@ -9,6 +9,11 @@ import {
   NotificationFeishuWebhookReqDto,
   NotificationFeishuWebhookResDto,
 } from '@microservices/notification/webhook/feishu/feishu-webhook.service';
+import {
+  SlackWebhookService,
+  NotificationSlackWebhookReqDto,
+  NotificationSlackWebhookResDto,
+} from '@microservices/notification/webhook/slack/slack-webhook.service';
 import {NotificationWebhookService} from '@microservices/notification/webhook/webhook.service';
 import {CommonCUDResDto} from '@/dto/common';
 import {
@@ -30,15 +35,13 @@ export class NotificationWebhookController {
 
   constructor(
     private feishuWebhookService: FeishuWebhookService,
+    private slackWebhookService: SlackWebhookService,
     private notificationWebhookService: NotificationWebhookService,
     private readonly prisma: PrismaService,
     private readonly logger: CustomLoggerService
   ) {}
 
   @Post('channel/create')
-  @ApiBody({
-    type: NotificationWebhookChannelCreateReqDto,
-  })
   @ApiResponse({
     type: CommonCUDResDto,
   })
@@ -50,9 +53,6 @@ export class NotificationWebhookController {
   }
 
   @Post('channel/update')
-  @ApiBody({
-    type: NotificationWebhookChannelUpdateReqDto,
-  })
   @ApiResponse({
     type: CommonCUDResDto,
   })
@@ -64,9 +64,6 @@ export class NotificationWebhookController {
   }
 
   @Post('channel/delete')
-  @ApiBody({
-    type: NotificationWebhookChannelUpdateReqDto,
-  })
   @ApiResponse({
     type: CommonCUDResDto,
   })
@@ -82,7 +79,7 @@ export class NotificationWebhookController {
     type: NotificationWebhookChannelListResDto,
   })
   async channelList(@Query() query: NotificationWebhookChannelListReqDto) {
-    const {page, pageSize, accessKeyId} = query;
+    const {page, pageSize, accessKeyId, platform} = query;
     return this.prisma.findManyInManyPages({
       model: Prisma.ModelName.NotificationWebhookChannel,
       pagination: {page, pageSize},
@@ -90,6 +87,7 @@ export class NotificationWebhookController {
         where: {
           deletedAt: null,
           accessKeyId,
+          platform,
         },
       },
     });
@@ -114,10 +112,7 @@ export class NotificationWebhookController {
   }
 
   @NoGuard()
-  @Post('feishu/webhook')
-  @ApiBody({
-    type: NotificationFeishuWebhookReqDto,
-  })
+  @Post('feishu')
   @ApiResponse({
     type: NotificationFeishuWebhookResDto,
   })
@@ -125,10 +120,20 @@ export class NotificationWebhookController {
     @Body()
     body: NotificationFeishuWebhookReqDto
   ) {
-    this.logger.log(
-      'feishu/webhook:' + JSON.stringify(body),
-      this.loggerContext
-    );
+    this.logger.log('feishu:' + JSON.stringify(body), this.loggerContext);
     return await this.feishuWebhookService.send(body);
+  }
+
+  @NoGuard()
+  @Post('slack')
+  @ApiResponse({
+    type: NotificationSlackWebhookResDto,
+  })
+  async slackWebhook(
+    @Body()
+    body: NotificationSlackWebhookReqDto
+  ) {
+    this.logger.log('slack:' + JSON.stringify(body), this.loggerContext);
+    return await this.slackWebhookService.send(body);
   }
 }

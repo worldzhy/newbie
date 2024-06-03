@@ -1,5 +1,5 @@
 import {Controller, Post, Body, Get, Query} from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiBody, ApiResponse} from '@nestjs/swagger';
+import {ApiTags, ApiBearerAuth, ApiResponse} from '@nestjs/swagger';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {Prisma} from '@prisma/client';
 import {NotificationService} from '@microservices/notification/notification.service';
@@ -41,9 +41,6 @@ export class NotificationController {
   }
 
   @Post('accessKey/create')
-  @ApiBody({
-    type: NotificationAccessKeyCreateReqDto,
-  })
   @ApiResponse({
     type: CommonCUDResDto,
   })
@@ -55,9 +52,6 @@ export class NotificationController {
   }
 
   @Post('accessKey/update')
-  @ApiBody({
-    type: NotificationAccessKeyUpdateReqDto,
-  })
   @ApiResponse({
     type: CommonCUDResDto,
   })
@@ -69,9 +63,6 @@ export class NotificationController {
   }
 
   @Post('accessKey/delete')
-  @ApiBody({
-    type: NotificationAccessKeyUpdateReqDto,
-  })
   @ApiResponse({
     type: CommonCUDResDto,
   })
