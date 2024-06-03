@@ -55,7 +55,7 @@ $ npx prisma generate
 $ npx prisma migrate dev
 $ npx prisma db seed
 
-$ npx prisma generate --schema ./prisma2/schema2.prisma
+$ npx prisma generate --schema ./prisma/schema2.prisma
 ```
 
 ### Install Google typescript lint
