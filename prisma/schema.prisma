@@ -695,7 +695,106 @@ model Place {
 // !! ------------------------------------------------------------ //
 // * EmailNotification                                             //
 // * SmsNotification                                               //
+// * NotificationAccessKey                                         //
+// * NotificationSimpleEmailChannel                                //
+// * NotificationSimpleEmailRecord                                 //
+// * NotificationAdvancedEmailChannel                              //
+// * NotificationAdvancedEmailRecord                               //
+// * NotificationWebhookChannel                                    //
+// * NotificationWebhookRecord                                     //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
+
+model NotificationAccessKey {
+  id                    Int                                @id @default(autoincrement())
+  key                   String // Auto generated
+  name                  String
+  status                String
+  createdAt             DateTime                           @default(now())
+  updatedAt             DateTime                           @updatedAt
+  deletedAt             DateTime?
+  webhookChannels       NotificationWebhookChannel[]
+  simpleEmailChannels   NotificationSimpleEmailChannel[]
+  advancedEmailChannels NotificationAdvancedEmailChannel[]
+
+  @@schema("microservice/notification")
+}
+
+model NotificationSimpleEmailChannel {
+  id          Int                             @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime                        @default(now())
+  updatedAt   DateTime                        @updatedAt
+  records     NotificationSimpleEmailRecord[]
+  accessKey   NotificationAccessKey           @relation(fields: [accessKeyId], references: [id])
+  accessKeyId Int
+
+  @@schema("microservice/notification")
+}
+
+model NotificationSimpleEmailRecord {
+  id        Int                            @id @default(autoincrement())
+  status    String // pending, succeeded, failed
+  createdAt DateTime                       @default(now())
+  updatedAt DateTime                       @updatedAt
+  channel   NotificationSimpleEmailChannel @relation(fields: [channelId], references: [id])
+  channelId Int
+
+  @@schema("microservice/notification")
+}
+
+model NotificationAdvancedEmailChannel {
+  id          Int                               @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime                          @default(now())
+  updatedAt   DateTime                          @updatedAt
+  records     NotificationAdvancedEmailRecord[]
+  accessKey   NotificationAccessKey?            @relation(fields: [accessKeyId], references: [id])
+  accessKeyId Int?
+
+  @@schema("microservice/notification")
+}
+
+model NotificationAdvancedEmailRecord {
+  id        Int                              @id @default(autoincrement())
+  status    String // pending, succeeded, failed 
+  createdAt DateTime                         @default(now())
+  updatedAt DateTime                         @updatedAt
+  channel   NotificationAdvancedEmailChannel @relation(fields: [channelId], references: [id])
+  channelId Int
+
+  @@schema("microservice/notification")
+}
+
+model NotificationWebhookChannel {
+  id          Int                         @id @default(autoincrement())
+  name        String
+  description String?
+  webhook     String
+  platform    String // feishu, slack ...
+  createdAt   DateTime                    @default(now())
+  updatedAt   DateTime                    @updatedAt
+  deletedAt   DateTime?
+  records     NotificationWebhookRecord[]
+  accessKey   NotificationAccessKey?      @relation(fields: [accessKeyId], references: [id])
+  accessKeyId Int?
+
+  @@schema("microservice/notification")
+}
+
+model NotificationWebhookRecord {
+  id        Int                        @id @default(autoincrement())
+  request   Json
+  response  Json?
+  status    String // pending, succeeded, failed
+  createdAt DateTime                   @default(now())
+  updatedAt DateTime                   @updatedAt
+  channel   NotificationWebhookChannel @relation(fields: [channelId], references: [id])
+  channelId Int
+
+  @@schema("microservice/notification")
+}
 
 model EmailNotification {
   id                Int      @id @default(autoincrement())

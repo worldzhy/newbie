@@ -178,7 +178,7 @@ export class DatatransTaskController {
     // [step 2] Send task to queue.
     const output = await this.sqs.sendMessage({
       queueUrl: this.configService.getOrThrow<string>(
-        'microservices.task.sqsQueueUrl'
+        'microservices.task.awsSqsQueueUrl'
       ),
       body: {missionId: task.missionId, take: task.take, skip: task.skip},
     });

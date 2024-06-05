@@ -1,40 +1,75 @@
-import {Notification2Service} from '@microservices/notification/notification2.service';
-import {Controller, Post, Body} from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
+import {Controller, Post, Body, Get, Query} from '@nestjs/common';
+import {ApiTags, ApiBearerAuth, ApiResponse} from '@nestjs/swagger';
+import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {Prisma} from '@prisma/client';
+import {NotificationService} from '@microservices/notification/notification.service';
+import {
+  NotificationAccessKeyCreateReqDto,
+  NotificationAccessKeyUpdateReqDto,
+} from '@microservices/notification/notification.dto';
+import {CommonCUDResDto} from '@/dto/common';
+import {
+  NotificationAccessKeyListReqDto,
+  NotificationAccessKeyListResDto,
+} from './notification.dto';
 
 @ApiTags('Notification')
 @ApiBearerAuth()
 @Controller('notification')
 export class NotificationController {
-  constructor(private readonly notification2Service: Notification2Service) {}
+  constructor(
+    private notificationService: NotificationService,
+    private readonly prisma: PrismaService
+  ) {}
 
-  @Post('traceable-email')
-  @ApiBody({
-    description: '',
-    examples: {
-      a: {
-        summary: '1. Create',
-        value: {
-          queueUrl:
-            'https://sqs.us-east-1.amazonaws.com/196438055748/inceptionpad-message-service-email-queue-level1',
-          body: {
-            toAddress: 'henry@inceptionpad.com',
-            subject: 'A strange letter',
-            content: 'No. 142857',
-          },
+  @Get('accessKey/list')
+  @ApiResponse({
+    type: NotificationAccessKeyListResDto,
+  })
+  async accessKeyList(@Query() query: NotificationAccessKeyListReqDto) {
+    const {page, pageSize, id} = query;
+    return this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.NotificationAccessKey,
+      pagination: {page, pageSize},
+      findManyArgs: {
+        where: {
+          deletedAt: null,
+          id,
         },
       },
-    },
-  })
-  async sendTraceableEmail(
-    @Body()
-    body: {
-      queueUrl: string;
-      body: {toAddress: string; subject: string; content: string};
-    }
-  ) {
-    return await this.notification2Service.sendEmail(body);
+    });
   }
 
-  /* End */
+  @Post('accessKey/create')
+  @ApiResponse({
+    type: CommonCUDResDto,
+  })
+  async accessKeyCreate(
+    @Body()
+    body: NotificationAccessKeyCreateReqDto
+  ) {
+    return await this.notificationService.accessKeyCreate(body);
+  }
+
+  @Post('accessKey/update')
+  @ApiResponse({
+    type: CommonCUDResDto,
+  })
+  async accessKeyUpdate(
+    @Body()
+    body: NotificationAccessKeyUpdateReqDto
+  ) {
+    return await this.notificationService.accessKeyUpdate(body);
+  }
+
+  @Post('accessKey/delete')
+  @ApiResponse({
+    type: CommonCUDResDto,
+  })
+  async accessKeyDelete(
+    @Body()
+    body: NotificationAccessKeyUpdateReqDto
+  ) {
+    return await this.notificationService.accessKeyDelete(body);
+  }
 }

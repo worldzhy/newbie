@@ -20,7 +20,8 @@
     "paths": {
       "@application0/*": ["src/application0/*"],
       "@microservices/*": ["src/microservices/*"],
-      "@toolkit/*": ["src/toolkit/*"]
+      "@toolkit/*": ["src/toolkit/*"],
+      "@/*": ["src/*"]
     }
   }
 }

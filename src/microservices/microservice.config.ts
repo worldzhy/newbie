@@ -77,6 +77,10 @@ export default registerAs('microservice', () => ({
       awsPinpointSenderId:
         process.env.NOTIFICATION_SMS_AWS_PINPOINT_SENDER_ID || 'default',
     },
+    traceableEmail: {
+      awsSqsQueueUrl:
+        'https://sqs.us-east-1.amazonaws.com/196438055748/inceptionpad-message-service-email-queue-level1',
+    },
   },
   storage: {
     awsS3Bucket: process.env.STORAGE_AWS_S3_BUCKET,
