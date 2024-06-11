@@ -78,6 +78,7 @@ export class ManagedGoogleDriveController {
     //     .build()
     // ) file: Express.Multer.File,
     @UploadedFile() file: Express.Multer.File,
+    @Param('fileId') fileId: string,
     @Body() body: {parentId?: string}
   ) {
     await this.googleDrive.uploadFile({file, parentId: body.parentId});
