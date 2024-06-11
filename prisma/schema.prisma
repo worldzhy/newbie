@@ -21,7 +21,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["microservice/account", "microservice/cloud", "microservice/cron", "microservice/event-scheduling", "microservice/map", "microservice/notification", "microservice/order-mgmt", "microservice/project-mgmt", "microservice/queue", "microservice/stock-mgmt", "microservice/storage", "microservice/tag", "microservice/token", "microservice/workflow", "microservice/people-finder", "application/engined", "application/recruitment", "application/solidcore", "application/tc-request"]
+  schemas  = ["microservice/account", "microservice/cloud", "microservice/cron", "microservice/event-scheduling", "microservice/map", "microservice/notification", "microservice/order-mgmt", "microservice/project-mgmt", "microservice/queue", "microservice/stock-mgmt", "microservice/storage", "microservice/tag", "microservice/token", "microservice/workflow", "microservice/people-finder", "microservice/go-click", "application/engined", "application/recruitment", "application/solidcore", "application/tc-request"]
 }
 
 // ! ------------------------------------------------------------ //
@@ -1294,6 +1294,43 @@ model PeopleFinderTask {
   updatedAt         DateTime               @updatedAt
 
   @@schema("microservice/people-finder")
+}
+
+// ! ------------------------------------------------------------ //
+// !             [Microservice] GoClick models                    //
+// ! ------------------------------------------------------------ //
+// * GoClickGroup                                                  //
+// * GoClickLink                                                  //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
+
+model GoClickGroup {
+  id          Int           @id @default(autoincrement())
+  name        String
+  parentId    Int           @default(0)
+  sort        Int           @default(0)
+  status      String // active inactive
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  deletedAt   DateTime?
+  goClickLink GoClickLink[]
+
+  @@schema("microservice/go-click")
+}
+
+model GoClickLink {
+  id          Int          @id @default(autoincrement())
+  name        String
+  url         String
+  group        GoClickGroup? @relation(fields: [groupId], references: [id])
+  groupId      Int
+  description String?
+  sort        Int          @default(0)
+  status      String // active inactive
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  deletedAt   DateTime?
+
+  @@schema("microservice/go-click")
 }
 
 // ! ------------------------------------------------------------ //
