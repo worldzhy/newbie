@@ -1300,7 +1300,7 @@ model PeopleFinderTask {
 // !             [Microservice] GoClick models                    //
 // ! ------------------------------------------------------------ //
 // * GoClickGroup                                                  //
-// * GoClickLink                                                  //
+// * GoClickItem                                                  //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
 model GoClickGroup {
@@ -1312,23 +1312,24 @@ model GoClickGroup {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   deletedAt   DateTime?
-  goClickLink GoClickLink[]
+  goClickItem GoClickItem[]
 
   @@schema("microservice/go-click")
 }
 
-model GoClickLink {
-  id          Int          @id @default(autoincrement())
-  name        String
-  url         String
-  group        GoClickGroup? @relation(fields: [groupId], references: [id])
-  groupId      Int
+model GoClickItem {
+  id          Int           @id @default(autoincrement())
+  label       String
+  content     String
   description String?
-  sort        Int          @default(0)
-  status      String // active inactive
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  sort        Int           @default(0)
+  type        String // link, string
+  status      String // active, inactive
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
   deletedAt   DateTime?
+  group       GoClickGroup? @relation(fields: [groupId], references: [id])
+  groupId     Int
 
   @@schema("microservice/go-click")
 }

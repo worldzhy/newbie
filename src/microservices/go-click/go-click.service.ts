@@ -3,8 +3,8 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {
   GoClickGroupCreateReqDto,
   GoClickGroupUpdateReqDto,
-  GoClickLinkCreateReqDto,
-  GoClickLinkUpdateReqDto,
+  GoClickItemCreateReqDto,
+  GoClickItemUpdateReqDto,
 } from './go-click.dto';
 import {GoClickStatus} from './constants';
 export * from './constants';
@@ -18,6 +18,7 @@ export class GoClickService {
     const group = await this.prisma.goClickGroup.findFirst({
       where: {
         name,
+        deletedAt: null,
       },
     });
     if (group) {
@@ -59,29 +60,30 @@ export class GoClickService {
     return {id};
   }
 
-  async linkCreate(body: GoClickLinkCreateReqDto): Promise<{id: number}> {
-    const {name} = body;
-    const link = await this.prisma.goClickLink.findFirst({
+  async itemCreate(body: GoClickItemCreateReqDto): Promise<{id: number}> {
+    const {label} = body;
+    const item = await this.prisma.goClickItem.findFirst({
       where: {
-        name,
+        label,
+        deletedAt: null,
       },
     });
-    if (link) {
-      throw new BadRequestException('Link name already exists');
+    if (item) {
+      throw new BadRequestException('Item label already exists');
     }
 
-    const newLink = await this.prisma.goClickLink.create({
+    const newItem = await this.prisma.goClickItem.create({
       data: {
         status: GoClickStatus.Active,
         ...body,
       },
     });
-    return {id: newLink.id};
+    return {id: newItem.id};
   }
 
-  async linkUpdate(body: GoClickLinkUpdateReqDto): Promise<{id: number}> {
+  async itemUpdate(body: GoClickItemUpdateReqDto): Promise<{id: number}> {
     const {id} = body;
-    await this.prisma.goClickLink.update({
+    await this.prisma.goClickItem.update({
       where: {
         id,
       },
@@ -92,9 +94,9 @@ export class GoClickService {
     return {id};
   }
 
-  async linkDelete(body: GoClickLinkUpdateReqDto): Promise<{id: number}> {
+  async itemDelete(body: GoClickItemUpdateReqDto): Promise<{id: number}> {
     const {id} = body;
-    await this.prisma.goClickLink.update({
+    await this.prisma.goClickItem.update({
       where: {
         id,
       },

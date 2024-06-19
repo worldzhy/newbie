@@ -64,7 +64,7 @@ export class GoClickGroupListResDto {
   pagination: CommonPaginationResDto;
 }
 
-export class GoClickLinkDetailResDto {
+export class GoClickItemDetailResDto {
   @ApiProperty({
     type: Number,
   })
@@ -78,12 +78,17 @@ export class GoClickLinkDetailResDto {
   @ApiProperty({
     type: String,
   })
-  name: string;
+  label: string;
 
   @ApiProperty({
     type: String,
   })
-  url: string;
+  content: string;
+
+  @ApiProperty({
+    type: String,
+  })
+  type: string;
 
   @ApiProperty({
     type: Number,
@@ -106,7 +111,7 @@ export class GoClickLinkDetailResDto {
   updatedAt: Date;
 }
 
-export class GoClickLinkListReqDto extends CommonPaginationReqDto {
+export class GoClickItemListReqDto extends CommonPaginationReqDto {
   @ApiProperty({
     type: Number,
     required: false,
@@ -126,15 +131,29 @@ export class GoClickLinkListReqDto extends CommonPaginationReqDto {
   groupId?: number;
 }
 
-export class GoClickLinkListResDto {
+export class GoClickItemListResDto {
   @ApiProperty({
-    type: GoClickLinkDetailResDto,
+    type: GoClickItemDetailResDto,
     isArray: true,
   })
-  records: GoClickLinkDetailResDto[];
+  records: GoClickItemDetailResDto[];
 
   @ApiProperty({
     type: CommonPaginationResDto,
   })
   pagination: CommonPaginationResDto;
+}
+
+export class GoClickTreeResDto extends GoClickGroupDetailResDto {
+  @ApiProperty({
+    type: GoClickItemDetailResDto,
+    isArray: true,
+  })
+  child: GoClickItemDetailResDto[];
+
+  @ApiProperty({
+    type: GoClickItemDetailResDto,
+    isArray: true,
+  })
+  items: GoClickItemDetailResDto[];
 }

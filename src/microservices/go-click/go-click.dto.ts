@@ -69,7 +69,7 @@ export class GoClickGroupUpdateReqDto {
   status: string;
 }
 
-export class GoClickLinkCreateReqDto {
+export class GoClickItemCreateReqDto {
   @ApiProperty({
     type: Number,
     required: false,
@@ -90,13 +90,19 @@ export class GoClickLinkCreateReqDto {
     type: String,
   })
   @IsString()
-  name: string;
+  label: string;
 
   @ApiProperty({
     type: String,
   })
   @IsString()
-  url: string;
+  content: string;
+
+  @ApiProperty({
+    type: String,
+  })
+  @IsString()
+  type: string;
 
   @ApiProperty({
     type: String,
@@ -107,7 +113,7 @@ export class GoClickLinkCreateReqDto {
   description: string;
 }
 
-export class GoClickLinkUpdateReqDto {
+export class GoClickItemUpdateReqDto {
   @ApiProperty({
     type: Number,
   })
@@ -136,7 +142,7 @@ export class GoClickLinkUpdateReqDto {
   })
   @IsString()
   @IsOptional()
-  name: string;
+  label: string;
 
   @ApiProperty({
     type: String,
@@ -144,7 +150,15 @@ export class GoClickLinkUpdateReqDto {
   })
   @IsString()
   @IsOptional()
-  url: string;
+  content: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  type: string;
 
   @ApiProperty({
     type: String,

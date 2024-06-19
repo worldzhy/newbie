@@ -7,16 +7,17 @@ import {GoClickService} from '@microservices/go-click/go-click.service';
 import {
   GoClickGroupCreateReqDto,
   GoClickGroupUpdateReqDto,
-  GoClickLinkCreateReqDto,
-  GoClickLinkUpdateReqDto,
+  GoClickItemCreateReqDto,
+  GoClickItemUpdateReqDto,
 } from '@microservices/go-click/go-click.dto';
 import {GoClickStatus} from '@microservices/go-click/constants';
 import {CommonCUDResDto} from '@/dto/common';
 import {
   GoClickGroupListReqDto,
   GoClickGroupListResDto,
-  GoClickLinkListReqDto,
-  GoClickLinkListResDto,
+  GoClickItemListReqDto,
+  GoClickItemListResDto,
+  GoClickTreeResDto,
 } from './go-click.dto';
 
 @ApiTags('GoClick')
@@ -87,14 +88,14 @@ export class GoClickController {
   }
 
   @NoGuard()
-  @Get('link/list')
+  @Get('item/list')
   @ApiResponse({
-    type: GoClickLinkListResDto,
+    type: GoClickItemListResDto,
   })
-  async linkList(@Query() query: GoClickLinkListReqDto) {
+  async itemList(@Query() query: GoClickItemListReqDto) {
     const {page, pageSize, id, ...rest} = query;
     return this.prisma.findManyInManyPages({
-      model: Prisma.ModelName.GoClickLink,
+      model: Prisma.ModelName.GoClickItem,
       pagination: {page, pageSize},
       findManyArgs: {
         where: {
@@ -110,31 +111,30 @@ export class GoClickController {
   }
 
   @NoGuard()
-  @Get('link/show')
+  @Get('tree')
   @ApiResponse({
-    type: GoClickLinkListResDto,
+    type: GoClickTreeResDto,
+    isArray: true,
   })
-  async linkShow() {
+  async tree() {
     const groups = await this.prisma.findManyInManyPages({
       model: Prisma.ModelName.GoClickGroup,
       pagination: {page: 0, pageSize: 10000},
       findManyArgs: {
         where: {
           deletedAt: null,
-          status: GoClickStatus.Active,
         },
         orderBy: {
           sort: 'desc',
         },
       },
     });
-    const links = await this.prisma.findManyInManyPages({
-      model: Prisma.ModelName.GoClickLink,
+    const items = await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.GoClickItem,
       pagination: {page: 0, pageSize: 1000},
       findManyArgs: {
         where: {
           deletedAt: null,
-          status: GoClickStatus.Active,
         },
         orderBy: {
           sort: 'desc',
@@ -145,11 +145,11 @@ export class GoClickController {
     const groupMap = {};
 
     groups.records.forEach(groupItem => {
-      groupMap[groupItem.id] = {...groupItem, links: [], child: []};
+      groupMap[groupItem.id] = {...groupItem, items: [], child: []};
     });
-    links.records.forEach(linkItem => {
-      if (groupMap[linkItem.groupId]) {
-        groupMap[linkItem.groupId].links.push(linkItem);
+    items.records.forEach(itemItem => {
+      if (groupMap[itemItem.groupId]) {
+        groupMap[itemItem.groupId].items.push(itemItem);
       }
     });
 
@@ -159,42 +159,44 @@ export class GoClickController {
       }
     });
 
-    return Object.keys(groupMap).map(groupId => groupMap[groupId]);
+    return Object.keys(groupMap)
+      .map(groupId => groupMap[groupId])
+      .filter(group => group.parentId === 0);
   }
 
   @NoGuard()
-  @Post('link/create')
+  @Post('item/create')
   @ApiResponse({
     type: CommonCUDResDto,
   })
-  async linkCreate(
+  async itemCreate(
     @Body()
-    body: GoClickLinkCreateReqDto
+    body: GoClickItemCreateReqDto
   ) {
-    return await this.goClickService.linkCreate(body);
+    return await this.goClickService.itemCreate(body);
   }
 
   @NoGuard()
-  @Post('link/update')
+  @Post('item/update')
   @ApiResponse({
     type: CommonCUDResDto,
   })
-  async linkUpdate(
+  async itemUpdate(
     @Body()
-    body: GoClickLinkUpdateReqDto
+    body: GoClickItemUpdateReqDto
   ) {
-    return await this.goClickService.linkUpdate(body);
+    return await this.goClickService.itemUpdate(body);
   }
 
   @NoGuard()
-  @Post('link/delete')
+  @Post('item/delete')
   @ApiResponse({
     type: CommonCUDResDto,
   })
-  async linkDelete(
+  async itemDelete(
     @Body()
-    body: GoClickLinkUpdateReqDto
+    body: GoClickItemUpdateReqDto
   ) {
-    return await this.goClickService.linkDelete(body);
+    return await this.goClickService.itemDelete(body);
   }
 }
