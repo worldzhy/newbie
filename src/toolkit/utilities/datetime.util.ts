@@ -57,6 +57,11 @@ export function currentQuarter(): number {
   return moment().quarter();
 }
 
+export function dateMinusDateByDays(bigDate: Date, smallDate: Date): number {
+  const differenceInTime = bigDate.getTime() - smallDate.getTime();
+  return Math.round(differenceInTime / (1000 * 3600 * 24));
+}
+
 export function firstDayOfQuarter(year: number, quarter: number) {
   let month = 0;
   if (quarter === 1) {
