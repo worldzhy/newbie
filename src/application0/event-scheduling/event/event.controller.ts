@@ -9,7 +9,9 @@ import {
   Get,
   BadRequestException,
 } from '@nestjs/common';
+import * as moment from 'moment';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
+import {NoGuard} from '@microservices/account/security/passport/public/public.decorator';
 import {
   Prisma,
   Event,
@@ -19,6 +21,7 @@ import {
 } from '@prisma/client';
 import {EventService} from '@microservices/event-scheduling/event.service';
 import {EventIssueService} from '@microservices/event-scheduling/event-issue.service';
+import {RoleService} from '@microservices/account/role.service';
 import {
   constructDateTime,
   datePlusMinutes,
@@ -286,5 +289,78 @@ export class EventController {
     });
   }
 
+  @Post('initExample')
+  @NoGuard()
+  async initExample() {
+    const user = await this.prisma.user.findFirst({
+      where: {roles: {some: {name: RoleService.RoleName.EVENT_HOST}}},
+      select: {
+        id: true,
+      },
+    });
+    if (!user) {
+      throw new BadRequestException('Not found Host.');
+    }
+    const eventType = await this.prisma.eventType.findFirst();
+    if (!eventType) {
+      throw new BadRequestException('Not found EventType.');
+    }
+
+    const eventVenue = await this.prisma.eventVenue.findFirst();
+    if (!eventVenue) {
+      throw new BadRequestException('Not found EventVenue.');
+    }
+
+    await this.prisma.eventContainer.deleteMany({
+      where: {
+        name: {startsWith: 'Example'},
+      },
+    });
+
+    const currentDate = moment();
+    const year = currentDate.year();
+    const month = currentDate.month() + 1;
+    const eventContainer = await this.prisma.eventContainer.create({
+      data: {
+        name: `Example ${year}-${month}`,
+        year: year,
+        month: month,
+        venueId: eventVenue.id,
+      },
+    });
+    const common = {
+      year: year,
+      month: month,
+      typeId: eventType.id,
+      venueId: eventVenue.id,
+      hostUserId: user.id,
+      containerId: eventContainer.id,
+      needToDuplicate: true,
+      timeZone: 'America/Los_Angeles',
+    };
+    const datetimeOfStarts = [
+      `${currentDate.format('YYYY-MM')}-03T05:15:00-07:00`,
+      `${currentDate.format('YYYY-MM')}-04T06:15:00-07:00`,
+      `${currentDate.format('YYYY-MM')}-01T05:45:00-07:00`,
+      `${currentDate.format('YYYY-MM')}-05T14:15:00-07:00`,
+      `${currentDate.format('YYYY-MM')}-07T08:15:00-07:00`,
+      `${currentDate.format('YYYY-MM')}-09T10:30:00-07:00`,
+      `${currentDate.format('YYYY-MM')}-08T10:30:00-07:00`,
+      `${currentDate.format('YYYY-MM')}-10T11:45:00-07:00`,
+      `${currentDate.format('YYYY-MM')}-13T14:15:00-07:00`,
+      `${currentDate.format('YYYY-MM')}-13T05:15:00-07:00`,
+      `${currentDate.format('YYYY-MM')}-14T15:45:00-07:00`,
+      `${currentDate.format('YYYY-MM')}-16T16:45:00-07:00`,
+      `${currentDate.format('YYYY-MM')}-19T08:15:00-07:00`,
+      `${currentDate.format('YYYY-MM')}-21T14:30:00-07:00`,
+      `${currentDate.format('YYYY-MM')}-22T09:45:00-07:00`,
+      `${currentDate.format('YYYY-MM')}-23T18:15:00-07:00`,
+      `${currentDate.format('YYYY-MM')}-24T17:30:00-07:00`,
+    ];
+    for (const d of datetimeOfStarts) {
+      await this.createEvent({...common, datetimeOfStart: d} as any);
+    }
+    return 'ok';
+  }
   /* End */
 }

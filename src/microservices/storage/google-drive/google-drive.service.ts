@@ -263,5 +263,39 @@ export class GoogleDriveService {
     }
   }
 
+  /**
+   * Remove all files.
+   */
+  private async deleteAll() {
+    // Find root files.
+    const filesInFolder = await this.prisma.googleFile.findMany({
+      where: {parentId: null},
+      select: {id: true},
+    });
+
+    for (let i = 0; i < filesInFolder.length; i++) {
+      await this.deleteFileRecursively(filesInFolder[i].id);
+    }
+  }
+
+  /**
+   * Initialize Example files.
+   */
+  async initExample() {
+    await this.deleteAll();
+
+    const exampleFolder = await this.createFolder({name: 'ExampleFolder'});
+    await this.createDocument({
+      name: 'Example Document',
+    });
+    await this.createSheet({
+      name: 'Example Sheet',
+    });
+    await this.createDocument({
+      name: 'Example Document 2',
+      parentId: exampleFolder.id,
+    });
+  }
+
   /* End */
 }

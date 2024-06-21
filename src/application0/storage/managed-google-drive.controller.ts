@@ -11,6 +11,7 @@ import {
   UploadedFile,
 } from '@nestjs/common';
 import {FileInterceptor} from '@nestjs/platform-express';
+import {NoGuard} from '@microservices/account/security/passport/public/public.decorator';
 import {Express} from 'express';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {GoogleDriveService} from '@microservices/storage/google-drive/google-drive.service';
@@ -177,6 +178,12 @@ export class ManagedGoogleDriveController {
   @Delete('permissions/:permissionId')
   async deletePermission(@Param('permissionId') permissionId: number) {
     return await this.googleDrivePermission.deletePermission(permissionId);
+  }
+
+  @Post('initExample')
+  @NoGuard()
+  async initExample() {
+    return await this.googleDrive.initExample();
   }
 
   /* End */

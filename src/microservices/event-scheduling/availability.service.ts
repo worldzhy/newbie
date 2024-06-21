@@ -262,40 +262,44 @@ export class AvailabilityService {
     cronParserOptions: any;
     minutesOfDuration: number;
   }) {
-    const interval = CronParser.parseExpression(
-      args.cronExpression,
-      args.cronParserOptions
-    );
     const timeslots: Prisma.AvailabilityTimeslotUncheckedUpdateInput[] = [];
-    while (interval.hasNext()) {
-      const parsedDatetime = interval.next().value.toDate();
+    try {
+      const interval = CronParser.parseExpression(
+        args.cronExpression,
+        args.cronParserOptions
+      );
+      while (interval.hasNext()) {
+        const parsedDatetime = interval.next().value.toDate();
 
-      for (
-        let i = 0;
-        i < args.minutesOfDuration / this.MINUTES_Of_TIMESLOT_UNIT;
-        i++
-      ) {
-        const datetimeOfStart = datePlusMinutes(
-          parsedDatetime,
-          this.MINUTES_Of_TIMESLOT_UNIT * i
-        );
-        const datetimeOfEnd = datePlusMinutes(
-          datetimeOfStart,
-          this.MINUTES_Of_TIMESLOT_UNIT
-        );
+        for (
+          let i = 0;
+          i < args.minutesOfDuration / this.MINUTES_Of_TIMESLOT_UNIT;
+          i++
+        ) {
+          const datetimeOfStart = datePlusMinutes(
+            parsedDatetime,
+            this.MINUTES_Of_TIMESLOT_UNIT * i
+          );
+          const datetimeOfEnd = datePlusMinutes(
+            datetimeOfStart,
+            this.MINUTES_Of_TIMESLOT_UNIT
+          );
 
-        timeslots.push({
-          datetimeOfStart: datetimeOfStart,
-          datetimeOfEnd: datetimeOfEnd,
-          // year: datetimeOfStart.getFullYear(),
-          // month: datetimeOfStart.getMonth() + 1, // 0-11, January gives 0
-          // dayOfMonth: datetimeOfStart.getDate(),
-          // dayOfWeek: datetimeOfStart.getDay(), //0-6, Sunday gives 0
-          // hour: datetimeOfStart.getHours(),
-          // minute: datetimeOfStart.getMinutes(),
-          minutesOfTimeslot: this.MINUTES_Of_TIMESLOT_UNIT,
-        });
+          timeslots.push({
+            datetimeOfStart: datetimeOfStart,
+            datetimeOfEnd: datetimeOfEnd,
+            // year: datetimeOfStart.getFullYear(),
+            // month: datetimeOfStart.getMonth() + 1, // 0-11, January gives 0
+            // dayOfMonth: datetimeOfStart.getDate(),
+            // dayOfWeek: datetimeOfStart.getDay(), //0-6, Sunday gives 0
+            // hour: datetimeOfStart.getHours(),
+            // minute: datetimeOfStart.getMinutes(),
+            minutesOfTimeslot: this.MINUTES_Of_TIMESLOT_UNIT,
+          });
+        }
       }
+    } catch (error) {
+      console.error(error);
     }
 
     return timeslots;
