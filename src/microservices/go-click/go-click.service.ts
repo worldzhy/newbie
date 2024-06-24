@@ -135,7 +135,7 @@ export class GoClickService {
     await this.deleteGoogleDriveAll();
 
     const exampleFolder = await this.googleDriveService.createFolder({
-      name: 'ExampleFolder',
+      name: 'Example Folder',
     });
     await this.googleDriveService.createDocument({
       name: 'Example Document',

@@ -229,9 +229,14 @@ export class GoClickController {
   @Post('init-workflow-example')
   @NoGuard()
   async initWorkflowExample() {
-    await this.prisma.workflow.delete({
+    const old = await this.prisma.workflow.findFirst({
       where: {name: 'Example'},
     });
+    if (old) {
+      await this.prisma.workflow.delete({
+        where: {id: old.id},
+      });
+    }
     const example = await await this.prisma.workflow.create({
       data: {
         name: 'Example',
