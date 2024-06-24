@@ -1,5 +1,7 @@
 import {Injectable, BadRequestException} from '@nestjs/common';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
+
+import {GoogleDriveService} from '@microservices/storage/google-drive/google-drive.service';
 import {
   GoClickGroupCreateReqDto,
   GoClickGroupUpdateReqDto,
@@ -11,7 +13,10 @@ export * from './constants';
 
 @Injectable()
 export class GoClickService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly googleDriveService: GoogleDriveService
+  ) {}
 
   async groupCreate(body: GoClickGroupCreateReqDto): Promise<{id: number}> {
     const {name} = body;
@@ -105,5 +110,40 @@ export class GoClickService {
       },
     });
     return {id};
+  }
+
+  /**
+   * Remove all files.
+   */
+  private async deleteGoogleDriveAll() {
+    // Find root files.
+    const filesInFolder = await this.prisma.googleFile.findMany({
+      where: {parentId: null},
+      select: {id: true},
+    });
+
+    for (let i = 0; i < filesInFolder.length; i++) {
+      await this.googleDriveService.deleteFileRecursively(filesInFolder[i].id);
+    }
+  }
+  /**
+   * Initialize Example files.
+   */
+  async initGoogleDriveExample() {
+    await this.deleteGoogleDriveAll();
+
+    const exampleFolder = await this.googleDriveService.createFolder({
+      name: 'ExampleFolder',
+    });
+    await this.googleDriveService.createDocument({
+      name: 'Example Document',
+    });
+    await this.googleDriveService.createSheet({
+      name: 'Example Sheet',
+    });
+    await this.googleDriveService.createDocument({
+      name: 'Example Document 2',
+      parentId: exampleFolder.id,
+    });
   }
 }

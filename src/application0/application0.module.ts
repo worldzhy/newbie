@@ -15,7 +15,6 @@ import {App0StorageModule} from './storage/storage.module';
 import {App0TagModule} from './tag/tag.module';
 import {App0WorkflowModule} from './workflow/workflow.module';
 import {App0PeopleFinderModule} from './people-finder/people-finder.module';
-import {App0GoClickModule} from './go-click/go-click.module';
 
 @Module({
   imports: [
@@ -31,7 +30,6 @@ import {App0GoClickModule} from './go-click/go-click.module';
     App0TagModule,
     App0WorkflowModule,
     App0PeopleFinderModule,
-    App0GoClickModule,
   ],
 })
 export class Application0Module {

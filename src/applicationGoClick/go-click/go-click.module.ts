@@ -6,4 +6,4 @@ import {GoClickController} from './go-click.controller';
   imports: [GoClickModule],
   controllers: [GoClickController],
 })
-export class App0GoClickModule {}
+export class AppGoClickModule {}
