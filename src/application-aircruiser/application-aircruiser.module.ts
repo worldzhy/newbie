@@ -1,6 +1,6 @@
 import {Module} from '@nestjs/common';
 import {Application0Module} from '@application0/application0.module';
-import {ApplicationGoClickModule} from '@/applicationGoclick/applicationGoClick.module';
+import {ApplicationGoClickModule} from '@/application-goclick/application-goclick.module';
 
 import {ApplicationAircruiserController} from './application-aircruiser.controller';
 import {AwsEnvironmentController} from './cloud/environment.controller';
