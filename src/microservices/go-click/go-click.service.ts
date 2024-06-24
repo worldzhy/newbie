@@ -67,10 +67,11 @@ export class GoClickService {
   }
 
   async itemCreate(body: GoClickItemCreateReqDto): Promise<{id: number}> {
-    const {label} = body;
+    const {label, groupId} = body;
     const item = await this.prisma.goClickItem.findFirst({
       where: {
         label,
+        groupId,
         deletedAt: null,
       },
     });
