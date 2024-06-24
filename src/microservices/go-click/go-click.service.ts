@@ -19,9 +19,10 @@ export class GoClickService {
   ) {}
 
   async groupCreate(body: GoClickGroupCreateReqDto): Promise<{id: number}> {
-    const {name} = body;
+    const {name, parentId} = body;
     const group = await this.prisma.goClickGroup.findFirst({
       where: {
+        parentId,
         name,
         deletedAt: null,
       },
