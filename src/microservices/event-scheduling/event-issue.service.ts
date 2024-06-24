@@ -42,17 +42,15 @@ export class EventIssueService {
   }
 
   async check(event: Event) {
-    // [solidcore only, 2023-11-20] Do not check locked event or event with TBD coach.
+    // [solidcore only, 2023-11-20] Do not check locked event.
     if (event.status === EventStatus.LOCKED) {
       return;
     }
-    const tag = await this.prisma.tag.findFirst({
-      where: {name: 'TBD', group: {name: 'Coach'}},
-    });
-    if (tag && event.hostUserId) {
+
+    if (event.hostUserId) {
       if (
         (await this.prisma.userSingleProfile.count({
-          where: {userId: event.hostUserId, tagIds: {has: tag.id}},
+          where: {userId: event.hostUserId},
         })) > 0
       ) {
         return;
