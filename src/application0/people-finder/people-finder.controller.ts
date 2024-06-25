@@ -38,7 +38,7 @@ import {
 } from '@microservices/people-finder/people-finder.service';
 import {PeopleFinderQueue} from './people-finder.processor';
 
-@ApiTags('People-finder')
+@ApiTags('People Finder')
 @ApiBearerAuth()
 @Controller('people-finder')
 export class PeopleFinderController {

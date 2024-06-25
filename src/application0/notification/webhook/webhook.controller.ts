@@ -27,7 +27,7 @@ import {
   NotificationWebhookRecordListResDto,
 } from './webhook.dto';
 
-@ApiTags('Notification/Webhook')
+@ApiTags('Notification / Webhook')
 @ApiBearerAuth()
 @Controller('notification/webhook')
 export class NotificationWebhookController {
