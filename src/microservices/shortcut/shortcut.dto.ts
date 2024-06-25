@@ -1,11 +1,11 @@
 import {ApiProperty} from '@nestjs/swagger';
 import {IsString, IsNumber, IsOptional} from 'class-validator';
 
-export class GoClickReqBaseDto {
+export class ShortcutReqBaseDto {
   channelName: string;
 }
 
-export class GoClickGroupCreateReqDto {
+export class ShortcutGroupCreateReqDto {
   @ApiProperty({
     type: Number,
     required: false,
@@ -29,7 +29,7 @@ export class GoClickGroupCreateReqDto {
   name: string;
 }
 
-export class GoClickGroupUpdateReqDto {
+export class ShortcutGroupUpdateReqDto {
   @ApiProperty({
     type: Number,
   })
@@ -69,7 +69,7 @@ export class GoClickGroupUpdateReqDto {
   status: string;
 }
 
-export class GoClickItemCreateReqDto {
+export class ShortcutItemCreateReqDto {
   @ApiProperty({
     type: Number,
     required: false,
@@ -113,7 +113,7 @@ export class GoClickItemCreateReqDto {
   description: string;
 }
 
-export class GoClickItemUpdateReqDto {
+export class ShortcutItemUpdateReqDto {
   @ApiProperty({
     type: Number,
   })

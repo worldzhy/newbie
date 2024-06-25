@@ -3,7 +3,7 @@ import {IsNumber, IsOptional} from 'class-validator';
 import {CommonPaginationReqDto, CommonPaginationResDto} from '@/dto/common';
 import {Type} from 'class-transformer';
 
-export class GoClickGroupDetailResDto {
+export class ShortcutGroupDetailResDto {
   @ApiProperty({
     type: Number,
   })
@@ -40,7 +40,7 @@ export class GoClickGroupDetailResDto {
   updatedAt: Date;
 }
 
-export class GoClickGroupListReqDto extends CommonPaginationReqDto {
+export class ShortcutGroupListReqDto extends CommonPaginationReqDto {
   @ApiProperty({
     type: Number,
     required: false,
@@ -51,12 +51,12 @@ export class GoClickGroupListReqDto extends CommonPaginationReqDto {
   id?: number;
 }
 
-export class GoClickGroupListResDto {
+export class ShortcutGroupListResDto {
   @ApiProperty({
-    type: GoClickGroupDetailResDto,
+    type: ShortcutGroupDetailResDto,
     isArray: true,
   })
-  records: GoClickGroupDetailResDto[];
+  records: ShortcutGroupDetailResDto[];
 
   @ApiProperty({
     type: CommonPaginationResDto,
@@ -64,7 +64,7 @@ export class GoClickGroupListResDto {
   pagination: CommonPaginationResDto;
 }
 
-export class GoClickItemDetailResDto {
+export class ShortcutItemDetailResDto {
   @ApiProperty({
     type: Number,
   })
@@ -111,7 +111,7 @@ export class GoClickItemDetailResDto {
   updatedAt: Date;
 }
 
-export class GoClickItemListReqDto extends CommonPaginationReqDto {
+export class ShortcutItemListReqDto extends CommonPaginationReqDto {
   @ApiProperty({
     type: Number,
     required: false,
@@ -131,12 +131,12 @@ export class GoClickItemListReqDto extends CommonPaginationReqDto {
   groupId?: number;
 }
 
-export class GoClickItemListResDto {
+export class ShortcutItemListResDto {
   @ApiProperty({
-    type: GoClickItemDetailResDto,
+    type: ShortcutItemDetailResDto,
     isArray: true,
   })
-  records: GoClickItemDetailResDto[];
+  records: ShortcutItemDetailResDto[];
 
   @ApiProperty({
     type: CommonPaginationResDto,
@@ -144,16 +144,16 @@ export class GoClickItemListResDto {
   pagination: CommonPaginationResDto;
 }
 
-export class GoClickTreeResDto extends GoClickGroupDetailResDto {
+export class ShortcutTreeResDto extends ShortcutGroupDetailResDto {
   @ApiProperty({
-    type: GoClickItemDetailResDto,
+    type: ShortcutItemDetailResDto,
     isArray: true,
   })
-  child: GoClickItemDetailResDto[];
+  child: ShortcutItemDetailResDto[];
 
   @ApiProperty({
-    type: GoClickItemDetailResDto,
+    type: ShortcutItemDetailResDto,
     isArray: true,
   })
-  items: GoClickItemDetailResDto[];
+  items: ShortcutItemDetailResDto[];
 }

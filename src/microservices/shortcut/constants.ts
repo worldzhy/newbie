@@ -1,9 +1,9 @@
-export enum GoClickStatus {
+export enum shortcuttatus {
   Active = 'active',
   Inactive = 'inactive',
 }
 
-export enum GoClickItemType {
+export enum ShortcutItemType {
   Link = 'link',
   String = 'string',
 }

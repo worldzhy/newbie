@@ -21,7 +21,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["microservice/account", "microservice/cloud", "microservice/cron", "microservice/event-scheduling", "microservice/map", "microservice/notification", "microservice/order-mgmt", "microservice/project-mgmt", "microservice/queue", "microservice/stock-mgmt", "microservice/storage", "microservice/tag", "microservice/token", "microservice/workflow", "microservice/people-finder", "microservice/go-click", "application/engined", "application/recruitment", "application/solidcore", "application/tc-request"]
+  schemas  = ["microservice/account", "microservice/cloud", "microservice/cron", "microservice/event-scheduling", "microservice/map", "microservice/notification", "microservice/order-mgmt", "microservice/project-mgmt", "microservice/queue", "microservice/stock-mgmt", "microservice/storage", "microservice/tag", "microservice/token", "microservice/workflow", "microservice/people-finder", "microservice/shortcut", "application/engined", "application/recruitment", "application/solidcore", "application/tc-request"]
 }
 
 // ! ------------------------------------------------------------ //
@@ -1297,41 +1297,41 @@ model PeopleFinderTask {
 }
 
 // ! ------------------------------------------------------------ //
-// !             [Microservice] GoClick models                    //
+// !             [Microservice] Shortcut models                    //
 // ! ------------------------------------------------------------ //
-// * GoClickGroup                                                  //
-// * GoClickItem                                                  //
+// * ShortcutGroup                                                  //
+// * ShortcutItem                                                  //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
 
-model GoClickGroup {
-  id          Int           @id @default(autoincrement())
-  name        String
-  parentId    Int           @default(0)
-  sort        Int           @default(0)
-  status      String // active inactive
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  deletedAt   DateTime?
-  goClickItem GoClickItem[]
+model ShortcutGroup {
+  id           Int            @id @default(autoincrement())
+  name         String
+  parentId     Int            @default(0)
+  sort         Int            @default(0)
+  status       String // active inactive
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  deletedAt    DateTime?
+  shortcutItem ShortcutItem[]
 
-  @@schema("microservice/go-click")
+  @@schema("microservice/shortcut")
 }
 
-model GoClickItem {
-  id          Int           @id @default(autoincrement())
+model ShortcutItem {
+  id          Int            @id @default(autoincrement())
   label       String
   content     String
   description String?
-  sort        Int           @default(0)
+  sort        Int            @default(0)
   type        String // link, string
   status      String // active, inactive
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
   deletedAt   DateTime?
-  group       GoClickGroup? @relation(fields: [groupId], references: [id])
+  group       ShortcutGroup? @relation(fields: [groupId], references: [id])
   groupId     Int
 
-  @@schema("microservice/go-click")
+  @@schema("microservice/shortcut")
 }
 
 // ! ------------------------------------------------------------ //

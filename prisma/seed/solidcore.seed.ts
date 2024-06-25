@@ -78,6 +78,23 @@ export async function seedForSolidcore() {
           },
         });
       }
+    } else if (role.name === RoleName.EventHost) {
+      await prisma.user.create({
+        data: {
+          password: 'Abc1234!',
+          email: 'jim@solidcore.com',
+          roles: {connect: [{id: role.id}]},
+          profile: {create: {firstName: 'Jim', lastName: 'Green'}},
+        },
+      });
+      await prisma.user.create({
+        data: {
+          password: 'Abc1234!',
+          email: 'kate@solidcore.com',
+          roles: {connect: [{id: role.id}]},
+          profile: {create: {firstName: 'Kate', lastName: 'Smith'}},
+        },
+      });
     }
   }
 

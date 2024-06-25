@@ -10,6 +10,7 @@ import {EventSchedulingModule} from './event-scheduling/event-scheduling.module'
 import {MapModule} from './map/map.module';
 import {NotificationModule} from './notification/notification.module';
 import {OrderManagementModule} from './order-mgmt/order-mgmt.module';
+import {ShortcutModule} from './shortcut/shortcut.module';
 import {StockManagementModule} from './stock-mgmt/stock-mgmt.module';
 import {StorageModule} from './storage/storage.module';
 import {TagModule} from './tag/tag.module';
@@ -32,6 +33,7 @@ import MicroserviceConfiguration from './microservice.config';
     MapModule,
     NotificationModule,
     OrderManagementModule,
+    ShortcutModule,
     StockManagementModule,
     StorageModule,
     TagModule,

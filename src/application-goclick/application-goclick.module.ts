@@ -1,24 +1,22 @@
-import {Module, MiddlewareConsumer} from '@nestjs/common';
-import {ConfigModule} from '@nestjs/config';
-import ApplicationConfiguration from '../config';
+import {Module} from '@nestjs/common';
+import {Application0Module} from '@application0/application0.module';
 
-// Toolkit and microservice modules
-import {HttpMiddleware} from '@toolkit/nestjs/middleware/http.middleware';
-import {MicroserviceModule} from '@microservices/microservice.module';
-
-// Application0 controllers
-import {AppGoClickModule} from './go-click/go-click.module';
+import {ApplicationGoClickController} from './application-goclick.controller';
+import {ShortcutController} from './shortcut/shortcut.controller';
+import {SolutionGoogleDriveController} from './solution/google-drive.controller';
+import {SolutionSchedulingController} from './solution/scheduling.controller';
+import {SolutionWorkflowController} from './solution/workflow.controller';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({load: [ApplicationConfiguration]}),
-    // Microservices (Global modules)
-    MicroserviceModule,
-    AppGoClickModule,
+    Application0Module, // BEAT IT!
+  ],
+  controllers: [
+    ApplicationGoClickController,
+    ShortcutController,
+    SolutionGoogleDriveController,
+    SolutionSchedulingController,
+    SolutionWorkflowController,
   ],
 })
-export class ApplicationGoClickModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(HttpMiddleware).forRoutes('*');
-  }
-}
+export class ApplicationGoClickModule {}
