@@ -13,7 +13,7 @@ export class ThrottlerExceptionFilter implements ExceptionFilter {
     const response = host.switchToHttp().getResponse<Response>();
 
     response.status(HttpStatus.TOO_MANY_REQUESTS).json({
-      status: 'HTTP ' + HttpStatus.TOO_MANY_REQUESTS,
+      code: HttpStatus.TOO_MANY_REQUESTS,
       error: {message: 'Too many requests. Please try again later.'},
       data: null,
     });
