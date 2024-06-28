@@ -1318,17 +1318,17 @@ model ShortcutGroup {
 }
 
 model ShortcutItem {
-  id          Int            @id @default(autoincrement())
+  id          Int           @id @default(autoincrement())
   label       String
   content     String
   description String?
-  sort        Int            @default(0)
+  sort        Int           @default(0)
   type        String // link, string
   status      String // active, inactive
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
   deletedAt   DateTime?
-  group       ShortcutGroup? @relation(fields: [groupId], references: [id])
+  group       ShortcutGroup @relation(fields: [groupId], references: [id])
   groupId     Int
 
   @@schema("microservice/shortcut")

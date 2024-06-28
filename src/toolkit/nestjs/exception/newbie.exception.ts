@@ -4,7 +4,7 @@ export class NewbieException extends HttpException {
   constructor(type: NewbieExceptionType) {
     const exception = NewbieExceptionMap.get(type);
     if (exception) {
-      super({status: exception.status, error: exception.error}, HttpStatus.OK);
+      super({status: exception.code, error: exception.error}, HttpStatus.OK);
     }
   }
 }
@@ -21,19 +21,19 @@ export enum NewbieExceptionType {
 
 const NewbieExceptionMap = new Map<
   NewbieExceptionType,
-  {status: string; error: object}
+  {code: number; error: object}
 >([
   [
     NewbieExceptionType.Login_WrongInput,
     {
-      status: 'L1001',
+      code: 1001,
       error: {message: 'Invalid combination of account and password'},
     },
   ],
   [
     NewbieExceptionType.Login_NoPassword,
     {
-      status: 'L1002',
+      code: 1002,
       error: {
         message:
           'The password has not been set. Please login via verification code',
@@ -43,7 +43,7 @@ const NewbieExceptionMap = new Map<
   [
     NewbieExceptionType.Login_ExceededAttempts,
     {
-      status: 'L1003',
+      code: 1003,
       error: {
         message: 'Suspicious login prevented',
         description:
@@ -54,7 +54,7 @@ const NewbieExceptionMap = new Map<
   [
     NewbieExceptionType.Login_HighFrequency,
     {
-      status: 'L1004',
+      code: 1004,
       error: {
         message: 'High frequency login prevented',
         description:
@@ -64,20 +64,20 @@ const NewbieExceptionMap = new Map<
   ],
   [
     NewbieExceptionType.ResetPassword_WrongInput,
-    {status: 'L1005', error: {message: 'Invalid email or phone'}},
+    {code: 1005, error: {message: 'Invalid email or phone'}},
   ],
   [
     NewbieExceptionType.ResetPassword_InvalidCode,
-    {status: 'L1006', error: {message: 'Invalid verification code'}},
+    {code: 1006, error: {message: 'Invalid verification code'}},
   ],
   [
     NewbieExceptionType.Access_HighFrequency,
     {
-      status: 'L2001',
+      code: 2001,
       error: {
-        message: 'High frequency access prevented',
+        message: 'High frequency http requests prevented',
         description:
-          "We blocked an attempt to access your account because we weren't sure it was really you. This happens when we notice unusual login activity, like an attempt to log in too many times, or from a different location or device. You'll need to wait before trying to log in again. Some blocks are removed automatically.",
+          "We blocked an attempt to request your endpoints because we weren't sure it was really you. This happens when we notice unusual login activity, like an attempt to log in too many times, or from a different location or device. You'll need to wait before trying to log in again. Some blocks are removed automatically.",
       },
     },
   ],

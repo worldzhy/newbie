@@ -12,11 +12,11 @@ export class NewbieExceptionFilter implements ExceptionFilter {
   catch(exception: NewbieException, host: ArgumentsHost) {
     const response = host.switchToHttp().getResponse<Response>();
 
-    const {status, error} = exception.getResponse() as {
-      status: string;
+    const {code, error} = exception.getResponse() as {
+      code: number;
       error: object;
     };
 
-    response.status(HttpStatus.OK).json({status, error, data: null});
+    response.status(HttpStatus.OK).json({code, error, data: null});
   }
 }

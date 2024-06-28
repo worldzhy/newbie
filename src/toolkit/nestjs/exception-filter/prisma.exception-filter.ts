@@ -8,6 +8,13 @@ import {Prisma} from '@prisma/client';
 import {Response} from 'express';
 import {getPrismaExceptionMessage} from '@toolkit/prisma/prisma.exception';
 
+enum PrismaExceptionCode {
+  PrismaClientKnownRequestError = 9001,
+  PrismaClientUnknownRequestError = 9002,
+  PrismaClientInitializationError = 9003,
+  PrismaClientValidationError = 9004,
+}
+
 /**
  * @see [PrismaErrors] https://www.prisma.io/docs/reference/api-reference/error-reference#error-codes
  */
@@ -22,8 +29,6 @@ export class PrismaExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
     const response = host.switchToHttp().getResponse<Response>();
     let statusCode: HttpStatus = HttpStatus.OK;
-    let errorCode: string | undefined;
-    let errorMessage: string | undefined;
 
     /*
      * PrismaClientKnownRequestError
@@ -37,8 +42,11 @@ export class PrismaExceptionFilter implements ExceptionFilter {
         statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
       }
 
-      errorCode = code;
-      errorMessage = getPrismaExceptionMessage(code, message);
+      response.status(statusCode).json({
+        code: PrismaExceptionCode.PrismaClientKnownRequestError,
+        error: {message: code + ' ' + getPrismaExceptionMessage(code, message)},
+        data: null,
+      });
     }
 
     /*
@@ -46,7 +54,11 @@ export class PrismaExceptionFilter implements ExceptionFilter {
      * Engine returns an error related to a request that does not have an error code
      */
     if (exception instanceof Prisma.PrismaClientUnknownRequestError) {
-      errorMessage = exception.message;
+      response.status(HttpStatus.OK).json({
+        code: PrismaExceptionCode.PrismaClientUnknownRequestError,
+        error: {message: exception.message},
+        data: null,
+      });
     }
 
     /*
@@ -62,8 +74,11 @@ export class PrismaExceptionFilter implements ExceptionFilter {
         statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
       }
 
-      errorCode = code;
-      errorMessage = getPrismaExceptionMessage(errorCode, message);
+      response.status(statusCode).json({
+        code: PrismaExceptionCode.PrismaClientInitializationError,
+        error: {message: code + ' ' + getPrismaExceptionMessage(code, message)},
+        data: null,
+      });
     }
 
     /*
@@ -71,15 +86,14 @@ export class PrismaExceptionFilter implements ExceptionFilter {
      * Validation fails
      */
     if (exception instanceof Prisma.PrismaClientValidationError) {
-      statusCode = HttpStatus.BAD_REQUEST;
-      errorMessage =
-        'Validation failed due to missing field, incorrect field name, incorrect field types, etc.';
+      response.status(HttpStatus.BAD_REQUEST).json({
+        code: PrismaExceptionCode.PrismaClientValidationError,
+        error: {
+          message:
+            'Validation failed due to missing field, incorrect field name, incorrect field types, etc.',
+        },
+        data: null,
+      });
     }
-
-    response.status(statusCode).json({
-      status: errorCode ?? 'HTTP ' + statusCode,
-      error: {message: errorMessage},
-      data: null,
-    });
   }
 }
