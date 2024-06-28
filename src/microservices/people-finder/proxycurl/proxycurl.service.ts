@@ -197,7 +197,7 @@ export class ProxycurlService {
       email: boolean;
       phone: boolean;
     };
-    callThirdPartyId: number;
+    callThirdPartyId?: number;
   }> {
     const dataFlag = {
       email: false,
@@ -290,6 +290,11 @@ export class ProxycurlService {
       }
       return {res, error, dataFlag, callThirdPartyId: newRecord.id};
     }
-    return {res: undefined, error: undefined, dataFlag, callThirdPartyId: 0};
+    return {
+      res: undefined,
+      error: undefined,
+      dataFlag,
+      callThirdPartyId: undefined,
+    };
   }
 }

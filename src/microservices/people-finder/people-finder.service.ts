@@ -79,7 +79,10 @@ export class PeopleFinderService {
     return {taskBatchId: newTaskBatch.id};
   }
 
-  async getTaskBrancTasks(batchId: string) {
+  async getTaskBatchTasks(
+    batchId: string,
+    options: {status?: PeopleFinderTaskStatus} = {}
+  ) {
     const taskBatch = await this.prisma.peopleFinderTaskBatch.findFirst({
       where: {
         batchId,
@@ -91,6 +94,7 @@ export class PeopleFinderService {
     return await this.prisma.peopleFinderTask.findMany({
       where: {
         taskBatchId: taskBatch.id,
+        ...options,
       },
     });
   }

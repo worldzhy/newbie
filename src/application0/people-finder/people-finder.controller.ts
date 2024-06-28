@@ -86,7 +86,41 @@ export class PeopleFinderController {
   ) {
     const {batchId} = body;
     await this.peopleFinder.createTaskBatch(body);
-    const tasks = await this.peopleFinder.getTaskBrancTasks(batchId);
+    const tasks = await this.peopleFinder.getTaskBatchTasks(batchId);
+    const datas: PeopleFinderTaskBullJob[] = tasks.map(
+      item =>
+        ({
+          id: item.id,
+          taskBatchId: item.taskBatchId,
+          userId: item.userId,
+          userSource: item.userSource,
+          name: item.name,
+          firstName: item.firstName,
+          middleName: item.middleName,
+          lastName: item.lastName,
+          companyDomain: item.companyDomain,
+          linkedin: item.linkedin,
+          findEmail: item.findEmail,
+          findPhone: item.findPhone,
+        }) as PeopleFinderTaskBullJob
+    );
+    await this.queue.addBulk(datas.map(item => ({data: item})));
+    return {batchId};
+  }
+
+  @NoGuard()
+  @Post('retry-contact-search-batch')
+  @ApiResponse({
+    type: CreateContactSearchBatchResDto,
+  })
+  async retryContactSearchTaskBatch(
+    @Body()
+    body: GetContactSearchBatchReqDto
+  ) {
+    const {batchId} = body;
+    const tasks = await this.peopleFinder.getTaskBatchTasks(batchId, {
+      status: PeopleFinderTaskStatus.pending,
+    });
     const datas: PeopleFinderTaskBullJob[] = tasks.map(
       item =>
         ({
@@ -276,23 +310,25 @@ export class PeopleFinderController {
               needEmail: true,
             }
           );
-          if (findRes) {
+          if (findRes.callThirdPartyId) {
             callThirdPartyId = findRes.callThirdPartyId;
           }
         }
 
-        const oldData = await this.prisma.peopleFinderTask.findFirst({
-          where: {id: Number(taskId)},
-        });
+        if (callThirdPartyId) {
+          const oldData = await this.prisma.peopleFinderTask.findFirst({
+            where: {id: Number(taskId)},
+          });
 
-        await this.prisma.peopleFinderTask.update({
-          where: {id: Number(taskId)},
-          data: {
-            callThirdPartyIds: oldData?.callThirdPartyIds.concat([
-              callThirdPartyId,
-            ]),
-          },
-        });
+          await this.prisma.peopleFinderTask.update({
+            where: {id: Number(taskId)},
+            data: {
+              callThirdPartyIds: oldData?.callThirdPartyIds.concat([
+                callThirdPartyId,
+              ]),
+            },
+          });
+        }
       }
     }
 

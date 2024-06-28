@@ -135,8 +135,11 @@ export class PeopleFinderJobProcessor {
           `/people-finder/voilanorbert-hook?taskId=${peopleFinderTaskId}&id=`
       );
 
-      // searching completed && no email
-      if (findRes?.res?.searching === false && !findRes?.dataFlag.email) {
+      // not domain or not name || searching completed && no email
+      if (
+        !findRes ||
+        (findRes?.res?.searching === false && !findRes?.dataFlag.email)
+      ) {
         // Check if the current personnel have records on the current platform, and do not execute those with records
         const isExistTaskId = await this.peopleFinder.isExist({
           platform: PeopleFinderPlatforms.proxycurl,
@@ -150,7 +153,7 @@ export class PeopleFinderJobProcessor {
             needPhone: true,
             needEmail: true,
           });
-          if (findRes2) {
+          if (findRes2.callThirdPartyId) {
             callThirdPartyId = findRes2.callThirdPartyId;
           }
         }
@@ -163,18 +166,22 @@ export class PeopleFinderJobProcessor {
       }
     }
 
-    const oldData = await this.prisma.peopleFinderTask.findFirst({
-      where: {id: peopleFinderTaskId},
-    });
+    // If not domain, findRes will be undefined, so callThirdPartyId is undefined
+    if (callThirdPartyId) {
+      const oldData = await this.prisma.peopleFinderTask.findFirst({
+        where: {id: peopleFinderTaskId},
+      });
 
-    await this.prisma.peopleFinderTask.update({
-      where: {id: peopleFinderTaskId},
-      data: {
-        callThirdPartyIds: oldData?.callThirdPartyIds.concat([
-          callThirdPartyId,
-        ]),
-      },
-    });
+      await this.prisma.peopleFinderTask.update({
+        where: {id: peopleFinderTaskId},
+        data: {
+          callThirdPartyIds: oldData?.callThirdPartyIds.concat([
+            callThirdPartyId,
+          ]),
+        },
+      });
+    }
+
     return isGetEmailIng;
   }
 }
