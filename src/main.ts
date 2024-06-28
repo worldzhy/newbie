@@ -3,6 +3,7 @@ import {NestFactory} from '@nestjs/core';
 import {ConfigService} from '@nestjs/config';
 import {FastifyAdapter, NestFastifyApplication} from '@nestjs/platform-fastify';
 import * as cookieParser from 'cookie-parser';
+import {urlencoded, json} from 'express';
 import helmet from 'helmet';
 import {
   DocumentBuilder,
@@ -30,6 +31,10 @@ async function bootstrap() {
   } else {
     app = await NestFactory.create(ApplicationModule);
     app.use(cookieParser());
+
+    // set max body size
+    app.use(json({limit: '10mb'}));
+    app.use(urlencoded({limit: '10mb', extended: true}));
   }
 
   // [step 2] Check required environment variables.
