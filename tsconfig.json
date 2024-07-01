@@ -18,7 +18,7 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@application0/*": ["src/application0/*"],
+      "@framework/*": ["src/framework/*"],
       "@microservices/*": ["src/microservices/*"],
       "@toolkit/*": ["src/toolkit/*"],
       "@/*": ["src/*"]

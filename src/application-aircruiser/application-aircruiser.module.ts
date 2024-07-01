@@ -1,5 +1,6 @@
 import {Module} from '@nestjs/common';
-import {Application0Module} from '@application0/application0.module';
+import {FrameworkModule} from '@framework/framework.module';
+import {MicroserviceModule} from '@microservices/microservice.module';
 
 import {ApplicationAircruiserController} from './application-aircruiser.controller';
 import {AwsEnvironmentController} from './cloud/environment.controller';
@@ -8,9 +9,7 @@ import {ProjectNoteController} from './project/note.controller';
 import {ProjectController} from './project/project.controller';
 
 @Module({
-  imports: [
-    Application0Module, // BEAT IT!
-  ],
+  imports: [FrameworkModule, MicroserviceModule],
   controllers: [
     ApplicationAircruiserController,
     AwsEnvironmentController,

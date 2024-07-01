@@ -1,21 +1,18 @@
 import {Global, Module} from '@nestjs/common';
 import {ConfigModule, ConfigService} from '@nestjs/config';
+import {BullModule} from '@nestjs/bull';
 import {CacheModule} from '@nestjs/cache-manager';
 import * as redisStore from 'cache-manager-redis-store';
-import {HttpModule} from '@nestjs/axios';
 import {ElasticModule} from './elastic/elastic.module';
 import {CustomLoggerModule} from './logger/logger.module';
 import {PrismaModule} from './prisma/prisma.module';
 import {SnowflakeModule} from './snowflake/snowflake.module';
 import {XLSXModule} from './xlsx/xlsx.module';
 import ToolkitConfiguration from './toolkit.config';
-import {BullModule} from '@nestjs/bull';
-import {NestJsModule} from './nestjs/nestjs.module';
 
 @Global()
 @Module({
   imports: getModules(),
-  exports: [HttpModule],
 })
 export class ToolkitModule {}
 
@@ -24,8 +21,6 @@ function getModules() {
     ConfigModule.forRoot({load: [ToolkitConfiguration], isGlobal: true}),
     CustomLoggerModule,
     ElasticModule,
-    HttpModule,
-    NestJsModule,
     PrismaModule,
     SnowflakeModule,
     XLSXModule,

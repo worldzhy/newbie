@@ -1,5 +1,6 @@
 import {Module} from '@nestjs/common';
-import {Application0Module} from '@application0/application0.module';
+import {FrameworkModule} from '@framework/framework.module';
+import {MicroserviceModule} from '@microservices/microservice.module';
 
 import {AvailabilityModule} from './availability/availability.module';
 import {ClassModule} from './class/class.module';
@@ -16,7 +17,9 @@ import {LocationController} from './location/location.controller';
 
 @Module({
   imports: [
-    Application0Module, // BEAT IT!
+    FrameworkModule,
+    MicroserviceModule,
+
     AvailabilityModule,
     ClassModule,
     CoachModule,

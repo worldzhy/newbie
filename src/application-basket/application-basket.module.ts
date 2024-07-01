@@ -1,5 +1,6 @@
 import {Module} from '@nestjs/common';
-import {Application0Module} from '@application0/application0.module';
+import {FrameworkModule} from '@framework/framework.module';
+import {MicroserviceModule} from '@microservices/microservice.module';
 
 import {ApplicationBasketController} from './application-basket.controller';
 import {SkuConversionController} from './stock-mgmt/sku-conversion.controller';
@@ -10,9 +11,7 @@ import {WarehouseSkuController} from './stock-mgmt/warehouse-sku.controller';
 import {WarehouseController} from './stock-mgmt/warehouse.controller';
 
 @Module({
-  imports: [
-    Application0Module, // BEAT IT!
-  ],
+  imports: [FrameworkModule, MicroserviceModule],
   controllers: [
     ApplicationBasketController,
     SkuConversionController,

@@ -14,7 +14,7 @@ import {
 import {
   NewbieException,
   NewbieExceptionType,
-} from '@toolkit/nestjs/exception/newbie.exception';
+} from '@framework/exception/newbie.exception';
 
 @Injectable()
 export class RateLimiterGuard {

@@ -1,14 +1,22 @@
-import {Global, Module} from '@nestjs/common';
+import {Global, MiddlewareConsumer, Module} from '@nestjs/common';
 import {APP_FILTER, APP_INTERCEPTOR} from '@nestjs/core';
+import {ConfigModule} from '@nestjs/config';
+import {HttpModule} from '@nestjs/axios';
 import {AllExceptionFilter} from './exception-filter/all.exception-filter';
 import {PrismaExceptionFilter} from './exception-filter/prisma.exception-filter';
 import {ThrottlerExceptionFilter} from './exception-filter/throttler.exception-filter';
 import {HttpExceptionFilter} from './exception-filter/http.exception-filter';
-import {HttpResponseInterceptor} from './interceptor/http-response.interceptor';
 import {NewbieExceptionFilter} from './exception-filter/newbie.exception-filter';
+import {HttpResponseInterceptor} from './interceptor/http-response.interceptor';
+import {HttpMiddleware} from './middleware/http.middleware';
+import FrameworkConfiguration from './framework.config';
 
 @Global()
 @Module({
+  imports: [
+    ConfigModule.forRoot({load: [FrameworkConfiguration], isGlobal: true}),
+    HttpModule,
+  ],
   providers: [
     // Filters
     {provide: APP_FILTER, useClass: AllExceptionFilter}, // 5th priority for all exceptions.
@@ -18,5 +26,10 @@ import {NewbieExceptionFilter} from './exception-filter/newbie.exception-filter'
     {provide: APP_FILTER, useClass: ThrottlerExceptionFilter}, // 1st priority for exceptions thrown by throttler (rate limit).
     {provide: APP_INTERCEPTOR, useClass: HttpResponseInterceptor},
   ],
+  exports: [HttpModule],
 })
-export class NestJsModule {}
+export class FrameworkModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(HttpMiddleware).forRoutes('*');
+  }
+}

@@ -18,7 +18,7 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {
   NewbieException,
   NewbieExceptionType,
-} from '@toolkit/nestjs/exception/newbie.exception';
+} from '@framework/exception/newbie.exception';
 
 @ApiTags('Account')
 @Controller('account')
