@@ -15,7 +15,7 @@ import {Prisma, EventContainer} from '@prisma/client';
 import {daysOfMonth} from '@toolkit/utilities/datetime.util';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {AccountService} from '@microservices/account/account.service';
-import {RoleService} from '@microservices/account/role.service';
+import {RoleService} from '@microservices/account/role/role.service';
 import {Request} from 'express';
 import _ from 'lodash';
 

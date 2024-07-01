@@ -3,7 +3,7 @@ import {ApiTags, ApiBearerAuth} from '@nestjs/swagger';
 import {daysOfMonth} from '@toolkit/utilities/datetime.util';
 import {Prisma} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {RoleService} from '@microservices/account/role.service';
+import {RoleService} from '@microservices/account/role/role.service';
 
 @ApiTags('Solidcore / Analysis')
 @ApiBearerAuth()

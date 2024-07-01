@@ -7,7 +7,6 @@ import {HttpMiddleware} from '@toolkit/nestjs/middleware/http.middleware';
 import {MicroserviceModule} from '@microservices/microservice.module';
 
 // Application0 controllers
-import {App0AccountModule} from './account/account.module';
 import {App0CronModule} from './cron/cron.module';
 import {App0EventSchedulingModule} from './event-scheduling/event-scheduling.module';
 import {App0NotificationModule} from './notification/notification.module';
@@ -22,7 +21,6 @@ import {App0PeopleFinderModule} from './people-finder/people-finder.module';
     // Microservices (Global modules)
     MicroserviceModule,
     // Application0
-    App0AccountModule,
     App0CronModule,
     App0EventSchedulingModule,
     App0NotificationModule,

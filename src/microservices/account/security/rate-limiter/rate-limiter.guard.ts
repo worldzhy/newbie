@@ -1,6 +1,6 @@
 import {Injectable, ExecutionContext} from '@nestjs/common';
 import {Reflector} from '@nestjs/core';
-import {UserService} from '../../user.service';
+import {UserService} from '../../user/user.service';
 import {
   LimitAccessByIpService,
   LimitLoginByIpService,

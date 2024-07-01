@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {SnowflakeService} from '@toolkit/snowflake/snowflake.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {RoleService} from '@microservices/account/role.service';
+import {RoleService} from '@microservices/account/role/role.service';
 
 @Injectable()
 export class RawDataCoachService {

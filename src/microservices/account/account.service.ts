@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {UserStatus, VerificationCodeUse} from '@prisma/client';
-import {UserService} from './user.service';
+import {UserService} from './user/user.service';
 import {VerificationCodeService} from './verification-code.service';
 import {LimitLoginByUserService} from './security/rate-limiter/rate-limiter.service';
 import {SimpleEmailService} from '@microservices/notification/email/simple-email.service';
@@ -13,7 +13,7 @@ import {AccessTokenService} from '@microservices/account/security/token/access-t
 import {RefreshTokenService} from '@microservices/account/security/token/refresh-token.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {Request} from 'express';
-import {RoleService} from './role.service';
+import {RoleService} from './role/role.service';
 
 @Injectable()
 export class AccountService {

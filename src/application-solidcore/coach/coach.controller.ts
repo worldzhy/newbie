@@ -16,8 +16,8 @@ import {
 import {Prisma, User} from '@prisma/client';
 import {verifyEmail} from '@toolkit/validators/user.validator';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
-import {UserService} from '@microservices/account/user.service';
-import {RoleService} from '@microservices/account/role.service';
+import {UserService} from '@microservices/account/user/user.service';
+import {RoleService} from '@microservices/account/role/role.service';
 import {AccountService} from '@microservices/account/account.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 

@@ -15,7 +15,7 @@ import {
   EventIssueStatus,
 } from '@prisma/client';
 import {EventIssueService} from '@microservices/event-scheduling/event-issue.service';
-import {RoleService} from '@microservices/account/role.service';
+import {RoleService} from '@microservices/account/role/role.service';
 
 @ApiTags('Solution')
 @ApiBearerAuth()
