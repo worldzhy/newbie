@@ -4,4 +4,4 @@ import {CronController} from './cron.controller';
 @Module({
   controllers: [CronController],
 })
-export class App0CronModule {}
+export class AppCronModule {}

@@ -20,4 +20,4 @@ const PeopleFinderQueueDynamicModule = BullModule.registerQueue({
   providers: [PeopleFinderJobProcessor],
   controllers: [PeopleFinderController],
 })
-export class App0PeopleFinderModule {}
+export class AppPeopleFinderModule {}

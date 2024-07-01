@@ -14,4 +14,4 @@ import {WorkflowRouteController} from './workflow-route.controller';
     WorkflowRouteController,
   ],
 })
-export class App0WorkflowModule {}
+export class AppWorkflowModule {}

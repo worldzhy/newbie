@@ -12,4 +12,4 @@ import {MountedS3Controller} from './mounted-s3.controller';
     LocalDriveController,
   ],
 })
-export class App0StorageModule {}
+export class AppStorageModule {}

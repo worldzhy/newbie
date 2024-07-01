@@ -14,4 +14,4 @@ import {NotificationWebhookController} from './webhook/webhook.controller';
     NotificationWebhookController,
   ],
 })
-export class App0NotificationModule {}
+export class AppNotificationModule {}

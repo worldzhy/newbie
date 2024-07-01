@@ -26,4 +26,4 @@ import {EventVenueController} from './venue/event-venue.controller';
     EventVenueController,
   ],
 })
-export class App0EventSchedulingModule {}
+export class AppEventSchedulingModule {}
