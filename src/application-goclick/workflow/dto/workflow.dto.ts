@@ -1,6 +1,9 @@
 import {ApiProperty} from '@nestjs/swagger';
 import {IsString, IsOptional} from 'class-validator';
-import {CommonPaginationReqDto, CommonPaginationResDto} from '@/dto/common';
+import {
+  CommonPaginationReqDto,
+  CommonPaginationResDto,
+} from '@framework/common.dto';
 
 export class WorkflowCreateReqDto {
   @ApiProperty({

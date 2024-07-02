@@ -15,7 +15,7 @@ import {
   NotificationSlackWebhookResDto,
 } from '@microservices/notification/webhook/slack/slack-webhook.service';
 import {NotificationWebhookService} from '@microservices/notification/webhook/webhook.service';
-import {CommonCUDResDto} from '@/dto/common';
+import {CommonCUDResDto} from '@framework/common.dto';
 import {
   NotificationWebhookChannelCreateReqDto,
   NotificationWebhookChannelUpdateReqDto,

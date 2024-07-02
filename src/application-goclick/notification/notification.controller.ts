@@ -7,7 +7,7 @@ import {
   NotificationAccessKeyCreateReqDto,
   NotificationAccessKeyUpdateReqDto,
 } from '@microservices/notification/notification.dto';
-import {CommonCUDResDto} from '@/dto/common';
+import {CommonCUDResDto} from '@framework/common.dto';
 import {
   NotificationAccessKeyListReqDto,
   NotificationAccessKeyListResDto,

@@ -1,7 +1,10 @@
 import {ApiProperty} from '@nestjs/swagger';
 import {IsNumber, IsNotEmpty, IsString, IsOptional} from 'class-validator';
 import {Type} from 'class-transformer';
-import {CommonPaginationReqDto, CommonPaginationResDto} from '@/dto/common';
+import {
+  CommonPaginationReqDto,
+  CommonPaginationResDto,
+} from '@framework/common.dto';
 import {NotificationWebhookChannelCreateReqDto} from '@microservices/notification/webhook/webhook.dto';
 import {
   NotificationWebhookRecordStatus,
