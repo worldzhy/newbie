@@ -58,7 +58,7 @@
     "axios": "^1.6.2",
     "bcrypt": "^5.1.1",
     "bull": "^4.11.5",
-    "cache-manager": "^4.1.0",
+    "cache-manager": "^5.0.0",
     "cache-manager-redis-store": "^2.0.0",
     "chromiumly": "^2.8.0",
     "class-transformer": "^0.5.1",
