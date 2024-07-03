@@ -1,0 +1,106 @@
+// ! ------------------------------------------------------------ //
+// !             [Application] TC Request models                  //
+// ! ------------------------------------------------------------ //
+// * TcWorkflow                                                   //
+// * TcWorkflowTrail                                              //
+// * TcPayment                                                    //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
+
+model TcWorkflow {
+  id                         String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  registrationNumber         String
+  orderId                    String? // Payment order
+  status                     String
+  reasonForRefusal           String?
+  parentId                   Int
+  fileIdForCertificate       String?
+  // VIEW1_DETAILS
+  title                      String?
+  firstName                  String?
+  middleName                 String?
+  lastName                   String?
+  fullName                   String?
+  dateOfBirth                DateTime?         @db.Date
+  gender                     String?
+  address                    String?
+  island                     String?
+  district                   String?
+  addressOutsideTC           String?
+  landlinePhone              String?
+  mobile                     String?
+  email                      String? //  If you have made previous Certificate of Character applications, the email you enter here will replace any you have previously entered. This means that all email correspondence we send regarding previous applications will now be sent to this address.
+  fileIdForRecentPhoto       String?           @db.Uuid
+  // VIEW2_PURPOSE
+  purpose                    String?
+  typeOfEmployment           String?
+  countryOfTravel            String?
+  otherPurpose               String?
+  intendedDateOfTravel       DateTime?         @db.Date
+  fileIdForTravelProof       String?
+  otherInformation           String? // If there is no information type "No"
+  // VIEW3_PAYMENT
+  // VIEW4_TYPE
+  scopeOfConvictions         String?
+  hasOutsideConviction       Boolean? // Yes or No
+  outsideConviction          String? // If hasOutsideConviction == Yes, fill in this field.
+  // VIEW5_MARITAL
+  maritalStatus              String?
+  isNameChanged              Boolean? // Name changed through Marriage or Deed Poll?
+  preFirstName               String?
+  preMiddleName              String?
+  preLastName                String?
+  // VIEW6_EMPLOYMENT
+  occupation                 String?
+  nameOfEmployer             String?
+  addressOfEmployer          String?
+  telephoneOfEmployer        String?
+  emailOfEmployer            String?
+  // VIEW7_TCUK_?
+  isTcUk                     Boolean?
+  // VIEW8_TCUK_YES
+  isTc                       Boolean?
+  fileIdOfTcPassport         String?           @db.Uuid
+  fileIdOfTcCertificate      String?           @db.Uuid
+  fileIdOfUkPassport         String?           @db.Uuid
+  fileIdOfUkCertificate      String?           @db.Uuid
+  // VIEW9_TCUK_NO
+  fileIdOfForeignPassport    String?           @db.Uuid
+  fileIdOfForeignCertificate String?           @db.Uuid
+  passportNumber             String?
+  dateOfIssue                DateTime?         @db.Date
+  dateOfExpiry               DateTime?         @db.Date
+  countryOfIssue             String?
+  placeOfBirth               String?
+  // nationality                String
+  // otherNationality           String?
+  statusCardNumber           String?
+  dateOfStatusCardIssue      DateTime?         @db.Date
+  dateOfRequest              DateTime          @default(now()) @db.Date
+  createdAt                  DateTime          @default(now())
+  updatedAt                  DateTime          @updatedAt
+  // Below fields copy from latest workflow trail.
+  view                       String
+  state                      String
+  nextView                   String
+  nextRoleId                 String?
+  processedByUserIds         String[] // Store id of users who have processed this workflow.
+  // Workflow trails
+  trails                     TcWorkflowTrail[]
+
+  @@schema("application/tc-request")
+}
+
+model TcWorkflowTrail {
+  id                Int        @id @default(autoincrement())
+  view              String
+  state             String // The state that is selected in this step.
+  nextView          String
+  nextRoleId        String?    @db.Uuid // The role who will process the next step.
+  processedByUserId String?    @db.Uuid // The user who processed this step.
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  workflow          TcWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId        String     @db.Uuid
+
+  @@schema("application/tc-request")
+}

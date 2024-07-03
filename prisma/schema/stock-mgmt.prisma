@@ -1,0 +1,135 @@
+// !! ------------------------------------------------------------ //
+// !!            [Microservice] Stock Management models        //
+// !! ------------------------------------------------------------ //
+// * Sku                                                          //
+// * Folder                                                        //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
+
+model Spu {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  skus      Sku[]
+
+  @@schema("microservice/stock-mgmt")
+}
+
+model Sku {
+  id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name              String
+  unitOfMeasurement UnitOfMeasurement
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  spu               Spu?              @relation(fields: [spuId], references: [id])
+  spuId             String?           @db.Uuid
+  warehouseSkus     WarehouseSku[]
+
+  @@schema("microservice/stock-mgmt")
+}
+
+model Warehouse {
+  id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type           WarehouseType
+  name           String
+  placeId        Int?
+  tagIds         Int[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  skus           WarehouseSku[]
+  skuConversions SkuConversion[]
+  skuTrails      SkuTrail[]
+
+  @@schema("microservice/stock-mgmt")
+}
+
+model WarehouseSku {
+  id          Int       @id @default(autoincrement())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
+  warehouseId String    @db.Uuid
+  sku         Sku       @relation(fields: [skuId], references: [id])
+  skuId       String    @db.Uuid
+
+  @@unique([warehouseId, skuId])
+  @@schema("microservice/stock-mgmt")
+}
+
+model SkuConversion {
+  id          Int                 @id @default(autoincrement())
+  name        String
+  tagIds      Int[]
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  items       SkuConversionItem[]
+  warehouse   Warehouse           @relation(fields: [warehouseId], references: [id])
+  warehouseId String              @db.Uuid
+
+  @@schema("microservice/stock-mgmt")
+}
+
+model SkuConversionItem {
+  id                 Int               @id @default(autoincrement())
+  directionOfStock   DirectionOfStock
+  warehouseSkuId     Int
+  unitOfMeasurement  UnitOfMeasurement
+  valueOfMeasurement Float
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  skuConversion      SkuConversion     @relation(fields: [skuConversionId], references: [id])
+  skuConversionId    Int
+
+  @@schema("microservice/stock-mgmt")
+}
+
+model SkuTrail {
+  id                 Int               @id @default(autoincrement())
+  directionOfStock   DirectionOfStock
+  type               TransactionType
+  warehouseSkuId     Int
+  unitOfMeasurement  UnitOfMeasurement
+  valueOfMeasurement Float
+  priceOfUnit        Float
+  priceOfTotal       Float
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  warehouse          Warehouse         @relation(fields: [warehouseId], references: [id])
+  warehouseId        String            @db.Uuid
+
+  @@schema("microservice/stock-mgmt")
+}
+
+enum UnitOfMeasurement {
+  g
+  kg
+  piece
+  dozon
+
+  @@schema("microservice/stock-mgmt")
+}
+
+enum WarehouseType {
+  Brand
+  Store
+  Supplier
+
+  @@schema("microservice/stock-mgmt")
+}
+
+enum DirectionOfStock {
+  IN
+  OUT
+
+  @@schema("microservice/stock-mgmt")
+}
+
+enum TransactionType {
+  Purchase
+  Split
+  Sell
+  Process
+  Loss
+
+  @@schema("microservice/stock-mgmt")
+}

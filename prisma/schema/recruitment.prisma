@@ -1,0 +1,366 @@
+// ! ------------------------------------------------------------ //
+// !             [Application] Recruitment models                 //
+// ! ------------------------------------------------------------ //
+// * Certification                                                //
+// * Job                                                          //
+// * JobApplication                                               //
+// * JobApplicationNote                                           //
+// * JobApplicationTask                                           //
+// * JobApplicationTesting                                        //
+// * JobApplicationTestingAttachment                              //
+// * JobApplicationTestingLog                                     //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
+
+model Candidate {
+  id              String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  status          CandidateStatus          @default(ACTIVE)
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+  profile         CandidateProfile?
+  placeId         Int? // Map module
+  certifications  CandidateCertification[]
+  trainings       CandidateTraining[]
+  jobApplications JobApplication[]
+  organization    Organization?            @relation(fields: [organizationId], references: [id])
+  organizationId  String?                  @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+enum CandidateStatus {
+  ACTIVE
+  INACTIVE
+
+  @@schema("application/recruitment")
+}
+
+model CandidateProfile {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  uniqueNumber      String
+  givenName         String
+  middleName        String?
+  familyName        String
+  fullName          String?
+  birthday          DateTime?
+  gender            String?
+  email             String?
+  primaryPhone      String
+  primaryPhoneExt   String?
+  alternatePhone    String?
+  alternatePhoneExt String?
+  websites          Json? // {'facebook': 'https://www.facebook.com/grace', 'twitter': 'https://twitter.com/elonmusk'}
+  picture           String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  candidate         Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  candidateId       String    @unique @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+model CandidateCertification {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  candidateId String    @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+model CandidateTraining {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  candidateId String    @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+model Job {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code        String
+  type        JobType
+  position    String
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  placeId     Int?
+
+  @@schema("application/recruitment")
+}
+
+enum JobType {
+  Hourly
+  Salaried
+
+  @@schema("application/recruitment")
+}
+
+model JobApplication {
+  id              String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  state           String?
+  jobType         JobType
+  jobCode         String? // Only available when jobType is Hourly.
+  jobSite         String
+  testTypes       String[]
+  referredBy      String // This field should user.name or user.id
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+  workflows       JobApplicationWorkflow[]
+  candidateUser   User                     @relation(fields: [candidateUserId], references: [id])
+  candidateUserId String                   @db.Uuid
+  candidate       Candidate?               @relation(fields: [candidateId], references: [id])
+  candidateId     String?                  @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+model JobApplicationWorkflow {
+  id                 String                         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt          DateTime                       @default(now())
+  updatedAt          DateTime                       @updatedAt
+  jobApplication     JobApplication                 @relation(fields: [jobApplicationId], references: [id], onDelete: Cascade)
+  jobApplicationId   String                         @db.Uuid
+  beingHeldByUser    User?                          @relation(fields: [beingHeldByUserId], references: [id])
+  beingHeldByUserId  String?                        @db.Uuid
+  payload            JobApplicationWorkflowPayload? // workflow payload
+  files              JobApplicationWorkflowFile[] // work payload
+  notes              JobApplicationWorkflowNote[] // workflow payload
+  tasks              JobApplicationWorkflowTask[] // workflow payload
+  trails             JobApplicationWorkflowTrail[]
+  // Below fields copy from latest workflow step.
+  stateId            Int
+  nextViewId         Int
+  nextRoleId         String?
+  processedByUserIds String[] // Store id of users who have processed this workflow.
+
+  @@schema("application/recruitment")
+}
+
+model JobApplicationWorkflowTrail {
+  id                Int                    @id @default(autoincrement())
+  viewId            Int
+  stateId           Int // The state that is selected in this step.
+  nextViewId        Int
+  nextRoleId        String?                @db.Uuid // The role who will process the next step.
+  processedByUserId String                 @db.Uuid // The user who processed this step.
+  comment           String?
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  workflow          JobApplicationWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId        String                 @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+model JobApplicationWorkflowPayload {
+  id                  Int                    @id @default(autoincrement())
+  testType            String?
+  testSite            String?
+  appointmentStartsAt DateTime?
+  appointmentEndsAt   DateTime?
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+  workflow            JobApplicationWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId          String                 @unique @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+model JobApplicationWorkflowFile {
+  id             Int                    @id @default(autoincrement())
+  fileId         String                 @db.Uuid
+  originalName   String
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+  workflow       JobApplicationWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId     String                 @db.Uuid
+  workflowStepId Int
+
+  @@schema("application/recruitment")
+}
+
+model JobApplicationWorkflowNote {
+  id              Int                    @id @default(autoincrement())
+  reporter        String?
+  reporterUserId  String                 @db.Uuid
+  reporterComment String
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+  workflow        JobApplicationWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId      String                 @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+model JobApplicationWorkflowTask {
+  id              Int                             @id @default(autoincrement())
+  reporter        String?
+  reporterUserId  String                          @db.Uuid
+  reporterComment String
+  assignee        String?
+  assigneeUserId  String                          @db.Uuid
+  state           JobApplicationWorkflowTaskState @default(PENDING)
+  createdAt       DateTime                        @default(now())
+  updatedAt       DateTime                        @updatedAt
+  workflow        JobApplicationWorkflow          @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId      String                          @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+enum JobApplicationWorkflowTaskState {
+  PENDING
+  DONE
+
+  @@schema("application/recruitment")
+}
+
+model File {
+  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  originalName String
+  mimeType     String
+  size         Int?
+  localPath    String? // Contains path and filename.
+  localName    String?
+  s3Bucket     String
+  s3Key        String // File name in S3 bucket.
+  s3Response   Json
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  folder       Folder?    @relation(fields: [folderId], references: [id])
+  folderId     String?    @db.Uuid
+  Document     Document[]
+
+  @@schema("application/recruitment")
+}
+
+model Folder {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  parentId  String?  @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  files     File[]
+
+  @@unique([name, parentId])
+  @@schema("application/recruitment")
+}
+
+model Document {
+  id                 String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  type               DocumentTypes     @default(DRAFT)
+  status             DocumentStatus    @default(ACTIVE)
+  title              String?
+  templateType       String?
+  description        String?
+  validStartsAt      DateTime?
+  validEndsAt        DateTime?
+  approvalDate       DateTime?
+  approvalName       String?
+  organization       Organization?     @relation(fields: [organizationId], references: [id])
+  organizationId     String?           @db.Uuid
+  documentTemplate   DocumentTemplate? @relation(fields: [documentTemplateId], references: [id])
+  documentTemplateId String?           @db.Uuid
+  history            DocumentHistory[]
+  file               File?             @relation(fields: [fileId], references: [id])
+  fileId             String?           @db.Uuid
+  sourceDocumentId   String?
+  content            DocumentContent?
+
+  @@schema("application/recruitment")
+}
+
+model DocumentContent {
+  id                String                             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  company           String?
+  deptArea          String?
+  location          String?
+  familyDept        String?
+  jobAddress        String?
+  jobAnalyst        String?
+  jobSummary        String?
+  patientFacing     String?
+  dateOfAnalysis    DateTime?
+  createdAt         DateTime                           @default(now())
+  updatedAt         DateTime                           @updatedAt
+  jobCode           DocumentContentJobCode[]
+  essentialFunction DocumentContentEssentialFunction[]
+  document          Document?                          @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId        String?                            @unique @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+model DocumentContentJobCode {
+  id                String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title             String
+  content           String
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  documentContent   DocumentContent? @relation(fields: [documentContentId], references: [id])
+  documentContentId String?          @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+model DocumentContentEssentialFunction {
+  id                String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title             String
+  content           String
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  documentContent   DocumentContent? @relation(fields: [documentContentId], references: [id])
+  documentContentId String?          @db.Uuid
+
+  @@schema("application/recruitment")
+}
+
+model DocumentHistory {
+  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  document           Document? @relation(fields: [documentId], references: [id])
+  documentId         String    @db.Uuid
+  newContent         Json
+  oldContent         Json?
+  processedByUserIds String[]
+
+  @@schema("application/recruitment")
+}
+
+model DocumentTemplate {
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String
+  path           String
+  schemaJson     Json?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String?       @db.Uuid
+  documents      Document[]
+
+  @@schema("application/recruitment")
+}
+
+enum DocumentStatus {
+  ACTIVE
+  INACTIVE
+
+  @@schema("application/recruitment")
+}
+
+enum DocumentTypes {
+  DRAFT
+  PUBLISHED
+
+  @@schema("application/recruitment")
+}

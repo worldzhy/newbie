@@ -1,0 +1,62 @@
+// ! ------------------------------------------------------------ //
+// !             [Application] Solidcore models                   //
+// ! ------------------------------------------------------------ //
+// * MindbodySite                                                 //
+// * AsyncPublish                                                 //
+// * mboLog                                                       //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
+
+enum AsyncEventStatus {
+  INIT
+  PENDING
+  REMOVING
+  REMOVED
+  PUBLISHING
+  COMPLETED
+  FAILED
+
+  @@schema("application/solidcore")
+}
+
+model MindbodySite {
+  id        Int      @id @default(autoincrement())
+  siteId    Int      @unique
+  siteName  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@schema("application/solidcore")
+}
+
+model AsyncPublish {
+  id           Int              @id @default(autoincrement())
+  status       AsyncEventStatus @default(INIT)
+  containerId  Int
+  curOldEvents Int              @default(0)
+  oldEvents    Int              @default(0)
+  curEventsCnt Int              @default(0)
+  eventsCnt    Int              @default(0)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@schema("application/solidcore")
+}
+
+model mboLog {
+  id             Int      @id @default(autoincrement())
+  asyncPublishId Int?
+  containerId    Int?
+  eventId        Int?
+  funcName       String?
+  studioId       Int
+  locationId     Int
+  params         Json?
+  resp           Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([funcName])
+  @@index([containerId])
+  @@index([studioId, locationId])
+  @@schema("application/solidcore")
+}

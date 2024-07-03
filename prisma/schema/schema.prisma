@@ -1,0 +1,25 @@
+// This is your Prisma schema file.
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// !! ------------------------------------------------------------ //
+// !!                       [Prisma] Issues                        //
+// !! ------------------------------------------------------------ //
+// * https://github.com/prisma/prisma/issues/4355                  //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
+
+generator client {
+  provider = "prisma-client-js"
+
+  // Enable Full-Text Search which is only available for PostgreSQL.
+  previewFeatures = ["multiSchema", "fullTextSearch", "prismaSchemaFolder"]
+
+  // For production deployment.
+  // binaryTargets   = ["native", "rhel-openssl-1.0.x"]
+  // binaryTargets   = ["native", "linux-arm64-openssl-1.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["microservice/account", "microservice/cloud", "microservice/cron", "microservice/event-scheduling", "microservice/map", "microservice/notification", "microservice/order-mgmt", "microservice/project-mgmt", "microservice/queue", "microservice/stock-mgmt", "microservice/storage", "microservice/tag", "microservice/token", "microservice/workflow", "microservice/people-finder", "microservice/shortcut", "application/engined", "application/recruitment", "application/solidcore", "application/tc-request"]
+}

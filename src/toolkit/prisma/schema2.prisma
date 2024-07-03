@@ -1,0 +1,44 @@
+// This is your Prisma schema file.
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client2"
+
+  // Enable Full-Text Search which is only available for PostgreSQL.
+  previewFeatures = ["fullTextSearch", "multiSchema"]
+
+  // For production deployment.
+  // binaryTargets   = ["native", "rhel-openssl-1.0.x"]
+  binaryTargets = ["native", "linux-arm64-openssl-1.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL_2")
+  schemas  = ["microservice/a", "microservice/b"]
+}
+
+// !! ------------------------------------------------------------ //
+// !!            [Microservice] A models                           //
+// !! ------------------------------------------------------------ //
+// * A                                                             //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
+
+model A {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  @@schema("microservice/a")
+}
+
+// !! ------------------------------------------------------------ //
+// !!            [Microservice] B models                           //
+// !! ------------------------------------------------------------ //
+// * B                                                             //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
+
+model B {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  @@schema("microservice/b")
+}
