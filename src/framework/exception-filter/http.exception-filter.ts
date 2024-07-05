@@ -37,8 +37,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
     }
 
     // [step 3] Response.
-    response
-      .status(httpStatus)
-      .json({code: httpStatus, error: {message}, data: null});
+    response.status(httpStatus).json({
+      code: httpStatus,
+      error: {message, info: exception.getResponse()},
+      data: null,
+    });
   }
 }
