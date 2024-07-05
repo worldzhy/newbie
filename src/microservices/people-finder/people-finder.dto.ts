@@ -1,5 +1,5 @@
 import {ApiProperty} from '@nestjs/swagger';
-import {IsString, IsOptional, IsArray} from 'class-validator';
+import {IsString, IsOptional, IsArray, IsBoolean} from 'class-validator';
 
 export class ContactSearchPeopleBase {
   @ApiProperty({
@@ -65,21 +65,20 @@ export class ContactSearchPeopleBase {
 export class PeopleFinderCallThirdPartyDto extends ContactSearchPeopleBase {}
 
 export class ContactSearchPeopleTaskDto extends ContactSearchPeopleBase {
-  @ApiProperty({
-    type: Boolean,
-    required: false,
-  })
-  @IsString()
-  @IsOptional()
-  findPhone?: boolean;
-
-  @ApiProperty({
-    type: Boolean,
-    required: false,
-  })
-  @IsString()
-  @IsOptional()
-  findEmail?: boolean;
+  // @ApiProperty({
+  //   type: Boolean,
+  //   required: false,
+  // })
+  // @IsBoolean()
+  // @IsOptional()
+  // findPhone?: boolean;
+  // @ApiProperty({
+  //   type: Boolean,
+  //   required: false,
+  // })
+  // @IsBoolean()
+  // @IsOptional()
+  // findEmail?: boolean;
 }
 
 export class CreateContactSearchTaskBatchReqDto {
@@ -89,6 +88,22 @@ export class CreateContactSearchTaskBatchReqDto {
   })
   @IsArray()
   peoples: ContactSearchPeopleTaskDto[];
+
+  @ApiProperty({
+    type: Boolean,
+    required: false,
+  })
+  @IsBoolean()
+  @IsOptional()
+  findPhone?: boolean;
+
+  @ApiProperty({
+    type: Boolean,
+    required: false,
+  })
+  @IsBoolean()
+  @IsOptional()
+  findEmail?: boolean;
 
   @ApiProperty({
     type: String,

@@ -28,6 +28,7 @@ import {
   PeopleFinderTaskStatus,
   PeopleFinderStatus,
   PeopleFinderTaskBullJob,
+  PeopleFinderSourceMode,
 } from '@microservices/people-finder/constants';
 import {VoilaNorbertService} from '@microservices/people-finder/voila-norbert/volia-norbert.service';
 import {ProxycurlService} from '@microservices/people-finder/proxycurl/proxycurl.service';
@@ -78,14 +79,42 @@ export class PeopleFinderController {
   @NoGuard()
   @Post('create-contact-search-batch')
   @ApiResponse({
+    description: `If there are multiple entries in companyDomain or linkedin, use ;*_*; For example, abc.com;*_*;123.com.
+    If findPhone only requires a domain`,
     type: CreateContactSearchBatchResDto,
   })
   async createContactSearchTaskBatch(
     @Body()
     body: CreateContactSearchTaskBatchReqDto
   ) {
-    const {batchId} = body;
-    await this.peopleFinder.createTaskBatch(body);
+    const splitStr = ';*_*;';
+    const {batchId, findEmail, findPhone} = body;
+    const findParam = {
+      findEmail: !!findEmail,
+      findPhone: !!findPhone,
+    };
+    if ((findEmail && findPhone) || (!findEmail && !findPhone))
+      throw new BadRequestException('Choose one of findEmail and findPhone');
+    const lastPeoples: CreateContactSearchTaskBatchReqDto['peoples'] = [];
+    body.peoples.forEach(item => {
+      item.companyDomain?.split(splitStr).forEach(companyDomain => {
+        lastPeoples.push({
+          ...findParam,
+          ...item,
+          companyDomain,
+          linkedin: '',
+        });
+      });
+      item.linkedin?.split(splitStr).forEach(linkedin => {
+        lastPeoples.push({
+          ...findParam,
+          ...item,
+          linkedin,
+          companyDomain: '',
+        });
+      });
+    });
+    await this.peopleFinder.createTaskBatch({...body, peoples: lastPeoples});
     const tasks = await this.peopleFinder.getTaskBatchTasks(batchId);
     const datas: PeopleFinderTaskBullJob[] = tasks.map(
       item =>
@@ -285,8 +314,13 @@ export class PeopleFinderController {
         // Check if the current personnel have records on the current platform, and do not execute those with records
         const isExistTaskId = await this.peopleFinder.isExist({
           platform: PeopleFinderPlatforms.proxycurl,
-          userId: record.userId,
-          userSource: record.userSource,
+          data: {
+            userId: record.userId,
+            userSource: record.userSource,
+            companyDomain: record.companyDomain as string,
+            name: record.name as string,
+          },
+          sourceMode: PeopleFinderSourceMode.searchPeopleByLinkedin,
         });
 
         let callThirdPartyId;

@@ -27,6 +27,13 @@ export enum PeopleFinderBatchTaskCallBackStatus {
   completed = 'completed',
 }
 
+export enum PeopleFinderSourceMode {
+  searchEmailByDomain = 'searchEmailByDomain',
+  searchPeopleByDomain = 'searchPeopleByDomain',
+  searchPeopleByLinkedin = 'searchPeopleByLinkedin',
+  searchPeopleLinkedin = 'searchPeopleLinkedin',
+}
+
 export type PeopleFinderUserReq = {
   userId: string;
   userSource: string;

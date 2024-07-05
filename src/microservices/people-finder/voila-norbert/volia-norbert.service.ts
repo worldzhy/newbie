@@ -5,7 +5,11 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {Prisma} from '@prisma/client';
 import {CustomLoggerService} from '@toolkit/logger/logger.service';
 import {PeopleFinderCallThirdPartyDto} from '../people-finder.dto';
-import {PeopleFinderStatus, PeopleFinderPlatforms} from '../constants';
+import {
+  PeopleFinderStatus,
+  PeopleFinderPlatforms,
+  PeopleFinderSourceMode,
+} from '../constants';
 import {
   SearchEmailByDomainReqDto,
   SearchEmailResDto,
@@ -112,6 +116,7 @@ export class VoilaNorbertService {
 
   /**
    * voilanorbert [support: email]
+   * only: companyDomain and name
    * @param webhook: xxxx.com?id=
    */
   async find(user: PeopleFinderCallThirdPartyDto, webhook: string) {
@@ -121,7 +126,7 @@ export class VoilaNorbertService {
       data: {
         ...user,
         source: PeopleFinderPlatforms.voilanorbert,
-        sourceMode: 'searchEmailByDomain',
+        sourceMode: PeopleFinderSourceMode.searchEmailByDomain,
         status: PeopleFinderStatus.pending,
       },
     });

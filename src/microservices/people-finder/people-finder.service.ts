@@ -1,5 +1,6 @@
 import {Injectable, BadRequestException} from '@nestjs/common';
 import {HttpService} from '@nestjs/axios';
+import {Prisma} from '@prisma/client';
 import {CustomLoggerService} from '@toolkit/logger/logger.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {
@@ -9,6 +10,7 @@ import {
   PeopleFinderBatchTaskStatus,
   PeopleFinderBatchTaskCallBackStatus,
 } from './constants';
+import {PeopleFinderUserReq} from '@microservices/people-finder/constants';
 import {CreateContactSearchTaskBatchReqDto} from './people-finder.dto';
 export * from './constants';
 
@@ -24,13 +26,32 @@ export class PeopleFinderService {
 
   async isExist({
     platform,
-    userSource,
-    userId,
+    data,
+    sourceMode,
   }: {
     platform: PeopleFinderPlatforms;
-    userSource: string;
-    userId: string;
+    data: PeopleFinderUserReq;
+    sourceMode: string;
   }): Promise<number> {
+    const buildWhere: Prisma.PeopleFinderCallThirdPartyWhereInput = {};
+    // Search emails only by company domain and name
+    if (platform === PeopleFinderPlatforms.voilanorbert) {
+      buildWhere.companyDomain = data.companyDomain;
+      buildWhere.name = data.name;
+    }
+    // Only findPhone and byDomain mode
+    if (platform === PeopleFinderPlatforms.peopledatalabs) {
+      buildWhere.name = data.name;
+      buildWhere.companyDomain = data.companyDomain;
+    }
+    // linkedin and domain+firstName
+    if (platform === PeopleFinderPlatforms.proxycurl) {
+      if (data.linkedin) buildWhere.linkedin = data.linkedin;
+      if (data.companyDomain) {
+        buildWhere.firstName = data.firstName;
+        buildWhere.companyDomain = data.companyDomain;
+      }
+    }
     const res = await this.prisma.peopleFinderCallThirdParty.findFirst({
       where: {
         status: {
@@ -40,8 +61,10 @@ export class PeopleFinderService {
           ],
         },
         source: platform,
-        userSource,
-        userId,
+        userId: data.userId,
+        userSource: data.userSource,
+        sourceMode,
+        ...buildWhere,
       },
     });
     if (res) return res.id;

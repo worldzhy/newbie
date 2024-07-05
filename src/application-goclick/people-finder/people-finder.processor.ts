@@ -12,6 +12,7 @@ import {
   PeopleFinderTaskBullJob,
   PeopleFinderUserReq,
   PeopleFinderTaskStatus,
+  PeopleFinderSourceMode,
 } from '@microservices/people-finder/constants';
 
 export const PeopleFinderQueue = 'people-finder';
@@ -70,6 +71,7 @@ export class PeopleFinderJobProcessor {
     return {};
   }
 
+  /** only need domain */
   private async findPhone(
     peopleFinderTaskId: number,
     data: PeopleFinderUserReq
@@ -79,8 +81,8 @@ export class PeopleFinderJobProcessor {
     // Check if the current personnel have records on the current platform, and do not execute those with records
     const isExistTaskId = await this.peopleFinder.isExist({
       platform: PeopleFinderPlatforms.peopledatalabs,
-      userId: data.userId,
-      userSource: data.userSource,
+      data,
+      sourceMode: PeopleFinderSourceMode.searchPeopleByDomain,
     });
 
     let callThirdPartyId;
@@ -122,8 +124,8 @@ export class PeopleFinderJobProcessor {
     // Check if the current personnel have records on the current platform, and do not execute those with records
     const isExistVoilanorbertTaskId = await this.peopleFinder.isExist({
       platform: PeopleFinderPlatforms.voilanorbert,
-      userId: data.userId,
-      userSource: data.userSource,
+      data,
+      sourceMode: PeopleFinderSourceMode.searchEmailByDomain,
     });
     let callThirdPartyId;
     if (isExistVoilanorbertTaskId) {
@@ -143,8 +145,8 @@ export class PeopleFinderJobProcessor {
         // Check if the current personnel have records on the current platform, and do not execute those with records
         const isExistTaskId = await this.peopleFinder.isExist({
           platform: PeopleFinderPlatforms.proxycurl,
-          userId: data.userId,
-          userSource: data.userSource,
+          data,
+          sourceMode: PeopleFinderSourceMode.searchPeopleByLinkedin,
         });
         if (isExistTaskId) {
           callThirdPartyId = isExistTaskId;

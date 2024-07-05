@@ -9,6 +9,7 @@ import {
   PeopleFinderStatus,
   PeopleFinderPlatforms,
   SearchFilter,
+  PeopleFinderSourceMode,
 } from '../constants';
 import {
   SearchPeopleLinkedinReqDto,
@@ -207,7 +208,7 @@ export class ProxycurlService {
       const newRecord = await this.prisma.peopleFinderCallThirdParty.create({
         data: {
           ...user,
-          sourceMode: 'searchPeopleByLinkedin',
+          sourceMode: PeopleFinderSourceMode.searchPeopleByLinkedin,
           source: PeopleFinderPlatforms.proxycurl,
           status: PeopleFinderStatus.pending,
         },
@@ -247,7 +248,7 @@ export class ProxycurlService {
       const newRecord = await this.prisma.peopleFinderCallThirdParty.create({
         data: {
           ...user,
-          sourceMode: 'searchPeopleLinkedin',
+          sourceMode: PeopleFinderSourceMode.searchPeopleLinkedin,
           source: PeopleFinderPlatforms.proxycurl,
           status: PeopleFinderStatus.pending,
         },

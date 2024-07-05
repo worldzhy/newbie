@@ -16,6 +16,7 @@ import {
   PeopleFinderStatus,
   PeopleFinderPlatforms,
   SearchFilter,
+  PeopleFinderSourceMode,
 } from '../constants';
 
 export * from './peopledatalabs.dto';
@@ -210,7 +211,7 @@ export class PeopledatalabsService {
         const newRecord = await this.prisma.peopleFinderCallThirdParty.create({
           data: {
             ...user,
-            sourceMode: 'searchPeopleByLinkedin',
+            sourceMode: PeopleFinderSourceMode.searchPeopleByLinkedin,
             source: PeopleFinderPlatforms.peopledatalabs,
             status: PeopleFinderStatus.pending,
           },
@@ -259,7 +260,7 @@ export class PeopledatalabsService {
         const newRecord = await this.prisma.peopleFinderCallThirdParty.create({
           data: {
             ...user,
-            sourceMode: 'searchPeopleByLinkedin',
+            sourceMode: PeopleFinderSourceMode.searchPeopleByLinkedin,
             source: PeopleFinderPlatforms.peopledatalabs,
             status: PeopleFinderStatus.parameterError,
           },
@@ -290,7 +291,7 @@ export class PeopledatalabsService {
         const newRecord = await this.prisma.peopleFinderCallThirdParty.create({
           data: {
             ...user,
-            sourceMode: 'searchPeopleByDomain',
+            sourceMode: PeopleFinderSourceMode.searchPeopleByDomain,
             source: PeopleFinderPlatforms.peopledatalabs,
             status: PeopleFinderStatus.pending,
           },
@@ -336,7 +337,7 @@ export class PeopledatalabsService {
         const newRecord = await this.prisma.peopleFinderCallThirdParty.create({
           data: {
             ...user,
-            sourceMode: 'searchPeopleByDomain',
+            sourceMode: PeopleFinderSourceMode.searchPeopleByDomain,
             source: PeopleFinderPlatforms.peopledatalabs,
             status: PeopleFinderStatus.parameterError,
           },
