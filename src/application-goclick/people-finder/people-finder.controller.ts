@@ -18,7 +18,8 @@ import {NoGuard} from '@microservices/account/security/passport/public/public.de
 import {
   CreateContactSearchBatchResDto,
   GetContactSearchBatchReqDto,
-  GetBatchStatusResDto,
+  GetBatchListStatusResDto,
+  GetContactSearchBatchListReqDto,
 } from './people-finder.dto';
 import {
   SearchEmailThirdResDto,
@@ -29,6 +30,7 @@ import {
   PeopleFinderStatus,
   PeopleFinderTaskBullJob,
   PeopleFinderSourceMode,
+  PeopleFinderBatchTaskStatus,
 } from '@microservices/people-finder/constants';
 import {VoilaNorbertService} from '@microservices/people-finder/voila-norbert/volia-norbert.service';
 import {ProxycurlService} from '@microservices/people-finder/proxycurl/proxycurl.service';
@@ -201,16 +203,37 @@ export class PeopleFinderController {
   }
 
   @NoGuard()
-  @Get('get-contact-search-batch-status')
+  @Post('get-contact-search-batch-status')
   @ApiResponse({
-    type: GetBatchStatusResDto,
+    type: GetBatchListStatusResDto,
   })
-  async getStatusByBatchId(
-    @Query()
-    query: GetContactSearchBatchReqDto
-  ): Promise<GetBatchStatusResDto> {
-    return await this.peopleFinder.checkTaskBatchStatus({
-      batchId: query.batchId,
+  async getStatusByBatchIds(
+    @Body()
+    body: GetContactSearchBatchListReqDto
+  ): Promise<GetBatchListStatusResDto> {
+    const map = {};
+    for (let i = 0; i < body.batchIds.length; i++) {
+      const r = await this.peopleFinder.checkTaskBatchStatus({
+        batchId: body.batchIds[i],
+      });
+      map[body.batchIds[i]] = r;
+    }
+    return map;
+  }
+
+  @NoGuard()
+  @Get('get-contact-search-pending-batch-status')
+  @ApiResponse({
+    type: GetBatchListStatusResDto,
+  })
+  async getPendingBatchStatus(): Promise<GetBatchListStatusResDto> {
+    const batches = await this.prisma.peopleFinderTaskBatch.findMany({
+      where: {
+        status: PeopleFinderBatchTaskStatus.pending,
+      },
+    });
+    return await this.getStatusByBatchIds({
+      batchIds: batches.map(item => item.batchId),
     });
   }
 

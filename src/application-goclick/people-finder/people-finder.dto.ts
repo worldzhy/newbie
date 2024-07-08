@@ -1,5 +1,5 @@
 import {ApiProperty} from '@nestjs/swagger';
-import {IsString} from 'class-validator';
+import {IsString, IsArray} from 'class-validator';
 
 export class CreateContactSearchBatchResDto {
   @ApiProperty({
@@ -17,6 +17,15 @@ export class GetContactSearchBatchReqDto {
   batchId: string;
 }
 
+export class GetContactSearchBatchListReqDto {
+  @ApiProperty({
+    type: String,
+    isArray: true,
+  })
+  @IsArray()
+  batchIds: string[];
+}
+
 export class GetBatchStatusResDto {
   @ApiProperty({
     type: Boolean,
@@ -32,4 +41,8 @@ export class GetBatchStatusResDto {
     type: Number,
   })
   total: number;
+}
+
+export class GetBatchListStatusResDto {
+  [key: string]: GetBatchStatusResDto;
 }
