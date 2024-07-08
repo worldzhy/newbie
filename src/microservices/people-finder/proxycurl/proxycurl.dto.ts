@@ -6,7 +6,10 @@ class CommonResDto {
   res?: unknown;
 }
 class CommonErrorResDto {
-  error: unknown;
+  error: any;
+}
+export enum ErrorStatus {
+  INSUFFICIENT_CREDITS = 403,
 }
 export class SearchPeopleLinkedinReqDto {
   @ApiProperty({

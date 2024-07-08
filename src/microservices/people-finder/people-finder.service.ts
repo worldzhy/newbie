@@ -12,6 +12,7 @@ import {
 } from './constants';
 import {PeopleFinderUserReq} from '@microservices/people-finder/constants';
 import {CreateContactSearchTaskBatchReqDto} from './people-finder.dto';
+import {PeopleFinderNotificationService} from './people-finder.notification.service';
 export * from './constants';
 
 @Injectable()
@@ -21,7 +22,8 @@ export class PeopleFinderService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly logger: CustomLoggerService,
-    private httpService: HttpService
+    private httpService: HttpService,
+    private peopleFinderNotification: PeopleFinderNotificationService
   ) {}
 
   async isExist({
@@ -236,6 +238,10 @@ export class PeopleFinderService {
                 callbackStatus: PeopleFinderBatchTaskCallBackStatus.completed,
               },
             });
+          } else {
+            this.peopleFinderNotification.send({
+              message: `[callback error] url:${taskBatch?.callbackUrl}, batchId:${taskBatch.batchId}`,
+            });
           }
           this.logger.log(
             'checkAndExecuteTaskBatchCallback: ' + JSON.stringify(res.data),
@@ -243,6 +249,9 @@ export class PeopleFinderService {
           );
         })
         .catch(async e => {
+          this.peopleFinderNotification.send({
+            message: `[callback error] url:${taskBatch?.callbackUrl}, batchId:${taskBatch.batchId}`,
+          });
           await this.prisma.peopleFinderTaskBatch.update({
             where: {id: taskBatchId},
             data: {

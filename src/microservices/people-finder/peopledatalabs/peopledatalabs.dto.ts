@@ -17,7 +17,7 @@ class CommonResDto {
   res?: unknown;
 }
 class CommonErrorResDto {
-  error: unknown;
+  error: any;
   ctx?: SearchPeopleThirdResDto | SearchPeopleThirdResDto[];
 }
 export class SearchPeopleByDomainReqDto {

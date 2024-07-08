@@ -5,6 +5,7 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {Prisma} from '@prisma/client';
 import {CustomLoggerService} from '@toolkit/logger/logger.service';
 import {PeopleFinderCallThirdPartyDto} from '../people-finder.dto';
+import {PeopleFinderNotificationService} from '../people-finder.notification.service';
 import {
   PeopleFinderStatus,
   PeopleFinderPlatforms,
@@ -36,6 +37,7 @@ export class VoilaNorbertService {
     private httpService: HttpService,
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
+    private peopleFinderNotification: PeopleFinderNotificationService,
     private readonly logger: CustomLoggerService
   ) {
     this.apiKey = this.configService.getOrThrow<string>(
@@ -84,7 +86,7 @@ export class VoilaNorbertService {
           data,
           this.reqConfig
         )
-        .then((res: SearchEmailThirdResDto) => {
+        .then(async (res: SearchEmailThirdResDto) => {
           if (res.status === VoliaNorbertStatus.SUCCESS) {
             resolve({res: res.data});
             this.logger.log(
@@ -93,6 +95,12 @@ export class VoilaNorbertService {
               this.loggerContext
             );
           } else {
+            if (res.status === VoliaNorbertStatus.INSUFFICIENT_CREDITS) {
+              // notification webhook
+              await this.peopleFinderNotification.send({
+                message: '[VoliaNorbert] Not have enough credits',
+              });
+            }
             const resError = {error: res.data, status: res.status};
             resolve({error: resError});
             this.logger.error(

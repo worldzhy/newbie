@@ -5,6 +5,7 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {Prisma} from '@prisma/client';
 import {CustomLoggerService} from '@toolkit/logger/logger.service';
 import {PeopleFinderCallThirdPartyDto} from '../people-finder.dto';
+import {PeopleFinderNotificationService} from '../people-finder.notification.service';
 import {
   SearchPeopleByDomainReqDto,
   SearchPeopleResDto,
@@ -30,6 +31,7 @@ export class PeopledatalabsService {
   constructor(
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
+    private peopleFinderNotification: PeopleFinderNotificationService,
     private readonly logger: CustomLoggerService
   ) {
     this.apiKey = this.configService.getOrThrow<string>(
@@ -225,6 +227,15 @@ export class PeopledatalabsService {
         if (error) {
           updateData.status = PeopleFinderStatus.failed;
           updateData.ctx = error as object;
+          // notification webhook
+          if (
+            error.error &&
+            error.error.status === PeopledatalabsStatus.PAYMENT_REQUIRED
+          ) {
+            await this.peopleFinderNotification.send({
+              message: '[peopledatalabs] Not have enough credits',
+            });
+          }
         } else if (res) {
           updateData.spent = res.rateLimit.callCreditsSpent;
           if (res.data) {
@@ -308,6 +319,15 @@ export class PeopledatalabsService {
         if (error) {
           updateData.status = PeopleFinderStatus.failed;
           updateData.ctx = error as object;
+          // notification webhook
+          if (
+            error.error &&
+            error.error.status === PeopledatalabsStatus.PAYMENT_REQUIRED
+          ) {
+            await this.peopleFinderNotification.send({
+              message: '[peopledatalabs] Not have enough credits',
+            });
+          }
         } else if (res) {
           updateData.spent = res.rateLimit.callCreditsSpent;
           const dataArray = res.data;

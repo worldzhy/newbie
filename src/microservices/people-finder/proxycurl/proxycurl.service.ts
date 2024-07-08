@@ -4,6 +4,7 @@ import {CustomLoggerService} from '@toolkit/logger/logger.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {Prisma} from '@prisma/client';
 import * as ProxycurlApi from 'proxycurl-js-linkedin-profile-scraper';
+import {PeopleFinderNotificationService} from '../people-finder.notification.service';
 import {PeopleFinderCallThirdPartyDto} from '../people-finder.dto';
 import {
   PeopleFinderStatus,
@@ -17,6 +18,7 @@ import {
   SearchPeopleByLinkedinResDto,
   SearchPeopleLinkedinResDto,
   SearchPeopleByLinkedinReqDto,
+  ErrorStatus,
 } from './proxycurl.dto';
 
 @Injectable()
@@ -28,7 +30,8 @@ export class ProxycurlService {
   constructor(
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
-    private readonly logger: CustomLoggerService
+    private readonly logger: CustomLoggerService,
+    private peopleFinderNotification: PeopleFinderNotificationService
   ) {
     this.apiKey = this.configService.getOrThrow<string>(
       'microservice.peopleFinder.proxycurl.apiKey'
@@ -223,6 +226,15 @@ export class ProxycurlService {
       if (error) {
         updateData.status = PeopleFinderStatus.failed;
         updateData.ctx = error as object;
+        // notification webhook
+        if (
+          error.error &&
+          error.error.status === ErrorStatus.INSUFFICIENT_CREDITS
+        ) {
+          await this.peopleFinderNotification.send({
+            message: '[proxycurl] Not have enough credits',
+          });
+        }
       } else if (res) {
         updateData.emails = res.personal_emails;
         updateData.phones = res.personal_numbers;
@@ -265,6 +277,15 @@ export class ProxycurlService {
       if (error) {
         updateData.status = PeopleFinderStatus.failed;
         updateData.ctx = error as object;
+        // notification webhook
+        if (
+          error.error &&
+          error.error.status === ErrorStatus.INSUFFICIENT_CREDITS
+        ) {
+          await this.peopleFinderNotification.send({
+            message: '[proxycurl] Not have enough credits',
+          });
+        }
       } else if (res && res.url) {
         updateData.linkedin = res.url;
         updateData.status = PeopleFinderStatus.completed;
