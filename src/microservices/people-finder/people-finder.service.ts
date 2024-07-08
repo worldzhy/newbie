@@ -219,14 +219,17 @@ export class PeopleFinderService {
       },
     });
 
-    if (taskBatch?.callbackUrl) {
+    if (
+      taskBatch?.callbackUrl &&
+      taskBatch.callbackStatus !== PeopleFinderBatchTaskCallBackStatus.completed
+    ) {
       this.httpService.axiosRef
         .post<{batchId: string}, {status: number; data: string}>(
           taskBatch?.callbackUrl,
           {batchId: taskBatch.batchId}
         )
         .then(async res => {
-          if (res.status === 200) {
+          if (res.status >= 200 && res.status < 300) {
             await this.prisma.peopleFinderTaskBatch.update({
               where: {id: taskBatchId},
               data: {
@@ -235,7 +238,7 @@ export class PeopleFinderService {
             });
           }
           this.logger.log(
-            'checkAndExecuteTaskBatchCallback: ' + JSON.stringify(res),
+            'checkAndExecuteTaskBatchCallback: ' + JSON.stringify(res.data),
             this.loggerContext
           );
         })

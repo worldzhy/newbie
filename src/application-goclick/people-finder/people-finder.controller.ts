@@ -382,6 +382,20 @@ export class PeopleFinderController {
     return 'ok';
   }
 
+  /**
+   * test
+   */
+  @NoGuard()
+  @Post('callback-test')
+  async callbackTest(
+    @Body()
+    body: {
+      taskBatchId: number;
+    }
+  ) {
+    await this.peopleFinder.checkAndExecuteTaskBatchCallback(body.taskBatchId);
+  }
+
   async voilanorbertContactSearchCallback(
     id: number,
     data?: SearchEmailContentResDto,
