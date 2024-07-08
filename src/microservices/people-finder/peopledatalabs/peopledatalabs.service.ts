@@ -243,6 +243,9 @@ export class PeopledatalabsService {
             updateData.phones = res.data.phone_numbers
               ? res.data.phone_numbers
               : [];
+            if (res.data.mobile_phone) {
+              updateData.phones.push(res.data.mobile_phone);
+            }
 
             if (updateData.emails && updateData.emails.length)
               dataFlag.email = true;
@@ -333,9 +336,14 @@ export class PeopledatalabsService {
           const dataArray = res.data;
           if (dataArray.length) {
             updateData.emails = dataArray[0].emails as object;
-            updateData.phones = dataArray[0].mobile_phone
-              ? [dataArray[0].mobile_phone]
-              : [];
+            let phones: string[] = [];
+            if (dataArray[0].phone_numbers) {
+              phones = [...dataArray[0].phone_numbers];
+            }
+            if (dataArray[0].mobile_phone) {
+              phones.push(dataArray[0].mobile_phone);
+            }
+            updateData.phones = phones;
             updateData.status = PeopleFinderStatus.completed;
             updateData.ctx = res as object;
           } else if (!dataArray || !dataArray.length) {
