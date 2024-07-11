@@ -186,9 +186,10 @@ export class PeopleFinderService {
         where: {id: {in: task.callThirdPartyIds}},
       });
 
-      // get emails and phones
+      // get emails \ phones \ linkedins
       let emails: string[] = [];
       let phones: string[] = [];
+      let linkedins: string[] = [];
       resultList.map(item => {
         if (item.emails && item.emails.length) {
           if (item.source === PeopleFinderPlatforms.voilanorbert) {
@@ -204,7 +205,10 @@ export class PeopleFinderService {
           emails = emails.concat(item.emails as string[]);
         }
         if (item.phones && item.phones.length) {
-          phones = item.phones as string[];
+          phones = phones.concat(item.phones as string[]);
+        }
+        if (item.linkedins && item.linkedins.length) {
+          linkedins = linkedins.concat(item.linkedins as string[]);
         }
       });
 
@@ -213,6 +217,7 @@ export class PeopleFinderService {
         data: {
           emails: Array.from(new Set(emails)),
           phones: Array.from(new Set(phones)),
+          linkedins: Array.from(new Set(linkedins)),
         },
       });
     }
