@@ -17,6 +17,7 @@ model PeopleFinderCallThirdParty {
   linkedin      String?
   emails        Json[]
   phones        Json[]
+  linkedins     Json[]
   ctx           Json?
   source        String
   sourceMode    String
@@ -58,6 +59,7 @@ model PeopleFinderTask {
   findPhone         Boolean?
   emails            Json[]
   phones            Json[]
+  linkedins         Json[]
   status            String // pending | completed
   createdAt         DateTime               @default(now())
   updatedAt         DateTime               @updatedAt

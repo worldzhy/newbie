@@ -343,6 +343,10 @@ export class PeopledatalabsService {
             if (dataArray[0].mobile_phone) {
               phones.push(dataArray[0].mobile_phone);
             }
+            // linkedin
+            if (dataArray[0].linkedin_url) {
+              updateData.linkedins = [dataArray[0].linkedin_url];
+            }
             updateData.phones = phones;
             updateData.status = PeopleFinderStatus.completed;
             updateData.ctx = res as object;

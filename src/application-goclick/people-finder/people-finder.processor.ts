@@ -78,18 +78,42 @@ export class PeopleFinderJobProcessor {
   ) {
     let isGetEmail = false;
 
+    let sourceMode;
+    let findWay;
+    // sourceMode
+    if (data.linkedin) {
+      sourceMode = PeopleFinderSourceMode.searchPeopleByLinkedin;
+      findWay = 'byLinkedin';
+    } else if (data.companyDomain) {
+      sourceMode = PeopleFinderSourceMode.searchPeopleByDomain;
+      findWay = 'byDomain';
+
+      const isExistLinkedin = await this.peopleFinder.isExist({
+        platform: PeopleFinderPlatforms.peopledatalabs,
+        // remove companyDomain, Otherwise it will be treated as a conditional query
+        data: {...data, companyDomain: ''},
+        sourceMode: PeopleFinderSourceMode.searchPeopleByLinkedin,
+      });
+      // If there was data previously sourced from 'byLinkedin', skip the find.
+      if (isExistLinkedin && isExistLinkedin.phones.length > 0) {
+        return {isGetEmail};
+      }
+    } else {
+      return {isGetEmail};
+    }
+
     // Check if the current personnel have records on the current platform, and do not execute those with records
-    const isExistTaskId = await this.peopleFinder.isExist({
+    const isExistTask = await this.peopleFinder.isExist({
       platform: PeopleFinderPlatforms.peopledatalabs,
       data,
-      sourceMode: PeopleFinderSourceMode.searchPeopleByDomain,
+      sourceMode,
     });
 
     let callThirdPartyId;
-    if (isExistTaskId) {
-      callThirdPartyId = isExistTaskId;
+    if (isExistTask) {
+      callThirdPartyId = isExistTask;
     } else {
-      const findRes = await this.peopledatalabsService.find('byDomain', data, {
+      const findRes = await this.peopledatalabsService.find(findWay, data, {
         needPhone: true,
         needEmail: false,
       });
@@ -143,13 +167,13 @@ export class PeopleFinderJobProcessor {
         (findRes?.res?.searching === false && !findRes?.dataFlag.email)
       ) {
         // Check if the current personnel have records on the current platform, and do not execute those with records
-        const isExistTaskId = await this.peopleFinder.isExist({
+        const isExistTask = await this.peopleFinder.isExist({
           platform: PeopleFinderPlatforms.proxycurl,
           data,
           sourceMode: PeopleFinderSourceMode.searchPeopleByLinkedin,
         });
-        if (isExistTaskId) {
-          callThirdPartyId = isExistTaskId;
+        if (isExistTask) {
+          callThirdPartyId = isExistTask;
         } else {
           const findRes2 = await this.proxycurlService.find(data, {
             needPhone: true,

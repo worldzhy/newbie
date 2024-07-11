@@ -34,7 +34,7 @@ export class PeopleFinderService {
     platform: PeopleFinderPlatforms;
     data: PeopleFinderUserReq;
     sourceMode: string;
-  }): Promise<number> {
+  }) {
     const buildWhere: Prisma.PeopleFinderCallThirdPartyWhereInput = {};
     // Search emails only by company domain and name
     if (platform === PeopleFinderPlatforms.voilanorbert) {
@@ -43,8 +43,11 @@ export class PeopleFinderService {
     }
     // Only findPhone and byDomain mode
     if (platform === PeopleFinderPlatforms.peopledatalabs) {
-      buildWhere.name = data.name;
-      buildWhere.companyDomain = data.companyDomain;
+      if (data.linkedin) buildWhere.linkedin = data.linkedin;
+      if (data.companyDomain) {
+        buildWhere.name = data.name;
+        buildWhere.companyDomain = data.companyDomain;
+      }
     }
     // linkedin and domain+firstName
     if (platform === PeopleFinderPlatforms.proxycurl) {
@@ -69,8 +72,8 @@ export class PeopleFinderService {
         ...buildWhere,
       },
     });
-    if (res) return res.id;
-    return 0;
+    if (res) return res;
+    return null;
   }
 
   async createTaskBatch({

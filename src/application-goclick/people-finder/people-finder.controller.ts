@@ -99,20 +99,21 @@ export class PeopleFinderController {
       throw new BadRequestException('Choose one of findEmail and findPhone');
     const lastPeoples: CreateContactSearchTaskBatchReqDto['peoples'] = [];
     body.peoples.forEach(item => {
-      item.companyDomain?.split(splitStr).forEach(companyDomain => {
-        lastPeoples.push({
-          ...findParam,
-          ...item,
-          companyDomain,
-          linkedin: '',
-        });
-      });
+      // If it is the same people. Linkedin is prioritized for stack entry, and subsequent logic needs to prioritize the execution of linkedin queries
       item.linkedin?.split(splitStr).forEach(linkedin => {
         lastPeoples.push({
           ...findParam,
           ...item,
           linkedin,
           companyDomain: '',
+        });
+      });
+      item.companyDomain?.split(splitStr).forEach(companyDomain => {
+        lastPeoples.push({
+          ...findParam,
+          ...item,
+          companyDomain,
+          linkedin: '',
         });
       });
     });
@@ -287,6 +288,9 @@ export class PeopleFinderController {
           if (item.phones) {
             user.phones = user.phones.concat(item.phones);
           }
+          if (item.linkedins) {
+            user.linkedins = user.linkedins.concat(item.linkedins);
+          }
         }
       }
     });
@@ -295,6 +299,7 @@ export class PeopleFinderController {
       userId: string;
       emails: unknown[];
       phones: unknown[];
+      linkedins: unknown[];
     }[] = [];
 
     Object.keys(userMap).forEach(key => {
@@ -303,6 +308,7 @@ export class PeopleFinderController {
         userId: user.userId!,
         phones: user.phones,
         emails: user.emails,
+        linkedins: user.linkedins,
       });
     });
 
