@@ -109,9 +109,9 @@ export class PeopleFinderJobProcessor {
       sourceMode,
     });
 
-    let callThirdPartyId;
+    let callThirdPartyId: number = 0;
     if (isExistTask) {
-      callThirdPartyId = isExistTask;
+      callThirdPartyId = isExistTask.id;
     } else {
       const findRes = await this.peopledatalabsService.find(findWay, data, {
         needPhone: true,
@@ -146,14 +146,14 @@ export class PeopleFinderJobProcessor {
   ) {
     let isGetEmailIng = false;
     // Check if the current personnel have records on the current platform, and do not execute those with records
-    const isExistVoilanorbertTaskId = await this.peopleFinder.isExist({
+    const isExistVoilanorbertTask = await this.peopleFinder.isExist({
       platform: PeopleFinderPlatforms.voilanorbert,
       data,
       sourceMode: PeopleFinderSourceMode.searchEmailByDomain,
     });
-    let callThirdPartyId;
-    if (isExistVoilanorbertTaskId) {
-      callThirdPartyId = isExistVoilanorbertTaskId;
+    let callThirdPartyId: number = 0;
+    if (isExistVoilanorbertTask) {
+      callThirdPartyId = isExistVoilanorbertTask.id;
     } else {
       const findRes = await this.voilaNorbertService.find(
         data,
@@ -173,7 +173,7 @@ export class PeopleFinderJobProcessor {
           sourceMode: PeopleFinderSourceMode.searchPeopleByLinkedin,
         });
         if (isExistTask) {
-          callThirdPartyId = isExistTask;
+          callThirdPartyId = isExistTask.id;
         } else {
           const findRes2 = await this.proxycurlService.find(data, {
             needPhone: true,

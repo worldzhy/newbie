@@ -341,7 +341,7 @@ export class PeopleFinderController {
       });
       if (record && record.userId && record.userSource) {
         // Check if the current personnel have records on the current platform, and do not execute those with records
-        const isExistTaskId = await this.peopleFinder.isExist({
+        const isExistTask = await this.peopleFinder.isExist({
           platform: PeopleFinderPlatforms.proxycurl,
           data: {
             userId: record.userId,
@@ -352,10 +352,10 @@ export class PeopleFinderController {
           sourceMode: PeopleFinderSourceMode.searchPeopleByLinkedin,
         });
 
-        let callThirdPartyId;
+        let callThirdPartyId: number = 0;
 
-        if (isExistTaskId) {
-          callThirdPartyId = isExistTaskId;
+        if (isExistTask) {
+          callThirdPartyId = isExistTask.id;
         } else {
           const findRes = await this.proxycurlService.find(
             {
