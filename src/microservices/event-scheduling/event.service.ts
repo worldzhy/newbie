@@ -10,13 +10,16 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {constructDateTime, daysOfMonth} from '@toolkit/utilities/datetime.util';
 import * as _ from 'lodash';
 import {EventIssueService} from './event-issue.service';
+import {eventPrismaMiddleware} from './event.prisma.middleware';
 
 @Injectable()
 export class EventService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly eventIssueService: EventIssueService
-  ) {}
+  ) {
+    this.prisma.$use(eventPrismaMiddleware);
+  }
 
   copyMany(params: {
     events: Event[];

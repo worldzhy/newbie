@@ -1,96 +1,11 @@
-import {BadRequestException} from '@nestjs/common';
 import {Prisma} from '@prisma/client';
-import {
-  generateHash,
-  generateRandomNumbers,
-} from '@toolkit/utilities/common.util';
 import {datePlusMinutes, splitDateTime} from '@toolkit/utilities/datetime.util';
-import {verifyEmail, verifyPassword} from '@toolkit/validators/user.validator';
 
-export async function prismaMiddleware(
+export async function eventPrismaMiddleware(
   params: Prisma.MiddlewareParams,
   next: (params: Prisma.MiddlewareParams) => Promise<any>
 ) {
-  if (params.model === Prisma.ModelName.User) {
-    switch (params.action) {
-      case 'create':
-      case 'update':
-        if (params.args['data']['email']) {
-          if (!verifyEmail(params.args['data']['email'])) {
-            throw new BadRequestException('Your email is not valid.');
-          }
-          params.args['data']['email'] = (
-            params.args['data']['email'] as string
-          ).toLowerCase();
-        }
-
-        if (params.args['data']['password']) {
-          if (!verifyPassword(params.args['data']['password'])) {
-            throw new BadRequestException(
-              'The password is not strong enough. (length >= 8, lowercase >= 1, uppercase >= 1, numbers >= 1, symbols >= 1)'
-            );
-          }
-          // Generate hash of the password.
-          const hash = await generateHash(params.args['data']['password']);
-          params.args['data']['password'] = hash;
-        }
-
-        if (params.args['data']['profile']) {
-          params.args['data']['profile'][params.action]['fullName'] =
-            params.args['data']['profile'][params.action]['firstName'] +
-            ' ' +
-            (params.args['data']['profile'][params.action]['middleName']
-              ? params.args['data']['profile'][params.action]['middleName'] +
-                ' '
-              : '') +
-            params.args['data']['profile'][params.action]['lastName'];
-        }
-        return next(params);
-      default:
-        return next(params);
-    }
-  } else if (
-    params.model === Prisma.ModelName.UserSingleProfile ||
-    params.model === Prisma.ModelName.UserMultiProfile
-  ) {
-    switch (params.action) {
-      case 'create':
-      case 'update':
-        if (params.args['data']['dateOfBirth']) {
-          params.args['data']['dateOfBirth'] = new Date(
-            params.args['data']['dateOfBirth'].toString()
-          );
-        }
-
-        if (
-          params.args['data']['firstName'] &&
-          params.args['data']['lastName']
-        ) {
-          params.args['data']['fullName'] =
-            params.args['data']['firstName'] +
-            ' ' +
-            (params.args['data']['middleName']
-              ? params.args['data']['middleName'] + ' '
-              : '') +
-            params.args['data']['lastName'];
-        }
-        return next(params);
-      default:
-        return next(params);
-    }
-  } else if (params.model === Prisma.ModelName.AwsResourceStack) {
-    // [middleware] Set the default stack name. AWS Infrastructure stack name must satisfy regular expression pattern: "[a-zA-Z][-a-zA-Z0-9]*".
-    if (params.action === 'create') {
-      if (!params.args['data']['name']) {
-        params.args['data']['name'] = (
-          params.args['data']['type'] +
-          '-' +
-          generateRandomNumbers(8)
-        ).replace(/_/g, '-');
-      }
-    }
-    return next(params);
-  } else if (params.model === Prisma.ModelName.EventContainer) {
+  if (params.model === Prisma.ModelName.EventContainer) {
     switch (params.action) {
       case 'create':
       case 'update': {
@@ -172,20 +87,9 @@ export async function prismaMiddleware(
   return next(params);
 }
 
-// 2023-08-10 -> 2023-08-10T12:00:00.000Z
-function formatInputDate() {}
-
-// 12:00:00 -> 2023-08-10T12:00:00.000Z
-function formatInputTime() {}
-
 // 2023-08-10T12:00:00.000Z -> 2023-08-10
 function formatOutputDate(date: Date) {
   return new Date(date).toISOString().split('T')[0];
-}
-
-// 2023-08-10T12:00:00.000Z -> 12:00:00
-function formatOutputTime(date: Date) {
-  return new Date(date).toISOString().split('T')[1].replace('.000Z', '');
 }
 
 function eventGeneratedFields(data: any) {

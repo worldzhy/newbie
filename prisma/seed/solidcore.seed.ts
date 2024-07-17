@@ -1,14 +1,14 @@
+import {userPrismaMiddleware} from '@microservices/account/user/user.prisma.middleware';
 import {
   PermissionAction,
   Prisma,
   PrismaClient,
   TrustedEntityType,
 } from '@prisma/client';
-import {prismaMiddleware} from '@toolkit/prisma/prisma.middleware';
 
 export async function seedForSolidcore() {
   const prisma = new PrismaClient();
-  prisma.$use(prismaMiddleware);
+  prisma.$use(userPrismaMiddleware);
 
   console.log('- Creating roles, permissions and users...');
 

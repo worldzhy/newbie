@@ -5,7 +5,6 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import {Prisma, PrismaClient} from '@prisma/client';
-import {prismaMiddleware} from '@toolkit/prisma/prisma.middleware';
 import {CustomLoggerService} from '@toolkit/logger/logger.service';
 
 @Injectable()
@@ -68,7 +67,6 @@ export class PrismaService
     });
 
     // Register middlewares.
-    this.$use(prismaMiddleware);
     // this.$extends({
     //   name: 'query-extension-usr',
     //   query: {

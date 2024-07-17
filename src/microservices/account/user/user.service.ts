@@ -2,10 +2,13 @@ import {Injectable} from '@nestjs/common';
 import {User} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {verifyUuid} from '@toolkit/validators/user.validator';
+import {userPrismaMiddleware} from './user.prisma.middleware';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {
+    this.prisma.$use(userPrismaMiddleware);
+  }
 
   /**
    * The account supports uuid / email / phone.

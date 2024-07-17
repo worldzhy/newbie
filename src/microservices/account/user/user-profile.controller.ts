@@ -5,7 +5,7 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Account / User Profile')
 @Controller('')
-export class ProfileController {
+export class UserProfileController {
   constructor(private readonly prisma: PrismaService) {}
 
   @Patch('single-profiles/:profileId')

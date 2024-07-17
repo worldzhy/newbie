@@ -9,13 +9,16 @@ import {
   CloudFormationStackService,
   CloudFormationStackType,
 } from './cloudformation/cloudformation.service';
+import {awsResourceStackPrismaMiddleware} from './aws-iaas.prisma.middleware';
 
 @Injectable()
 export class AwsIaaSService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cloudformationStackService: CloudFormationStackService
-  ) {}
+  ) {
+    this.prisma.$use(awsResourceStackPrismaMiddleware);
+  }
 
   listStackTypes() {
     return Object.values(CloudFormationStackType);

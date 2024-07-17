@@ -11,7 +11,7 @@ import {OrganizationController} from '../../microservices/account/organization/o
 import {PermissionController} from '../../microservices/account/permission/permission.controller';
 import {RoleController} from '../../microservices/account/role/role.controller';
 import {UserController} from '../../microservices/account/user/user.controller';
-import {ProfileController} from '../../microservices/account/user/profile.controller';
+import {UserProfileController} from './user/user-profile.controller';
 
 import {AccountService} from './account.service';
 import {RoleService} from './role/role.service';
@@ -34,7 +34,7 @@ import {SecurityModule} from './security/security.module';
     PermissionController,
     RoleController,
     UserController,
-    ProfileController,
+    UserProfileController,
   ],
   providers: [
     AccountService,

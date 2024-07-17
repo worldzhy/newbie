@@ -13,7 +13,7 @@ import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {AwsResourceStack, AwsResourceStackState, Prisma} from '@prisma/client';
 import {CloudFormationStackType} from '@microservices/cloud/iaas/aws/cloudformation/cloudformation.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {AwsIaaSService} from '@microservices/cloud/iaas/aws/service';
+import {AwsIaaSService} from '@microservices/cloud/iaas/aws/aws-iaas.service';
 
 @ApiTags('Cloud Resource Stack')
 @ApiBearerAuth()
