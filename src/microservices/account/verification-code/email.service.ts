@@ -3,10 +3,10 @@ import {ConfigService} from '@nestjs/config';
 import {SendMessagesCommandOutput} from '@aws-sdk/client-pinpoint';
 import {EmailNotification} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {AwsPinpointService} from '@microservices/cloud/saas/aws/aws-pinpoint.service';
+import {AwsPinpointService} from './aws.pinpoint.service';
 
 @Injectable()
-export class SimpleEmailService {
+export class VerificationCodeEmailService {
   private emailPinpointApplicationId: string;
   private emailPinpointFromAddress: string;
 
@@ -48,7 +48,7 @@ export class SimpleEmailService {
       }
     }
 
-    return await this.prisma.emailNotification.create({
+    return await this.prisma.verificationCodeEmail.create({
       data: {
         payload: params,
         pinpointRequestId: pinpointRequestId,

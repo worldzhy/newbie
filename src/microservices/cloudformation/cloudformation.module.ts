@@ -1,10 +1,10 @@
 import {Global, Module} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import {JwtModule} from '@nestjs/jwt';
-import {CloudFormationStackService} from './cloudformation/cloudformation.service';
+import {AwsCloudFormationStackService} from './stack/stack.service';
 import {AwsEnvironmentService} from './environment/environment.service';
 import {AwsSecretKeyTokenService} from './token/secretkey-token.service';
-import {AwsIaaSService} from './aws-iaas.service';
+import {AwsCloudformationService} from './cloudformation.service';
 
 @Global()
 @Module({
@@ -19,11 +19,15 @@ import {AwsIaaSService} from './aws-iaas.service';
     }),
   ],
   providers: [
-    CloudFormationStackService,
+    AwsCloudFormationStackService,
     AwsEnvironmentService,
     AwsSecretKeyTokenService,
-    AwsIaaSService,
+    AwsCloudformationService,
   ],
-  exports: [CloudFormationStackService, AwsEnvironmentService, AwsIaaSService],
+  exports: [
+    AwsCloudFormationStackService,
+    AwsEnvironmentService,
+    AwsCloudformationService,
+  ],
 })
-export class AwsIaaSModule {}
+export class AwsCloudformationModule {}

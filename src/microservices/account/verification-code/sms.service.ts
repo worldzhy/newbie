@@ -6,7 +6,7 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {AwsPinpointService} from './aws.pinpoint.service';
 
 @Injectable()
-export class SmsService {
+export class VerificationCodeSmsService {
   private smsPinpointApplicationId: string;
   private smsPinpointSenderId: string;
 
@@ -43,7 +43,7 @@ export class SmsService {
       }
     }
 
-    return await this.prisma.smsNotification.create({
+    return await this.prisma.verificationCodeSms.create({
       data: {
         payload: params,
         pinpointRequestId: pinpointRequestId,

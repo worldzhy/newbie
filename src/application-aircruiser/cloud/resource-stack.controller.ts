@@ -11,9 +11,9 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {AwsResourceStack, AwsResourceStackState, Prisma} from '@prisma/client';
-import {CloudFormationStackType} from '@microservices/cloud/iaas/aws/cloudformation/cloudformation.service';
+import {CloudFormationStackType} from '@microservices/cloudformation/stack/stack.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {AwsIaaSService} from '@microservices/cloud/iaas/aws/aws-iaas.service';
+import {AwsCloudformationService} from '@microservices/cloudformation/cloudformation.service';
 
 @ApiTags('Cloud Resource Stack')
 @ApiBearerAuth()
@@ -21,12 +21,12 @@ import {AwsIaaSService} from '@microservices/cloud/iaas/aws/aws-iaas.service';
 export class AwsResourceStackController {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly awsIaaSService: AwsIaaSService
+    private readonly cloudformationService: AwsCloudformationService
   ) {}
 
   @Get('types')
   listStackTypes() {
-    return this.awsIaaSService.listStackTypes();
+    return this.cloudformationService.listStackTypes();
   }
 
   @Get('params')
@@ -34,7 +34,7 @@ export class AwsResourceStackController {
     @Query('type') type: string,
     @Query('manager') manager: string
   ) {
-    return this.awsIaaSService.getStackParams({manager, type});
+    return this.cloudformationService.getStackParams({manager, type});
   }
 
   @Post('')
@@ -147,7 +147,7 @@ export class AwsResourceStackController {
     @Param('stackId')
     stackId: string
   ): Promise<AwsResourceStack> {
-    return await this.awsIaaSService.createStack(stackId);
+    return await this.cloudformationService.createStack(stackId);
   }
 
   //* Destroy resources
@@ -156,7 +156,7 @@ export class AwsResourceStackController {
     @Param('stackId')
     stackId: string
   ): Promise<AwsResourceStack> {
-    return await this.awsIaaSService.destroyStack(stackId);
+    return await this.cloudformationService.destroyStack(stackId);
   }
 
   /* End */

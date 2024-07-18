@@ -1,6 +1,6 @@
 import {Express} from 'express';
 import {forms_v1} from '@googleapis/forms';
-import {GoogleFormService} from '@microservices/cloud/saas/google/google-form.service';
+import {GoogleFormService} from '@microservices/google/google-form.service';
 import {BadRequestException, Injectable} from '@nestjs/common';
 import {
   firstDayOfMonth,

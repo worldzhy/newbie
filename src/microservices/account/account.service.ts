@@ -1,14 +1,8 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import {UserStatus, VerificationCodeUse} from '@prisma/client';
+import {Injectable, NotFoundException} from '@nestjs/common';
+import {UserStatus} from '@prisma/client';
 import {UserService} from './user/user.service';
-import {VerificationCodeService} from './verification-code.service';
+import {VerificationCodeService} from './verification-code/verification-code.service';
 import {LimitLoginByUserService} from './security/rate-limiter/rate-limiter.service';
-import {SimpleEmailService} from '@microservices/notification/email/simple-email.service';
-import {SmsService} from '@microservices/notification/sms/sms.service';
 import {AccessTokenService} from '@microservices/account/security/token/access-token.service';
 import {RefreshTokenService} from '@microservices/account/security/token/refresh-token.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
@@ -22,9 +16,6 @@ export class AccountService {
     private readonly userService: UserService,
     private readonly accessTokenService: AccessTokenService,
     private readonly refreshTokenService: RefreshTokenService,
-    private readonly verificationCodeService: VerificationCodeService,
-    private readonly simpleEmailService: SimpleEmailService,
-    private readonly smsService: SmsService,
     private readonly limitLoginByUserService: LimitLoginByUserService
   ) {}
 
@@ -161,67 +152,6 @@ export class AccountService {
           ),
         },
       },
-    };
-  }
-
-  // *
-  // * Won't send message if the same email apply again within 1 minute.
-  // *
-  async sendVerificationCode(params: {
-    email?: string;
-    phone?: string;
-    use: VerificationCodeUse;
-  }): Promise<{secondsOfCountdown: number}> {
-    if (params.email) {
-      // [step 1] Check if the account exists.
-      const user = await this.userService.findByAccount(params.email);
-      if (!user) {
-        throw new NotFoundException('Your account is not registered.');
-      }
-
-      // [step 2] Generate verification code.
-      const verificationCode =
-        await this.verificationCodeService.generateForEmail(
-          params.email,
-          params.use
-        );
-
-      // [step 3] Send verification code.
-      await this.simpleEmailService.send({
-        email: params.email,
-        subject: 'Your Verificaiton Code',
-        plainText:
-          verificationCode.code +
-          ' is your verification code valid for the next 10 minutes.',
-        html:
-          verificationCode.code +
-          ' is your verification code valid for the next 10 minutes.',
-      });
-    } else if (params.phone) {
-      // [step 1] Check if the account exists.
-      const user = await this.userService.findByAccount(params.phone);
-      if (!user) {
-        throw new NotFoundException('Your account is not registered.');
-      }
-
-      // [step 2] Generate verification code.
-      const verificationCode =
-        await this.verificationCodeService.generateForPhone(
-          params.phone,
-          params.use
-        );
-
-      // [step 3] Send verification code.
-      await this.smsService.send({
-        phone: params.phone,
-        text: verificationCode.code,
-      });
-    } else {
-      throw new BadRequestException('The email or phone is invalid.');
-    }
-
-    return {
-      secondsOfCountdown: this.verificationCodeService.timeoutMinutes * 60,
     };
   }
 

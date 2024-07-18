@@ -9,13 +9,13 @@ import {
   DescribeStacksCommand,
 } from '@aws-sdk/client-cloudformation';
 import {AwsResourceStack, AwsEnvironment} from '@prisma/client';
-import {CicdBuild_Stack} from './stack/cicd-build.stack';
-import {CicdPipeline_Stack} from './stack/cicd-pipeline.stack';
-import {CicdRepository_Stack} from './stack/cicd-repository.stack';
-import {ComputingFargate_Stack} from './stack/computing-fargate.stack';
-import {NetworkHipaa_Stack} from './stack/network-hipaa.stack';
-import {ProductMessageTracker_Stack} from './stack/product-message-tracker.stack';
-import {Null_Stack} from './stack/null.stack';
+import {CicdBuild_Stack} from './cicd-build.stack';
+import {CicdPipeline_Stack} from './cicd-pipeline.stack';
+import {CicdRepository_Stack} from './cicd-repository.stack';
+import {ComputingFargate_Stack} from './computing-fargate.stack';
+import {NetworkHipaa_Stack} from './network-hipaa.stack';
+import {ProductMessageTracker_Stack} from './product-message-tracker.stack';
+import {Null_Stack} from './null.stack';
 import {AwsSecretKeyTokenService} from '../token/secretkey-token.service';
 
 export const CloudFormationStackType = {
@@ -28,7 +28,7 @@ export const CloudFormationStackType = {
 };
 
 @Injectable()
-export class CloudFormationStackService {
+export class AwsCloudFormationStackService {
   constructor(
     private readonly secretKeyTokenService: AwsSecretKeyTokenService
   ) {}

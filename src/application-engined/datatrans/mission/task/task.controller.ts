@@ -18,7 +18,7 @@ import {
   ElasticsearchDatasourceIndex,
   PostgresqlDatasourceConstraintKeyType,
 } from '@prisma/client';
-import {AwsSqsService} from '@microservices/cloud/saas/aws/aws-sqs.service';
+import {AwsSqsService} from '@microservices/sqs/sqs.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {ConfigService} from '@nestjs/config';
 

@@ -1,24 +1,19 @@
 import {Global, Module} from '@nestjs/common';
-import {SimpleEmailService} from './email/simple-email.service';
-import {TraceableEmailService} from './email/traceable-email.service';
-import {SmsService} from './sms/sms.service';
-import {NotificationService} from './notification.service';
+import {EmailModule} from './email/email.module';
+import {SmsModule} from './sms/sms.module';
+import {TraceableEmailModule} from './traceable/tracaable-email.module';
 import {NotificationWebhookModule} from './webhook/webhook.module';
+import {NotificationService} from './notification.service';
 
 @Global()
 @Module({
-  imports: [NotificationWebhookModule],
-  providers: [
-    SimpleEmailService,
-    TraceableEmailService,
-    SmsService,
-    NotificationService,
+  imports: [
+    EmailModule,
+    SmsModule,
+    TraceableEmailModule,
+    NotificationWebhookModule,
   ],
-  exports: [
-    SimpleEmailService,
-    TraceableEmailService,
-    SmsService,
-    NotificationService,
-  ],
+  providers: [NotificationService],
+  exports: [NotificationService],
 })
 export class NotificationModule {}

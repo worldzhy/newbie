@@ -11,7 +11,7 @@ import {
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Prisma, AwsEnvironment} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {AwsEnvironmentService} from '@microservices/cloud/iaas/aws/environment/environment.service';
+import {AwsEnvironmentService} from '@microservices/cloudformation/environment/environment.service';
 
 @ApiTags('Cloud Environment')
 @ApiBearerAuth()

@@ -1,4 +1,4 @@
-import {TraceableEmailService} from '@microservices/notification/email/traceable-email.service';
+import {TraceableEmailService} from '@microservices/notification/traceable/traceable-email.service';
 import {Controller, Post, Body} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 

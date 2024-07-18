@@ -6,16 +6,16 @@ import {BadRequestException, Injectable} from '@nestjs/common';
 import {AwsResourceStackState} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {
-  CloudFormationStackService,
+  AwsCloudFormationStackService,
   CloudFormationStackType,
-} from './cloudformation/cloudformation.service';
-import {awsResourceStackPrismaMiddleware} from './aws-iaas.prisma.middleware';
+} from './stack/stack.service';
+import {awsResourceStackPrismaMiddleware} from './cloudformation.prisma.middleware';
 
 @Injectable()
-export class AwsIaaSService {
+export class AwsCloudformationService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly cloudformationStackService: CloudFormationStackService
+    private readonly cloudformationStackService: AwsCloudFormationStackService
   ) {
     this.prisma.$use(awsResourceStackPrismaMiddleware);
   }

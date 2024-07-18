@@ -227,6 +227,30 @@ enum VerificationCodeUse {
   @@schema("microservice/account")
 }
 
+model VerificationCodeEmail {
+  id                Int      @id @default(autoincrement())
+  payload           Json // The notification content for one email address.
+  pinpointRequestId String? // RequestId is the Pinpoint request id. One request can contain multiple text messages.
+  pinpointMessageId String? // MessageId is the email message id.
+  pinpointResponse  Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@schema("microservice/account")
+}
+
+model VerificationCodeSms {
+  id                Int      @id @default(autoincrement())
+  payload           Json // The notification content for one phone.
+  pinpointRequestId String? // RequestId is the Pinpoint request id. One request can contain multiple text messages.
+  pinpointMessageId String? // MessageId is the text message id.
+  pinpointResponse  Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@schema("microservice/account")
+}
+
 model AccessToken {
   id        Int      @id @default(autoincrement())
   userId    String   @db.Uuid

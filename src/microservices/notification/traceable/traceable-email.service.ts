@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {AwsSqsService} from '@microservices/cloud/saas/aws/aws-sqs.service';
+import {AwsSqsService} from './aws.sqs.service';
 
 @Injectable()
 export class TraceableEmailService {

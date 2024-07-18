@@ -1,4 +1,4 @@
-import {SimpleEmailService} from '@microservices/notification/email/simple-email.service';
+import {EmailService} from '@microservices/notification/email/email.service';
 import {Controller, Post, Body} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 
@@ -6,7 +6,7 @@ import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 @ApiBearerAuth()
 @Controller('notification')
 export class SimpleEmailController {
-  constructor(private readonly simpleEmailService: SimpleEmailService) {}
+  constructor(private readonly emailService: EmailService) {}
 
   @Post('simple-email')
   @ApiBody({
@@ -31,7 +31,7 @@ export class SimpleEmailController {
       html?: string;
     }
   ) {
-    return await this.simpleEmailService.send(body);
+    return await this.emailService.send(body);
   }
 
   /* End */
