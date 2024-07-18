@@ -15,7 +15,8 @@ import {
 // import {ApplicationEnginedModule as ApplicationModule} from './application-engined/application-engined.module';
 // import {ApplicationRecruitmentModule as ApplicationModule} from './application-recruitment/application-recruitment.module';
 // import {ApplicationSolidcoreModule as ApplicationModule} from './application-solidcore/application-solidcore.module';
-import {ApplicationGoClickModule as ApplicationModule} from './application-goclick/application-goclick.module';
+// import {ApplicationGoClickModule as ApplicationModule} from './application-goclick/application-goclick.module';
+import {ApplicationModule} from './application/application.module';
 
 const nodeCluster = require('node:cluster');
 const numCPUs = require('node:os').availableParallelism();

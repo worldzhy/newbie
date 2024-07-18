@@ -1,15 +1,17 @@
 import {Controller, Post, Body, Res} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Response} from 'express';
-import {AccountService} from '@microservices/account/account.service';
 import {RefreshTokenService} from '@microservices/account/security/token/refresh-token.service';
+import {LimitLoginByUserService} from './security/rate-limiter/rate-limiter.service';
+import {TokenService} from './security/token/token.service';
 
 @ApiTags('Account')
 @Controller('account')
 export class LogoutController {
   constructor(
-    private readonly accountService: AccountService,
-    private readonly refreshTokenService: RefreshTokenService
+    private readonly tokenService: TokenService,
+    private readonly refreshTokenService: RefreshTokenService,
+    private readonly limitLoginByUserService: LimitLoginByUserService
   ) {}
 
   @Post('logout')
@@ -29,10 +31,13 @@ export class LogoutController {
     @Body() body: {userId: string},
     @Res({passthrough: true}) response: Response
   ): Promise<{data: {message: string}}> {
-    // [step 1] Log out
-    await this.accountService.logout(body.userId);
+    // [step 1] Invalidate all tokens.
+    await this.tokenService.invalidateAccessTokenAndRefreshToken(body.userId);
 
-    // [step 2] Clear cookie
+    // [step 2] Clear user attempts.
+    await this.limitLoginByUserService.delete(body.userId);
+
+    // [step 3] Clear cookie
     response.clearCookie(
       this.refreshTokenService.cookieName,
       this.refreshTokenService.getCookieOptions()

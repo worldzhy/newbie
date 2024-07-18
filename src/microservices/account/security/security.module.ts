@@ -22,6 +22,7 @@ import {
 
 import {AccessTokenModule} from './token/access-token.module';
 import {RefreshTokenModule} from './token/refresh-token.module';
+import {TokenModule} from './token/token.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import {RefreshTokenModule} from './token/refresh-token.module';
     }),
     AccessTokenModule,
     RefreshTokenModule,
+    TokenModule,
   ],
   providers: [
     {provide: APP_GUARD, useClass: ThrottlerGuard}, // 1st priority guard.

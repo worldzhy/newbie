@@ -1,9 +1,9 @@
 import {Controller, Get, Res} from '@nestjs/common';
 import {ApiTags, ApiCookieAuth} from '@nestjs/swagger';
 import {Response} from 'express';
-import {AccountService} from '@microservices/account/account.service';
-import {RefreshTokenService} from '@microservices/account/security/token/refresh-token.service';
-import {GuardByRefreshToken} from '@microservices/account/security/passport/refresh-token/refresh-token.decorator';
+import {RefreshTokenService} from './security/token/refresh-token.service';
+import {TokenService} from './security/token/token.service';
+import {GuardByRefreshToken} from './security/passport/refresh-token/refresh-token.decorator';
 import {Cookies} from '@toolkit/cookie/cookie.decorator';
 import {AccessToken} from '@prisma/client';
 import {secondsUntilUnixTimestamp} from '@toolkit/utilities/datetime.util';
@@ -12,8 +12,8 @@ import {secondsUntilUnixTimestamp} from '@toolkit/utilities/datetime.util';
 @Controller('account')
 export class LoginRefreshController {
   constructor(
-    private readonly accountService: AccountService,
-    private readonly refreshTokenService: RefreshTokenService
+    private readonly refreshTokenService: RefreshTokenService,
+    private readonly tokenService: TokenService
   ) {}
 
   @GuardByRefreshToken()
@@ -31,11 +31,13 @@ export class LoginRefreshController {
     };
 
     // [step 2] Invalidate existing tokens
-    await this.accountService.invalidateTokens(tokenInfo.userId);
+    await this.tokenService.invalidateAccessTokenAndRefreshToken(
+      tokenInfo.userId
+    );
 
     // [step 3] Generate new tokens
     const {accessToken, refreshToken: newRefreshToken} =
-      await this.accountService.generateTokens(
+      await this.tokenService.generateAccessTokenAndRefreshToken(
         {userId: tokenInfo.userId, sub: tokenInfo.sub},
         {expiresIn: secondsUntilUnixTimestamp(tokenInfo.exp)}
       );

@@ -1,8 +1,8 @@
 import {Controller, Post, Body, Res, NotFoundException} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Response} from 'express';
-import {AccountService} from '@microservices/account/account.service';
-import {GuardByVerificationCode} from '@microservices/account/security/passport/verification-code/verification-code.decorator';
+import {AccountService} from './account.service';
+import {GuardByVerificationCode} from './security/passport/verification-code/verification-code.decorator';
 import {AccessToken, VerificationCodeUse} from '@prisma/client';
 import {NoGuard} from './security/passport/public/public.decorator';
 import {

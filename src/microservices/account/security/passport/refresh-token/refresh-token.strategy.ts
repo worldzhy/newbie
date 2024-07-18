@@ -2,8 +2,8 @@ import {Injectable, UnauthorizedException} from '@nestjs/common';
 import {PassportStrategy} from '@nestjs/passport';
 import {Strategy} from 'passport-custom';
 import {Request} from 'express';
-import {AccountService} from '@microservices/account/account.service';
 import {RefreshTokenService} from '@microservices/account/security/token/refresh-token.service';
+import {TokenService} from '../../token/token.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @Injectable()
@@ -13,8 +13,8 @@ export class RefreshTokenStrategy extends PassportStrategy(
 ) {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly accountService: AccountService,
-    private readonly refreshTokenService: RefreshTokenService
+    private readonly refreshTokenService: RefreshTokenService,
+    private readonly tokenService: TokenService
   ) {
     super();
   }
@@ -34,7 +34,9 @@ export class RefreshTokenStrategy extends PassportStrategy(
         const userData = this.refreshTokenService.decodeToken(refreshToken) as {
           userId: string;
         };
-        await this.accountService.invalidateTokens(userData.userId);
+        await this.tokenService.invalidateAccessTokenAndRefreshToken(
+          userData.userId
+        );
       }
       throw new UnauthorizedException('Token is incorrect.');
     }
@@ -49,7 +51,9 @@ export class RefreshTokenStrategy extends PassportStrategy(
       const userData = this.refreshTokenService.decodeToken(refreshToken) as {
         userId: string;
       };
-      await this.accountService.invalidateTokens(userData.userId);
+      await this.tokenService.invalidateAccessTokenAndRefreshToken(
+        userData.userId
+      );
       throw new UnauthorizedException('Token is incorrect.');
     }
 

@@ -1,9 +1,9 @@
 import {Controller, Post, Body, Res} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Response} from 'express';
-import {AccountService} from '@microservices/account/account.service';
-import {GuardByProfile} from '@microservices/account/security/passport/profile/profile.decorator';
-import {GuardByUuid} from '@microservices/account/security/passport/uuid/uuid.decorator';
+import {AccountService} from './account.service';
+import {GuardByProfile} from './security/passport/profile/profile.decorator';
+import {GuardByUuid} from './security/passport/uuid/uuid.decorator';
 import {AccessToken} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
