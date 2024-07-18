@@ -21,13 +21,13 @@ export class S3Service {
     private readonly prisma: PrismaService
   ) {
     this.client = new S3Client({
-      region: this.config.getOrThrow<string>('microservice.aws.s3.region'),
+      region: this.config.getOrThrow<string>('microservice.storage.aws.region'),
       credentials: {
         accessKeyId: this.config.getOrThrow<string>(
-          'microservice.aws.s3.accessKeyId'
+          'microservice.storage.aws.accessKeyId'
         )!,
         secretAccessKey: this.config.getOrThrow<string>(
-          'microservice.aws.s3.secretAccessKey'
+          'microservice.storage.aws.secretAccessKey'
         )!,
       },
     });

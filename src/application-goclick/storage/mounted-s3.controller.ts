@@ -138,7 +138,7 @@ export class MountedS3Controller {
       url:
         'https://' +
         this.config.getOrThrow<string>(
-          'microservice.storage.awsCloudfrontDomain'
+          'microservice.storage.aws.cloudfrontDomain'
         ) +
         '/' +
         file.s3Key,

@@ -1,0 +1,19 @@
+
+{
+  "config-service": {
+    "aws": {
+      "sqs":{
+        "accessKeyId": "process.env.AWS_SQS_ACCESS_KEY_ID",
+        "secretAccessKey": "process.env.AWS_SQS_SECRET_ACCESS_KEY",
+        "region": "process.env.AWS_SQS_REGION",
+        "queueUrl": "process.env.AWS_SQS_QUEUE_URL"
+      }
+    }
+  },
+  "env":{
+    "AWS_SQS_ACCESS_KEY_ID": "",
+    "AWS_SQS_SECRET_ACCESS_KEY": "",
+    "AWS_SQS_REGION": "",
+    "AWS_SQS_QUEUE_URL": ""
+  }
+}

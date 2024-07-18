@@ -1,0 +1,13 @@
+
+{
+  "config-service": {
+    "cloudformation": {
+      "token":{
+        "secret": "process.env.AWS_CLOUDFORMATION_SECRETKEY_TOKEN_SECRET"
+      }
+    }
+  },
+  "env":{
+    "AWS_CLOUDFORMATION_SECRETKEY_TOKEN_SECRET":""
+  }
+}

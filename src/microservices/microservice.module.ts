@@ -3,8 +3,8 @@ import {ConfigModule} from '@nestjs/config';
 import {ToolkitModule} from '@toolkit/toolkit.module';
 import {AccountModule} from './account/account.module';
 import {AwsCloudformationModule} from './cloudformation/cloudformation.module';
-import {AwsSqsModule} from './sqs/sqs.module';
-import {GoogleSaaSModule} from './google/google-saas.module';
+import {AwsModule} from './aws/aws.module';
+import {GoogleAPIsModule} from './googleapis/googleapis.module';
 import {CronTaskModule} from './cron/cron.module';
 import {EventSchedulingModule} from './event-scheduling/event-scheduling.module';
 import {MapModule} from './map/map.module';
@@ -26,8 +26,8 @@ import MicroserviceConfiguration from './microservice.config';
     ConfigModule.forRoot({load: [MicroserviceConfiguration], isGlobal: true}),
     AccountModule,
     AwsCloudformationModule,
-    AwsSqsModule,
-    GoogleSaaSModule,
+    AwsModule,
+    GoogleAPIsModule,
     CronTaskModule,
     EventSchedulingModule,
     MapModule,

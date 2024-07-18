@@ -8,4 +8,4 @@ import {GoogleTimezoneService} from './google-timezone.service';
   providers: [GoogleFormService, GoogleSheetService, GoogleTimezoneService],
   exports: [GoogleFormService, GoogleSheetService, GoogleTimezoneService],
 })
-export class GoogleSaaSModule {}
+export class GoogleAPIsModule {}

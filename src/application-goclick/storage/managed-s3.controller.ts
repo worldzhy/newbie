@@ -33,7 +33,7 @@ export class ManagedS3Controller {
     private readonly accessTokenService: AccessTokenService
   ) {
     this.s3Bucket = this.config.getOrThrow<string>(
-      'microservice.storage.awsS3Bucket'
+      'microservice.storage.aws.s3Bucket'
     );
   }
 
@@ -138,7 +138,7 @@ export class ManagedS3Controller {
       url:
         'https://' +
         this.config.getOrThrow<string>(
-          'microservice.storage.awsCloudfrontDomain'
+          'microservice.storage.aws.cloudfrontDomain'
         ) +
         '/' +
         file.s3Key,

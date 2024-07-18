@@ -1,0 +1,6 @@
+
+{
+  "config-service": {
+    "eventScheduling": {"minutesOfTimeslotUnit": 5}
+  }
+}

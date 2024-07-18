@@ -1,0 +1,33 @@
+{
+  "config-service": {
+    "storage": {
+      "googleapis": {
+        "credentials": {
+          "apiKey": "process.env.STORAGE_GOOGLE_CREDENTIALS_API_KEY",
+          "serviceAccount": "process.env.STORAGE_GOOGLE_CREDENTIALS_SERVICE_ACCOUNT"
+        }
+      },
+      "aws": {
+        "accessKeyId": "process.env.STORAGE_AWS_ACCESS_KEY_ID",
+        "secretAccessKey": "process.env.STORAGE_AWS_SECRET_ACCESS_KEY",
+        "region": "process.env.STORAGE_AWS_REGION",
+        "s3Bucket": "process.env.STORAGE_AWS_S3_BUCKET",
+        "cloudfrontDomain": "process.env.STORAGE_AWS_CLOUDFRONT_DOMAIN"
+
+      },
+      "local": {
+        "path": "process.env.STORAGE_LOCAL_PATH || './storage'"
+      }
+    }
+  },
+  "env":{
+    "STORAGE_GOOGLE_CREDENTIALS_API_KEY":"",
+    "STORAGE_GOOGLE_CREDENTIALS_SERVICE_ACCOUNT":"",
+    "STORAGE_AWS_ACCESS_KEY_ID":"",
+    "STORAGE_AWS_SECRET_ACCESS_KEY":"",
+    "STORAGE_AWS_REGION":"",
+    "STORAGE_AWS_S3_BUCKET":"",
+    "STORAGE_AWS_CLOUDFRONT_DOMAIN":"",
+    "STORAGE_LOCAL_PATH":""
+  }
+}

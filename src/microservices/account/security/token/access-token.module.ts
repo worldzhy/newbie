@@ -10,11 +10,11 @@ import {AccessTokenService} from './access-token.service';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         secret: config.getOrThrow<string>(
-          'microservice.token.userAccess.secret'
+          'microservice.account.token.userAccess.secret'
         ),
         signOptions: {
           expiresIn: config.getOrThrow<string>(
-            'microservice.token.userAccess.expiresIn'
+            'microservice.account.token.userAccess.expiresIn'
           ),
         },
       }),

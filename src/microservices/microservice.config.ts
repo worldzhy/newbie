@@ -19,34 +19,48 @@ export default registerAs('microservice', () => ({
         durationSeconds: 60,
       },
     },
+    token: {
+      userAccess: {
+        expiresIn: '10m',
+        secret: process.env.ACCOUNT_USER_ACCESS_TOKEN_SECRET,
+      },
+      userRefresh: {
+        expiresIn: '1440m',
+        secret: process.env.ACCOUNT_USER_REFRESH_TOKEN_SECRET,
+      },
+    },
     verificationCode: {
       timeoutMinutes: 1, // The verification code will be invalid after 1 minutes.
       resendMinutes: 1, // The verification code can be resend after 1 minute.
     },
+    aws: {
+      accessKeyId: 'process.env.ACCOUNT_AWS_ACCESS_KEY_ID',
+      secretAccessKey: 'process.env.ACCOUNT_AWS_SECRET_ACCESS_KEY',
+      region: 'process.env.ACCOUNT_AWS_REGION',
+      pinpointApplicationId:
+        "process.env.ACCOUNT_AWS_PINPOINT_APPLICATION_ID || 'default'",
+      pinpointFromAddress:
+        "process.env.ACCOUNT_AWS_PINPOINT_FROM_ADDRESS || 'default'",
+      pinpointSenderId:
+        "process.env.ACCOUNT_AWS_PINPOINT_SENDER_ID || 'default'",
+    },
   },
   aws: {
-    accountId: process.env.AWS_ACCOUNT_ID,
-    profile: process.env.AWS_PROFILE,
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    region: process.env.AWS_REGION,
-    s3ForCloudformation: process.env.AWS_S3_FOR_CLOUDFORMATION,
     pinpoint: {
       accessKeyId: process.env.AWS_PINPOINT_ACCESS_KEY_ID || 'default',
       secretAccessKey: process.env.AWS_PINPOINT_SECRET_ACCESS_KEY || 'default',
       region: process.env.AWS_PINPOINT_REGION || 'default',
     },
-    s3: {
-      accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID || 'default',
-      secretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY || 'default',
-      region: process.env.AWS_S3_REGION || 'default',
-    },
     sqs: {
       accessKeyId: process.env.AWS_SQS_ACCESS_KEY_ID || 'default',
       secretAccessKey: process.env.AWS_SQS_SECRET_ACCESS_KEY || 'default',
       region: process.env.AWS_SQS_REGION || 'default',
-      publish_remove_queue: process.env.PUBLISH_REMOVE_QUEUE || 'default',
-      publish_add_queue: process.env.PUBLISH_ADD_QUEUE || 'default',
+      queueUrl: process.env.AWS_SQS_QUEUE_URL,
+    },
+  },
+  cloudformation: {
+    token: {
+      secret: process.env.AWS_SECRETKEY_TOKEN_SECRET,
     },
   },
   eventScheduling: {minutesOfTimeslotUnit: 5},
@@ -65,6 +79,11 @@ export default registerAs('microservice', () => ({
     siteId: -99,
   },
   notification: {
+    aws: {
+      accessKeyId: process.env.NOTIFICATION_AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.NOTIFICATION_AWS_SECRET_ACCESS_KEY,
+      region: process.env.NOTIFICATION_AWS_REGION,
+    },
     email: {
       awsPinpointApplicationId:
         process.env.NOTIFICATION_EMAIL_AWS_PINPOINT_APPLICATION_ID || 'default',
@@ -83,25 +102,20 @@ export default registerAs('microservice', () => ({
     },
   },
   storage: {
-    awsS3Bucket: process.env.STORAGE_AWS_S3_BUCKET,
-    awsCloudfrontDomain: process.env.STORAGE_AWS_CLOUDFRONT_DOMAIN,
-    localPath: process.env.FILE_MANAGEMENT_LOCAL_PATH || './storage',
-  },
-  task: {
-    awsSqsQueueUrl: process.env.TASK_AWS_SQS_QUEUE_URL || 'default',
-  },
-  token: {
-    userAccess: {
-      expiresIn: '10m',
-      secret: process.env.USER_ACCESS_TOKEN_SECRET,
+    googleapis: {
+      credentials: {
+        apiKey: process.env.STORAGE_GOOGLE_CREDENTIALS_API_KEY,
+        serviceAccount: process.env.STORAGE_GOOGLE_CREDENTIALS_SERVICE_ACCOUNT,
+      },
     },
-    userRefresh: {
-      expiresIn: '1440m',
-      secret: process.env.USER_REFRESH_TOKEN_SECRET,
+    aws: {
+      accessKeyId: process.env.NOTIFICATION_AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.NOTIFICATION_AWS_SECRET_ACCESS_KEY,
+      region: process.env.NOTIFICATION_AWS_REGION,
+      s3Bucket: process.env.STORAGE_AWS_S3_BUCKET,
+      cloudfrontDomain: process.env.STORAGE_AWS_CLOUDFRONT_DOMAIN,
     },
-    awsSecretKey: {
-      secret: process.env.AWS_SECRETKEY_TOKEN_SECRET,
-    },
+    local: {path: process.env.FILE_MANAGEMENT_LOCAL_PATH || './storage'},
   },
   peopleFinder: {
     voilanorbert: {
