@@ -1,0 +1,49 @@
+// ! ------------------------------------------------------------ //
+// !          [Microservice] Cloud resource models                //
+// ! ------------------------------------------------------------ //
+// * InfrastructureStack                                          //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
+
+enum AwsResourceStackState {
+  PENDING
+  BUILD_PROCESSING
+  BUILD_SUCCEEDED
+  BUILD_FAILED
+  DESTROY_PROCESSING
+  DESTROY_SUCCEEDED
+  DESTROY_FAILED
+
+  @@schema("microservice/cloudformation")
+}
+
+model AwsEnvironment {
+  id                  String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                String
+  awsAccountId        String?
+  awsAccessKeyId      String
+  awsSecretAccessKey  String // automatic hashing
+  awsRegion           String
+  s3ForCloudformation String?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  stacks              AwsResourceStack[]
+
+  @@schema("microservice/cloudformation")
+}
+
+model AwsResourceStack {
+  id                  String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                String?               @unique // Set default value via prisma middleware.
+  type                String
+  params              Json?
+  state               AwsResourceStackState @default(PENDING)
+  createStackOutput   Json?
+  describeStackOutput Json?
+  deleteStackOutput   Json?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  environment         AwsEnvironment        @relation(fields: [environmentId], references: [id], onDelete: Cascade)
+  environmentId       String                @db.Uuid
+
+  @@schema("microservice/cloudformation")
+}

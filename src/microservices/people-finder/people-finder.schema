@@ -1,0 +1,68 @@
+// ! ------------------------------------------------------------ //
+// !             [Microservice] people-finder models              //
+// ! ------------------------------------------------------------ //
+// * PeopleFinderCallThirdParty                                                //
+// * PeopleFinderTaskBatch                                         //
+// * PeopleFinderTask                                            //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
+model PeopleFinderCallThirdParty {
+  id            Int      @id @default(autoincrement())
+  userId        String?
+  userSource    String?
+  name          String?
+  firstName     String?
+  middleName    String?
+  lastName      String?
+  companyDomain String?
+  linkedin      String?
+  emails        Json[]
+  phones        Json[]
+  linkedins     Json[]
+  ctx           Json?
+  source        String
+  sourceMode    String
+  spent         Int?
+  status        String // pending | completed | failed
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@schema("microservice/people-finder")
+}
+
+model PeopleFinderTaskBatch {
+  id               Int                @id @default(autoincrement())
+  batchId          String
+  callbackUrl      String?
+  callbackStatus   String
+  status           String // pending | completed
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  PeopleFinderTask PeopleFinderTask[]
+
+  @@schema("microservice/people-finder")
+}
+
+model PeopleFinderTask {
+  id                Int                    @id @default(autoincrement())
+  taskBatch         PeopleFinderTaskBatch? @relation(fields: [taskBatchId], references: [id])
+  callThirdPartyIds Int[]
+  taskBatchId       Int?
+  userId            String?
+  userSource        String?
+  name              String?
+  firstName         String?
+  middleName        String?
+  lastName          String?
+  companyDomain     String?
+  linkedin          String?
+  findEmail         Boolean?
+  findPhone         Boolean?
+  emails            Json[]
+  phones            Json[]
+  linkedins         Json[]
+  status            String // pending | completed
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+
+  @@schema("microservice/people-finder")
+}

@@ -1,0 +1,23 @@
+// !! ------------------------------------------------------------ //
+// !!            [Microservice] Map models                         //
+// !! ------------------------------------------------------------ //
+// * Place                                                         //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
+
+model Place {
+  id                   Int      @id @default(autoincrement())
+  name                 String?
+  address              String?
+  address2             String?
+  city                 String?
+  state                String?
+  country              String?
+  zipCode              String?
+  timeZone             String? // https://www.iplocate.com/en/resources/timezones/list-of-timezones
+  googleMapPlaceId     String?
+  googleMapPlaceResult Json?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@schema("microservice/map")
+}

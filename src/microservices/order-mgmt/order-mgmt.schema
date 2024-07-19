@@ -1,0 +1,48 @@
+// !! ------------------------------------------------------------ //
+// !!            [Microservice] Order models                       //
+// !! ------------------------------------------------------------ //
+// * Order                                                         //
+// * OrderItem                                                     //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
+
+model Order {
+  id                  String                @id @default(cuid())
+  status              String?
+  totalPrice          Float
+  totalTax            Float?
+  currency            String
+  note                String?
+  items               OrderItem[]
+  stripePaymentIntent StripePaymentIntent[]
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  @@schema("microservice/order-mgmt")
+}
+
+model OrderItem {
+  id         String   @id @default(cuid())
+  name       String
+  totalPrice Float
+  totalTax   Float?
+  pieces     Int?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId    String
+
+  @@schema("microservice/order-mgmt")
+}
+
+model StripePaymentIntent {
+  id           String   @id
+  status       String
+  amount       Float
+  clientSecret String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  order        Order?   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId      String?
+
+  @@schema("microservice/order-mgmt")
+}

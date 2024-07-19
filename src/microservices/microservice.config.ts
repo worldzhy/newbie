@@ -60,7 +60,7 @@ export default registerAs('microservice', () => ({
   },
   cloudformation: {
     token: {
-      secret: process.env.AWS_SECRETKEY_TOKEN_SECRET,
+      secret: process.env.AWS_CLOUDFORMATION_SECRETKEY_TOKEN_SECRET,
     },
   },
   eventScheduling: {minutesOfTimeslotUnit: 5},

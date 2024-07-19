@@ -1,0 +1,37 @@
+// ! ------------------------------------------------------------ //
+// !             [Microservice] Shortcut models                    //
+// ! ------------------------------------------------------------ //
+// * ShortcutGroup                                                  //
+// * ShortcutItem                                                  //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
+
+model ShortcutGroup {
+  id           Int            @id @default(autoincrement())
+  name         String
+  parentId     Int            @default(0)
+  sort         Int            @default(0)
+  status       String // active inactive
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  deletedAt    DateTime?
+  shortcutItem ShortcutItem[]
+
+  @@schema("microservice/shortcut")
+}
+
+model ShortcutItem {
+  id          Int           @id @default(autoincrement())
+  label       String
+  content     String
+  description String?
+  sort        Int           @default(0)
+  type        String // link, string
+  status      String // active, inactive
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  deletedAt   DateTime?
+  group       ShortcutGroup @relation(fields: [groupId], references: [id])
+  groupId     Int
+
+  @@schema("microservice/shortcut")
+}

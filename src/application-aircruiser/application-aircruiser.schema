@@ -21,7 +21,7 @@
 //   DEVELOPER_FRONTEND_FRAMEWORK
 //   DEVELOPER_INFRASTRUCTURE
 
-//   @@schema("microservice/project-mgmt")
+//   @@schema("application/aircruiser")
 // }
 
 model Project {
@@ -31,7 +31,7 @@ model Project {
   updatedAt DateTime      @updatedAt
   notes     ProjectNote[]
 
-  @@schema("microservice/project-mgmt")
+  @@schema("application/aircruiser")
 }
 
 model ProjectNote {
@@ -44,5 +44,5 @@ model ProjectNote {
   project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId String?  @db.Uuid
 
-  @@schema("microservice/project-mgmt")
+  @@schema("application/aircruiser")
 }
