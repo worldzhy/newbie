@@ -72,7 +72,7 @@ export class EventService {
               );
 
               const targetEvent = {
-                hostUserId: event.hostUserId,
+                hostId: event.hostId,
                 datetimeOfStart: datetimeOfStart,
                 isLocked: false,
                 isPublished: false,
@@ -111,7 +111,7 @@ export class EventService {
           where: {
             id: {not: eventId},
             containerId: oldEvent.containerId,
-            hostUserId: oldEvent.hostUserId,
+            hostId: oldEvent.hostId,
             typeId: oldEvent.typeId,
             hour: oldEvent.hour,
             minute: oldEvent.minute,
@@ -158,12 +158,11 @@ export class EventService {
       where: {status: EventIssueStatus.UNREPAIRED, eventId: newEvent.id},
     });
 
-    if (newEvent.hostUserId) {
-      newEvent['hostUser'] =
-        await this.prisma.userSingleProfile.findUniqueOrThrow({
-          where: {userId: newEvent.hostUserId},
-          select: {userId: true, fullName: true, eventHostTitle: true},
-        });
+    if (newEvent.hostId) {
+      newEvent['hostUser'] = await this.prisma.eventHost.findUniqueOrThrow({
+        where: {id: newEvent.hostId},
+        select: {id: true, fullName: true, eventHostTitle: true},
+      });
     }
 
     // [step 5] Duplicate events.
@@ -183,7 +182,7 @@ export class EventService {
       const newOtherEvent = await this.prisma.event.update({
         where: {id: otherEvent.id},
         data: {
-          hostUserId: newEvent.hostUserId,
+          hostId: newEvent.hostId,
           typeId: newEvent.typeId,
           datetimeOfStart: newDatetimeOfStart,
           minutesOfDuration: newEvent.minutesOfDuration,

@@ -68,11 +68,18 @@ enum EventStatus {
   @@schema("microservice/event-scheduling")
 }
 
+enum EventHostStatus {
+  ACTIVE
+  INACTIVE
+
+  @@schema("microservice/event-scheduling")
+}
+
 model AvailabilityExpression {
   id                                     Int                          @id @default(autoincrement())
   name                                   String?
   status                                 AvailabilityExpressionStatus @default(EDITING)
-  hostUserId                             String                       @db.Uuid
+  hostId                                 String                       @db.Uuid
   venueIds                               Int[]
   cronExpressionsOfAvailableTimePoints   String[]
   cronExpressionsOfUnavailableTimePoints String[]
@@ -90,7 +97,7 @@ model AvailabilityExpression {
 model AvailabilityTimeslot {
   id                Int                        @id @default(autoincrement())
   status            AvailabilityTimeslotStatus @default(USABLE)
-  hostUserId        String                     @db.Uuid
+  hostId            String                     @db.Uuid
   venueIds          Int[]
   datetimeOfStart   DateTime
   datetimeOfEnd     DateTime
@@ -100,7 +107,7 @@ model AvailabilityTimeslot {
   expression        AvailabilityExpression     @relation(fields: [expressionId], references: [id], onDelete: Cascade)
   expressionId      Int
 
-  @@index([hostUserId, venueIds, datetimeOfStart, datetimeOfEnd])
+  @@index([hostId, venueIds, datetimeOfStart, datetimeOfEnd])
   @@schema("microservice/event-scheduling")
 }
 
@@ -108,7 +115,7 @@ model AvailabilityTimeslot {
 model Event {
   id                Int              @id @default(autoincrement())
   status            EventStatus      @default(EDITING)
-  hostUserId        String?          @db.Uuid
+  hostId            String?          @db.Uuid
   datetimeOfStart   DateTime
   datetimeOfEnd     DateTime
   timeZone          String
@@ -137,7 +144,7 @@ model Event {
   reservations      Reservation[]
 
   @@index([containerId, year, month, weekOfMonth, deletedAt])
-  @@index([hostUserId, venueId, datetimeOfStart, datetimeOfEnd, deletedAt])
+  @@index([hostId, venueId, datetimeOfStart, datetimeOfEnd, deletedAt])
   @@index([deletedAt])
   @@schema("microservice/event-scheduling")
 }
@@ -201,6 +208,41 @@ model EventVenue {
   external_bookingStatus              String?          @default("Free")
   external_waitlistCapacity           Int?             @default(10)
   external_webCapacity                Int?             @default(10)
+
+  @@schema("microservice/event-scheduling")
+}
+
+model EventHost {
+  id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  status         EventHostStatus @default(ACTIVE)
+  email          String?         @unique
+  phone          String?         @unique
+  password       String? // automatic hashing
+  lastLoginAt    DateTime?
+  fullName       String?
+  firstName      String?
+  middleName     String?
+  lastName       String?
+  tagIds         Int[]
+  eventVenueIds  Int[] // event venue ids
+  eventTypeIds   Int[] // event type ids
+  eventHostTitle Int?
+  quotaOfWeekMin Int?
+  quotaOfWeekMax Int?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  roles          EventHostRole[]
+
+  @@schema("microservice/event-scheduling")
+}
+
+model EventHostRole {
+  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String      @unique
+  description String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  users       EventHost[]
 
   @@schema("microservice/event-scheduling")
 }

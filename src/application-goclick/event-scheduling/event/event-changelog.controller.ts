@@ -65,17 +65,17 @@ export class EventChangeLogController {
     // Get all the coaches information
     const coachIds = result.records
       .map(event => {
-        return event.hostUserId;
+        return event.hostId;
       })
       .filter(coachId => coachId !== null) as string[];
-    const coachProfiles = await this.prisma.userSingleProfile.findMany({
-      where: {userId: {in: coachIds}},
-      select: {userId: true, fullName: true, eventHostTitle: true},
+    const coachProfiles = await this.prisma.eventHost.findMany({
+      where: {id: {in: coachIds}},
+      select: {id: true, fullName: true, eventHostTitle: true},
     });
     const coachProfilesMapping = coachProfiles.reduce(
       (obj, item) => ({
         ...obj,
-        [item.userId]: item,
+        [item.id]: item,
       }),
       {}
     );
@@ -83,8 +83,8 @@ export class EventChangeLogController {
     for (let i = 0; i < result.records.length; i++) {
       const event = result.records[i];
       // Attach coach information
-      if (event.hostUserId) {
-        event['hostUser'] = coachProfilesMapping[event.hostUserId];
+      if (event.hostId) {
+        event['hostUser'] = coachProfilesMapping[event.hostId];
       } else {
         event['hostUser'] = {};
       }

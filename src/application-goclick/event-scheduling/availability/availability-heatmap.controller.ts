@@ -1,7 +1,7 @@
 import {Controller, Query, Get, UseInterceptors} from '@nestjs/common';
 import {CacheInterceptor} from '@nestjs/cache-manager';
 import {ApiTags, ApiBearerAuth} from '@nestjs/swagger';
-import {Prisma, User} from '@prisma/client';
+import {EventHost, Prisma} from '@prisma/client';
 import {AvailabilityService} from '@microservices/event-scheduling/availability.service';
 import {daysOfMonth, daysOfWeek} from '@toolkit/utilities/datetime.util';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
@@ -9,7 +9,7 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 enum HEATMAP_TYPE {
   Availability = 1,
 }
-type HeatmapInfo = {type: HEATMAP_TYPE; data: User[] | number}[];
+type HeatmapInfo = {type: HEATMAP_TYPE; data: EventHost[] | number}[];
 
 const HOUR_OF_OPENING = 5;
 const HOUR_OF_CLOSURE = 22;
@@ -67,30 +67,27 @@ export class AvailabilityHeatmapController {
     });
 
     // [step 2] Get coaches in the location.
-    const userWhereArgs: Prisma.UserWhereInput = {
-      profile: {eventVenueIds: {has: venueId}},
+    const hostWhereArgs: Prisma.EventHostWhereInput = {
+      eventVenueIds: {has: venueId},
     };
-    const userSelectArgs: Prisma.UserSelect = {
+    const hostSelectArgs: Prisma.EventHostSelect = {
       id: true,
-      profile: {
-        select: {
-          fullName: true,
-          eventHostTitle: true,
-          quotaOfWeekMax: true,
-          quotaOfWeekMin: true,
-        },
-      },
+      fullName: true,
+      eventHostTitle: true,
+      quotaOfWeekMax: true,
+      quotaOfWeekMin: true,
     };
-    type UserFindManyResult = Prisma.Result<
-      typeof this.prisma.user,
-      {select: typeof userSelectArgs},
+    type EventHostFindManyResult = Prisma.Result<
+      typeof this.prisma.eventHost,
+      {select: typeof hostSelectArgs},
       'findMany'
     >;
 
-    const coaches: UserFindManyResult = await this.prisma.user.findMany({
-      where: userWhereArgs,
-      select: userSelectArgs,
-    });
+    const coaches: EventHostFindManyResult =
+      await this.prisma.eventHost.findMany({
+        where: hostWhereArgs,
+        select: hostSelectArgs,
+      });
     const coachIds = coaches.map(coach => {
       return coach.id;
     });
@@ -99,12 +96,12 @@ export class AvailabilityHeatmapController {
     for (let i = 0; i < heatmapTimeslots.length; i++) {
       const heatmapTimeslot = heatmapTimeslots[i];
 
-      const availableCoaches: UserFindManyResult = [];
+      const availableCoaches: EventHostFindManyResult = [];
 
-      // Get {hostUserId:string, _count:{}}[]
+      // Get {hostId:string, _count:{}}[]
       const groupedAvailabilityTimeslots =
-        await this.availabilityService.getTimeslotsGroupByHostUserId({
-          hostUserIds: coachIds,
+        await this.availabilityService.getTimeslotsGroupByHostId({
+          hostIds: coachIds,
           venueId: venueId,
           datetimeOfStart: heatmapTimeslot.datetimeOfStart,
           datetimeOfEnd: heatmapTimeslot.datetimeOfEnd,
@@ -115,16 +112,16 @@ export class AvailabilityHeatmapController {
         // Check if it is seamless in the heatmap timeslot.
         // If it is seamless, then the coach is available for the heatmap timeslot.
         // ! If different availability expressions include same timeslots,
-        // ! element._count.hostUserId will be larger than (MINUTES_OF_TIMESLOT / this.availabilityTimeslotService.MINUTES_Of_TIMESLOT_UNIT)
+        // ! element._count.hostId will be larger than (MINUTES_OF_TIMESLOT / this.availabilityTimeslotService.MINUTES_Of_TIMESLOT_UNIT)
         // ! It will cause some available coaches not appear on the heatmap.
         if (
-          element._count.hostUserId ===
+          element._count.hostId ===
           MINUTES_OF_TIMESLOT /
             this.availabilityService.MINUTES_Of_TIMESLOT_UNIT
         ) {
           for (let p = 0; p < coaches.length; p++) {
             const coach = coaches[p];
-            if (coach.id === element.hostUserId) {
+            if (coach.id === element.hostId) {
               availableCoaches.push(coach);
             }
           }

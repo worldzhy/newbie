@@ -98,7 +98,7 @@ export class EventIssueController {
     if (coaches.length > 0) {
       await this.prisma.event.update({
         where: {id: event.id},
-        data: {hostUserId: coaches[0].id},
+        data: {hostId: coaches[0].id},
       });
 
       // [step 2] Mark the issue is repaired.
@@ -112,22 +112,21 @@ export class EventIssueController {
       switch (issue.type) {
         case EventIssueType.ERROR_NONEXISTENT_COACH:
           description =
-            'Coach changed: No coach' + ' -> ' + coaches[0].profile?.fullName;
+            'Coach changed: No coach' + ' -> ' + coaches[0].fullName;
         case EventIssueType.ERROR_CONFLICTING_EVENT_TIME:
         case EventIssueType.ERROR_UNAVAILABLE_EVENT_TIME:
         case EventIssueType.ERROR_UNAVAILABLE_EVENT_TYPE:
         case EventIssueType.ERROR_UNAVAILABLE_EVENT_VENUE: {
-          if (event.hostUserId) {
-            const userProfile =
-              await this.prisma.userSingleProfile.findUniqueOrThrow({
-                where: {userId: event.hostUserId},
-                select: {fullName: true},
-              });
+          if (event.hostId) {
+            const oldEventHost = await this.prisma.eventHost.findUniqueOrThrow({
+              where: {id: event.hostId},
+              select: {fullName: true},
+            });
             description =
               'Coach changed: ' +
-              userProfile.fullName +
+              oldEventHost.fullName +
               ' -> ' +
-              coaches[0].profile?.fullName;
+              coaches[0].fullName;
           }
         }
       }

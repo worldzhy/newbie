@@ -44,7 +44,7 @@ export class EventController {
       a: {
         summary: '1. Create',
         value: {
-          hostUserId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
+          hostId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
           datetimeOfStart: '2023-11-28 17:40:05.025 +0800',
           typeId: 1,
           venueId: 1,
@@ -58,8 +58,8 @@ export class EventController {
     @Body()
     body: Prisma.EventUncheckedCreateInput & {needToDuplicate?: boolean}
   ): Promise<Event> {
-    if (!body.hostUserId) {
-      throw new BadRequestException('hostUserId is required.');
+    if (!body.hostId) {
+      throw new BadRequestException('hostId is required.');
     }
 
     // [step 1] Create event.
@@ -94,9 +94,9 @@ export class EventController {
     event['issues'] = await this.prisma.eventIssue.findMany({
       where: {status: EventIssueStatus.UNREPAIRED, eventId: event.id},
     });
-    event['hostUser'] = await this.prisma.userSingleProfile.findUniqueOrThrow({
-      where: {userId: body.hostUserId},
-      select: {userId: true, fullName: true, eventHostTitle: true},
+    event['hostUser'] = await this.prisma.eventHost.findUniqueOrThrow({
+      where: {id: body.hostId},
+      select: {id: true, fullName: true, eventHostTitle: true},
     });
 
     // [step 5] Duplicate events.
@@ -141,7 +141,7 @@ export class EventController {
 
         const newOtherEvent = await this.prisma.event.create({
           data: {
-            hostUserId: event.hostUserId,
+            hostId: event.hostId,
             datetimeOfStart: newDatetimeOfStart,
             minutesOfDuration: event.minutesOfDuration,
             timeZone: event.timeZone,
@@ -193,17 +193,17 @@ export class EventController {
     // Get all the coaches information
     const coachIds = events
       .map(event => {
-        return event.hostUserId;
+        return event.hostId;
       })
       .filter(coachId => coachId !== null) as string[];
-    const coachProfiles = await this.prisma.userSingleProfile.findMany({
-      where: {userId: {in: coachIds}},
-      select: {userId: true, fullName: true, eventHostTitle: true},
+    const coachProfiles = await this.prisma.eventHost.findMany({
+      where: {id: {in: coachIds}},
+      select: {id: true, fullName: true, eventHostTitle: true},
     });
     const coachProfilesMapping = coachProfiles.reduce(
       (obj, item) => ({
         ...obj,
-        [item.userId]: item,
+        [item.id]: item,
       }),
       {}
     );
@@ -211,8 +211,8 @@ export class EventController {
     for (let i = 0; i < events.length; i++) {
       const event = events[i];
       // Attach coach information
-      if (event.hostUserId) {
-        event['hostUser'] = coachProfilesMapping[event.hostUserId];
+      if (event.hostId) {
+        event['hostUser'] = coachProfilesMapping[event.hostId];
       } else {
         event['hostUser'] = {};
       }
@@ -229,7 +229,7 @@ export class EventController {
       a: {
         summary: '1. Update',
         value: {
-          hostUserId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
+          hostId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
           datetimeOfStart: '2023-11-28 17:40:05.025 +0800',
           typeId: 1,
           venueId: 1,

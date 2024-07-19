@@ -47,10 +47,10 @@ export class EventIssueService {
       return;
     }
 
-    if (event.hostUserId) {
+    if (event.hostId) {
       if (
         (await this.prisma.userSingleProfile.count({
-          where: {userId: event.hostUserId},
+          where: {userId: event.hostId},
         })) > 0
       ) {
         return;
@@ -64,9 +64,9 @@ export class EventIssueService {
 
     // [step 1] Get the coach.
     let hostUser: User | null = null;
-    if (event.hostUserId) {
+    if (event.hostId) {
       hostUser = await this.prisma.user.findUnique({
-        where: {id: event.hostUserId},
+        where: {id: event.hostId},
         include: {profile: true},
       });
     }
@@ -118,7 +118,7 @@ export class EventIssueService {
 
       const count = await this.prisma.availabilityTimeslot.count({
         where: {
-          hostUserId: hostUser.id,
+          hostId: hostUser.id,
           venueIds: {has: event.venueId},
           datetimeOfStart: {gte: newDatetimeOfStart},
           datetimeOfEnd: {lte: newDatetimeOfEnd},
@@ -135,7 +135,7 @@ export class EventIssueService {
       // [step 2-6] Check time conflict among different venues.
       const conflictingEvents = await this.prisma.event.findMany({
         where: {
-          hostUserId: hostUser.id,
+          hostId: hostUser.id,
           venueId: {not: event.venueId},
           datetimeOfStart: {
             lt: datePlusMinutes(

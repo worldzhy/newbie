@@ -5,16 +5,12 @@ import {ceilByMinutes, floorByMinutes} from '@toolkit/utilities/datetime.util';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 const ROLE_NAME_EVENT_HOST = 'Event Host';
-const userSelectArgs: Prisma.UserSelect = {
+const userSelectArgs: Prisma.EventHostSelect = {
   id: true,
-  profile: {
-    select: {
-      fullName: true,
-      eventHostTitle: true,
-      quotaOfWeekMin: true,
-      quotaOfWeekMax: true,
-    },
-  },
+  fullName: true,
+  eventHostTitle: true,
+  quotaOfWeekMin: true,
+  quotaOfWeekMax: true,
 };
 
 @Injectable()
@@ -40,19 +36,17 @@ export class EventHostService {
     minutesOfDuration: number;
   }) {
     type UserResult = Prisma.Result<
-      typeof this.prisma.user,
+      typeof this.prisma.eventHost,
       {select: typeof userSelectArgs},
       'findUniqueOrThrow'
     >;
 
     // [step 1] Get coaches for the specific venue.
-    const coaches = await this.prisma.user.findMany({
+    const coaches = await this.prisma.eventHost.findMany({
       where: {
         roles: {some: {name: ROLE_NAME_EVENT_HOST}},
-        profile: {
-          eventVenueIds: {has: event.venueId},
-          eventTypeIds: {has: event.typeId},
-        },
+        eventVenueIds: {has: event.venueId},
+        eventTypeIds: {has: event.typeId},
       },
       select: userSelectArgs,
     });
@@ -74,7 +68,7 @@ export class EventHostService {
     );
     const availabilities = await this.prisma.availabilityTimeslot.findMany({
       where: {
-        hostUserId: {in: coachIds},
+        hostId: {in: coachIds},
         venueIds: {has: event.venueId},
         datetimeOfStart: {gte: newDatetimeOfStart},
         datetimeOfEnd: {lte: newDatetimeOfEnd},
@@ -84,7 +78,7 @@ export class EventHostService {
 
     // [step 2-2] Get available coaches.
     const sortedAvailableCoaches: {
-      hostUserId: string;
+      hostId: string;
       remainingQuota: number;
       remainingQuotaOfMin: number;
       remainingQuotaOfMax: number;
@@ -95,7 +89,7 @@ export class EventHostService {
     for (let i = 0; i < coaches.length; i++) {
       const coach = coaches[i];
       const availabilitiesOfOneCoach = availabilities.filter(availability => {
-        return availability.hostUserId === coach.id;
+        return availability.hostId === coach.id;
       });
       if (
         availabilitiesOfOneCoach.length >=
@@ -104,7 +98,7 @@ export class EventHostService {
         // Count coach's events in all locations.
         const countOfEvents = await this.prisma.event.count({
           where: {
-            hostUserId: coach.id,
+            hostId: coach.id,
             year: event.year,
             month: event.month,
             weekOfMonth: event.weekOfMonth,
@@ -115,7 +109,7 @@ export class EventHostService {
         // ! A coach can not be dispatched more classes than his/her max preference.
         if (coach['profile']?.quotaOfWeekMax! - countOfEvents > 0) {
           sortedAvailableCoaches.push({
-            hostUserId: coach.id,
+            hostId: coach.id,
             remainingQuota: coach['profile']?.quotaOfWeekMin! - countOfEvents,
             remainingQuotaOfMin:
               coach['profile']?.quotaOfWeekMin! - countOfEvents,
@@ -182,7 +176,7 @@ export class EventHostService {
       const sortedAvailableCoach = sortedAvailableCoaches[m];
       for (let n = 0; n < availableCoaches.length; n++) {
         const availableCoach = availableCoaches[n];
-        if (availableCoach.id === sortedAvailableCoach.hostUserId) {
+        if (availableCoach.id === sortedAvailableCoach.hostId) {
           finalCoaches[m] = availableCoach;
         }
       }
@@ -201,13 +195,11 @@ export class EventHostService {
     minutesOfDuration: number;
   }) {
     // [step 1] Get coaches for the specific venue.
-    const coaches = await this.prisma.user.findMany({
+    const coaches = await this.prisma.eventHost.findMany({
       where: {
         roles: {some: {name: ROLE_NAME_EVENT_HOST}},
-        profile: {
-          eventVenueIds: {has: event.venueId},
-          eventTypeIds: {has: event.typeId},
-        },
+        eventVenueIds: {has: event.venueId},
+        eventTypeIds: {has: event.typeId},
       },
       select: userSelectArgs,
     });
@@ -226,7 +218,7 @@ export class EventHostService {
     );
     const availabilities = await this.prisma.availabilityTimeslot.findMany({
       where: {
-        hostUserId: {in: coachIds},
+        hostId: {in: coachIds},
         venueIds: {has: event.venueId},
         datetimeOfStart: {gte: newDatetimeOfStart},
         datetimeOfEnd: {lte: newDatetimeOfEnd},
@@ -240,21 +232,21 @@ export class EventHostService {
 
       // Check if the coach is available between the start time and end time.
       const availabilitiesOfOneCoach = availabilities.filter(availability => {
-        return availability.hostUserId === coach.id;
+        return availability.hostId === coach.id;
       });
       if (
         availabilitiesOfOneCoach.length >=
         event.minutesOfDuration / this.MINUTES_Of_TIMESLOT_UNIT
       ) {
-        coach.profile!['isAvailable'] = true;
+        coach['isAvailable'] = true;
       } else {
-        coach.profile!['isAvailable'] = false;
+        coach['isAvailable'] = false;
       }
 
       // Count coach's events in all locations.
       const countOfEvents = await this.prisma.event.count({
         where: {
-          hostUserId: coach.id,
+          hostId: coach.id,
           year: event.year,
           month: event.month,
           weekOfMonth: event.weekOfMonth,
@@ -262,13 +254,10 @@ export class EventHostService {
         },
       });
 
-      coach.profile!['quotaOfUsed'] = countOfEvents;
-      coach.profile!['remainingQuota'] =
-        coach.profile!.quotaOfWeekMin! - countOfEvents;
-      coach.profile!['remainingQuotaOfMin'] =
-        coach.profile!.quotaOfWeekMin! - countOfEvents;
-      coach.profile!['remainingQuotaOfMax'] =
-        coach.profile!.quotaOfWeekMax! - countOfEvents;
+      coach['quotaOfUsed'] = countOfEvents;
+      coach['remainingQuota'] = coach.quotaOfWeekMin! - countOfEvents;
+      coach['remainingQuotaOfMin'] = coach.quotaOfWeekMin! - countOfEvents;
+      coach['remainingQuotaOfMax'] = coach.quotaOfWeekMax! - countOfEvents;
 
       // [RC 2023-11-21] A coach is available even she/he has been scheduled more than max preferred number of classes.
       // if (countOfEvents >= coach['profile'].quotaOfWeekMax) {
@@ -278,8 +267,8 @@ export class EventHostService {
 
     // [step 3] Sort coaches by quota.
     coaches.sort((coachA, coachB) => {
-      const a = coachA.profile!;
-      const b = coachB.profile!;
+      const a = coachA;
+      const b = coachB;
       if (a['remainingQuota'] > 0 && b['remainingQuota'] > 0) {
         if (
           a['remainingQuota'] / a.quotaOfWeekMin! >=

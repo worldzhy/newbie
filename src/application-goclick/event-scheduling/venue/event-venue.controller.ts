@@ -7,13 +7,9 @@ import {
   Body,
   Param,
   Query,
-  Req,
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {EventVenue, Place, Prisma} from '@prisma/client';
-import {AccountService} from '@microservices/account/account.service';
-import {Request} from 'express';
-import {RoleService} from '@microservices/account/role/role.service';
 import * as _ from 'lodash';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
@@ -21,11 +17,7 @@ import {PrismaService} from '@toolkit/prisma/prisma.service';
 @ApiBearerAuth()
 @Controller('event-venues')
 export class EventVenueController {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly accountService: AccountService,
-    private readonly roleService: RoleService
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Post('')
   @ApiBody({
@@ -77,7 +69,6 @@ export class EventVenueController {
 
   @Get('')
   async getEventVenues(
-    @Req() request: Request,
     @Query('page') page: number,
     @Query('pageSize') pageSize: number,
     @Query('name') name?: string
@@ -85,13 +76,6 @@ export class EventVenueController {
     // [step 1] Construct where argument.
     let where: Prisma.EventVenueWhereInput | undefined;
     const whereConditions: object[] = [];
-
-    const user = await this.accountService.me(request);
-    if (await this.roleService.isAdmin(user.id)) {
-      // Get all the locations.
-    } else {
-      whereConditions.push({id: {in: user.profile?.eventVenueIds}});
-    }
 
     if (name) {
       name = name.trim();

@@ -72,7 +72,7 @@ model AvailabilityExpression {
   id                                     Int                          @id @default(autoincrement())
   name                                   String?
   status                                 AvailabilityExpressionStatus @default(EDITING)
-  hostUserId                             String                       @db.Uuid
+  hostId                             String                       @db.Uuid
   venueIds                               Int[]
   cronExpressionsOfAvailableTimePoints   String[]
   cronExpressionsOfUnavailableTimePoints String[]
@@ -90,7 +90,7 @@ model AvailabilityExpression {
 model AvailabilityTimeslot {
   id                Int                        @id @default(autoincrement())
   status            AvailabilityTimeslotStatus @default(USABLE)
-  hostUserId        String                     @db.Uuid
+  hostId        String                     @db.Uuid
   venueIds          Int[]
   datetimeOfStart   DateTime
   datetimeOfEnd     DateTime
@@ -100,7 +100,7 @@ model AvailabilityTimeslot {
   expression        AvailabilityExpression     @relation(fields: [expressionId], references: [id], onDelete: Cascade)
   expressionId      Int
 
-  @@index([hostUserId, venueIds, datetimeOfStart, datetimeOfEnd])
+  @@index([hostId, venueIds, datetimeOfStart, datetimeOfEnd])
   @@schema("microservice/event-scheduling")
 }
 
@@ -108,7 +108,7 @@ model AvailabilityTimeslot {
 model Event {
   id                Int              @id @default(autoincrement())
   status            EventStatus      @default(EDITING)
-  hostUserId        String?          @db.Uuid
+  hostId        String?          @db.Uuid
   datetimeOfStart   DateTime
   datetimeOfEnd     DateTime
   timeZone          String
@@ -137,7 +137,7 @@ model Event {
   reservations      Reservation[]
 
   @@index([containerId, year, month, weekOfMonth, deletedAt])
-  @@index([hostUserId, venueId, datetimeOfStart, datetimeOfEnd, deletedAt])
+  @@index([hostId, venueId, datetimeOfStart, datetimeOfEnd, deletedAt])
   @@index([deletedAt])
   @@schema("microservice/event-scheduling")
 }

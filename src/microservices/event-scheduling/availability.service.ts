@@ -116,29 +116,29 @@ export class AvailabilityService {
 
     return finalAvailabilityTimeslots.map(timeslot => {
       timeslot.expressionId = expression.id;
-      timeslot.hostUserId = expression.hostUserId;
+      timeslot.hostId = expression.hostId;
       timeslot.venueIds = expression.venueIds;
       return timeslot as Prisma.AvailabilityTimeslotCreateManyInput;
     });
   }
 
-  async getTimeslotsGroupByHostUserId(params: {
-    hostUserIds: string[];
+  async getTimeslotsGroupByHostId(params: {
+    hostIds: string[];
     venueId: number;
     datetimeOfStart: Date;
     datetimeOfEnd: Date;
   }) {
     return await this.prisma.availabilityTimeslot.groupBy({
-      by: ['hostUserId'],
+      by: ['hostId'],
       where: {
-        hostUserId: {
-          in: params.hostUserIds,
+        hostId: {
+          in: params.hostIds,
         },
         venueIds: {has: params.venueId},
         datetimeOfStart: {gte: params.datetimeOfStart},
         datetimeOfEnd: {lte: params.datetimeOfEnd},
       },
-      _count: {hostUserId: true},
+      _count: {hostId: true},
     });
   }
 
@@ -205,7 +205,7 @@ export class AvailabilityService {
    * ! This function is not used anymore because it costs too much database computing resource.
    */
   async checkinTimeslots(event: Event) {
-    if (!event.hostUserId) {
+    if (!event.hostId) {
       return;
     }
 
@@ -221,7 +221,7 @@ export class AvailabilityService {
 
     await this.prisma.availabilityTimeslot.updateMany({
       where: {
-        hostUserId: event.hostUserId,
+        hostId: event.hostId,
         datetimeOfStart: {gte: newDatetimeOfStart},
         datetimeOfEnd: {lte: newDatetimeOfEnd},
       },
@@ -233,7 +233,7 @@ export class AvailabilityService {
    * ! This function is not used anymore because it costs too much database computing resource.
    */
   async undoCheckinTimeslots(event: Event) {
-    if (!event.hostUserId) {
+    if (!event.hostId) {
       return;
     }
 
@@ -249,7 +249,7 @@ export class AvailabilityService {
 
     await this.prisma.availabilityTimeslot.updateMany({
       where: {
-        hostUserId: event.hostUserId,
+        hostId: event.hostId,
         datetimeOfStart: {gte: newDatetimeOfStart},
         datetimeOfEnd: {lte: newDatetimeOfEnd},
       },

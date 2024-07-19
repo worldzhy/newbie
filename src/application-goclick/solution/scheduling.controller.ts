@@ -31,8 +31,8 @@ export class SolutionSchedulingController {
     @Body()
     body: Prisma.EventUncheckedCreateInput & {needToDuplicate?: boolean}
   ): Promise<Event> {
-    if (!body.hostUserId) {
-      throw new BadRequestException('hostUserId is required.');
+    if (!body.hostId) {
+      throw new BadRequestException('hostId is required.');
     }
 
     // [step 1] Create event.
@@ -67,9 +67,9 @@ export class SolutionSchedulingController {
     event['issues'] = await this.prisma.eventIssue.findMany({
       where: {status: EventIssueStatus.UNREPAIRED, eventId: event.id},
     });
-    event['hostUser'] = await this.prisma.userSingleProfile.findUniqueOrThrow({
-      where: {userId: body.hostUserId},
-      select: {userId: true, fullName: true, eventHostTitle: true},
+    event['hosthost'] = await this.prisma.eventHost.findUniqueOrThrow({
+      where: {id: body.hostId},
+      select: {id: true, fullName: true, eventHostTitle: true},
     });
 
     // [step 5] Duplicate events.
@@ -114,7 +114,7 @@ export class SolutionSchedulingController {
 
         const newOtherEvent = await this.prisma.event.create({
           data: {
-            hostUserId: event.hostUserId,
+            hostId: event.hostId,
             datetimeOfStart: newDatetimeOfStart,
             minutesOfDuration: event.minutesOfDuration,
             timeZone: event.timeZone,
@@ -146,13 +146,13 @@ export class SolutionSchedulingController {
   @Post('init-schedule-example')
   @NoGuard()
   async initExample() {
-    const user = await this.prisma.user.findFirst({
+    const host = await this.prisma.eventHost.findFirst({
       where: {roles: {some: {name: RoleService.RoleName.EVENT_HOST}}},
       select: {
         id: true,
       },
     });
-    if (!user) {
+    if (!host) {
       throw new BadRequestException('Not found Host.');
     }
     const eventType = await this.prisma.eventType.findFirst();
@@ -187,7 +187,7 @@ export class SolutionSchedulingController {
       month: month,
       typeId: eventType.id,
       venueId: eventVenue.id,
-      hostUserId: user.id,
+      hostId: host.id,
       containerId: eventContainer.id,
       needToDuplicate: true,
       timeZone: 'America/Los_Angeles',

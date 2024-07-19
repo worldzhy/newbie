@@ -14,8 +14,6 @@ import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Prisma, EventContainer} from '@prisma/client';
 import {daysOfMonth} from '@toolkit/utilities/datetime.util';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {AccountService} from '@microservices/account/account.service';
-import {RoleService} from '@microservices/account/role/role.service';
 import {Request} from 'express';
 import _ from 'lodash';
 
@@ -23,11 +21,7 @@ import _ from 'lodash';
 @ApiBearerAuth()
 @Controller('event-containers')
 export class EventContainerController {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly accountService: AccountService,
-    private readonly roleService: RoleService
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Get('days-of-month')
   getDaysOfMonth(@Query('year') year: number, @Query('month') month: number) {
@@ -79,9 +73,6 @@ export class EventContainerController {
       };
     }
   ) {
-    const user = await this.accountService.me(req);
-    const isAdmin = await this.roleService.isAdmin(user.id);
-
     // [step 1] Construct where argument.
     const searchFilter = {};
     if (body) {
@@ -105,28 +96,6 @@ export class EventContainerController {
           }
         }
       }
-    }
-
-    if (isAdmin === false) {
-      if (
-        !user.profile ||
-        (user.profile && user.profile.eventVenueIds.length === 0)
-      ) {
-        return [];
-      } else {
-        if (searchFilter['venueId']) {
-          searchFilter['venueId'] = {
-            in: _.intersection(
-              user.profile.eventVenueIds,
-              searchFilter['venueId'].in
-            ),
-          };
-        } else {
-          searchFilter['venueId'] = {in: user.profile.eventVenueIds};
-        }
-      }
-    } else {
-      // Do nothing if the user is an admin.
     }
 
     // [step 2] Get event containers.

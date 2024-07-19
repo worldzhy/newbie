@@ -50,7 +50,7 @@ export class AvailabilityExpressionController {
       a: {
         summary: '1. Create',
         value: {
-          hostUserId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
+          hostId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
           venueIds: [1, 2],
           cronExpressionsOfAvailableTimePoints: [
             '0,30 11-14 * 7-9 1,3,5',
@@ -82,7 +82,7 @@ export class AvailabilityExpressionController {
     @Req() request: Request,
     @Query('page') page: number,
     @Query('pageSize') pageSize: number,
-    @Query('hostUserId') hostUserId?: string,
+    @Query('hostId') hostId?: string,
     @Query('name') name?: string,
     @Query('year') year?: number,
     @Query('quarter') quarter?: QUARTER
@@ -91,9 +91,9 @@ export class AvailabilityExpressionController {
     let where: Prisma.AvailabilityExpressionWhereInput | undefined;
     const whereConditions: object[] = [];
 
-    if (hostUserId) {
+    if (hostId) {
       // [use case 1] called on coach setting page.
-      whereConditions.push({hostUserId});
+      whereConditions.push({hostId});
     } else {
       // [use case 2] called on upload availability page.
       if (name && name.trim()) {
@@ -104,12 +104,6 @@ export class AvailabilityExpressionController {
       if (year && quarter) {
         whereConditions.push({
           name: {contains: year + ' ' + quarter, mode: 'insensitive'},
-        });
-      }
-      const user = await this.accountService.me(request);
-      if (user['profile'] && user['profile'].eventVenueIds) {
-        whereConditions.push({
-          venueIds: {hasSome: user['profile'].eventVenueIds},
         });
       }
     }
@@ -146,7 +140,7 @@ export class AvailabilityExpressionController {
       a: {
         summary: '1. Update',
         value: {
-          hostUserId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
+          hostId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
           venueIds: [1, 2],
           cronExpressionsOfAvailableTimePoints: [
             '0,30 11-14 * 7-9 1,3,5',
