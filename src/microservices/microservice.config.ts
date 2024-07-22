@@ -46,11 +46,6 @@ export default registerAs('microservice', () => ({
     },
   },
   aws: {
-    pinpoint: {
-      accessKeyId: process.env.AWS_PINPOINT_ACCESS_KEY_ID || 'default',
-      secretAccessKey: process.env.AWS_PINPOINT_SECRET_ACCESS_KEY || 'default',
-      region: process.env.AWS_PINPOINT_REGION || 'default',
-    },
     sqs: {
       accessKeyId: process.env.AWS_SQS_ACCESS_KEY_ID || 'default',
       secretAccessKey: process.env.AWS_SQS_SECRET_ACCESS_KEY || 'default',
