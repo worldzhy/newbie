@@ -80,6 +80,7 @@ export class VoilaNorbertService {
         domain: companyDomain,
         webhook,
       };
+      let noCredits = false;
       this.httpService.axiosRef
         .post<SearchEmailByDomainReqDto, SearchEmailThirdResDto>(
           url,
@@ -100,9 +101,10 @@ export class VoilaNorbertService {
               await this.peopleFinderNotification.send({
                 message: '[VoliaNorbert] Not have enough credits',
               });
+              noCredits = true;
             }
             const resError = {error: res.data, status: res.status};
-            resolve({error: resError});
+            resolve({error: resError, noCredits});
             this.logger.error(
               'VoliaNorbert searchEmailByDomain error: ' +
                 JSON.stringify(resError),
@@ -112,7 +114,7 @@ export class VoilaNorbertService {
         })
         .catch(e => {
           const resError = {error: e.response.data};
-          resolve({error: resError});
+          resolve({error: resError, noCredits});
           this.logger.error(
             'VoliaNorbert searchEmailByDomain error: ' +
               JSON.stringify(resError),
@@ -140,17 +142,18 @@ export class VoilaNorbertService {
     });
 
     // todo spent
-    const {res, error} = await this.searchEmailByDomain({
+    const {res, error, noCredits} = await this.searchEmailByDomain({
       name,
       companyDomain,
       webhook: webhook + newRecord.id,
     });
 
-    return await this.voilanorbertContactSearchCallback(
+    const result = await this.voilanorbertContactSearchCallback(
       newRecord.id,
       res,
       error
     );
+    return {...result, noCredits};
   }
 
   async voilanorbertContactSearchCallback(

@@ -202,11 +202,13 @@ export class ProxycurlService {
       phone: boolean;
     };
     callThirdPartyId?: number;
+    noCredits?: boolean;
   }> {
     const dataFlag = {
       email: false,
       phone: false,
     };
+    let noCredits = false;
     if (user.linkedin) {
       const newRecord = await this.prisma.peopleFinderCallThirdParty.create({
         data: {
@@ -234,6 +236,7 @@ export class ProxycurlService {
           await this.peopleFinderNotification.send({
             message: '[proxycurl] Not have enough credits',
           });
+          noCredits = true;
         }
       } else if (res) {
         updateData.emails = res.personal_emails;
@@ -255,7 +258,7 @@ export class ProxycurlService {
         data: updateData,
       });
 
-      return {res, error, dataFlag, callThirdPartyId: newRecord.id};
+      return {res, error, dataFlag, callThirdPartyId: newRecord.id, noCredits};
     } else if (user.companyDomain && user.firstName) {
       const newRecord = await this.prisma.peopleFinderCallThirdParty.create({
         data: {
@@ -285,6 +288,7 @@ export class ProxycurlService {
           await this.peopleFinderNotification.send({
             message: '[proxycurl] Not have enough credits',
           });
+          noCredits = true;
         }
       } else if (res && res.url) {
         updateData.linkedin = res.url;
@@ -310,13 +314,14 @@ export class ProxycurlService {
           {needPhone, needEmail}
         );
       }
-      return {res, error, dataFlag, callThirdPartyId: newRecord.id};
+      return {res, error, dataFlag, callThirdPartyId: newRecord.id, noCredits};
     }
     return {
       res: undefined,
       error: undefined,
       dataFlag,
       callThirdPartyId: undefined,
+      noCredits,
     };
   }
 }

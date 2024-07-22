@@ -102,4 +102,5 @@ export class SearchEmailThirdResDto {
 export class SearchEmailResDto implements CommonResDto {
   error?: CommonErrorResDto;
   res?: SearchEmailContentResDto;
+  noCredits?: boolean;
 }

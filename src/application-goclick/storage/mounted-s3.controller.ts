@@ -33,7 +33,7 @@ export class MountedS3Controller {
     private readonly accessTokenService: AccessTokenService
   ) {
     this.s3Bucket = this.config.getOrThrow<string>(
-      'microservice.storage.awsS3Bucket'
+      'microservice.storage.aws.s3Bucket'
     );
   }
 

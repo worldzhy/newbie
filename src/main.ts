@@ -12,8 +12,8 @@ import {
 } from '@nestjs/swagger';
 // import {ApplicationAircruiserModule as ApplicationModule} from './application-aircruiser/application-aircruiser.module';
 // import {ApplicationEnginedModule as ApplicationModule} from './application-engined/application-engined.module';
-// import {ApplicationGoClickModule as ApplicationModule} from './application-goclick/application-goclick.module';
-import {ApplicationModule} from './application/application.module';
+import {ApplicationGoClickModule as ApplicationModule} from './application-goclick/application-goclick.module';
+// import {ApplicationModule} from './application/application.module';
 
 const nodeCluster = require('node:cluster');
 const numCPUs = require('node:os').availableParallelism();

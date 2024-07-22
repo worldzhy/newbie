@@ -208,6 +208,7 @@ export class PeopledatalabsService {
       email: false,
       phone: false,
     };
+    let noCredits = false;
     if (mode === 'byLinkedin') {
       if (user.linkedin) {
         const newRecord = await this.prisma.peopleFinderCallThirdParty.create({
@@ -235,6 +236,7 @@ export class PeopledatalabsService {
             await this.peopleFinderNotification.send({
               message: '[peopledatalabs] Not have enough credits',
             });
+            noCredits = true;
           }
         } else if (res) {
           updateData.spent = res.rateLimit.callCreditsSpent;
@@ -269,7 +271,13 @@ export class PeopledatalabsService {
           data: updateData,
         });
 
-        return {error, res, dataFlag, callThirdPartyId: newRecord.id};
+        return {
+          error,
+          res,
+          dataFlag,
+          callThirdPartyId: newRecord.id,
+          noCredits,
+        };
       } else {
         const newRecord = await this.prisma.peopleFinderCallThirdParty.create({
           data: {
@@ -330,6 +338,7 @@ export class PeopledatalabsService {
             await this.peopleFinderNotification.send({
               message: '[peopledatalabs] Not have enough credits',
             });
+            noCredits = true;
           }
         } else if (res) {
           updateData.spent = res.rateLimit.callCreditsSpent;
@@ -364,7 +373,13 @@ export class PeopledatalabsService {
           data: updateData,
         });
 
-        return {error, res, dataFlag, callThirdPartyId: newRecord.id};
+        return {
+          error,
+          res,
+          dataFlag,
+          callThirdPartyId: newRecord.id,
+          noCredits,
+        };
       } else {
         const newRecord = await this.prisma.peopleFinderCallThirdParty.create({
           data: {

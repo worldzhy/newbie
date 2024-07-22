@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
-import {Processor, Process} from '@nestjs/bull';
-import {Job} from 'bull';
+import {Processor, Process, InjectQueue} from '@nestjs/bull';
+import {Job, Queue} from 'bull';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {VoilaNorbertService} from '@microservices/people-finder/voila-norbert/volia-norbert.service';
 import {ProxycurlService} from '@microservices/people-finder/proxycurl/proxycurl.service';
@@ -28,7 +28,8 @@ export class PeopleFinderJobProcessor {
     private peopleFinder: PeopleFinderService,
     private voilaNorbertService: VoilaNorbertService,
     private proxycurlService: ProxycurlService,
-    private peopledatalabsService: PeopledatalabsService
+    private peopledatalabsService: PeopledatalabsService,
+    @InjectQueue(PeopleFinderQueue) public queue: Queue
   ) {
     this.callBackOrigin = this.configService.getOrThrow<string>(
       'microservice.peopleFinder.voilanorbert.callbackOrigin'
@@ -38,6 +39,7 @@ export class PeopleFinderJobProcessor {
   @Process({concurrency: 1})
   async peopleFinderProcess(job: Job) {
     const {data}: {data: PeopleFinderTaskBullJob} = job;
+
     if (data) {
       let isGetEmail = false;
       let isGetEmailIng = false;
@@ -120,6 +122,9 @@ export class PeopleFinderJobProcessor {
 
       if (findRes) {
         if (findRes.dataFlag.email) isGetEmail = findRes.dataFlag.email;
+        if (findRes.noCredits) {
+          await this.queue.pause();
+        }
         callThirdPartyId = findRes.callThirdPartyId;
       }
     }
@@ -161,6 +166,10 @@ export class PeopleFinderJobProcessor {
           `/people-finder/voilanorbert-hook?taskId=${peopleFinderTaskId}&id=`
       );
 
+      if (findRes?.noCredits) {
+        await this.queue.pause();
+      }
+
       // not domain or not name || searching completed && no email
       if (
         !findRes ||
@@ -179,6 +188,9 @@ export class PeopleFinderJobProcessor {
             needPhone: true,
             needEmail: true,
           });
+          if (findRes2?.noCredits) {
+            await this.queue.pause();
+          }
           if (findRes2.callThirdPartyId) {
             callThirdPartyId = findRes2.callThirdPartyId;
           }

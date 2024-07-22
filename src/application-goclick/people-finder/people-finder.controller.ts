@@ -63,6 +63,26 @@ export class PeopleFinderController {
   }
 
   @NoGuard()
+  @Post('contact-search-queue-resume')
+  async queueResume() {
+    this.queue.resume();
+    return 'ok';
+  }
+
+  @NoGuard()
+  @Post('contact-search-queue-pause')
+  async queuePause() {
+    this.queue.pause();
+    return 'ok';
+  }
+
+  @NoGuard()
+  @Get('contact-search-queue-is-pause')
+  async isQueuePause() {
+    return await this.queue.isPaused();
+  }
+
+  @NoGuard()
   @Post('create-contact-search-batch-id')
   @ApiResponse({
     type: CreateContactSearchBatchResDto,
