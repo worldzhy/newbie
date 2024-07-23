@@ -7,6 +7,7 @@ const {
 } = require('../constants');
 
 const assembleSchemaFiles = (addedMicroservices, removedMicroservices) => {
+  // [step 1] Add prisma schema for microservices.
   addedMicroservices.forEach(name => {
     const {key, schemaFileName} = ALL_MICROSERVICES[name] || {};
 
@@ -36,6 +37,7 @@ const assembleSchemaFiles = (addedMicroservices, removedMicroservices) => {
     }
   });
 
+  // [step 2] Remove prisma schema for microservices.
   removedMicroservices.forEach(name => {
     const {key, schemaFileName} = ALL_MICROSERVICES[name] || {};
 
@@ -56,6 +58,7 @@ const assembleSchemaFiles = (addedMicroservices, removedMicroservices) => {
     }
   });
 
+  // [step 3] Generate prisma client.
   execSync('npx prisma generate');
 };
 

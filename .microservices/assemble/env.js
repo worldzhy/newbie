@@ -11,6 +11,7 @@ const LINE =
 const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
   const envObj = getEnvObject();
 
+  // [step 1] Add variables to the env object.
   addedMicroservices.forEach(name => {
     const {key, configFileName} = ALL_MICROSERVICES[name] || {};
 
@@ -39,6 +40,7 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
     }
   });
 
+  // [step 2] Remove variables from the env object.
   removedMicroservices.forEach(name => {
     const {key, configFileName} = ALL_MICROSERVICES[name] || {};
 
@@ -70,6 +72,7 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
     }
   });
 
+  // [step 3] Write the .env file.
   if (Object.keys(envObj).length) {
     fs.writeFileSync(
       ENV_PATH,

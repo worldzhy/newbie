@@ -102,7 +102,6 @@ const assembleSourceCodeFiles = () => {
       }
     }
   });
-
   fs.writeFileSync(
     MICROSERVICES_CONFIG_PATH,
     Object.keys(configs).length

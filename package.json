@@ -1,6 +1,6 @@
 {
-  "name": "nestjs",
-  "version": "0.0.1",
+  "name": "newbie",
+  "version": "1.0.0",
   "description": "",
   "author": "worldzhy",
   "private": true,
@@ -18,7 +18,7 @@
     "fix": "gts fix",
     "compile": "tsc",
     "prepare": "npx husky install && npx prisma generate",
-    "ms": "node ./.microservices/index.js"
+    "ms": "node .microservices/index.js"
   },
   "prisma": {
     "seed": "ts-node -r tsconfig-paths/register ./prisma/seed.ts"
