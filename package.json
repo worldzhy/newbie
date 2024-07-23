@@ -16,16 +16,9 @@
     "lint": "gts lint",
     "clean": "gts clean",
     "fix": "gts fix",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json",
     "compile": "tsc",
     "prepare": "npx husky install && npx prisma generate",
-    "pretest": "npm run compile",
-    "posttest": "npm run lint",
-    "newbie": "node ./.newbie/index.js"
+    "ms": "node ./.microservices/index.js"
   },
   "prisma": {
     "seed": "ts-node -r tsconfig-paths/register ./prisma/seed.ts"
@@ -98,19 +91,16 @@
     "@commitlint/config-conventional": "^18.4.3",
     "@nestjs/cli": "^10.2.1",
     "@nestjs/schematics": "^10.0.3",
-    "@nestjs/testing": "^10.2.10",
     "@types/cache-manager": "^4.0.6",
     "@types/cookie-parser": "^1.4.6",
     "@types/cron": "^2.0.1",
     "@types/express": "^4.17.21",
-    "@types/jest": "29.5.10",
     "@types/lodash": "^4.14.202",
     "@types/multer": "^1.4.11",
     "@types/node": "^20.9.4",
     "@types/passport-jwt": "^3.0.13",
     "@types/passport-local": "^1.0.38",
     "@types/snowflake-sdk": "^1.6.17",
-    "@types/supertest": "^2.0.16",
     "@types/validator": "^13.11.7",
     "@typescript-eslint/eslint-plugin": "^6.12.0",
     "@typescript-eslint/parser": "^6.12.0",
@@ -124,33 +114,13 @@
     "gts": "^5.2.0",
     "husky": "^8.0.3",
     "inquirer": "^10.1.0",
-    "jest": "^29.7.0",
     "prettier": "^3.1.0",
     "prisma": "^5.16.1",
     "source-map-support": "^0.5.21",
-    "supertest": "^6.3.3",
-    "ts-jest": "^29.1.1",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.3.2"
-  },
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
-    "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
-    },
-    "collectCoverageFrom": [
-      "**/*.(t|j)s"
-    ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
   },
   "config": {
     "commitizen": {
