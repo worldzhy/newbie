@@ -1,5 +1,9 @@
 const fs = require('fs');
-const {ALL_MICROSERVICES, ENV_PATH} = require('../constants');
+const {
+  ALL_MICROSERVICES,
+  ENV_PATH,
+  MICROSERVICES_PATH,
+} = require('../constants');
 
 const LINE =
   /(?:^|^)\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\'|[^'])*'|\s*"(?:\"|[^"])*"|\s*`(?:\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?(?:$|$)/gm;
@@ -8,17 +12,20 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
   const envObj = getEnvObject();
 
   addedMicroservices.forEach(name => {
-    const {key, configPath} = ALL_MICROSERVICES[name] || {};
+    const {key, configFileName} = ALL_MICROSERVICES[name] || {};
 
     if (!key) {
       console.error(`Error: No service <${name}> provided!`);
       return;
     }
 
-    if (configPath) {
-      if (fs.existsSync(configPath)) {
+    if (configFileName) {
+      const configFilePath =
+        MICROSERVICES_PATH + '/' + key + '/' + key + '.config.json';
+
+      if (fs.existsSync(configFilePath)) {
         const {env = {}} = JSON.parse(
-          fs.readFileSync(configPath, {encoding: 'utf8', flag: 'r'})
+          fs.readFileSync(configFilePath, {encoding: 'utf8', flag: 'r'})
         );
 
         Object.keys(env).forEach(key => {
@@ -33,17 +40,20 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
   });
 
   removedMicroservices.forEach(name => {
-    const {key, configPath} = ALL_MICROSERVICES[name] || {};
+    const {key, configFileName} = ALL_MICROSERVICES[name] || {};
 
     if (!key) {
       console.error(`Error: No service <${name}> provided!`);
       return;
     }
 
-    if (configPath) {
-      if (fs.existsSync(configPath)) {
+    if (configFileName) {
+      const configFilePath =
+        MICROSERVICES_PATH + '/' + key + '/' + key + '.config.json';
+
+      if (fs.existsSync(configFilePath)) {
         const {env = {}} = JSON.parse(
-          fs.readFileSync(configPath, {encoding: 'utf8', flag: 'r'})
+          fs.readFileSync(configFilePath, {encoding: 'utf8', flag: 'r'})
         );
 
         const envKeys = Object.keys(env);
