@@ -1,4 +1,4 @@
-const ENABLED_MICROSERVICES_PATH = './.newbie/enabled.json';
+const ENABLED_MICROSERVICES_PATH = './.microservices/enabled.json';
 const ENV_PATH = './.env';
 const MICROSERVICES_PATH = './src/microservices';
 const MICROSERVICES_MODULE_PATH = './src/microservices/microservice.module.ts';

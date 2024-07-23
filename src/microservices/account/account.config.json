@@ -18,11 +18,11 @@
       "token": {
         "userAccess": {
           "expiresIn": "10m",
-          "secret": "process.env.ACCOUNT_USER_ACCESS_TOKEN_SECRET"
+          "secret": "process.env.ACCOUNT_USER_ACCESS_TOKEN_SECRET || 'your-access-token-secret'"
         },
         "userRefresh": {
           "expiresIn": "1440m",
-          "secret": "process.env.ACCOUNT_USER_REFRESH_TOKEN_SECRET"
+          "secret": "process.env.ACCOUNT_USER_REFRESH_TOKEN_SECRET || 'your-refresh-token-secret'"
         }
       },
       "verificationCode": {
@@ -32,7 +32,7 @@
       "aws": {
         "accessKeyId": "process.env.ACCOUNT_AWS_ACCESS_KEY_ID",
         "secretAccessKey": "process.env.ACCOUNT_AWS_SECRET_ACCESS_KEY",
-        "region": "process.env.ACCOUNT_AWS_REGION",
+        "region": "process.env.ACCOUNT_AWS_REGION || 'us-east-1'",
         "pinpointApplicationId": "process.env.ACCOUNT_AWS_PINPOINT_APPLICATION_ID || 'default'",
         "pinpointFromAddress": "process.env.ACCOUNT_AWS_PINPOINT_FROM_ADDRESS || 'default'", 
         "pinpointSenderId": "process.env.ACCOUNT_AWS_PINPOINT_SENDER_ID || 'default'"

@@ -10,13 +10,13 @@
       "aws": {
         "accessKeyId": "process.env.STORAGE_AWS_ACCESS_KEY_ID",
         "secretAccessKey": "process.env.STORAGE_AWS_SECRET_ACCESS_KEY",
-        "region": "process.env.STORAGE_AWS_REGION",
+        "region": "process.env.STORAGE_AWS_REGION || 'us-east-1'",
         "s3Bucket": "process.env.STORAGE_AWS_S3_BUCKET",
         "cloudfrontDomain": "process.env.STORAGE_AWS_CLOUDFRONT_DOMAIN"
 
       },
       "local": {
-        "path": "process.env.STORAGE_LOCAL_PATH || './storage'"
+        "path": "process.env.STORAGE_LOCAL_PATH"
       }
     }
   },

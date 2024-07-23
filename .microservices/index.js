@@ -26,8 +26,16 @@ const main = async () => {
   );
 
   // [step 2] Print the usage of the command-line tool.
+  console.info('Welcome to use newbie microservices command-line tool:)');
   console.info(
-    `\n----------------------------------------------------------------\n* Press <Up> and <Down> to move the cursor.\n* Press <Space> to toggle between enabled and disabled.\n* Press <Enter> to finish the configuration.\n* Press <Q> to quit without saving the configuration.\n----------------------------------------------------------------\n`
+    '----------------------------------------------------------------'
+  );
+  console.info('* Press <Up> and <Down> to move the cursor.');
+  console.info('* Press <Space> to toggle between enabled and disabled.');
+  console.info('* Press <Enter> to finish the configuration.');
+  console.info('* Press <Q> to quit without saving the configuration.');
+  console.info(
+    '----------------------------------------------------------------\n'
   );
 
   // [step 3] Main function.
@@ -36,21 +44,19 @@ const main = async () => {
 
   // [step 3-1] Enable and disable services.
   const enabledMicroservices = await checkbox({
-    message: 'Enable or disable services in the project:',
+    message:
+      'Which microservices do you want to enable or disable for your project:',
     choices: allMicroservices.map(microservice => {
       const checked = currentMicroervices.includes(microservice);
       return {
         checked,
         value: microservice,
-        name: `${microservice}${checked ? ' (Enabled)' : ''}`,
+        name: `${microservice}${checked ? '(enabled)' : ''}`,
       };
     }),
+    pageSize: 100,
     loop: false,
-    pageSize: 20,
-    theme: {
-      prefix: '',
-      helpMode: 'never',
-    },
+    theme: {helpMode: 'never'},
   });
   const addedMicroservices = getAddedMicroservices(enabledMicroservices);
   const removedMicroservices = getRemovedMicroservices(enabledMicroservices);
@@ -58,23 +64,25 @@ const main = async () => {
   // [step 3-2] Confirm the operation.
   let message = '';
   if (!addedMicroservices.length && !removedMicroservices.length) {
-    console.info('\nNo changes');
+    console.info(
+      '\n[info] You did not make any changes to the microservices.\n'
+    );
     process.exit(1);
   } else if (!removedMicroservices.length && addedMicroservices.length) {
-    message = `Are you sure to enable ${bold(
+    message = `Are you sure you want to enable ${bold(
       green(addedMicroservices.join(', '))
-    )} ${addedMicroservices.length > 1 ? 'services?' : 'service?'}`;
+    )} ${addedMicroservices.length > 1 ? 'microservices?' : 'microservice?'}`;
   } else if (removedMicroservices.length && !addedMicroservices.length) {
-    message = `Are you sure to disable ${bold(
+    message = `Are you sure you want to disable ${bold(
       red(removedMicroservices.join(', '))
-    )} ${removedMicroservices.length > 1 ? 'services?' : 'service?'}`;
+    )} ${removedMicroservices.length > 1 ? 'microservices?' : 'microservice?'}`;
   } else {
-    message = `Are you sure to disable ${bold(
+    message = `Are you sure you want to disable ${bold(
       red(removedMicroservices.join(', '))
     )} ${
-      removedMicroservices.length > 1 ? 'services' : 'service'
+      removedMicroservices.length > 1 ? 'microservices' : 'microservice'
     } and enable ${bold(green(addedMicroservices.join(', ')))} ${
-      addedMicroservices.length > 1 ? 'services?' : 'service?'
+      addedMicroservices.length > 1 ? 'microservices?' : 'microservice?'
     }`;
   }
 
@@ -84,10 +92,7 @@ const main = async () => {
       {name: 'Yes', value: 'yes'},
       {name: 'No', value: 'no'},
     ],
-    theme: {
-      prefix: '',
-      helpMode: 'always',
-    },
+    theme: {prefix: '', helpMode: 'never'},
   });
 
   // [step 3-3] Execute the operation.
@@ -103,7 +108,9 @@ const main = async () => {
 
     console.log('\n');
   } else {
-    console.log('Operation canceled.\n');
+    console.info(
+      '\n[info] You did not make any changes to the microservices.\n'
+    );
   }
 };
 

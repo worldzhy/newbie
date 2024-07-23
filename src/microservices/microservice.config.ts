@@ -10,18 +10,22 @@ export default registerAs('microservice', () => ({
     token: {
       userAccess: {
         expiresIn: '10m',
-        secret: process.env.ACCOUNT_USER_ACCESS_TOKEN_SECRET,
+        secret:
+          process.env.ACCOUNT_USER_ACCESS_TOKEN_SECRET ||
+          'your-access-token-secret',
       },
       userRefresh: {
         expiresIn: '1440m',
-        secret: process.env.ACCOUNT_USER_REFRESH_TOKEN_SECRET,
+        secret:
+          process.env.ACCOUNT_USER_REFRESH_TOKEN_SECRET ||
+          'your-refresh-token-secret',
       },
     },
     verificationCode: {timeoutMinutes: 1, resendMinutes: 1},
     aws: {
       accessKeyId: process.env.ACCOUNT_AWS_ACCESS_KEY_ID,
       secretAccessKey: process.env.ACCOUNT_AWS_SECRET_ACCESS_KEY,
-      region: process.env.ACCOUNT_AWS_REGION,
+      region: process.env.ACCOUNT_AWS_REGION || 'us-east-1',
       pinpointApplicationId:
         process.env.ACCOUNT_AWS_PINPOINT_APPLICATION_ID || 'default',
       pinpointFromAddress:
@@ -33,12 +37,16 @@ export default registerAs('microservice', () => ({
     sqs: {
       accessKeyId: process.env.AWS_SQS_ACCESS_KEY_ID,
       secretAccessKey: process.env.AWS_SQS_SECRET_ACCESS_KEY,
-      region: process.env.AWS_SQS_REGION,
+      region: process.env.AWS_SQS_REGION || 'us-east-1',
       queueUrl: process.env.AWS_SQS_QUEUE_URL,
     },
   },
   cloudformation: {
-    token: {secret: process.env.AWS_CLOUDFORMATION_SECRETKEY_TOKEN_SECRET},
+    token: {
+      secret:
+        process.env.AWS_CLOUDFORMATION_SECRETKEY_TOKEN_SECRET ||
+        'your-secretkey-token-secret',
+    },
   },
   eventScheduling: {minutesOfTimeslotUnit: 5},
   googleapis: {
@@ -51,7 +59,7 @@ export default registerAs('microservice', () => ({
     aws: {
       accessKeyId: process.env.NOTIFICATION_AWS_ACCESS_KEY_ID,
       secretAccessKey: process.env.NOTIFICATION_AWS_SECRET_ACCESS_KEY,
-      region: process.env.NOTIFICATION_AWS_REGION,
+      region: process.env.NOTIFICATION_AWS_REGION || 'us-east-1',
     },
     email: {
       awsPinpointApplicationId:
@@ -67,7 +75,7 @@ export default registerAs('microservice', () => ({
     },
     traceableEmail: {
       awsSqsQueueUrl:
-        'https://sqs.us-east-1.amazonaws.com/196438055748/inceptionpad-message-service-email-queue-level1',
+        'https://sqs.us-east-1.amazonaws.com/196438055748/traceable-email-service-email-queue-level1',
     },
   },
   peopleFinder: {
@@ -93,10 +101,10 @@ export default registerAs('microservice', () => ({
     aws: {
       accessKeyId: process.env.STORAGE_AWS_ACCESS_KEY_ID,
       secretAccessKey: process.env.STORAGE_AWS_SECRET_ACCESS_KEY,
-      region: process.env.STORAGE_AWS_REGION,
+      region: process.env.STORAGE_AWS_REGION || 'us-east-1',
       s3Bucket: process.env.STORAGE_AWS_S3_BUCKET,
       cloudfrontDomain: process.env.STORAGE_AWS_CLOUDFRONT_DOMAIN,
     },
-    local: {path: process.env.STORAGE_LOCAL_PATH || './storage'},
+    local: {path: process.env.STORAGE_LOCAL_PATH},
   },
 }));
