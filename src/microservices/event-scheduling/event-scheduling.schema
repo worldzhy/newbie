@@ -3,11 +3,13 @@
 // !! ------------------------------------------------------------ //
 // * AvailabilityExpression                                        //
 // * AvailabilityTimeslot                                          //
+// * Event                                                         //
+// * EventChangeLog                                                //
 // * EventContainer                                                //
+// * EventHost                                                     //
+// * EventIssue                                                    //
 // * EventType                                                     //
 // * EventVenue                                                    //
-// * EventIssue                                                    //
-// * Event                                                         //
 // * Reservation                                                   //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
 
@@ -68,11 +70,18 @@ enum EventStatus {
   @@schema("microservice/event-scheduling")
 }
 
+enum EventHostStatus {
+  ACTIVE
+  INACTIVE
+
+  @@schema("microservice/event-scheduling")
+}
+
 model AvailabilityExpression {
   id                                     Int                          @id @default(autoincrement())
   name                                   String?
   status                                 AvailabilityExpressionStatus @default(EDITING)
-  hostId                             String                       @db.Uuid
+  hostId                                 String                       @db.Uuid
   venueIds                               Int[]
   cronExpressionsOfAvailableTimePoints   String[]
   cronExpressionsOfUnavailableTimePoints String[]
@@ -90,7 +99,7 @@ model AvailabilityExpression {
 model AvailabilityTimeslot {
   id                Int                        @id @default(autoincrement())
   status            AvailabilityTimeslotStatus @default(USABLE)
-  hostId        String                     @db.Uuid
+  hostId            String                     @db.Uuid
   venueIds          Int[]
   datetimeOfStart   DateTime
   datetimeOfEnd     DateTime
@@ -108,7 +117,7 @@ model AvailabilityTimeslot {
 model Event {
   id                Int              @id @default(autoincrement())
   status            EventStatus      @default(EDITING)
-  hostId        String?          @db.Uuid
+  hostId            String?          @db.Uuid
   datetimeOfStart   DateTime
   datetimeOfEnd     DateTime
   timeZone          String
@@ -139,6 +148,73 @@ model Event {
   @@index([containerId, year, month, weekOfMonth, deletedAt])
   @@index([hostId, venueId, datetimeOfStart, datetimeOfEnd, deletedAt])
   @@index([deletedAt])
+  @@schema("microservice/event-scheduling")
+}
+
+model EventChangeLog {
+  id               Int                @id @default(autoincrement())
+  type             EventChangeLogType @default(USER)
+  description      String
+  notedByUserId    String?            @db.Uuid
+  eventContainerId Int
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  event            Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId          Int
+
+  @@schema("microservice/event-scheduling")
+}
+
+model EventContainer {
+  id            Int                  @id @default(autoincrement())
+  name          String?
+  status        EventContainerStatus @default(EDITING)
+  dateOfOpening DateTime? // Use dateOfOpening and dateOfClosure together
+  dateOfClosure DateTime?
+  year          Int // Use year and month together
+  month         Int
+  timezone      String? // https://www.iplocate.com/en/resources/timezones/list-of-timezones
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  venue         EventVenue           @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  venueId       Int
+  events        Event[]
+
+  @@schema("microservice/event-scheduling")
+}
+
+model EventHost {
+  id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  status         EventHostStatus @default(ACTIVE)
+  email          String?         @unique
+  phone          String?         @unique
+  password       String? // automatic hashing
+  lastLoginAt    DateTime?
+  fullName       String?
+  firstName      String?
+  middleName     String?
+  lastName       String?
+  tagIds         Int[]
+  eventVenueIds  Int[] // event venue ids
+  eventTypeIds   Int[] // event type ids
+  eventHostTitle Int?
+  quotaOfWeekMin Int?
+  quotaOfWeekMax Int?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  roles          EventHostRole[]
+
+  @@schema("microservice/event-scheduling")
+}
+
+model EventHostRole {
+  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String      @unique
+  description String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  users       EventHost[]
+
   @@schema("microservice/event-scheduling")
 }
 
@@ -201,38 +277,6 @@ model EventVenue {
   external_bookingStatus              String?          @default("Free")
   external_waitlistCapacity           Int?             @default(10)
   external_webCapacity                Int?             @default(10)
-
-  @@schema("microservice/event-scheduling")
-}
-
-model EventContainer {
-  id            Int                  @id @default(autoincrement())
-  name          String?
-  status        EventContainerStatus @default(EDITING)
-  dateOfOpening DateTime? // Use dateOfOpening and dateOfClosure together
-  dateOfClosure DateTime?
-  year          Int // Use year and month together
-  month         Int
-  timezone      String? // https://www.iplocate.com/en/resources/timezones/list-of-timezones
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
-  venue         EventVenue           @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  venueId       Int
-  events        Event[]
-
-  @@schema("microservice/event-scheduling")
-}
-
-model EventChangeLog {
-  id               Int                @id @default(autoincrement())
-  type             EventChangeLogType @default(USER)
-  description      String
-  notedByUserId    String?            @db.Uuid
-  eventContainerId Int
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  event            Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  eventId          Int
 
   @@schema("microservice/event-scheduling")
 }
