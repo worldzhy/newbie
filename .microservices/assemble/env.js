@@ -61,7 +61,7 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
         const envKeys = Object.keys(env);
         if (envKeys.length) {
           envKeys.forEach(key => {
-            if (envObj[key]) {
+            if (envObj[key] !== undefined) {
               delete envObj[key];
             }
           });
