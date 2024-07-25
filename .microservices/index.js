@@ -1,6 +1,6 @@
 const figlet = require('figlet');
 const {checkbox, select} = require('@inquirer/prompts');
-const {red, green, bold} = require('colorette');
+const {green, bold, inverse} = require('colorette');
 const {
   getAddedMicroservices,
   getRemovedMicroservices,
@@ -49,9 +49,9 @@ const main = async () => {
     choices: allMicroservices.map(microservice => {
       const checked = currentMicroervices.includes(microservice);
       return {
-        checked,
         value: microservice,
         name: `${microservice}${checked ? '(enabled)' : ''}`,
+        checked,
       };
     }),
     pageSize: 100,
@@ -71,19 +71,15 @@ const main = async () => {
   } else if (!removedMicroservices.length && addedMicroservices.length) {
     message = `Are you sure you want to enable ${bold(
       green(addedMicroservices.join(', '))
-    )} ${addedMicroservices.length > 1 ? 'microservices?' : 'microservice?'}`;
+    )} ?`;
   } else if (removedMicroservices.length && !addedMicroservices.length) {
     message = `Are you sure you want to disable ${bold(
-      red(removedMicroservices.join(', '))
-    )} ${removedMicroservices.length > 1 ? 'microservices?' : 'microservice?'}`;
+      inverse(removedMicroservices.join(', '))
+    )} ?`;
   } else {
     message = `Are you sure you want to disable ${bold(
-      red(removedMicroservices.join(', '))
-    )} ${
-      removedMicroservices.length > 1 ? 'microservices' : 'microservice'
-    } and enable ${bold(green(addedMicroservices.join(', ')))} ${
-      addedMicroservices.length > 1 ? 'microservices?' : 'microservice?'
-    }`;
+      inverse(removedMicroservices.join(', '))
+    )} and enable ${bold(green(addedMicroservices.join(', ')))} ?`;
   }
 
   const result = await select({
