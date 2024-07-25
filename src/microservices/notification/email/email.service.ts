@@ -16,10 +16,10 @@ export class EmailService {
     private readonly pinpointService: AwsPinpointService
   ) {
     this.emailPinpointApplicationId = this.configService.getOrThrow<string>(
-      'microservice.notification.email.awsPinpointApplicationId'
+      'microservices.notification.email.awsPinpointApplicationId'
     )!;
     this.emailPinpointFromAddress = this.configService.getOrThrow<string>(
-      'microservice.notification.email.awsPinpointFromAddress'
+      'microservices.notification.email.awsPinpointFromAddress'
     )!;
   }
 

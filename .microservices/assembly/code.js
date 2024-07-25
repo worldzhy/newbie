@@ -63,7 +63,7 @@ const EmptyMicroservicesModuleTemplate = () => `
   @Module({
     imports: [ToolkitModule],
   })
-  export class MicroserviceModule {}
+  export class MicroservicesModule {}
   `;
 
 const EmptyServicesConfigTemplate = () => `
@@ -104,7 +104,7 @@ const MicroservicesModuleTemplate = microservices => {
         ${importModuleNames}
       ],
     })
-    export class MicroserviceModule {}
+    export class MicroservicesModule {}
     `;
 };
 

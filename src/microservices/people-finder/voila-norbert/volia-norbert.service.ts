@@ -41,7 +41,7 @@ export class VoilaNorbertService {
     private readonly logger: CustomLoggerService
   ) {
     this.apiKey = this.configService.getOrThrow<string>(
-      'microservice.peopleFinder.voilanorbert.apiKey'
+      'microservices.peopleFinder.voilanorbert.apiKey'
     );
     this.reqConfig = {
       auth: {

@@ -16,13 +16,13 @@ export class PeopleFinderNotificationService {
     private httpService: HttpService
   ) {
     this.webhookFeishu = this.configService.getOrThrow<string>(
-      'microservice.peopleFinder.notification.webhookFeishu'
+      'microservices.peopleFinder.notification.webhookFeishu'
     );
     this.accessKey = this.configService.getOrThrow<string>(
-      'microservice.peopleFinder.notification.accessKey'
+      'microservices.peopleFinder.notification.accessKey'
     );
     this.channelName = this.configService.getOrThrow<string>(
-      'microservice.peopleFinder.notification.channelName'
+      'microservices.peopleFinder.notification.channelName'
     );
   }
 

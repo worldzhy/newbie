@@ -13,7 +13,7 @@ import {AwsCloudformationService} from './cloudformation.service';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         secret: config.getOrThrow<string>(
-          'microservice.cloudformation.token.secret'
+          'microservices.cloudformation.token.secret'
         ),
       }),
     }),

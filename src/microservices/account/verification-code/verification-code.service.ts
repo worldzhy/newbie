@@ -21,10 +21,10 @@ export class VerificationCodeService {
     private readonly prisma: PrismaService
   ) {
     this.timeoutMinutes = this.configService.getOrThrow<number>(
-      'microservice.account.verificationCode.timeoutMinutes'
+      'microservices.account.verificationCode.timeoutMinutes'
     );
     this.resendMinutes = this.configService.getOrThrow<number>(
-      'microservice.account.verificationCode.resendMinutes'
+      'microservices.account.verificationCode.resendMinutes'
     );
   }
 

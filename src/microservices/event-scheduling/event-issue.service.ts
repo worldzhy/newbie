@@ -37,7 +37,7 @@ export class EventIssueService {
     private readonly prisma: PrismaService
   ) {
     this.MINUTES_Of_TIMESLOT_UNIT = this.configService.getOrThrow<number>(
-      'microservice.eventScheduling.minutesOfTimeslotUnit'
+      'microservices.eventScheduling.minutesOfTimeslotUnit'
     );
   }
 

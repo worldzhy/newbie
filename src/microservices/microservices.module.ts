@@ -1,6 +1,6 @@
 import {Global, Module} from '@nestjs/common';
 import {ToolkitModule} from '@toolkit/toolkit.module';
-import MicroserviceConfiguration from './microservice.config';
+import MicroserviceConfiguration from './microservices.config';
 import {ConfigModule} from '@nestjs/config';
 import {AccountModule} from './account/account.module';
 import {AwsModule} from './aws/aws.module';
@@ -42,4 +42,4 @@ import {WorkflowModule} from './workflow/workflow.module';
     WorkflowModule,
   ],
 })
-export class MicroserviceModule {}
+export class MicroservicesModule {}

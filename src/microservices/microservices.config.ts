@@ -1,6 +1,6 @@
 import {registerAs} from '@nestjs/config';
 
-export default registerAs('microservice', () => ({
+export default registerAs('microservices', () => ({
   account: {
     security: {
       ipLoginLimiter: {points: 10, durationSeconds: 600},

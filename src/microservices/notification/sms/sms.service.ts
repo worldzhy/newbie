@@ -16,10 +16,10 @@ export class SmsService {
     private readonly pinpointService: AwsPinpointService
   ) {
     this.smsPinpointApplicationId = this.configService.getOrThrow<string>(
-      'microservice.notification.sms.awsPinpointApplicationId'
+      'microservices.notification.sms.awsPinpointApplicationId'
     )!;
     this.smsPinpointSenderId = this.configService.getOrThrow<string>(
-      'microservice.notification.sms.awsPinpointSenderId'
+      'microservices.notification.sms.awsPinpointSenderId'
     )!;
   }
 

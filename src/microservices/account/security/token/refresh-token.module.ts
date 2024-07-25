@@ -10,11 +10,11 @@ import {RefreshTokenService} from './refresh-token.service';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         secret: config.getOrThrow<string>(
-          'microservice.account.token.userRefresh.secret'
+          'microservices.account.token.userRefresh.secret'
         ),
         signOptions: {
           expiresIn: config.getOrThrow<string>(
-            'microservice.account.token.userRefresh.expiresIn'
+            'microservices.account.token.userRefresh.expiresIn'
           ),
         },
       }),

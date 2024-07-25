@@ -14,7 +14,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     private readonly accessTokenService: AccessTokenService
   ) {
     const secret = config.getOrThrow<string>(
-      'microservice.account.token.userAccess.secret'
+      'microservices.account.token.userAccess.secret'
     );
 
     super({

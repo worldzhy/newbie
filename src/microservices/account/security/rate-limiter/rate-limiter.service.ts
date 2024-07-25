@@ -21,26 +21,26 @@ abstract class RateLimiterService {
     switch (limiterType) {
       case LimiterType.IP_ACCESS:
         this.points = this.config.getOrThrow<number>(
-          'microservice.account.security.ipAccessLimiter.points'
+          'microservices.account.security.ipAccessLimiter.points'
         );
         this.duration = this.config.getOrThrow<number>(
-          'microservice.account.security.ipAccessLimiter.durationSeconds'
+          'microservices.account.security.ipAccessLimiter.durationSeconds'
         );
         break;
       case LimiterType.IP_LOGIN:
         this.points = this.config.getOrThrow<number>(
-          'microservice.account.security.ipLoginLimiter.points'
+          'microservices.account.security.ipLoginLimiter.points'
         );
         this.duration = this.config.getOrThrow<number>(
-          'microservice.account.security.ipLoginLimiter.durationSeconds'
+          'microservices.account.security.ipLoginLimiter.durationSeconds'
         );
         break;
       case LimiterType.USER_LOGIN:
         this.points = this.config.getOrThrow<number>(
-          'microservice.account.security.userLoginLimiter.points'
+          'microservices.account.security.userLoginLimiter.points'
         );
         this.duration = this.config.getOrThrow<number>(
-          'microservice.account.security.userLoginLimiter.durationSeconds'
+          'microservices.account.security.userLoginLimiter.durationSeconds'
         );
         break;
     }

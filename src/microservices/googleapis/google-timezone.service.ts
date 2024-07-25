@@ -22,7 +22,7 @@ export class GoogleTimezoneService {
           params: {
             query: address,
             key: this.configService.getOrThrow<string>(
-              'microservice.googleapis.credentials.apiKey'
+              'microservices.googleapis.credentials.apiKey'
             ),
           },
         }
@@ -40,7 +40,7 @@ export class GoogleTimezoneService {
               location: latLng,
               timestamp: 0,
               key: this.configService.getOrThrow<string>(
-                'microservice.googleapis.credentials.apiKey'
+                'microservices.googleapis.credentials.apiKey'
               ),
             },
           }
