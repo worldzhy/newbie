@@ -1,7 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import {SendMessagesCommandOutput} from '@aws-sdk/client-pinpoint';
-import {SmsNotification} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {AwsPinpointService} from './aws.pinpoint.service';
 
@@ -23,7 +22,7 @@ export class VerificationCodeSmsService {
     )!;
   }
 
-  async send(params: {phone: string; text: string}): Promise<SmsNotification> {
+  async send(params: {phone: string; text: string}) {
     // [step 1] Send AWS Pinpoint message.
     const output: SendMessagesCommandOutput =
       await this.pinpointService.sendSms({

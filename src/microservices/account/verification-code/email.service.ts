@@ -1,7 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import {SendMessagesCommandOutput} from '@aws-sdk/client-pinpoint';
-import {EmailNotification} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {AwsPinpointService} from './aws.pinpoint.service';
 
@@ -28,7 +27,7 @@ export class VerificationCodeEmailService {
     subject: string;
     plainText?: string;
     html?: string;
-  }): Promise<EmailNotification> {
+  }) {
     // [step 1] Send AWS Pinpoint message.
     const output: SendMessagesCommandOutput =
       await this.pinpointService.sendEmail({
