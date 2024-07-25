@@ -1,11 +1,11 @@
-const ENABLED_MICROSERVICES_PATH = './.microservices/enabled.json';
 const ENV_PATH = './.env';
-const MICROSERVICES_PATH = './src/microservices';
-const MICROSERVICES_MODULE_PATH = './src/microservices/microservice.module.ts';
-const MICROSERVICES_CONFIG_PATH = './src/microservices/microservice.config.ts';
+const MICROSERVICES_JSON = './.microservices/microservices.json';
+const MICROSERVICES_CODE_PATH = './src/microservices';
+const MICROSERVICES_MODULE_TS = './src/microservices/microservice.module.ts';
+const MICROSERVICES_CONFIG_TS = './src/microservices/microservice.config.ts';
 const PRISMA_SCHEMA_PATH = './prisma/schema';
-const TS_CONFIG_PATH = './tsconfig.json';
-const TS_CONFIG_BUILD_PATH = './tsconfig.build.json';
+const TS_CONFIG_BUILD_JSON = './tsconfig.build.json';
+const TS_CONFIG_JSON = './tsconfig.json';
 
 const ALL_MICROSERVICES = {
   account: {
@@ -140,12 +140,12 @@ const ALL_MICROSERVICES = {
 
 module.exports = {
   ALL_MICROSERVICES,
-  ENABLED_MICROSERVICES_PATH,
+  MICROSERVICES_JSON,
   ENV_PATH,
-  MICROSERVICES_PATH,
-  MICROSERVICES_MODULE_PATH,
-  MICROSERVICES_CONFIG_PATH,
+  MICROSERVICES_CODE_PATH,
+  MICROSERVICES_MODULE_TS,
+  MICROSERVICES_CONFIG_TS,
   PRISMA_SCHEMA_PATH,
-  TS_CONFIG_PATH,
-  TS_CONFIG_BUILD_PATH,
+  TS_CONFIG_JSON,
+  TS_CONFIG_BUILD_JSON,
 };

@@ -1,17 +1,17 @@
 const figlet = require('figlet');
 const {checkbox, select} = require('@inquirer/prompts');
-const {green, bold, inverse} = require('colorette');
+const {bold, cyan, greenBright, inverse} = require('colorette');
 const {
   getAddedMicroservices,
   getRemovedMicroservices,
   getEnabledMicroservices,
   updateEnabledMicroservices,
-} = require('./enabled');
+} = require('./microservices');
 const {ALL_MICROSERVICES} = require('./constants');
-const {assembleEnvFile} = require('./assemble/env');
-const {assembleSourceCodeFiles} = require('./assemble/source-code');
-const {assembleSchemaFiles} = require('./assemble/schema');
-const {assembleTsConfigFiles} = require('./assemble/tsconfig');
+const {assembleEnvFile} = require('./assembly/env');
+const {assembleSourceCodeFiles} = require('./assembly/code');
+const {assembleSchemaFiles} = require('./assembly/schema');
+const {assembleTsConfigFiles} = require('./assembly/tsconfig');
 
 const main = async () => {
   // [step 1] Print the logo of the command-line tool.
@@ -55,7 +55,7 @@ const main = async () => {
       };
     }),
     pageSize: 100,
-    loop: false,
+    loop: true,
     theme: {helpMode: 'never'},
   });
   const addedMicroservices = getAddedMicroservices(enabledMicroservices);
@@ -69,17 +69,17 @@ const main = async () => {
     );
     process.exit(0);
   } else if (!removedMicroservices.length && addedMicroservices.length) {
-    message = `Are you sure you want to enable ${bold(
-      green(addedMicroservices.join(', '))
+    message = `Are you sure you want to ENABLE ${cyan(
+      addedMicroservices.join(', ')
     )} ?`;
   } else if (removedMicroservices.length && !addedMicroservices.length) {
-    message = `Are you sure you want to disable ${bold(
-      inverse(removedMicroservices.join(', '))
+    message = `Are you sure you want to DISABLE ${inverse(
+      removedMicroservices.join(', ')
     )} ?`;
   } else {
-    message = `Are you sure you want to disable ${bold(
-      inverse(removedMicroservices.join(', '))
-    )} and enable ${bold(green(addedMicroservices.join(', ')))} ?`;
+    message = `Are you sure you want to DISABLE ${inverse(
+      removedMicroservices.join(', ')
+    )} and ENABLE ${cyan(addedMicroservices.join(', '))} ?`;
   }
 
   const result = await select({
@@ -102,7 +102,7 @@ const main = async () => {
     assembleEnvFile(addedMicroservices, removedMicroservices);
     assembleTsConfigFiles();
 
-    console.log('\n');
+    console.log(bold(greenBright('     c O m P L e T e\n')));
   } else {
     console.info(
       '\n[info] You did not make any changes to the microservices.\n'

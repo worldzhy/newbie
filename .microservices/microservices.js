@@ -1,5 +1,5 @@
 const fs = require('fs');
-const {ALL_MICROSERVICES, ENABLED_MICROSERVICES_PATH} = require('./constants');
+const {ALL_MICROSERVICES, MICROSERVICES_JSON} = require('./constants');
 
 const getAddedMicroservices = enabledServiceNames => {
   const currentMicroservices = getEnabledMicroservices();
@@ -20,27 +20,25 @@ const getRemovedMicroservices = enabledServiceNames => {
 };
 
 const getEnabledMicroservices = () => {
-  if (!fs.existsSync(ENABLED_MICROSERVICES_PATH)) {
+  if (!fs.existsSync(MICROSERVICES_JSON)) {
     fs.writeFileSync(
-      ENABLED_MICROSERVICES_PATH,
-      JSON.stringify({microservices: []}, null, 2)
+      MICROSERVICES_JSON,
+      JSON.stringify({enabled: []}, null, 2)
     );
   }
 
-  const enabled = JSON.parse(
-    fs.readFileSync(ENABLED_MICROSERVICES_PATH, 'utf8')
-  );
-  if (!enabled.microservices) {
-    enabled.microservices = [];
+  const json = JSON.parse(fs.readFileSync(MICROSERVICES_JSON, 'utf8'));
+  if (!json.enabled) {
+    json.enabled = [];
   }
 
-  return enabled.microservices;
+  return json.enabled;
 };
 
 const updateEnabledMicroservices = enabledMicroservices => {
   fs.writeFileSync(
-    ENABLED_MICROSERVICES_PATH,
-    JSON.stringify({microservices: enabledMicroservices}, null, 2)
+    MICROSERVICES_JSON,
+    JSON.stringify({enabled: enabledMicroservices}, null, 2)
   );
 };
 

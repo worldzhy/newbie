@@ -31,21 +31,18 @@ export class AvailabilityService {
       });
 
     // [step 1] Construct cron parser options.
-    const venues = await this.prisma.eventVenue.findMany({
-      where: {id: {in: expression.venueIds}},
-      select: {placeId: true},
-    });
-    const placeIds = venues
-      .filter(venue => venue.placeId !== null || undefined)
-      .map(venue => venue.placeId!);
-    const places = await this.prisma.place.findMany({
-      where: {id: {in: placeIds}},
-      select: {timeZone: true},
-    });
+    let timeZone: string | null = null;
+    if (expression.venueIds.length > 0) {
+      const venue = await this.prisma.eventVenue.findUnique({
+        where: {id: expression.venueIds[0]},
+        select: {timeZone: true},
+      });
+      if (venue) timeZone = venue.timeZone;
+    }
 
     const cronParserOptions = {
       // ! https://unpkg.com/browse/cron-parser@4.8.1/README.md
-      tz: places[0] ? places[0].timeZone : undefined,
+      tz: timeZone ?? undefined,
       currentDate: expression.dateOfOpening.toISOString(),
       endDate: expression.dateOfClosure
         ? expression.dateOfClosure.toISOString()

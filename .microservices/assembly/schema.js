@@ -1,12 +1,15 @@
 const fs = require('fs');
 const {execSync} = require('child_process');
+const {underline} = require('colorette');
 const {
   ALL_MICROSERVICES,
-  MICROSERVICES_PATH,
+  MICROSERVICES_CODE_PATH,
   PRISMA_SCHEMA_PATH,
 } = require('../constants');
 
 const assembleSchemaFiles = (addedMicroservices, removedMicroservices) => {
+  console.info('|' + underline(' 1. updating schema...   ') + '|');
+
   // [step 1] Add prisma schema for microservices.
   addedMicroservices.forEach(name => {
     const {key, schemaFileName} = ALL_MICROSERVICES[name] || {};
@@ -18,7 +21,7 @@ const assembleSchemaFiles = (addedMicroservices, removedMicroservices) => {
 
     if (schemaFileName) {
       const sourceSchemaPath =
-        MICROSERVICES_PATH + '/' + key + '/' + schemaFileName;
+        MICROSERVICES_CODE_PATH + '/' + key + '/' + schemaFileName;
       const targetSchemaPath = PRISMA_SCHEMA_PATH + '/' + key + '.prisma';
 
       if (fs.existsSync(sourceSchemaPath)) {
@@ -29,7 +32,6 @@ const assembleSchemaFiles = (addedMicroservices, removedMicroservices) => {
 
         if (schema) {
           fs.writeFileSync(targetSchemaPath, schema);
-          console.info(`Add schema for microservice<${name}>`);
         }
       } else {
         console.error(`Error: Missing schema for microservice<${name}>!`);
@@ -51,7 +53,6 @@ const assembleSchemaFiles = (addedMicroservices, removedMicroservices) => {
 
       if (targetSchemaPath && fs.existsSync(targetSchemaPath)) {
         fs.unlinkSync(targetSchemaPath);
-        console.info(`Remove schema for microservice<${name}>`);
       } else {
         // Do nothing.
       }
@@ -59,7 +60,9 @@ const assembleSchemaFiles = (addedMicroservices, removedMicroservices) => {
   });
 
   // [step 3] Generate prisma client.
-  execSync('npx prisma generate');
+  try {
+    execSync('npx prisma generate');
+  } catch (error) {}
 };
 
 module.exports = {

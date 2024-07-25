@@ -1,5 +1,5 @@
 {
-  "microservices": [
+  "enabled": [
     "account",
     "aws",
     "cloudformation",

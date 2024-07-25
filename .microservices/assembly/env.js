@@ -1,14 +1,17 @@
 const fs = require('fs');
+const {underline} = require('colorette');
 const {
   ALL_MICROSERVICES,
   ENV_PATH,
-  MICROSERVICES_PATH,
+  MICROSERVICES_CODE_PATH,
 } = require('../constants');
 
 const LINE =
   /(?:^|^)\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\'|[^'])*'|\s*"(?:\"|[^"])*"|\s*`(?:\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?(?:$|$)/gm;
 
 const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
+  console.info('|' + underline(' 3. updating env...      ') + '|');
+
   const envObj = getEnvObject();
 
   // [step 1] Add variables to the env object.
@@ -22,7 +25,7 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
 
     if (configFileName) {
       const configFilePath =
-        MICROSERVICES_PATH + '/' + key + '/' + key + '.config.json';
+        MICROSERVICES_CODE_PATH + '/' + key + '/' + key + '.config.json';
 
       if (fs.existsSync(configFilePath)) {
         const {env = {}} = JSON.parse(
@@ -51,7 +54,7 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
 
     if (configFileName) {
       const configFilePath =
-        MICROSERVICES_PATH + '/' + key + '/' + key + '.config.json';
+        MICROSERVICES_CODE_PATH + '/' + key + '/' + key + '.config.json';
 
       if (fs.existsSync(configFilePath)) {
         const {env = {}} = JSON.parse(
@@ -80,7 +83,6 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
         .map(e => e.join('='))
         .join('\n')
     );
-    console.info(`Update .env`);
   } else {
     console.error(`Error: .env is empty!`);
   }

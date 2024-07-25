@@ -1,28 +1,31 @@
 const fs = require('fs');
-const {getEnabledMicroservices} = require('../enabled');
+const {underline} = require('colorette');
+const {getEnabledMicroservices} = require('../microservices');
 const {
   ALL_MICROSERVICES,
-  TS_CONFIG_PATH,
-  TS_CONFIG_BUILD_PATH,
+  TS_CONFIG_JSON,
+  TS_CONFIG_BUILD_JSON,
 } = require('../constants');
 
 const assembleTsConfigFiles = () => {
+  console.info('|' + underline(' 4. updating tsconfig... ') + '|');
+
   const enabledMicroservices = getEnabledMicroservices();
   let tsconfig = {exclude: []};
   let tsBuildConfig = {exclude: []};
   const tsCheckSrc = [];
   const tsExcludeSrc = [];
 
-  if (!fs.existsSync(TS_CONFIG_PATH)) {
+  if (!fs.existsSync(TS_CONFIG_JSON)) {
     console.error('Error: Missing tsconfig.json file!');
   } else {
-    tsconfig = JSON.parse(fs.readFileSync(TS_CONFIG_PATH, 'utf8')) || {};
+    tsconfig = JSON.parse(fs.readFileSync(TS_CONFIG_JSON, 'utf8')) || {};
   }
-  if (!fs.existsSync(TS_CONFIG_BUILD_PATH)) {
+  if (!fs.existsSync(TS_CONFIG_BUILD_JSON)) {
     console.error('Error: Missing tsconfig.build.json file!');
   } else {
     tsBuildConfig =
-      JSON.parse(fs.readFileSync(TS_CONFIG_BUILD_PATH, 'utf8')) || {};
+      JSON.parse(fs.readFileSync(TS_CONFIG_BUILD_JSON, 'utf8')) || {};
   }
 
   const {exclude} = tsconfig;
@@ -55,12 +58,11 @@ const assembleTsConfigFiles = () => {
   } else {
     tsBuildConfig.exclude = tsExcludeSrc;
   }
-  fs.writeFileSync(TS_CONFIG_PATH, JSON.stringify(tsconfig, null, 2));
+  fs.writeFileSync(TS_CONFIG_JSON, JSON.stringify(tsconfig, null, 2));
   fs.writeFileSync(
-    TS_CONFIG_BUILD_PATH,
+    TS_CONFIG_BUILD_JSON,
     JSON.stringify(tsBuildConfig, null, 2)
   );
-  console.info(`Update tsconfig.json and tsconfig.build.json`);
 };
 
 module.exports = {

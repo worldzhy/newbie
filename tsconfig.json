@@ -32,5 +32,7 @@
       ]
     }
   },
-  "exclude": []
+  "exclude": [
+    "./prisma"
+  ]
 }

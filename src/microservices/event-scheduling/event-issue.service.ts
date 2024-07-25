@@ -4,9 +4,9 @@ import {
   Prisma,
   EventIssueType,
   Event,
-  User,
   EventIssueStatus,
   EventStatus,
+  EventHost,
 } from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {
@@ -49,8 +49,8 @@ export class EventIssueService {
 
     if (event.hostId) {
       if (
-        (await this.prisma.userSingleProfile.count({
-          where: {userId: event.hostId},
+        (await this.prisma.eventHost.count({
+          where: {id: event.hostId},
         })) > 0
       ) {
         return;
@@ -63,33 +63,25 @@ export class EventIssueService {
     });
 
     // [step 1] Get the coach.
-    let hostUser: User | null = null;
+    let eventHost: EventHost | null = null;
     if (event.hostId) {
-      hostUser = await this.prisma.user.findUnique({
+      eventHost = await this.prisma.eventHost.findUnique({
         where: {id: event.hostId},
-        include: {profile: true},
       });
     }
 
     // [step 2] Check issues.
     const issueCreateManyInput: Prisma.EventIssueCreateManyInput[] = [];
-    if (!hostUser) {
+    if (!eventHost) {
       // [step 2-1] Check exist.
       issueCreateManyInput.push({
         type: EventIssueType.ERROR_NONEXISTENT_COACH,
         description: EventIssueDescription.Error_CoachNotExisted,
         eventId: event.id,
       });
-    } else if (!hostUser['profile']) {
-      // [step 2-2] Check coach profile.
-      issueCreateManyInput.push({
-        type: EventIssueType.ERROR_UNCONFIGURED_COACH,
-        description: EventIssueDescription.Error_CoachNotConfigured,
-        eventId: event.id,
-      });
     } else {
       // [step 2-3] Check class type.
-      if (!hostUser['profile']['eventTypeIds'].includes(event.typeId)) {
+      if (!eventHost.eventTypeIds.includes(event.typeId)) {
         issueCreateManyInput.push({
           type: EventIssueType.ERROR_UNAVAILABLE_EVENT_TYPE,
           description: EventIssueDescription.Error_ClassUnavailable,
@@ -98,7 +90,7 @@ export class EventIssueService {
       }
 
       // [step 2-4] Check location.
-      if (!hostUser['profile']['eventVenueIds'].includes(event.venueId)) {
+      if (!eventHost.eventVenueIds.includes(event.venueId)) {
         issueCreateManyInput.push({
           type: EventIssueType.ERROR_UNAVAILABLE_EVENT_VENUE,
           description: EventIssueDescription.Error_LocationUnavailable,
@@ -118,7 +110,7 @@ export class EventIssueService {
 
       const count = await this.prisma.availabilityTimeslot.count({
         where: {
-          hostId: hostUser.id,
+          hostId: eventHost.id,
           venueIds: {has: event.venueId},
           datetimeOfStart: {gte: newDatetimeOfStart},
           datetimeOfEnd: {lte: newDatetimeOfEnd},
@@ -135,7 +127,7 @@ export class EventIssueService {
       // [step 2-6] Check time conflict among different venues.
       const conflictingEvents = await this.prisma.event.findMany({
         where: {
-          hostId: hostUser.id,
+          hostId: eventHost.id,
           venueId: {not: event.venueId},
           datetimeOfStart: {
             lt: datePlusMinutes(
