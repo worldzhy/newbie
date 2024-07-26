@@ -28,7 +28,7 @@ const assembleSourceCodeFiles = () => {
     const {key, configFileName} = ALL_MICROSERVICES[name] || {};
 
     if (!key) {
-      console.error(`Error: No service <${name}> provided!`);
+      console.error(`[Error] Non-existent microservice<${name}>`);
       return;
     }
 

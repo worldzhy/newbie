@@ -22,7 +22,7 @@ const assembleTsConfigFiles = () => {
     tsconfig = JSON.parse(fs.readFileSync(TS_CONFIG_JSON, 'utf8')) || {};
   }
   if (!fs.existsSync(TS_CONFIG_BUILD_JSON)) {
-    console.error('Error: Missing tsconfig.build.json file!');
+    console.error('[Error] Missing tsconfig.build.json file');
   } else {
     tsBuildConfig =
       JSON.parse(fs.readFileSync(TS_CONFIG_BUILD_JSON, 'utf8')) || {};

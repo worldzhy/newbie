@@ -19,7 +19,7 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
     const {key, configFileName} = ALL_MICROSERVICES[name] || {};
 
     if (!key) {
-      console.error(`Error: No service <${name}> provided!`);
+      console.error(`[Error] Non-existent microservice<${name}>`);
       return;
     }
 
@@ -38,7 +38,7 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
           }
         });
       } else {
-        console.error(`Error: Missing config.json for microservice<${name}>!`);
+        console.error(`[Error] Missing config.json for microservice<${name}>!`);
       }
     }
   });
@@ -48,7 +48,7 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
     const {key, configFileName} = ALL_MICROSERVICES[name] || {};
 
     if (!key) {
-      console.error(`Error: No service <${name}> provided!`);
+      console.error(`[Error] Non-existent microservice<${name}>`);
       return;
     }
 
@@ -70,7 +70,7 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
           });
         }
       } else {
-        console.error(`Error: Missing config.json for microservice<${name}>!`);
+        console.error(`[Error] Missing config.json for microservice<${name}>!`);
       }
     }
   });
@@ -90,7 +90,7 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
 
 const getEnvObject = () => {
   if (!fs.existsSync(ENV_PATH)) {
-    console.error('[Error] missing .env file');
+    console.error('[Error] Missing .env file');
     return {};
   }
 

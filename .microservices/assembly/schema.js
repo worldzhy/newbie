@@ -15,7 +15,7 @@ const assembleSchemaFiles = (addedMicroservices, removedMicroservices) => {
     const {key, schemaFileName} = ALL_MICROSERVICES[name] || {};
 
     if (!key) {
-      console.error(`Error: No service <${name}> provided!`);
+      console.error(`[Error] non-existent microservice<${name}>`);
       return;
     }
 
@@ -34,7 +34,7 @@ const assembleSchemaFiles = (addedMicroservices, removedMicroservices) => {
           fs.writeFileSync(targetSchemaPath, schema);
         }
       } else {
-        console.error(`Error: Missing schema for microservice<${name}>!`);
+        console.error(`[Error] Missing schema for microservice<${name}>!`);
       }
     }
   });
@@ -44,7 +44,7 @@ const assembleSchemaFiles = (addedMicroservices, removedMicroservices) => {
     const {key, schemaFileName} = ALL_MICROSERVICES[name] || {};
 
     if (!key) {
-      console.error(`Error: No service <${name}> provided!`);
+      console.error(`[Error] non-existent microservice<${name}>`);
       return;
     }
 
