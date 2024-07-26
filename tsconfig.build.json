@@ -5,7 +5,6 @@
     "dist",
     "./prisma",
     "./src/microservices/account",
-    "./src/microservices/aws",
     "./src/microservices/cloudformation",
     "./src/microservices/cron",
     "./src/microservices/event-scheduling",
