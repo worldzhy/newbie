@@ -1,3 +1,5 @@
 {
-  "enabled": []
+  "enabled": [
+    "cloudformation"
+  ]
 }
