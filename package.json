@@ -24,7 +24,7 @@
     "seed": "ts-node -r tsconfig-paths/register ./prisma/seed.ts"
   },
   "dependencies": {
-    "@aws-sdk/client-cloudformation": "^3.454.0",
+    "@aws-sdk/client-cloudformation": "^3.609.0",
     "@aws-sdk/client-pinpoint": "^3.454.0",
     "@aws-sdk/client-s3": "^3.456.0",
     "@aws-sdk/client-sqs": "^3.454.0",
