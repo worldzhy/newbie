@@ -69,7 +69,7 @@ const EmptyMicroservicesModuleTemplate = () => `
 const EmptyServicesConfigTemplate = () => `
   import {registerAs} from '@nestjs/config';
 
-  export default registerAs('microservice', () => ({}));
+  export default registerAs('microservices', () => ({}));
   `;
 
 const MicroservicesModuleTemplate = microservices => {
@@ -82,7 +82,7 @@ const MicroservicesModuleTemplate = microservices => {
     import {ToolkitModule} from '@toolkit/toolkit.module';
     ${
       hasService
-        ? `import MicroserviceConfiguration from './microservice.config';\nimport {ConfigModule} from '@nestjs/config';`
+        ? `import MicroservicesConfiguration from './microservices.config';\nimport {ConfigModule} from '@nestjs/config';`
         : ''
     }
     ${selectCode.map(({key}) => ALL_MICROSERVICES[key].importCode).join('\n')}
@@ -90,7 +90,7 @@ const MicroservicesModuleTemplate = microservices => {
 
   const importModuleNames = `${
     hasService
-      ? `ConfigModule.forRoot({load: [MicroserviceConfiguration], isGlobal: true}),`
+      ? `ConfigModule.forRoot({load: [MicroservicesConfiguration], isGlobal: true}),`
       : ''
   }${selectCode
     .map(({key}) => ALL_MICROSERVICES[key].moduleNames)
@@ -111,7 +111,7 @@ const MicroservicesModuleTemplate = microservices => {
 const MicroservicesConfigTemplate = configs => `
   import {registerAs} from '@nestjs/config';
 
-  export default registerAs('microservice', () => (${JSON.stringify(
+  export default registerAs('microservices', () => (${JSON.stringify(
     configs
   ).replace(/('|")(process.*?)\1/g, '$2')}));
   `;

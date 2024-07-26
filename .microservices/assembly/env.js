@@ -76,7 +76,7 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
   });
 
   // [step 3] Write the .env file.
-  if (Object.keys(envObj).length) {
+  if (Object.keys(envObj).length > 0) {
     fs.writeFileSync(
       ENV_PATH,
       Object.entries(envObj)
@@ -84,13 +84,13 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
         .join('\n')
     );
   } else {
-    console.error(`Error: .env is empty!`);
+    // Do nothing
   }
 };
 
 const getEnvObject = () => {
   if (!fs.existsSync(ENV_PATH)) {
-    console.error('Error: Missing .env file!');
+    console.error('[Error] missing .env file');
     return {};
   }
 

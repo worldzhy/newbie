@@ -31,9 +31,9 @@ function getModules() {
         imports: [ConfigModule],
         useFactory: async (configService: ConfigService) => ({
           store: redisStore,
-          host: configService.get('toolkit.redis.host'),
-          port: configService.get('toolkit.redis.port'),
-          password: configService.get('toolkit.redis.password'),
+          host: configService.get('toolkit.cache.redis.host'),
+          port: configService.get('toolkit.cache.redis.port'),
+          password: configService.get('toolkit.cache.redis.password'),
           ttl: configService.get('toolkit.cache.redis.ttl'), // cache-manamger v4 => seconds, v5 => milliseconds
         }),
         inject: [ConfigService],
@@ -46,9 +46,9 @@ function getModules() {
         inject: [ConfigService],
         useFactory: (configService: ConfigService) => ({
           redis: {
-            host: configService.get('toolkit.redis.host'),
-            port: configService.get('toolkit.redis.port'),
-            password: configService.get('toolkit.redis.password'),
+            host: configService.get('toolkit.bull.redis.host'),
+            port: configService.get('toolkit.bull.redis.port'),
+            password: configService.get('toolkit.bull.redis.password'),
           },
         }),
       })

@@ -1,20 +1,3 @@
 {
-  "enabled": [
-    "account",
-    "aws",
-    "cloudformation",
-    "cron",
-    "event-scheduling",
-    "googleapis",
-    "map",
-    "notification",
-    "order-mgmt",
-    "people-finder",
-    "queue",
-    "shortcut",
-    "stock-mgmt",
-    "storage",
-    "tag",
-    "workflow"
-  ]
+  "enabled": []
 }

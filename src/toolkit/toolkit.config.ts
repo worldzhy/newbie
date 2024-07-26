@@ -1,6 +1,13 @@
 import {registerAs} from '@nestjs/config';
 
 export default registerAs('toolkit', () => ({
+  bull: {
+    redis: {
+      host: process.env.BULL_REDIS_HOST,
+      port: parseInt(process.env.BULL_REDIS_PORT ?? '6379'),
+      password: process.env.BULL_REDIS_PASSWORD,
+    },
+  },
   cache: {
     memory: {
       ttl: 3600, // cache-manamger v4 => seconds, v5 => milliseconds
@@ -8,12 +15,10 @@ export default registerAs('toolkit', () => ({
     },
     redis: {
       ttl: 86400, // cache-manamger v4 => seconds, v5 => milliseconds
+      host: process.env.CACHE_REDIS_HOST,
+      port: parseInt(process.env.CACHE_REDIS_PORT ?? '6379'),
+      password: process.env.CACHE_REDIS_PASSWORD,
     },
-  },
-  redis: {
-    host: process.env.REDIS_HOST,
-    port: parseInt(process.env.REDIS_PORT ?? '6379'),
-    password: process.env.REDIS_PASSWORD,
   },
   elastic: {
     node: process.env.ELASTICSEARCH_NODE || 'http://127.0.0.1',
