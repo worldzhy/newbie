@@ -31,7 +31,7 @@ export class SignupController {
         summary: '1. Sign up with email',
         value: {
           email: 'email@example.com',
-          password: 'Abc1234!',
+          password: '',
         },
       },
       b: {

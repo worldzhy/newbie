@@ -28,7 +28,7 @@ export class PasswordController {
         summary: '1. new password != current password',
         value: {
           userId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
-          currentPassword: 'Abc1234!',
+          currentPassword: '',
           newPassword: 'Abc12345!',
         },
       },
@@ -36,8 +36,8 @@ export class PasswordController {
         summary: '2. new password == current password',
         value: {
           userId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
-          currentPassword: 'Abc1234!',
-          newPassword: 'Abc1234!',
+          currentPassword: '',
+          newPassword: '',
         },
       },
     },
