@@ -29,7 +29,7 @@ export class PasswordController {
         value: {
           userId: 'fd5c948e-d15d-48d6-a458-7798e4d9921c',
           currentPassword: '',
-          newPassword: 'Abc12345!',
+          newPassword: '',
         },
       },
       b: {
@@ -86,7 +86,7 @@ export class PasswordController {
         value: {
           email: 'henry@inceptionpad.com',
           verificationCode: '283749',
-          newPassword: 'abc1234!',
+          newPassword: '',
         },
       },
       b: {
@@ -94,7 +94,7 @@ export class PasswordController {
         value: {
           phone: '13260000789',
           verificationCode: '283749',
-          newPassword: 'abc1234!',
+          newPassword: '',
         },
       },
     },

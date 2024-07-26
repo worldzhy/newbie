@@ -234,7 +234,7 @@ export class UserController {
         summary: '1. new password != current password',
         value: {
           currentPassword: '',
-          newPassword: 'Abc12345!',
+          newPassword: '',
         },
       },
       b: {
