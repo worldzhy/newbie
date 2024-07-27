@@ -80,7 +80,7 @@
     "rimraf": "^5.0.5",
     "rxjs": "^7.8.1",
     "snowflake-sdk": "^1.9.1",
-    "stripe": "^14.5.0",
+    "stripe": "^14.25.0",
     "swagger-ui-express": "^5.0.0",
     "typeorm": "^0.3.17",
     "validator": "^13.11.0",
