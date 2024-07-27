@@ -3,7 +3,7 @@ const MICROSERVICES_JSON = './.microservices/microservices.json';
 const MICROSERVICES_CODE_PATH = './src/microservices';
 const MICROSERVICES_MODULE_TS = './src/microservices/microservices.module.ts';
 const MICROSERVICES_CONFIG_TS = './src/microservices/microservices.config.ts';
-const PRISMA_SCHEMA_PATH = './prisma/schema';
+const PRISMA_SCHEMA_PATH = './prisma/schema/microservices';
 const TS_CONFIG_BUILD_JSON = './tsconfig.build.json';
 const TS_CONFIG_JSON = './tsconfig.json';
 
