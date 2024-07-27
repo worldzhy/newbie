@@ -82,7 +82,7 @@
     "snowflake-sdk": "^1.9.1",
     "stripe": "^14.5.0",
     "swagger-ui-express": "^5.0.0",
-    "typeorm": "^0.3.17",
+    "typeorm": "^0.3.20",
     "validator": "^13.11.0",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.19.3/xlsx-0.19.3.tgz"
   },
