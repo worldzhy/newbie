@@ -8,15 +8,21 @@ import {
   SlackWebhookPostBodyDto,
   NotificationSlackWebhookResDto,
   SlackWebhookPostResDto,
-} from './slack-webhook.dto';
-import {NotificationAccessKeyStatus} from '@microservices/notification/constants';
-import {NotificationWebhookRecordStatus} from '../constants';
+} from './slack.dto';
+import {
+  NotificationWebhookPlatform,
+  NotificationWebhookRecordStatus,
+} from '../constants';
+import {
+  NotificationWebhookChannelCreateReqDto,
+  NotificationWebhookChannelUpdateReqDto,
+} from '../webhook.dto';
 
-export * from './slack-webhook.dto';
+export * from './slack.dto';
 
 @Injectable()
 export class SlackWebhookService {
-  private loggerContext = 'Slack-Webhook';
+  private loggerContext = 'Slack Webhook';
 
   constructor(
     private httpService: HttpService,
@@ -24,28 +30,60 @@ export class SlackWebhookService {
     private readonly logger: CustomLoggerService
   ) {}
 
-  async send(body: NotificationSlackWebhookReqDto) {
-    const {channelName, accessKey, slackParams} = body;
+  async createChannel(
+    body: NotificationWebhookChannelCreateReqDto
+  ): Promise<{id: number}> {
+    const {name} = body;
     const channel = await this.prisma.notificationWebhookChannel.findFirst({
-      where: {
-        name: channelName,
-      },
-      include: {
-        accessKey: true,
-      },
+      where: {name, platform: NotificationWebhookPlatform.Slack},
     });
+    if (channel) {
+      throw new BadRequestException('Channel name already exists');
+    }
 
-    if (!channel) throw new BadRequestException('No channel found.');
-    if (channel.accessKey?.key !== accessKey)
-      throw new BadRequestException('AccessKey Error.');
-    if (channel.accessKey?.status === NotificationAccessKeyStatus.Inactive)
-      throw new BadRequestException('AccessKey is inactive.');
+    return await this.prisma.notificationWebhookChannel.create({
+      data: {...body, platform: NotificationWebhookPlatform.Slack},
+    });
+  }
+
+  async updateChannel(
+    body: NotificationWebhookChannelUpdateReqDto
+  ): Promise<{id: number}> {
+    const {id} = body;
+    return await this.prisma.notificationWebhookChannel.update({
+      where: {id},
+      data: {...body},
+    });
+  }
+
+  async deleteChannel(
+    body: NotificationWebhookChannelUpdateReqDto
+  ): Promise<{id: number}> {
+    const {id} = body;
+
+    return await this.prisma.notificationWebhookChannel.update({
+      where: {id},
+      data: {deletedAt: new Date()},
+    });
+  }
+
+  async send(req: NotificationSlackWebhookReqDto) {
+    const {channelName, body} = req;
+    const channel =
+      await this.prisma.notificationWebhookChannel.findUniqueOrThrow({
+        where: {
+          name_platform: {
+            name: channelName,
+            platform: NotificationWebhookPlatform.Slack,
+          },
+        },
+      });
 
     const newRecord = await this.prisma.notificationWebhookRecord.create({
       data: {
         channelId: channel.id,
         status: NotificationWebhookRecordStatus.Pending,
-        request: slackParams as object,
+        request: body as object,
       },
     });
 
@@ -53,7 +91,7 @@ export class SlackWebhookService {
       await this.httpService.axiosRef
         .post<SlackWebhookPostBodyDto, AxiosResponse<SlackWebhookPostResDto>>(
           channel.webhook,
-          slackParams
+          body
         )
         .then(res => {
           this.logger.log(
@@ -81,6 +119,7 @@ export class SlackWebhookService {
           : NotificationWebhookRecordStatus.Succeeded,
       },
     });
+
     return result;
   }
 }

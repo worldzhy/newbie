@@ -1,19 +1,10 @@
 import {Module, Global} from '@nestjs/common';
-import {NotificationWebhookService} from './webhook.service';
-import {FeishuWebhookService} from './feishu/feishu-webhook.service';
-import {SlackWebhookService} from './slack/slack-webhook.service';
+import {LarkWebhookService} from './lark/lark.service';
+import {SlackWebhookService} from './slack/slack.service';
 
 @Global()
 @Module({
-  providers: [
-    NotificationWebhookService,
-    FeishuWebhookService,
-    SlackWebhookService,
-  ],
-  exports: [
-    NotificationWebhookService,
-    FeishuWebhookService,
-    SlackWebhookService,
-  ],
+  providers: [LarkWebhookService, SlackWebhookService],
+  exports: [LarkWebhookService, SlackWebhookService],
 })
 export class NotificationWebhookModule {}

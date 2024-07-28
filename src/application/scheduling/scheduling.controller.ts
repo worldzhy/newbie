@@ -12,10 +12,10 @@ import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Prisma} from '@prisma/client';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
-@ApiTags('Cron')
+@ApiTags('Scheduling')
 @ApiBearerAuth()
-@Controller('crons')
-export class CronController {
+@Controller('scheduling')
+export class SchedulingController {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cronService: CronTaskService

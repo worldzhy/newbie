@@ -1,11 +1,10 @@
 import {Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {generateRandomNumbers} from '@toolkit/utilities/common.util';
 const GateApi = require('gate-api');
 
 @Injectable()
-export class CurrencyService {
+export class SpotCurrencyService {
   private spot;
 
   constructor(
@@ -23,45 +22,50 @@ export class CurrencyService {
     this.spot = new GateApi.SpotApi(client);
   }
 
+  async listSpotAccounts() {
+    const result = await this.spot.listSpotAccounts();
+    return result.body;
+  }
+
   async getAllCurrencies() {
-    const response = await this.spot.listCurrencies();
-    if (response.body) {
+    const result = await this.spot.listCurrencies();
+    if (result.body) {
       await this.prisma.currency.createMany({
-        data: response.body,
+        data: result.body,
         skipDuplicates: true,
       });
     } else {
-      return response;
+      return result;
     }
   }
 
   async getCurrency(currency: string) {
-    const response = await this.spot.getCurrency(currency);
-    if (response.body) {
-      return response.body;
+    const result = await this.spot.getCurrency(currency);
+    if (result.body) {
+      return result.body;
     } else {
-      return response;
+      return result;
     }
   }
 
   async getAllCurrencyPairs() {
-    const response = await this.spot.listCurrencyPairs();
-    if (response.body) {
+    const result = await this.spot.listCurrencyPairs();
+    if (result.body) {
       await this.prisma.currencyPair.createMany({
-        data: response.body,
+        data: result.body,
         skipDuplicates: true,
       });
     } else {
-      return response;
+      return result;
     }
   }
 
   async getCurrencyPair() {
-    const response = await this.spot.getCurrencyPair();
-    if (response.body) {
-      return response.body;
+    const result = await this.spot.getCurrencyPair();
+    if (result.body) {
+      return result.body;
     } else {
-      return response;
+      return result;
     }
   }
 
@@ -80,18 +84,6 @@ export class CurrencyService {
       currency_pair: currencyPair,
     });
     console.log(currencyTickers);
-  }
-
-  async createOrder() {
-    const result = await this.spot.createOrder({
-      text: 't-' + generateRandomNumbers(8),
-      currency_pair: '',
-      type: Order_Type.Market, // limit or market
-      account: 'spot',
-      side: Order_Side.Buy, // buy or sell
-      amount: '', // trade amount
-      time_in_force: Order_TimeInForce.ImmediateOrCancelled, // ImmediateOrCancelled
-    });
   }
 
   /* End */

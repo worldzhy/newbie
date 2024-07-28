@@ -1,8 +1,8 @@
-export enum FeishuWebhookSendStatus {
+export enum LarkWebhookSendStatus {
   Succeeded = 0,
 }
 
-export enum FeishuWebhookMessageType {
+export enum LarkWebhookMessageType {
   Text = 'text',
   Post = 'post',
   ShareChat = 'share_chat',

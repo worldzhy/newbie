@@ -3,8 +3,8 @@ import {ConfigService} from '@nestjs/config';
 const GateApi = require('gate-api');
 
 @Injectable()
-export class DepositService {
-  private wallet;
+export class SpotAccountService {
+  private spot;
 
   constructor(private readonly config: ConfigService) {
     const client = new GateApi.ApiClient();
@@ -15,16 +15,21 @@ export class DepositService {
       this.config.getOrThrow<string>('application.gateApi.secret')
     );
 
-    this.wallet = new GateApi.WalletApi(client);
+    this.spot = new GateApi.SpotApi(client);
   }
 
-  async getDepositAddress(currency: string) {
-    const response = await this.wallet.getDepositAddress(currency);
-    if (response.body) {
-      return response.body;
-    } else {
-      return response;
+  async listSpotAccounts() {
+    const result = await this.spot.listSpotAccounts();
+    return result.body;
+  }
+
+  async getBalance(currency: string) {
+    const result = await this.spot.listSpotAccounts({currency});
+    if (result.body) {
+      return parseFloat(result.body[0].available);
     }
+
+    return 0;
   }
 
   /* End */

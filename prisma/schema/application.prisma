@@ -26,7 +26,7 @@ datasource db {
 
 model Currency {
   id               Int      @id @default(autoincrement())
-  name             String   @unique
+  currency         String   @unique
   delisted         Boolean
   withdrawDisabled Boolean
   withdrawDelayed  Boolean
@@ -41,8 +41,7 @@ model Currency {
 }
 
 model CurrencyPair {
-  id              Int      @id @default(autoincrement())
-  name            String   @unique
+  id              String   @id // currency_pair
   base            String
   quote           String
   fee             String?
@@ -77,27 +76,36 @@ model TradeTask {
 model Order {
   id                 String   @id
   text               String
+  amendText          String
+  createTime         String // 秒级 Unix 时间戳
+  updateTime         String
+  createTimeMs       Int // 毫秒级 Unix 时间戳
+  updateTimeMs       Int
+  status             String?
   currencyPair       String
   type               String
   account            String
   side               String
-  amount             Float
+  amount             String
+  price              String
   timeInForce        String
-  createdTime        Int // 秒级 Unix 时间戳
-  createdTimeMs      BigInt // 毫秒级 Unix 时间戳
-  filledAmount       Float
-  fillPrice          Float
-  filledTotal        Float
-  avgDealPrice       Float
-  fee                Float
+  icebery            String?
+  letf               String?
+  filledAmount       String?
+  fillPrice          String
+  filledTotal        String
+  avgDealPrice       String
+  fee                String
   feeCurrency        String
-  pointFee           Float
-  gtFee              Float
-  gtMakerFee         Float
-  gtTakerFee         Float
+  pointFee           String
+  gtFee              String
+  gtMakerFee         String
+  gtTakerFee         String
   gtDiscount         Boolean
-  rebatedFee         Float
+  rebatedFee         String
   rebatedFeeCurrency String
+  stpId              String?
+  stpAct             String?
   finishAs           String
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
