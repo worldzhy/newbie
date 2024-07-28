@@ -1,9 +1,9 @@
 import {ApiProperty} from '@nestjs/swagger';
 import {IsObject, IsString, ValidateNested, IsDefined} from 'class-validator';
 import {Type} from 'class-transformer';
-import {FeishuWebhookMessageType} from './constants';
+import {LarkWebhookMessageType} from './constants';
 
-export class FeishuWebhookPostResDto {
+export class LarkWebhookPostResDto {
   @ApiProperty({
     type: Number,
   })
@@ -20,10 +20,10 @@ export class FeishuWebhookPostResDto {
   data: unknown;
 }
 
-export class FeishuWebhookPostBodyDto {
+export class LarkWebhookPostBodyDto {
   @ApiProperty({
     type: String,
-    enum: FeishuWebhookMessageType,
+    enum: LarkWebhookMessageType,
   })
   @IsString()
   msg_type: string;
@@ -35,7 +35,7 @@ export class FeishuWebhookPostBodyDto {
   content: object;
 }
 
-export class NotificationFeishuWebhookReqDto {
+export class NotificationLarkWebhookReqDto {
   @ApiProperty({
     type: String,
   })
@@ -43,21 +43,15 @@ export class NotificationFeishuWebhookReqDto {
   channelName: string;
 
   @ApiProperty({
-    type: String,
+    type: LarkWebhookPostBodyDto,
   })
-  @IsString()
-  accessKey: string;
-
-  @ApiProperty({
-    type: FeishuWebhookPostBodyDto,
-  })
-  @Type(() => FeishuWebhookPostBodyDto)
+  @Type(() => LarkWebhookPostBodyDto)
   @ValidateNested()
   @IsDefined()
-  feishuParams: FeishuWebhookPostBodyDto;
+  body: LarkWebhookPostBodyDto;
 }
 
-export class NotificationFeishuWebhookResDto {
+export class NotificationLarkWebhookResDto {
   @ApiProperty({
     type: Object,
     required: false,

@@ -61,18 +61,12 @@ export class NotificationSlackWebhookReqDto {
   channelName: string;
 
   @ApiProperty({
-    type: String,
-  })
-  @IsString()
-  accessKey: string;
-
-  @ApiProperty({
     type: SlackWebhookPostBodyDto,
   })
   @Type(() => SlackWebhookPostBodyDto)
   @ValidateNested()
   @IsDefined()
-  slackParams: SlackWebhookPostBodyDto;
+  body: SlackWebhookPostBodyDto;
 }
 
 export class NotificationSlackWebhookResDto {
