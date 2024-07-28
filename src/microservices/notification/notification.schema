@@ -66,6 +66,7 @@ model NotificationWebhookChannel {
   deletedAt   DateTime?
   records     NotificationWebhookRecord[]
 
+  @@unique([name, platform])
   @@schema("microservice/notification")
 }
 
