@@ -1,5 +1,5 @@
 const ENV_PATH = './.env';
-const MICROSERVICES_JSON = './.microservices/microservices.json';
+const MICROSERVICES_JSON = './.newbie/.db/microservices.json';
 const MICROSERVICES_CODE_PATH = './src/microservices';
 const MICROSERVICES_MODULE_TS = './src/microservices/microservices.module.ts';
 const MICROSERVICES_CONFIG_TS = './src/microservices/microservices.config.ts';

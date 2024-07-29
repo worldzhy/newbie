@@ -1,6 +1,6 @@
 const fs = require('fs');
 const {underline} = require('colorette');
-const {getEnabledMicroservices} = require('../microservices');
+const {getEnabledMicroservices} = require('../.db/microservices');
 const {
   ALL_MICROSERVICES,
   TS_CONFIG_JSON,

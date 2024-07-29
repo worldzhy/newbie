@@ -6,12 +6,12 @@ const {
   getRemovedMicroservices,
   getEnabledMicroservices,
   updateEnabledMicroservices,
-} = require('./microservices');
-const {ALL_MICROSERVICES} = require('./constants');
-const {assembleEnvFile} = require('./assembly/env');
-const {assembleSourceCodeFiles} = require('./assembly/code');
-const {assembleSchemaFiles} = require('./assembly/schema');
-const {assembleTsConfigFiles} = require('./assembly/tsconfig');
+} = require('../.db/microservices');
+const {ALL_MICROSERVICES} = require('../constants');
+const {assembleEnvFile} = require('./assemble-env');
+const {assembleSourceCodeFiles} = require('./assemble-code');
+const {assembleSchemaFiles} = require('./assemble-schema');
+const {assembleTsConfigFiles} = require('./assemble-tsconfig');
 
 const main = async () => {
   // [step 1] Print the logo of the command-line tool.
@@ -26,7 +26,7 @@ const main = async () => {
   );
 
   // [step 2] Print the usage of the command-line tool.
-  console.info('Welcome to use newbie microservices command-line tool:)');
+  console.info('Welcome to use newbie command-line tool:)');
   console.info(
     '----------------------------------------------------------------'
   );

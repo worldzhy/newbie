@@ -1,5 +1,5 @@
 const fs = require('fs');
-const {ALL_MICROSERVICES, MICROSERVICES_JSON} = require('./constants');
+const {ALL_MICROSERVICES, MICROSERVICES_JSON} = require('../constants');
 
 const getAddedMicroservices = enabledServiceNames => {
   const currentMicroservices = getEnabledMicroservices();

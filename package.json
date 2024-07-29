@@ -7,18 +7,17 @@
   "license": "MIT",
   "scripts": {
     "prebuild": "rimraf dist",
-    "build": "nest build",
-    "start": "nest start",
-    "dev": "nest start --watch",
-    "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/src/main",
-    "format": "prettier --write \"src/**/*.ts\"",
-    "lint": "gts lint",
+    "prepare": "npx husky install && npx prisma generate",
     "clean": "gts clean",
     "fix": "gts fix",
+    "lint": "gts lint",
     "compile": "tsc",
-    "prepare": "npx husky install && npx prisma generate",
-    "ms": "node .microservices/index.js"
+    "format": "prettier --write \"src/**/*.ts\"",
+    "build": "nest build",
+    "prod": "node dist/src/main",
+    "dev": "nest start --watch",
+    "newbie": "node .newbie/assemble/index.js",
+    "newbie:check": "node .newbie/check/index.js"
   },
   "prisma": {
     "seed": "ts-node -r tsconfig-paths/register ./prisma/seed.ts"

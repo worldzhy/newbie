@@ -1,7 +1,7 @@
 const fs = require('fs');
 const {execSync} = require('child_process');
 const {underline} = require('colorette');
-const {getEnabledMicroservices} = require('../microservices');
+const {getEnabledMicroservices} = require('../.db/microservices');
 const {
   ALL_MICROSERVICES,
   MICROSERVICES_CODE_PATH,
