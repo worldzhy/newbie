@@ -43,7 +43,9 @@ async function bootstrap() {
   // [step 3] Enable features.
   app.enableCors({
     credentials: true,
-    origin: configService.getOrThrow<string[]>('server.allowedOrigins'),
+    origin: configService.getOrThrow<string[]>(
+      'framework.server.allowedOrigins'
+    ),
   });
 
   app.useGlobalPipes(
@@ -61,9 +63,9 @@ async function bootstrap() {
     })
   );
 
-  const env = configService.getOrThrow<string>('server.environment');
+  const env = configService.getOrThrow<string>('framework.environment');
   const nodeFramework = configService.getOrThrow<string>(
-    'server.nodeFramework'
+    'framework.nodeFramework'
   );
   if (env === 'production') {
     // helmet is only available in production environment.
@@ -92,9 +94,11 @@ async function bootstrap() {
   }
 
   // [step 4] Listen port
-  const port = configService.getOrThrow<number>('server.port');
+  const port = configService.getOrThrow<number>('framework.server.port');
   const server = await app.listen(port, '0.0.0.0');
-  server.timeout = configService.getOrThrow<number>('server.httpTimeout');
+  server.timeout = configService.getOrThrow<number>(
+    'framework.server.httpTimeout'
+  );
 
   console.log(`Application is running on: ${await app.getUrl()}`);
 }

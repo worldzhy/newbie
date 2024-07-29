@@ -57,11 +57,10 @@ const assembleSourceCodeFiles = () => {
 
 const EmptyMicroservicesModuleTemplate = () => `
   import {Global, Module} from '@nestjs/common';
-  import {ToolkitModule} from '@toolkit/toolkit.module';
 
   @Global()
   @Module({
-    imports: [ToolkitModule],
+    imports: [],
   })
   export class MicroservicesModule {}
   `;
@@ -79,7 +78,6 @@ const MicroservicesModuleTemplate = microservices => {
   const hasService = !!selectCode.length;
   const importCode = `
     import {Global, Module} from '@nestjs/common';
-    import {ToolkitModule} from '@toolkit/toolkit.module';
     ${
       hasService
         ? `import MicroservicesConfiguration from './microservices.config';\nimport {ConfigModule} from '@nestjs/config';`
@@ -100,7 +98,6 @@ const MicroservicesModuleTemplate = microservices => {
     @Global()
     @Module({
       imports: [
-        ToolkitModule,
         ${importModuleNames}
       ],
     })

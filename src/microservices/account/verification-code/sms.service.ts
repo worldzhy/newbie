@@ -15,10 +15,10 @@ export class VerificationCodeSmsService {
     private readonly pinpointService: AwsPinpointService
   ) {
     this.smsPinpointApplicationId = this.configService.getOrThrow<string>(
-      'microservices.account.aws.pinpointApplicationId'
+      'microservices.account.verificationCode.aws.pinpointApplicationId'
     )!;
     this.smsPinpointSenderId = this.configService.getOrThrow<string>(
-      'microservices.account.aws.pinpointSenderId'
+      'microservices.account.verificationCode.aws.pinpointSenderId'
     )!;
   }
 
