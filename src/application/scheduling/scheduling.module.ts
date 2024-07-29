@@ -7,6 +7,5 @@ import {GateApiModule} from '../gateapi/gateapi.module';
   imports: [GateApiModule],
   controllers: [SchedulingController],
   providers: [CronJobProducer],
-  // exports: [CronJobProducer],
 })
 export class SchedulingModule {}

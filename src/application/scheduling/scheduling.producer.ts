@@ -1,7 +1,6 @@
 import {Injectable} from '@nestjs/common';
-import {Cron} from '@nestjs/schedule';
+import {Cron, Timeout} from '@nestjs/schedule';
 import {SpotCurrencyService} from '../gateapi/spot/currency.service';
-import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {SpotAccountService} from '../gateapi/spot/account.service';
 import {
   LARK_CHANNEL_NAME,
@@ -9,17 +8,34 @@ import {
 } from '../application.constants';
 import {LarkWebhookService} from '@microservices/notification/webhook/lark/lark.service';
 import {dateOfUnixTimestamp} from '@toolkit/utilities/datetime.util';
+import {SpotOrderService} from '../gateapi/spot/order.service';
+import {TimeoutTaskService} from '@microservices/task-scheduling/timeout/timeout.service';
 
 @Injectable()
 export class CronJobProducer {
   constructor(
-    private readonly prisma: PrismaService,
     private readonly spotAccountService: SpotAccountService,
     private readonly spotCurrencyService: SpotCurrencyService,
+    private readonly timeoutTaskService: TimeoutTaskService,
+
     private readonly lark: LarkWebhookService
   ) {}
 
-  @Cron('0 0 * * * *')
+  // @Timeout(1000)
+  // handleTimeout() {
+  //   this.timeoutTaskService.createTask({
+  //     name: 'NEIRO_USDT',
+  //     milliseconds: 1722180600 * 1000 - Date.now(),
+  //     callback: async function () {
+  //       await SpotOrderService.callback_buy({
+  //         currencyPair: 'NEIRO_USDT',
+  //         amount: '3',
+  //       });
+  //     },
+  //   });
+  // }
+
+  @Cron('0 0 0 10 * *')
   async fetchNewCurrencyPairs() {
     console.log('Fetch new currency pairs at ' + Date());
 
@@ -29,7 +45,6 @@ export class CronJobProducer {
     // [step 2] Get new currency pairs from database.
     const newCurrencyPairs =
       await this.spotCurrencyService.getNewCurrencyPairs();
-
     const larkText = newCurrencyPairs
       .map(
         pair =>
@@ -48,7 +63,23 @@ export class CronJobProducer {
       text: '[新币来了]\n' + larkText,
     });
 
-    // [step 3] Check spot account if there are enough
+    // [step 3] Create trade tasks for new currency pairs.
+    for (let i = 0; i < newCurrencyPairs.length; i++) {
+      const newCurrencyPair = newCurrencyPairs[i];
+
+      this.timeoutTaskService.createTask({
+        name: newCurrencyPair.id,
+        milliseconds: newCurrencyPair.buyStart * 1000 - Date.now() + 50, // delay 50ms
+        callback: async function () {
+          await SpotOrderService.callback_buy({
+            currencyPair: newCurrencyPair.id,
+            amount: newCurrencyPair.minQuoteAmount,
+          });
+        },
+      });
+    }
+
+    // [step 4] Check spot account if there are enough
     const usdtBalance = await this.spotAccountService.getBalance('USDT');
     if (usdtBalance < MIN_USDT_AMOUNT_IN_WALLET) {
       await this.lark.sendText({
@@ -59,31 +90,5 @@ export class CronJobProducer {
           '，请及时充值。',
       });
     }
-
-    // [step 3] Create trade tasks for new currency pairs.
-    // for (let i = 0; i < newCurrencyPairs.length; i++) {
-    //   const newCurrencyPair = newCurrencyPairs[i];
-
-    //   const count = await this.prisma.tradeTask.count({
-    //     where: {base: newCurrencyPair.base, quote: newCurrencyPair.quote},
-    //   });
-    //   if (count < 1) {
-    //     await this.prisma.tradeTask.create({
-    //       data: {
-    //         base: newCurrencyPair.base,
-    //         quote: newCurrencyPair.quote,
-    //         quoteAmount: parseFloat(newCurrencyPair.minQuoteAmount ?? '1.0'), // Buy 1.0 if there is no min quote amount.
-    //         buyStart: newCurrencyPair.buyStart,
-    //       },
-    //     });
-
-    //     await this.prisma.cronTask.create({
-    //       data: {
-    //         name: '',
-    //         cronTime: '',
-    //       },
-    //     });
-    //   }
-    // }
   }
 }

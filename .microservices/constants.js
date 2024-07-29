@@ -32,14 +32,6 @@ const ALL_MICROSERVICES = {
     moduleNames: 'AwsCloudformationModule',
     importCode: `import {AwsCloudformationModule} from './cloudformation/cloudformation.module';`,
   },
-  cron: {
-    key: 'cron',
-    srcPath: './src/microservices/cron',
-    schemaFileName: 'cron.schema',
-    configFileName: null,
-    moduleNames: 'CronTaskModule',
-    importCode: `import {CronTaskModule} from './cron/cron.module';`,
-  },
   'event-scheduling': {
     key: 'event-scheduling',
     srcPath: './src/microservices/event-scheduling',
@@ -127,6 +119,14 @@ const ALL_MICROSERVICES = {
     configFileName: null,
     moduleNames: 'TagModule',
     importCode: `import {TagModule} from './tag/tag.module';`,
+  },
+  'task-scheduling': {
+    key: 'task-scheduling',
+    srcPath: './src/microservices/task-scheduling',
+    schemaFileName: 'task-scheduling.schema',
+    configFileName: null,
+    moduleNames: 'TaskSchedulingModule',
+    importCode: `import {TaskSchedulingModule} from './task-scheduling/task-scheduling.module';`,
   },
   workflow: {
     key: 'workflow',

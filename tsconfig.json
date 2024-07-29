@@ -47,6 +47,7 @@
     "./src/microservices/stock-mgmt",
     "./src/microservices/storage",
     "./src/microservices/tag",
-    "./src/microservices/workflow"
+    "./src/microservices/workflow",
+    "./src/microservices/cron"
   ]
 }

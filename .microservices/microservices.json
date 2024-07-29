@@ -1,6 +1,6 @@
 {
   "enabled": [
-    "cron",
-    "notification"
+    "notification",
+    "task-scheduling"
   ]
 }

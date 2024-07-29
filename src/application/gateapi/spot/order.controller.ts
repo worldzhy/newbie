@@ -28,7 +28,7 @@ export class SpotOrderController {
     @Body()
     body: {
       currencyPair: string;
-      amount: number;
+      amount: string;
     }
   ) {
     return await this.orderService.buy(body);
@@ -45,7 +45,7 @@ export class SpotOrderController {
     @Body()
     body: {
       currencyPair: string;
-      amount: number;
+      amount: string;
     }
   ) {
     return await this.orderService.sell(body);

@@ -15,3 +15,15 @@ model CronTask {
 
   @@schema("microservice/cron")
 }
+
+model TimeoutTask {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  running     Boolean  @default(false)
+  command     String?
+  triggeredAt DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@schema("microservice/cron")
+}

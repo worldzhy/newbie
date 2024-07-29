@@ -45,8 +45,8 @@ model CurrencyPair {
   base            String
   quote           String
   fee             String?
-  minBaseAmount   String?
-  minQuoteAmount  String?
+  minBaseAmount   String
+  minQuoteAmount  String
   maxBaseAmount   String?
   maxQuoteAmount  String?
   amountPrecision Int?
@@ -73,14 +73,14 @@ model TradeTask {
   @@schema("application")
 }
 
-model Order {
+model SpotOrder {
   id                 String   @id
   text               String
   amendText          String
   createTime         String // 秒级 Unix 时间戳
   updateTime         String
-  createTimeMs       Int // 毫秒级 Unix 时间戳
-  updateTimeMs       Int
+  createTimeMs       BigInt // 毫秒级 Unix 时间戳
+  updateTimeMs       BigInt
   status             String?
   currencyPair       String
   type               String
@@ -89,8 +89,8 @@ model Order {
   amount             String
   price              String
   timeInForce        String
-  icebery            String?
-  letf               String?
+  iceberg            String?
+  left               String?
   filledAmount       String?
   fillPrice          String
   filledTotal        String
