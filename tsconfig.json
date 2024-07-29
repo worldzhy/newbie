@@ -37,7 +37,6 @@
     "./src/microservices/account",
     "./src/microservices/aws",
     "./src/microservices/cloudformation",
-    "./src/microservices/cron",
     "./src/microservices/event-scheduling",
     "./src/microservices/googleapis",
     "./src/microservices/map",
@@ -49,6 +48,7 @@
     "./src/microservices/stock-mgmt",
     "./src/microservices/storage",
     "./src/microservices/tag",
+    "./src/microservices/task-scheduling",
     "./src/microservices/workflow"
   ]
 }
