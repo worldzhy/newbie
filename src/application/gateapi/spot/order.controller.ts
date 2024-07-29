@@ -1,21 +1,12 @@
-import {Body, Controller, Get, Post, Query} from '@nestjs/common';
+import {Body, Controller, Post} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {SpotOrderService} from './order.service';
-import {Order_Filter} from '@/application/application.constants';
 
 @ApiTags('Spot / Order')
 @ApiBearerAuth()
 @Controller('orders')
 export class SpotOrderController {
   constructor(private readonly orderService: SpotOrderService) {}
-
-  @Get('')
-  async listOrders(
-    @Query('currencyPair') currencyPair: string,
-    @Query('status') status: Order_Filter
-  ) {
-    return await this.orderService.list({currencyPair, status});
-  }
 
   @Post('buy')
   @ApiBody({

@@ -1,5 +1,5 @@
 // ! ------------------------------------------------------------ //
-// !           [Microservice] Cron models                         //
+// !           [Microservice] Task scheduling models                         //
 // ! ------------------------------------------------------------ //
 // * CronTask (This is an example model.)                             //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
@@ -13,7 +13,7 @@ model CronTask {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@schema("microservice/cron")
+  @@schema("microservice/task-scheduling")
 }
 
 model TimeoutTask {
@@ -25,5 +25,5 @@ model TimeoutTask {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  @@schema("microservice/cron")
+  @@schema("microservice/task-scheduling")
 }

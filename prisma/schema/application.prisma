@@ -21,26 +21,10 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["application", "microservice/account", "microservice/cloudformation", "microservice/cron", "microservice/event-scheduling", "microservice/map", "microservice/notification", "microservice/order-mgmt", "microservice/project-mgmt", "microservice/queue", "microservice/stock-mgmt", "microservice/storage", "microservice/tag", "microservice/workflow", "microservice/people-finder", "microservice/shortcut"]
+  schemas  = ["application", "microservice/account", "microservice/notification", "microservice/task-scheduling"]
 }
 
-model Currency {
-  id               Int      @id @default(autoincrement())
-  currency         String   @unique
-  delisted         Boolean
-  withdrawDisabled Boolean
-  withdrawDelayed  Boolean
-  depositDisabled  Boolean
-  tradeDisabled    Boolean
-  fixedRate        String?
-  chain            String
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-
-  @@schema("application")
-}
-
-model CurrencyPair {
+model SpotCurrencyPair {
   id              String   @id // currency_pair
   base            String
   quote           String
@@ -56,19 +40,6 @@ model CurrencyPair {
   buyStart        Int // 允许买入时间，秒级 Unix 时间戳
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-
-  @@schema("application")
-}
-
-model TradeTask {
-  id          Int      @id @default(autoincrement())
-  status      String   @default("waiting") // waiting, complete
-  base        String
-  quote       String
-  quoteAmount Float
-  buyStart    Int // 允许买入时间，秒级 Unix 时间戳
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
 
   @@schema("application")
 }
@@ -112,3 +83,40 @@ model SpotOrder {
 
   @@schema("application")
 }
+
+model SpotStock {
+  id        Int    @id @default(autoincrement())
+  currency  String @unique
+  highPrice String
+
+  @@schema("application")
+}
+
+// model Currency {
+//   id               Int      @id @default(autoincrement())
+//   currency         String   @unique
+//   delisted         Boolean
+//   withdrawDisabled Boolean
+//   withdrawDelayed  Boolean
+//   depositDisabled  Boolean
+//   tradeDisabled    Boolean
+//   fixedRate        String?
+//   chain            String
+//   createdAt        DateTime @default(now())
+//   updatedAt        DateTime @updatedAt
+
+//   @@schema("application")
+// }
+
+// model TradeTask {
+//   id          Int      @id @default(autoincrement())
+//   status      String   @default("waiting") // waiting, complete
+//   base        String
+//   quote       String
+//   quoteAmount Float
+//   buyStart    Int // 允许买入时间，秒级 Unix 时间戳
+//   createdAt   DateTime @default(now())
+//   updatedAt   DateTime @updatedAt
+
+//   @@schema("application")
+// }

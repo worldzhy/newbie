@@ -9,6 +9,14 @@ export class TimeoutTaskService {
     return this.schedulerRegistry.getTimeouts();
   }
 
+  getTask(name: string) {
+    try {
+      return this.schedulerRegistry.getTimeout(name);
+    } catch (error) {
+      return null;
+    }
+  }
+
   createTask(params: {
     name: string;
     milliseconds: number;

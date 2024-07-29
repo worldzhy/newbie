@@ -17,12 +17,6 @@ export class SpotCurrencyController {
   }
 
   @NoGuard()
-  @Get('')
-  async getAllCurrencies() {
-    return await this.currencyService.getAllCurrencies();
-  }
-
-  @NoGuard()
   @Get('pairs')
   async getAllCurrencyPairs() {
     return await this.currencyService.getAllCurrencyPairs();

@@ -27,18 +27,6 @@ export class SpotCurrencyService {
     return result.body;
   }
 
-  async getAllCurrencies() {
-    const result = await this.spot.listCurrencies();
-    if (result.body) {
-      await this.prisma.currency.createMany({
-        data: result.body,
-        skipDuplicates: true,
-      });
-    } else {
-      return result;
-    }
-  }
-
   async getCurrency(currency: string) {
     const result = await this.spot.getCurrency(currency);
     if (result.body) {
@@ -51,7 +39,7 @@ export class SpotCurrencyService {
   async getAllCurrencyPairs() {
     const result = await this.spot.listCurrencyPairs();
     if (result.body) {
-      await this.prisma.currencyPair.createMany({
+      await this.prisma.spotCurrencyPair.createMany({
         data: result.body,
         skipDuplicates: true,
       });
@@ -70,18 +58,22 @@ export class SpotCurrencyService {
   }
 
   async getNewCurrencyPairs() {
-    const currencyPairs = await this.prisma.currencyPair.findMany({
+    const today = new Date().getTime() / 1000;
+    const tomorrow = today + 60 * 60 * 24;
+
+    const currencyPairs = await this.prisma.spotCurrencyPair.findMany({
       where: {
-        buyStart: {gt: new Date().getTime() / 1000},
+        AND: [{buyStart: {gt: today}}, {buyStart: {lte: tomorrow}}],
       },
       orderBy: {buyStart: 'asc'},
     });
+
     return currencyPairs;
   }
 
-  async getCurrencyTickers(currencyPair: string) {
+  async getCurrencyTickers(spotCurrencyPair: string) {
     const currencyTickers = await this.spot.listTickers({
-      currency_pair: currencyPair,
+      currency_pair: spotCurrencyPair,
     });
     console.log(currencyTickers);
   }
