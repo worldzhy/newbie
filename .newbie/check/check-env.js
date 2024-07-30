@@ -47,21 +47,24 @@ const getEnvObject = () => {
   return envObj;
 };
 const getLocalEnv = () => {
-  let envObj = {};
+  let envObj = {
+    toolkit: [],
+    framework: [],
+  };
 
   if (fs.existsSync(toolkotConfigPath)) {
     const {env = {}} = JSON.parse(
       fs.readFileSync(toolkotConfigPath, {encoding: 'utf8', flag: 'r'})
     );
 
-    envObj = {...env};
+    envObj.toolkit = Object.keys(env);
   }
   if (fs.existsSync(frameworkConfigPath)) {
     const {env = {}} = JSON.parse(
       fs.readFileSync(frameworkConfigPath, {encoding: 'utf8', flag: 'r'})
     );
 
-    envObj = {...envObj, ...env};
+    envObj.framework = Object.keys(env);
   }
   return envObj;
 };
@@ -76,16 +79,15 @@ const getMicroservicesEnv = () => {
       const configFilePath =
         MICROSERVICES_CODE_PATH + '/' + key + '/' + configFileName;
 
+      if (!envObj[key]) {
+        envObj[key] = [];
+      }
       if (fs.existsSync(configFilePath)) {
         const {env = {}} = JSON.parse(
           fs.readFileSync(configFilePath, {encoding: 'utf8', flag: 'r'})
         );
 
-        Object.keys(env).forEach(key => {
-          if (!envObj[key]) {
-            envObj[key] = env[key];
-          }
-        });
+        envObj[key] = Object.keys(env);
       } else {
         console.error(`[Error] Missing config.json for microservice<${name}>!`);
       }
@@ -95,15 +97,40 @@ const getMicroservicesEnv = () => {
 };
 
 const checkEnv = () => {
+  const missingResult = {};
+  const localEnvObj = getLocalEnv();
+  const msEnvObj = getMicroservicesEnv();
   const envObj = Object.keys(getEnvObject());
-  const localEnvObj = Object.keys(getLocalEnv());
-  const msEnvObj = Object.keys(getMicroservicesEnv());
-  const missEnv = [...localEnvObj, ...msEnvObj].filter(
-    key => !envObj.includes(key)
-  );
 
-  if (missEnv.length) {
-    console.info('Missing environment variables in .env: \n', missEnv);
+  Object.keys(msEnvObj).forEach(type => {
+    msEnvObj[type].forEach(value => {
+      if (!envObj.includes(value)) {
+        if (!missingResult[type]) {
+          missingResult[type] = [];
+        }
+        missingResult[type].push(value);
+      }
+    });
+  });
+  Object.keys(localEnvObj).forEach(type => {
+    localEnvObj[type].forEach(value => {
+      if (!envObj.includes(value)) {
+        if (!missingResult[type]) {
+          missingResult[type] = [];
+        }
+        missingResult[type].push(value);
+      }
+    });
+  });
+  const missingType = Object.keys(missingResult);
+
+  if (missingType.length) {
+    console.info('Missing environment variables in .env\n');
+    missingType.forEach(type => {
+      console.info(`Module ${type} missing:\n`);
+      console.info(missingResult[type]);
+      console.info('\n');
+    });
   } else {
     console.info('All environment variables are set!');
   }
