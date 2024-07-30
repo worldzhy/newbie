@@ -1,7 +1,6 @@
-import {Controller, Get} from '@nestjs/common';
+import {Controller, Get, Param} from '@nestjs/common';
 import {ApiTags, ApiBearerAuth} from '@nestjs/swagger';
 import {SpotCurrencyService} from './currency.service';
-import {NoGuard} from '@microservices/account/security/passport/public/public.decorator';
 
 @ApiTags('Spot / Currency')
 @ApiBearerAuth()
@@ -9,23 +8,24 @@ import {NoGuard} from '@microservices/account/security/passport/public/public.de
 export class SpotCurrencyController {
   constructor(private readonly currencyService: SpotCurrencyService) {}
 
-  @NoGuard()
-  @Get('usdt')
-  async getCurrency() {
-    const currency = 'USDT';
+  @Get(':currency')
+  async getCurrency(@Param('currency') currency: string) {
     return await this.currencyService.getCurrency(currency);
   }
 
-  @NoGuard()
   @Get('pairs')
   async getAllCurrencyPairs() {
     return await this.currencyService.getAllCurrencyPairs();
   }
 
-  @NoGuard()
-  @Get('pairs/new')
+  @Get('pairs/:currencyPair')
+  async getCurrencyPair(@Param('currencyPair') currencyPair: string) {
+    return await this.currencyService.getCurrencyPair(currencyPair);
+  }
+
+  @Get('pairs/refresh')
   async getNewCurrencyPairs() {
-    return await this.currencyService.getNewCurrencyPairs();
+    return await this.currencyService.refreshCurrencyPairs();
   }
 
   /* End */

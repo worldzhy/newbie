@@ -4,7 +4,7 @@ const GateApi = require('gate-api');
 
 @Injectable()
 export class SpotAccountService {
-  private spot;
+  private spotApi;
 
   constructor(private readonly config: ConfigService) {
     const client = new GateApi.ApiClient();
@@ -15,16 +15,16 @@ export class SpotAccountService {
       this.config.getOrThrow<string>('application.gateApi.secret')
     );
 
-    this.spot = new GateApi.SpotApi(client);
+    this.spotApi = new GateApi.SpotApi(client);
   }
 
   async listSpotAccounts() {
-    const result = await this.spot.listSpotAccounts();
+    const result = await this.spotApi.listSpotAccounts();
     return result.body;
   }
 
   async getBalance(currency: string) {
-    const result = await this.spot.listSpotAccounts({currency});
+    const result = await this.spotApi.listSpotAccounts({currency});
     if (result.body) {
       return parseFloat(result.body[0].available);
     }

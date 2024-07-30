@@ -5,7 +5,7 @@ const GateApi = require('gate-api');
 
 @Injectable()
 export class SpotCurrencyService {
-  private spot;
+  private spotApi;
 
   constructor(
     private readonly config: ConfigService,
@@ -19,63 +19,99 @@ export class SpotCurrencyService {
       this.config.getOrThrow<string>('application.gateApi.secret')
     );
 
-    this.spot = new GateApi.SpotApi(client);
+    this.spotApi = new GateApi.SpotApi(client);
   }
 
   async listSpotAccounts() {
-    const result = await this.spot.listSpotAccounts();
-    return result.body;
+    try {
+      const result = await this.spotApi.listSpotAccounts();
+      return result.body;
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   async getCurrency(currency: string) {
-    const result = await this.spot.getCurrency(currency);
-    if (result.body) {
-      return result.body;
-    } else {
-      return result;
+    try {
+      const result = await this.spotApi.getCurrency(currency);
+      if (result.body) {
+        return result.body;
+      } else {
+        return result;
+      }
+    } catch (error) {
+      console.log(error);
     }
   }
 
   async getAllCurrencyPairs() {
-    const result = await this.spot.listCurrencyPairs();
-    if (result.body) {
-      await this.prisma.spotCurrencyPair.createMany({
-        data: result.body,
-        skipDuplicates: true,
-      });
-    } else {
-      return result;
+    try {
+      const result = await this.spotApi.listCurrencyPairs();
+      if (result.body) {
+        return result.body;
+      } else {
+        return result;
+      }
+    } catch (error) {
+      console.log(error);
     }
   }
 
-  async getCurrencyPair() {
-    const result = await this.spot.getCurrencyPair();
-    if (result.body) {
-      return result.body;
-    } else {
-      return result;
+  async getCurrencyPair(currencyPair: string) {
+    try {
+      const result = await this.spotApi.getCurrencyPair(currencyPair);
+      if (result.body) {
+        return result.body;
+      } else {
+        return result;
+      }
+    } catch (error) {
+      console.log(error);
     }
   }
 
-  async getNewCurrencyPairs() {
-    const today = new Date().getTime() / 1000;
-    const tomorrow = today + 60 * 60 * 24;
-
+  async refreshCurrencyPairs() {
+    // [step 1] Some currency pairs' buyStart may change.
     const currencyPairs = await this.prisma.spotCurrencyPair.findMany({
-      where: {
-        AND: [{buyStart: {gt: today}}, {buyStart: {lte: tomorrow}}],
-      },
+      where: {buyStart: {gt: Date.now() / 1000}},
       orderBy: {buyStart: 'asc'},
     });
 
-    return currencyPairs;
+    for (let i = 0; i < currencyPairs.length; i++) {
+      const currencyPair = currencyPairs[i];
+
+      const pair = await this.getCurrencyPair(currencyPair.id);
+      if (pair) {
+        try {
+          await this.prisma.spotCurrencyPair.update({
+            where: {id: currencyPair.id},
+            data: pair,
+          });
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    }
+
+    // [step 2] Get all the currencies.
+    const allCurrencyPairs = await this.getAllCurrencyPairs();
+    if (allCurrencyPairs) {
+      try {
+        await this.prisma.spotCurrencyPair.createMany({
+          data: allCurrencyPairs,
+          skipDuplicates: true,
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    }
   }
 
-  async getCurrencyTickers(spotCurrencyPair: string) {
-    const currencyTickers = await this.spot.listTickers({
-      currency_pair: spotCurrencyPair,
+  async getLatestCurrencyPair() {
+    return await this.prisma.spotCurrencyPair.findFirst({
+      where: {buyStart: {gt: Date.now() / 1000}},
+      orderBy: {buyStart: 'asc'},
     });
-    console.log(currencyTickers);
   }
 
   /* End */
