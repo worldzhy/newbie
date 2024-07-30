@@ -4,46 +4,10 @@ const {
   MICROSERVICES_CODE_PATH,
   MICROSERVICES_MODULE_TS,
   MICROSERVICES_CONFIG_TS,
-  APPLICATION_PRISMA_PATH,
 } = require('../constants');
 const {underline} = require('colorette');
 const {execSync} = require('child_process');
 const {getEnabledMicroservices} = require('../.db/microservices');
-
-const assembleApplicationPrisma = () => {
-  const enabledMicroservices = getEnabledMicroservices();
-  const removedMicroservices = Object.keys(ALL_MICROSERVICES).filter(
-    key => !enabledMicroservices.includes(key)
-  );
-  const enabledPrismaPath = enabledMicroservices.map(
-    name => `microservice/${name}`
-  );
-  const removedPrismaPath = removedMicroservices.map(
-    name => `microservice/${name}`
-  );
-  const prismaFile = fs.readFileSync(APPLICATION_PRISMA_PATH, {
-    encoding: 'utf8',
-    flag: 'r',
-  });
-  const updatePrismaFile = prismaFile.replace(
-    /(datasource db \{(?:.|\n|\r)*schemas\s*\=\s*)(\[.*?\])/g,
-    (...res) => {
-      const codeHeader = res[1];
-      const schemaStr = res[2];
-      const schemaArray = JSON.parse(`{"val": ${schemaStr}}`)?.val;
-      const schemaCode = Array.from(
-        new Set([
-          ...schemaArray.filter(val => !removedPrismaPath.includes(val)),
-          ...enabledPrismaPath,
-        ])
-      );
-
-      return codeHeader + JSON.stringify(schemaCode);
-    }
-  );
-
-  fs.writeFileSync(APPLICATION_PRISMA_PATH, updatePrismaFile);
-};
 
 const assembleSourceCodeFiles = () => {
   console.info('|' + underline(' 2. updating code...     ') + '|');
@@ -87,10 +51,7 @@ const assembleSourceCodeFiles = () => {
       : EmptyServicesConfigTemplate()
   );
 
-  // [step 3] Assemble application.prisma file
-  assembleApplicationPrisma();
-
-  // [step 4] Format code.
+  // [step 3] Format code.
   execSync('npm run format');
 };
 

@@ -1,11 +1,48 @@
 const fs = require('fs');
-const {execSync} = require('child_process');
-const {underline} = require('colorette');
 const {
   ALL_MICROSERVICES,
-  MICROSERVICES_CODE_PATH,
   PRISMA_SCHEMA_PATH,
+  MICROSERVICES_CODE_PATH,
+  APPLICATION_PRISMA_PATH,
 } = require('../constants');
+const {underline} = require('colorette');
+const {execSync} = require('child_process');
+const {getEnabledMicroservices} = require('../.db/microservices');
+
+const assembleApplicationPrisma = () => {
+  const enabledMicroservices = getEnabledMicroservices();
+  const removedMicroservices = Object.keys(ALL_MICROSERVICES).filter(
+    key => !enabledMicroservices.includes(key)
+  );
+  const enabledPrismaPath = enabledMicroservices.map(
+    name => `microservice/${name}`
+  );
+  const removedPrismaPath = removedMicroservices.map(
+    name => `microservice/${name}`
+  );
+  const prismaFile = fs.readFileSync(APPLICATION_PRISMA_PATH, {
+    encoding: 'utf8',
+    flag: 'r',
+  });
+  const updatePrismaFile = prismaFile.replace(
+    /(datasource db \{(?:.|\n|\r)*schemas\s*\=\s*)(\[.*?\])/g,
+    (...res) => {
+      const codeHeader = res[1];
+      const schemaStr = res[2];
+      const schemaArray = JSON.parse(`{"val": ${schemaStr}}`)?.val;
+      const schemaCode = Array.from(
+        new Set([
+          ...schemaArray.filter(val => !removedPrismaPath.includes(val)),
+          ...enabledPrismaPath,
+        ])
+      );
+
+      return codeHeader + JSON.stringify(schemaCode);
+    }
+  );
+
+  fs.writeFileSync(APPLICATION_PRISMA_PATH, updatePrismaFile);
+};
 
 const assembleSchemaFiles = (addedMicroservices, removedMicroservices) => {
   console.info('|' + underline(' 1. updating schema...   ') + '|');
@@ -60,7 +97,10 @@ const assembleSchemaFiles = (addedMicroservices, removedMicroservices) => {
     }
   });
 
-  // [step 3] Generate prisma client.
+  // [step 3] Assemble application.prisma file
+  assembleApplicationPrisma();
+
+  // [step 4] Generate prisma client.
   try {
     execSync('npx prisma generate');
   } catch (error) {}
