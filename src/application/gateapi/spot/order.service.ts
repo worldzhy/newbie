@@ -10,6 +10,9 @@ import {
 import {PrismaClient} from '@prisma/client';
 const GateApi = require('gate-api');
 
+const PAY_USDT_AMOUNT = 5; // The minimum amount is 3
+const PRICE_DECLINE_RATIO = 0.9;
+
 @Injectable()
 export class SpotOrderService {
   private spot;
@@ -85,7 +88,7 @@ export class SpotOrderService {
     }
   }
 
-  static async callback_buy(params: {currencyPair: string; amount: number}) {
+  static async callback_buy(params: {currencyPair: string}) {
     console.info(
       `[${params.currencyPair}_BUY] We are snapping up the currency.`
     );
@@ -118,7 +121,7 @@ export class SpotOrderService {
           type: Order_Type.Market,
           account: 'spot',
           side: Order_Side.Buy,
-          amount: params.amount,
+          amount: PAY_USDT_AMOUNT,
           timeInForce: Order_TimeInForce.ImmediateOrCancelled,
         });
 
@@ -176,7 +179,7 @@ export class SpotOrderService {
           console.info(
             `[${params.currencyPair}_SELL] Now the highest price is ${highPrice}`
           );
-        } else if (lastPrice < highPrice * 0.8) {
+        } else if (lastPrice < highPrice * PRICE_DECLINE_RATIO) {
           console.info(
             `[${
               params.currencyPair

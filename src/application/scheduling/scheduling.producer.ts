@@ -59,7 +59,7 @@ export class CronJobProducer {
   //   }
   // }
 
-  @Cron('0 0 0 15 * *')
+  @Cron('0 55 * * * *')
   async fetchNewCurrencyPairs() {
     console.log('Fetch new currency pairs at ' + Date());
 
@@ -110,7 +110,6 @@ export class CronJobProducer {
           callback: async function () {
             await SpotOrderService.callback_buy({
               currencyPair: newCurrencyPair.id,
-              amount: parseFloat(newCurrencyPair.minQuoteAmount) * 1.5,
             });
           },
         });
