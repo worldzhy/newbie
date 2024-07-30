@@ -72,7 +72,7 @@ const getMicroservicesEnv = () => {
   enabledMicroservices.forEach(name => {
     const {key, configFileName} = ALL_MICROSERVICES[name] || {};
 
-    if (key) {
+    if (key && configFileName) {
       const configFilePath =
         MICROSERVICES_CODE_PATH + '/' + key + '/' + configFileName;
 

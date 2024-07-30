@@ -7,6 +7,7 @@ const MICROSERVICES_CONFIG_TS = './src/microservices/microservices.config.ts';
 const PRISMA_SCHEMA_PATH = './prisma/schema/microservices';
 const TS_CONFIG_BUILD_JSON = './tsconfig.build.json';
 const TS_CONFIG_JSON = './tsconfig.json';
+const APPLICATION_PRISMA_PATH = './prisma/schema/application.prisma';
 
 const LINE =
   /(?:^|^)\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\'|[^'])*'|\s*"(?:\"|[^"])*"|\s*`(?:\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?(?:$|$)/gm;
@@ -154,4 +155,5 @@ module.exports = {
   MICROSERVICES_CODE_PATH,
   MICROSERVICES_MODULE_TS,
   MICROSERVICES_CONFIG_TS,
+  APPLICATION_PRISMA_PATH,
 };
