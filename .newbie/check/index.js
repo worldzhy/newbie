@@ -1,4 +1,5 @@
 const figlet = require('figlet');
+const {checkEnv} = require('./check-env');
 
 const main = async () => {
   // [step 1] Print the logo of the command-line tool.
@@ -17,12 +18,13 @@ const main = async () => {
   console.info(
     '----------------------------------------------------------------'
   );
-  console.info('* Checking the environment variables...');
+  console.info('* Checking environment variables...');
   console.info(
     '----------------------------------------------------------------\n'
   );
 
-  // [step 3] Main function.
+  // [step 3] Check .env and print missing env variables.
+  checkEnv();
 };
 
 main();

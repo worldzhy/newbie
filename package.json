@@ -15,7 +15,7 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "build": "nest build",
     "prod": "node dist/src/main",
-    "dev": "nest start --watch",
+    "dev": "node .newbie/check/index.js && nest start --watch",
     "newbie": "node .newbie/assemble/index.js",
     "newbie:check": "node .newbie/check/index.js"
   },

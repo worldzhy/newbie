@@ -1,13 +1,11 @@
 const fs = require('fs');
-const {underline} = require('colorette');
 const {
-  ALL_MICROSERVICES,
+  LINE,
   ENV_PATH,
+  ALL_MICROSERVICES,
   MICROSERVICES_CODE_PATH,
 } = require('../constants');
-
-const LINE =
-  /(?:^|^)\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\'|[^'])*'|\s*"(?:\"|[^"])*"|\s*`(?:\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?(?:$|$)/gm;
+const {underline} = require('colorette');
 
 const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
   console.info('|' + underline(' 3. updating env...      ') + '|');

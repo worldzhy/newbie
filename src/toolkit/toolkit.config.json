@@ -1,0 +1,8 @@
+{
+  "env": {
+    "PORT": "3000",
+    "ALLOWED_ORIGINS": "",
+    "SERVER_SERIAL_NUMBER": "0",
+    "ENVIRONMENT": "development"
+  }
+}
