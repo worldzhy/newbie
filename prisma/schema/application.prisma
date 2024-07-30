@@ -21,5 +21,5 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["application", "microservice/account", "microservice/cloudformation", "microservice/event-scheduling", "microservice/map", "microservice/notification", "microservice/order-mgmt", "microservice/project-mgmt", "microservice/queue", "microservice/stock-mgmt", "microservice/storage", "microservice/tag", "microservice/task-scheduling", "microservice/workflow", "microservice/people-finder", "microservice/shortcut"]
+  schemas  = ["application"]
 }
