@@ -23,43 +23,43 @@ export class CronJobProducer {
     private readonly lark: LarkWebhookService
   ) {}
 
-  @Timeout(10000)
-  handleTradeTask() {
-    const currencyPair = 'MOXIE_USDT';
-    const buyTaskName = currencyPair + '_BUY';
-    const sellTaskName = currencyPair + '_SELL';
+  // @Timeout(10000)
+  // handleTradeTask() {
+  //   const currencyPair = 'MOXIE_USDT';
+  //   const buyTaskName = currencyPair + '_BUY';
+  //   const sellTaskName = currencyPair + '_SELL';
 
-    // Create buy task
-    const buyTask = this.timeoutTaskService.getTask(buyTaskName);
-    if (!buyTask) {
-      this.timeoutTaskService.createTask({
-        name: buyTaskName,
-        milliseconds: 5000, // delay 50ms
-        callback: async function () {
-          await SpotOrderService.callback_buy({
-            currencyPair: currencyPair,
-            amount: '5',
-          });
-        },
-      });
-    }
+  //   // Create buy task
+  //   const buyTask = this.timeoutTaskService.getTask(buyTaskName);
+  //   if (!buyTask) {
+  //     this.timeoutTaskService.createTask({
+  //       name: buyTaskName,
+  //       milliseconds: 5000, // delay 50ms
+  //       callback: async function () {
+  //         await SpotOrderService.callback_buy({
+  //           currencyPair: currencyPair,
+  //           amount: '5',
+  //         });
+  //       },
+  //     });
+  //   }
 
-    // Create sell task
-    const sellTask = this.timeoutTaskService.getTask(sellTaskName);
-    if (!sellTask) {
-      this.timeoutTaskService.createTask({
-        name: sellTaskName,
-        milliseconds: 5000,
-        callback: async function () {
-          await SpotOrderService.callback_sell({
-            currencyPair: currencyPair,
-          });
-        },
-      });
-    }
-  }
+  //   // Create sell task
+  //   const sellTask = this.timeoutTaskService.getTask(sellTaskName);
+  //   if (!sellTask) {
+  //     this.timeoutTaskService.createTask({
+  //       name: sellTaskName,
+  //       milliseconds: 5000,
+  //       callback: async function () {
+  //         await SpotOrderService.callback_sell({
+  //           currencyPair: currencyPair,
+  //         });
+  //       },
+  //     });
+  //   }
+  // }
 
-  @Cron('0 0 0 20 * *')
+  @Cron('0 0 0 15 * *')
   async fetchNewCurrencyPairs() {
     console.log('Fetch new currency pairs at ' + Date());
 
@@ -92,7 +92,7 @@ export class CronJobProducer {
       .replaceAll(',', '\n');
     await this.lark.sendText({
       channelName: LARK_CHANNEL_NAME,
-      text: '[新币来了]\n' + larkText,
+      text: '[新币播报]\n' + larkText,
     });
 
     // [step 3] Create trade tasks for new currency pairs.
@@ -106,11 +106,11 @@ export class CronJobProducer {
       if (!buyTask) {
         this.timeoutTaskService.createTask({
           name: buyTaskName,
-          milliseconds: newCurrencyPair.buyStart * 1000 - Date.now() + 50, // delay 50ms
+          milliseconds: newCurrencyPair.buyStart * 1000 - Date.now(),
           callback: async function () {
             await SpotOrderService.callback_buy({
               currencyPair: newCurrencyPair.id,
-              amount: '5',
+              amount: parseFloat(newCurrencyPair.minQuoteAmount) * 1.5,
             });
           },
         });
@@ -121,7 +121,7 @@ export class CronJobProducer {
       if (!sellTask) {
         this.timeoutTaskService.createTask({
           name: sellTaskName,
-          milliseconds: newCurrencyPair.buyStart * 1000 - Date.now() + 50, // delay 50ms
+          milliseconds: newCurrencyPair.buyStart * 1000 - Date.now(),
           callback: async function () {
             await SpotOrderService.callback_sell({
               currencyPair: newCurrencyPair.id,
