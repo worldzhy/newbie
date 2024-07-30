@@ -2,7 +2,6 @@ import {HttpService} from '@nestjs/axios';
 import {AxiosResponse, AxiosError} from 'axios';
 import {Injectable, BadRequestException} from '@nestjs/common';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {CustomLoggerService} from '@toolkit/logger/logger.service';
 import {LarkWebhookSendStatus} from './constants';
 import {
   NotificationLarkWebhookReqDto,
@@ -22,12 +21,9 @@ export * from './lark.dto';
 
 @Injectable()
 export class LarkWebhookService {
-  private loggerContext = 'Lark Webhook';
-
   constructor(
     private httpService: HttpService,
-    private readonly prisma: PrismaService,
-    private readonly logger: CustomLoggerService
+    private readonly prisma: PrismaService
   ) {}
 
   async createChannel(
@@ -102,30 +98,13 @@ export class LarkWebhookService {
         )
         .then(res => {
           if (res.data.code === LarkWebhookSendStatus.Succeeded) {
-            this.logger.log(
-              `LarkNotification send [${channel.webhook}] success: ` +
-                JSON.stringify(res.data),
-              this.loggerContext
-            );
             return {res: res.data};
           } else {
-            const resError = {error: res.data};
-            this.logger.error(
-              `LarkNotification send [${channel.webhook}] error: ` +
-                JSON.stringify(resError),
-              this.loggerContext
-            );
-            return resError;
+            return {error: res.data};
           }
         })
         .catch((e: AxiosError) => {
-          const resError = {error: {message: e.message, response: e.response}};
-          this.logger.error(
-            `LarkNotification send [${channel.webhook}] error: ` +
-              JSON.stringify(resError),
-            this.loggerContext
-          );
-          return resError;
+          return {error: {message: e.message, response: e.response}};
         });
 
     await this.prisma.notificationWebhookRecord.update({

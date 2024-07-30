@@ -2,7 +2,6 @@ import {HttpService} from '@nestjs/axios';
 import {AxiosResponse, AxiosError} from 'axios';
 import {Injectable, BadRequestException} from '@nestjs/common';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {CustomLoggerService} from '@toolkit/logger/logger.service';
 import {
   NotificationSlackWebhookReqDto,
   SlackWebhookPostBodyDto,
@@ -22,12 +21,9 @@ export * from './slack.dto';
 
 @Injectable()
 export class SlackWebhookService {
-  private loggerContext = 'Slack Webhook';
-
   constructor(
     private httpService: HttpService,
-    private readonly prisma: PrismaService,
-    private readonly logger: CustomLoggerService
+    private readonly prisma: PrismaService
   ) {}
 
   async createChannel(
@@ -94,20 +90,10 @@ export class SlackWebhookService {
           body
         )
         .then(res => {
-          this.logger.log(
-            `SlackNotification send [${channel.webhook}] success: ` + res,
-            this.loggerContext
-          );
           return {res: res.data};
         })
         .catch((e: AxiosError) => {
-          const resError = {error: {message: e.response?.data}};
-          this.logger.error(
-            `SlackNotification send [${channel.webhook}] error: ` +
-              JSON.stringify(resError),
-            this.loggerContext
-          );
-          return resError;
+          return {error: {message: e.response?.data}};
         });
 
     await this.prisma.notificationWebhookRecord.update({
