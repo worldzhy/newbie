@@ -1,4 +1,4 @@
-import {Logger,Injectable} from '@nestjs/common';
+import {Logger, Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import * as PDLJS from 'peopledatalabs';
 import {PrismaService} from '@toolkit/prisma/prisma.service';

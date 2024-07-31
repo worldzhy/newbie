@@ -1,5 +1,5 @@
 import {HttpService} from '@nestjs/axios';
-import {Logger,Injectable} from '@nestjs/common';
+import {Logger, Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {Prisma} from '@prisma/client';
@@ -14,7 +14,7 @@ import {
   SearchEmailByDomainReqDto,
   SearchEmailResDto,
   SearchEmailThirdResDto,
-  VoliaNorbertStatus,  
+  VoliaNorbertStatus,
   SearchEmailContentResDto,
 } from './volia-norbert.dto';
 export * from './volia-norbert.dto';

@@ -21,6 +21,7 @@
     "./src/microservices/tag",
     "./src/microservices/task-scheduling",
     "./src/microservices/workflow",
-    "./src/microservices/xlsx"
+    "./src/microservices/xlsx",
+    "./src/toolkit"
   ]
 }
