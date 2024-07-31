@@ -1,4 +1,4 @@
-import {Global, MiddlewareConsumer, Module} from '@nestjs/common';
+import {Global, Logger, MiddlewareConsumer, Module} from '@nestjs/common';
 import {APP_FILTER, APP_INTERCEPTOR} from '@nestjs/core';
 import {ConfigModule} from '@nestjs/config';
 import {HttpModule} from '@nestjs/axios';
@@ -11,11 +11,14 @@ import {HttpResponseInterceptor} from './interceptors/http-response.interceptor'
 import {HttpMiddleware} from './middlewares/http.middleware';
 import FrameworkConfiguration from './framework.config';
 
+
+
+
 @Global()
 @Module({
   imports: [
     ConfigModule.forRoot({load: [FrameworkConfiguration], isGlobal: true}),
-    HttpModule,
+    HttpModule,  
   ],
   providers: [
     // Filters
@@ -25,6 +28,7 @@ import FrameworkConfiguration from './framework.config';
     {provide: APP_FILTER, useClass: PrismaExceptionFilter}, // 2rd priority for exceptions thrown by services.
     {provide: APP_FILTER, useClass: ThrottlerExceptionFilter}, // 1st priority for exceptions thrown by throttler (rate limit).
     {provide: APP_INTERCEPTOR, useClass: HttpResponseInterceptor},
+    Logger
   ],
   exports: [HttpModule],
 })

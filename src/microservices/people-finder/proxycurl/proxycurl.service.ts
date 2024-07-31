@@ -1,6 +1,5 @@
-import {Injectable} from '@nestjs/common';
+import {Logger,Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
-import {CustomLoggerService} from '@toolkit/logger/logger.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {Prisma} from '@prisma/client';
 import * as ProxycurlApi from 'proxycurl-js-linkedin-profile-scraper';
@@ -30,7 +29,7 @@ export class ProxycurlService {
   constructor(
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
-    private readonly logger: CustomLoggerService,
+    private readonly logger: Logger,
     private peopleFinderNotification: PeopleFinderNotificationService
   ) {
     this.apiKey = this.configService.getOrThrow<string>(

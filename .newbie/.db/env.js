@@ -2,8 +2,8 @@ const fs = require('fs');
 const {getEnabledMicroservices} = require('../.db/microservices');
 const {
   ENV_PATH,
-  FRAMEWORK_CONFIG_JSON,
-  TOOLKIT_CONFIG_JSON,
+  FRAMEWORK_SETTINGS_JSON,
+  TOOLKIT_SETTINGS_JSON,
   MICROSERVICES_CODE_PATH,
   ALL_MICROSERVICES,
   LINE,
@@ -39,9 +39,9 @@ const getObjectFromEnvFile = () => {
 };
 
 const getEnvArrayFromFrameworkConfig = () => {
-  if (fs.existsSync(FRAMEWORK_CONFIG_JSON)) {
+  if (fs.existsSync(FRAMEWORK_SETTINGS_JSON)) {
     const {env = {}} = JSON.parse(
-      fs.readFileSync(FRAMEWORK_CONFIG_JSON, {encoding: 'utf8', flag: 'r'})
+      fs.readFileSync(FRAMEWORK_SETTINGS_JSON, {encoding: 'utf8', flag: 'r'})
     );
     return Object.keys(env);
   }
@@ -50,9 +50,9 @@ const getEnvArrayFromFrameworkConfig = () => {
 };
 
 const getEnvArrayFromToolkitConfig = () => {
-  if (fs.existsSync(TOOLKIT_CONFIG_JSON)) {
+  if (fs.existsSync(TOOLKIT_SETTINGS_JSON)) {
     const {env = {}} = JSON.parse(
-      fs.readFileSync(TOOLKIT_CONFIG_JSON, {encoding: 'utf8', flag: 'r'})
+      fs.readFileSync(TOOLKIT_SETTINGS_JSON, {encoding: 'utf8', flag: 'r'})
     );
     return Object.keys(env);
   }
@@ -65,22 +65,24 @@ const getEnvObjectFromMicroservicesConfig = () => {
   const enabledMicroservices = getEnabledMicroservices();
 
   enabledMicroservices.forEach(name => {
-    const {key, configFileName} = ALL_MICROSERVICES[name] || {};
+    const {key, settingsFileName} = ALL_MICROSERVICES[name] || {};
 
-    if (key && configFileName) {
-      const configFilePath =
-        MICROSERVICES_CODE_PATH + '/' + key + '/' + configFileName;
+    if (key && settingsFileName) {
+      const settingsFilePath =
+        MICROSERVICES_CODE_PATH + '/' + key + '/' + settingsFileName;
       if (!envObj[key]) {
         envObj[key] = [];
       }
 
-      if (fs.existsSync(configFilePath)) {
+      if (fs.existsSync(settingsFilePath)) {
         const {env = {}} = JSON.parse(
-          fs.readFileSync(configFilePath, {encoding: 'utf8', flag: 'r'})
+          fs.readFileSync(settingsFilePath, {encoding: 'utf8', flag: 'r'})
         );
         envObj[key] = Object.keys(env);
       } else {
-        console.error(`[Error] Missing config.json for microservice<${name}>!`);
+        console.error(
+          `[Error] Missing settings.json for microservice<${name}>!`
+        );
       }
     }
   });

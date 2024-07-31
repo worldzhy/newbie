@@ -3,8 +3,8 @@ const {
   ENV_PATH,
   ALL_MICROSERVICES,
   MICROSERVICES_CODE_PATH,
-  FRAMEWORK_CONFIG_JSON,
-  TOOLKIT_CONFIG_JSON,
+  FRAMEWORK_SETTINGS_JSON,
+  TOOLKIT_SETTINGS_JSON,
 } = require('../newbie.constants');
 const {underline} = require('colorette');
 const {getObjectFromEnvFile} = require('../.db/env');
@@ -15,9 +15,9 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
   const envObj = getObjectFromEnvFile();
 
   // [step 1] Assemble framework environment variables
-  if (fs.existsSync(FRAMEWORK_CONFIG_JSON)) {
+  if (fs.existsSync(FRAMEWORK_SETTINGS_JSON)) {
     const {env = {}} = JSON.parse(
-      fs.readFileSync(FRAMEWORK_CONFIG_JSON, {encoding: 'utf8', flag: 'r'})
+      fs.readFileSync(FRAMEWORK_SETTINGS_JSON, {encoding: 'utf8', flag: 'r'})
     );
     Object.keys(env).forEach(key => {
       if (!envObj[key]) {
@@ -25,13 +25,13 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
       }
     });
   } else {
-    console.error(`[Error] Missing framework.config.json!`);
+    console.error(`[Error] Missing framework.settings.json!`);
   }
 
   // [step 2] Assemble toolkit environment variables
-  if (fs.existsSync(TOOLKIT_CONFIG_JSON)) {
+  if (fs.existsSync(TOOLKIT_SETTINGS_JSON)) {
     const {env = {}} = JSON.parse(
-      fs.readFileSync(TOOLKIT_CONFIG_JSON, {encoding: 'utf8', flag: 'r'})
+      fs.readFileSync(TOOLKIT_SETTINGS_JSON, {encoding: 'utf8', flag: 'r'})
     );
     Object.keys(env).forEach(key => {
       if (!envObj[key]) {
@@ -39,26 +39,26 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
       }
     });
   } else {
-    console.error(`[Error] Missing toolkit.config.json!`);
+    console.error(`[Error] Missing toolkit.settings.json!`);
   }
 
   // [step 3] Assemble microservices environment variables
   // [step 3-1] Add variables to the env object.
   addedMicroservices.forEach(name => {
-    const {key, configFileName} = ALL_MICROSERVICES[name] || {};
+    const {key, settingsFileName} = ALL_MICROSERVICES[name] || {};
 
     if (!key) {
       console.error(`[Error] Non-existent microservice<${name}>`);
       return;
     }
 
-    if (configFileName) {
-      const configFilePath =
-        MICROSERVICES_CODE_PATH + '/' + key + '/' + key + '.config.json';
+    if (settingsFileName) {
+      const settingsFilePath =
+        MICROSERVICES_CODE_PATH + '/' + key + '/' + key + '.settings.json';
 
-      if (fs.existsSync(configFilePath)) {
+      if (fs.existsSync(settingsFilePath)) {
         const {env = {}} = JSON.parse(
-          fs.readFileSync(configFilePath, {encoding: 'utf8', flag: 'r'})
+          fs.readFileSync(settingsFilePath, {encoding: 'utf8', flag: 'r'})
         );
 
         Object.keys(env).forEach(key => {
@@ -67,27 +67,29 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
           }
         });
       } else {
-        console.error(`[Error] Missing config.json for microservice<${name}>!`);
+        console.error(
+          `[Error] Missing settings.json for microservice<${name}>!`
+        );
       }
     }
   });
 
   // [step 3-2] Remove variables from the env object.
   removedMicroservices.forEach(name => {
-    const {key, configFileName} = ALL_MICROSERVICES[name] || {};
+    const {key, settingsFileName} = ALL_MICROSERVICES[name] || {};
 
     if (!key) {
       console.error(`[Error] Non-existent microservice<${name}>`);
       return;
     }
 
-    if (configFileName) {
-      const configFilePath =
-        MICROSERVICES_CODE_PATH + '/' + key + '/' + key + '.config.json';
+    if (settingsFileName) {
+      const settingsFilePath =
+        MICROSERVICES_CODE_PATH + '/' + key + '/' + key + '.settings.json';
 
-      if (fs.existsSync(configFilePath)) {
+      if (fs.existsSync(settingsFilePath)) {
         const {env = {}} = JSON.parse(
-          fs.readFileSync(configFilePath, {encoding: 'utf8', flag: 'r'})
+          fs.readFileSync(settingsFilePath, {encoding: 'utf8', flag: 'r'})
         );
 
         const envKeys = Object.keys(env);
@@ -99,7 +101,9 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
           });
         }
       } else {
-        console.error(`[Error] Missing config.json for microservice<${name}>!`);
+        console.error(
+          `[Error] Missing settings.json for microservice<${name}>!`
+        );
       }
     }
   });

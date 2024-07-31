@@ -1,11 +1,10 @@
 import {
   BadRequestException,
-  INestApplication,
+  Logger,INestApplication,
   Injectable,
   OnModuleInit,
 } from '@nestjs/common';
 import {Prisma, PrismaClient} from '@prisma/client';
-import {CustomLoggerService} from '@toolkit/logger/logger.service';
 
 @Injectable()
 export class PrismaService
@@ -17,7 +16,7 @@ export class PrismaService
 {
   private loggerContext = 'Prisma';
 
-  constructor(private readonly logger: CustomLoggerService) {
+  constructor(private readonly logger: Logger) {
     super({
       /* About log levels
       -query:	Logs all queries run by Prisma.

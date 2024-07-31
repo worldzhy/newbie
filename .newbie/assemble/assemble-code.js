@@ -25,20 +25,20 @@ const assembleSourceCodeFiles = () => {
   // [step 2] Assemble microservice.config.ts
   let configs = {};
   enabledMicroservices.forEach(name => {
-    const {key, configFileName} = ALL_MICROSERVICES[name] || {};
+    const {key, settingsFileName} = ALL_MICROSERVICES[name] || {};
 
     if (!key) {
       console.error(`[Error] Non-existent microservice<${name}>`);
       return;
     }
 
-    if (configFileName) {
-      const configFilePath =
-        MICROSERVICES_CODE_PATH + '/' + key + '/' + configFileName;
+    if (settingsFileName) {
+      const settingsFilePath =
+        MICROSERVICES_CODE_PATH + '/' + key + '/' + settingsFileName;
 
-      if (fs.existsSync(configFilePath)) {
+      if (fs.existsSync(settingsFilePath)) {
         const {'config-service': config = {}} = JSON.parse(
-          fs.readFileSync(configFilePath, {encoding: 'utf8', flag: 'r'})
+          fs.readFileSync(settingsFilePath, {encoding: 'utf8', flag: 'r'})
         );
         configs = {...configs, ...config};
       }

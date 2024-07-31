@@ -4,7 +4,6 @@ import {BullModule} from '@nestjs/bull';
 import {CacheModule} from '@nestjs/cache-manager';
 import * as redisStore from 'cache-manager-redis-store';
 import {ElasticModule} from './elastic/elastic.module';
-import {CustomLoggerModule} from './logger/logger.module';
 import {PrismaModule} from './prisma/prisma.module';
 import {SnowflakeModule} from './snowflake/snowflake.module';
 import ToolkitConfiguration from './toolkit.config';
@@ -18,7 +17,6 @@ export class ToolkitModule {}
 function getModules() {
   const modules = [
     ConfigModule.forRoot({load: [ToolkitConfiguration], isGlobal: true}),
-    CustomLoggerModule,
     ElasticModule,
     PrismaModule,
     SnowflakeModule,
