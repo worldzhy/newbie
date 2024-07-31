@@ -137,11 +137,10 @@ export class SpotOrderService {
           console.warn(
             `[${params.currencyPair}_BUY] Something wrong happened when we were trying to buy.`
           );
-          console.warn(error.response.data);
+          // console.warn(error.response.data);
+          console.warn(error);
         }
       }
-
-      // await delay(50);
     }
 
     console.info(
@@ -218,11 +217,10 @@ export class SpotOrderService {
           console.warn(
             `[${params.currencyPair}_SELL] Something wrong happened when We were trying to sell.`
           );
-          console.warn(error.response.data);
+          // console.warn(error.response.data);
+          console.warn(error);
         }
       }
-
-      await delay(10);
     }
 
     console.info(
