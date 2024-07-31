@@ -25,10 +25,10 @@
   },
   "dependencies": {
     "@aws-sdk/client-cloudformation": "^3.454.0",
-    "@aws-sdk/client-pinpoint": "^3.609.0",
-    "@aws-sdk/client-s3": "^3.456.0",
+    "@aws-sdk/client-pinpoint": "^3.621.0",
+    "@aws-sdk/client-s3": "^3.529.0",
     "@aws-sdk/client-sqs": "^3.454.0",
-    "@aws-sdk/credential-providers": "^3.609.0",
+    "@aws-sdk/credential-providers": "^3.621.0",
     "@casl/prisma": "^1.4.1",
     "@elastic/elasticsearch": "^7.13.0",
     "@fastify/static": "^7.0.0",
