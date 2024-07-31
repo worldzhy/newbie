@@ -5,7 +5,7 @@ const {
   MICROSERVICES_CODE_PATH,
   FRAMEWORK_CONFIG_JSON,
   TOOLKIT_CONFIG_JSON,
-} = require('../constants');
+} = require('../newbie.constants');
 const {underline} = require('colorette');
 const {getObjectFromEnvFile} = require('../.db/env');
 

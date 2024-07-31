@@ -7,7 +7,7 @@ const {
   MICROSERVICES_CODE_PATH,
   ALL_MICROSERVICES,
   LINE,
-} = require('../constants');
+} = require('../newbie.constants');
 
 const getObjectFromEnvFile = () => {
   // [step 1] Copy .env.example to .env if .env is not existed.

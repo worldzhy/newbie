@@ -1,5 +1,5 @@
 const fs = require('fs');
-const {ALL_MICROSERVICES, DB_MICROSERVICES} = require('../constants');
+const {ALL_MICROSERVICES, DB_MICROSERVICES} = require('../newbie.constants');
 
 const getAddedMicroservices = enabledServiceNames => {
   const currentMicroservices = getEnabledMicroservices();

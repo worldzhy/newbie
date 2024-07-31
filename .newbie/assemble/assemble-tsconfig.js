@@ -5,7 +5,7 @@ const {
   ALL_MICROSERVICES,
   TS_CONFIG_JSON,
   TS_CONFIG_BUILD_JSON,
-} = require('../constants');
+} = require('../newbie.constants');
 
 const assembleTsConfigFiles = () => {
   console.info('|' + underline(' 4. updating tsconfig... ') + '|');

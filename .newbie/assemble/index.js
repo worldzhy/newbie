@@ -7,7 +7,7 @@ const {
   getEnabledMicroservices,
   updateEnabledMicroservices,
 } = require('../.db/microservices');
-const {ALL_MICROSERVICES} = require('../constants');
+const {ALL_MICROSERVICES} = require('../newbie.constants');
 const {assembleEnvFile} = require('./assemble-env');
 const {assembleSourceCodeFiles} = require('./assemble-code');
 const {assembleSchemaFiles} = require('./assemble-schema');

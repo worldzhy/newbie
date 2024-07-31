@@ -2,13 +2,13 @@ import {Global, MiddlewareConsumer, Module} from '@nestjs/common';
 import {APP_FILTER, APP_INTERCEPTOR} from '@nestjs/core';
 import {ConfigModule} from '@nestjs/config';
 import {HttpModule} from '@nestjs/axios';
-import {AllExceptionFilter} from './exception-filter/all.exception-filter';
-import {PrismaExceptionFilter} from './exception-filter/prisma.exception-filter';
-import {ThrottlerExceptionFilter} from './exception-filter/throttler.exception-filter';
-import {HttpExceptionFilter} from './exception-filter/http.exception-filter';
-import {NewbieExceptionFilter} from './exception-filter/newbie.exception-filter';
-import {HttpResponseInterceptor} from './interceptor/http-response.interceptor';
-import {HttpMiddleware} from './middleware/http.middleware';
+import {AllExceptionFilter} from './exception-filters/all.exception-filter';
+import {PrismaExceptionFilter} from './exception-filters/prisma.exception-filter';
+import {ThrottlerExceptionFilter} from './exception-filters/throttler.exception-filter';
+import {HttpExceptionFilter} from './exception-filters/http.exception-filter';
+import {NewbieExceptionFilter} from './exception-filters/newbie.exception-filter';
+import {HttpResponseInterceptor} from './interceptors/http-response.interceptor';
+import {HttpMiddleware} from './middlewares/http.middleware';
 import FrameworkConfiguration from './framework.config';
 
 @Global()

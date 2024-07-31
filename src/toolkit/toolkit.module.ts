@@ -7,7 +7,6 @@ import {ElasticModule} from './elastic/elastic.module';
 import {CustomLoggerModule} from './logger/logger.module';
 import {PrismaModule} from './prisma/prisma.module';
 import {SnowflakeModule} from './snowflake/snowflake.module';
-import {XLSXModule} from './xlsx/xlsx.module';
 import ToolkitConfiguration from './toolkit.config';
 
 @Global()
@@ -23,7 +22,6 @@ function getModules() {
     ElasticModule,
     PrismaModule,
     SnowflakeModule,
-    XLSXModule,
   ];
   if (process.env.REDIS_HOST) {
     modules.push(

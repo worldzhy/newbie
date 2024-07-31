@@ -1,5 +1,6 @@
 const DB_ENV = './.newbie/.db/env.json';
 const DB_MICROSERVICES = './.newbie/.db/microservices.json';
+const NEWBIE_CONFIG_JSON = './.newbie/newbie.config.json';
 
 const ENV_PATH = './.env';
 
@@ -84,6 +85,14 @@ const ALL_MICROSERVICES = {
     moduleNames: 'OrderManagementModule',
     importCode: `import {OrderManagementModule} from './order-mgmt/order-mgmt.module';`,
   },
+  pdf: {
+    key: 'pdf',
+    srcPath: './src/microservices/pdf',
+    schemaFileName: null,
+    configFileName: 'pdf.config.json',
+    moduleNames: 'PdfModule',
+    importCode: `import {PdfModule} from './pdf/pdf.module';`,
+  },
   'people-finder': {
     key: 'people-finder',
     srcPath: './src/microservices/people-finder',
@@ -147,6 +156,14 @@ const ALL_MICROSERVICES = {
     configFileName: null,
     moduleNames: 'WorkflowModule',
     importCode: `import {WorkflowModule} from './workflow/workflow.module';`,
+  },
+  xlsx: {
+    key: 'xlsx',
+    srcPath: './src/microservices/xlsx',
+    schemaFileName: null,
+    configFileName: 'xlsx.config.json',
+    moduleNames: 'XLSXModule',
+    importCode: `import {XLSXModule} from './xlsx/xlsx.module';`,
   },
 };
 

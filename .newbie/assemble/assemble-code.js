@@ -4,7 +4,7 @@ const {
   MICROSERVICES_CODE_PATH,
   MICROSERVICES_MODULE_TS,
   MICROSERVICES_CONFIG_TS,
-} = require('../constants');
+} = require('../newbie.constants');
 const {underline} = require('colorette');
 const {execSync} = require('child_process');
 const {getEnabledMicroservices} = require('../.db/microservices');

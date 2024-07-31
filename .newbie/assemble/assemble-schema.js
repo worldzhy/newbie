@@ -4,7 +4,7 @@ const {
   PRISMA_SCHEMA_PATH,
   MICROSERVICES_CODE_PATH,
   PRISMA_SCHEMA_APPLICATION,
-} = require('../constants');
+} = require('../newbie.constants');
 const {underline} = require('colorette');
 const {execSync} = require('child_process');
 const {getEnabledMicroservices} = require('../.db/microservices');
