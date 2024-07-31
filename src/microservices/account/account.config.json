@@ -43,7 +43,7 @@
       }
     }
   },
-  "env":{
+  "env": {
     "ACCOUNT_REDIS_HOST": "",
     "ACCOUNT_REDIS_PORT": "",
     "ACCOUNT_USER_ACCESS_TOKEN_SECRET": "",
@@ -54,5 +54,21 @@
     "ACCOUNT_AWS_PINPOINT_APPLICATION_ID": "",
     "ACCOUNT_AWS_PINPOINT_FROM_ADDRESS": "",
     "ACCOUNT_AWS_PINPOINT_SENDER_ID": ""
+  },
+  "dependencies": {    
+    "@nestjs/jwt": "^10.2.0",
+    "@nestjs/passport": "^10.0.2",
+    "@nestjs/throttler": "^5.0.1",
+    "@casl/prisma": "^1.4.1",  
+    "ioredis": "^5.3.2",
+    "passport": "^0.6.0",
+    "passport-custom": "^1.1.1",
+    "passport-jwt": "^4.0.1",
+    "passport-local": "^1.0.0",
+    "rate-limiter-flexible": "^3.0.4"
+  },
+  "devDependencies": {
+    "@types/passport-jwt": "^3.0.13",
+    "@types/passport-local": "^1.0.38"
   }
 }

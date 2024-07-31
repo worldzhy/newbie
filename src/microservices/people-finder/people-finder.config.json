@@ -26,5 +26,9 @@
     "PEOPLE_FINDER_WEBHOOK_FEISHU":"",
     "PEOPLE_FINDER_ACCESS_KEY":"",
     "PEOPLE_FINDER_SYSTEM_CHANNEL":""
+  },
+  "dependencies":{
+    "peopledatalabs": "^8.0.1",
+    "proxycurl-js-linkedin-profile-scraper": "^1.0.2"
   }
 }

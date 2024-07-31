@@ -18,5 +18,28 @@
     "SNOWFLAKE_SCHEMA": "",
     "SNOWFLAKE_WAREHOUSE": "",
     "SNOWFLAKE_POOL_MAX": 3
+  },
+  "dependencies": { 
+    "@elastic/elasticsearch": "^7.13.0",
+    "@nestjs/bull": "^10.0.1",
+    "@nestjs/cache-manager": "^2.1.1", 
+    "@prisma/client": "^5.17.0",
+    "bcrypt": "^5.1.1",
+    "bull": "^4.11.5",
+    "cache-manager": "^4.1.0",
+    "cache-manager-redis-store": "^2.0.0",
+    "moment": "^2.29.4",
+    "multer": "^1.4.5-lts.1",
+    "pdf-lib": "^1.17.1",
+    "snowflake-sdk": "^1.9.1",
+    "typeorm": "^0.3.17",
+    "validator": "^13.11.0",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.19.3/xlsx-0.19.3.tgz"
+  },
+  "devDependencies": {
+    "@types/cache-manager": "^4.0.6",
+    "@types/multer": "^1.4.11",
+    "@types/snowflake-sdk": "^1.6.17",
+    "@types/validator": "^13.11.7"
   }
 }

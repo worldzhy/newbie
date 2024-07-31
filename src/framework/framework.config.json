@@ -4,5 +4,13 @@
     "PORT": "3000",
     "ALLOWED_ORIGINS": "localhost:3000,localhost:3001",
     "SERVER_SERIAL_NUMBER": "1"
+  },
+  "dependencies": {
+    "@nestjs/axios": "^3.0.1",
+    "@nestjs/throttler": "^5.0.1",
+    "axios": "^1.6.2"
+  },
+  "devDependencies": {
+
   }
 }

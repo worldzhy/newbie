@@ -9,5 +9,8 @@
   },
   "env":{
     "AWS_CLOUDFORMATION_SECRETKEY_TOKEN_SECRET":""
+  },
+  "dependencies": {
+    "@nestjs/jwt": "^10.2.0"
   }
 }

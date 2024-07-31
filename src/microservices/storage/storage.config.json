@@ -20,7 +20,7 @@
       }
     }
   },
-  "env":{
+  "env": {
     "STORAGE_GOOGLE_CREDENTIALS_API_KEY":"",
     "STORAGE_GOOGLE_CREDENTIALS_SERVICE_ACCOUNT":"",
     "STORAGE_AWS_ACCESS_KEY_ID":"",
@@ -29,5 +29,12 @@
     "STORAGE_AWS_S3_BUCKET":"",
     "STORAGE_AWS_CLOUDFRONT_DOMAIN":"",
     "STORAGE_LOCAL_PATH":""
+  },
+  "dependencies": {
+    "@googleapis/drive": "^8.6.0",
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "@types/multer": "^1.4.11"
   }
 }
