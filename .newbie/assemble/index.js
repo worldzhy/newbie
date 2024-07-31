@@ -1,6 +1,6 @@
 const figlet = require('figlet');
 const {checkbox, select} = require('@inquirer/prompts');
-const {bold, cyan, greenBright, inverse} = require('colorette');
+const {bold, cyan, green, inverse} = require('colorette');
 const {
   getAddedMicroservices,
   getRemovedMicroservices,
@@ -102,7 +102,7 @@ const main = async () => {
     assembleEnvFile(addedMicroservices, removedMicroservices);
     assembleTsConfigFiles();
 
-    console.log(bold(greenBright('     c O m P L e T e\n')));
+    console.log(bold(green('     C O M P L E T E\n')));
   } else {
     console.info(
       '\n[info] You did not make any changes to the microservices.\n'

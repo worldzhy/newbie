@@ -1,8 +1,22 @@
 {
   "env": {
-    "PORT": "3000",
-    "ALLOWED_ORIGINS": "",
-    "SERVER_SERIAL_NUMBER": "0",
-    "ENVIRONMENT": "development"
+    "BULL_REDIS_HOST": "localhost",
+    "BULL_REDIS_PORT": "6379",
+    "BULL_REDIS_PASSWORD": "",
+    "CACHE_REDIS_HOST": "localhost",
+    "CACHE_REDIS_PORT": "6379",
+    "CACHE_REDIS_PASSWORD": "",
+    "ELASTICSEARCH_NODE": "http://127.0.0.1",
+    "ELASTICSEARCH_USERNAME": "",
+    "ELASTICSEARCH_PASSWORD": "",
+    "LOGGER_AWS_SQS_QUEUE_URL": "default",
+    "PRISMA_DATABASE_URL": "postgresql://postgres:postgres@localhost:5432/newbie",
+    "SNOWFLAKE_ACCOUNT": "",
+    "SNOWFLAKE_USERNAME": "",
+    "SNOWFLAKE_PASSWORD": "",
+    "SNOWFLAKE_DATABASE": "",
+    "SNOWFLAKE_SCHEMA": "",
+    "SNOWFLAKE_WAREHOUSE": "",
+    "SNOWFLAKE_POOL_MAX": 3
   }
 }

@@ -3,7 +3,7 @@ const {
   ALL_MICROSERVICES,
   PRISMA_SCHEMA_PATH,
   MICROSERVICES_CODE_PATH,
-  APPLICATION_PRISMA_PATH,
+  PRISMA_SCHEMA_APPLICATION,
 } = require('../constants');
 const {underline} = require('colorette');
 const {execSync} = require('child_process');
@@ -20,7 +20,7 @@ const assembleApplicationPrisma = () => {
   const removedPrismaPath = removedMicroservices.map(
     name => `microservice/${name}`
   );
-  const prismaFile = fs.readFileSync(APPLICATION_PRISMA_PATH, {
+  const prismaFile = fs.readFileSync(PRISMA_SCHEMA_APPLICATION, {
     encoding: 'utf8',
     flag: 'r',
   });
@@ -41,7 +41,7 @@ const assembleApplicationPrisma = () => {
     }
   );
 
-  fs.writeFileSync(APPLICATION_PRISMA_PATH, updatePrismaFile);
+  fs.writeFileSync(PRISMA_SCHEMA_APPLICATION, updatePrismaFile);
 };
 
 const assembleSchemaFiles = (addedMicroservices, removedMicroservices) => {

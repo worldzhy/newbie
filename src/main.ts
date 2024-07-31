@@ -34,11 +34,13 @@ async function bootstrap() {
 
   // [step 2] Check required environment variables.
   const configService = app.get<ConfigService>(ConfigService);
-  ['ENVIRONMENT', 'PORT', 'ALLOWED_ORIGINS', 'DATABASE_URL'].forEach(envVar => {
-    if (!configService.getOrThrow<string>(envVar)) {
-      throw Error(`Undefined environment variable: ${envVar}`);
+  ['ENVIRONMENT', 'PORT', 'ALLOWED_ORIGINS', 'PRISMA_DATABASE_URL'].forEach(
+    envVar => {
+      if (!configService.getOrThrow<string>(envVar)) {
+        throw Error(`Undefined environment variable: ${envVar}`);
+      }
     }
-  });
+  );
 
   // [step 3] Enable features.
   app.enableCors({

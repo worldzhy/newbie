@@ -28,13 +28,3 @@ const main = async () => {
 };
 
 main();
-
-// Close inquirer input if user press "Q" or "Ctrl-C" key
-process.stdin.on('keypress', (_, key) => {
-  if (key.name === 'q' || (key.ctrl === true && key.name === 'c')) {
-    console.info(
-      '\n\n[info] You did not make any changes to the microservices.'
-    );
-    process.exit(0);
-  }
-});

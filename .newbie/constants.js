@@ -1,13 +1,20 @@
+const DB_ENV = './.newbie/.db/env.json';
+const DB_MICROSERVICES = './.newbie/.db/microservices.json';
+
 const ENV_PATH = './.env';
-const ENV_EXAMPLE_PATH = './.env.example';
-const MICROSERVICES_JSON = './.newbie/.db/microservices.json';
+
 const MICROSERVICES_CODE_PATH = './src/microservices';
 const MICROSERVICES_MODULE_TS = './src/microservices/microservices.module.ts';
 const MICROSERVICES_CONFIG_TS = './src/microservices/microservices.config.ts';
+
+const FRAMEWORK_CONFIG_JSON = './src/framework/framework.config.json';
+const TOOLKIT_CONFIG_JSON = './src/toolkit/toolkit.config.json';
+
 const PRISMA_SCHEMA_PATH = './prisma/schema/microservices';
+const PRISMA_SCHEMA_APPLICATION = './prisma/schema/application.prisma';
+
 const TS_CONFIG_BUILD_JSON = './tsconfig.build.json';
 const TS_CONFIG_JSON = './tsconfig.json';
-const APPLICATION_PRISMA_PATH = './prisma/schema/application.prisma';
 
 const LINE =
   /(?:^|^)\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\'|[^'])*'|\s*"(?:\"|[^"])*"|\s*`(?:\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?(?:$|$)/gm;
@@ -144,16 +151,23 @@ const ALL_MICROSERVICES = {
 };
 
 module.exports = {
-  LINE,
+  DB_MICROSERVICES,
+
   ENV_PATH,
-  TS_CONFIG_JSON,
-  ENV_EXAMPLE_PATH,
-  ALL_MICROSERVICES,
-  MICROSERVICES_JSON,
-  PRISMA_SCHEMA_PATH,
-  TS_CONFIG_BUILD_JSON,
+
   MICROSERVICES_CODE_PATH,
   MICROSERVICES_MODULE_TS,
   MICROSERVICES_CONFIG_TS,
-  APPLICATION_PRISMA_PATH,
+
+  FRAMEWORK_CONFIG_JSON,
+  TOOLKIT_CONFIG_JSON,
+
+  PRISMA_SCHEMA_PATH,
+  PRISMA_SCHEMA_APPLICATION,
+
+  TS_CONFIG_JSON,
+  TS_CONFIG_BUILD_JSON,
+
+  LINE,
+  ALL_MICROSERVICES,
 };

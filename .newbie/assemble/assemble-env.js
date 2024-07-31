@@ -1,18 +1,49 @@
 const fs = require('fs');
 const {
-  LINE,
   ENV_PATH,
   ALL_MICROSERVICES,
   MICROSERVICES_CODE_PATH,
+  FRAMEWORK_CONFIG_JSON,
+  TOOLKIT_CONFIG_JSON,
 } = require('../constants');
 const {underline} = require('colorette');
+const {getObjectFromEnvFile} = require('../.db/env');
 
 const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
   console.info('|' + underline(' 3. updating env...      ') + '|');
 
-  const envObj = getEnvObject();
+  const envObj = getObjectFromEnvFile();
 
-  // [step 1] Add variables to the env object.
+  // [step 1] Assemble framework environment variables
+  if (fs.existsSync(FRAMEWORK_CONFIG_JSON)) {
+    const {env = {}} = JSON.parse(
+      fs.readFileSync(FRAMEWORK_CONFIG_JSON, {encoding: 'utf8', flag: 'r'})
+    );
+    Object.keys(env).forEach(key => {
+      if (!envObj[key]) {
+        envObj[key] = env[key];
+      }
+    });
+  } else {
+    console.error(`[Error] Missing framework.config.json!`);
+  }
+
+  // [step 2] Assemble toolkit environment variables
+  if (fs.existsSync(TOOLKIT_CONFIG_JSON)) {
+    const {env = {}} = JSON.parse(
+      fs.readFileSync(TOOLKIT_CONFIG_JSON, {encoding: 'utf8', flag: 'r'})
+    );
+    Object.keys(env).forEach(key => {
+      if (!envObj[key]) {
+        envObj[key] = env[key];
+      }
+    });
+  } else {
+    console.error(`[Error] Missing toolkit.config.json!`);
+  }
+
+  // [step 3] Assemble microservices environment variables
+  // [step 3-1] Add variables to the env object.
   addedMicroservices.forEach(name => {
     const {key, configFileName} = ALL_MICROSERVICES[name] || {};
 
@@ -41,7 +72,7 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
     }
   });
 
-  // [step 2] Remove variables from the env object.
+  // [step 3-2] Remove variables from the env object.
   removedMicroservices.forEach(name => {
     const {key, configFileName} = ALL_MICROSERVICES[name] || {};
 
@@ -73,7 +104,7 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
     }
   });
 
-  // [step 3] Write the .env file.
+  // [step 4] Write the .env file.
   if (Object.keys(envObj).length > 0) {
     fs.writeFileSync(
       ENV_PATH,
@@ -84,34 +115,6 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
   } else {
     // Do nothing
   }
-};
-
-const getEnvObject = () => {
-  if (!fs.existsSync(ENV_PATH)) {
-    console.error('[Error] Missing .env file');
-    return {};
-  }
-
-  const env = fs.readFileSync(ENV_PATH, {encoding: 'utf8', flag: 'r'});
-  const lines = env.toString().replace(/\r\n?/gm, '\n');
-  const obj = {};
-  let match;
-  while ((match = LINE.exec(lines)) != null) {
-    const key = match[1];
-    let value = match[2] || '';
-
-    value = value.trim();
-    const maybeQuote = value[0];
-
-    value = value.replace(/^(['"`])([\s\S]*)\1$/gm, '$2');
-    if (maybeQuote === '"') {
-      value = value.replace(/\n/g, '\n');
-      value = value.replace(/\r/g, '\r');
-    }
-    obj[key] = value;
-  }
-
-  return obj;
 };
 
 module.exports = {
