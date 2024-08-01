@@ -65,10 +65,12 @@
     "passport-custom": "^1.1.1",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
-    "rate-limiter-flexible": "^3.0.4"
+    "rate-limiter-flexible": "^3.0.4",
+    "validator": "^13.11.0"
   },
   "devDependencies": {
     "@types/passport-jwt": "^3.0.13",
-    "@types/passport-local": "^1.0.38"
+    "@types/passport-local": "^1.0.38",
+    "@types/validator": "^13.11.7"
   }
 }

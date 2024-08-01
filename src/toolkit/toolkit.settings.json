@@ -1,15 +1,8 @@
 {
   "env": {
-    "BULL_REDIS_HOST": "localhost",
-    "BULL_REDIS_PORT": "6379",
-    "BULL_REDIS_PASSWORD": "",
-    "CACHE_REDIS_HOST": "localhost",
-    "CACHE_REDIS_PORT": "6379",
-    "CACHE_REDIS_PASSWORD": "",
     "ELASTICSEARCH_NODE": "http://127.0.0.1",
     "ELASTICSEARCH_USERNAME": "",
     "ELASTICSEARCH_PASSWORD": "",
-    "LOGGER_AWS_SQS_QUEUE_URL": "default",
     "PRISMA_DATABASE_URL": "postgresql://postgres:postgres@localhost:5432/newbie",
     "SNOWFLAKE_ACCOUNT": "",
     "SNOWFLAKE_USERNAME": "",
@@ -20,23 +13,14 @@
     "SNOWFLAKE_POOL_MAX": 3
   },
   "dependencies": { 
-    "@elastic/elasticsearch": "^7.13.0",
-    "@nestjs/bull": "^10.0.1",
-    "@nestjs/cache-manager": "^2.1.1", 
+    "@elastic/elasticsearch": "7.13.0",
     "@prisma/client": "^5.17.0",
     "bcrypt": "^5.1.1",
-    "bull": "^4.11.5",
-    "cache-manager": "^4.1.0",
-    "cache-manager-redis-store": "^2.0.0",
     "moment": "^2.29.4",
-    "snowflake-sdk": "^1.9.1",
-    "typeorm": "^0.3.17",
-    "validator": "^13.11.0"
+    "snowflake-sdk": "^1.9.1"
   },
   "devDependencies": {
-    "@types/cache-manager": "^4.0.6",
     "@types/snowflake-sdk": "^1.6.17",
-    "@types/validator": "^13.11.7",
     "prisma": "^5.17.0"
   }
 }

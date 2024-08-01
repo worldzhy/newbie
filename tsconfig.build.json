@@ -6,6 +6,7 @@
     "./prisma",
     "./src/microservices/account",
     "./src/microservices/aws",
+    "./src/microservices/cache",
     "./src/microservices/cloudformation",
     "./src/microservices/event-scheduling",
     "./src/microservices/googleapis",
@@ -21,7 +22,6 @@
     "./src/microservices/tag",
     "./src/microservices/task-scheduling",
     "./src/microservices/workflow",
-    "./src/microservices/xlsx",
-    "./src/toolkit"
+    "./src/microservices/xlsx"
   ]
 }

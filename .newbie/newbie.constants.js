@@ -36,6 +36,14 @@ const ALL_MICROSERVICES = {
     moduleNames: 'AwsModule',
     importCode: `import {AwsModule} from './aws/aws.module';`,
   },
+  cache: {
+    key: 'cache',
+    srcPath: './src/microservices/cache',
+    schemaFileName: null,
+    settingsFileName: 'cache.settings.json',
+    moduleNames: 'NewbieCacheModule',
+    importCode: `import {NewbieCacheModule} from './cache/cache.module';`,
+  },
   cloudformation: {
     key: 'cloudformation',
     srcPath: './src/microservices/cloudformation',
@@ -104,9 +112,9 @@ const ALL_MICROSERVICES = {
     key: 'queue',
     srcPath: './src/microservices/queue',
     schemaFileName: 'queue.schema',
-    settingsFileName: null,
-    moduleNames: 'QueueModule',
-    importCode: `import {QueueModule} from './queue/queue.module';`,
+    settingsFileName: 'queue.settings.json',
+    moduleNames: 'NewbieQueueModule',
+    importCode: `import {NewbieQueueModule} from './queue/queue.module';`,
   },
   shortcut: {
     key: 'shortcut',
