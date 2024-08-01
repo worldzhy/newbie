@@ -27,16 +27,25 @@ const main = async () => {
   );
 
   // [step 2] Print the usage of the command-line tool.
-  console.info('Welcome to use newbie command-line tool:)');
+  console.info('What is newbie?');
+  console.info(' -----------------------------------------------------------');
+  console.info('| Newbie is a backend development framework based on NestJS.|');
+  console.info('| The main goal of the framework is to allow developers to  |');
+  console.info('| reuse ready-made modules such as account, workflow, etc.  |');
+  console.info('| We can flexibly add or remove these ready-made modules in |');
+  console.info('| the project.                                              |');
   console.info(
-    '----------------------------------------------------------------'
+    ' -----------------------------------------------------------\n'
   );
-  console.info('* Press <Up> and <Down> to move the cursor.');
-  console.info('* Press <Space> to toggle between enabled and disabled.');
-  console.info('* Press <Enter> to finish the configuration.');
-  console.info('* Press <Q> to quit without saving the configuration.');
+
+  console.info('How to use newbie?');
+  console.info(' -----------------------------------------------------------');
+  console.info('|* Press <Up> and <Down> to move the cursor.                |');
+  console.info('|* Press <Space> to toggle between enabled and disabled.    |');
+  console.info('|* Press <Enter> to finish the configuration.               |');
+  console.info('|* Press <Q> to quit without saving the configuration.      |');
   console.info(
-    '----------------------------------------------------------------\n'
+    ' -----------------------------------------------------------\n'
   );
 
   // [step 3] Main function.
