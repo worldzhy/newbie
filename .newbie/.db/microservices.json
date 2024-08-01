@@ -1,6 +1,3 @@
 {
-  "enabled": [
-    "notification",
-    "task-scheduling"
-  ]
+  "enabled": []
 }

@@ -9,14 +9,6 @@ export class TimeoutTaskService {
     return this.schedulerRegistry.getTimeouts();
   }
 
-  getTask(name: string) {
-    try {
-      return this.schedulerRegistry.getTimeout(name);
-    } catch (error) {
-      return null;
-    }
-  }
-
   createTask(params: {
     name: string;
     milliseconds: number;
@@ -25,18 +17,12 @@ export class TimeoutTaskService {
     const timeout = setTimeout(params.callback, params.milliseconds);
     this.schedulerRegistry.addTimeout(params.name, timeout);
 
-    console.info(
-      `Timeout task ${
-        params.name
-      } has been created. It will be triggered after ${
-        params.milliseconds / 1000
-      } seconds.`
-    );
+    console.log('A timeout task ' + params.name + ' has been created.');
   }
 
   deleteTask(name: string) {
     this.schedulerRegistry.deleteTimeout(name);
-    console.warn(`Timeout task ${name} has been deleted.`);
+    console.warn(`A timeout task ${name} has been deleted.`);
   }
 
   /* End */
