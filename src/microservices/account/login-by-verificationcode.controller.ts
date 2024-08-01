@@ -8,8 +8,11 @@ import {NoGuard} from './security/passport/public/public.decorator';
 import {
   NewbieException,
   NewbieExceptionType,
-} from '@framework/exception/newbie.exception';
-import {verifyEmail, verifyPhone} from '@toolkit/validators/user.validator';
+} from '@framework/exceptions/newbie.exception';
+import {
+  verifyEmail,
+  verifyPhone,
+} from '@microservices/account/account.validator';
 import {UserService} from './user/user.service';
 import {VerificationCodeService} from './verification-code/verification-code.service';
 import {VerificationCodeEmailService} from './verification-code/email.service';

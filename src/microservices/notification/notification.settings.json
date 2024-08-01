@@ -19,8 +19,7 @@
       }
     }
   },
-
-  "env":{
+  "env": {
     "NOTIFICATION_AWS_ACCESS_KEY_ID":"",
     "NOTIFICATION_AWS_SECRET_ACCESS_KEY":"",
     "NOTIFICATION_AWS_REGION":"",
@@ -28,5 +27,8 @@
     "NOTIFICATION_EMAIL_AWS_PINPOINT_FROM_ADDRESS":"",
     "NOTIFICATION_SMS_AWS_PINPOINT_APPLICATION_ID":"",
     "NOTIFICATION_SMS_AWS_PINPOINT_SENDER_ID":"" 
+  },
+  "dependencies": {
+    "@aws-sdk/client-pinpoint": "^3.609.0"
   }
 }

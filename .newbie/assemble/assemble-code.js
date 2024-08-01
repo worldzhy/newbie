@@ -1,17 +1,14 @@
 const fs = require('fs');
+const {execSync} = require('child_process');
+const {getEnabledMicroservices} = require('../.db/microservices');
 const {
   ALL_MICROSERVICES,
   MICROSERVICES_CODE_PATH,
   MICROSERVICES_MODULE_TS,
   MICROSERVICES_CONFIG_TS,
 } = require('../newbie.constants');
-const {underline} = require('colorette');
-const {execSync} = require('child_process');
-const {getEnabledMicroservices} = require('../.db/microservices');
 
 const assembleSourceCodeFiles = () => {
-  console.info('|' + underline(' 2. updating code...     ') + '|');
-
   const enabledMicroservices = getEnabledMicroservices();
 
   // [step 1] Assemble microservice.module.ts

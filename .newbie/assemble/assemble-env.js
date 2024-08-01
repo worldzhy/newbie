@@ -1,4 +1,5 @@
 const fs = require('fs');
+const {getObjectFromEnvFile} = require('../.db/env');
 const {
   ENV_PATH,
   ALL_MICROSERVICES,
@@ -6,12 +7,8 @@ const {
   FRAMEWORK_SETTINGS_JSON,
   TOOLKIT_SETTINGS_JSON,
 } = require('../newbie.constants');
-const {underline} = require('colorette');
-const {getObjectFromEnvFile} = require('../.db/env');
 
 const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
-  console.info('|' + underline(' 3. updating env...      ') + '|');
-
   const envObj = getObjectFromEnvFile();
 
   // [step 1] Assemble framework environment variables

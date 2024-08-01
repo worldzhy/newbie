@@ -1,6 +1,5 @@
 import {Module} from '@nestjs/common';
 import {APP_GUARD} from '@nestjs/core';
-import {ThrottlerGuard, ThrottlerModule} from '@nestjs/throttler';
 
 import {RateLimiterGuard} from './rate-limiter/rate-limiter.guard';
 import {PassportGuard} from './passport/passport.guard';
@@ -25,17 +24,8 @@ import {RefreshTokenModule} from './token/refresh-token.module';
 import {TokenModule} from './token/token.module';
 
 @Module({
-  imports: [
-    ThrottlerModule.forRoot({
-      // Maximum of 10000 requests / 1000 milliseconds for each endpoint.
-      throttlers: [{limit: 10000, ttl: 1000}],
-    }),
-    AccessTokenModule,
-    RefreshTokenModule,
-    TokenModule,
-  ],
+  imports: [AccessTokenModule, RefreshTokenModule, TokenModule],
   providers: [
-    {provide: APP_GUARD, useClass: ThrottlerGuard}, // 1st priority guard.
     {provide: APP_GUARD, useClass: RateLimiterGuard}, // 2nd priority guard.
     {provide: APP_GUARD, useClass: PassportGuard}, // 3rd priority guard.
     {provide: APP_GUARD, useClass: AuthorizationGuard}, // 4th priority guard.

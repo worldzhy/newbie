@@ -1,12 +1,12 @@
 import {Controller, Post, Body, BadRequestException} from '@nestjs/common';
 import {ApiTags, ApiBody} from '@nestjs/swagger';
-import {Prisma, User} from '@prisma/client';
+import {Prisma} from '@prisma/client';
 import {NoGuard} from '@microservices/account/security/passport/public/public.decorator';
 import {
   verifyEmail,
   verifyPassword,
   verifyPhone,
-} from '@toolkit/validators/user.validator';
+} from '@microservices/account/account.validator';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 
 @ApiTags('Account')

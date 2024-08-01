@@ -32,17 +32,9 @@ async function bootstrap() {
     app.use(urlencoded({limit: '10mb', extended: true}));
   }
 
-  // [step 2] Check required environment variables.
+  // [step 2] Enable features.
   const configService = app.get<ConfigService>(ConfigService);
-  ['ENVIRONMENT', 'PORT', 'ALLOWED_ORIGINS', 'PRISMA_DATABASE_URL'].forEach(
-    envVar => {
-      if (!configService.getOrThrow<string>(envVar)) {
-        throw Error(`Undefined environment variable: ${envVar}`);
-      }
-    }
-  );
 
-  // [step 3] Enable features.
   app.enableCors({
     credentials: true,
     origin: configService.getOrThrow<string[]>(
@@ -95,7 +87,7 @@ async function bootstrap() {
     SwaggerModule.setup('api', app, document, customOptions);
   }
 
-  // [step 4] Listen port
+  // [step 3] Listen port
   const port = configService.getOrThrow<number>('framework.server.port');
   const server = await app.listen(port, '0.0.0.0');
   server.timeout = configService.getOrThrow<number>(

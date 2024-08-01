@@ -1,52 +1,14 @@
 const fs = require('fs');
+const {execSync} = require('child_process');
+const {getEnabledMicroservices} = require('../.db/microservices');
 const {
   ALL_MICROSERVICES,
   PRISMA_SCHEMA_PATH,
   MICROSERVICES_CODE_PATH,
   PRISMA_SCHEMA_APPLICATION,
 } = require('../newbie.constants');
-const {underline} = require('colorette');
-const {execSync} = require('child_process');
-const {getEnabledMicroservices} = require('../.db/microservices');
-
-const assembleApplicationPrisma = () => {
-  const enabledMicroservices = getEnabledMicroservices();
-  const removedMicroservices = Object.keys(ALL_MICROSERVICES).filter(
-    key => !enabledMicroservices.includes(key)
-  );
-  const enabledPrismaPath = enabledMicroservices.map(
-    name => `microservice/${name}`
-  );
-  const removedPrismaPath = removedMicroservices.map(
-    name => `microservice/${name}`
-  );
-  const prismaFile = fs.readFileSync(PRISMA_SCHEMA_APPLICATION, {
-    encoding: 'utf8',
-    flag: 'r',
-  });
-  const updatePrismaFile = prismaFile.replace(
-    /(datasource db \{(?:.|\n|\r)*schemas\s*\=\s*)(\[.*?\])/g,
-    (...res) => {
-      const codeHeader = res[1];
-      const schemaStr = res[2];
-      const schemaArray = JSON.parse(`{"val": ${schemaStr}}`)?.val;
-      const schemaCode = Array.from(
-        new Set([
-          ...schemaArray.filter(val => !removedPrismaPath.includes(val)),
-          ...enabledPrismaPath,
-        ])
-      );
-
-      return codeHeader + JSON.stringify(schemaCode);
-    }
-  );
-
-  fs.writeFileSync(PRISMA_SCHEMA_APPLICATION, updatePrismaFile);
-};
 
 const assembleSchemaFiles = (addedMicroservices, removedMicroservices) => {
-  console.info('|' + underline(' 1. updating schema...   ') + '|');
-
   // [step 1] Add prisma schema for microservices.
   addedMicroservices.forEach(name => {
     const {key, schemaFileName} = ALL_MICROSERVICES[name] || {};
@@ -102,8 +64,43 @@ const assembleSchemaFiles = (addedMicroservices, removedMicroservices) => {
 
   // [step 4] Generate prisma client.
   try {
-    execSync('npx prisma generate');
+    execSync('npx prisma generate --allow-no-models');
   } catch (error) {}
+};
+
+const assembleApplicationPrisma = () => {
+  const enabledMicroservices = getEnabledMicroservices();
+  const removedMicroservices = Object.keys(ALL_MICROSERVICES).filter(
+    key => !enabledMicroservices.includes(key)
+  );
+  const enabledPrismaPath = enabledMicroservices.map(
+    name => `microservice/${name}`
+  );
+  const removedPrismaPath = removedMicroservices.map(
+    name => `microservice/${name}`
+  );
+  const prismaFile = fs.readFileSync(PRISMA_SCHEMA_APPLICATION, {
+    encoding: 'utf8',
+    flag: 'r',
+  });
+  const updatePrismaFile = prismaFile.replace(
+    /(datasource db \{(?:.|\n|\r)*schemas\s*\=\s*)(\[.*?\])/g,
+    (...res) => {
+      const codeHeader = res[1];
+      const schemaStr = res[2];
+      const schemaArray = JSON.parse(`{"val": ${schemaStr}}`)?.val;
+      const schemaCode = Array.from(
+        new Set([
+          ...schemaArray.filter(val => !removedPrismaPath.includes(val)),
+          ...enabledPrismaPath,
+        ])
+      );
+
+      return codeHeader + JSON.stringify(schemaCode);
+    }
+  );
+
+  fs.writeFileSync(PRISMA_SCHEMA_APPLICATION, updatePrismaFile);
 };
 
 module.exports = {

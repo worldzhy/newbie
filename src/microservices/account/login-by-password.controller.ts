@@ -34,7 +34,7 @@ export class LoginByPasswordController {
     examples: {
       a: {
         summary: '1. Log in with email',
-        value: {account: 'admin@inceptionpad.com', password: ''},
+        value: {account: 'admin@newbie.com', password: ''},
       },
       b: {
         summary: '2. Log in with phone',

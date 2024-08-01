@@ -2,6 +2,7 @@ import {Global, Module} from '@nestjs/common';
 import {ConfigModule, ConfigService} from '@nestjs/config';
 import {CacheModule} from '@nestjs/cache-manager';
 import * as redisStore from 'cache-manager-redis-store';
+import MicroservicesConfiguration from '../microservices.config';
 
 @Global()
 @Module({
@@ -10,7 +11,9 @@ import * as redisStore from 'cache-manager-redis-store';
 export class NewbieCacheModule {}
 
 function getModules() {
-  const modules = [];
+  const modules = [
+    ConfigModule.forRoot({load: [MicroservicesConfiguration], isGlobal: true}),
+  ];
   if (process.env.REDIS_HOST) {
     modules.push(
       CacheModule.registerAsync({

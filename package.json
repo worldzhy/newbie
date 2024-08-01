@@ -32,7 +32,7 @@
     "@nestjs/platform-express": "^10.2.10",
     "@nestjs/platform-fastify": "^10.3.8",
     "@nestjs/swagger": "^7.4.0",
-    "@nestjs/throttler": "^5.0.1",
+    "@nestjs/throttler": "^6.0.0",
     "@prisma/client": "^5.17.0",
     "axios": "^1.6.2",
     "bcrypt": "^5.1.1",

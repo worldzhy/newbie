@@ -1,5 +1,4 @@
 const fs = require('fs');
-const {underline} = require('colorette');
 const {getEnabledMicroservices} = require('../.db/microservices');
 const {
   ALL_MICROSERVICES,
@@ -8,8 +7,6 @@ const {
 } = require('../newbie.constants');
 
 const assembleTsConfigFiles = () => {
-  console.info('|' + underline(' 4. updating tsconfig... ') + '|');
-
   const enabledMicroservices = getEnabledMicroservices();
   let tsconfig = {exclude: []};
   let tsBuildConfig = {exclude: []};

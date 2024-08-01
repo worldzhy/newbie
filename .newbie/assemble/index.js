@@ -1,6 +1,6 @@
 const figlet = require('figlet');
 const {checkbox, select} = require('@inquirer/prompts');
-const {bold, cyan, green, inverse} = require('colorette');
+const {bold, cyan, green, inverse, underline} = require('colorette');
 const {
   getAddedMicroservices,
   getRemovedMicroservices,
@@ -8,8 +8,9 @@ const {
   updateEnabledMicroservices,
 } = require('../.db/microservices');
 const {ALL_MICROSERVICES} = require('../newbie.constants');
-const {assembleEnvFile} = require('./assemble-env');
 const {assembleSourceCodeFiles} = require('./assemble-code');
+const {assembleDependencies} = require('./assemble-dependencies');
+const {assembleEnvFile} = require('./assemble-env');
 const {assembleSchemaFiles} = require('./assemble-schema');
 const {assembleTsConfigFiles} = require('./assemble-tsconfig');
 
@@ -44,8 +45,7 @@ const main = async () => {
 
   // [step 3-1] Enable and disable services.
   const enabledMicroservices = await checkbox({
-    message:
-      'Which microservices do you want to enable or disable for your project:',
+    message: 'Which microservices do you want to enable for your project:',
     choices: allMicroservices.map(microservice => {
       const checked = currentMicroervices.includes(microservice);
       return {
@@ -97,9 +97,20 @@ const main = async () => {
     updateEnabledMicroservices(enabledMicroservices);
 
     // Assemable project files.
-    assembleSchemaFiles(addedMicroservices, removedMicroservices);
-    assembleSourceCodeFiles();
+    console.info(' ' + underline('                             ') + ' ');
+    console.info('|' + underline(' 1. updating dependencies... ') + '|');
+    assembleDependencies(addedMicroservices, removedMicroservices);
+
+    console.info('|' + underline(' 2. updating env...          ') + '|');
     assembleEnvFile(addedMicroservices, removedMicroservices);
+
+    console.info('|' + underline(' 3. updating schema...       ') + '|');
+    assembleSchemaFiles(addedMicroservices, removedMicroservices);
+
+    console.info('|' + underline(' 4. updating code...         ') + '|');
+    assembleSourceCodeFiles();
+
+    console.info('|' + underline(' 5. updating tsconfig...     ') + '|');
     assembleTsConfigFiles();
 
     console.log(bold(green('     C O M P L E T E\n')));
