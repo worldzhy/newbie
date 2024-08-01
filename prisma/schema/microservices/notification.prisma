@@ -1,0 +1,108 @@
+// !! ------------------------------------------------------------ //
+// !!            [Microservice] Notification models                //
+// !! ------------------------------------------------------------ //
+// * EmailNotification                                             //
+// * SmsNotification                                               //
+// * NotificationSimpleEmailChannel                                //
+// * NotificationSimpleEmailRecord                                 //
+// * NotificationAdvancedEmailChannel                              //
+// * NotificationAdvancedEmailRecord                               //
+// * NotificationWebhookChannel                                    //
+// * NotificationWebhookRecord                                     //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
+
+model NotificationSimpleEmailChannel {
+  id          Int                             @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime                        @default(now())
+  updatedAt   DateTime                        @updatedAt
+  records     NotificationSimpleEmailRecord[]
+
+  @@schema("microservice/notification")
+}
+
+model NotificationSimpleEmailRecord {
+  id        Int                            @id @default(autoincrement())
+  status    String // pending, succeeded, failed
+  createdAt DateTime                       @default(now())
+  updatedAt DateTime                       @updatedAt
+  channel   NotificationSimpleEmailChannel @relation(fields: [channelId], references: [id])
+  channelId Int
+
+  @@schema("microservice/notification")
+}
+
+model NotificationAdvancedEmailChannel {
+  id          Int                               @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime                          @default(now())
+  updatedAt   DateTime                          @updatedAt
+  records     NotificationAdvancedEmailRecord[]
+
+  @@schema("microservice/notification")
+}
+
+model NotificationAdvancedEmailRecord {
+  id        Int                              @id @default(autoincrement())
+  status    String // pending, succeeded, failed 
+  createdAt DateTime                         @default(now())
+  updatedAt DateTime                         @updatedAt
+  channel   NotificationAdvancedEmailChannel @relation(fields: [channelId], references: [id])
+  channelId Int
+
+  @@schema("microservice/notification")
+}
+
+model NotificationWebhookChannel {
+  id          Int                         @id @default(autoincrement())
+  name        String
+  description String?
+  webhook     String
+  platform    String // lark, slack ...
+  createdAt   DateTime                    @default(now())
+  updatedAt   DateTime                    @updatedAt
+  deletedAt   DateTime?
+  records     NotificationWebhookRecord[]
+
+  @@unique([name, platform])
+  @@schema("microservice/notification")
+}
+
+model NotificationWebhookRecord {
+  id        Int                        @id @default(autoincrement())
+  request   Json
+  response  Json?
+  status    String // pending, succeeded, failed
+  createdAt DateTime                   @default(now())
+  updatedAt DateTime                   @updatedAt
+  channel   NotificationWebhookChannel @relation(fields: [channelId], references: [id])
+  channelId Int
+
+  @@schema("microservice/notification")
+}
+
+model EmailNotification {
+  id                Int      @id @default(autoincrement())
+  payload           Json // The notification content for one email address.
+  pinpointRequestId String? // RequestId is the Pinpoint request id. One request can contain multiple text messages.
+  pinpointMessageId String? // MessageId is the email message id.
+  pinpointResponse  Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@schema("microservice/notification")
+}
+
+model SmsNotification {
+  id                Int      @id @default(autoincrement())
+  payload           Json // The notification content for one phone.
+  pinpointRequestId String? // RequestId is the Pinpoint request id. One request can contain multiple text messages.
+  pinpointMessageId String? // MessageId is the text message id.
+  pinpointResponse  Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@schema("microservice/notification")
+}

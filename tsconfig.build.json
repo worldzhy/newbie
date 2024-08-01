@@ -11,7 +11,6 @@
     "./src/microservices/event-scheduling",
     "./src/microservices/googleapis",
     "./src/microservices/map",
-    "./src/microservices/notification",
     "./src/microservices/order-mgmt",
     "./src/microservices/pdf",
     "./src/microservices/people-finder",
