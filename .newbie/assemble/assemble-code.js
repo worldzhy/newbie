@@ -105,9 +105,10 @@ const MicroservicesModuleTemplate = microservices => {
 const MicroservicesConfigTemplate = configs => `
   import {registerAs} from '@nestjs/config';
 
-  export default registerAs('microservices', () => (${JSON.stringify(
-    configs
-  ).replace(/('|")(process.*?)\1/g, '$2')}));
+  export default registerAs('microservices', () => (${JSON.stringify(configs)
+    .replace(/('|")(process.*?)\1/g, '$2')
+    .replace(/('|")(parseInt\(process.*?)\1/g, '$2')
+    .replace(/('|")(parseFloat\(process.*?)\1/g, '$2')}));
   `;
 
 module.exports = {

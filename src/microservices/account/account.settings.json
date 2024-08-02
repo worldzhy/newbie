@@ -1,5 +1,5 @@
 {
-  "config-service":{
+  "config-service": {
     "account": {
       "ratelimiter": {
         "ipLoginLimiter": {
@@ -30,14 +30,14 @@
         }
       },
       "verificationCode": {
-        "timeoutMinutes": 1, 
+        "timeoutMinutes": 1,
         "resendMinutes": 1,
         "aws": {
           "accessKeyId": "process.env.ACCOUNT_AWS_ACCESS_KEY_ID",
           "secretAccessKey": "process.env.ACCOUNT_AWS_SECRET_ACCESS_KEY",
           "region": "process.env.ACCOUNT_AWS_REGION || 'us-east-1'",
           "pinpointApplicationId": "process.env.ACCOUNT_AWS_PINPOINT_APPLICATION_ID || 'default'",
-          "pinpointFromAddress": "process.env.ACCOUNT_AWS_PINPOINT_FROM_ADDRESS || 'default'", 
+          "pinpointFromAddress": "process.env.ACCOUNT_AWS_PINPOINT_FROM_ADDRESS || 'default'",
           "pinpointSenderId": "process.env.ACCOUNT_AWS_PINPOINT_SENDER_ID || 'default'"
         }
       }
@@ -55,11 +55,11 @@
     "ACCOUNT_AWS_PINPOINT_FROM_ADDRESS": "",
     "ACCOUNT_AWS_PINPOINT_SENDER_ID": ""
   },
-  "dependencies": {    
+  "dependencies": {
     "@aws-sdk/client-pinpoint": "^3.609.0",
     "@nestjs/jwt": "^10.2.0",
     "@nestjs/passport": "^10.0.2",
-    "@casl/prisma": "^1.4.1",  
+    "@casl/prisma": "^1.4.1",
     "ioredis": "^5.3.2",
     "passport": "^0.6.0",
     "passport-custom": "^1.1.1",
