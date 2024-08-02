@@ -132,7 +132,11 @@ export class PrismaService
     model: Prisma.ModelName;
     findManyArgs?: any;
   }) {
-    const {model, findManyArgs} = params;
+    const {findManyArgs} = params;
+
+    // ! Handle the situation where there is no Prisma model to prevent the following code from reporting an error.
+    const model = params.model as string;
+
     const modelLowercaseFirstLetter =
       model.charAt(0).toLowerCase() + model.slice(1);
 
@@ -159,7 +163,11 @@ export class PrismaService
     };
     findManyArgs?: any;
   }) {
-    const {model, pagination, findManyArgs} = params;
+    const {pagination, findManyArgs} = params;
+
+    // ! Handle the situation where there is no Prisma model to prevent the following code from reporting an error.
+    const model = params.model as string;
+
     const modelLowercaseFirstLetter =
       model.charAt(0).toLowerCase() + model.slice(1);
 
