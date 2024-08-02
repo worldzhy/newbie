@@ -1,6 +1,5 @@
-import {Injectable} from '@nestjs/common';
+import {Logger, Injectable} from '@nestjs/common';
 import {HttpService} from '@nestjs/axios';
-import {CustomLoggerService} from '@toolkit/logger/logger.service';
 import {ConfigService} from '@nestjs/config';
 
 @Injectable()
@@ -11,7 +10,7 @@ export class PeopleFinderNotificationService {
   channelName: string;
 
   constructor(
-    private readonly logger: CustomLoggerService,
+    private readonly logger: Logger,
     private readonly configService: ConfigService,
     private httpService: HttpService
   ) {

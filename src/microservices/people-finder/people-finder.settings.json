@@ -1,0 +1,34 @@
+{
+  "config-service": {
+    "peopleFinder": {
+      "voilanorbert": {
+        "apiKey": "process.env.PEOPLE_FINDER_VOILANORBERT_API_KEY",
+        "callbackOrigin": "process.env.PEOPLE_FINDER_VOILANORBERT_CALLBACK_ORIGIN"
+      },
+      "proxycurl": {
+        "apiKey": "process.env.PEOPLE_FINDER_PROXYCURL_API_KEY"
+      },
+      "peopledatalabs": {
+        "apiKey": "process.env.PEOPLE_FINDER_PEOPLEDATALABS_API_KEY"
+      },
+      "notification": {
+        "webhookFeishu": "process.env.PEOPLE_FINDER_WEBHOOK_FEISHU",
+        "accessKey": "process.env.PEOPLE_FINDER_ACCESS_KEY",
+        "channelName": "process.env.PEOPLE_FINDER_SYSTEM_CHANNEL"
+      }
+    }
+  },
+  "env":{
+    "PEOPLE_FINDER_VOILANORBERT_API_KEY":"",
+    "PEOPLE_FINDER_VOILANORBERT_CALLBACK_ORIGIN":"",
+    "PEOPLE_FINDER_PROXYCURL_API_KEY":"",
+    "PEOPLE_FINDER_PEOPLEDATALABS_API_KEY":"",
+    "PEOPLE_FINDER_WEBHOOK_FEISHU":"",
+    "PEOPLE_FINDER_ACCESS_KEY":"",
+    "PEOPLE_FINDER_SYSTEM_CHANNEL":""
+  },
+  "dependencies":{
+    "peopledatalabs": "^8.0.1",
+    "proxycurl-js-linkedin-profile-scraper": "^1.0.2"
+  }
+}

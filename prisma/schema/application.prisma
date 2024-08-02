@@ -1,0 +1,25 @@
+// This is your Prisma schema file.
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// !! ------------------------------------------------------------ //
+// !!                       [Prisma] Issues                        //
+// !! ------------------------------------------------------------ //
+// * https://github.com/prisma/prisma/issues/4355                  //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
+
+generator client {
+  provider = "prisma-client-js"
+
+  // Enable Full-Text Search which is only available for PostgreSQL.
+  previewFeatures = ["multiSchema", "fullTextSearch", "prismaSchemaFolder"]
+
+  // For production deployment.
+  // binaryTargets   = ["native", "rhel-openssl-1.0.x"]
+  // binaryTargets   = ["native", "linux-arm64-openssl-1.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("PRISMA_DATABASE_URL")
+  schemas  = ["application"]
+}

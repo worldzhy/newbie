@@ -32,18 +32,14 @@ async function bootstrap() {
     app.use(urlencoded({limit: '10mb', extended: true}));
   }
 
-  // [step 2] Check required environment variables.
+  // [step 2] Enable features.
   const configService = app.get<ConfigService>(ConfigService);
-  ['ENVIRONMENT', 'PORT', 'ALLOWED_ORIGINS', 'DATABASE_URL'].forEach(envVar => {
-    if (!configService.getOrThrow<string>(envVar)) {
-      throw Error(`Undefined environment variable: ${envVar}`);
-    }
-  });
 
-  // [step 3] Enable features.
   app.enableCors({
     credentials: true,
-    origin: configService.getOrThrow<string[]>('server.allowedOrigins'),
+    origin: configService.getOrThrow<string[]>(
+      'framework.server.allowedOrigins'
+    ),
   });
 
   app.useGlobalPipes(
@@ -61,9 +57,9 @@ async function bootstrap() {
     })
   );
 
-  const env = configService.getOrThrow<string>('server.environment');
+  const env = configService.getOrThrow<string>('framework.environment');
   const nodeFramework = configService.getOrThrow<string>(
-    'server.nodeFramework'
+    'framework.nodeFramework'
   );
   if (env === 'production') {
     // helmet is only available in production environment.
@@ -91,10 +87,12 @@ async function bootstrap() {
     SwaggerModule.setup('api', app, document, customOptions);
   }
 
-  // [step 4] Listen port
-  const port = configService.getOrThrow<number>('server.port');
+  // [step 3] Listen port
+  const port = configService.getOrThrow<number>('framework.server.port');
   const server = await app.listen(port, '0.0.0.0');
-  server.timeout = configService.getOrThrow<number>('server.httpTimeout');
+  server.timeout = configService.getOrThrow<number>(
+    'framework.server.httpTimeout'
+  );
 
   console.log(`Application is running on: ${await app.getUrl()}`);
 }

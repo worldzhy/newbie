@@ -1,5 +1,5 @@
 export enum NotificationWebhookPlatform {
-  Feishu = 'feishu',
+  Lark = 'lark',
   Slack = 'slack',
 }
 

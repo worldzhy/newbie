@@ -11,11 +11,11 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {PermissionAction, Prisma, Role, User, UserStatus} from '@prisma/client';
-import {UserService} from '@microservices/account/user/user.service';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
+import {verifyUuid} from '@microservices/account/account.validator';
 import {compareHash} from '@toolkit/utilities/common.util';
-import {verifyUuid} from '@toolkit/validators/user.validator';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {UserService} from './user.service';
 
 @ApiTags('Account / User')
 @ApiBearerAuth()

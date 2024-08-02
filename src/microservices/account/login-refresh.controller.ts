@@ -4,8 +4,9 @@ import {Response} from 'express';
 import {RefreshTokenService} from './security/token/refresh-token.service';
 import {TokenService} from './security/token/token.service';
 import {GuardByRefreshToken} from './security/passport/refresh-token/refresh-token.decorator';
-import {Cookies} from '@toolkit/cookie/cookie.decorator';
+// import {Cookies} from '@framework/decorators/cookie.decorator';
 import {AccessToken} from '@prisma/client';
+import {Cookies} from '@framework/decorators/cookie.decorator';
 import {secondsUntilUnixTimestamp} from '@toolkit/utilities/datetime.util';
 
 @ApiTags('Account')

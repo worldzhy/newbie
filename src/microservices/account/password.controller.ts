@@ -2,13 +2,16 @@ import {Controller, Body, BadRequestException, Post} from '@nestjs/common';
 import {ApiTags, ApiBody, ApiBearerAuth} from '@nestjs/swagger';
 import {VerificationCodeService} from '@microservices/account/verification-code/verification-code.service';
 import {NoGuard} from '@microservices/account/security/passport/public/public.decorator';
-import {verifyEmail, verifyPhone} from '@toolkit/validators/user.validator';
+import {
+  verifyEmail,
+  verifyPhone,
+} from '@microservices/account/account.validator';
 import {compareHash} from '@toolkit/utilities/common.util';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {
   NewbieException,
   NewbieExceptionType,
-} from '@framework/exception/newbie.exception';
+} from '@framework/exceptions/newbie.exception';
 
 @ApiTags('Account')
 @Controller('account')

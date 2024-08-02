@@ -1,7 +1,6 @@
-import {Injectable, BadRequestException} from '@nestjs/common';
+import {Logger, Injectable, BadRequestException} from '@nestjs/common';
 import {HttpService} from '@nestjs/axios';
 import {Prisma} from '@prisma/client';
-import {CustomLoggerService} from '@toolkit/logger/logger.service';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {
   PeopleFinderStatus,
@@ -21,7 +20,7 @@ export class PeopleFinderService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly logger: CustomLoggerService,
+    private readonly logger: Logger,
     private httpService: HttpService,
     private peopleFinderNotification: PeopleFinderNotificationService
   ) {}

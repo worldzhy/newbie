@@ -6,7 +6,7 @@ import {UserService} from '@microservices/account/user/user.service';
 import {
   NewbieException,
   NewbieExceptionType,
-} from '@framework/exception/newbie.exception';
+} from '@framework/exceptions/newbie.exception';
 
 @Injectable()
 export class PasswordStrategy extends PassportStrategy(

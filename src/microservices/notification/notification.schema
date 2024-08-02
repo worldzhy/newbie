@@ -3,7 +3,6 @@
 // !! ------------------------------------------------------------ //
 // * EmailNotification                                             //
 // * SmsNotification                                               //
-// * NotificationAccessKey                                         //
 // * NotificationSimpleEmailChannel                                //
 // * NotificationSimpleEmailRecord                                 //
 // * NotificationAdvancedEmailChannel                              //
@@ -12,21 +11,6 @@
 // * NotificationWebhookRecord                                     //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
 
-model NotificationAccessKey {
-  id                    Int                                @id @default(autoincrement())
-  key                   String // Auto generated
-  name                  String
-  status                String
-  createdAt             DateTime                           @default(now())
-  updatedAt             DateTime                           @updatedAt
-  deletedAt             DateTime?
-  webhookChannels       NotificationWebhookChannel[]
-  simpleEmailChannels   NotificationSimpleEmailChannel[]
-  advancedEmailChannels NotificationAdvancedEmailChannel[]
-
-  @@schema("microservice/notification")
-}
-
 model NotificationSimpleEmailChannel {
   id          Int                             @id @default(autoincrement())
   name        String
@@ -34,8 +18,6 @@ model NotificationSimpleEmailChannel {
   createdAt   DateTime                        @default(now())
   updatedAt   DateTime                        @updatedAt
   records     NotificationSimpleEmailRecord[]
-  accessKey   NotificationAccessKey           @relation(fields: [accessKeyId], references: [id])
-  accessKeyId Int
 
   @@schema("microservice/notification")
 }
@@ -58,8 +40,6 @@ model NotificationAdvancedEmailChannel {
   createdAt   DateTime                          @default(now())
   updatedAt   DateTime                          @updatedAt
   records     NotificationAdvancedEmailRecord[]
-  accessKey   NotificationAccessKey?            @relation(fields: [accessKeyId], references: [id])
-  accessKeyId Int?
 
   @@schema("microservice/notification")
 }
@@ -80,14 +60,13 @@ model NotificationWebhookChannel {
   name        String
   description String?
   webhook     String
-  platform    String // feishu, slack ...
+  platform    String // lark, slack ...
   createdAt   DateTime                    @default(now())
   updatedAt   DateTime                    @updatedAt
   deletedAt   DateTime?
   records     NotificationWebhookRecord[]
-  accessKey   NotificationAccessKey?      @relation(fields: [accessKeyId], references: [id])
-  accessKeyId Int?
 
+  @@unique([name, platform])
   @@schema("microservice/notification")
 }
 

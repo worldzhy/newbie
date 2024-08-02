@@ -1,0 +1,30 @@
+// ! ------------------------------------------------------------ //
+// !           [Microservice] Task scheduling models              //
+// ! ------------------------------------------------------------ //
+// * CronTask                                                     //
+// * TimeoutTask                                                  //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
+
+model CronTask {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  cronTime  String
+  running   Boolean  @default(false)
+  command   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@schema("microservice/task-scheduling")
+}
+
+model TimeoutTask {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  running   Boolean  @default(false)
+  command   String?
+    triggeredAt   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@schema("microservice/task-scheduling")
+}

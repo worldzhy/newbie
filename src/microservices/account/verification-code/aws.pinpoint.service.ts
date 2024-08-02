@@ -15,14 +15,14 @@ export class AwsPinpointService {
   constructor(private readonly configService: ConfigService) {
     this.client = new PinpointClient({
       region: this.configService.getOrThrow<string>(
-        'microservices.account.aws.region'
+        'microservices.account.verificationCode.aws.region'
       ),
       credentials: {
         accessKeyId: this.configService.getOrThrow<string>(
-          'microservices.account.aws.accessKeyId'
+          'microservices.account.verificationCode.aws.accessKeyId'
         )!,
         secretAccessKey: this.configService.getOrThrow<string>(
-          'microservices.account.aws.secretAccessKey'
+          'microservices.account.verificationCode.aws.secretAccessKey'
         )!,
       },
     });

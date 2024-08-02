@@ -6,19 +6,22 @@
     "./prisma",
     "./src/microservices/account",
     "./src/microservices/aws",
+    "./src/microservices/cache",
     "./src/microservices/cloudformation",
-    "./src/microservices/cron",
     "./src/microservices/event-scheduling",
     "./src/microservices/googleapis",
     "./src/microservices/map",
     "./src/microservices/notification",
     "./src/microservices/order-mgmt",
+    "./src/microservices/pdf",
     "./src/microservices/people-finder",
     "./src/microservices/queue",
     "./src/microservices/shortcut",
     "./src/microservices/stock-mgmt",
     "./src/microservices/storage",
     "./src/microservices/tag",
-    "./src/microservices/workflow"
+    "./src/microservices/task-scheduling",
+    "./src/microservices/workflow",
+    "./src/microservices/xlsx"
   ]
 }

@@ -1,9 +1,8 @@
-import {Injectable} from '@nestjs/common';
+import {Logger, Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import * as PDLJS from 'peopledatalabs';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {Prisma} from '@prisma/client';
-import {CustomLoggerService} from '@toolkit/logger/logger.service';
 import {PeopleFinderCallThirdPartyDto} from '../people-finder.dto';
 import {PeopleFinderNotificationService} from '../people-finder.notification.service';
 import {
@@ -32,7 +31,7 @@ export class PeopledatalabsService {
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
     private peopleFinderNotification: PeopleFinderNotificationService,
-    private readonly logger: CustomLoggerService
+    private readonly logger: Logger
   ) {
     this.apiKey = this.configService.getOrThrow<string>(
       'microservices.peopleFinder.peopledatalabs.apiKey'

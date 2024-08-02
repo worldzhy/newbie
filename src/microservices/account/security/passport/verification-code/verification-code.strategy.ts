@@ -3,7 +3,10 @@ import {PassportStrategy} from '@nestjs/passport';
 import {Strategy} from 'passport-local';
 import {VerificationCodeService} from '@microservices/account/verification-code/verification-code.service';
 import {UserService} from '@microservices/account/user/user.service';
-import {verifyEmail, verifyPhone} from '@toolkit/validators/user.validator';
+import {
+  verifyEmail,
+  verifyPhone,
+} from '@microservices/account/account.validator';
 
 @Injectable()
 export class VerificationCodeStrategy extends PassportStrategy(

@@ -14,7 +14,7 @@ import {
 import {
   NewbieException,
   NewbieExceptionType,
-} from '@framework/exception/newbie.exception';
+} from '@framework/exceptions/newbie.exception';
 
 @Injectable()
 export class RateLimiterGuard {
