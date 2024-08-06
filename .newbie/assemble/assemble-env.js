@@ -7,6 +7,13 @@ const {
   MICROSERVICES_CODE_PATH,
   FRAMEWORK_SETTINGS_JSON,
 } = require('../newbie.constants');
+const {getEnabledMicroservices} = require('../.db/microservices');
+
+/**
+ * The assembleEnvFile function does 2 things:
+ * 1. Add or remove variables in .env
+ * 2. Generate a copy of .env which is named .env.example (for production deployment)
+ */
 
 const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
   const envObj = getObjectFromEnvFile();
@@ -116,9 +123,13 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
   } else {
     // Do nothing
   }
+
+  // [step 5] Generate .env.example
+  generateEnvExampleFile();
 };
 
-const updateEnvExampleFile = addedMicroservices => {
+const generateEnvExampleFile = addedMicroservices => {
+  getEnabledMicroservices();
   const envExamplePath = './.env.example';
   const frameworkHeaderTemplate = `# Environment variables declared in this file are automatically made available to Prisma.
 # See the documentation for more detail: https://pris.ly/d/prisma-schema#accessing-environment-variables-from-the-schema
@@ -134,12 +145,14 @@ const updateEnvExampleFile = addedMicroservices => {
 # SERVER_SERIAL_NUMBER: Related to cronjob                                             #
 # DATABASE_URL: @See https://www.prisma.io/docs/concepts/components/prisma-client/working-with-prismaclient/connection-pool
 # ------------------------------------------------------------------------------------ #\n`;
+
   const getHeaderTemplate = (
     name,
     path
   ) => `\n\n# ------------------------------------${name}--------------------------------------- #
 ! Mention ${path} when the following varialbes changes.
 # ------------------------------------------------------------------------------------ #\n`;
+
   const capitalizeFirstLetter = string =>
     string.charAt(0).toUpperCase() + string.slice(1);
 
@@ -215,5 +228,4 @@ const updateEnvExampleFile = addedMicroservices => {
 
 module.exports = {
   assembleEnvFile,
-  updateEnvExampleFile,
 };

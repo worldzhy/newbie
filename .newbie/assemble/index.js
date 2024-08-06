@@ -10,7 +10,7 @@ const {
 const {ALL_MICROSERVICES} = require('../newbie.constants');
 const {assembleSourceCodeFiles} = require('./assemble-code');
 const {assembleDependencies} = require('./assemble-dependencies');
-const {assembleEnvFile, updateEnvExampleFile} = require('./assemble-env');
+const {assembleEnvFile} = require('./assemble-env');
 const {assembleSchemaFiles} = require('./assemble-schema');
 const {assembleTsConfigFiles} = require('./assemble-tsconfig');
 
@@ -112,7 +112,6 @@ const main = async () => {
 
     console.info('|' + underline(' 2. updating env...          ') + '|');
     assembleEnvFile(addedMicroservices, removedMicroservices);
-    updateEnvExampleFile(addedMicroservices);
 
     console.info('|' + underline(' 3. updating schema...       ') + '|');
     assembleSchemaFiles(addedMicroservices, removedMicroservices);
