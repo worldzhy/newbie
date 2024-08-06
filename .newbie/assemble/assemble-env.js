@@ -3,9 +3,9 @@ const {getObjectFromEnvFile} = require('../.db/env');
 const {
   ENV_PATH,
   ALL_MICROSERVICES,
+  TOOLKIT_SETTINGS_JSON,
   MICROSERVICES_CODE_PATH,
   FRAMEWORK_SETTINGS_JSON,
-  TOOLKIT_SETTINGS_JSON,
 } = require('../newbie.constants');
 
 const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
@@ -118,6 +118,102 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
   }
 };
 
+const updateEnvExampleFile = addedMicroservices => {
+  const envExamplePath = './.env.example';
+  const frameworkHeaderTemplate = `# Environment variables declared in this file are automatically made available to Prisma.
+# See the documentation for more detail: https://pris.ly/d/prisma-schema#accessing-environment-variables-from-the-schema
+
+# Prisma supports the native connection string format for PostgreSQL, MySQL, SQLite, SQL Server, MongoDB (Preview) and CockroachDB (Preview).
+# See the documentation for all the connection string options: https://pris.ly/d/connection-strings
+
+
+# ------------------------------------Framework--------------------------------------- #
+! Mention ${FRAMEWORK_SETTINGS_JSON} when the following varialbes changes.
+# ------------------------------------------------------------------------------------ #
+# ENVIRONMENT: 'production' or 'development'                                           #
+# SERVER_SERIAL_NUMBER: Related to cronjob                                             #
+# DATABASE_URL: @See https://www.prisma.io/docs/concepts/components/prisma-client/working-with-prismaclient/connection-pool
+# ------------------------------------------------------------------------------------ #\n`;
+  const getHeaderTemplate = (
+    name,
+    path
+  ) => `\n\n# ------------------------------------${name}--------------------------------------- #
+! Mention ${path} when the following varialbes changes.
+# ------------------------------------------------------------------------------------ #\n`;
+  const capitalizeFirstLetter = string =>
+    string.charAt(0).toUpperCase() + string.slice(1);
+
+  // [step 1] Append framework variables to .env.example
+  fs.writeFileSync(envExamplePath, frameworkHeaderTemplate);
+  if (fs.existsSync(FRAMEWORK_SETTINGS_JSON)) {
+    const {env = {}} = JSON.parse(
+      fs.readFileSync(FRAMEWORK_SETTINGS_JSON, {encoding: 'utf8', flag: 'r'})
+    );
+
+    if (Object.keys(env).length > 0) {
+      fs.appendFileSync(
+        envExamplePath,
+        Object.entries(env)
+          .map(e => e.join('='))
+          .join('\n')
+      );
+    }
+  }
+
+  // [step 2] Append tooltip variables to .env.example
+  if (fs.existsSync(TOOLKIT_SETTINGS_JSON)) {
+    const {env = {}} = JSON.parse(
+      fs.readFileSync(TOOLKIT_SETTINGS_JSON, {encoding: 'utf8', flag: 'r'})
+    );
+
+    if (Object.keys(env).length > 0) {
+      fs.appendFileSync(
+        envExamplePath,
+        getHeaderTemplate('Toolkit', TOOLKIT_SETTINGS_JSON)
+      );
+      fs.appendFileSync(
+        envExamplePath,
+        Object.entries(env)
+          .map(e => e.join('='))
+          .join('\n')
+      );
+    }
+  }
+
+  // [step 3] Append microservices variables to .env.example
+  addedMicroservices.forEach(name => {
+    const {key, settingsFileName} = ALL_MICROSERVICES[name] || {};
+
+    if (!key) {
+      return;
+    }
+    if (settingsFileName) {
+      const settingsFilePath =
+        MICROSERVICES_CODE_PATH + '/' + key + '/' + key + '.settings.json';
+
+      if (fs.existsSync(settingsFilePath)) {
+        const {env = {}} = JSON.parse(
+          fs.readFileSync(settingsFilePath, {encoding: 'utf8', flag: 'r'})
+        );
+
+        if (Object.keys(env).length > 0) {
+          fs.appendFileSync(
+            envExamplePath,
+            getHeaderTemplate(capitalizeFirstLetter(key), settingsFilePath)
+          );
+          fs.appendFileSync(
+            envExamplePath,
+            Object.entries(env)
+              .map(e => e.join('='))
+              .join('\n')
+          );
+        }
+      }
+    }
+  });
+};
+
 module.exports = {
   assembleEnvFile,
+  updateEnvExampleFile,
 };
