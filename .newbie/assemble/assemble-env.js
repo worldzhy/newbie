@@ -128,9 +128,9 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
   generateEnvExampleFile();
 };
 
-const generateEnvExampleFile = addedMicroservices => {
-  getEnabledMicroservices();
+const generateEnvExampleFile = () => {
   const envExamplePath = './.env.example';
+  const addedMicroservices = getEnabledMicroservices();
   const frameworkHeaderTemplate = `# Environment variables declared in this file are automatically made available to Prisma.
 # See the documentation for more detail: https://pris.ly/d/prisma-schema#accessing-environment-variables-from-the-schema
 
@@ -139,7 +139,7 @@ const generateEnvExampleFile = addedMicroservices => {
 
 
 # ------------------------------------Framework--------------------------------------- #
-! Mention ${FRAMEWORK_SETTINGS_JSON} when the following varialbes changes.
+# ! Mention ${FRAMEWORK_SETTINGS_JSON} when the following varialbes changes.
 # ------------------------------------------------------------------------------------ #
 # ENVIRONMENT: 'production' or 'development'                                           #
 # SERVER_SERIAL_NUMBER: Related to cronjob                                             #
@@ -150,9 +150,8 @@ const generateEnvExampleFile = addedMicroservices => {
     name,
     path
   ) => `\n\n# ------------------------------------${name}--------------------------------------- #
-! Mention ${path} when the following varialbes changes.
+# ! Mention ${path} when the following varialbes changes.
 # ------------------------------------------------------------------------------------ #\n`;
-
   const capitalizeFirstLetter = string =>
     string.charAt(0).toUpperCase() + string.slice(1);
 
