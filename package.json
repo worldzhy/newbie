@@ -14,7 +14,7 @@
     "compile": "tsc",
     "format": "prettier --write \"src/**/*.ts\"",
     "build": "nest build",
-    "prod": "node dist/src/main",
+    "start": "nest start",
     "dev": "nest start --watch",
     "newbie": "node .newbie/assemble/index.js",
     "newbie:check": "node .newbie/check/index.js"

@@ -1,13 +1,13 @@
 const fs = require('fs');
-const {getEnabledMicroservices} = require('../.db/microservices');
 const {
-  ENV_PATH,
-  FRAMEWORK_SETTINGS_JSON,
-  TOOLKIT_SETTINGS_JSON,
-  MICROSERVICES_CODE_PATH,
-  ALL_MICROSERVICES,
   LINE,
+  ENV_PATH,
+  ALL_MICROSERVICES,
+  TOOLKIT_SETTINGS_JSON,
+  FRAMEWORK_SETTINGS_JSON,
+  MICROSERVICES_CODE_PATH,
 } = require('../newbie.constants');
+const {getEnabledMicroservices} = require('../.db/microservices');
 
 const getObjectFromEnvFile = () => {
   // [step 1] Copy .env.example to .env if .env is not existed.

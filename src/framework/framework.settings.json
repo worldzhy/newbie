@@ -2,7 +2,7 @@
   "env": {
     "ENVIRONMENT": "development",
     "PORT": "3000",
-    "ALLOWED_ORIGINS": "localhost:3000,localhost:3001",
+    "ALLOWED_ORIGINS": "http://localhost:3000,http://localhost:3001",
     "SERVER_SERIAL_NUMBER": "1"
   }
 }

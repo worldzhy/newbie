@@ -103,7 +103,7 @@ $ npx prisma db seed
 
 ```
 $ npm run build
-$ pm2 start npm --name newbie -- prod
+$ pm2 start npm --name newbie -- start
 ```
 
 ### Restart application
