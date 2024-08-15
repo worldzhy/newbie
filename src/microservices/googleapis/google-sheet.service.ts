@@ -6,6 +6,8 @@ import {
   number2alphabet,
 } from '@toolkit/utilities/common.util';
 
+const DEFAULT_SHEET_TITLE = 'Sheet1';
+
 /**
  * API parameters introduction
  *
@@ -62,21 +64,23 @@ export class GoogleSheetService {
     // }
   }
 
-  async clearSheet(params: {fileId: string; sheetTitle: string}) {
+  async clearSheet(params: {fileId: string; sheetTitle?: string}) {
     await this.client.spreadsheets.values.clear({
       spreadsheetId: params.fileId,
-      range: params.sheetTitle,
+      range: params.sheetTitle ?? DEFAULT_SHEET_TITLE,
     });
   }
 
-  async getSheetId(params: {fileId: string; sheetTitle: string}) {
+  async getSheetId(params: {fileId: string; sheetTitle?: string}) {
     const response = await this.client.spreadsheets.get({
       spreadsheetId: params.fileId,
     });
     if (response.data.sheets) {
       for (let i = 0; i < response.data.sheets.length; i++) {
         const sheet = response.data.sheets[i];
-        if (sheet.properties?.title === params.sheetTitle) {
+        if (
+          sheet.properties?.title === (params.sheetTitle ?? DEFAULT_SHEET_TITLE)
+        ) {
           return sheet.properties.sheetId;
         }
       }
@@ -85,13 +89,13 @@ export class GoogleSheetService {
 
   async updateHeadings(params: {
     fileId: string;
-    sheetTitle: string;
+    sheetTitle?: string;
     headings: string[];
   }) {
     // [step 0] Get sheet id.
     const sheetId = await this.getSheetId({
       fileId: params.fileId,
-      sheetTitle: params.sheetTitle,
+      sheetTitle: params.sheetTitle ?? DEFAULT_SHEET_TITLE,
     });
 
     // [step 1] Update format.
@@ -138,7 +142,7 @@ export class GoogleSheetService {
     // [step 2] Update data.
     await this.updateRow({
       fileId: params.fileId,
-      sheetTitle: params.sheetTitle,
+      sheetTitle: params.sheetTitle ?? DEFAULT_SHEET_TITLE,
       rowIndex: 1,
       rowData: params.headings,
     });
@@ -148,11 +152,11 @@ export class GoogleSheetService {
    * Row Operations                     *
    **************************************/
 
-  async getRows(params: {fileId: string; sheetTitle: string}) {
+  async getRows(params: {fileId: string; sheetTitle?: string}) {
     try {
       const response = await this.client.spreadsheets.values.get({
         spreadsheetId: params.fileId,
-        range: `${params.sheetTitle}`,
+        range: `${params.sheetTitle ?? DEFAULT_SHEET_TITLE}`,
       });
       return response.data.values;
     } catch (err) {
@@ -162,14 +166,14 @@ export class GoogleSheetService {
 
   async appendRows(params: {
     fileId: string;
-    sheetTitle: string;
+    sheetTitle?: string;
     data: any[][];
   }) {
     try {
       const response = await this.client.spreadsheets.values.append({
         spreadsheetId: params.fileId,
         valueInputOption: 'RAW',
-        range: `${params.sheetTitle}!A1`,
+        range: `${params.sheetTitle ?? DEFAULT_SHEET_TITLE}!A1`,
         requestBody: {values: params.data},
       });
       return response.data.spreadsheetId;
@@ -180,7 +184,7 @@ export class GoogleSheetService {
 
   async updateRow(params: {
     fileId: string;
-    sheetTitle: string;
+    sheetTitle?: string;
     rowIndex: number;
     rowData: string[];
   }) {
@@ -189,7 +193,7 @@ export class GoogleSheetService {
       const response = await this.client.spreadsheets.values.update({
         spreadsheetId: params.fileId,
         valueInputOption: 'RAW',
-        range: `${params.sheetTitle}!A${params.rowIndex}:${columnLetter}${params.rowIndex}`,
+        range: `${params.sheetTitle ?? DEFAULT_SHEET_TITLE}!A${params.rowIndex}:${columnLetter}${params.rowIndex}`,
         requestBody: {values: [params.rowData]},
       });
 
