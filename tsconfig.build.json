@@ -16,6 +16,7 @@
     "./src/microservices/pdf",
     "./src/microservices/people-finder",
     "./src/microservices/queue",
+    "./src/microservices/saas-starter",
     "./src/microservices/shortcut",
     "./src/microservices/stock-mgmt",
     "./src/microservices/storage",
