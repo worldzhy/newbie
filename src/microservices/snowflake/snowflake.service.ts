@@ -7,15 +7,12 @@ export class SnowflakeService {
   private connectionPool: {use: (arg0: (conn: any) => Promise<void>) => void};
 
   constructor(private readonly configService: ConfigService) {
-    if (!this.connectionPool) {
-      const connectionOptions = this.configService.get(
-        'toolkit.snowflake.connectionOption'
-      );
-      const poolOptions = this.configService.get(
-        'toolkit.snowflake.poolOption'
-      );
-      this.connectionPool = createPool(connectionOptions, poolOptions);
-    }
+    const config = this.configService.getOrThrow('microservices.snowflake');
+
+    this.connectionPool = createPool(
+      config.connectionOptions,
+      config.poolOptions
+    );
   }
 
   async execute(options: {sqlText: string; binds?: any[]}) {

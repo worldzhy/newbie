@@ -60,6 +60,14 @@ const ALL_MICROSERVICES = {
     moduleNames: 'AwsCloudformationModule',
     importCode: `import {AwsCloudformationModule} from './cloudformation/cloudformation.module';`,
   },
+  elasticsearch: {
+    key: 'elasticsearch',
+    srcPath: './src/microservices/elasticsearch',
+    schemaFileName: null,
+    settingsFileName: 'elasticsearch.settings.json',
+    moduleNames: 'ElasticsearchModule',
+    importCode: `import {ElasticsearchModule} from './elasticsearch/elasticsearch.module';`,
+  },
   'event-scheduling': {
     key: 'event-scheduling',
     srcPath: './src/microservices/event-scheduling',
@@ -139,6 +147,14 @@ const ALL_MICROSERVICES = {
     settingsFileName: null,
     moduleNames: 'ShortcutModule',
     importCode: `import {ShortcutModule} from './shortcut/shortcut.module';`,
+  },
+  snowflake: {
+    key: 'snowflake',
+    srcPath: './src/microservices/snowflake',
+    schemaFileName: null,
+    settingsFileName: 'snowflake.settings.json',
+    moduleNames: 'SnowflakeModule',
+    importCode: `import {SnowflakeModule} from './snowflake/snowflake.module';`,
   },
   'stock-mgmt': {
     key: 'stock-mgmt',
