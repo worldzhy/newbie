@@ -1,7 +1,6 @@
 import {Injectable, Logger} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import {AWSError, S3} from 'aws-sdk';
-import {Configuration} from '../../config/configuration.interface';
 
 @Injectable()
 export class S3Service {
@@ -9,7 +8,9 @@ export class S3Service {
   private logger = new Logger(S3Service.name);
 
   constructor(private configService: ConfigService) {
-    const config = this.configService.getOrThrow<Configuration['s3']>('s3');
+    const config = this.configService.getOrThrow(
+      'microservices.saas-starter.s3'
+    );
     if (config.accessKeyId)
       this.client = new S3({
         apiVersion: '2006-03-01',

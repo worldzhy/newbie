@@ -1,7 +1,6 @@
 import {Injectable, NestMiddleware} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import {NextFunction, Response} from 'express';
-import {Configuration} from '../config/configuration.interface';
 import {UserRequest} from '../modules/auth/auth.interface';
 import {ElasticSearchService} from '../providers/elasticsearch/elasticsearch.service';
 
@@ -13,8 +12,9 @@ export class ApiLoggerMiddleware implements NestMiddleware {
   ) {}
 
   use(request: UserRequest, res: Response, next: NextFunction) {
-    const config =
-      this.configService.getOrThrow<Configuration['tracking']>('tracking');
+    const config = this.configService.getOrThrow(
+      'microservices.saas-starter.tracking'
+    );
     let date = new Date();
     res.on('finish', () => {
       let authorizationKey = '';

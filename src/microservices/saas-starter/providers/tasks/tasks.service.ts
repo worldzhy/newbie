@@ -1,7 +1,6 @@
 import {Injectable, Logger} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import {Cron, CronExpression} from '@nestjs/schedule';
-import {Configuration} from '../../config/configuration.interface';
 import {DomainsService} from '../../modules/domains/domains.service';
 import {MetricsService} from '../../modules/metrics/metrics.service';
 import {UsersService} from '../../modules/users/users.service';
@@ -29,8 +28,9 @@ export class TasksService {
   async deleteOldSessions() {
     const now = new Date();
     const unusedRefreshTokenExpiryDays =
-      this.configService.get<number>('security.unusedRefreshTokenExpiryDays') ??
-      30;
+      this.configService.get<number>(
+        'microservices.saas-starter.security.unusedRefreshTokenExpiryDays'
+      ) ?? 30;
     now.setDate(now.getDate() - unusedRefreshTokenExpiryDays);
     const deleted = await this.prisma.session.deleteMany({
       where: {updatedAt: {lte: now}},
@@ -43,7 +43,9 @@ export class TasksService {
   async deleteInactiveUsers() {
     const now = new Date();
     const inactiveUserDeleteDays =
-      this.configService.get<number>('security.inactiveUserDeleteDays') ?? 30;
+      this.configService.get<number>(
+        'microservices.saas-starter.security.inactiveUserDeleteDays'
+      ) ?? 30;
     now.setDate(now.getDate() - inactiveUserDeleteDays);
     const deleted = await this.prisma.user.findMany({
       select: {id: true},
@@ -61,12 +63,13 @@ export class TasksService {
 
   @Cron(CronExpression.EVERY_DAY_AT_3PM)
   async deleteOldLogs() {
-    const tracking =
-      this.configService.getOrThrow<Configuration['tracking']>('tracking');
-    if (tracking.deleteOldLogs)
+    const config = this.configService.getOrThrow(
+      'microservices.saas-starter.tracking'
+    );
+    if (config.deleteOldLogs)
       return this.elasticSearchService.deleteOldRecords(
-        tracking.index,
-        tracking.deleteOldLogsDays
+        config.index,
+        config.deleteOldLogsDays
       );
   }
 

@@ -17,9 +17,9 @@ import {
 import {MailService} from '../../providers/mail/mail.service';
 import {Expose} from '../../providers/prisma/prisma.interface';
 import {PrismaService} from '../../providers/prisma/prisma.service';
-import {TokensService} from '../../providers/tokens/tokens.service';
 import {TwilioService} from '../../providers/twilio/twilio.service';
 import {AuthService} from '../auth/auth.service';
+import {generateRandomString} from '@toolkit/utilities/random.util';
 
 @Injectable()
 export class MultiFactorAuthenticationService {
@@ -28,8 +28,7 @@ export class MultiFactorAuthenticationService {
     private auth: AuthService,
     private configService: ConfigService,
     private twilioService: TwilioService,
-    private emailService: MailService,
-    private tokensService: TokensService
+    private emailService: MailService
   ) {}
 
   async requestTotpMfa(userId: number): Promise<string> {
@@ -121,7 +120,7 @@ export class MultiFactorAuthenticationService {
     await this.prisma.backupCode.deleteMany({where: {user: {id}}});
     const codes: string[] = [];
     for await (const _ of [...Array(10)]) {
-      const unsafeCode = await this.tokensService.generateRandomString(10);
+      const unsafeCode = await generateRandomString(10);
       codes.push(unsafeCode);
       const code = await hash(
         unsafeCode,

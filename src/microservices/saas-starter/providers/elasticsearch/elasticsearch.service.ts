@@ -7,7 +7,6 @@ import createAwsElasticsearchConnector from 'aws-elasticsearch-connector';
 import AWS from 'aws-sdk';
 import PQueue from 'p-queue';
 import pRetry from 'p-retry';
-import {Configuration} from '../../config/configuration.interface';
 
 @Injectable()
 export class ElasticSearchService {
@@ -16,10 +15,9 @@ export class ElasticSearchService {
   private client: Client;
 
   constructor(private configService: ConfigService) {
-    const config =
-      this.configService.getOrThrow<Configuration['elasticSearch']>(
-        'elasticSearch'
-      );
+    const config = this.configService.getOrThrow(
+      'microservices.saas-starter.elasticSearch'
+    );
     if (config.aws?.accessKeyId) {
       AWS.config.update({
         accessKeyId: config.aws.accessKeyId,

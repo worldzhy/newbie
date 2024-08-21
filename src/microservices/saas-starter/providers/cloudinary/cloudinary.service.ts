@@ -2,7 +2,6 @@ import {Injectable, Logger} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import cloudinary, {UploadApiResponse} from 'cloudinary';
 import {Readable, Stream} from 'stream';
-import {Configuration} from '../../config/configuration.interface';
 
 /**
  * MultiStream class helps convert buffers to a streams
@@ -37,8 +36,9 @@ export class CloudinaryService {
   private logger = new Logger(CloudinaryService.name);
 
   constructor(private configService: ConfigService) {
-    const config =
-      this.configService.getOrThrow<Configuration['cloudinary']>('cloudinary');
+    const config = this.configService.getOrThrow(
+      'microservices.saas-starter.cloudinary'
+    );
     if (config.cloudName)
       cloudinary.v2.config({
         cloud_name: config.cloudName,

@@ -1,7 +1,6 @@
 import {Injectable, Logger} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import {Octokit} from '@octokit/rest';
-import {Configuration} from '../../config/configuration.interface';
 
 @Injectable()
 export class GitHubService {
@@ -9,8 +8,9 @@ export class GitHubService {
   octokit: Octokit;
 
   constructor(private configService: ConfigService) {
-    const config =
-      this.configService.getOrThrow<Configuration['github']>('github');
+    const config = this.configService.getOrThrow(
+      'microservices.saas-starter.github'
+    );
     if (config.auth)
       this.octokit = new Octokit({
         auth: config.auth,

@@ -11,7 +11,6 @@ import {Reflector} from '@nestjs/core';
 import {RateLimiterMemory} from 'rate-limiter-flexible';
 import {getClientIp} from 'request-ip';
 import {Observable} from 'rxjs';
-import {Configuration} from '../config/configuration.interface';
 import {RATE_LIMIT_EXCEEDED} from '../errors/errors.constants';
 import {UserRequest} from '../modules/auth/auth.interface';
 
@@ -26,18 +25,18 @@ export class RateLimitInterceptor implements NestInterceptor {
     private configService: ConfigService
   ) {
     this.rateLimiterPublic = new RateLimiterMemory(
-      this.configService.getOrThrow<Configuration['rateLimit']['public']>(
-        'rateLimit.public'
+      this.configService.getOrThrow(
+        'microservices.saas-starter.rateLimit.public'
       )
     );
     this.rateLimiterAuthenticated = new RateLimiterMemory(
-      this.configService.getOrThrow<
-        Configuration['rateLimit']['authenticated']
-      >('rateLimit.authenticated')
+      this.configService.getOrThrow(
+        'microservices.saas-starter.rateLimit.authenticated'
+      )
     );
     this.rateLimiterApiKey = new RateLimiterMemory(
-      this.configService.getOrThrow<Configuration['rateLimit']['apiKey']>(
-        'rateLimit.apiKey'
+      this.configService.getOrThrow(
+        'microservices.saas-starter.rateLimit.apiKey'
       )
     );
   }

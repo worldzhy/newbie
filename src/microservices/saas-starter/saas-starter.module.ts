@@ -5,9 +5,8 @@ import {
   RequestMethod,
 } from '@nestjs/common';
 import {ConfigModule} from '@nestjs/config';
-import {APP_FILTER, APP_GUARD, APP_INTERCEPTOR} from '@nestjs/core';
+import {APP_GUARD, APP_INTERCEPTOR} from '@nestjs/core';
 import {ScheduleModule} from '@nestjs/schedule';
-import configuration from './config/configuration';
 import {AuditLogger} from './interceptors/audit-log.interceptor';
 import {RateLimitInterceptor} from './interceptors/rate-limit.interceptor';
 import {ApiLoggerMiddleware} from './middleware/api-logger.middleware';
@@ -46,9 +45,6 @@ import {MetaModule} from './modules/meta/meta.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      load: [configuration],
-    }),
     ScheduleModule.forRoot(),
     PrismaModule,
     TasksModule,
@@ -79,10 +75,6 @@ import {MetaModule} from './modules/meta/meta.module';
     MetaModule,
   ],
   providers: [
-    // {
-    //   provide: APP_FILTER,
-    //   useClass: HttpExceptionFilter,
-    // },
     {
       provide: APP_INTERCEPTOR,
       useClass: RateLimitInterceptor,

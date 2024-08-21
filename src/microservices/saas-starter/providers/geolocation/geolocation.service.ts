@@ -1,6 +1,6 @@
 import {Injectable, OnModuleDestroy} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
-import geolite2 from 'geolite2-redist';
+import * as geolite2 from 'geolite2-redist';
 import maxmind, {CityResponse, Reader} from 'maxmind';
 import * as QuickLRU from 'quick-lru';
 

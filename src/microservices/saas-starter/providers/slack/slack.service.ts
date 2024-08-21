@@ -7,7 +7,6 @@ import {
 } from '@slack/web-api';
 import PQueue from 'p-queue';
 import pRetry from 'p-retry';
-import {Configuration} from '../../config/configuration.interface';
 
 @Injectable()
 export class SlackService {
@@ -16,8 +15,9 @@ export class SlackService {
   private queue = new PQueue({concurrency: 1});
 
   constructor(private configService: ConfigService) {
-    const config =
-      this.configService.getOrThrow<Configuration['slack']>('slack');
+    const config = this.configService.getOrThrow(
+      'microservices.saas-starter.slack'
+    );
     if (config.token)
       this.client = new WebClient(config.token, {
         slackApiUrl: config.slackApiUrl,

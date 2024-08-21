@@ -28,7 +28,7 @@ export class StripeService {
     private prisma: PrismaService
   ) {
     const stripeApiKey = this.configService.getOrThrow<string>(
-      'payments.stripeApiKey'
+      'microservices.saas-starter.payments.stripeApiKey'
     );
     this.stripe = new Stripe(stripeApiKey, {
       apiVersion: '2024-06-20',

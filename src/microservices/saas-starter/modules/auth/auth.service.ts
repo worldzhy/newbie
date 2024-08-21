@@ -67,6 +67,7 @@ import {
   userScopes,
 } from '../../helpers/scopes';
 import axios from 'axios';
+import {generateRandomString} from '@toolkit/utilities/random.util';
 
 @Injectable()
 export class AuthService {
@@ -217,9 +218,7 @@ export class AuthService {
 
     let id: number | undefined = undefined;
     while (!id) {
-      id = Number(
-        `10${await this.tokensService.generateRandomString(6, 'numeric')}`
-      );
+      id = Number(`10${await generateRandomString(6, 'numeric')}`);
       const users = await this.prisma.user.findMany({where: {id}, take: 1});
       if (users.length) id = undefined;
     }
@@ -590,7 +589,7 @@ export class AuthService {
     userAgent: string,
     user: User
   ): Promise<TokenResponse> {
-    const token = await this.tokensService.generateRandomString(64);
+    const token = await generateRandomString(64);
     const ua = new UAParser(userAgent);
     const location = await this.geolocationService.getLocation(ipAddress);
     const {id} = await this.prisma.session.create({

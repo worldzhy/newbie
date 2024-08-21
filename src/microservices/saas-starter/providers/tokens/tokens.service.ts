@@ -1,6 +1,5 @@
 import {Injectable, UnauthorizedException} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
-import * as cryptoRandomString from 'crypto-random-string';
 import {
   decode,
   DecodeOptions,
@@ -9,7 +8,6 @@ import {
   verify,
   VerifyOptions,
 } from 'jsonwebtoken';
-import {v4} from 'uuid';
 import {INVALID_TOKEN} from '../../errors/errors.constants';
 
 @Injectable()
@@ -32,7 +30,10 @@ export class TokensService {
     if (typeof payload === 'number') payload = payload.toString();
     return sign(
       payload,
-      this.configService.get<string>('saas-starter.security.jwtSecret') ?? '',
+      // this.configService.getOrThrow<string>(
+      //   'microservices.saas-starter.security.jwtSecret'
+      // ),
+      'saas-starter',
       {
         ...options,
         subject,
@@ -67,46 +68,5 @@ export class TokensService {
    */
   decode<T>(token: string, options?: DecodeOptions) {
     return decode(token, options) as T;
-  }
-
-  /**
-   * Generate a UUID
-   */
-  generateUuid() {
-    return v4();
-  }
-
-  /**
-   * Generate a cryptographically strong random string
-   * @param length - Length of returned string
-   * @param charactersOrType - Characters or one of the supported types
-   */
-  async generateRandomString(
-    length = 32,
-    charactersOrType = 'alphanumeric'
-  ): Promise<string> {
-    if (
-      [
-        'hex',
-        'base64',
-        'url-safe',
-        'numeric',
-        'distinguishable',
-        'ascii-printable',
-        'alphanumeric',
-      ].includes(charactersOrType)
-    )
-      return cryptoRandomString({
-        length,
-        type: charactersOrType as
-          | 'hex'
-          | 'base64'
-          | 'url-safe'
-          | 'numeric'
-          | 'distinguishable'
-          | 'ascii-printable'
-          | 'alphanumeric',
-      });
-    return cryptoRandomString({length, characters: charactersOrType});
   }
 }

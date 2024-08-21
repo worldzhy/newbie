@@ -10,44 +10,50 @@ import SESTransport from 'nodemailer/lib/ses-transport';
 import PQueue from 'p-queue';
 import pRetry from 'p-retry';
 import {join} from 'path';
-import {Configuration} from '../../config/configuration.interface';
 import {MailOptions} from './mail.interface';
 
 @Injectable()
 export class MailService {
   private readonly logger = new Logger(MailService.name);
   private transport: Mail;
-  private config: Configuration['email'];
   private queue = new PQueue({concurrency: 1});
   private readTemplate = mem(this.readTemplateUnmemoized);
 
   constructor(private configService: ConfigService) {
-    this.config =
-      this.configService.getOrThrow<Configuration['email']>('email');
-    if (this.config.ses?.accessKeyId)
+    const config = this.configService.getOrThrow(
+      'microservices.saas-starter.email'
+    );
+
+    if (config.ses?.accessKeyId)
       this.transport = nodemailer.createTransport({
         SES: new SES({
           apiVersion: '2010-12-01',
-          accessKeyId: this.config.ses.accessKeyId,
-          secretAccessKey: this.config.ses.secretAccessKey,
-          region: this.config.ses.region,
+          accessKeyId: config.ses.accessKeyId,
+          secretAccessKey: config.ses.secretAccessKey,
+          region: config.ses.region,
         }),
       } as SESTransport.Options);
-    else this.transport = nodemailer.createTransport(this.config.transport);
+    else this.transport = nodemailer.createTransport(config.transport);
   }
 
   send(options: Mail.Options & MailOptions) {
+    const config = this.configService.getOrThrow(
+      'microservices.saas-starter.email'
+    );
+
     this.queue
       .add(() =>
         pRetry(
           () =>
             this.sendMail({
               ...options,
-              from:
-                options.from ?? `"${this.config.name}" <${this.config.from}>`,
+              from: options.from ?? `"${config.name}" <${config.from}>`,
             }),
           {
-            retries: this.configService.get<number>('email.retries') ?? 3,
+            retries:
+              this.configService.get<number>(
+                'microservices.saas-starter.email.retries'
+              ) ?? 3,
             onFailedAttempt: error => {
               this.logger.error(
                 `Mail to ${options.to} failed, retrying (${error.retriesLeft} attempts left)`,
@@ -90,6 +96,6 @@ export class MailService {
 
   private async readTemplateUnmemoized(name: string) {
     if (!name.endsWith('.html')) name = `${name}.md`;
-    return fs.readFile(join('.', 'src', 'templates', name), 'utf8');
+    return fs.readFile(join(__dirname, 'templates', name), 'utf8');
   }
 }

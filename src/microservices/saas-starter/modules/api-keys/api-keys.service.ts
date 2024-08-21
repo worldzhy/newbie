@@ -15,7 +15,7 @@ import {groupOwnerScopes, userScopes} from '../../helpers/scopes';
 import {ElasticSearchService} from '../../providers/elasticsearch/elasticsearch.service';
 import {Expose} from '../../providers/prisma/prisma.interface';
 import {PrismaService} from '../../providers/prisma/prisma.service';
-import {TokensService} from '../../providers/tokens/tokens.service';
+import {generateRandomString} from '@toolkit/utilities/random.util';
 
 @Injectable()
 export class ApiKeysService {
@@ -23,7 +23,6 @@ export class ApiKeysService {
 
   constructor(
     private prisma: PrismaService,
-    private tokensService: TokensService,
     private configService: ConfigService,
     private elasticSearchService: ElasticSearchService
   ) {
@@ -36,7 +35,7 @@ export class ApiKeysService {
     groupId: number,
     data: Omit<Omit<Prisma.ApiKeyCreateInput, 'apiKey'>, 'group'>
   ): Promise<ApiKey> {
-    const apiKey = await this.tokensService.generateRandomString();
+    const apiKey = await generateRandomString();
     data.scopes = await this.cleanScopesForGroup(groupId, data.scopes);
     return this.prisma.apiKey.create({
       data: {...data, apiKey, group: {connect: {id: groupId}}},
@@ -46,7 +45,7 @@ export class ApiKeysService {
     userId: number,
     data: Omit<Omit<Prisma.ApiKeyCreateInput, 'apiKey'>, 'user'>
   ): Promise<ApiKey> {
-    const apiKey = await this.tokensService.generateRandomString();
+    const apiKey = await generateRandomString();
     data.scopes = await this.cleanScopesForUser(userId, data.scopes);
     return this.prisma.apiKey.create({
       data: {...data, apiKey, user: {connect: {id: userId}}},

@@ -7,7 +7,7 @@ import {ConfigService} from '@nestjs/config';
 import type {Prisma} from '@prisma/client';
 import {ApprovedSubnet} from '@prisma/client';
 import {compare, hash} from 'bcrypt';
-import anonymize from 'ip-anonymize';
+import * as anonymize from 'ip-anonymize';
 import {
   APPROVED_SUBNET_NOT_FOUND,
   UNAUTHORIZED_RESOURCE,

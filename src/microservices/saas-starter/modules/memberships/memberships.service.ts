@@ -22,7 +22,7 @@ import {ApiKeysService} from '../api-keys/api-keys.service';
 import {AuthService} from '../auth/auth.service';
 import {GroupsService} from '../groups/groups.service';
 import {CreateMembershipInput} from './memberships.interface';
-import {TokensService} from '../../providers/tokens/tokens.service';
+import {generateRandomString} from '@toolkit/utilities/random.util';
 
 @Injectable()
 export class MembershipsService {
@@ -32,8 +32,7 @@ export class MembershipsService {
     private email: MailService,
     private configService: ConfigService,
     private groupsService: GroupsService,
-    private apiKeyService: ApiKeysService,
-    private tokensService: TokensService
+    private apiKeyService: ApiKeysService
   ) {}
 
   async createUserMembership(
@@ -42,9 +41,7 @@ export class MembershipsService {
   ) {
     let id: number | undefined = undefined;
     while (!id) {
-      id = Number(
-        `10${await this.tokensService.generateRandomString(6, 'numeric')}`
-      );
+      id = Number(`10${await generateRandomString(6, 'numeric')}`);
       const users = await this.prisma.user.findMany({where: {id}, take: 1});
       if (users.length) id = undefined;
     }

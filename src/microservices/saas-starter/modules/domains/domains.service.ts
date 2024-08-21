@@ -24,6 +24,7 @@ import {
   DOMAIN_VERIFICATION_TXT,
 } from './domains.constants';
 import {DomainVerificationMethods} from './domains.interface';
+import {generateRandomString} from '@toolkit/utilities/random.util';
 
 @Injectable()
 export class DomainsService {
@@ -48,7 +49,7 @@ export class DomainsService {
       )
     )
       throw new BadRequestException(INVALID_DOMAIN);
-    const verificationCode = await this.tokensService.generateRandomString();
+    const verificationCode = await generateRandomString();
     const currentProfilePicture = await this.prisma.group.findUniqueOrThrow({
       where: {id: groupId},
       select: {profilePictureUrl: true},

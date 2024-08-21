@@ -26,6 +26,7 @@ import {TokensService} from '../../providers/tokens/tokens.service';
 import {ApiKeysService} from '../api-keys/api-keys.service';
 import {AuthService} from '../auth/auth.service';
 import {PasswordUpdateInput} from './users.interface';
+import {generateUuid} from '@toolkit/utilities/random.util';
 
 @Injectable()
 export class UsersService {
@@ -208,9 +209,7 @@ export class UsersService {
     );
 
     const {Location} = await this.s3Service.upload(
-      `picture-${id}-${this.tokensService.generateUuid()}${extname(
-        file.originalname
-      )}`,
+      `picture-${id}-${generateUuid()}${extname(file.originalname)}`,
       file.buffer,
       bucket,
       true
