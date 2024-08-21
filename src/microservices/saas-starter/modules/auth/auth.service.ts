@@ -16,7 +16,7 @@ import {authenticator} from 'otplib';
 import {createRandomBytes, createDigest} from '@otplib/plugin-crypto';
 import {keyEncoder, keyDecoder} from '@otplib/plugin-thirty-two';
 import qrcode from 'qrcode';
-import randomColor from 'randomcolor';
+import * as randomColor from 'randomcolor';
 import UAParser from 'ua-parser-js';
 import {
   COMPROMISED_PASSWORD,

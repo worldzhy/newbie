@@ -144,7 +144,7 @@ export class DomainsService {
       try {
         const {data} = await axios.get(
           `http://${domain.domain}/.well-known/${this.configService.get<string>(
-            'meta.domainVerificationFile' ?? 'staart-verify.txt'
+            'meta.domainVerificationFile' ?? 'saas-starter-verify.txt'
           )}`
         );
         verified = data.includes(domain.verificationCode);

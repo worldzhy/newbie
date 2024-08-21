@@ -10,16 +10,17 @@ import {ConfigService} from '@nestjs/config';
 @Injectable()
 export class AwsSqsService {
   private client: SQSClient;
+  private queueUrl: string;
 
   constructor(private readonly configService: ConfigService) {
     const accessKeyId = this.configService.getOrThrow<string>(
-      'microservices.aws.sqs.accessKeyId'
+      'microservices.aws-sqs.accessKeyId'
     );
     const secretAccessKey = this.configService.getOrThrow<string>(
-      'microservices.aws.sqs.secretAccessKey'
+      'microservices.aws-sqs.secretAccessKey'
     );
     const region = this.configService.getOrThrow<string>(
-      'microservices.aws.sqs.region'
+      'microservices.aws-sqs.region'
     );
 
     if (accessKeyId && secretAccessKey && region) {
@@ -31,6 +32,10 @@ export class AwsSqsService {
         region: region,
       });
     }
+
+    this.queueUrl = this.configService.getOrThrow<string>(
+      'microservices.aws-sqs.queueUrl'
+    );
   }
 
   /**
@@ -41,14 +46,14 @@ export class AwsSqsService {
    * @memberof SqsService
    */
   async sendMessage(params: {
-    queueUrl: string;
+    queueUrl?: string;
     body: object;
     MessageGroupId?: string;
     MessageDeduplicationId?: string;
   }) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sendMessageRequest: any = {
-      QueueUrl: params.queueUrl,
+      QueueUrl: params.queueUrl ?? this.queueUrl,
       MessageBody: JSON.stringify(params.body),
     };
 
@@ -64,13 +69,13 @@ export class AwsSqsService {
     return await this.client.send(new SendMessageCommand(sendMessageRequest));
   }
 
-  async getQueueAttributes(
-    queueUrl: string,
-    attributeNames: QueueAttributeName[]
-  ) {
+  async getQueueAttributes(params: {
+    queueUrl?: string;
+    attributeNames: QueueAttributeName[];
+  }) {
     const getQueueAttributesRequest = {
-      QueueUrl: queueUrl,
-      AttributeNames: attributeNames,
+      QueueUrl: params.queueUrl ?? this.queueUrl,
+      AttributeNames: params.attributeNames,
     };
 
     const result = await this.client.send(

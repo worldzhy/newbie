@@ -28,13 +28,21 @@ const ALL_MICROSERVICES = {
     moduleNames: 'AccountModule',
     importCode: `import {AccountModule} from './account/account.module';`,
   },
-  aws: {
-    key: 'aws',
-    srcPath: './src/microservices/aws',
+  'aws-s3': {
+    key: 'aws-s3',
+    srcPath: './src/microservices/aws-s3',
+    schemaFileName: 'aws-s3.schema',
+    settingsFileName: 'aws-s3.settings.json',
+    moduleNames: 'AwsS3Module',
+    importCode: `import {AwsS3Module} from './aws-s3/aws-s3.module';`,
+  },
+  'aws-sqs': {
+    key: 'aws-sqs',
+    srcPath: './src/microservices/aws-sqs',
     schemaFileName: null,
-    settingsFileName: 'aws.settings.json',
-    moduleNames: 'AwsModule',
-    importCode: `import {AwsModule} from './aws/aws.module';`,
+    settingsFileName: 'aws-sqs.settings.json',
+    moduleNames: 'AwsSqsModule',
+    importCode: `import {AwsSqsModule} from './aws-sqs/aws-sqs.module';`,
   },
   cache: {
     key: 'cache',

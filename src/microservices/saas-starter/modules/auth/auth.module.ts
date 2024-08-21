@@ -12,7 +12,7 @@ import {ApprovedSubnetsModule} from '../approved-subnets/approved-subnets.module
 import {ApprovedSubnetsService} from '../approved-subnets/approved-subnets.service';
 import {AuthController} from './auth.controller';
 import {AuthService} from './auth.service';
-import {StaartStrategy} from './staart.strategy';
+import {StaartStrategy} from './auth.strategy';
 
 @Module({
   imports: [

@@ -55,7 +55,7 @@ export class AuthController {
     @Ip() ip: string,
     @Body() data: RegisterDto
   ): Promise<Expose<User>> {
-    return this.authService.register(ip, data);
+    return await this.authService.register(ip, data);
   }
 
   /** Get a new access token using a refresh token */

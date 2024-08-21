@@ -12,9 +12,9 @@ const bool = (val: string | undefined, bool: boolean): boolean =>
 const configuration: Configuration = {
   frontendUrl: process.env.FRONTEND_URL ?? 'http://localhost:3000',
   meta: {
-    appName: process.env.APP_NAME ?? 'Staart',
+    appName: process.env.APP_NAME ?? 'SaaS Starter',
     domainVerificationFile:
-      process.env.DOMAIN_VERIFICATION_FILE ?? 'staart-verify.txt',
+      process.env.DOMAIN_VERIFICATION_FILE ?? 'saas-starter-verify.txt',
   },
   rateLimit: {
     public: {
@@ -36,7 +36,7 @@ const configuration: Configuration = {
   },
   security: {
     saltRounds: int(process.env.SALT_ROUNDS, 10),
-    jwtSecret: process.env.JWT_SECRET ?? 'staart',
+    jwtSecret: process.env.JWT_SECRET ?? 'saas-starter',
     totpWindowPast: int(process.env.TOTP_WINDOW_PAST, 1),
     totpWindowFuture: int(process.env.TOTP_WINDOW_FUTURE, 0),
     mfaTokenExpiry: process.env.MFA_TOKEN_EXPIRY ?? '10m',
@@ -72,7 +72,7 @@ const configuration: Configuration = {
     },
   },
   email: {
-    name: process.env.EMAIL_NAME ?? 'Staart',
+    name: process.env.EMAIL_NAME ?? 'SaaS Starter',
     from: process.env.EMAIL_FROM ?? '',
     retries: int(process.env.EMAIL_FAIL_RETRIES, 3),
     ses: {
@@ -108,7 +108,7 @@ const configuration: Configuration = {
     mode:
       (process.env.TRACKING_MODE as Configuration['tracking']['mode']) ??
       'api-key',
-    index: process.env.TRACKING_INDEX ?? 'staart-logs',
+    index: process.env.TRACKING_INDEX ?? 'saas-starter-logs',
     deleteOldLogs: bool(process.env.TRACKING_DELETE_OLD_LOGS, true),
     deleteOldLogsDays: int(process.env.TRACKING_DELETE_OLD_LOGS_DAYS, 90),
   },

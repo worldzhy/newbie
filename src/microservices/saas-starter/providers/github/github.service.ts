@@ -14,7 +14,7 @@ export class GitHubService {
     if (config.auth)
       this.octokit = new Octokit({
         auth: config.auth,
-        userAgent: config.userAgent ?? 'staart',
+        userAgent: config.userAgent ?? 'saas-starter',
       });
     else this.logger.warn('GitHub API key not found');
   }

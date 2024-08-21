@@ -35,7 +35,8 @@
   "exclude": [
     "./prisma",
     "./src/microservices/account",
-    "./src/microservices/aws",
+    "./src/microservices/aws-s3",
+    "./src/microservices/aws-sqs",
     "./src/microservices/cache",
     "./src/microservices/cloudformation",
     "./src/microservices/event-scheduling",

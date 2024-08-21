@@ -10,12 +10,12 @@ import {TokensService} from '../../providers/tokens/tokens.service';
 import {AccessTokenClaims, AccessTokenParsed} from './auth.interface';
 const Strategy = require('passport-strategy');
 
-class StaartStrategyName extends Strategy {
-  name = 'staart';
+class SaasStarterStrategyName extends Strategy {
+  name = 'saas-starter';
 }
 
 @Injectable()
-export class StaartStrategy extends PassportStrategy(StaartStrategyName) {
+export class StaartStrategy extends PassportStrategy(SaasStarterStrategyName) {
   constructor(
     private apiKeyService: ApiKeysService,
     private tokensService: TokensService

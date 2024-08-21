@@ -1,0 +1,30 @@
+// !! ------------------------------------------------------------ //
+// !!            [Microservice] AWS S3 models                      //
+// !! ------------------------------------------------------------ //
+// * S3File                                                        //
+// * S3Bucket                                                      //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
+
+model S3File {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String
+  type       String // could be 'Folder'
+  size       Int? // in bytes
+  s3Bucket   String
+  s3Key      String // File name in S3 bucket.
+  s3Response Json?
+  parentId   String?  @db.Uuid
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@schema("microservice/aws-s3")
+}
+
+model S3Bucket {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@schema("microservice/aws-s3")
+}

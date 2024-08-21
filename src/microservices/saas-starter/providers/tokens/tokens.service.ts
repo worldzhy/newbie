@@ -1,6 +1,6 @@
 import {Injectable, UnauthorizedException} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
-import cryptoRandomString from 'crypto-random-string';
+import * as cryptoRandomString from 'crypto-random-string';
 import {
   decode,
   DecodeOptions,
@@ -32,7 +32,7 @@ export class TokensService {
     if (typeof payload === 'number') payload = payload.toString();
     return sign(
       payload,
-      this.configService.get<string>('security.jwtSecret') ?? '',
+      this.configService.get<string>('saas-starter.security.jwtSecret') ?? '',
       {
         ...options,
         subject,

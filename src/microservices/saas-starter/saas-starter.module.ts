@@ -18,7 +18,7 @@ import {ApprovedSubnetsModule} from './modules/approved-subnets/approved-subnets
 import {AuditLogsModule} from './modules/audit-logs/audit-logs.module';
 import {AuthModule} from './modules/auth/auth.module';
 import {ScopesGuard} from './modules/auth/scope.guard';
-import {StaartAuthGuard} from './modules/auth/staart-auth.guard';
+import {SaasStarterAuthGuard} from './modules/auth/auth.guard';
 import {DomainsModule} from './modules/domains/domains.module';
 import {EmailsModule} from './modules/emails/emails.module';
 import {GroupsModule} from './modules/groups/groups.module';
@@ -40,7 +40,7 @@ import {PrismaModule} from './providers/prisma/prisma.module';
 import {S3Module} from './providers/s3/s3.module';
 import {SlackModule} from './providers/slack/slack.module';
 import {TasksModule} from './providers/tasks/tasks.module';
-import {HttpExceptionFilter} from './filters/http-exception.filter';
+// import {HttpExceptionFilter} from './filters/http-exception.filter';
 import {MetricsModule} from './modules/metrics/metrics.module';
 import {MetaModule} from './modules/meta/meta.module';
 
@@ -79,17 +79,17 @@ import {MetaModule} from './modules/meta/meta.module';
     MetaModule,
   ],
   providers: [
-    {
-      provide: APP_FILTER,
-      useClass: HttpExceptionFilter,
-    },
+    // {
+    //   provide: APP_FILTER,
+    //   useClass: HttpExceptionFilter,
+    // },
     {
       provide: APP_INTERCEPTOR,
       useClass: RateLimitInterceptor,
     },
     {
       provide: APP_GUARD,
-      useClass: StaartAuthGuard,
+      useClass: SaasStarterAuthGuard,
     },
     {
       provide: APP_GUARD,

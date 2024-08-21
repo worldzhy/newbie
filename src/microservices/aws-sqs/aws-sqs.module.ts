@@ -6,4 +6,4 @@ import {AwsSqsService} from './aws-sqs.service';
   providers: [AwsSqsService],
   exports: [AwsSqsService],
 })
-export class AwsModule {}
+export class AwsSqsModule {}
