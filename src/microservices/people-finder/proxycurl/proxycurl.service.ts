@@ -52,8 +52,8 @@ export class ProxycurlService {
   }
 
   /**
-   * https://github.com/nubelaco/proxycurl-js-linkedin-profile-scraper/blob/main/docs/PeopleAPIApi.md
-   * 1 credit
+   * https://github.com/nubelaco/proxycurl-js-linkedin-profile-scraper/blob/main/docs/PeopleAPIApi.md#personLookupEndpoint
+   * 2 credit
    */
   async searchPeopleLinkedin({
     firstName,

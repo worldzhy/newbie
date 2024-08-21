@@ -474,7 +474,7 @@ export class PeopleFinderController {
       distinct: ['userId', 'companyDomain', 'linkedin', 'source', 'sourceMode'],
       where: {
         status: {in: [PeopleFinderStatus.failed, PeopleFinderStatus.completed]},
-        id: {gt: 1841},
+        id: {gt: 66586},
       },
     });
     const sourceMap = {
@@ -621,13 +621,13 @@ export class PeopleFinderController {
       }
     });
     const groupResult = {};
-    Object.keys(groupMap).forEach(key => {
-      groupResult[groupName[key]] = {
-        ...groupMap[key],
-        phonePer: groupMap[key].phone / groupMap[key].total,
-        emailPer: groupMap[key].email / groupMap[key].total,
-      };
-    });
+    // Object.keys(groupMap).forEach(key => {
+    //   groupResult[groupName[key]] = {
+    //     ...groupMap[key],
+    //     phonePer: groupMap[key].phone / groupMap[key].total,
+    //     emailPer: groupMap[key].email / groupMap[key].total,
+    //   };
+    // });
     /* delete 402
     const deletes: number[] = [];
     sourceMap[PeopleFinderPlatforms.peopledatalabs] = sourceMap[
@@ -664,6 +664,9 @@ export class PeopleFinderController {
           phonePer: 0,
           completed: sourceMap[key].completed.length,
           failed: sourceMap[key].failed.length,
+          spent: 0,
+          spentFailed: 0,
+          spentCompleted: 0,
         };
       }
       result[key].total =
@@ -671,41 +674,47 @@ export class PeopleFinderController {
       sourceMap[key].completed.forEach(item => {
         if (item.emails.length) result[key].hasEmails++;
         if (item.phones.length) result[key].hasPhones++;
+        result[key].spent += item.spent;
+        result[key].spentCompleted += item.spent;
+      });
+      sourceMap[key].failed.forEach(item => {
+        result[key].spent += item.spent;
+        result[key].spentFailed += item.spent;
       });
       result[key].emailPer = result[key].hasEmails / result[key].total;
       result[key].phonePer = result[key].hasPhones / result[key].total;
     });
 
-    const exportData = res.map(item => {
-      if (item.emails && item.emails.length) {
-        if (item.source === PeopleFinderPlatforms.voilanorbert) {
-          item.emails = item.emails.map(
-            (emailCon: {email: string; score: number}) => emailCon.email
-          );
-        }
-        if (item.source === PeopleFinderPlatforms.peopledatalabs) {
-          item.emails = item.emails.map(
-            (emailCon: {address: string; type: string}) => emailCon.address
-          );
-        }
-        // @ts-ignore
-        item.emails = item.emails.join('|');
-      } else {
-        // @ts-ignore
-        item.emails = '';
-      }
-      if (item.phones && item.phones.length) {
-        // @ts-ignore
-        item.phones = item.phones.join('|');
-      } else {
-        // @ts-ignore
-        item.phones = '';
-      }
-      // @ts-ignore
-      delete item.ctx;
-      return item;
-    });
-    return {result, groupResult, exportData};
+    // const exportData = res.map(item => {
+    //   if (item.emails && item.emails.length) {
+    //     if (item.source === PeopleFinderPlatforms.voilanorbert) {
+    //       item.emails = item.emails.map(
+    //         (emailCon: {email: string; score: number}) => emailCon.email
+    //       );
+    //     }
+    //     if (item.source === PeopleFinderPlatforms.peopledatalabs) {
+    //       item.emails = item.emails.map(
+    //         (emailCon: {address: string; type: string}) => emailCon.address
+    //       );
+    //     }
+    //     // @ts-ignore
+    //     item.emails = item.emails.join('|');
+    //   } else {
+    //     // @ts-ignore
+    //     item.emails = '';
+    //   }
+    //   if (item.phones && item.phones.length) {
+    //     // @ts-ignore
+    //     item.phones = item.phones.join('|');
+    //   } else {
+    //     // @ts-ignore
+    //     item.phones = '';
+    //   }
+    //   // @ts-ignore
+    //   delete item.ctx;
+    //   return item;
+    // });
+    return {result, groupResult};
   }
   /* End */
 }
