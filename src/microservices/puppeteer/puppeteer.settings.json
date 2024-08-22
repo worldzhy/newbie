@@ -1,0 +1,13 @@
+{
+  "config-service": {
+    "puppeteer": {
+      "chromiumPath": "process.env.CHROMIUM_PATH ?? ''"
+    }
+  },
+  "env": {
+    "CHROMIUM_PATH": ""
+  },
+  "dependencies": {
+    "puppeteer": "latest"
+  }
+}

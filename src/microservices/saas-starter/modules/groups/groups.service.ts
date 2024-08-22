@@ -3,8 +3,9 @@ import type {Prisma} from '@prisma/client';
 import {Group} from '@prisma/client';
 import randomColor from 'randomcolor';
 import {GROUP_NOT_FOUND} from '../../errors/errors.constants';
-import {Expose} from '../../providers/prisma/prisma.interface';
-import {PrismaService} from '../../providers/prisma/prisma.service';
+import {Expose} from '../../helpers/interfaces';
+import {expose} from '../../helpers/expose';
+import {PrismaService} from '@framework/prisma/prisma.service';
 
 @Injectable()
 export class GroupsService {
@@ -53,7 +54,7 @@ export class GroupsService {
         where,
         orderBy,
       });
-      return groups.map(user => this.prisma.expose<Group>(user));
+      return groups.map(user => expose<Group>(user));
     } catch (error) {
       return [];
     }
@@ -75,7 +76,7 @@ export class GroupsService {
       include,
     } as any);
     if (!group) throw new NotFoundException(GROUP_NOT_FOUND);
-    return this.prisma.expose<Group>(group);
+    return expose<Group>(group);
   }
 
   async updateGroup(
@@ -90,7 +91,7 @@ export class GroupsService {
       where: {id},
       data,
     });
-    return this.prisma.expose<Group>(group);
+    return expose<Group>(group);
   }
 
   async replaceGroup(
@@ -105,7 +106,7 @@ export class GroupsService {
       where: {id},
       data,
     });
-    return this.prisma.expose<Group>(group);
+    return expose<Group>(group);
   }
 
   async deleteGroup(id: number): Promise<Expose<Group>> {
@@ -117,7 +118,7 @@ export class GroupsService {
     const group = await this.prisma.group.delete({
       where: {id},
     });
-    return this.prisma.expose<Group>(group);
+    return expose<Group>(group);
   }
 
   async getSubgroups(
@@ -139,7 +140,7 @@ export class GroupsService {
         where: {...where, parent: {id}},
         orderBy,
       });
-      return groups.map(user => this.prisma.expose<Group>(user));
+      return groups.map(user => expose<Group>(user));
     } catch (error) {
       return [];
     }

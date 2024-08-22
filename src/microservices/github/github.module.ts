@@ -1,9 +1,8 @@
-import {Module} from '@nestjs/common';
-import {ConfigModule} from '@nestjs/config';
+import {Global, Module} from '@nestjs/common';
 import {GitHubService} from './github.service';
 
+@Global()
 @Module({
-  imports: [ConfigModule],
   providers: [GitHubService],
   exports: [GitHubService],
 })

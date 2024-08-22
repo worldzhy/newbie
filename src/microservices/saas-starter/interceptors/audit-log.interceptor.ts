@@ -15,17 +15,17 @@ import {STAART_AUDIT_LOG_DATA} from '../modules/audit-logs/audit-log.constants';
 import {UserRequest} from '../modules/auth/auth.interface';
 import {WebhooksService} from '../modules/webhooks/webhooks.service';
 import {GeolocationService} from '../providers/geolocation/geolocation.service';
-import {PrismaService} from '../providers/prisma/prisma.service';
+import {PrismaService} from '@framework/prisma/prisma.service';
 
 @Injectable()
 export class AuditLogger implements NestInterceptor {
-  logger = new Logger(AuditLogger.name);
+  private logger = new Logger(AuditLogger.name);
 
   constructor(
     private readonly reflector: Reflector,
-    private prisma: PrismaService,
-    private geolocationService: GeolocationService,
-    private webhooksService: WebhooksService
+    private readonly prisma: PrismaService,
+    private readonly geolocationService: GeolocationService,
+    private readonly webhooksService: WebhooksService
   ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {

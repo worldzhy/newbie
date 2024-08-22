@@ -16,7 +16,7 @@ import {
   SOURCE_NOT_FOUND,
   SUBSCRIPTION_NOT_FOUND,
 } from '../../errors/errors.constants';
-import {PrismaService} from '../../providers/prisma/prisma.service';
+import {PrismaService} from '@framework/prisma/prisma.service';
 
 @Injectable()
 export class StripeService {
@@ -84,7 +84,7 @@ export class StripeService {
     return this.stripe.billingPortal.sessions.create({
       customer: stripeId,
       return_url: `${this.configService.get<string>(
-        'frontendUrl'
+        'microservices.saas-starter.frontendUrl'
       )}/groups/${groupId}`,
     });
   }
@@ -185,12 +185,12 @@ export class StripeService {
       mode,
       payment_method_types: this.configService.get<
         Array<Stripe.Checkout.SessionCreateParams.PaymentMethodType>
-      >('payments.paymentMethodTypes') ?? ['card'],
+      >('microservices.saas-starter.payments.paymentMethodTypes') ?? ['card'],
       success_url: `${this.configService.get<string>(
-        'frontendUrl'
+        'microservices.saas-starter.frontendUrl'
       )}/groups/${groupId}`,
       cancel_url: `${this.configService.get<string>(
-        'frontendUrl'
+        'microservices.saas-starter.frontendUrl'
       )}/groups/${groupId}`,
     };
     if (mode === 'subscription')
@@ -239,7 +239,9 @@ export class StripeService {
     const event = this.stripe.webhooks.constructEvent(
       payload,
       signature,
-      this.configService.get<string>('payments.stripeEndpointSecret') ?? ''
+      this.configService.get<string>(
+        'microservices.saas-starter.payments.stripeEndpointSecret'
+      ) ?? ''
     );
     switch (event.type) {
       default:

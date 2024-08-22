@@ -16,9 +16,9 @@ import {
   UNAUTHORIZED_RESOURCE,
 } from '../../errors/errors.constants';
 import {DnsService} from '../../providers/dns/dns.service';
-import {Expose} from '../../providers/prisma/prisma.interface';
-import {PrismaService} from '../../providers/prisma/prisma.service';
-import {TokensService} from '../../providers/tokens/tokens.service';
+import {Expose} from '../../helpers/interfaces';
+import {expose} from '../../helpers/expose';
+import {PrismaService} from '@framework/prisma/prisma.service';
 import {
   DOMAIN_VERIFICATION_HTML,
   DOMAIN_VERIFICATION_TXT,
@@ -30,7 +30,6 @@ import {generateRandomString} from '@framework/utilities/random.util';
 export class DomainsService {
   constructor(
     private prisma: PrismaService,
-    private tokensService: TokensService,
     private dnsService: DnsService,
     private configService: ConfigService
   ) {}
@@ -102,7 +101,7 @@ export class DomainsService {
         where: {...where, group: {id: groupId}},
         orderBy,
       });
-      return domains.map(group => this.prisma.expose<Domain>(group));
+      return domains.map(group => expose<Domain>(group));
     } catch (error) {
       return [];
     }
@@ -115,7 +114,7 @@ export class DomainsService {
     if (!domain) throw new NotFoundException(DOMAIN_NOT_FOUND);
     if (domain.groupId !== groupId)
       throw new UnauthorizedException(UNAUTHORIZED_RESOURCE);
-    return this.prisma.expose<Domain>(domain);
+    return expose<Domain>(domain);
   }
 
   async verifyDomain(
@@ -145,7 +144,8 @@ export class DomainsService {
       try {
         const {data} = await axios.get(
           `http://${domain.domain}/.well-known/${this.configService.get<string>(
-            'meta.domainVerificationFile' ?? 'saas-starter-verify.txt'
+            'microservices.saas-starter.meta.domainVerificationFile' ??
+              'saas-starter-verify.txt'
           )}`
         );
         verified = data.includes(domain.verificationCode);
@@ -170,6 +170,6 @@ export class DomainsService {
     const domain = await this.prisma.domain.delete({
       where: {id},
     });
-    return this.prisma.expose<Domain>(domain);
+    return expose<Domain>(domain);
   }
 }

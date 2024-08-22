@@ -15,7 +15,7 @@ import {OptionalIntPipe} from '@framework/pipes/optional-int.pipe';
 import {OrderByPipe} from '@framework/pipes/order-by.pipe';
 import {SelectIncludePipe} from '@framework/pipes/select-include.pipe';
 import {WherePipe} from '@framework/pipes/where.pipe';
-import {Expose} from '../../providers/prisma/prisma.interface';
+import {Expose} from '../../helpers/interfaces';
 import {AuditLog} from '../audit-logs/audit-log.decorator';
 import {Scopes} from '../auth/scope.decorator';
 import {ReplaceGroupDto, UpdateGroupDto} from './groups.dto';

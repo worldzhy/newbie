@@ -24,21 +24,12 @@ export class RateLimitInterceptor implements NestInterceptor {
     private readonly reflector: Reflector,
     private configService: ConfigService
   ) {
-    this.rateLimiterPublic = new RateLimiterMemory(
-      this.configService.getOrThrow(
-        'microservices.saas-starter.rateLimit.public'
-      )
+    const config = this.configService.getOrThrow(
+      'microservices.saas-starter.rateLimit'
     );
-    this.rateLimiterAuthenticated = new RateLimiterMemory(
-      this.configService.getOrThrow(
-        'microservices.saas-starter.rateLimit.authenticated'
-      )
-    );
-    this.rateLimiterApiKey = new RateLimiterMemory(
-      this.configService.getOrThrow(
-        'microservices.saas-starter.rateLimit.apiKey'
-      )
-    );
+    this.rateLimiterPublic = new RateLimiterMemory(config.public);
+    this.rateLimiterAuthenticated = new RateLimiterMemory(config.authenticated);
+    this.rateLimiterApiKey = new RateLimiterMemory(config.apiKey);
   }
 
   async intercept(

@@ -13,8 +13,9 @@ import {
 } from '../../errors/errors.constants';
 import {groupOwnerScopes, userScopes} from '../../helpers/scopes';
 import {ElasticsearchService} from '../../providers/elasticsearch/elasticsearch.service';
-import {Expose} from '../../providers/prisma/prisma.interface';
-import {PrismaService} from '../../providers/prisma/prisma.service';
+import {Expose} from '../../helpers/interfaces';
+import {expose} from '../../helpers/expose';
+import {PrismaService} from '@framework/prisma/prisma.service';
 import {generateRandomString} from '@framework/utilities/random.util';
 
 @Injectable()
@@ -27,7 +28,9 @@ export class ApiKeysService {
     private elasticsearch: ElasticsearchService
   ) {
     this.lru = new QuickLRU<string, ApiKey>({
-      maxSize: this.configService.get<number>('caching.apiKeyLruSize') ?? 100,
+      maxSize: this.configService.getOrThrow<number>(
+        'microservices.saas-starter.caching.apiKeyLruSize'
+      ),
     });
   }
 
@@ -71,7 +74,7 @@ export class ApiKeysService {
         where: {...where, group: {id: groupId}},
         orderBy,
       });
-      return apiKey.map(group => this.prisma.expose<ApiKey>(group));
+      return apiKey.map(group => expose<ApiKey>(group));
     } catch (error) {
       return [];
     }
@@ -95,7 +98,7 @@ export class ApiKeysService {
         where: {...where, user: {id: userId}},
         orderBy,
       });
-      return apiKey.map(user => this.prisma.expose<ApiKey>(user));
+      return apiKey.map(user => expose<ApiKey>(user));
     } catch (error) {
       return [];
     }
@@ -111,7 +114,7 @@ export class ApiKeysService {
     if (!apiKey) throw new NotFoundException(API_KEY_NOT_FOUND);
     if (apiKey.groupId !== groupId)
       throw new UnauthorizedException(UNAUTHORIZED_RESOURCE);
-    return this.prisma.expose<ApiKey>(apiKey);
+    return expose<ApiKey>(apiKey);
   }
   async getApiKeyForUser(userId: number, id: number): Promise<Expose<ApiKey>> {
     const apiKey = await this.prisma.apiKey.findUnique({
@@ -120,7 +123,7 @@ export class ApiKeysService {
     if (!apiKey) throw new NotFoundException(API_KEY_NOT_FOUND);
     if (apiKey.userId !== userId)
       throw new UnauthorizedException(UNAUTHORIZED_RESOURCE);
-    return this.prisma.expose<ApiKey>(apiKey);
+    return expose<ApiKey>(apiKey);
   }
 
   async getApiKeyFromKey(key: string): Promise<Expose<ApiKey>> {
@@ -130,7 +133,7 @@ export class ApiKeysService {
     });
     if (!apiKey) throw new NotFoundException(API_KEY_NOT_FOUND);
     this.lru.set(key, apiKey);
-    return this.prisma.expose<ApiKey>(apiKey);
+    return expose<ApiKey>(apiKey);
   }
 
   async updateApiKeyForGroup(
@@ -150,7 +153,7 @@ export class ApiKeysService {
       data,
     });
     this.lru.delete(testApiKey.apiKey);
-    return this.prisma.expose<ApiKey>(apiKey);
+    return expose<ApiKey>(apiKey);
   }
   async updateApiKeyForUser(
     userId: number,
@@ -169,7 +172,7 @@ export class ApiKeysService {
       data,
     });
     this.lru.delete(testApiKey.apiKey);
-    return this.prisma.expose<ApiKey>(apiKey);
+    return expose<ApiKey>(apiKey);
   }
 
   async replaceApiKeyForGroup(
@@ -189,7 +192,7 @@ export class ApiKeysService {
       data,
     });
     this.lru.delete(testApiKey.apiKey);
-    return this.prisma.expose<ApiKey>(apiKey);
+    return expose<ApiKey>(apiKey);
   }
   async replaceApiKeyForUser(
     userId: number,
@@ -208,7 +211,7 @@ export class ApiKeysService {
       data,
     });
     this.lru.delete(testApiKey.apiKey);
-    return this.prisma.expose<ApiKey>(apiKey);
+    return expose<ApiKey>(apiKey);
   }
 
   async deleteApiKeyForGroup(
@@ -225,7 +228,7 @@ export class ApiKeysService {
       where: {id},
     });
     this.lru.delete(testApiKey.apiKey);
-    return this.prisma.expose<ApiKey>(apiKey);
+    return expose<ApiKey>(apiKey);
   }
   async deleteApiKeyForUser(
     userId: number,
@@ -241,7 +244,7 @@ export class ApiKeysService {
       where: {id},
     });
     this.lru.delete(testApiKey.apiKey);
-    return this.prisma.expose<ApiKey>(apiKey);
+    return expose<ApiKey>(apiKey);
   }
 
   async getApiKeyLogsForGroup(
@@ -315,10 +318,14 @@ export class ApiKeysService {
     const now = new Date();
     now.setDate(
       now.getDate() -
-        this.configService.getOrThrow<number>('tracking.deleteOldLogsDays')
+        this.configService.getOrThrow<number>(
+          'microservices.saas-starter.tracking.deleteOldLogsDays'
+        )
     );
     const result = await this.elasticsearch.search({
-      index: this.configService.get<string>('tracking.index'),
+      index: this.configService.get<string>(
+        'microservices.saas-starter.tracking.index'
+      ),
       from: params.cursor?.id,
       body: {
         query: {

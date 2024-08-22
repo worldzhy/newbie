@@ -14,8 +14,9 @@ import {
   UNAUTHORIZED_RESOURCE,
   WEBHOOK_NOT_FOUND,
 } from '../../errors/errors.constants';
-import {Expose} from '../../providers/prisma/prisma.interface';
-import {PrismaService} from '../../providers/prisma/prisma.service';
+import {Expose} from '../../helpers/interfaces';
+import {expose} from '../../helpers/expose';
+import {PrismaService} from '@framework/prisma/prisma.service';
 
 @Injectable()
 export class WebhooksService {
@@ -55,7 +56,7 @@ export class WebhooksService {
         where: {...where, group: {id: groupId}},
         orderBy,
       });
-      return webhooks.map(group => this.prisma.expose<Webhook>(group));
+      return webhooks.map(group => expose<Webhook>(group));
     } catch (error) {
       return [];
     }
@@ -68,7 +69,7 @@ export class WebhooksService {
     if (!webhook) throw new NotFoundException(WEBHOOK_NOT_FOUND);
     if (webhook.groupId !== groupId)
       throw new UnauthorizedException(UNAUTHORIZED_RESOURCE);
-    return this.prisma.expose<Webhook>(webhook);
+    return expose<Webhook>(webhook);
   }
 
   async updateWebhook(
@@ -86,7 +87,7 @@ export class WebhooksService {
       where: {id},
       data,
     });
-    return this.prisma.expose<Webhook>(webhook);
+    return expose<Webhook>(webhook);
   }
 
   async replaceWebhook(
@@ -104,7 +105,7 @@ export class WebhooksService {
       where: {id},
       data,
     });
-    return this.prisma.expose<Webhook>(webhook);
+    return expose<Webhook>(webhook);
   }
 
   async deleteWebhook(groupId: number, id: number): Promise<Expose<Webhook>> {
@@ -117,7 +118,7 @@ export class WebhooksService {
     const webhook = await this.prisma.webhook.delete({
       where: {id},
     });
-    return this.prisma.expose<Webhook>(webhook);
+    return expose<Webhook>(webhook);
   }
 
   async getWebhookScopes(): Promise<Record<string, string>> {
@@ -159,7 +160,9 @@ export class WebhooksService {
             .add(() =>
               pRetry(() => this.callWebhook(webhook, event), {
                 retries:
-                  this.configService.get<number>('webhooks.retries') ?? 3,
+                  this.configService.get<number>(
+                    'microservices.saas-starter.webhooks.retries'
+                  ) ?? 3,
                 onFailedAttempt: error => {
                   this.logger.error(
                     `Triggering webhoook failed, retrying (${error.retriesLeft} attempts left)`,

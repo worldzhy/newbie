@@ -30,7 +30,9 @@ export class ElasticsearchService {
         .add(() =>
           pRetry(() => this.indexRecord(index, record, params), {
             retries:
-              this.configService.get<number>('elasticSearch.retries') ?? 3,
+              this.configService.get<number>(
+                'microservices.elasticsearch.retries'
+              ) ?? 3,
             onFailedAttempt: error => {
               this.logger.error(
                 `Indexing record failed, retrying (${error.retriesLeft} attempts left)`,

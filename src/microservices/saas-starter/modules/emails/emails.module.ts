@@ -4,7 +4,7 @@ import {ApprovedSubnetsService} from '../approved-subnets/approved-subnets.servi
 import {AuthService} from '../auth/auth.service';
 import {MailModule} from '../../providers/mail/mail.module';
 import {GeolocationService} from '../../providers/geolocation/geolocation.service';
-import {PrismaModule} from '../../providers/prisma/prisma.module';
+
 import {PwnedModule} from '../../providers/pwned/pwned.module';
 import {TokensModule} from '../../providers/tokens/tokens.module';
 import {TwilioModule} from '../../providers/twilio/twilio.module';
@@ -16,7 +16,6 @@ import {ApiKeysModule} from '../api-keys/api-keys.module';
 
 @Module({
   imports: [
-    PrismaModule,
     MailModule,
     ConfigModule,
     TwilioModule,

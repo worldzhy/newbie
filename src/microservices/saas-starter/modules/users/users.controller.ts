@@ -20,7 +20,7 @@ import {CursorPipe} from '@framework/pipes/cursor.pipe';
 import {OptionalIntPipe} from '@framework/pipes/optional-int.pipe';
 import {OrderByPipe} from '@framework/pipes/order-by.pipe';
 import {WherePipe} from '@framework/pipes/where.pipe';
-import {Expose} from '../../providers/prisma/prisma.interface';
+import {Expose} from '../../helpers/interfaces';
 import {UserRequest} from '../auth/auth.interface';
 import {RateLimit} from '../auth/rate-limit.decorator';
 import {Scopes} from '../auth/scope.decorator';

@@ -1,8 +1,9 @@
 import {Injectable} from '@nestjs/common';
 import type {Prisma} from '@prisma/client';
 import {AuditLog} from '@prisma/client';
-import {Expose} from '../../providers/prisma/prisma.interface';
-import {PrismaService} from '../../providers/prisma/prisma.service';
+import {Expose} from '../../helpers/interfaces';
+import {expose} from '../../helpers/expose';
+import {PrismaService} from '@framework/prisma/prisma.service';
 
 @Injectable()
 export class AuditLogsService {
@@ -25,7 +26,7 @@ export class AuditLogsService {
         orderBy,
         include: {group: true, user: true},
       });
-      return AuditLog.map(group => this.prisma.expose<AuditLog>(group));
+      return AuditLog.map(group => expose<AuditLog>(group));
     } catch (error) {
       return [];
     }

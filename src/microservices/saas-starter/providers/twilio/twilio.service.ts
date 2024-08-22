@@ -14,10 +14,10 @@ export class TwilioService {
 
   constructor(private configService: ConfigService) {
     const twilioAccountSid = this.configService.get<string>(
-      'sms.twilioAccountSid'
+      'microservices.saas-starter.sms.twilioAccountSid'
     );
     const twilioAuthToken = this.configService.get<string>(
-      'sms.twilioAuthToken'
+      'microservices.saas-starter.sms.twilioAuthToken'
     );
     if (!twilioAccountSid || !twilioAuthToken)
       this.logger.warn('Twilio account SID/auth token not found');
@@ -31,7 +31,10 @@ export class TwilioService {
     this.queue
       .add(() =>
         pRetry(() => this.sendSms(options), {
-          retries: this.configService.get<number>('sms.retries') ?? 3,
+          retries:
+            this.configService.get<number>(
+              'microservices.saas-starter.sms.retries'
+            ) ?? 3,
           onFailedAttempt: error => {
             this.logger.error(
               `SMS to ${options.to} failed, retrying (${error.retriesLeft} attempts left)`,

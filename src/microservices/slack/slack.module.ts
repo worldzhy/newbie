@@ -1,9 +1,8 @@
-import {Module} from '@nestjs/common';
-import {ConfigModule} from '@nestjs/config';
+import {Global, Module} from '@nestjs/common';
 import {SlackService} from './slack.service';
 
+@Global()
 @Module({
-  imports: [ConfigModule],
   providers: [SlackService],
   exports: [SlackService],
 })

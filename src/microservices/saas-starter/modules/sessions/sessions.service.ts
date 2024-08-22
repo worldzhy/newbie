@@ -9,8 +9,9 @@ import {
   SESSION_NOT_FOUND,
   UNAUTHORIZED_RESOURCE,
 } from '../../errors/errors.constants';
-import {Expose} from '../../providers/prisma/prisma.interface';
-import {PrismaService} from '../../providers/prisma/prisma.service';
+import {Expose} from '../../helpers/interfaces';
+import {expose} from '../../helpers/expose';
+import {PrismaService} from '@framework/prisma/prisma.service';
 
 @Injectable()
 export class SessionsService {
@@ -37,7 +38,7 @@ export class SessionsService {
         orderBy,
       });
       return sessions
-        .map(user => this.prisma.expose<Session>(user))
+        .map(user => expose<Session>(user))
         .map(i => ({...i, isCurrentSession: sessionId === i.id}));
     } catch (error) {
       return [];
@@ -57,7 +58,7 @@ export class SessionsService {
       throw new UnauthorizedException(UNAUTHORIZED_RESOURCE);
     if (!session) throw new NotFoundException(SESSION_NOT_FOUND);
     return {
-      ...this.prisma.expose<Session>(session),
+      ...expose<Session>(session),
       isCurrentSession: sessionId === session.id,
     };
   }
@@ -72,6 +73,6 @@ export class SessionsService {
     const session = await this.prisma.session.delete({
       where: {id},
     });
-    return this.prisma.expose<Session>(session);
+    return expose<Session>(session);
   }
 }

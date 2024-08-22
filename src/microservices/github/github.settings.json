@@ -1,0 +1,15 @@
+{
+  "config-service": {
+    "github": {
+      "auth": "process.env.GITHUB_AUTH",
+      "userAgent": "process.env.GITHUB_USER_AGENT"
+    }
+  },
+  "env": {
+    "GITHUB_AUTH": "",
+    "GITHUB_USER_AGENT": ""
+  },
+  "dependencies": {
+    "@octokit/rest": "^20.1.1"
+  }
+}

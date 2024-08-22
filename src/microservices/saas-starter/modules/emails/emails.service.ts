@@ -13,8 +13,9 @@ import {
   USER_NOT_FOUND,
 } from '../../errors/errors.constants';
 import {safeEmail} from '../../helpers/safe-email';
-import {Expose} from '../../providers/prisma/prisma.interface';
-import {PrismaService} from '../../providers/prisma/prisma.service';
+import {Expose} from '../../helpers/interfaces';
+import {expose} from '../../helpers/expose';
+import {PrismaService} from '@framework/prisma/prisma.service';
 import {AuthService} from '../auth/auth.service';
 
 @Injectable()
@@ -55,7 +56,7 @@ export class EmailsService {
         where: {...where, user: {id: userId}},
         orderBy,
       });
-      return emails.map(user => this.prisma.expose<Email>(user));
+      return emails.map(user => expose<Email>(user));
     } catch (error) {
       return [];
     }
@@ -68,7 +69,7 @@ export class EmailsService {
     if (!email) throw new NotFoundException(EMAIL_NOT_FOUND);
     if (email.userId !== userId)
       throw new UnauthorizedException(UNAUTHORIZED_RESOURCE);
-    return this.prisma.expose<Email>(email);
+    return expose<Email>(email);
   }
 
   async deleteEmail(userId: number, id: number): Promise<Expose<Email>> {
@@ -97,6 +98,6 @@ export class EmailsService {
     const email = await this.prisma.email.delete({
       where: {id},
     });
-    return this.prisma.expose<Email>(email);
+    return expose<Email>(email);
   }
 }

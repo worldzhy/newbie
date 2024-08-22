@@ -13,8 +13,9 @@ import {
   UNAUTHORIZED_RESOURCE,
 } from '../../errors/errors.constants';
 import {GeolocationService} from '../../providers/geolocation/geolocation.service';
-import {Expose} from '../../providers/prisma/prisma.interface';
-import {PrismaService} from '../../providers/prisma/prisma.service';
+import {Expose} from '../../helpers/interfaces';
+import {expose} from '../../helpers/expose';
+import {PrismaService} from '@framework/prisma/prisma.service';
 
 @Injectable()
 export class ApprovedSubnetsService {
@@ -43,9 +44,7 @@ export class ApprovedSubnetsService {
         where: {...where, user: {id: userId}},
         orderBy,
       });
-      return ApprovedSubnet.map(user =>
-        this.prisma.expose<ApprovedSubnet>(user)
-      );
+      return ApprovedSubnet.map(user => expose<ApprovedSubnet>(user));
     } catch (error) {
       return [];
     }
@@ -62,7 +61,7 @@ export class ApprovedSubnetsService {
     if (ApprovedSubnet.userId !== userId)
       throw new UnauthorizedException(UNAUTHORIZED_RESOURCE);
     if (!ApprovedSubnet) throw new NotFoundException(APPROVED_SUBNET_NOT_FOUND);
-    return this.prisma.expose<ApprovedSubnet>(ApprovedSubnet);
+    return expose<ApprovedSubnet>(ApprovedSubnet);
   }
 
   async deleteApprovedSubnet(
@@ -79,13 +78,15 @@ export class ApprovedSubnetsService {
     const ApprovedSubnet = await this.prisma.approvedSubnet.delete({
       where: {id},
     });
-    return this.prisma.expose<ApprovedSubnet>(ApprovedSubnet);
+    return expose<ApprovedSubnet>(ApprovedSubnet);
   }
 
   async approveNewSubnet(userId: number, ipAddress: string) {
     const subnet = await hash(
       anonymize(ipAddress),
-      this.configService.get<number>('security.saltRounds') ?? 10
+      this.configService.getOrThrow<number>(
+        'microservices.saas-starter.security.saltRounds'
+      )
     );
     const location = await this.geolocationService.getLocation(ipAddress);
     const approved = await this.prisma.approvedSubnet.create({
@@ -98,7 +99,7 @@ export class ApprovedSubnetsService {
         countryCode: location?.country?.iso_code,
       },
     });
-    return this.prisma.expose<ApprovedSubnet>(approved);
+    return expose<ApprovedSubnet>(approved);
   }
 
   /**
@@ -115,7 +116,7 @@ export class ApprovedSubnetsService {
     });
     for await (const item of previousSubnets) {
       if (await compare(subnet, item.subnet))
-        return this.prisma.expose<ApprovedSubnet>(item);
+        return expose<ApprovedSubnet>(item);
     }
     return this.approveNewSubnet(userId, ipAddress);
   }

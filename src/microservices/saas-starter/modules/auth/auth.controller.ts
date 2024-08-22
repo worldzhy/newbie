@@ -8,7 +8,7 @@ import {
   Post,
 } from '@nestjs/common';
 import {User} from '@prisma/client';
-import {Expose} from '../../providers/prisma/prisma.interface';
+import {Expose} from '../../helpers/interfaces';
 import {
   ForgotPasswordDto,
   LoginDto,

@@ -5,7 +5,7 @@ import {DomainsService} from '../../modules/domains/domains.service';
 import {MetricsService} from '../../modules/metrics/metrics.service';
 import {UsersService} from '../../modules/users/users.service';
 import {ElasticsearchService} from '../elasticsearch/elasticsearch.service';
-import {PrismaService} from '../prisma/prisma.service';
+import {PrismaService} from '@framework/prisma/prisma.service';
 
 @Injectable()
 export class TasksService {

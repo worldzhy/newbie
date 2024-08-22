@@ -38,8 +38,9 @@ import {
 import {safeEmail} from '../../helpers/safe-email';
 import {GeolocationService} from '../../providers/geolocation/geolocation.service';
 import {MailService} from '../../providers/mail/mail.service';
-import {Expose} from '../../providers/prisma/prisma.interface';
-import {PrismaService} from '../../providers/prisma/prisma.service';
+import {Expose} from '../../helpers/interfaces';
+import {expose} from '../../helpers/expose';
+import {PrismaService} from '@framework/prisma/prisma.service';
 import {PwnedService} from '../../providers/pwned/pwned.service';
 import {
   APPROVE_SUBNET_TOKEN,
@@ -85,8 +86,12 @@ export class AuthService {
   ) {
     this.authenticator = authenticator.create({
       window: [
-        this.configService.get<number>('security.totpWindowPast') ?? 0,
-        this.configService.get<number>('security.totpWindowFuture') ?? 0,
+        this.configService.get<number>(
+          'microservices.saas-starter.security.totpWindowPast'
+        ) ?? 0,
+        this.configService.get<number>(
+          'microservices.saas-starter.security.totpWindowFuture'
+        ) ?? 0,
       ],
       keyEncoder,
       keyDecoder,
@@ -201,7 +206,11 @@ export class AuthService {
       } catch (error) {}
     }
 
-    if (this.configService.get<boolean>('gravatar.enabled')) {
+    if (
+      this.configService.get<boolean>(
+        'microservices.saas-starter.gravatar.enabled'
+      )
+    ) {
       for await (const emailString of [email, emailSafe]) {
         const md5Email = createHash('md5').update(emailString).digest('hex');
         try {
@@ -247,7 +256,7 @@ export class AuthService {
         });
     } else await this.sendEmailVerification(email, false, origin);
     await this.approvedSubnetsService.approveNewSubnet(user.id, ipAddress);
-    return this.prisma.expose(user);
+    return expose(user);
   }
 
   async sendEmailVerification(email: string, resend = false, origin?: string) {
@@ -268,7 +277,10 @@ export class AuthService {
         name: emailDetails.user.name,
         days: 7,
         link: `${
-          origin ?? this.configService.get<string>('frontendUrl')
+          origin ??
+          this.configService.get<string>(
+            'microservices.saas-starter.frontendUrl'
+          )
         }/auth/link/verify-email?token=${this.tokensService.signJwt(
           EMAIL_VERIFY_TOKEN,
           {id: emailDetails.id},
@@ -340,7 +352,9 @@ export class AuthService {
     });
     const otpauth = this.authenticator.keyuri(
       userId.toString(),
-      this.configService.get<string>('meta.appName') ?? '',
+      this.configService.get<string>(
+        'microservices.saas-starter.meta.appName'
+      ) ?? '',
       secret
     );
     return qrcode.toDataURL(otpauth);
@@ -367,7 +381,7 @@ export class AuthService {
       where: {id: userId},
       data: {twoFactorMethod: method, twoFactorSecret: user.twoFactorSecret},
     });
-    return this.prisma.expose<User>(result);
+    return expose<User>(result);
   }
 
   async loginWithTotp(
@@ -413,7 +427,10 @@ export class AuthService {
         name: emailDetails.user.name,
         minutes: 30,
         link: `${
-          origin ?? this.configService.get<string>('frontendUrl')
+          origin ??
+          this.configService.get<string>(
+            'microservices.saas-starter.frontendUrl'
+          )
         }/auth/link/reset-password?token=${this.tokensService.signJwt(
           PASSWORD_RESET_TOKEN,
           {id: emailDetails.user.id},
@@ -499,7 +516,10 @@ export class AuthService {
           name: result.user.name,
           group: group.name,
           link: `${
-            origin ?? this.configService.get<string>('frontendUrl')
+            origin ??
+            this.configService.get<string>(
+              'microservices.saas-starter.frontendUrl'
+            )
           }/groups/${group.id}`,
         },
       });
@@ -558,7 +578,10 @@ export class AuthService {
                 name: user.name,
                 locationName,
                 link: `${
-                  origin ?? this.configService.get<string>('frontendUrl')
+                  origin ??
+                  this.configService.get<string>(
+                    'microservices.saas-starter.frontendUrl'
+                  )
                 }/users/${id}/sessions`,
               },
             });
@@ -580,7 +603,9 @@ export class AuthService {
     return this.tokensService.signJwt(
       LOGIN_ACCESS_TOKEN,
       payload,
-      this.configService.get<string>('security.accessTokenExpiry')
+      this.configService.get<string>(
+        'microservices.saas-starter.security.accessTokenExpiry'
+      )
     );
   }
 
@@ -629,7 +654,9 @@ export class AuthService {
     const totpToken = this.tokensService.signJwt(
       MULTI_FACTOR_TOKEN,
       mfaTokenPayload,
-      this.configService.get<string>('security.mfaTokenExpiry')
+      this.configService.get<string>(
+        'microservices.saas-starter.security.mfaTokenExpiry'
+      )
     );
     if (user.twoFactorMethod === 'EMAIL' || forceMethod === 'EMAIL') {
       if (user.prefersEmail) {
@@ -639,10 +666,12 @@ export class AuthService {
           data: {
             name: user.name,
             minutes: parseInt(
-              this.configService.get<string>('security.mfaTokenExpiry') ?? ''
+              this.configService.get<string>(
+                'microservices.saas-starter.security.mfaTokenExpiry'
+              ) ?? ''
             ),
             link: `${this.configService.get<string>(
-              'frontendUrl'
+              'microservices.saas-starter.frontendUrl'
             )}/auth/link/login%2Ftoken?token=${this.tokensService.signJwt(
               EMAIL_MFA_TOKEN,
               {id: user.id},
@@ -659,7 +688,9 @@ export class AuthService {
         this.twilioService.send({
           to: user.twoFactorPhone,
           body: `${this.getOneTimePassword(user.twoFactorSecret)} is your ${
-            this.configService.get<string>('meta.appName') ?? ''
+            this.configService.get<string>(
+              'microservices.saas-starter.meta.appName'
+            ) ?? ''
           } verification code.`,
         });
       }
@@ -713,7 +744,10 @@ export class AuthService {
             locationName,
             minutes: 30,
             link: `${
-              origin ?? this.configService.get<string>('frontendUrl')
+              origin ??
+              this.configService.get<string>(
+                'microservices.saas-starter.frontendUrl'
+              )
             }/auth/link/approve-subnet?token=${this.tokensService.signJwt(
               APPROVE_SUBNET_TOKEN,
               {id},
@@ -730,17 +764,25 @@ export class AuthService {
     ignorePwnedPassword: boolean
   ): Promise<string> {
     if (!ignorePwnedPassword) {
-      if (!this.configService.get<boolean>('security.passwordPwnedCheck'))
+      if (
+        !this.configService.get<boolean>(
+          'microservices.saas-starter.security.passwordPwnedCheck'
+        )
+      )
         return await hash(
           password,
-          this.configService.get<number>('security.saltRounds') ?? 10
+          this.configService.get<number>(
+            'microservices.saas-starter.security.saltRounds'
+          ) ?? 10
         );
       if (!(await this.pwnedService.isPasswordSafe(password)))
         throw new BadRequestException(COMPROMISED_PASSWORD);
     }
     return await hash(
       password,
-      this.configService.get<number>('security.saltRounds') ?? 10
+      this.configService.get<number>(
+        'microservices.saas-starter.security.saltRounds'
+      ) ?? 10
     );
   }
 

@@ -10,18 +10,23 @@ import pRetry from 'p-retry';
 
 @Injectable()
 export class SlackService {
-  client: WebClient;
+  private config: {
+    token: any;
+    slackApiUrl: any;
+    rejectRateLimitedCalls: any;
+    retries: any;
+  };
+  private client: WebClient;
   private logger = new Logger(SlackService.name);
   private queue = new PQueue({concurrency: 1});
 
   constructor(private configService: ConfigService) {
-    const config = this.configService.getOrThrow(
-      'microservices.saas-starter.slack'
-    );
-    if (config.token)
-      this.client = new WebClient(config.token, {
-        slackApiUrl: config.slackApiUrl,
-        rejectRateLimitedCalls: config.rejectRateLimitedCalls,
+    this.config = this.configService.getOrThrow('microservices.slack');
+
+    if (this.config.token)
+      this.client = new WebClient(this.config.token, {
+        slackApiUrl: this.config.slackApiUrl,
+        rejectRateLimitedCalls: this.config.rejectRateLimitedCalls,
       });
   }
 
@@ -29,7 +34,7 @@ export class SlackService {
     this.queue
       .add(() =>
         pRetry(() => this.sendMessage(options), {
-          retries: this.configService.get<number>('slack.retries') ?? 3,
+          retries: this.config.retries,
           onFailedAttempt: error => {
             this.logger.error(
               `Message to ${options.channel} failed, retrying (${error.retriesLeft} attempts left)`,
@@ -46,7 +51,7 @@ export class SlackService {
     this.queue
       .add(() =>
         pRetry(() => this.sendMessageToChannel(channelName, text), {
-          retries: this.configService.get<number>('slack.retries') ?? 3,
+          retries: this.config.retries,
           onFailedAttempt: error => {
             this.logger.error(
               `Message to ${channelName} failed, retrying (${error.retriesLeft} attempts left)`,

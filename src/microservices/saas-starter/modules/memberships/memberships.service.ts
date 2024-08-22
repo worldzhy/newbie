@@ -16,8 +16,9 @@ import {
 } from '../../errors/errors.constants';
 import {safeEmail} from '../../helpers/safe-email';
 import {MailService} from '../../providers/mail/mail.service';
-import {Expose} from '../../providers/prisma/prisma.interface';
-import {PrismaService} from '../../providers/prisma/prisma.service';
+import {Expose} from '../../helpers/interfaces';
+import {expose} from '../../helpers/expose';
+import {PrismaService} from '@framework/prisma/prisma.service';
 import {ApiKeysService} from '../api-keys/api-keys.service';
 import {AuthService} from '../auth/auth.service';
 import {GroupsService} from '../groups/groups.service';
@@ -69,7 +70,7 @@ export class MembershipsService {
         orderBy,
         include: {group: true, user: true},
       });
-      return memberships.map(user => this.prisma.expose<Membership>(user));
+      return memberships.map(user => expose<Membership>(user));
     } catch (error) {
       return [];
     }
@@ -86,7 +87,7 @@ export class MembershipsService {
     if (!membership) throw new NotFoundException(MEMBERSHIP_NOT_FOUND);
     if (membership.userId !== userId)
       throw new UnauthorizedException(UNAUTHORIZED_RESOURCE);
-    return this.prisma.expose<Membership>(membership);
+    return expose<Membership>(membership);
   }
 
   async getGroupMembership(
@@ -100,7 +101,7 @@ export class MembershipsService {
     if (!membership) throw new NotFoundException(MEMBERSHIP_NOT_FOUND);
     if (membership.groupId !== groupId)
       throw new UnauthorizedException(UNAUTHORIZED_RESOURCE);
-    return this.prisma.expose<Membership>(membership);
+    return expose<Membership>(membership);
   }
 
   async deleteUserMembership(
@@ -118,7 +119,7 @@ export class MembershipsService {
       where: {id},
     });
     await this.apiKeyService.removeUnauthorizedScopesForUser(userId);
-    return this.prisma.expose<Membership>(membership);
+    return expose<Membership>(membership);
   }
 
   async updateGroupMembership(
@@ -149,7 +150,7 @@ export class MembershipsService {
     await this.apiKeyService.removeUnauthorizedScopesForUser(
       testMembership.userId
     );
-    return this.prisma.expose<Membership>(membership);
+    return expose<Membership>(membership);
   }
 
   async deleteGroupMembership(
@@ -170,7 +171,7 @@ export class MembershipsService {
     await this.apiKeyService.removeUnauthorizedScopesForUser(
       testMembership.userId
     );
-    return this.prisma.expose<Membership>(membership);
+    return expose<Membership>(membership);
   }
 
   async createGroupMembership(
@@ -183,7 +184,7 @@ export class MembershipsService {
       where: {emails: {some: {emailSafe}}},
     });
     let user: Expose<User> | null = userResult
-      ? this.prisma.expose<User>(userResult)
+      ? expose<User>(userResult)
       : null;
     if (!user)
       user = await this.auth.register(ipAddress, {name: data.email, ...data});
@@ -202,11 +203,11 @@ export class MembershipsService {
         name: user.name,
         group: result.group.name,
         link: `${this.configService.get<string>(
-          'frontendUrl'
+          'microservices.saas-starter.frontendUrl'
         )}/groups/${groupId}`,
       },
     });
-    return this.prisma.expose<Membership>(result);
+    return expose<Membership>(result);
   }
 
   /** Verify whether a group membership can be deleted */

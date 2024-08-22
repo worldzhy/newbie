@@ -18,8 +18,9 @@ import {
 import {Files} from '../../helpers/interfaces';
 import {safeEmail} from '../../helpers/safe-email';
 import {MailService} from '../../providers/mail/mail.service';
-import {Expose} from '../../providers/prisma/prisma.interface';
-import {PrismaService} from '../../providers/prisma/prisma.service';
+import {Expose} from '../../helpers/interfaces';
+import {expose} from '../../helpers/expose';
+import {PrismaService} from '@framework/prisma/prisma.service';
 import {S3Service} from '../../providers/s3/s3.service';
 import {MERGE_ACCOUNTS_TOKEN} from '../../providers/tokens/tokens.constants';
 import {TokensService} from '../../providers/tokens/tokens.service';
@@ -45,7 +46,7 @@ export class UsersService {
       where: {id},
     });
     if (!user) throw new NotFoundException(USER_NOT_FOUND);
-    return this.prisma.expose<User>(user);
+    return expose<User>(user);
   }
 
   async getUsers(params: {
@@ -64,7 +65,7 @@ export class UsersService {
         where,
         orderBy,
       });
-      return users.map(user => this.prisma.expose<User>(user));
+      return users.map(user => expose<User>(user));
     } catch (error) {
       return [];
     }
@@ -120,7 +121,7 @@ export class UsersService {
       // Remove all scopes now allowed anymore from API keys
       await this.apiKeysService.cleanAllApiKeysForUser(id);
     }
-    return this.prisma.expose<User>(user);
+    return expose<User>(user);
   }
 
   async deactivateUser(
@@ -144,7 +145,7 @@ export class UsersService {
         });
       }
 
-    return this.prisma.expose<User>(user);
+    return expose<User>(user);
   }
 
   async deleteUser(id: number): Promise<Expose<User>> {
@@ -159,7 +160,7 @@ export class UsersService {
     await this.prisma.auditLog.deleteMany({where: {user: {id}}});
     await this.prisma.apiKey.deleteMany({where: {user: {id}}});
     const user = await this.prisma.user.delete({where: {id}});
-    return this.prisma.expose<User>(user);
+    return expose<User>(user);
   }
 
   async requestMerge(userId: number, email: string): Promise<{queued: true}> {
@@ -171,7 +172,9 @@ export class UsersService {
     if (!user) throw new NotFoundException(USER_NOT_FOUND);
     if (user.id === userId) throw new NotFoundException(USER_NOT_FOUND);
     const minutes = parseInt(
-      this.configService.get<string>('security.mergeUsersTokenExpiry') ?? ''
+      this.configService.get<string>(
+        'microservices.saas-starter.security.mergeUsersTokenExpiry'
+      ) ?? ''
     );
     if (user.prefersEmail) {
       this.email.send({
@@ -181,7 +184,7 @@ export class UsersService {
           name: user.name,
           minutes,
           link: `${this.configService.get<string>(
-            'frontendUrl'
+            'microservices.saas-starter.frontendUrl'
           )}/auth/link/merge-accounts?token=${this.tokensService.signJwt(
             MERGE_ACCOUNTS_TOKEN,
             {baseUserId: userId, mergeUserId: user.id},
@@ -200,12 +203,14 @@ export class UsersService {
   ): Promise<Expose<User>> {
     if (file.size > 25000000) throw new Error(FILE_TOO_LARGE);
 
-    const region = this.configService.getOrThrow<string>('s3.region');
+    const region = this.configService.getOrThrow<string>(
+      'microservices.saas-starter.s3.region'
+    );
     const bucket = this.configService.getOrThrow<string>(
-      's3.profilePictureBucket'
+      'microservices.saas-starter.s3.profilePictureBucket'
     );
     const cdnHostname = this.configService.getOrThrow<string>(
-      's3.profilePictureCdnHostname'
+      'microservices.saas-starter.s3.profilePictureCdnHostname'
     );
 
     const {Location} = await this.s3Service.upload(

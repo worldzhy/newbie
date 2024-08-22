@@ -16,7 +16,7 @@ export class ElasticsearchService {
 
   constructor(private configService: ConfigService) {
     const config = this.configService.getOrThrow(
-      'microservices.saas-starter.elasticSearch'
+      'microservices.saas-starter.elasticsearch'
     );
     if (config.aws?.accessKeyId) {
       AWS.config.update({
@@ -42,7 +42,9 @@ export class ElasticsearchService {
         .add(() =>
           pRetry(() => this.indexRecord(index, record, params), {
             retries:
-              this.configService.get<number>('elasticSearch.retries') ?? 3,
+              this.configService.get<number>(
+                'microservices.saas-starter.elasticsearch.retries'
+              ) ?? 3,
             onFailedAttempt: error => {
               this.logger.error(
                 `Indexing record failed, retrying (${error.retriesLeft} attempts left)`,

@@ -8,9 +8,9 @@ import {APP_GUARD, APP_INTERCEPTOR} from '@nestjs/core';
 import {ScheduleModule} from '@nestjs/schedule';
 import {AuditLogger} from './interceptors/audit-log.interceptor';
 import {RateLimitInterceptor} from './interceptors/rate-limit.interceptor';
-import {ApiLoggerMiddleware} from './middleware/api-logger.middleware';
-import {JsonBodyMiddleware} from './middleware/json-body.middleware';
-import {RawBodyMiddleware} from './middleware/raw-body.middleware';
+import {ApiLoggerMiddleware} from './middlewares/api-logger.middleware';
+import {JsonBodyMiddleware} from './middlewares/json-body.middleware';
+import {RawBodyMiddleware} from './middlewares/raw-body.middleware';
 import {ApiKeysModule} from './modules/api-keys/api-keys.module';
 import {ApprovedSubnetsModule} from './modules/approved-subnets/approved-subnets.module';
 import {AuditLogsModule} from './modules/audit-logs/audit-logs.module';
@@ -26,17 +26,12 @@ import {SessionsModule} from './modules/sessions/sessions.module';
 import {StripeModule} from './modules/stripe/stripe.module';
 import {UsersModule} from './modules/users/users.module';
 import {WebhooksModule} from './modules/webhooks/webhooks.module';
-import {CloudinaryModule} from './providers/cloudinary/cloudinary.module';
 import {DnsModule} from './providers/dns/dns.module';
-import {ElasticSearchModule} from './providers/elasticsearch/elasticsearch.module';
+import {ElasticsearchModule} from './providers/elasticsearch/elasticsearch.module';
 import {GeolocationModule} from './providers/geolocation/geolocation.module';
-import {GitHubModule} from './providers/github/github.module';
 import {GoogleMapsModule} from './providers/google-maps/google-maps.module';
 import {MailModule} from './providers/mail/mail.module';
-import {PuppeteerModule} from './providers/puppeteer/puppeteer.module';
-import {PrismaModule} from './providers/prisma/prisma.module';
 import {S3Module} from './providers/s3/s3.module';
-import {SlackModule} from './providers/slack/slack.module';
 import {TasksModule} from './providers/tasks/tasks.module';
 import {MetricsModule} from './modules/metrics/metrics.module';
 import {MetaModule} from './modules/meta/meta.module';
@@ -44,7 +39,6 @@ import {MetaModule} from './modules/meta/meta.module';
 @Module({
   imports: [
     ScheduleModule.forRoot(),
-    PrismaModule,
     TasksModule,
     UsersModule,
     AuthModule,
@@ -62,13 +56,9 @@ import {MetaModule} from './modules/meta/meta.module';
     StripeModule,
     AuditLogsModule,
     WebhooksModule,
-    ElasticSearchModule,
-    SlackModule,
+    ElasticsearchModule,
     S3Module,
-    CloudinaryModule,
-    GitHubModule,
     GoogleMapsModule,
-    PuppeteerModule,
     MetricsModule,
     MetaModule,
   ],

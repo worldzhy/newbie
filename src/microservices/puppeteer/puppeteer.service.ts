@@ -1,14 +1,21 @@
 import {Injectable} from '@nestjs/common';
+import {ConfigService} from '@nestjs/config';
 import {launch, PDFOptions} from 'puppeteer';
 
 @Injectable()
 export class PuppeteerService {
+  private config: {chromiumPath: string};
+
+  constructor(private readonly configService: ConfigService) {
+    this.config = this.configService.getOrThrow('microservices.puppeteer');
+  }
+
   async renderHtmlToImage(
     html: string,
     viewport?: {width: number; height: number}
   ) {
     const browser = await launch({
-      executablePath: process.env.CHROMIUM_PATH,
+      executablePath: this.config.chromiumPath,
       args: ['--no-sandbox'],
     });
     const page = await browser.newPage();
@@ -25,7 +32,7 @@ export class PuppeteerService {
     options?: PDFOptions
   ) {
     const browser = await launch({
-      executablePath: process.env.CHROMIUM_PATH,
+      executablePath: this.config.chromiumPath,
       args: ['--no-sandbox'],
     });
     const page = await browser.newPage();

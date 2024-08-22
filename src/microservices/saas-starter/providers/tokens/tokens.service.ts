@@ -30,10 +30,9 @@ export class TokensService {
     if (typeof payload === 'number') payload = payload.toString();
     return sign(
       payload,
-      // this.configService.getOrThrow<string>(
-      //   'microservices.saas-starter.security.jwtSecret'
-      // ),
-      'saas-starter',
+      this.configService.getOrThrow<string>(
+        'microservices.saas-starter.security.jwtSecret'
+      ),
       {
         ...options,
         subject,
@@ -52,7 +51,9 @@ export class TokensService {
     try {
       return verify(
         token,
-        this.configService.get<string>('security.jwtSecret') ?? '',
+        this.configService.getOrThrow<string>(
+          'microservices.saas-starter.security.jwtSecret'
+        ),
         {...options, subject}
       ) as any as T;
     } catch (error) {

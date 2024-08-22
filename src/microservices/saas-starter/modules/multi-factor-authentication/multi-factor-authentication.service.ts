@@ -15,8 +15,9 @@ import {
   USER_NOT_FOUND,
 } from '../../errors/errors.constants';
 import {MailService} from '../../providers/mail/mail.service';
-import {Expose} from '../../providers/prisma/prisma.interface';
-import {PrismaService} from '../../providers/prisma/prisma.service';
+import {Expose} from '../../helpers/interfaces';
+import {expose} from '../../helpers/expose';
+import {PrismaService} from '@framework/prisma/prisma.service';
 import {TwilioService} from '../../providers/twilio/twilio.service';
 import {AuthService} from '../auth/auth.service';
 import {generateRandomString} from '@framework/utilities/random.util';
@@ -58,7 +59,9 @@ export class MultiFactorAuthenticationService {
     return this.twilioService.send({
       to: phone,
       body: `${this.auth.getOneTimePassword(secret)} is your ${
-        this.configService.get<string>('meta.appName') ?? ''
+        this.configService.get<string>(
+          'microservices.saas-starter.meta.appName'
+        ) ?? ''
       } verification code.`,
     });
   }
@@ -113,7 +116,7 @@ export class MultiFactorAuthenticationService {
       where: {id: userId},
       data: {twoFactorMethod: 'NONE', twoFactorSecret: null},
     });
-    return this.prisma.expose<User>(user);
+    return expose<User>(user);
   }
 
   async regenerateBackupCodes(id: number) {
@@ -124,7 +127,9 @@ export class MultiFactorAuthenticationService {
       codes.push(unsafeCode);
       const code = await hash(
         unsafeCode,
-        this.configService.get<number>('security.saltRounds') ?? 10
+        this.configService.get<number>(
+          'microservices.saas-starter.security.saltRounds'
+        ) ?? 10
       );
       await this.prisma.backupCode.create({
         data: {user: {connect: {id}}, code},

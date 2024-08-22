@@ -59,6 +59,14 @@ const ALL_MICROSERVICES = {
     moduleNames: 'AwsCloudformationModule',
     importCode: `import {AwsCloudformationModule} from './cloudformation/cloudformation.module';`,
   },
+  cloudinary: {
+    key: 'cloudinary',
+    srcPath: './src/microservices/cloudinary',
+    schemaFileName: null,
+    settingsFileName: 'cloudinary.settings.json',
+    moduleNames: 'CloudinaryModule',
+    importCode: `import {CloudinaryModule} from './cloudinary/cloudinary.module';`,
+  },
   elasticsearch: {
     key: 'elasticsearch',
     srcPath: './src/microservices/elasticsearch',
@@ -74,6 +82,14 @@ const ALL_MICROSERVICES = {
     settingsFileName: 'event-scheduling.settings.json',
     moduleNames: 'EventSchedulingModule',
     importCode: `import {EventSchedulingModule} from './event-scheduling/event-scheduling.module';`,
+  },
+  github: {
+    key: 'github',
+    srcPath: './src/microservices/github',
+    schemaFileName: null,
+    settingsFileName: 'github.settings.json',
+    moduleNames: 'GitHubModule',
+    importCode: `import {GitHubModule} from './github/github.module';`,
   },
   googleapis: {
     key: 'googleapis',
@@ -123,6 +139,14 @@ const ALL_MICROSERVICES = {
     moduleNames: 'PeopleFinderModule',
     importCode: `import {PeopleFinderModule} from './people-finder/people-finder.module';`,
   },
+  puppeteer: {
+    key: 'puppeteer',
+    srcPath: './src/microservices/puppeteer',
+    schemaFileName: null,
+    settingsFileName: 'puppeteer.settings.json',
+    moduleNames: 'PuppeteerModule',
+    importCode: `import {PuppeteerModule} from './puppeteer/puppeteer.module';`,
+  },
   queue: {
     key: 'queue',
     srcPath: './src/microservices/queue',
@@ -146,6 +170,14 @@ const ALL_MICROSERVICES = {
     settingsFileName: null,
     moduleNames: 'ShortcutModule',
     importCode: `import {ShortcutModule} from './shortcut/shortcut.module';`,
+  },
+  slack: {
+    key: 'slack',
+    srcPath: './src/microservices/slack',
+    schemaFileName: null,
+    settingsFileName: 'slack.settings.json',
+    moduleNames: 'SlackModule',
+    importCode: `import {SlackModule} from './slack/slack.module';`,
   },
   snowflake: {
     key: 'snowflake',
