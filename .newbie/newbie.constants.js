@@ -28,13 +28,21 @@ const ALL_MICROSERVICES = {
     moduleNames: 'AccountModule',
     importCode: `import {AccountModule} from './account/account.module';`,
   },
-  aws: {
-    key: 'aws',
-    srcPath: './src/microservices/aws',
+  'aws-s3': {
+    key: 'aws-s3',
+    srcPath: './src/microservices/aws-s3',
+    schemaFileName: 'aws-s3.schema',
+    settingsFileName: 'aws-s3.settings.json',
+    moduleNames: 'AwsS3Module',
+    importCode: `import {AwsS3Module} from './aws-s3/aws-s3.module';`,
+  },
+  'aws-sqs': {
+    key: 'aws-sqs',
+    srcPath: './src/microservices/aws-sqs',
     schemaFileName: null,
-    settingsFileName: 'aws.settings.json',
-    moduleNames: 'AwsModule',
-    importCode: `import {AwsModule} from './aws/aws.module';`,
+    settingsFileName: 'aws-sqs.settings.json',
+    moduleNames: 'AwsSqsModule',
+    importCode: `import {AwsSqsModule} from './aws-sqs/aws-sqs.module';`,
   },
   cache: {
     key: 'cache',
@@ -51,6 +59,14 @@ const ALL_MICROSERVICES = {
     settingsFileName: 'cloudformation.settings.json',
     moduleNames: 'AwsCloudformationModule',
     importCode: `import {AwsCloudformationModule} from './cloudformation/cloudformation.module';`,
+  },
+  elasticsearch: {
+    key: 'elasticsearch',
+    srcPath: './src/microservices/elasticsearch',
+    schemaFileName: null,
+    settingsFileName: 'elasticsearch.settings.json',
+    moduleNames: 'ElasticsearchModule',
+    importCode: `import {ElasticsearchModule} from './elasticsearch/elasticsearch.module';`,
   },
   'event-scheduling': {
     key: 'event-scheduling',
@@ -116,6 +132,14 @@ const ALL_MICROSERVICES = {
     moduleNames: 'NewbieQueueModule',
     importCode: `import {NewbieQueueModule} from './queue/queue.module';`,
   },
+  'saas-starter': {
+    key: 'saas-starter',
+    srcPath: './src/microservices/saas-starter',
+    schemaFileName: 'saas-starter.schema',
+    settingsFileName: 'saas-starter.settings.json',
+    moduleNames: 'SaasStarterModule',
+    importCode: `import {SaasStarterModule} from './saas-starter/saas-starter.module';`,
+  },
   shortcut: {
     key: 'shortcut',
     srcPath: './src/microservices/shortcut',
@@ -123,6 +147,14 @@ const ALL_MICROSERVICES = {
     settingsFileName: null,
     moduleNames: 'ShortcutModule',
     importCode: `import {ShortcutModule} from './shortcut/shortcut.module';`,
+  },
+  snowflake: {
+    key: 'snowflake',
+    srcPath: './src/microservices/snowflake',
+    schemaFileName: null,
+    settingsFileName: 'snowflake.settings.json',
+    moduleNames: 'SnowflakeModule',
+    importCode: `import {SnowflakeModule} from './snowflake/snowflake.module';`,
   },
   'stock-mgmt': {
     key: 'stock-mgmt',

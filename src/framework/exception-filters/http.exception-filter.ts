@@ -9,9 +9,9 @@ import {Request, Response} from 'express';
 
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
-  private loggerContext = 'HttpException';
-
-  constructor(private readonly logger: Logger) {}
+  constructor(private readonly logger: Logger) {
+    this.logger = new Logger('HttpException');
+  }
 
   catch(exception: HttpException, host: ArgumentsHost) {
     const request = host.switchToHttp().getRequest<Request>();
@@ -28,11 +28,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     // [step 2] Write log.
     if (httpStatus >= 500) {
-      this.logger.error(content, this.loggerContext);
+      this.logger.error(content);
     } else if (httpStatus >= 400) {
-      this.logger.warn(content, this.loggerContext);
+      this.logger.warn(content);
     } else {
-      this.logger.log(content, this.loggerContext);
+      this.logger.log(content);
     }
 
     // [step 3] Response.

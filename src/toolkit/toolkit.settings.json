@@ -1,26 +1,14 @@
 {
   "env": {
-    "ELASTICSEARCH_NODE": "http://127.0.0.1",
-    "ELASTICSEARCH_USERNAME": "",
-    "ELASTICSEARCH_PASSWORD": "",
-    "PRISMA_DATABASE_URL": "postgresql://postgres:postgres@localhost:5432/newbie",
-    "SNOWFLAKE_ACCOUNT": "",
-    "SNOWFLAKE_USERNAME": "",
-    "SNOWFLAKE_PASSWORD": "",
-    "SNOWFLAKE_DATABASE": "",
-    "SNOWFLAKE_SCHEMA": "",
-    "SNOWFLAKE_WAREHOUSE": "",
-    "SNOWFLAKE_POOL_MAX": 3
+    "PRISMA_DATABASE_URL": "postgresql://postgres:postgres@localhost:5432/newbie"
   },
   "dependencies": { 
-    "@elastic/elasticsearch": "7.13.0",
     "@prisma/client": "^5.17.0",
     "bcrypt": "^5.1.1",
-    "moment": "^2.29.4",
-    "snowflake-sdk": "^1.9.1"
+    "crypto-random-string": "^3.3.1",
+    "moment": "^2.29.4"
   },
   "devDependencies": {
-    "@types/snowflake-sdk": "^1.6.17",
     "prisma": "^5.17.0"
   }
 }

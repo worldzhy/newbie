@@ -15,9 +15,9 @@ export class PrismaService
   >
   implements OnModuleInit
 {
-  private loggerContext = 'Prisma';
+  private logger = new Logger('Prisma');
 
-  constructor(private readonly logger: Logger) {
+  constructor() {
     super({
       /* About log levels
       -query:	Logs all queries run by Prisma.
@@ -43,27 +43,27 @@ export class PrismaService
     // Register event handlers.
     this.$on('query', (e: Prisma.QueryEvent) => {
       this.logger.log('👇👇👇');
-      this.logger.log(`time: ${e.timestamp}`, this.loggerContext);
-      this.logger.log(`query: ${e.query}`, this.loggerContext);
-      this.logger.log(`params: ${e.params}`, this.loggerContext);
-      this.logger.log(`duration: ${e.duration} ms`, this.loggerContext);
-      this.logger.log(`target: ${e.target}`, this.loggerContext);
+      this.logger.log(`time: ${e.timestamp}`);
+      this.logger.log(`query: ${e.query}`);
+      this.logger.log(`params: ${e.params}`);
+      this.logger.log(`duration: ${e.duration} ms`);
+      this.logger.log(`target: ${e.target}`);
       this.logger.log('');
     });
 
     this.$on('info', (e: Prisma.LogEvent) => {
       const message = `${e.timestamp} >> ${e.message} >> [Target] ${e.target}`;
-      this.logger.log(message, this.loggerContext);
+      this.logger.log(message);
     });
 
     this.$on('warn', (e: Prisma.LogEvent) => {
       const message = `${e.timestamp} >> ${e.message} >> [Target] ${e.target}`;
-      this.logger.warn(message, this.loggerContext);
+      this.logger.warn(message);
     });
 
     this.$on('error', (e: Prisma.LogEvent) => {
       const message = `${e.timestamp} >> ${e.message} >> [Target] ${e.target}`;
-      this.logger.error(message, this.loggerContext);
+      this.logger.error(message);
     });
 
     // Register middlewares.
