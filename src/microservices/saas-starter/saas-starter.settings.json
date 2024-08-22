@@ -187,6 +187,7 @@
     "GOOGLE_MAPS_API_KEY": ""
   },
   "dependencies": {
+    "@elastic/elasticsearch": "^7.13.0",
     "@nestjs/schedule": "^4.0.1",
     "jsonwebtoken": "^9.0.2",
     "cloudinary": "latest",

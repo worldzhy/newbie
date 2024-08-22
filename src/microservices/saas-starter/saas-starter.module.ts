@@ -4,7 +4,6 @@ import {
   NestModule,
   RequestMethod,
 } from '@nestjs/common';
-import {ConfigModule} from '@nestjs/config';
 import {APP_GUARD, APP_INTERCEPTOR} from '@nestjs/core';
 import {ScheduleModule} from '@nestjs/schedule';
 import {AuditLogger} from './interceptors/audit-log.interceptor';
@@ -39,7 +38,6 @@ import {PrismaModule} from './providers/prisma/prisma.module';
 import {S3Module} from './providers/s3/s3.module';
 import {SlackModule} from './providers/slack/slack.module';
 import {TasksModule} from './providers/tasks/tasks.module';
-// import {HttpExceptionFilter} from './filters/http-exception.filter';
 import {MetricsModule} from './modules/metrics/metrics.module';
 import {MetaModule} from './modules/meta/meta.module';
 

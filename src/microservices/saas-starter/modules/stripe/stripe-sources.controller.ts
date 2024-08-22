@@ -8,8 +8,8 @@ import {
   Query,
 } from '@nestjs/common';
 import Stripe from 'stripe';
-import {CursorPipe} from '../../pipes/cursor.pipe';
-import {OptionalIntPipe} from '../../pipes/optional-int.pipe';
+import {CursorPipe} from '@framework/pipes/cursor.pipe';
+import {OptionalIntPipe} from '@framework/pipes/optional-int.pipe';
 import {AuditLog} from '../audit-logs/audit-log.decorator';
 import {Scopes} from '../auth/scope.decorator';
 import {StripeService} from './stripe.service';

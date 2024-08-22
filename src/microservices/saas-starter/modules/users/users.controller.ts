@@ -16,10 +16,10 @@ import {
 import {FilesInterceptor} from '@nestjs/platform-express';
 import {Prisma, User} from '@prisma/client';
 import {Files} from '../../helpers/interfaces';
-import {CursorPipe} from '../../pipes/cursor.pipe';
-import {OptionalIntPipe} from '../../pipes/optional-int.pipe';
-import {OrderByPipe} from '../../pipes/order-by.pipe';
-import {WherePipe} from '../../pipes/where.pipe';
+import {CursorPipe} from '@framework/pipes/cursor.pipe';
+import {OptionalIntPipe} from '@framework/pipes/optional-int.pipe';
+import {OrderByPipe} from '@framework/pipes/order-by.pipe';
+import {WherePipe} from '@framework/pipes/where.pipe';
 import {Expose} from '../../providers/prisma/prisma.interface';
 import {UserRequest} from '../auth/auth.interface';
 import {RateLimit} from '../auth/rate-limit.decorator';

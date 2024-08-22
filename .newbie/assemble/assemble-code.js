@@ -49,7 +49,9 @@ const assembleSourceCodeFiles = () => {
   );
 
   // [step 3] Format code.
-  execSync('npm run format');
+  try {
+    execSync('npm run format');
+  } catch (error) {}
 };
 
 const EmptyMicroservicesModuleTemplate = () => `

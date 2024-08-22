@@ -10,11 +10,11 @@ import {
   Query,
 } from '@nestjs/common';
 import {Group, Prisma} from '@prisma/client';
-import {CursorPipe} from '../../pipes/cursor.pipe';
-import {OptionalIntPipe} from '../../pipes/optional-int.pipe';
-import {OrderByPipe} from '../../pipes/order-by.pipe';
-import {SelectIncludePipe} from '../../pipes/select-include.pipe';
-import {WherePipe} from '../../pipes/where.pipe';
+import {CursorPipe} from '@framework/pipes/cursor.pipe';
+import {OptionalIntPipe} from '@framework/pipes/optional-int.pipe';
+import {OrderByPipe} from '@framework/pipes/order-by.pipe';
+import {SelectIncludePipe} from '@framework/pipes/select-include.pipe';
+import {WherePipe} from '@framework/pipes/where.pipe';
 import {Expose} from '../../providers/prisma/prisma.interface';
 import {AuditLog} from '../audit-logs/audit-log.decorator';
 import {Scopes} from '../auth/scope.decorator';
