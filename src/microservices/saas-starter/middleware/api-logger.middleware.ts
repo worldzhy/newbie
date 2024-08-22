@@ -2,13 +2,13 @@ import {Injectable, NestMiddleware} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import {NextFunction, Response} from 'express';
 import {UserRequest} from '../modules/auth/auth.interface';
-import {ElasticSearchService} from '../providers/elasticsearch/elasticsearch.service';
+import {ElasticsearchService} from '../providers/elasticsearch/elasticsearch.service';
 
 @Injectable()
 export class ApiLoggerMiddleware implements NestMiddleware {
   constructor(
     private configService: ConfigService,
-    private elasticSearchService: ElasticSearchService
+    private elasticsearch: ElasticsearchService
   ) {}
 
   use(request: UserRequest, res: Response, next: NextFunction) {
@@ -39,7 +39,7 @@ export class ApiLoggerMiddleware implements NestMiddleware {
         (config.mode === 'api-key-or-user' &&
           (request.user?.type === 'api-key' || request.user?.type === 'user'))
       )
-        this.elasticSearchService.index(config.index, obj);
+        this.elasticsearch.index(config.index, obj);
     });
     next();
   }

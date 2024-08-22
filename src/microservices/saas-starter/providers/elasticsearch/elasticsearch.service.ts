@@ -9,8 +9,8 @@ import PQueue from 'p-queue';
 import pRetry from 'p-retry';
 
 @Injectable()
-export class ElasticSearchService {
-  private logger = new Logger(ElasticSearchService.name);
+export class ElasticsearchService {
+  private logger = new Logger(ElasticsearchService.name);
   private queue = new PQueue({concurrency: 1});
   private client: Client;
 
@@ -36,7 +36,7 @@ export class ElasticSearchService {
     else this.logger.warn('ElasticSearch tracking is not enabled');
   }
 
-  index(index: string, record: Record<string, any>, params?: Index) {
+  async index(index: string, record: Record<string, any>, params?: Index) {
     if (this.client)
       this.queue
         .add(() =>
@@ -55,7 +55,7 @@ export class ElasticSearchService {
         .catch(() => {});
   }
 
-  search(
+  async search(
     params?: Search<Record<string, any>>,
     options?: TransportRequestOptions
   ) {
@@ -67,7 +67,7 @@ export class ElasticSearchService {
    * @param index - Index
    * @param days - Number of days ago (e.g., 30 will delete month-old data)
    */
-  deleteOldRecords = async (index: string, days: number) => {
+  async deleteOldRecords(index: string, days: number) {
     const now = new Date();
     now.setDate(now.getDate() - days);
     if (this.client)
@@ -89,7 +89,7 @@ export class ElasticSearchService {
           },
         },
       });
-  };
+  }
 
   private async indexRecord(
     index: string,

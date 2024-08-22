@@ -24,7 +24,7 @@ export class ElasticsearchService {
     });
   }
 
-  index(index: string, record: Record<string, any>, params?: Index) {
+  async index(index: string, record: Record<string, any>, params?: Index) {
     if (this.client)
       this.queue
         .add(() =>
@@ -43,7 +43,7 @@ export class ElasticsearchService {
         .catch(() => {});
   }
 
-  search(
+  async search(
     params?: Search<Record<string, any>>,
     options?: TransportRequestOptions
   ) {
@@ -55,7 +55,7 @@ export class ElasticsearchService {
    * @param index - Index
    * @param days - Number of days ago (e.g., 30 will delete month-old data)
    */
-  deleteOldRecords = async (index: string, days: number) => {
+  async deleteOldRecords(index: string, days: number) {
     const now = new Date();
     now.setDate(now.getDate() - days);
     if (this.client)
@@ -77,7 +77,7 @@ export class ElasticsearchService {
           },
         },
       });
-  };
+  }
 
   private async indexRecord(
     index: string,

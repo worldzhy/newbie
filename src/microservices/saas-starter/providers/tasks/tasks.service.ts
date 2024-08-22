@@ -4,7 +4,7 @@ import {Cron, CronExpression} from '@nestjs/schedule';
 import {DomainsService} from '../../modules/domains/domains.service';
 import {MetricsService} from '../../modules/metrics/metrics.service';
 import {UsersService} from '../../modules/users/users.service';
-import {ElasticSearchService} from '../elasticsearch/elasticsearch.service';
+import {ElasticsearchService} from '../elasticsearch/elasticsearch.service';
 import {PrismaService} from '../prisma/prisma.service';
 
 @Injectable()
@@ -12,7 +12,7 @@ export class TasksService {
   constructor(
     private prisma: PrismaService,
     private configService: ConfigService,
-    private elasticSearchService: ElasticSearchService,
+    private elasticsearch: ElasticsearchService,
     private domainsService: DomainsService,
     private usersService: UsersService,
     private metricsService: MetricsService
@@ -67,7 +67,7 @@ export class TasksService {
       'microservices.saas-starter.tracking'
     );
     if (config.deleteOldLogs)
-      return this.elasticSearchService.deleteOldRecords(
+      return this.elasticsearch.deleteOldRecords(
         config.index,
         config.deleteOldLogsDays
       );

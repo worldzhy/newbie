@@ -12,7 +12,7 @@ import {
   UNAUTHORIZED_RESOURCE,
 } from '../../errors/errors.constants';
 import {groupOwnerScopes, userScopes} from '../../helpers/scopes';
-import {ElasticSearchService} from '../../providers/elasticsearch/elasticsearch.service';
+import {ElasticsearchService} from '../../providers/elasticsearch/elasticsearch.service';
 import {Expose} from '../../providers/prisma/prisma.interface';
 import {PrismaService} from '../../providers/prisma/prisma.service';
 import {generateRandomString} from '@framework/utilities/random.util';
@@ -24,7 +24,7 @@ export class ApiKeysService {
   constructor(
     private prisma: PrismaService,
     private configService: ConfigService,
-    private elasticSearchService: ElasticSearchService
+    private elasticsearch: ElasticsearchService
   ) {
     this.lru = new QuickLRU<string, ApiKey>({
       maxSize: this.configService.get<number>('caching.apiKeyLruSize') ?? 100,
@@ -317,7 +317,7 @@ export class ApiKeysService {
       now.getDate() -
         this.configService.getOrThrow<number>('tracking.deleteOldLogsDays')
     );
-    const result = await this.elasticSearchService.search({
+    const result = await this.elasticsearch.search({
       index: this.configService.get<string>('tracking.index'),
       from: params.cursor?.id,
       body: {
