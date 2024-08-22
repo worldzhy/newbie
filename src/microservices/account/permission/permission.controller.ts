@@ -15,7 +15,7 @@ import {
   Prisma,
   TrustedEntityType,
 } from '@prisma/client';
-import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {PrismaService} from '@framework/prisma/prisma.service';
 
 @ApiTags('Account / Permission')
 @ApiBearerAuth()

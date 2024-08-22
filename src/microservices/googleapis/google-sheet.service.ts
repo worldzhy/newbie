@@ -4,7 +4,7 @@ import {ConfigService} from '@nestjs/config';
 import {
   generateRandomNumber,
   number2alphabet,
-} from '@toolkit/utilities/common.util';
+} from '@framework/utilities/common.util';
 
 const DEFAULT_SHEET_TITLE = 'Sheet1';
 

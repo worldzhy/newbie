@@ -43,7 +43,8 @@
     "helmet": "^7.1.0",
     "moment": "^2.30.1",
     "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^18.4.3",

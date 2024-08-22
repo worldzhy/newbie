@@ -3,6 +3,17 @@
     "ENVIRONMENT": "development",
     "PORT": "3000",
     "ALLOWED_ORIGINS": "http://localhost:3000,http://localhost:3001",
-    "SERVER_SERIAL_NUMBER": "1"
+    "SERVER_SERIAL_NUMBER": "1",
+    "PRISMA_DATABASE_URL": "postgresql://postgres:postgres@localhost:5432/newbie"
+  },
+  "dependencies": { 
+    "@prisma/client": "^5.17.0",
+    "bcrypt": "^5.1.1",
+    "crypto-random-string": "^3.3.1",
+    "moment": "^2.29.4",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.17.0"
   }
 }

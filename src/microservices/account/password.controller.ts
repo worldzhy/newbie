@@ -6,8 +6,8 @@ import {
   verifyEmail,
   verifyPhone,
 } from '@microservices/account/account.validator';
-import {compareHash} from '@toolkit/utilities/common.util';
-import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {compareHash} from '@framework/utilities/common.util';
+import {PrismaService} from '@framework/prisma/prisma.service';
 import {
   NewbieException,
   NewbieExceptionType,

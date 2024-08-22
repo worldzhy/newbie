@@ -1,14 +1,14 @@
 import {Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import {Event, AvailabilityTimeslotStatus, Prisma} from '@prisma/client';
-import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {PrismaService} from '@framework/prisma/prisma.service';
 import {
   ceilByMinutes,
   datePlusMinutes,
   datePlusYears,
   floorByMinutes,
   splitDateTime,
-} from '@toolkit/utilities/datetime.util';
+} from '@framework/utilities/datetime.util';
 const CronParser = require('cron-parser');
 
 @Injectable()

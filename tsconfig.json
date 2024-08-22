@@ -24,9 +24,6 @@
       "@microservices/*": [
         "src/microservices/*"
       ],
-      "@toolkit/*": [
-        "src/toolkit/*"
-      ],
       "@/*": [
         "src/*"
       ]

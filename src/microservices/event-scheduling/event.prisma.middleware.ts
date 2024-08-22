@@ -1,5 +1,8 @@
 import {Prisma} from '@prisma/client';
-import {datePlusMinutes, splitDateTime} from '@toolkit/utilities/datetime.util';
+import {
+  datePlusMinutes,
+  splitDateTime,
+} from '@framework/utilities/datetime.util';
 
 export async function eventPrismaMiddleware(
   params: Prisma.MiddlewareParams,

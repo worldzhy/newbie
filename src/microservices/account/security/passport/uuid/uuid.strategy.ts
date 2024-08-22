@@ -3,7 +3,7 @@ import {PassportStrategy} from '@nestjs/passport';
 import {Strategy} from 'passport-custom';
 import {Request} from 'express';
 import {verifyUuid} from '@microservices/account/account.validator';
-import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {PrismaService} from '@framework/prisma/prisma.service';
 
 @Injectable()
 export class UuidStrategy extends PassportStrategy(Strategy, 'custom.uuid') {

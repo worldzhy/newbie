@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Prisma, Place} from '@prisma/client';
-import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {PrismaService} from '@framework/prisma/prisma.service';
 
 @ApiTags('Place')
 @ApiBearerAuth()

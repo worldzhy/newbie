@@ -11,7 +11,7 @@ import {
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 import {Organization, PermissionAction, Prisma} from '@prisma/client';
 import {RequirePermission} from '@microservices/account/security/authorization/authorization.decorator';
-import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {PrismaService} from '@framework/prisma/prisma.service';
 
 @ApiTags('Account / Organization')
 @ApiBearerAuth()

@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {JwtService, JwtSignOptions} from '@nestjs/jwt';
 import * as express from 'express';
-import {dateOfUnixTimestamp} from '@toolkit/utilities/datetime.util';
+import {dateOfUnixTimestamp} from '@framework/utilities/datetime.util';
 
 @Injectable()
 export class RefreshTokenService {

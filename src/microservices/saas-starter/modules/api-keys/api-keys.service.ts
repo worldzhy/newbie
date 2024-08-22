@@ -15,7 +15,7 @@ import {groupOwnerScopes, userScopes} from '../../helpers/scopes';
 import {ElasticSearchService} from '../../providers/elasticsearch/elasticsearch.service';
 import {Expose} from '../../providers/prisma/prisma.interface';
 import {PrismaService} from '../../providers/prisma/prisma.service';
-import {generateRandomString} from '@toolkit/utilities/random.util';
+import {generateRandomString} from '@framework/utilities/random.util';
 
 @Injectable()
 export class ApiKeysService {

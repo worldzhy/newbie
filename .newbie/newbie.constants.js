@@ -8,7 +8,6 @@ const MICROSERVICES_MODULE_TS = './src/microservices/microservices.module.ts';
 const MICROSERVICES_CONFIG_TS = './src/microservices/microservices.config.ts';
 
 const FRAMEWORK_SETTINGS_JSON = './src/framework/framework.settings.json';
-const TOOLKIT_SETTINGS_JSON = './src/toolkit/toolkit.settings.json';
 
 const PRISMA_SCHEMA_PATH = './prisma/schema/microservices';
 const PRISMA_SCHEMA_APPLICATION = './prisma/schema/application.prisma';
@@ -216,7 +215,6 @@ module.exports = {
   MICROSERVICES_CONFIG_TS,
 
   FRAMEWORK_SETTINGS_JSON,
-  TOOLKIT_SETTINGS_JSON,
 
   PRISMA_SCHEMA_PATH,
   PRISMA_SCHEMA_APPLICATION,

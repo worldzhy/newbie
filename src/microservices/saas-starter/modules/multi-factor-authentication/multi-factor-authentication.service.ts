@@ -19,7 +19,7 @@ import {Expose} from '../../providers/prisma/prisma.interface';
 import {PrismaService} from '../../providers/prisma/prisma.service';
 import {TwilioService} from '../../providers/twilio/twilio.service';
 import {AuthService} from '../auth/auth.service';
-import {generateRandomString} from '@toolkit/utilities/random.util';
+import {generateRandomString} from '@framework/utilities/random.util';
 
 @Injectable()
 export class MultiFactorAuthenticationService {

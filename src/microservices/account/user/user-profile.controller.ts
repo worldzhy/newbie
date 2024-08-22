@@ -1,7 +1,7 @@
 import {Controller, Body, Patch, Param} from '@nestjs/common';
 import {ApiTags, ApiBody, ApiBearerAuth} from '@nestjs/swagger';
 import {Prisma} from '@prisma/client';
-import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {PrismaService} from '@framework/prisma/prisma.service';
 
 @ApiTags('Account / User Profile')
 @Controller('')

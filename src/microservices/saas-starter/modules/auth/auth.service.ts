@@ -67,7 +67,7 @@ import {
   userScopes,
 } from '../../helpers/scopes';
 import axios from 'axios';
-import {generateRandomString} from '@toolkit/utilities/random.util';
+import {generateRandomString} from '@framework/utilities/random.util';
 
 @Injectable()
 export class AuthService {

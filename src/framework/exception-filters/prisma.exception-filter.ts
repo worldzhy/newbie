@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import {Prisma} from '@prisma/client';
 import {Response} from 'express';
-import {getPrismaExceptionMessage} from '@toolkit/prisma/prisma.exception';
+import {getPrismaExceptionMessage} from '@framework/prisma/prisma.exception';
 
 enum PrismaExceptionCode {
   PrismaClientKnownRequestError = 9001,

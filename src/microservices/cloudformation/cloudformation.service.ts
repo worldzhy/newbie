@@ -4,7 +4,7 @@ import {
 } from '@aws-sdk/client-cloudformation';
 import {BadRequestException, Injectable} from '@nestjs/common';
 import {AwsResourceStackState} from '@prisma/client';
-import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {PrismaService} from '@framework/prisma/prisma.service';
 import {
   AwsCloudFormationStackService,
   CloudFormationStackType,

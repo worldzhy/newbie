@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {SchedulerRegistry} from '@nestjs/schedule';
-import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {PrismaService} from '@framework/prisma/prisma.service';
 import {CronJob} from 'cron';
 
 @Injectable()

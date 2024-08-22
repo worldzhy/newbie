@@ -1,7 +1,7 @@
 import {Logger, Injectable, BadRequestException} from '@nestjs/common';
 import {HttpService} from '@nestjs/axios';
 import {Prisma} from '@prisma/client';
-import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {PrismaService} from '@framework/prisma/prisma.service';
 import {
   PeopleFinderStatus,
   PeopleFinderPlatforms,

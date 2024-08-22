@@ -24,7 +24,7 @@ import {
   DOMAIN_VERIFICATION_TXT,
 } from './domains.constants';
 import {DomainVerificationMethods} from './domains.interface';
-import {generateRandomString} from '@toolkit/utilities/random.util';
+import {generateRandomString} from '@framework/utilities/random.util';
 
 @Injectable()
 export class DomainsService {

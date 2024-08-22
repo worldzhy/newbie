@@ -26,7 +26,7 @@ import {TokensService} from '../../providers/tokens/tokens.service';
 import {ApiKeysService} from '../api-keys/api-keys.service';
 import {AuthService} from '../auth/auth.service';
 import {PasswordUpdateInput} from './users.interface';
-import {generateUuid} from '@toolkit/utilities/random.util';
+import {generateUuid} from '@framework/utilities/random.util';
 
 @Injectable()
 export class UsersService {

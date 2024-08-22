@@ -7,7 +7,7 @@ import {GuardByRefreshToken} from './security/passport/refresh-token/refresh-tok
 // import {Cookies} from '@framework/decorators/cookie.decorator';
 import {AccessToken} from '@prisma/client';
 import {Cookies} from '@framework/decorators/cookie.decorator';
-import {secondsUntilUnixTimestamp} from '@toolkit/utilities/datetime.util';
+import {secondsUntilUnixTimestamp} from '@framework/utilities/datetime.util';
 
 @ApiTags('Account')
 @Controller('account')

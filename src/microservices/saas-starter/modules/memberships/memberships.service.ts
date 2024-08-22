@@ -22,7 +22,7 @@ import {ApiKeysService} from '../api-keys/api-keys.service';
 import {AuthService} from '../auth/auth.service';
 import {GroupsService} from '../groups/groups.service';
 import {CreateMembershipInput} from './memberships.interface';
-import {generateRandomString} from '@toolkit/utilities/random.util';
+import {generateRandomString} from '@framework/utilities/random.util';
 
 @Injectable()
 export class MembershipsService {
