@@ -48,14 +48,14 @@ export function compareArrays(array1: Array<any>, array2: Array<any>) {
   // if the argument is the same array, we can be sure the contents are same as well
   if (array2 === array1) return true;
   // compare lengths - can save a lot of time
-  if (array1.length != array2.length) return false;
+  if (array1.length !== array2.length) return false;
 
-  for (var i = 0, l = array1.length; i < l; i++) {
+  for (let i = 0, l = array1.length; i < l; i++) {
     // Check if we have nested arrays
     if (array1[i] instanceof Array && array2[i] instanceof Array) {
       // recurse into the nested arrays
       if (!compareArrays(array1[i], array2[i])) return false;
-    } else if (array1[i] != array2[i]) {
+    } else if (array1[i] !== array2[i]) {
       // Warning - two different object instances will never be equal: {x:20} != {x:20}
       return false;
     }

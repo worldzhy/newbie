@@ -84,7 +84,7 @@ export function alphabet2number(alphabet: string) {
 export function extractNumbersFromString(str: string) {
   const numbers: number[] = [];
 
-  let matches = str.match(/\d+/g);
+  const matches = str.match(/\d+/g);
   if (matches) {
     for (let i = 0; i < matches.length; i++) {
       numbers.push(parseInt(matches[i]));
