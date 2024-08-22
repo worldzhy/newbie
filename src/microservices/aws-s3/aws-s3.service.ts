@@ -163,7 +163,7 @@ export class AwsS3Service {
 
   /** Get a signed URL to access an S3 object for signedUrlExpiresIn seconds */
   async getSignedDownloadUrl(params: {bucket?: string; path: string}) {
-    let command = new GetObjectCommand({
+    const command = new GetObjectCommand({
       Bucket: params.bucket ?? this.bucket,
       Key: params.path,
     });
@@ -173,7 +173,7 @@ export class AwsS3Service {
   }
 
   async getSignedUploadUrl(params: {bucket?: string; path: string}) {
-    let command = new PutObjectCommand({
+    const command = new PutObjectCommand({
       Bucket: params.bucket ?? this.bucket,
       Key: params.path,
     });
@@ -243,7 +243,7 @@ export class AwsS3Service {
     let path = '';
 
     // [step 1] Get current file.
-    let file = await this.prisma.s3File.findFirstOrThrow({
+    const file = await this.prisma.s3File.findFirstOrThrow({
       where: {id: fileId},
       select: {id: true, name: true, type: true, parentId: true},
     });

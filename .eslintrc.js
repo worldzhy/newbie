@@ -2,7 +2,7 @@ module.exports = {
   parser: '@typescript-eslint/parser',
   parserOptions: {
     project: 'tsconfig.json',
-    tsconfigRootDir: __dirname,
+    tsconfigRootDir: '/',
     sourceType: 'module',
   },
   plugins: ['@typescript-eslint/eslint-plugin'],
@@ -23,7 +23,6 @@ module.exports = {
     '@typescript-eslint/no-explicit-any': 'off',
 
     // Below rules are from gts - https://www.npmjs.com/package/gts
-    'prettier/prettier': 'error',
     'block-scoped-var': 'error',
     eqeqeq: 'error',
     'no-var': 'error',
