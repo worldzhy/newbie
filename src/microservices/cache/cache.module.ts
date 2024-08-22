@@ -27,7 +27,7 @@ function getModules() {
         }),
         inject: [ConfigService],
         isGlobal: true,
-      })
+      }),
     );
   } else {
     modules.push(
@@ -39,7 +39,7 @@ function getModules() {
         }),
         inject: [ConfigService],
         isGlobal: true,
-      })
+      }),
     );
   }
   return modules;

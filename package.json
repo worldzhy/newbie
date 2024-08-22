@@ -6,21 +6,16 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "prebuild": "rimraf dist",
-    "prepare": "npx husky install",
-    "clean": "gts clean",
-    "fix": "gts fix",
-    "lint": "gts lint",
-    "compile": "tsc",
-    "format": "prettier --write \"src/**/*.ts\"",
     "build": "nest build",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
-    "dev": "nest start --watch",
+    "start:dev": "nest start --watch",
+    "start:debug": "nest start --debug --watch",
+    "start:prod": "node dist/main",
+    "lint": "eslint \"{src,test}/**/*.ts\" --fix",
+    "prebuild": "rimraf dist",
     "newbie": "node .newbie/assemble/index.js",
     "newbie:check": "node .newbie/check/index.js"
-  },
-  "prisma": {
-    "seed": "ts-node -r tsconfig-paths/register ./prisma/seed.ts"
   },
   "dependencies": {
     "@fastify/static": "^7.0.0",
@@ -54,15 +49,16 @@
     "@types/cookie-parser": "^1.4.6",
     "@types/express": "^4.17.21",
     "@types/node": "^20.9.4",
+    "@typescript-eslint/eslint-plugin": "^8.2.0",
+    "@typescript-eslint/parser": "^8.2.0",
     "colorette": "^2.0.20",
     "commitizen": "^4.3.0",
     "cz-conventional-changelog": "^3.3.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
     "figlet": "^1.7.0",
-    "gts": "^5.2.0",
     "husky": "^8.0.3",
-    "inquirer": "^10.1.6",
+    "inquirer": "^10.1.8",
     "prettier": "^3.1.0",
     "prisma": "^5.17.0",
     "source-map-support": "^0.5.21",
@@ -75,5 +71,8 @@
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
     }
+  },
+  "prisma": {
+    "seed": "ts-node -r tsconfig-paths/register ./prisma/seed.ts"
   }
 }

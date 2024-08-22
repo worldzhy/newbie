@@ -29,7 +29,7 @@
 
 #### Install pm2
 
-```
+```bash
 npm i -g pm2
 ```
 
@@ -37,7 +37,7 @@ npm i -g pm2
 
 #### Install NestJS
 
-```
+```bash
 npm i -g @nestjs/cli
 ```
 
@@ -47,29 +47,23 @@ npm i -g @nestjs/cli
 
 ### Install dependencies
 
-```
+```bash
 $ npm i
 $ cp .env.example .env
 ```
 
 ### Install database
 
-```
+```bash
 $ npx prisma generate
 $ npx prisma db push
 $ npx prisma db seed
 ```
 
-### Install google typescript lint
-
-```
-$ npx gts init
-```
-
 ### Install husky
 
-```
-$ npm install --save-dev husky commitizen @commitlint/{cli,config-conventional}
+```bash
+$ npm i --save-dev husky commitizen @commitlint/{cli,config-conventional}
 $ npx husky init
 $ npx commitizen init cz-conventional-changelog --save-dev --save-exact
 $ echo "module.exports = {extends: ['@commitlint/config-conventional']};" > commitlint.config.js
@@ -77,7 +71,7 @@ $ echo "module.exports = {extends: ['@commitlint/config-conventional']};" > comm
 
 ### Start application
 
-```
+```bash
 $ npm run dev
 ```
 
@@ -85,15 +79,15 @@ $ npm run dev
 
 ### Install dependencies
 
-```
-$ npm install --omit=dev
-$ npm install --save-dev tsconfig-paths
+```bash
+$ npm i --omit=dev
+$ npm i --save-dev tsconfig-paths
 $ cp .env.example .env
 ```
 
 ### Install database
 
-```
+```bash
 $ npx prisma generate
 $ npx prisma db push
 $ npx prisma db seed
@@ -101,14 +95,14 @@ $ npx prisma db seed
 
 ### Start application
 
-```
+```bash
 $ npm run build
 $ pm2 start npm --name newbie -- start
 ```
 
 ### Restart application
 
-```
+```bash
 $ pm2 stop newbie
 $ npm run build
 $ pm2 start newbie
