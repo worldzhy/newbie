@@ -1,7 +1,5 @@
-import {INestApplication, ValidationPipe} from '@nestjs/common';
+import {ValidationPipe} from '@nestjs/common';
 import {NestFactory} from '@nestjs/core';
-import {ConfigService} from '@nestjs/config';
-import {FastifyAdapter, NestFastifyApplication} from '@nestjs/platform-fastify';
 import * as cookieParser from 'cookie-parser';
 import {urlencoded, json} from 'express';
 import helmet from 'helmet';
@@ -11,36 +9,29 @@ import {
   SwaggerCustomOptions,
 } from '@nestjs/swagger';
 import {ApplicationModule} from './application/application.module';
-
 const nodeCluster = require('node:cluster');
 const numCPUs = require('node:os').availableParallelism();
 
+const enum Environment {
+  Development = 'development',
+  Production = 'production',
+}
+const environment = process.env.ENVIRONMENT ?? Environment.Development;
+const port = parseInt(process.env.PORT ?? '') || 3000;
+const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? '').split(',');
+const timeoutOfHttpRequest = 60000; // milliseconds
+
 async function bootstrap() {
   // [step 1] Create a nestjs application.
-  let app: INestApplication;
-  if (process.env.NODE_FRAMEWORK === 'fastify') {
-    app = await NestFactory.create<NestFastifyApplication>(
-      ApplicationModule,
-      new FastifyAdapter()
-    );
-  } else {
-    app = await NestFactory.create(ApplicationModule);
-    app.use(cookieParser());
+  const app = await NestFactory.create(ApplicationModule);
+  app.use(cookieParser());
 
-    // set max body size
-    app.use(json({limit: '10mb'}));
-    app.use(urlencoded({limit: '10mb', extended: true}));
-  }
+  // set max body size
+  app.use(json({limit: '10mb'}));
+  app.use(urlencoded({limit: '10mb', extended: true}));
 
   // [step 2] Enable features.
-  const configService = app.get<ConfigService>(ConfigService);
-
-  app.enableCors({
-    credentials: true,
-    origin: configService.getOrThrow<string[]>(
-      'framework.server.allowedOrigins'
-    ),
-  });
+  app.enableCors({credentials: true, origin: allowedOrigins});
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -57,16 +48,10 @@ async function bootstrap() {
     })
   );
 
-  const env = configService.getOrThrow<string>('framework.environment');
-  const nodeFramework = configService.getOrThrow<string>(
-    'framework.nodeFramework'
-  );
-  if (env === 'production') {
+  if (environment === Environment.Production) {
     // helmet is only available in production environment.
-    if (nodeFramework === 'express') {
-      app.use(helmet());
-    }
-  } else if (env === 'development') {
+    app.use(helmet());
+  } else if (environment === Environment.Development) {
     // API document is only available in development environment.
     const config = new DocumentBuilder()
       .setTitle('API Document')
@@ -88,11 +73,8 @@ async function bootstrap() {
   }
 
   // [step 3] Listen port
-  const port = configService.getOrThrow<number>('framework.server.port');
   const server = await app.listen(port, '0.0.0.0');
-  server.timeout = configService.getOrThrow<number>(
-    'framework.server.httpTimeout'
-  );
+  server.timeout = timeoutOfHttpRequest;
 
   console.log(`Application is running on: ${await app.getUrl()}`);
 }
