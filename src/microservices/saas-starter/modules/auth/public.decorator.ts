@@ -1,4 +1,4 @@
-import {STAART_PUBLIC_ENDPOINT} from './auth.constants';
+import {PUBLIC_ENDPOINT} from './auth.constants';
 
 export function Public() {
   return (
@@ -7,10 +7,10 @@ export function Public() {
     descriptor?: TypedPropertyDescriptor<any>
   ) => {
     if (descriptor) {
-      Reflect.defineMetadata(STAART_PUBLIC_ENDPOINT, true, descriptor.value);
+      Reflect.defineMetadata(PUBLIC_ENDPOINT, true, descriptor.value);
       return descriptor;
     }
-    Reflect.defineMetadata(STAART_PUBLIC_ENDPOINT, true, target);
+    Reflect.defineMetadata(PUBLIC_ENDPOINT, true, target);
     return target;
   };
 }

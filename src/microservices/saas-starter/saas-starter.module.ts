@@ -16,7 +16,7 @@ import {ApprovedSubnetsModule} from './modules/approved-subnets/approved-subnets
 import {AuditLogsModule} from './modules/audit-logs/audit-logs.module';
 import {AuthModule} from './modules/auth/auth.module';
 import {ScopesGuard} from './modules/auth/scope.guard';
-import {SaasStarterAuthGuard} from './modules/auth/auth.guard';
+import {SaaSStarterAuthGuard} from './modules/auth/auth.guard';
 import {DomainsModule} from './modules/domains/domains.module';
 import {EmailsModule} from './modules/emails/emails.module';
 import {GroupsModule} from './modules/groups/groups.module';
@@ -34,7 +34,6 @@ import {MailModule} from './providers/mail/mail.module';
 import {S3Module} from './providers/s3/s3.module';
 import {TasksModule} from './providers/tasks/tasks.module';
 import {MetricsModule} from './modules/metrics/metrics.module';
-import {MetaModule} from './modules/meta/meta.module';
 
 @Module({
   imports: [
@@ -60,28 +59,15 @@ import {MetaModule} from './modules/meta/meta.module';
     S3Module,
     GoogleMapsModule,
     MetricsModule,
-    MetaModule,
   ],
   providers: [
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: RateLimitInterceptor,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: SaasStarterAuthGuard,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: ScopesGuard,
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: AuditLogger,
-    },
+    {provide: APP_INTERCEPTOR, useClass: RateLimitInterceptor},
+    {provide: APP_GUARD, useClass: SaaSStarterAuthGuard},
+    {provide: APP_GUARD, useClass: ScopesGuard},
+    {provide: APP_INTERCEPTOR, useClass: AuditLogger},
   ],
 })
-export class SaasStarterModule implements NestModule {
+export class SaaSStarterModule implements NestModule {
   public configure(consumer: MiddlewareConsumer): void {
     consumer
       .apply(RawBodyMiddleware)

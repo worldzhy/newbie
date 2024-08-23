@@ -11,7 +11,7 @@ import {getClientIp} from 'request-ip';
 import {Observable} from 'rxjs';
 import {tap} from 'rxjs/operators';
 import UAParser from 'ua-parser-js';
-import {STAART_AUDIT_LOG_DATA} from '../modules/audit-logs/audit-log.constants';
+import {AUDIT_LOG_DATA} from '../modules/audit-logs/audit-log.constants';
 import {UserRequest} from '../modules/auth/auth.interface';
 import {WebhooksService} from '../modules/webhooks/webhooks.service';
 import {GeolocationService} from '../providers/geolocation/geolocation.service';
@@ -30,7 +30,7 @@ export class AuditLogger implements NestInterceptor {
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     let auditLog = this.reflector.get<string | string[]>(
-      STAART_AUDIT_LOG_DATA,
+      AUDIT_LOG_DATA,
       context.getHandler()
     );
     return next.handle().pipe(
