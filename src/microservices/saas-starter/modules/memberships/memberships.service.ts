@@ -203,7 +203,7 @@ export class MembershipsService {
         name: user.name,
         group: result.group.name,
         link: `${this.configService.get<string>(
-          'microservices.saas-starter.frontendUrl'
+          'microservices.app.frontendUrl'
         )}/groups/${groupId}`,
       },
     });

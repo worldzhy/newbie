@@ -278,9 +278,7 @@ export class AuthService {
         days: 7,
         link: `${
           origin ??
-          this.configService.get<string>(
-            'microservices.saas-starter.frontendUrl'
-          )
+          this.configService.get<string>('microservices.app.frontendUrl')
         }/auth/link/verify-email?token=${this.tokensService.signJwt(
           EMAIL_VERIFY_TOKEN,
           {id: emailDetails.id},
@@ -352,9 +350,8 @@ export class AuthService {
     });
     const otpauth = this.authenticator.keyuri(
       userId.toString(),
-      this.configService.get<string>(
-        'microservices.saas-starter.meta.appName'
-      ) ?? '',
+      this.configService.get<string>('microservices.saas-starter.app.name') ??
+        '',
       secret
     );
     return qrcode.toDataURL(otpauth);
@@ -428,9 +425,7 @@ export class AuthService {
         minutes: 30,
         link: `${
           origin ??
-          this.configService.get<string>(
-            'microservices.saas-starter.frontendUrl'
-          )
+          this.configService.get<string>('microservices.app.frontendUrl')
         }/auth/link/reset-password?token=${this.tokensService.signJwt(
           PASSWORD_RESET_TOKEN,
           {id: emailDetails.user.id},
@@ -517,9 +512,7 @@ export class AuthService {
           group: group.name,
           link: `${
             origin ??
-            this.configService.get<string>(
-              'microservices.saas-starter.frontendUrl'
-            )
+            this.configService.get<string>('microservices.app.frontendUrl')
           }/groups/${group.id}`,
         },
       });
@@ -580,7 +573,7 @@ export class AuthService {
                 link: `${
                   origin ??
                   this.configService.get<string>(
-                    'microservices.saas-starter.frontendUrl'
+                    'microservices.app.frontendUrl'
                   )
                 }/users/${id}/sessions`,
               },
@@ -671,7 +664,7 @@ export class AuthService {
               ) ?? ''
             ),
             link: `${this.configService.get<string>(
-              'microservices.saas-starter.frontendUrl'
+              'microservices.app.frontendUrl'
             )}/auth/link/login%2Ftoken?token=${this.tokensService.signJwt(
               EMAIL_MFA_TOKEN,
               {id: user.id},
@@ -689,7 +682,7 @@ export class AuthService {
           to: user.twoFactorPhone,
           body: `${this.getOneTimePassword(user.twoFactorSecret)} is your ${
             this.configService.get<string>(
-              'microservices.saas-starter.meta.appName'
+              'microservices.saas-starter.app.name'
             ) ?? ''
           } verification code.`,
         });
@@ -745,9 +738,7 @@ export class AuthService {
             minutes: 30,
             link: `${
               origin ??
-              this.configService.get<string>(
-                'microservices.saas-starter.frontendUrl'
-              )
+              this.configService.get<string>('microservices.app.frontendUrl')
             }/auth/link/approve-subnet?token=${this.tokensService.signJwt(
               APPROVE_SUBNET_TOKEN,
               {id},
@@ -771,18 +762,18 @@ export class AuthService {
       )
         return await hash(
           password,
-          this.configService.get<number>(
+          this.configService.getOrThrow<number>(
             'microservices.saas-starter.security.saltRounds'
-          ) ?? 10
+          )
         );
       if (!(await this.pwnedService.isPasswordSafe(password)))
         throw new BadRequestException(COMPROMISED_PASSWORD);
     }
     return await hash(
       password,
-      this.configService.get<number>(
+      this.configService.getOrThrow<number>(
         'microservices.saas-starter.security.saltRounds'
-      ) ?? 10
+      )
     );
   }
 

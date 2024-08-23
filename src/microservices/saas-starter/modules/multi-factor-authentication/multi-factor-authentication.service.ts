@@ -59,9 +59,8 @@ export class MultiFactorAuthenticationService {
     return this.twilioService.send({
       to: phone,
       body: `${this.auth.getOneTimePassword(secret)} is your ${
-        this.configService.get<string>(
-          'microservices.saas-starter.meta.appName'
-        ) ?? ''
+        this.configService.get<string>('microservices.saas-starter.app.name') ??
+        ''
       } verification code.`,
     });
   }

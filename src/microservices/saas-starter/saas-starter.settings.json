@@ -1,40 +1,16 @@
 {
   "config-service": {
     "saas-starter": {
-      "frontendUrl": "process.env.FRONTEND_URL ?? 'http://localhost:3000'",
-      "meta": {
-        "appName": "process.env.APP_NAME ?? 'SaaS Starter'",
-        "domainVerificationFile": "process.env.DOMAIN_VERIFICATION_FILE ?? 'saas-starter-verify.txt'"
+      "app": {
+        "name": "process.env.APP_NAME ?? 'SaaS Starter'",
+        "frontendUrl": "process.env.APP_FRONTEND_URL ?? 'http://localhost:3000'"
       },
-      "rateLimit": {
-        "public": {
-          "points": "int(process.env.RATE_LIMIT_PUBLIC_POINT, 250)",
-          "duration": "int(process.env.RATE_LIMIT_PUBLIC_DURATIO, 3600)"
-        },
-        "authenticated": {
-          "points": "int(process.env.RATE_LIMIT_AUTHENTICATED_POINTS, 5000)",
-          "duration": "int(process.env.RATE_LIMIT_AUTHENTICATED_DURATION, 3600)"
-        },
-        "apiKey": {
-          "points": "int(process.env.RATE_LIMIT_API_KEY_POINTS, 10000)",
-          "duration": "int(process.env.RATE_LIMIT_API_KEY_DURATION, 3600)"
-        }
+      "cache": {
+        "geolocationLruSize": "int(process.env.CACHE_GEOLOCATION_LRU_SIZE, 100)",
+        "apiKeyLruSize": "int(process.env.CACHE_APIKEY_LRU_SIZE, 100)"
       },
-      "caching": {
-        "geolocationLruSize": "int(process.env.GEOLOCATION_LRU_SIZE, 100)",
-        "apiKeyLruSize": "int(process.env.API_KEY_LRU_SIZE, 100)"
-      },
-      "security": {
-        "saltRounds": "int(process.env.SALT_ROUNDS, 10)",
-        "jwtSecret": "process.env.JWT_SECRET ?? 'saas-starter'",
-        "totpWindowPast": "int(process.env.TOTP_WINDOW_PAST, 1)",
-        "totpWindowFuture": "int(process.env.TOTP_WINDOW_FUTURE, 0)",
-        "mfaTokenExpiry": "process.env.MFA_TOKEN_EXPIRY ?? '10m'",
-        "mergeUsersTokenExpiry": "process.env.MERGE_USERS_TOKEN_EXPIRY ?? '30m'",
-        "accessTokenExpiry": "process.env.ACCESS_TOKEN_EXPIRY ?? '1h'",
-        "passwordPwnedCheck": "bool(process.env.PASSWORD_PWNED_CHECK, true)",
-        "unusedRefreshTokenExpiryDays": "int(process.env.DELETE_EXPIRED_SESSIONS, 30)",
-        "inactiveUserDeleteDays": "int(process.env.INACTIVE_USER_DELETE_DAYS, 30)"
+      "domain": {
+        "verificationFile": "process.env.DOMAIN_VERIFICATION_FILE ?? 'saas-starter-verify.txt'"
       },
       "elasticsearch": {
         "node": "process.env.ELASTICSEARCH_NODE",
@@ -65,13 +41,11 @@
           }
         }
       },
-      "webhooks": {
-        "retries": "int(process.env.WEBHOOK_FAIL_RETRIES, 3)"
+      "googleMaps": {
+        "apiKey": "process.env.GOOGLE_MAPS_API_KEY"
       },
-      "sms": {
-        "retries": "int(process.env.SMS_FAIL_RETRIES, 3)",
-        "twilioAccountSid": "process.env.TWILIO_ACCOUNT_SID ?? ''",
-        "twilioAuthToken": "process.env.TWILIO_AUTH_TOKEN ?? ''"
+      "gravatar": {
+        "enabled": "bool(process.env.GRAVATAR_ENABLED, true)"
       },
       "payments": {
         "stripeApiKey": "process.env.STRIPE_API_KEY ?? ''",
@@ -79,11 +53,31 @@
         "stripeEndpointSecret": "process.env.STRIPE_ENDPOINT_SECRET ?? ''",
         "paymentMethodTypes": "['card']"
       },
-      "tracking": {
-        "mode": "process.env.TRACKING_MODE ?? 'api-key'",
-        "index": "process.env.TRACKING_INDEX ?? 'saas-starter-logs'",
-        "deleteOldLogs": "bool(process.env.TRACKING_DELETE_OLD_LOGS, true)",
-        "deleteOldLogsDays": "int(process.env.TRACKING_DELETE_OLD_LOGS_DAYS, 90)"
+      "rateLimit": {
+        "public": {
+          "points": "int(process.env.RATE_LIMIT_PUBLIC_POINT, 250)",
+          "duration": "int(process.env.RATE_LIMIT_PUBLIC_DURATIO, 3600)"
+        },
+        "authenticated": {
+          "points": "int(process.env.RATE_LIMIT_AUTHENTICATED_POINTS, 5000)",
+          "duration": "int(process.env.RATE_LIMIT_AUTHENTICATED_DURATION, 3600)"
+        },
+        "apiKey": {
+          "points": "int(process.env.RATE_LIMIT_API_KEY_POINTS, 10000)",
+          "duration": "int(process.env.RATE_LIMIT_API_KEY_DURATION, 3600)"
+        }
+      },
+      "security": {
+        "saltRounds": "int(process.env.SECURITY_SALT_ROUNDS, 10)",
+        "jwtSecret": "process.env.SECURITY_JWT_SECRET ?? 'saas-starter'",
+        "totpWindowPast": "int(process.env.SECURITY_TOTP_WINDOW_PAST, 1)",
+        "totpWindowFuture": "int(process.env.SECURITY_TOTP_WINDOW_FUTURE, 0)",
+        "mfaTokenExpiry": "process.env.SECURITY_MFA_TOKEN_EXPIRY ?? '10m'",
+        "mergeUsersTokenExpiry": "process.env.SECURITY_MERGE_USERS_TOKEN_EXPIRY ?? '30m'",
+        "accessTokenExpiry": "process.env.SECURITY_ACCESS_TOKEN_EXPIRY ?? '1h'",
+        "passwordPwnedCheck": "bool(process.env.SECURITY_PASSWORD_PWNED_CHECK, true)",
+        "unusedRefreshTokenExpiryDays": "int(process.env.SECURITY_DELETE_EXPIRED_SESSIONS, 30)",
+        "inactiveUserDeleteDays": "int(process.env.SECURITY_INACTIVE_USER_DELETE_DAYS, 30)"
       },
       "s3": {
         "accessKeyId": "process.env.AWS_S3_ACCESS_KEY ?? ''",
@@ -92,36 +86,28 @@
         "profilePictureBucket": "process.env.AWS_S3_PROFILE_PICTURE_BUCKET ?? ''",
         "profilePictureCdnHostname": "process.env.AWS_S3_PROFILE_PICTURE_CDN_HOST_NAME ?? ''"
       },
-      "googleMaps": {
-        "apiKey": "process.env.GOOGLE_MAPS_API_KEY"
+      "tracking": {
+        "mode": "process.env.TRACKING_MODE ?? 'api-key'",
+        "index": "process.env.TRACKING_INDEX ?? 'saas-starter-logs'",
+        "deleteOldLogs": "bool(process.env.TRACKING_DELETE_OLD_LOGS, true)",
+        "deleteOldLogsDays": "int(process.env.TRACKING_DELETE_OLD_LOGS_DAYS, 90)"
       },
-      "gravatar": {
-        "enabled": "bool(process.env.PASSWORD_PWNED_CHECK, true)"
+      "twilio": {
+        "retries": "int(process.env.TWILIO_FAIL_RETRIES, 3)",
+        "accountSid": "process.env.TWILIO_ACCOUNT_SID ?? ''",
+        "authToken": "process.env.TWILIO_AUTH_TOKEN ?? ''"
+      },
+      "webhooks": {
+        "retries": "int(process.env.WEBHOOK_FAIL_RETRIES, 3)"
       }
     }
   },
   "env": {
-    "FRONTEND_URL": "",
     "APP_NAME": "",
+    "APP_FRONTEND_URL": "",
+    "CACHE_GEOLOCATION_LRU_SIZE": "",
+    "CACHE_APIKEY_LRU_SIZE": "",
     "DOMAIN_VERIFICATION_FILE": "",
-    "RATE_LIMIT_PUBLIC_POINTS": "",
-    "RATE_LIMIT_PUBLIC_DURATION": "",
-    "RATE_LIMIT_AUTHENTICATED_POINTS": "",
-    "RATE_LIMIT_AUTHENTICATED_DURATION": "",
-    "RATE_LIMIT_API_KEY_POINTS": "",
-    "RATE_LIMIT_API_KEY_DURATION": "",
-    "GEOLOCATION_LRU_SIZE": "",
-    "API_KEY_LRU_SIZE": "",
-    "SALT_ROUNDS": "",
-    "JWT_SECRET": "",
-    "TOTP_WINDOW_PAST": "",
-    "TOTP_WINDOW_FUTURE": "",
-    "MFA_TOKEN_EXPIRY": "",
-    "MERGE_USERS_TOKEN_EXPIRY": "",
-    "ACCESS_TOKEN_EXPIRY": "",
-    "PASSWORD_PWNED_CHECK": "",
-    "DELETE_EXPIRED_SESSIONS": "",
-    "INACTIVE_USER_DELETE_DAYS": "",
     "ELASTICSEARCH_NODE": "",
     "ELASTICSEARCH_FAIL_RETRIES": "",
     "ELASTICSEARCH_AUTH_USERNAME": "",
@@ -142,55 +128,72 @@
     "EMAIL_SECURE": "",
     "EMAIL_USER": "",
     "EMAIL_PASSWORD": "",
-    "WEBHOOK_FAIL_RETRIES": "",
-    "SMS_FAIL_RETRIES": "",
-    "TWILIO_ACCOUNT_SID": "",
-    "TWILIO_AUTH_TOKEN": "",
+    "GOOGLE_MAPS_API_KEY": "",
+    "GRAVATAR_ENABLED": "",
     "STRIPE_API_KEY": "",
     "STRIPE_PRODUCT_ID": "",
     "STRIPE_ENDPOINT_SECRET": "",
-    "TRACKING_MODE": "",
-    "TRACKING_INDEX": "",
-    "TRACKING_DELETE_OLD_LOGS": "",
-    "TRACKING_DELETE_OLD_LOGS_DAYS": "",
+    "RATE_LIMIT_PUBLIC_POINTS": "",
+    "RATE_LIMIT_PUBLIC_DURATION": "",
+    "RATE_LIMIT_AUTHENTICATED_POINTS": "",
+    "RATE_LIMIT_AUTHENTICATED_DURATION": "",
+    "RATE_LIMIT_API_KEY_POINTS": "",
+    "RATE_LIMIT_API_KEY_DURATION": "",
+    "SECURITY_SALT_ROUNDS": "",
+    "SECURITY_JWT_SECRET": "",
+    "SECURITY_TOTP_WINDOW_PAST": "",
+    "SECURITY_TOTP_WINDOW_FUTURE": "",
+    "SECURITY_MFA_TOKEN_EXPIRY": "",
+    "SECURITY_MERGE_USERS_TOKEN_EXPIRY": "",
+    "SECURITY_ACCESS_TOKEN_EXPIRY": "",
+    "SECURITY_PASSWORD_PWNED_CHECK": "",
+    "SECURITY_DELETE_EXPIRED_SESSIONS": "",
+    "SECURITY_INACTIVE_USER_DELETE_DAYS": "",
     "AWS_S3_ACCESS_KEY": "",
     "AWS_S3_SECRET_KEY": "",
     "AWS_S3_REGION": "",
     "AWS_S3_PROFILE_PICTURE_BUCKET": "",
     "AWS_S3_PROFILE_PICTURE_CDN_HO": "",
-    "GOOGLE_MAPS_API_KEY": ""
+    "TRACKING_MODE": "",
+    "TRACKING_INDEX": "",
+    "TRACKING_DELETE_OLD_LOGS": "",
+    "TRACKING_DELETE_OLD_LOGS_DAYS": "",
+    "TWILIO_FAIL_RETRIES": "",
+    "TWILIO_ACCOUNT_SID": "",
+    "TWILIO_AUTH_TOKEN": "",
+    "WEBHOOK_FAIL_RETRIES": ""
   },
   "dependencies": {
     "@elastic/elasticsearch": "^7.13.0",
+    "@googlemaps/google-maps-services-js": "latest",
+    "@nestjs/passport": "latest",
     "@nestjs/schedule": "^4.0.1",
-    "jsonwebtoken": "^9.0.2",
-    "dot-object": "latest",
+    "@staart/mustache-markdown": "latest",
     "aws-elasticsearch-connector": "latest",
     "aws-sdk": "latest",
-    "p-queue": "^6.6.2",
-    "p-retry": "^4.6.2",
-    "geolite2-redist": "^2.0.4",
-    "maxmind": "latest",
-    "@googlemaps/google-maps-services-js": "latest",
-    "@staart/mustache-markdown": "latest",
-    "mem": "^8.1.1",
-    "nodemailer": "latest",
-    "hibp": "latest",
-    "stripe": "latest",
-    "twilio": "latest",
     "circularbuffer": "latest",
-    "pidusage": "latest",
-    "randomcolor": "latest",
-    "@nestjs/passport": "latest",
-    "request-ip": "latest",
-    "passport-strategy": "latest",
+    "dot-object": "latest",
+    "geolite2-redist": "^2.0.4",
+    "hibp": "latest",
     "ip-range-check": "latest",
     "ip-anonymize": "latest",
+    "jsonwebtoken": "^9.0.2",
+    "maxmind": "latest",
+    "mem": "^8.1.1",
+    "nodemailer": "latest",
+    "normalize-email": "latest",
     "otplib": "latest",
+    "passport-strategy": "latest",
+    "pidusage": "latest",
+    "p-queue": "^6.6.2",
+    "p-retry": "^4.6.2",
     "qrcode": "latest",
-    "ua-parser-js": "latest",
+    "randomcolor": "latest",
     "rate-limiter-flexible": "latest",
-    "normalize-email": "latest"
+    "request-ip": "latest",
+    "stripe": "latest",
+    "twilio": "latest",
+    "ua-parser-js": "latest"
   },
   "assets": [
     "microservices/saas-starter/providers/mail/templates/"

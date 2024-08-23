@@ -184,7 +184,7 @@ export class UsersService {
           name: user.name,
           minutes,
           link: `${this.configService.get<string>(
-            'microservices.saas-starter.frontendUrl'
+            'microservices.app.frontendUrl'
           )}/auth/link/merge-accounts?token=${this.tokensService.signJwt(
             MERGE_ACCOUNTS_TOKEN,
             {baseUserId: userId, mergeUserId: user.id},

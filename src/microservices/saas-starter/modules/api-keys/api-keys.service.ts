@@ -29,7 +29,7 @@ export class ApiKeysService {
   ) {
     this.lru = new QuickLRU<string, ApiKey>({
       maxSize: this.configService.getOrThrow<number>(
-        'microservices.saas-starter.caching.apiKeyLruSize'
+        'microservices.saas-starter.cache.apiKeyLruSize'
       ),
     });
   }

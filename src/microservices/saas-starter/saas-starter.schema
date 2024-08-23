@@ -65,7 +65,7 @@ model Group {
     updatedAt         DateTime     @updatedAt
     parentId          Int?
     parent            Group?       @relation("groupSubgroups", fields: [parentId], references: [id])
-    apikeys           ApiKey[]     @relation("groupApiKey")
+    apiKeys           ApiKey[]     @relation("groupApiKey")
     auditLogs         AuditLog[]   @relation("groupAuditLog")
     domains           Domain[]     @relation("groupDomain")
     subgroups         Group[]      @relation("groupSubgroups")

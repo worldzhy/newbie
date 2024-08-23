@@ -84,7 +84,7 @@ export class StripeService {
     return this.stripe.billingPortal.sessions.create({
       customer: stripeId,
       return_url: `${this.configService.get<string>(
-        'microservices.saas-starter.frontendUrl'
+        'microservices.app.frontendUrl'
       )}/groups/${groupId}`,
     });
   }
@@ -187,10 +187,10 @@ export class StripeService {
         Array<Stripe.Checkout.SessionCreateParams.PaymentMethodType>
       >('microservices.saas-starter.payments.paymentMethodTypes') ?? ['card'],
       success_url: `${this.configService.get<string>(
-        'microservices.saas-starter.frontendUrl'
+        'microservices.app.frontendUrl'
       )}/groups/${groupId}`,
       cancel_url: `${this.configService.get<string>(
-        'microservices.saas-starter.frontendUrl'
+        'microservices.app.frontendUrl'
       )}/groups/${groupId}`,
     };
     if (mode === 'subscription')
