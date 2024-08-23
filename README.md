@@ -7,7 +7,7 @@
 
 </p>
 
-## Description
+## 📖 Description
 
 [Newbie](https://github.com/worldzhy/newbie) is a [Node.js](http://nodejs.org) project development framework based on [NestJS](https://github.com/nestjs/nest).
 
@@ -15,7 +15,7 @@
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo_text.svg" width="320" alt="Nest Logo" /></a>
 </p>
 
-## Setup environment
+## 🛠 Setup environment
 
 #### Install Node.js
 
@@ -43,7 +43,7 @@ npm i -g @nestjs/cli
 
 > https://docs.nestjs.com/first-steps
 
-## For development
+## 👩‍💻 Develop
 
 ### Install dependencies
 
@@ -75,7 +75,7 @@ $ echo "module.exports = {extends: ['@commitlint/config-conventional']};" > comm
 $ npm run dev
 ```
 
-## For production
+## 💻 Production
 
 ### Install dependencies
 
@@ -108,6 +108,6 @@ $ npm run build
 $ pm2 start newbie
 ```
 
-## License
+## 📄 License
 
 Newbie is [MIT licensed](LICENSE).
