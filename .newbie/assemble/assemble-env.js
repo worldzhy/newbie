@@ -3,7 +3,6 @@ const {getObjectFromEnvFile} = require('../.db/env');
 const {
   ENV_PATH,
   ALL_MICROSERVICES,
-  TOOLKIT_SETTINGS_JSON,
   MICROSERVICES_CODE_PATH,
   FRAMEWORK_SETTINGS_JSON,
 } = require('../newbie.constants');
@@ -32,22 +31,8 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
     console.error(`[Error] Missing framework.settings.json!`);
   }
 
-  // [step 2] Assemble toolkit environment variables
-  if (fs.existsSync(TOOLKIT_SETTINGS_JSON)) {
-    const {env = {}} = JSON.parse(
-      fs.readFileSync(TOOLKIT_SETTINGS_JSON, {encoding: 'utf8', flag: 'r'})
-    );
-    Object.keys(env).forEach(key => {
-      if (!envObj[key]) {
-        envObj[key] = env[key];
-      }
-    });
-  } else {
-    console.error(`[Error] Missing toolkit.settings.json!`);
-  }
-
-  // [step 3] Assemble microservices environment variables
-  // [step 3-1] Add variables to the env object.
+  // [step 2] Assemble microservices environment variables
+  // [step 2-1] Add variables to the env object.
   addedMicroservices.forEach(name => {
     const {key, settingsFileName} = ALL_MICROSERVICES[name] || {};
 
@@ -78,7 +63,7 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
     }
   });
 
-  // [step 3-2] Remove variables from the env object.
+  // [step 2-2] Remove variables from the env object.
   removedMicroservices.forEach(name => {
     const {key, settingsFileName} = ALL_MICROSERVICES[name] || {};
 
@@ -112,7 +97,7 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
     }
   });
 
-  // [step 4] Write the .env file.
+  // [step 3] Write the .env file.
   if (Object.keys(envObj).length > 0) {
     fs.writeFileSync(
       ENV_PATH,
@@ -124,7 +109,7 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
     // Do nothing
   }
 
-  // [step 5] Generate .env.example
+  // [step 4] Generate .env.example
   generateEnvExampleFile();
 };
 
@@ -166,27 +151,7 @@ const generateEnvExampleFile = () => {
     }
   }
 
-  // [step 2] Append tooltip variables to .env.example
-  if (fs.existsSync(TOOLKIT_SETTINGS_JSON)) {
-    const {env = {}} = JSON.parse(
-      fs.readFileSync(TOOLKIT_SETTINGS_JSON, {encoding: 'utf8', flag: 'r'})
-    );
-
-    if (Object.keys(env).length > 0) {
-      fs.appendFileSync(
-        envExamplePath,
-        getHeaderTemplate('Toolkit', TOOLKIT_SETTINGS_JSON)
-      );
-      fs.appendFileSync(
-        envExamplePath,
-        Object.entries(env)
-          .map(e => e.join('='))
-          .join('\n')
-      );
-    }
-  }
-
-  // [step 3] Append microservices variables to .env.example
+  // [step 2] Append microservices variables to .env.example
   enabledMicroservices.forEach(name => {
     const {key, settingsFileName} = ALL_MICROSERVICES[name] || {};
 

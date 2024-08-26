@@ -1,0 +1,1 @@
+export const PUBLIC_ENDPOINT = 'PUBLIC_ENDPOINT';

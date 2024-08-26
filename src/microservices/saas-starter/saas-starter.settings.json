@@ -1,0 +1,201 @@
+{
+  "config-service": {
+    "saas-starter": {
+      "app": {
+        "name": "process.env.APP_NAME ?? 'SaaS Starter'",
+        "frontendUrl": "process.env.APP_FRONTEND_URL ?? 'http://localhost:3000'"
+      },
+      "cache": {
+        "geolocationLruSize": "int(process.env.CACHE_GEOLOCATION_LRU_SIZE, 100)",
+        "apiKeyLruSize": "int(process.env.CACHE_APIKEY_LRU_SIZE, 100)"
+      },
+      "domain": {
+        "verificationFile": "process.env.DOMAIN_VERIFICATION_FILE ?? 'saas-starter-verify.txt'"
+      },
+      "elasticsearch": {
+        "node": "process.env.ELASTICSEARCH_NODE",
+        "retries": "int(process.env.ELASTICSEARCH_FAIL_RETRIES, 3)",
+        "auth": "process.env.ELASTICSEARCH_AUTH_USERNAME ? {username: process.env.ELASTICSEARCH_AUTH_USERNAME, password: process.env.ELASTICSEARCH_AUTH_PASSWORD,} : process.env.ELASTICSEARCH_AUTH_API_KEY ? process.env.ELASTICSEARCH_AUTH_API_KEY_ID ? {apiKey: {api_key: process.env.ELASTICSEARCH_AUTH_API_KEY,id: process.env.ELASTICSEARCH_AUTH_API_KEY_ID,},}: { apiKey: process.env.ELASTICSEARCH_AUTH_API_KEY }: undefined",
+        "aws": {
+          "accessKeyId": "process.env.ELASTICSEARCH_AWS_ACCESS_KEY_ID ?? ''",
+          "secretAccessKey": "process.env.ELASTICSEARCH_AWS_SECRET_ACCESS_KEY ?? ''",
+          "region": "process.env.ELASTICSEARCH_AWS_REGION ?? ''"
+        }
+      },
+      "email": {
+        "name": "process.env.EMAIL_NAME ?? 'SaaS Starter'",
+        "from": "process.env.EMAIL_FROM ?? ''",
+        "retries": "int(process.env.EMAIL_FAIL_RETRIES, 3)",
+        "ses": {
+          "accessKeyId": "process.env.EMAIL_SES_ACCESS_KEY_ID ?? ''",
+          "secretAccessKey": "process.env.EMAIL_SES_SECRET_ACCESS_KEY ?? ''",
+          "region": "process.env.EMAIL_SES_REGION ?? ''"
+        },
+        "transport": {
+          "host": "process.env.EMAIL_HOST ?? ''",
+          "port": "int(process.env.EMAIL_PORT, 587)",
+          "secure": "bool(process.env.EMAIL_SECURE, false)",
+          "auth": {
+            "user": "process.env.EMAIL_USER ?? process.env.EMAIL_FROM ?? ''",
+            "pass": "process.env.EMAIL_PASSWORD ?? ''"
+          }
+        }
+      },
+      "googleMaps": {
+        "apiKey": "process.env.GOOGLE_MAPS_API_KEY"
+      },
+      "gravatar": {
+        "enabled": "bool(process.env.GRAVATAR_ENABLED, true)"
+      },
+      "payments": {
+        "stripeApiKey": "process.env.STRIPE_API_KEY ?? ''",
+        "stripeProductId": "process.env.STRIPE_PRODUCT_ID ?? ''",
+        "stripeEndpointSecret": "process.env.STRIPE_ENDPOINT_SECRET ?? ''",
+        "paymentMethodTypes": "['card']"
+      },
+      "rateLimit": {
+        "public": {
+          "points": "int(process.env.RATE_LIMIT_PUBLIC_POINT, 250)",
+          "duration": "int(process.env.RATE_LIMIT_PUBLIC_DURATIO, 3600)"
+        },
+        "authenticated": {
+          "points": "int(process.env.RATE_LIMIT_AUTHENTICATED_POINTS, 5000)",
+          "duration": "int(process.env.RATE_LIMIT_AUTHENTICATED_DURATION, 3600)"
+        },
+        "apiKey": {
+          "points": "int(process.env.RATE_LIMIT_API_KEY_POINTS, 10000)",
+          "duration": "int(process.env.RATE_LIMIT_API_KEY_DURATION, 3600)"
+        }
+      },
+      "security": {
+        "saltRounds": "int(process.env.SECURITY_SALT_ROUNDS, 10)",
+        "jwtSecret": "process.env.SECURITY_JWT_SECRET ?? 'saas-starter'",
+        "totpWindowPast": "int(process.env.SECURITY_TOTP_WINDOW_PAST, 1)",
+        "totpWindowFuture": "int(process.env.SECURITY_TOTP_WINDOW_FUTURE, 0)",
+        "mfaTokenExpiry": "process.env.SECURITY_MFA_TOKEN_EXPIRY ?? '10m'",
+        "mergeUsersTokenExpiry": "process.env.SECURITY_MERGE_USERS_TOKEN_EXPIRY ?? '30m'",
+        "accessTokenExpiry": "process.env.SECURITY_ACCESS_TOKEN_EXPIRY ?? '1h'",
+        "passwordPwnedCheck": "bool(process.env.SECURITY_PASSWORD_PWNED_CHECK, true)",
+        "unusedRefreshTokenExpiryDays": "int(process.env.SECURITY_DELETE_EXPIRED_SESSIONS, 30)",
+        "inactiveUserDeleteDays": "int(process.env.SECURITY_INACTIVE_USER_DELETE_DAYS, 30)"
+      },
+      "s3": {
+        "accessKeyId": "process.env.AWS_S3_ACCESS_KEY ?? ''",
+        "secretAccessKey": "process.env.AWS_S3_SECRET_KEY ?? ''",
+        "region": "process.env.AWS_S3_REGION ?? ''",
+        "profilePictureBucket": "process.env.AWS_S3_PROFILE_PICTURE_BUCKET ?? ''",
+        "profilePictureCdnHostname": "process.env.AWS_S3_PROFILE_PICTURE_CDN_HOST_NAME ?? ''"
+      },
+      "tracking": {
+        "mode": "process.env.TRACKING_MODE ?? 'api-key'",
+        "index": "process.env.TRACKING_INDEX ?? 'saas-starter-logs'",
+        "deleteOldLogs": "bool(process.env.TRACKING_DELETE_OLD_LOGS, true)",
+        "deleteOldLogsDays": "int(process.env.TRACKING_DELETE_OLD_LOGS_DAYS, 90)"
+      },
+      "twilio": {
+        "retries": "int(process.env.TWILIO_FAIL_RETRIES, 3)",
+        "accountSid": "process.env.TWILIO_ACCOUNT_SID ?? ''",
+        "authToken": "process.env.TWILIO_AUTH_TOKEN ?? ''"
+      },
+      "webhooks": {
+        "retries": "int(process.env.WEBHOOK_FAIL_RETRIES, 3)"
+      }
+    }
+  },
+  "env": {
+    "APP_NAME": "",
+    "APP_FRONTEND_URL": "",
+    "CACHE_GEOLOCATION_LRU_SIZE": "",
+    "CACHE_APIKEY_LRU_SIZE": "",
+    "DOMAIN_VERIFICATION_FILE": "",
+    "ELASTICSEARCH_NODE": "",
+    "ELASTICSEARCH_FAIL_RETRIES": "",
+    "ELASTICSEARCH_AUTH_USERNAME": "",
+    "ELASTICSEARCH_AUTH_PASSWORD": "",
+    "ELASTICSEARCH_AUTH_API_KEY": "",
+    "ELASTICSEARCH_AUTH_API_KEY_ID": "",
+    "ELASTICSEARCH_AWS_ACCESS_KEY_ID": "",
+    "ELASTICSEARCH_AWS_SECRET_ACCESS_KEY": "",
+    "ELASTICSEARCH_AWS_REGION": "",
+    "EMAIL_NAME": "",
+    "EMAIL_FROM": "",
+    "EMAIL_FAIL_RETRIES": "",
+    "EMAIL_SES_ACCESS_KEY_ID": "",
+    "EMAIL_SES_SECRET_ACCESS_KEY": "",
+    "EMAIL_SES_REGION": "",
+    "EMAIL_HOST": "",
+    "EMAIL_PORT": "",
+    "EMAIL_SECURE": "",
+    "EMAIL_USER": "",
+    "EMAIL_PASSWORD": "",
+    "GOOGLE_MAPS_API_KEY": "",
+    "GRAVATAR_ENABLED": "",
+    "STRIPE_API_KEY": "",
+    "STRIPE_PRODUCT_ID": "",
+    "STRIPE_ENDPOINT_SECRET": "",
+    "RATE_LIMIT_PUBLIC_POINTS": "",
+    "RATE_LIMIT_PUBLIC_DURATION": "",
+    "RATE_LIMIT_AUTHENTICATED_POINTS": "",
+    "RATE_LIMIT_AUTHENTICATED_DURATION": "",
+    "RATE_LIMIT_API_KEY_POINTS": "",
+    "RATE_LIMIT_API_KEY_DURATION": "",
+    "SECURITY_SALT_ROUNDS": "",
+    "SECURITY_JWT_SECRET": "",
+    "SECURITY_TOTP_WINDOW_PAST": "",
+    "SECURITY_TOTP_WINDOW_FUTURE": "",
+    "SECURITY_MFA_TOKEN_EXPIRY": "",
+    "SECURITY_MERGE_USERS_TOKEN_EXPIRY": "",
+    "SECURITY_ACCESS_TOKEN_EXPIRY": "",
+    "SECURITY_PASSWORD_PWNED_CHECK": "",
+    "SECURITY_DELETE_EXPIRED_SESSIONS": "",
+    "SECURITY_INACTIVE_USER_DELETE_DAYS": "",
+    "AWS_S3_ACCESS_KEY": "",
+    "AWS_S3_SECRET_KEY": "",
+    "AWS_S3_REGION": "",
+    "AWS_S3_PROFILE_PICTURE_BUCKET": "",
+    "AWS_S3_PROFILE_PICTURE_CDN_HO": "",
+    "TRACKING_MODE": "",
+    "TRACKING_INDEX": "",
+    "TRACKING_DELETE_OLD_LOGS": "",
+    "TRACKING_DELETE_OLD_LOGS_DAYS": "",
+    "TWILIO_FAIL_RETRIES": "",
+    "TWILIO_ACCOUNT_SID": "",
+    "TWILIO_AUTH_TOKEN": "",
+    "WEBHOOK_FAIL_RETRIES": ""
+  },
+  "dependencies": {
+    "@elastic/elasticsearch": "^7.13.0",
+    "@googlemaps/google-maps-services-js": "latest",
+    "@nestjs/passport": "latest",
+    "@nestjs/schedule": "^4.0.1",
+    "@staart/mustache-markdown": "latest",
+    "aws-elasticsearch-connector": "latest",
+    "aws-sdk": "latest",
+    "circularbuffer": "latest",
+    "dot-object": "latest",
+    "geolite2-redist": "^2.0.4",
+    "hibp": "latest",
+    "ip-range-check": "latest",
+    "ip-anonymize": "latest",
+    "jsonwebtoken": "^9.0.2",
+    "maxmind": "latest",
+    "mem": "^8.1.1",
+    "nodemailer": "latest",
+    "normalize-email": "latest",
+    "otplib": "latest",
+    "passport-strategy": "latest",
+    "pidusage": "latest",
+    "p-queue": "^6.6.2",
+    "p-retry": "^4.6.2",
+    "qrcode": "latest",
+    "randomcolor": "latest",
+    "rate-limiter-flexible": "latest",
+    "request-ip": "latest",
+    "stripe": "latest",
+    "twilio": "latest",
+    "ua-parser-js": "latest"
+  },
+  "assets": [
+    "microservices/saas-starter/providers/mail/templates/"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "config-service": {
+    "cloudinary": {
+      "cloudName": "process.env.CLOUDINARY_CLOUD_NAME ?? ''",
+      "apiKey": "process.env.CLOUDINARY_API_KEY ?? ''",
+      "apiSecret": "process.env.CLOUDINARY_API_SECRET ?? ''"
+    }
+  },
+  "env": {
+    "CLOUDINARY_CLOUD_NAME": "",
+    "CLOUDINARY_API_KEY": "",
+    "CLOUDINARY_API_SECRET": ""
+  },
+  "dependencies": {
+    "cloudinary": "^2.4.0"
+  }
+}

@@ -8,7 +8,6 @@ const MICROSERVICES_MODULE_TS = './src/microservices/microservices.module.ts';
 const MICROSERVICES_CONFIG_TS = './src/microservices/microservices.config.ts';
 
 const FRAMEWORK_SETTINGS_JSON = './src/framework/framework.settings.json';
-const TOOLKIT_SETTINGS_JSON = './src/toolkit/toolkit.settings.json';
 
 const PRISMA_SCHEMA_PATH = './prisma/schema/microservices';
 const PRISMA_SCHEMA_APPLICATION = './prisma/schema/application.prisma';
@@ -28,13 +27,21 @@ const ALL_MICROSERVICES = {
     moduleNames: 'AccountModule',
     importCode: `import {AccountModule} from './account/account.module';`,
   },
-  aws: {
-    key: 'aws',
-    srcPath: './src/microservices/aws',
+  'aws-s3': {
+    key: 'aws-s3',
+    srcPath: './src/microservices/aws-s3',
+    schemaFileName: 'aws-s3.schema',
+    settingsFileName: 'aws-s3.settings.json',
+    moduleNames: 'AwsS3Module',
+    importCode: `import {AwsS3Module} from './aws-s3/aws-s3.module';`,
+  },
+  'aws-sqs': {
+    key: 'aws-sqs',
+    srcPath: './src/microservices/aws-sqs',
     schemaFileName: null,
-    settingsFileName: 'aws.settings.json',
-    moduleNames: 'AwsModule',
-    importCode: `import {AwsModule} from './aws/aws.module';`,
+    settingsFileName: 'aws-sqs.settings.json',
+    moduleNames: 'AwsSqsModule',
+    importCode: `import {AwsSqsModule} from './aws-sqs/aws-sqs.module';`,
   },
   cache: {
     key: 'cache',
@@ -52,6 +59,22 @@ const ALL_MICROSERVICES = {
     moduleNames: 'AwsCloudformationModule',
     importCode: `import {AwsCloudformationModule} from './cloudformation/cloudformation.module';`,
   },
+  cloudinary: {
+    key: 'cloudinary',
+    srcPath: './src/microservices/cloudinary',
+    schemaFileName: null,
+    settingsFileName: 'cloudinary.settings.json',
+    moduleNames: 'CloudinaryModule',
+    importCode: `import {CloudinaryModule} from './cloudinary/cloudinary.module';`,
+  },
+  elasticsearch: {
+    key: 'elasticsearch',
+    srcPath: './src/microservices/elasticsearch',
+    schemaFileName: null,
+    settingsFileName: 'elasticsearch.settings.json',
+    moduleNames: 'ElasticsearchModule',
+    importCode: `import {ElasticsearchModule} from './elasticsearch/elasticsearch.module';`,
+  },
   'event-scheduling': {
     key: 'event-scheduling',
     srcPath: './src/microservices/event-scheduling',
@@ -59,6 +82,14 @@ const ALL_MICROSERVICES = {
     settingsFileName: 'event-scheduling.settings.json',
     moduleNames: 'EventSchedulingModule',
     importCode: `import {EventSchedulingModule} from './event-scheduling/event-scheduling.module';`,
+  },
+  github: {
+    key: 'github',
+    srcPath: './src/microservices/github',
+    schemaFileName: null,
+    settingsFileName: 'github.settings.json',
+    moduleNames: 'GitHubModule',
+    importCode: `import {GitHubModule} from './github/github.module';`,
   },
   googleapis: {
     key: 'googleapis',
@@ -108,6 +139,14 @@ const ALL_MICROSERVICES = {
     moduleNames: 'PeopleFinderModule',
     importCode: `import {PeopleFinderModule} from './people-finder/people-finder.module';`,
   },
+  puppeteer: {
+    key: 'puppeteer',
+    srcPath: './src/microservices/puppeteer',
+    schemaFileName: null,
+    settingsFileName: 'puppeteer.settings.json',
+    moduleNames: 'PuppeteerModule',
+    importCode: `import {PuppeteerModule} from './puppeteer/puppeteer.module';`,
+  },
   queue: {
     key: 'queue',
     srcPath: './src/microservices/queue',
@@ -116,6 +155,14 @@ const ALL_MICROSERVICES = {
     moduleNames: 'NewbieQueueModule',
     importCode: `import {NewbieQueueModule} from './queue/queue.module';`,
   },
+  'saas-starter': {
+    key: 'saas-starter',
+    srcPath: './src/microservices/saas-starter',
+    schemaFileName: 'saas-starter.schema',
+    settingsFileName: 'saas-starter.settings.json',
+    moduleNames: 'SaaSStarterModule',
+    importCode: `import {SaaSStarterModule} from './saas-starter/saas-starter.module';`,
+  },
   shortcut: {
     key: 'shortcut',
     srcPath: './src/microservices/shortcut',
@@ -123,6 +170,22 @@ const ALL_MICROSERVICES = {
     settingsFileName: null,
     moduleNames: 'ShortcutModule',
     importCode: `import {ShortcutModule} from './shortcut/shortcut.module';`,
+  },
+  slack: {
+    key: 'slack',
+    srcPath: './src/microservices/slack',
+    schemaFileName: null,
+    settingsFileName: 'slack.settings.json',
+    moduleNames: 'SlackModule',
+    importCode: `import {SlackModule} from './slack/slack.module';`,
+  },
+  snowflake: {
+    key: 'snowflake',
+    srcPath: './src/microservices/snowflake',
+    schemaFileName: null,
+    settingsFileName: 'snowflake.settings.json',
+    moduleNames: 'SnowflakeModule',
+    importCode: `import {SnowflakeModule} from './snowflake/snowflake.module';`,
   },
   'stock-mgmt': {
     key: 'stock-mgmt',
@@ -184,7 +247,6 @@ module.exports = {
   MICROSERVICES_CONFIG_TS,
 
   FRAMEWORK_SETTINGS_JSON,
-  TOOLKIT_SETTINGS_JSON,
 
   PRISMA_SCHEMA_PATH,
   PRISMA_SCHEMA_APPLICATION,

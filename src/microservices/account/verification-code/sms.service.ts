@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import {SendMessagesCommandOutput} from '@aws-sdk/client-pinpoint';
-import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {PrismaService} from '@framework/prisma/prisma.service';
 import {AwsPinpointService} from './aws.pinpoint.service';
 
 @Injectable()

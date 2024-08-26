@@ -7,7 +7,7 @@ import {
   verifyPassword,
   verifyPhone,
 } from '@microservices/account/account.validator';
-import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {PrismaService} from '@framework/prisma/prisma.service';
 
 @ApiTags('Account')
 @Controller('account')

@@ -7,7 +7,7 @@
 
 </p>
 
-## Description
+## 📖 Description
 
 [Newbie](https://github.com/worldzhy/newbie) is a [Node.js](http://nodejs.org) project development framework based on [NestJS](https://github.com/nestjs/nest).
 
@@ -15,7 +15,7 @@
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo_text.svg" width="320" alt="Nest Logo" /></a>
 </p>
 
-## Setup environment
+## 🛠 Setup environment
 
 #### Install Node.js
 
@@ -29,7 +29,7 @@
 
 #### Install pm2
 
-```
+```bash
 npm i -g pm2
 ```
 
@@ -37,39 +37,33 @@ npm i -g pm2
 
 #### Install NestJS
 
-```
+```bash
 npm i -g @nestjs/cli
 ```
 
 > https://docs.nestjs.com/first-steps
 
-## For development
+## 👩‍💻 Develop
 
 ### Install dependencies
 
-```
+```bash
 $ npm i
 $ cp .env.example .env
 ```
 
 ### Install database
 
-```
+```bash
 $ npx prisma generate
 $ npx prisma db push
 $ npx prisma db seed
 ```
 
-### Install google typescript lint
-
-```
-$ npx gts init
-```
-
 ### Install husky
 
-```
-$ npm install --save-dev husky commitizen @commitlint/{cli,config-conventional}
+```bash
+$ npm i --save-dev husky commitizen @commitlint/{cli,config-conventional}
 $ npx husky init
 $ npx commitizen init cz-conventional-changelog --save-dev --save-exact
 $ echo "module.exports = {extends: ['@commitlint/config-conventional']};" > commitlint.config.js
@@ -77,23 +71,23 @@ $ echo "module.exports = {extends: ['@commitlint/config-conventional']};" > comm
 
 ### Start application
 
-```
+```bash
 $ npm run dev
 ```
 
-## For production
+## 💻 Production
 
 ### Install dependencies
 
-```
-$ npm install --omit=dev
-$ npm install --save-dev tsconfig-paths
+```bash
+$ npm i --omit=dev
+$ npm i --save-dev tsconfig-paths
 $ cp .env.example .env
 ```
 
 ### Install database
 
-```
+```bash
 $ npx prisma generate
 $ npx prisma db push
 $ npx prisma db seed
@@ -101,19 +95,19 @@ $ npx prisma db seed
 
 ### Start application
 
-```
+```bash
 $ npm run build
 $ pm2 start npm --name newbie -- start
 ```
 
 ### Restart application
 
-```
+```bash
 $ pm2 stop newbie
 $ npm run build
 $ pm2 start newbie
 ```
 
-## License
+## 📄 License
 
 Newbie is [MIT licensed](LICENSE).

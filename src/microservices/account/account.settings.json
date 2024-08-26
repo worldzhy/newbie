@@ -16,7 +16,7 @@
         },
         "redis": {
           "host": "process.env.ACCOUNT_REDIS_HOST",
-          "port": "parseInt(process.env.ACCOUNT_REDIS_PORT ?? '6379')"
+          "port": "int(process.env.ACCOUNT_REDIS_PORT, 6379)"
         }
       },
       "token": {

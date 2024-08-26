@@ -10,6 +10,7 @@ import {HttpExceptionFilter} from './exception-filters/http.exception-filter';
 import {NewbieExceptionFilter} from './exception-filters/newbie.exception-filter';
 import {HttpResponseInterceptor} from './interceptors/http-response.interceptor';
 import {HttpMiddleware} from './middlewares/http.middleware';
+import {PrismaModule} from './prisma/prisma.module';
 import FrameworkConfiguration from './framework.config';
 
 @Global()
@@ -21,6 +22,7 @@ import FrameworkConfiguration from './framework.config';
       throttlers: [{limit: 10000, ttl: 1000}],
     }),
     HttpModule,
+    PrismaModule,
   ],
   providers: [
     // Filters

@@ -8,7 +8,7 @@ import {
 } from '@prisma/client';
 import {PERMISSION_KEY} from './authorization.decorator';
 import {AccessTokenService} from '@microservices/account/security/token/access-token.service';
-import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {PrismaService} from '@framework/prisma/prisma.service';
 
 @Injectable()
 export class AuthorizationGuard implements CanActivate {

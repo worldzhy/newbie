@@ -6,8 +6,11 @@ import {
   EventIssueStatus,
   EventStatus,
 } from '@prisma/client';
-import {PrismaService} from '@toolkit/prisma/prisma.service';
-import {constructDateTime, daysOfMonth} from '@toolkit/utilities/datetime.util';
+import {PrismaService} from '@framework/prisma/prisma.service';
+import {
+  constructDateTime,
+  daysOfMonth,
+} from '@framework/utilities/datetime.util';
 import * as _ from 'lodash';
 import {EventIssueService} from './event-issue.service';
 import {eventPrismaMiddleware} from './event.prisma.middleware';

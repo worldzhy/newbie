@@ -1,7 +1,7 @@
 import {Injectable, InternalServerErrorException} from '@nestjs/common';
 import * as google from '@googleapis/drive';
 import {ConfigService} from '@nestjs/config';
-import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {PrismaService} from '@framework/prisma/prisma.service';
 import {GoogleFileType, GoogleMimeType} from './google-drive.enum';
 
 /**

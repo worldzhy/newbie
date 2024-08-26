@@ -1,5 +1,5 @@
 import {Prisma} from '@prisma/client';
-import {generateRandomNumbers} from '@toolkit/utilities/common.util';
+import {generateRandomNumbers} from '@framework/utilities/common.util';
 
 export async function awsResourceStackPrismaMiddleware(
   params: Prisma.MiddlewareParams,

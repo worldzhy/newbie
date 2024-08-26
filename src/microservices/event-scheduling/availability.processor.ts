@@ -1,7 +1,7 @@
 import {Processor, Process, OnQueueCompleted} from '@nestjs/bull';
 import {Job} from 'bull';
 import {AvailabilityExpressionStatus} from '@prisma/client';
-import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {PrismaService} from '@framework/prisma/prisma.service';
 import {AvailabilityService} from '@microservices/event-scheduling/availability.service';
 
 export const EventSchedulingQueue = 'event-scheduling';

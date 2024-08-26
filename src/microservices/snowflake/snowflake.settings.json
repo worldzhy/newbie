@@ -1,0 +1,37 @@
+{
+  "config-service": {
+    "snowflake": {
+      "connectionOptions":{
+        "account": "process.env.SNOWFLAKE_ACCOUNT",
+        "username": "process.env.SNOWFLAKE_USERNAME",
+        "password": "process.env.SNOWFLAKE_PASSWORD",
+        "database": "process.env.SNOWFLAKE_DATABASE",
+        "schema": "process.env.SNOWFLAKE_SCHEMA",
+        "warehouse": "process.env.SNOWFLAKE_WAREHOUSE",
+        "clientSessionKeepAlive": true,
+        "clientSessionKeepAliveHeartbeatFrequency": 3600
+      },
+      "poolOptions": {
+        "max": 10,
+        "min": 0,
+        "acquireTimeoutMillis": 120000,
+        "evictionRunIntervalMillis": 60000,
+        "idleTimeoutMillis": 120000
+      }
+    }
+  },
+  "env": {
+    "SNOWFLAKE_ACCOUNT": "",
+    "SNOWFLAKE_USERNAME": "",
+    "SNOWFLAKE_PASSWORD": "",
+    "SNOWFLAKE_DATABASE": "",
+    "SNOWFLAKE_SCHEMA": "",
+    "SNOWFLAKE_WAREHOUSE": ""
+  },
+  "dependencies": { 
+    "snowflake-sdk": "^1.9.1"
+  },
+  "devDependencies": {
+    "@types/snowflake-sdk": "^1.6.17"
+  }
+}

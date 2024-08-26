@@ -3,7 +3,6 @@ const {
   LINE,
   ENV_PATH,
   ALL_MICROSERVICES,
-  TOOLKIT_SETTINGS_JSON,
   FRAMEWORK_SETTINGS_JSON,
   MICROSERVICES_CODE_PATH,
 } = require('../newbie.constants');
@@ -49,17 +48,6 @@ const getEnvArrayFromFrameworkConfig = () => {
   return [];
 };
 
-const getEnvArrayFromToolkitConfig = () => {
-  if (fs.existsSync(TOOLKIT_SETTINGS_JSON)) {
-    const {env = {}} = JSON.parse(
-      fs.readFileSync(TOOLKIT_SETTINGS_JSON, {encoding: 'utf8', flag: 'r'})
-    );
-    return Object.keys(env);
-  }
-
-  return [];
-};
-
 const getEnvObjectFromMicroservicesConfig = () => {
   const envObj = {};
   const enabledMicroservices = getEnabledMicroservices();
@@ -93,6 +81,5 @@ const getEnvObjectFromMicroservicesConfig = () => {
 module.exports = {
   getObjectFromEnvFile,
   getEnvArrayFromFrameworkConfig,
-  getEnvArrayFromToolkitConfig,
   getEnvObjectFromMicroservicesConfig,
 };

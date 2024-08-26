@@ -1,5 +1,5 @@
 import {Injectable} from '@nestjs/common';
-import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {PrismaService} from '@framework/prisma/prisma.service';
 import {AccessTokenService} from './access-token.service';
 import {RefreshTokenService} from './refresh-token.service';
 

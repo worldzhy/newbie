@@ -1,8 +1,11 @@
 import {Injectable} from '@nestjs/common';
 import {Prisma} from '@prisma/client';
 import {AvailabilityService} from '@microservices/event-scheduling/availability.service';
-import {ceilByMinutes, floorByMinutes} from '@toolkit/utilities/datetime.util';
-import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {
+  ceilByMinutes,
+  floorByMinutes,
+} from '@framework/utilities/datetime.util';
+import {PrismaService} from '@framework/prisma/prisma.service';
 
 const ROLE_NAME_EVENT_HOST = 'Event Host';
 const userSelectArgs: Prisma.EventHostSelect = {

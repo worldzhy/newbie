@@ -1,0 +1,328 @@
+// ! ------------------------------------------------------------ //
+// !           [Microservice] SaaS Starter models                 //
+// ! ------------------------------------------------------------ //
+// * User                                                         //
+// * Group                                                        //
+// * Email                                                        //
+// * ApiKey                                                       //
+// * ApprovedSubnet                                               //
+// * BackupCode                                                   //
+// * CouponCode                                                   //
+// * Domain                                                       //
+// * Identity                                                     //
+// * Membership                                                   //
+// * Session                                                      //
+// * Webhook                                                      //
+// * AuditLog                                                     //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄  //
+
+model User {
+    checkLocationOnLogin Boolean              @default(false)
+    countryCode          String               @default("us")
+    createdAt            DateTime             @default(now())
+    gender               Gender               @default(UNKNOWN)
+    id                   Int                  @id
+    name                 String
+    notificationEmail    NotificationEmail    @default(ACCOUNT)
+    password             String?
+    prefersLanguage      String               @default("en-us")
+    prefersColorScheme   PrefersColorScheme   @default(NO_PREFERENCE)
+    prefersReducedMotion PrefersReducedMotion @default(NO_PREFERENCE)
+    prefersEmailId       Int?
+    profilePictureUrl    String               @default("https://unavatar.now.sh/fallback.png")
+    role                 UserRole             @default(USER)
+    timezone             String               @default("America/Los_Angeles")
+    twoFactorMethod      MfaMethod            @default(NONE)
+    twoFactorPhone       String?
+    twoFactorSecret      String?
+    attributes           Json?
+    updatedAt            DateTime             @updatedAt
+    active               Boolean              @default(true)
+    prefersEmail         Email?               @relation("userPrefersEmail", fields: [prefersEmailId], references: [id])
+    apiKeys              ApiKey[]             @relation("userApiKey")
+    approvedSubnets      ApprovedSubnet[]     @relation("userApprovedSubnet")
+    auditLogs            AuditLog[]           @relation("userAuditLog")
+    backupCodes          BackupCode[]         @relation("userBackupCode")
+    emails               Email[]              @relation("userEmail")
+    identities           Identity[]           @relation("userIdentity")
+    memberships          Membership[]         @relation("userMembership")
+    sessions             Session[]            @relation("userSession")
+
+    @@index([prefersEmailId])
+    @@schema("microservice/saas-starter")
+}
+
+model Group {
+    autoJoinDomain    Boolean      @default(false)
+    createdAt         DateTime     @default(now())
+    forceTwoFactor    Boolean      @default(false)
+    id                Int          @id
+    ipRestrictions    String?
+    name              String
+    onlyAllowDomain   Boolean      @default(false)
+    profilePictureUrl String       @default("https://unavatar.now.sh/fallback.png")
+    attributes        Json?
+    updatedAt         DateTime     @updatedAt
+    parentId          Int?
+    parent            Group?       @relation("groupSubgroups", fields: [parentId], references: [id])
+    apiKeys           ApiKey[]     @relation("groupApiKey")
+    auditLogs         AuditLog[]   @relation("groupAuditLog")
+    domains           Domain[]     @relation("groupDomain")
+    subgroups         Group[]      @relation("groupSubgroups")
+    memberships       Membership[] @relation("groupMembership")
+    webhooks          Webhook[]    @relation("groupWebhook")
+
+    @@index([parentId])
+    @@schema("microservice/saas-starter")
+}
+
+model Email {
+    createdAt  DateTime @default(now())
+    email      String   @unique
+    emailSafe  String   @unique
+    id         Int      @id @default(autoincrement())
+    isVerified Boolean  @default(false)
+    updatedAt  DateTime @updatedAt
+    userId     Int
+    user       User     @relation("userEmail", fields: [userId], references: [id])
+    users      User[]   @relation("userPrefersEmail")
+
+    @@index([userId])
+    @@schema("microservice/saas-starter")
+}
+
+model ApiKey {
+    createdAt            DateTime   @default(now())
+    description          String?
+    id                   Int        @id @default(autoincrement())
+    ipRestrictions       Json?
+    apiKey               String     @unique
+    name                 String?
+    groupId              Int?
+    referrerRestrictions Json?
+    scopes               String[]
+    updatedAt            DateTime   @updatedAt
+    userId               Int?
+    auditLogs            AuditLog[] @relation("apiKeyAuditLog")
+    group                Group?     @relation("groupApiKey", fields: [groupId], references: [id])
+    user                 User?      @relation("userApiKey", fields: [userId], references: [id])
+
+    @@index([groupId])
+    @@index([userId])
+    @@schema("microservice/saas-starter")
+}
+
+model ApprovedSubnet {
+    createdAt   DateTime @default(now())
+    id          Int      @id @default(autoincrement())
+    subnet      String
+    city        String?
+    region      String?
+    timezone    String?
+    countryCode String?
+    updatedAt   DateTime @updatedAt
+    userId      Int
+    user        User     @relation("userApprovedSubnet", fields: [userId], references: [id])
+
+    @@index([userId])
+    @@schema("microservice/saas-starter")
+}
+
+model BackupCode {
+    id        Int      @id @default(autoincrement())
+    code      String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    isUsed    Boolean  @default(false)
+    userId    Int
+    user      User     @relation("userBackupCode", fields: [userId], references: [id])
+
+    @@index([userId])
+    @@schema("microservice/saas-starter")
+}
+
+model CouponCode {
+    id               Int       @id @default(autoincrement())
+    code             String
+    createdAt        DateTime  @default(now())
+    updatedAt        DateTime  @updatedAt
+    expiresAt        DateTime?
+    maxUses          Int       @default(1000)
+    usedCount        Int       @default(0)
+    teamRestrictions String?
+    amount           Float     @default(0.00)
+    currency         String
+    description      String?
+
+    @@schema("microservice/saas-starter")
+}
+
+model Domain {
+    createdAt        DateTime @default(now())
+    domain           String
+    id               Int      @id @default(autoincrement())
+    isVerified       Boolean  @default(false)
+    groupId          Int
+    updatedAt        DateTime @updatedAt
+    verificationCode String
+    group            Group    @relation("groupDomain", fields: [groupId], references: [id])
+
+    @@index([groupId])
+    @@schema("microservice/saas-starter")
+}
+
+model Identity {
+    createdAt DateTime     @default(now())
+    id        Int          @id @default(autoincrement())
+    loginName String
+    type      IdentityType
+    updatedAt DateTime     @updatedAt
+    userId    Int
+    user      User         @relation("userIdentity", fields: [userId], references: [id])
+
+    @@index([userId])
+    @@schema("microservice/saas-starter")
+}
+
+model Membership {
+    createdAt DateTime       @default(now())
+    id        Int            @id @default(autoincrement())
+    groupId   Int
+    role      MembershipRole @default(MEMBER)
+    updatedAt DateTime       @updatedAt
+    userId    Int
+    group     Group          @relation("groupMembership", fields: [groupId], references: [id])
+    user      User           @relation("userMembership", fields: [userId], references: [id])
+
+    @@index([groupId])
+    @@index([userId])
+    @@schema("microservice/saas-starter")
+}
+
+model Session {
+    createdAt       DateTime @default(now())
+    id              Int      @id @default(autoincrement())
+    ipAddress       String
+    token           String
+    updatedAt       DateTime @updatedAt
+    userAgent       String?
+    city            String?
+    region          String?
+    timezone        String?
+    countryCode     String?
+    browser         String?
+    operatingSystem String?
+    userId          Int
+    user            User     @relation("userSession", fields: [userId], references: [id])
+
+    @@index([userId])
+    @@schema("microservice/saas-starter")
+}
+
+model Webhook {
+    contentType String    @default("application/json")
+    createdAt   DateTime  @default(now())
+    event       String
+    id          Int       @id @default(autoincrement())
+    isActive    Boolean   @default(false)
+    lastFiredAt DateTime?
+    groupId     Int
+    secret      String?
+    updatedAt   DateTime  @updatedAt
+    url         String
+    group       Group     @relation("groupWebhook", fields: [groupId], references: [id])
+
+    @@index([groupId])
+    @@schema("microservice/saas-starter")
+}
+
+model AuditLog {
+    createdAt       DateTime @default(now())
+    event           String
+    rawEvent        String
+    id              Int      @id @default(autoincrement())
+    groupId         Int?
+    updatedAt       DateTime @updatedAt
+    userId          Int?
+    apiKeyId        Int?
+    ipAddress       String?
+    userAgent       String?
+    city            String?
+    region          String?
+    timezone        String?
+    countryCode     String?
+    browser         String?
+    operatingSystem String?
+    group           Group?   @relation("groupAuditLog", fields: [groupId], references: [id])
+    user            User?    @relation("userAuditLog", fields: [userId], references: [id])
+    apiKey          ApiKey?  @relation("apiKeyAuditLog", fields: [apiKeyId], references: [id])
+
+    @@index([apiKeyId])
+    @@index([groupId])
+    @@index([userId])
+    @@schema("microservice/saas-starter")
+}
+
+enum Gender {
+    MALE
+    FEMALE
+    NONBINARY
+    UNKNOWN
+
+    @@schema("microservice/saas-starter")
+}
+
+enum NotificationEmail {
+    ACCOUNT
+    UPDATES
+    PROMOTIONS
+
+    @@schema("microservice/saas-starter")
+}
+
+enum PrefersColorScheme {
+    NO_PREFERENCE
+    LIGHT
+    DARK
+
+    @@schema("microservice/saas-starter")
+}
+
+enum PrefersReducedMotion {
+    NO_PREFERENCE
+    REDUCE
+
+    @@schema("microservice/saas-starter")
+}
+
+enum UserRole {
+    SUDO
+    USER
+
+    @@schema("microservice/saas-starter")
+}
+
+enum MfaMethod {
+    NONE
+    SMS
+    TOTP
+    EMAIL
+
+    @@schema("microservice/saas-starter")
+}
+
+enum MembershipRole {
+    OWNER
+    ADMIN
+    MEMBER
+
+    @@schema("microservice/saas-starter")
+}
+
+enum IdentityType {
+    GOOGLE
+    APPLE
+    SLACK
+
+    @@schema("microservice/saas-starter")
+}

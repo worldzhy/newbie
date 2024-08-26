@@ -2,14 +2,12 @@ const fs = require('fs');
 const {
   getObjectFromEnvFile,
   getEnvArrayFromFrameworkConfig,
-  getEnvArrayFromToolkitConfig,
   getEnvObjectFromMicroservicesConfig,
 } = require('../.db/env');
 
 const checkEnv = () => {
   const missingVariables = {};
   const frameworkEnvArray = getEnvArrayFromFrameworkConfig();
-  const toolkitEnvArray = getEnvArrayFromToolkitConfig();
   const microservicesEnvObj = getEnvObjectFromMicroservicesConfig();
   const envObj = Object.keys(getObjectFromEnvFile());
 
@@ -19,15 +17,6 @@ const checkEnv = () => {
         missingVariables['framework'] = [];
       }
       missingVariables['framework'].push(value);
-    }
-  });
-
-  toolkitEnvArray.forEach(value => {
-    if (!envObj.includes(value)) {
-      if (!missingVariables['toolkit']) {
-        missingVariables['toolkit'] = [];
-      }
-      missingVariables['toolkit'].push(value);
     }
   });
 

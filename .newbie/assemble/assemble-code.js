@@ -49,7 +49,9 @@ const assembleSourceCodeFiles = () => {
   );
 
   // [step 3] Format code.
-  execSync('npm run format');
+  try {
+    execSync('npm run format');
+  } catch (error) {}
 };
 
 const EmptyMicroservicesModuleTemplate = () => `
@@ -104,11 +106,13 @@ const MicroservicesModuleTemplate = microservices => {
 
 const MicroservicesConfigTemplate = configs => `
   import {registerAs} from '@nestjs/config';
+  import {bool} from '@framework/utilities/bool.util';
+  import {int} from '@framework/utilities/int.util';
 
   export default registerAs('microservices', () => (${JSON.stringify(configs)
     .replace(/('|")(process.*?)\1/g, '$2')
-    .replace(/('|")(parseInt\(process.*?)\1/g, '$2')
-    .replace(/('|")(parseFloat\(process.*?)\1/g, '$2')}));
+    .replace(/('|")(bool\(process.*?)\1/g, '$2')
+    .replace(/('|")(int\(process.*?)\1/g, '$2')}));
   `;
 
 module.exports = {

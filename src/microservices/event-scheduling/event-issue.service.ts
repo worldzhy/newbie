@@ -8,13 +8,13 @@ import {
   EventStatus,
   EventHost,
 } from '@prisma/client';
-import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {PrismaService} from '@framework/prisma/prisma.service';
 import {
   ceilByMinutes,
   dateMinusMinutes,
   datePlusMinutes,
   floorByMinutes,
-} from '@toolkit/utilities/datetime.util';
+} from '@framework/utilities/datetime.util';
 import * as _ from 'lodash';
 
 enum EventIssueDescription {

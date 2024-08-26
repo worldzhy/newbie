@@ -1,0 +1,92 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Ip,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
+import {Membership, Prisma} from '@prisma/client';
+import {CursorPipe} from '@framework/pipes/cursor.pipe';
+import {OptionalIntPipe} from '@framework/pipes/optional-int.pipe';
+import {OrderByPipe} from '@framework/pipes/order-by.pipe';
+import {WherePipe} from '@framework/pipes/where.pipe';
+import {Expose} from '../../helpers/interfaces';
+import {AuditLog} from '../audit-logs/audit-log.decorator';
+import {Scopes} from '../auth/scope.decorator';
+import {CreateGroupMembershipDto, UpdateMembershipDto} from './memberships.dto';
+import {MembershipsService} from './memberships.service';
+
+@Controller('groups/:groupId/memberships')
+export class GroupMembershipController {
+  constructor(private membershipsService: MembershipsService) {}
+
+  /** Add a member to a group */
+  @Post()
+  @AuditLog('add-membership')
+  @Scopes('group-{groupId}:write-membership-*')
+  async create(
+    @Ip() ip: string,
+    @Param('groupId', ParseIntPipe) groupId: number,
+    @Body() data: CreateGroupMembershipDto
+  ): Promise<Expose<Membership>> {
+    return this.membershipsService.createGroupMembership(ip, groupId, data);
+  }
+
+  /** Get memberships for a group */
+  @Get()
+  @Scopes('group-{groupId}:read-membership-*')
+  async getAll(
+    @Param('groupId', ParseIntPipe) groupId: number,
+    @Query('skip', OptionalIntPipe) skip?: number,
+    @Query('take', OptionalIntPipe) take?: number,
+    @Query('cursor', CursorPipe) cursor?: Prisma.MembershipWhereUniqueInput,
+    @Query('where', WherePipe) where?: Record<string, number | string>,
+    @Query('orderBy', OrderByPipe) orderBy?: Record<string, 'asc' | 'desc'>
+  ): Promise<Expose<Membership>[]> {
+    return this.membershipsService.getMemberships({
+      skip,
+      take,
+      orderBy,
+      cursor,
+      where: {...where, group: {id: groupId}},
+    });
+  }
+
+  /** Get a membership for a group */
+  @Get(':id')
+  @Scopes('group-{groupId}:read-membership-{id}')
+  async get(
+    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('id', ParseIntPipe) id: number
+  ): Promise<Expose<Membership>> {
+    return this.membershipsService.getGroupMembership(groupId, id);
+  }
+
+  /** Update a membership for a group */
+  @Patch(':id')
+  @AuditLog('update-membership')
+  @Scopes('group-{groupId}:write-membership-{id}')
+  async update(
+    @Body() data: UpdateMembershipDto,
+    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('id', ParseIntPipe) id: number
+  ): Promise<Expose<Membership>> {
+    return this.membershipsService.updateGroupMembership(groupId, id, data);
+  }
+
+  /** Remove a member from a group */
+  @Delete(':id')
+  @AuditLog('delete-membership')
+  @Scopes('group-{groupId}:delete-membership-{id}')
+  async remove(
+    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('id', ParseIntPipe) id: number
+  ): Promise<Expose<Membership>> {
+    return this.membershipsService.deleteGroupMembership(groupId, id);
+  }
+}

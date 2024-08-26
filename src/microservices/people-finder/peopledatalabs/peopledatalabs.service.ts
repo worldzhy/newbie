@@ -1,7 +1,7 @@
 import {Logger, Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import * as PDLJS from 'peopledatalabs';
-import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {PrismaService} from '@framework/prisma/prisma.service';
 import {Prisma} from '@prisma/client';
 import {PeopleFinderCallThirdPartyDto} from '../people-finder.dto';
 import {PeopleFinderNotificationService} from '../people-finder.notification.service';

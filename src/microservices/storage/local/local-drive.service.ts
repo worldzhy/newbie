@@ -1,7 +1,7 @@
 import {Injectable, StreamableFile} from '@nestjs/common';
 import {Express} from 'express';
 import {createReadStream} from 'fs';
-import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {PrismaService} from '@framework/prisma/prisma.service';
 
 /**
  * Note: In this service, assume "files" means both files and folders.

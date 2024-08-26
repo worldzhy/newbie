@@ -5,7 +5,7 @@ import {AccountService} from './account.service';
 import {GuardByProfile} from './security/passport/profile/profile.decorator';
 import {GuardByUuid} from './security/passport/uuid/uuid.decorator';
 import {AccessToken} from '@prisma/client';
-import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {PrismaService} from '@framework/prisma/prisma.service';
 
 @ApiTags('Account')
 @Controller('account')

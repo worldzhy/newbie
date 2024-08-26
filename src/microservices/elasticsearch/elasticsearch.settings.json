@@ -1,0 +1,21 @@
+{
+  "config-service": {
+    "elasticsearch": {
+      "node": "process.env.ELASTICSEARCH_NODE || 'http://127.0.0.1'",
+      "username": "process.env.ELASTICSEARCH_USERNAME",
+      "password": "process.env.ELASTICSEARCH_PASSWORD"
+    }
+  },
+  "env": {
+    "ELASTICSEARCH_NODE": "http://127.0.0.1",
+    "ELASTICSEARCH_USERNAME": "",
+    "ELASTICSEARCH_PASSWORD": ""
+  },
+  "dependencies": { 
+    "@elastic/elasticsearch": "7.13.0",
+    "p-queue": "^6.6.2",
+    "p-retry": "^4.6.2"
+  },
+  "devDependencies": {
+  }
+}

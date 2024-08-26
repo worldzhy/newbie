@@ -1,6 +1,6 @@
 import {BadRequestException} from '@nestjs/common';
 import {Prisma} from '@prisma/client';
-import {generateHash} from '@toolkit/utilities/common.util';
+import {generateHash} from '@framework/utilities/common.util';
 import {
   verifyEmail,
   verifyPassword,

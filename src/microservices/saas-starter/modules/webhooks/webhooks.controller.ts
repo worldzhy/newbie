@@ -1,0 +1,114 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
+import {Prisma, Webhook} from '@prisma/client';
+import {CursorPipe} from '@framework/pipes/cursor.pipe';
+import {OptionalIntPipe} from '@framework/pipes/optional-int.pipe';
+import {OrderByPipe} from '@framework/pipes/order-by.pipe';
+import {WherePipe} from '@framework/pipes/where.pipe';
+import {Expose} from '../../helpers/interfaces';
+import {AuditLog} from '../audit-logs/audit-log.decorator';
+import {Scopes} from '../auth/scope.decorator';
+import {
+  CreateWebhookDto,
+  ReplaceWebhookDto,
+  UpdateWebhookDto,
+} from './webhooks.dto';
+import {WebhooksService} from './webhooks.service';
+
+@Controller('groups/:groupId/webhooks')
+export class WebhookController {
+  constructor(private webhooksService: WebhooksService) {}
+
+  /** Create a webhook for a group */
+  @Post()
+  @AuditLog('create-webhook')
+  @Scopes('group-{groupId}:write-webhook-*')
+  async create(
+    @Param('groupId', ParseIntPipe) groupId: number,
+    @Body() data: CreateWebhookDto
+  ): Promise<Expose<Webhook>> {
+    return this.webhooksService.createWebhook(groupId, data);
+  }
+
+  /** Get webhooks for a group */
+  @Get()
+  @Scopes('group-{groupId}:read-webhook-*')
+  async getAll(
+    @Param('groupId', ParseIntPipe) groupId: number,
+    @Query('skip', OptionalIntPipe) skip?: number,
+    @Query('take', OptionalIntPipe) take?: number,
+    @Query('cursor', CursorPipe) cursor?: Prisma.WebhookWhereUniqueInput,
+    @Query('where', WherePipe) where?: Record<string, number | string>,
+    @Query('orderBy', OrderByPipe) orderBy?: Record<string, 'asc' | 'desc'>
+  ): Promise<Expose<Webhook>[]> {
+    return this.webhooksService.getWebhooks(groupId, {
+      skip,
+      take,
+      orderBy,
+      cursor,
+      where,
+    });
+  }
+
+  /** Get webhook scopes for a group */
+  @Get('scopes')
+  @Scopes('group-{groupId}:write-webhook-*')
+  async scopes(): Promise<Record<string, string>> {
+    return this.webhooksService.getWebhookScopes();
+  }
+
+  /** Get a webhook for a group */
+  @Get(':id')
+  @Scopes('group-{groupId}:read-webhook-{id}')
+  async get(
+    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('id', ParseIntPipe) id: number
+  ): Promise<Expose<Webhook>> {
+    return this.webhooksService.getWebhook(groupId, id);
+  }
+
+  /** Update a webhook for a group */
+  @Patch(':id')
+  @AuditLog('update-webhook')
+  @Scopes('group-{groupId}:write-webhook-{id}')
+  async update(
+    @Body() data: UpdateWebhookDto,
+    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('id', ParseIntPipe) id: number
+  ): Promise<Expose<Webhook>> {
+    return this.webhooksService.updateWebhook(groupId, id, data);
+  }
+
+  /** Replace a webhook for a group */
+  @Put(':id')
+  @AuditLog('update-webhook')
+  @Scopes('group-{groupId}:write-webhook-{id}')
+  async replace(
+    @Body() data: ReplaceWebhookDto,
+    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('id', ParseIntPipe) id: number
+  ): Promise<Expose<Webhook>> {
+    return this.webhooksService.updateWebhook(groupId, id, data);
+  }
+
+  /** Delete a webhook for a group */
+  @Delete(':id')
+  @AuditLog('delete-webhook')
+  @Scopes('group-{groupId}:delete-webhook-{id}')
+  async remove(
+    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('id', ParseIntPipe) id: number
+  ): Promise<Expose<Webhook>> {
+    return this.webhooksService.deleteWebhook(groupId, id);
+  }
+}

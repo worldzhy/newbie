@@ -2,7 +2,7 @@ import {Injectable, NotFoundException} from '@nestjs/common';
 import {UserStatus} from '@prisma/client';
 import {UserService} from './user/user.service';
 import {AccessTokenService} from '@microservices/account/security/token/access-token.service';
-import {PrismaService} from '@toolkit/prisma/prisma.service';
+import {PrismaService} from '@framework/prisma/prisma.service';
 import {Request} from 'express';
 import {RoleService} from './role/role.service';
 import {TokenService} from './security/token/token.service';
