@@ -17,7 +17,7 @@ const assembleDependencies = (addedMicroservices, removedMicroservices) => {
     }
 
     const settingsFilePath =
-      MICROSERVICES_CODE_PATH + '/' + key + '/' + key + '.settings.json';
+      MICROSERVICES_CODE_PATH + '/' + key + '/' + settingsFileName;
 
     if (fs.existsSync(settingsFilePath)) {
       const {dependencies = {}, devDependencies = {}} = JSON.parse(
@@ -61,7 +61,7 @@ const assembleDependencies = (addedMicroservices, removedMicroservices) => {
     }
 
     const settingsFilePath =
-      MICROSERVICES_CODE_PATH + '/' + key + '/' + key + '.settings.json';
+      MICROSERVICES_CODE_PATH + '/' + key + '/' + settingsFileName;
 
     if (fs.existsSync(settingsFilePath)) {
       const {dependencies = {}, devDependencies = {}} = JSON.parse(
@@ -82,7 +82,7 @@ const assembleDependencies = (addedMicroservices, removedMicroservices) => {
     }
 
     const settingsFilePath =
-      MICROSERVICES_CODE_PATH + '/' + key + '/' + key + '.settings.json';
+      MICROSERVICES_CODE_PATH + '/' + key + '/' + settingsFileName;
 
     if (fs.existsSync(settingsFilePath)) {
       const {dependencies = {}, devDependencies = {}} = JSON.parse(
@@ -107,7 +107,11 @@ const assembleDependencies = (addedMicroservices, removedMicroservices) => {
     willBeRemovedDevDependencies.length > 0
   ) {
     execSync(
-      `npm uninstall ${willBeRemovedDependencies.toString().replaceAll(',', ' ')} ${willBeRemovedDevDependencies.toString().replaceAll(',', ' ')}`
+      `npm uninstall ${willBeRemovedDependencies
+        .toString()
+        .replaceAll(',', ' ')} ${willBeRemovedDevDependencies
+        .toString()
+        .replaceAll(',', ' ')}`
     );
   }
 };

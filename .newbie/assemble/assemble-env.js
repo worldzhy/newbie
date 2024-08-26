@@ -43,7 +43,7 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
 
     if (settingsFileName) {
       const settingsFilePath =
-        MICROSERVICES_CODE_PATH + '/' + key + '/' + key + '.settings.json';
+        MICROSERVICES_CODE_PATH + '/' + key + '/' + settingsFileName;
 
       if (fs.existsSync(settingsFilePath)) {
         const {env = {}} = JSON.parse(
@@ -74,7 +74,7 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
 
     if (settingsFileName) {
       const settingsFilePath =
-        MICROSERVICES_CODE_PATH + '/' + key + '/' + key + '.settings.json';
+        MICROSERVICES_CODE_PATH + '/' + key + '/' + settingsFileName;
 
       if (fs.existsSync(settingsFilePath)) {
         const {env = {}} = JSON.parse(
@@ -160,7 +160,7 @@ const generateEnvExampleFile = () => {
     }
     if (settingsFileName) {
       const settingsFilePath =
-        MICROSERVICES_CODE_PATH + '/' + key + '/' + key + '.settings.json';
+        MICROSERVICES_CODE_PATH + '/' + key + '/' + settingsFileName;
 
       if (fs.existsSync(settingsFilePath)) {
         const {env = {}} = JSON.parse(

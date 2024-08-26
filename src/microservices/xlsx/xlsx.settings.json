@@ -1,9 +1,0 @@
-{
-  "dependencies": {
-    "multer": "^1.4.5-lts.1",
-    "xlsx": "https://cdn.sheetjs.com/xlsx-0.19.3/xlsx-0.19.3.tgz"
-  },
-  "devDependencies": {
-    "@types/multer": "^1.4.11"
-  }
-}
