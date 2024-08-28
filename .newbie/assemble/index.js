@@ -123,7 +123,7 @@ const main = async () => {
     assembleSourceCodeFiles();
 
     console.info('|' + underline(' 6. remove submodules...     ') + '|');
-    removeSubmodules(removedMicroservices);
+    removeSubmodules(addedMicroservices, removedMicroservices);
 
     console.log(bold(green('     C O M P L E T E\n')));
   } else {

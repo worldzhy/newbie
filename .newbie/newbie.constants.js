@@ -17,6 +17,8 @@ const TS_CONFIG_JSON = './tsconfig.json';
 
 const GIT_MODULES = './.gitmodules';
 
+const NEWBIE_DEVELOPER = 'NEWBIE_DEVELOPER';
+
 const LINE =
   /(?:^|^)\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\'|[^'])*'|\s*"(?:\"|[^"])*"|\s*`(?:\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?(?:$|$)/gm;
 
@@ -303,4 +305,6 @@ module.exports = {
 
   LINE,
   ALL_MICROSERVICES,
+
+  NEWBIE_DEVELOPER,
 };
