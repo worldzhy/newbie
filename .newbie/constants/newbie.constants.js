@@ -1,5 +1,5 @@
 const ENABLED_PATH = './.newbie/.enabled';
-const ENABLED_MICROSERVICES = './.newbie/.enabled/.microservices.json';
+const ENABLED_MICROSERVICES = './.newbie/.enabled/microservices.json';
 
 const FRAMEWORK_SETTINGS_JSON = './src/framework/framework.settings.json';
 const MICROSERVICES_MODULE_TS = './src/microservices/microservices.module.ts';

@@ -5,7 +5,7 @@ const {assembleSourceCodeFiles} = require('./assemble/assemble-code');
 const {assembleDependencies} = require('./assemble/assemble-dependencies');
 const {assembleEnvFile} = require('./assemble/assemble-env');
 const {assembleSchemaFiles} = require('./assemble/assemble-schema');
-const {assembleSubmodules} = require('./assemble/assemble-clone');
+const {assembleRepositories} = require('./assemble/assemble-repositories');
 const {ALL_MICROSERVICES} = require('./constants/newbie.constants');
 const {
   getAddedMicroservices,
@@ -112,7 +112,7 @@ const main = async () => {
     console.info(
       '|' + underline(' 1. synchronizing code repositories... ') + '|'
     );
-    assembleSubmodules(addedMicroservices, removedMicroservices);
+    assembleRepositories(addedMicroservices, removedMicroservices);
 
     console.info(
       '|' + underline(' 2. updating package dependencies...   ') + '|'

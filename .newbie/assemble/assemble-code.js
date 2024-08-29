@@ -29,7 +29,7 @@ const assembleSourceCodeFiles = removedMicroservices => {
       return;
     }
     if (settingsFileName) {
-      const settingsFilePath = `${ENABLED_PATH}/${settingsFileName}`;
+      const settingsFilePath = `${ENABLED_PATH}/${key}/${settingsFileName}`;
 
       if (fs.existsSync(settingsFilePath)) {
         const {'config-service': config = {}} = JSON.parse(

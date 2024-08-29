@@ -12,7 +12,7 @@ const envObj = getObjectFromEnvFile();
 
 const isNewbiwDeveloper = () => envObj[NEWBIE_DEVELOPER] === 'true';
 
-const cloneGitSubmodules = addedMicroservices => {
+const assembleRepositories = (addedMicroservices, removedMicroservices) => {
   addedMicroservices.forEach(name => {
     const {key, srcPath, repositoryUrl} = ALL_MICROSERVICES[name] || {};
     const microserviceNewbiePath = `${srcPath}/.newbie`;
@@ -31,37 +31,31 @@ const cloneGitSubmodules = addedMicroservices => {
       execSync(`cp -rf ${microserviceNewbiePath} ${ENABLED_PATH}/${key}`);
     }
   });
-};
 
-const removeSubmodules = (addedMicroservices, removedMicroservices) => {
-  if (removedMicroservices.length) {
-    removedMicroservices.forEach(name => {
-      const {key, srcPath} = ALL_MICROSERVICES[name] || {};
+  removedMicroservices.forEach(name => {
+    const {key, srcPath} = ALL_MICROSERVICES[name] || {};
 
-      if (!key) {
-        return;
-      }
-      if (isNewbiwDeveloper()) {
+    if (!key) {
+      return;
+    }
+    if (isNewbiwDeveloper()) {
+      try {
         execSync(`git submodule deinit -f ${srcPath}`);
         execSync(`git rm -r --cached ${srcPath}`);
         execSync(`rm -rf .git/modules/${srcPath}`);
-      }
+      } catch (error) {}
+    }
+
+    try {
       execSync(`rm -rf ${srcPath}`);
-    });
-    removedMicroservices.forEach(name => {
-      const {srcPath} = ALL_MICROSERVICES[name] || {};
+      execSync(
+        `git config -f .gitmodules --remove-section submodule.${srcPath}`
+      );
+    } catch (error) {}
 
-      if (srcPath) {
-        try {
-          execSync(
-            `git config -f .gitmodules --remove-section submodule.${srcPath}`
-          );
-        } catch (error) {}
+    // execSync(`git add ${GIT_MODULES}`);
+  });
 
-        execSync(`git add ${GIT_MODULES}`);
-      }
-    });
-  }
   if (!isNewbiwDeveloper() && addedMicroservices.length) {
     addedMicroservices.forEach(name => {
       const {key, srcPath} = ALL_MICROSERVICES[name] || {};
@@ -81,11 +75,6 @@ const removeSubmodules = (addedMicroservices, removedMicroservices) => {
   }
 };
 
-const assembleSubmodules = (addedMicroservices, removedMicroservices) => {
-  cloneGitSubmodules(addedMicroservices);
-  removeSubmodules(addedMicroservices, removedMicroservices);
-};
-
 module.exports = {
-  assembleSubmodules,
+  assembleRepositories,
 };
