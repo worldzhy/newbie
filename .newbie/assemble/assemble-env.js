@@ -42,7 +42,7 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
     }
 
     if (settingsFileName) {
-      const settingsFilePath = `${ENABLED_PATH}/${settingsFileName}`;
+      const settingsFilePath = `${ENABLED_PATH}/${key}/${settingsFileName}`;
 
       if (fs.existsSync(settingsFilePath)) {
         const {env = {}} = JSON.parse(
@@ -55,9 +55,7 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
           }
         });
       } else {
-        console.error(
-          `[Error] Missing settings.json for microservice<${name}>!`
-        );
+        console.error(`[Error] Missing ${name}.settings.json`);
       }
     }
   });
@@ -71,7 +69,7 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
       return;
     }
     if (settingsFileName) {
-      const settingsFilePath = `${ENABLED_PATH}/${settingsFileName}`;
+      const settingsFilePath = `${ENABLED_PATH}/${key}/${settingsFileName}`;
 
       if (fs.existsSync(settingsFilePath)) {
         const {env = {}} = JSON.parse(
@@ -87,9 +85,7 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
           });
         }
       } else {
-        console.error(
-          `[Error] Missing settings.json for microservice<${name}>!`
-        );
+        console.error(`[Error] Missing ${name}.settings.json`);
       }
     }
   });

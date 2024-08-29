@@ -48,15 +48,10 @@ const assembleSourceCodeFiles = removedMicroservices => {
 
   // [step 3] Remove newbie config files.
   removedMicroservices.forEach(name => {
-    const {schemaFileName, settingsFileName} = ALL_MICROSERVICES[name] || {};
-    const schemaPath = `${ENABLED_PATH}/${schemaFileName}`;
-    const settingsPath = `${ENABLED_PATH}/${settingsFileName}`;
+    const enabledMicroservicesPath = `${ENABLED_PATH}/${name}`;
 
-    if (schemaFileName && fs.existsSync(schemaPath)) {
-      execSync(`rm ${schemaPath}`);
-    }
-    if (settingsFileName && fs.existsSync(settingsPath)) {
-      execSync(`rm ${settingsPath}`);
+    if (enabledMicroservicesPath && fs.existsSync(enabledMicroservicesPath)) {
+      execSync(`rm -r ${enabledMicroservicesPath}`);
     }
   });
 

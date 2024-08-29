@@ -56,7 +56,7 @@ const getEnvObjectFromMicroservicesConfig = () => {
     const {key, settingsFileName} = ALL_MICROSERVICES[name] || {};
 
     if (key && settingsFileName) {
-      const settingsFilePath = `${ENABLED_PATH}/${settingsFileName}`;
+      const settingsFilePath = `${ENABLED_PATH}/${key}/${settingsFileName}`;
 
       if (!envObj[key]) {
         envObj[key] = [];
@@ -67,9 +67,7 @@ const getEnvObjectFromMicroservicesConfig = () => {
         );
         envObj[key] = Object.keys(env);
       } else {
-        console.error(
-          `[Error] Missing settings.json for microservice<${name}>!`
-        );
+        console.error(`[Error] Missing ${name}.settings.json`);
       }
     }
   });

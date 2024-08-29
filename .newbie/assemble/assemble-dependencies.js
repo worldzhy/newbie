@@ -16,7 +16,7 @@ const assembleDependencies = (addedMicroservices, removedMicroservices) => {
     if (!key || !settingsFileName) {
       return;
     }
-    const settingsFilePath = `${ENABLED_PATH}/${settingsFileName}`;
+    const settingsFilePath = `${ENABLED_PATH}/${key}/${settingsFileName}`;
 
     if (fs.existsSync(settingsFilePath)) {
       const {dependencies = {}, devDependencies = {}} = JSON.parse(
@@ -32,7 +32,7 @@ const assembleDependencies = (addedMicroservices, removedMicroservices) => {
         )
       );
     } else {
-      console.error(`[Error] Missing settings.json for microservice<${name}>!`);
+      console.error(`[Error] Missing ${name}.settings.json`);
     }
   });
   if (
@@ -58,7 +58,7 @@ const assembleDependencies = (addedMicroservices, removedMicroservices) => {
     if (!key || !settingsFileName) {
       return;
     }
-    const settingsFilePath = `${ENABLED_PATH}/${settingsFileName}`;
+    const settingsFilePath = `${ENABLED_PATH}/${key}/${settingsFileName}`;
 
     if (fs.existsSync(settingsFilePath)) {
       const {dependencies = {}, devDependencies = {}} = JSON.parse(
@@ -78,7 +78,7 @@ const assembleDependencies = (addedMicroservices, removedMicroservices) => {
     if (!key || !settingsFileName) {
       return;
     }
-    const settingsFilePath = `${ENABLED_PATH}/${settingsFileName}`;
+    const settingsFilePath = `${ENABLED_PATH}/${key}/${settingsFileName}`;
 
     if (fs.existsSync(settingsFilePath)) {
       const {dependencies = {}, devDependencies = {}} = JSON.parse(
@@ -94,7 +94,7 @@ const assembleDependencies = (addedMicroservices, removedMicroservices) => {
           willBeRemovedDevDependencies.push(key);
       });
     } else {
-      console.error(`[Error] Missing settings.json for microservice<${name}>!`);
+      console.error(`[Error] Missing ${name}.settings.json`);
     }
   });
 

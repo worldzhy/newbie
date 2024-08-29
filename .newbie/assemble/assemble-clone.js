@@ -14,18 +14,21 @@ const isNewbiwDeveloper = () => envObj[NEWBIE_DEVELOPER] === 'true';
 
 const cloneGitSubmodules = addedMicroservices => {
   addedMicroservices.forEach(name => {
-    const {key, srcPath, repo, repoPath, schemaFileName, settingsFileName} =
-      ALL_MICROSERVICES[name] || {};
-    const schemaPath = `${srcPath}/.newbie/${schemaFileName}`;
-    const settingsPath = `${srcPath}/.newbie/${settingsFileName}`;
+    const {key, srcPath, repositoryUrl} = ALL_MICROSERVICES[name] || {};
+    const microserviceNewbiePath = `${srcPath}/.newbie`;
 
     if (!key) return;
-    execSync(`git submodule add ${repo} ${repoPath}`);
-    if (schemaFileName && fs.existsSync(schemaPath)) {
-      execSync(`cp -f ${schemaPath} ${ENABLED_PATH}/${schemaFileName}`);
+    try {
+      execSync(`git submodule add ${repositoryUrl} ${srcPath}`);
+    } catch (error) {
+      execSync(`git submodule deinit -f ${srcPath}`);
+      execSync(`git rm -r --cached ${srcPath}`);
+      execSync(`rm -rf .git/modules/${srcPath}`);
+      execSync(`git submodule add ${repositoryUrl} ${srcPath}`);
     }
-    if (settingsFileName && fs.existsSync(settingsPath)) {
-      execSync(`cp -f ${settingsPath} ${ENABLED_PATH}/${settingsFileName}`);
+
+    if (microserviceNewbiePath && fs.existsSync(microserviceNewbiePath)) {
+      execSync(`cp -rf ${microserviceNewbiePath} ${ENABLED_PATH}/${key}`);
     }
   });
 };
@@ -33,41 +36,44 @@ const cloneGitSubmodules = addedMicroservices => {
 const removeSubmodules = (addedMicroservices, removedMicroservices) => {
   if (removedMicroservices.length) {
     removedMicroservices.forEach(name => {
-      const {key, srcPath, repoPath} = ALL_MICROSERVICES[name] || {};
+      const {key, srcPath} = ALL_MICROSERVICES[name] || {};
 
       if (!key) {
         return;
       }
       if (isNewbiwDeveloper()) {
-        execSync(`git submodule deinit -f ${repoPath}`);
-        execSync(`git rm --cached ${repoPath} -r`);
-        execSync(`rm -rf .git/modules/${repoPath}`);
+        execSync(`git submodule deinit -f ${srcPath}`);
+        execSync(`git rm -r --cached ${srcPath}`);
+        execSync(`rm -rf .git/modules/${srcPath}`);
       }
       execSync(`rm -rf ${srcPath}`);
     });
     removedMicroservices.forEach(name => {
-      const {repoPath} = ALL_MICROSERVICES[name] || {};
+      const {srcPath} = ALL_MICROSERVICES[name] || {};
 
-      if (repoPath) {
-        execSync(
-          `git config -f .gitmodules --remove-section submodule.${repoPath}`
-        );
+      if (srcPath) {
+        try {
+          execSync(
+            `git config -f .gitmodules --remove-section submodule.${srcPath}`
+          );
+        } catch (error) {}
+
         execSync(`git add ${GIT_MODULES}`);
       }
     });
   }
   if (!isNewbiwDeveloper() && addedMicroservices.length) {
     addedMicroservices.forEach(name => {
-      const {key, srcPath, repoPath} = ALL_MICROSERVICES[name] || {};
+      const {key, srcPath} = ALL_MICROSERVICES[name] || {};
       const newbiePath = `${srcPath}/.newbie`;
 
       if (!key) return;
-      execSync(`cp -r ${repoPath} ${repoPath}_temp`);
-      execSync(`git submodule deinit -f ${repoPath}`);
-      execSync(`git rm --cached ${repoPath} -r`);
-      execSync(`rm -rf .git/modules/${repoPath}`);
+      execSync(`cp -r ${srcPath} ${srcPath}_temp`);
+      execSync(`git submodule deinit -f ${srcPath}`);
+      execSync(`git rm --cached ${srcPath} -r`);
+      execSync(`rm -rf .git/modules/${srcPath}`);
       execSync(`rm -rf ${srcPath}`);
-      execSync(`mv ${repoPath}_temp ${repoPath}`);
+      execSync(`mv ${srcPath}_temp ${srcPath}`);
       if (fs.existsSync(newbiePath)) {
         execSync(`rm -rf ${newbiePath}`);
       }

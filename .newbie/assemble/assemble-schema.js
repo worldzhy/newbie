@@ -19,7 +19,7 @@ const assembleSchemaFiles = (addedMicroservices, removedMicroservices) => {
     }
 
     if (schemaFileName) {
-      const sourceSchemaPath = `${ENABLED_PATH}/${schemaFileName}`;
+      const sourceSchemaPath = `${ENABLED_PATH}/${key}/${schemaFileName}`;
 
       if (fs.existsSync(sourceSchemaPath)) {
         const schema = fs.readFileSync(sourceSchemaPath, {
@@ -33,7 +33,7 @@ const assembleSchemaFiles = (addedMicroservices, removedMicroservices) => {
           fs.writeFileSync(PRISMA_SCHEMA_PATH + '/' + key + '.prisma', schema);
         }
       } else {
-        console.error(`[Error] Missing schema for microservice<${name}>!`);
+        console.error(`[Error] Missing ${name}.schema`);
       }
     }
   });
