@@ -5,6 +5,9 @@
 # dotenv environment variables file
 .env
 
+# git submodules file
+.gitmodules
+
 # Logs
 logs
 *.log
