@@ -1,10 +1,8 @@
 const fs = require('fs');
 const {execSync} = require('child_process');
-const {
-  ALL_MICROSERVICES,
-  MICROSERVICES_CODE_PATH,
-} = require('../newbie.constants');
-const {getEnabledMicroservices} = require('../.db/microservices');
+const {getEnabledMicroservices} = require('../utilities/microservices.util');
+const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
+const {ENABLED_PATH} = require('../constants/path.constants');
 
 const assembleDependencies = (addedMicroservices, removedMicroservices) => {
   // [step 1] Add dependencies.
@@ -12,12 +10,11 @@ const assembleDependencies = (addedMicroservices, removedMicroservices) => {
   const willBeAddedDevDependencies = [];
   addedMicroservices.forEach(name => {
     const {key, settingsFileName} = ALL_MICROSERVICES[name] || {};
+
     if (!key || !settingsFileName) {
       return;
     }
-
-    const settingsFilePath =
-      MICROSERVICES_CODE_PATH + '/' + key + '/' + key + '.settings.json';
+    const settingsFilePath = `${ENABLED_PATH}/${key}/${settingsFileName}`;
 
     if (fs.existsSync(settingsFilePath)) {
       const {dependencies = {}, devDependencies = {}} = JSON.parse(
@@ -33,10 +30,9 @@ const assembleDependencies = (addedMicroservices, removedMicroservices) => {
         )
       );
     } else {
-      console.error(`[Error] Missing settings.json for microservice<${name}>!`);
+      console.error(`[Error] Missing ${name}.settings.json`);
     }
   });
-
   if (
     willBeAddedDependencies.length > 0 ||
     willBeAddedDevDependencies.length > 0
@@ -56,12 +52,11 @@ const assembleDependencies = (addedMicroservices, removedMicroservices) => {
   const enabledDevDependencies = [];
   getEnabledMicroservices().forEach(name => {
     const {key, settingsFileName} = ALL_MICROSERVICES[name] || {};
+
     if (!key || !settingsFileName) {
       return;
     }
-
-    const settingsFilePath =
-      MICROSERVICES_CODE_PATH + '/' + key + '/' + key + '.settings.json';
+    const settingsFilePath = `${ENABLED_PATH}/${key}/${settingsFileName}`;
 
     if (fs.existsSync(settingsFilePath)) {
       const {dependencies = {}, devDependencies = {}} = JSON.parse(
@@ -72,17 +67,16 @@ const assembleDependencies = (addedMicroservices, removedMicroservices) => {
       enabledDevDependencies.push(...Object.keys(devDependencies));
     }
   });
-
   const willBeRemovedDependencies = [];
   const willBeRemovedDevDependencies = [];
+
   removedMicroservices.forEach(name => {
     const {key, settingsFileName} = ALL_MICROSERVICES[name] || {};
+
     if (!key || !settingsFileName) {
       return;
     }
-
-    const settingsFilePath =
-      MICROSERVICES_CODE_PATH + '/' + key + '/' + key + '.settings.json';
+    const settingsFilePath = `${ENABLED_PATH}/${key}/${settingsFileName}`;
 
     if (fs.existsSync(settingsFilePath)) {
       const {dependencies = {}, devDependencies = {}} = JSON.parse(
@@ -98,7 +92,7 @@ const assembleDependencies = (addedMicroservices, removedMicroservices) => {
           willBeRemovedDevDependencies.push(key);
       });
     } else {
-      console.error(`[Error] Missing settings.json for microservice<${name}>!`);
+      console.error(`[Error] Missing ${name}.settings.json`);
     }
   });
 
@@ -107,7 +101,11 @@ const assembleDependencies = (addedMicroservices, removedMicroservices) => {
     willBeRemovedDevDependencies.length > 0
   ) {
     execSync(
-      `npm uninstall ${willBeRemovedDependencies.toString().replaceAll(',', ' ')} ${willBeRemovedDevDependencies.toString().replaceAll(',', ' ')}`
+      `npm uninstall ${willBeRemovedDependencies
+        .toString()
+        .replaceAll(',', ' ')} ${willBeRemovedDevDependencies
+        .toString()
+        .replaceAll(',', ' ')}`
     );
   }
 };

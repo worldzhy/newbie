@@ -1,14 +1,14 @@
 const fs = require('fs');
-const {execSync} = require('child_process');
-const {getEnabledMicroservices} = require('../.db/microservices');
+const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
 const {
-  ALL_MICROSERVICES,
-  MICROSERVICES_CODE_PATH,
+  ENABLED_PATH,
   MICROSERVICES_MODULE_TS,
   MICROSERVICES_CONFIG_TS,
-} = require('../newbie.constants');
+} = require('../constants/path.constants');
+const {execSync} = require('child_process');
+const {getEnabledMicroservices} = require('../utilities/microservices.util');
 
-const assembleSourceCodeFiles = () => {
+const assembleSourceCodeFiles = removedMicroservices => {
   const enabledMicroservices = getEnabledMicroservices();
 
   // [step 1] Assemble microservice.module.ts
@@ -28,10 +28,8 @@ const assembleSourceCodeFiles = () => {
       console.error(`[Error] Non-existent microservice<${name}>`);
       return;
     }
-
     if (settingsFileName) {
-      const settingsFilePath =
-        MICROSERVICES_CODE_PATH + '/' + key + '/' + settingsFileName;
+      const settingsFilePath = `${ENABLED_PATH}/${key}/${settingsFileName}`;
 
       if (fs.existsSync(settingsFilePath)) {
         const {'config-service': config = {}} = JSON.parse(
@@ -48,7 +46,16 @@ const assembleSourceCodeFiles = () => {
       : EmptyServicesConfigTemplate()
   );
 
-  // [step 3] Format code.
+  // [step 3] Remove newbie config files.
+  removedMicroservices.forEach(name => {
+    const enabledMicroservicesPath = `${ENABLED_PATH}/${name}`;
+
+    if (enabledMicroservicesPath && fs.existsSync(enabledMicroservicesPath)) {
+      execSync(`rm -r ${enabledMicroservicesPath}`);
+    }
+  });
+
+  // [step 4] Format code.
   try {
     execSync('npm run format');
   } catch (error) {}

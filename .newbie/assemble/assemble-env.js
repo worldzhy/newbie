@@ -1,12 +1,12 @@
 const fs = require('fs');
-const {getObjectFromEnvFile} = require('../.db/env');
+const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
 const {
+  ENABLED_PATH,
   ENV_PATH,
-  ALL_MICROSERVICES,
-  MICROSERVICES_CODE_PATH,
   FRAMEWORK_SETTINGS_JSON,
-} = require('../newbie.constants');
-const {getEnabledMicroservices} = require('../.db/microservices');
+} = require('../constants/path.constants');
+const {getObjectFromEnvFile} = require('../utilities/env.util');
+const {getEnabledMicroservices} = require('../utilities/microservices.util');
 
 /**
  * The assembleEnvFile function does 2 things:
@@ -42,8 +42,7 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
     }
 
     if (settingsFileName) {
-      const settingsFilePath =
-        MICROSERVICES_CODE_PATH + '/' + key + '/' + key + '.settings.json';
+      const settingsFilePath = `${ENABLED_PATH}/${key}/${settingsFileName}`;
 
       if (fs.existsSync(settingsFilePath)) {
         const {env = {}} = JSON.parse(
@@ -56,9 +55,7 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
           }
         });
       } else {
-        console.error(
-          `[Error] Missing settings.json for microservice<${name}>!`
-        );
+        console.error(`[Error] Missing ${name}.settings.json`);
       }
     }
   });
@@ -71,10 +68,8 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
       console.error(`[Error] Non-existent microservice<${name}>`);
       return;
     }
-
     if (settingsFileName) {
-      const settingsFilePath =
-        MICROSERVICES_CODE_PATH + '/' + key + '/' + key + '.settings.json';
+      const settingsFilePath = `${ENABLED_PATH}/${key}/${settingsFileName}`;
 
       if (fs.existsSync(settingsFilePath)) {
         const {env = {}} = JSON.parse(
@@ -90,9 +85,7 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
           });
         }
       } else {
-        console.error(
-          `[Error] Missing settings.json for microservice<${name}>!`
-        );
+        console.error(`[Error] Missing ${name}.settings.json`);
       }
     }
   });
@@ -159,8 +152,7 @@ const generateEnvExampleFile = () => {
       return;
     }
     if (settingsFileName) {
-      const settingsFilePath =
-        MICROSERVICES_CODE_PATH + '/' + key + '/' + key + '.settings.json';
+      const settingsFilePath = `${ENABLED_PATH}/${settingsFileName}`;
 
       if (fs.existsSync(settingsFilePath)) {
         const {env = {}} = JSON.parse(

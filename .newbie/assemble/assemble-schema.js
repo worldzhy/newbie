@@ -1,12 +1,12 @@
 const fs = require('fs');
-const {execSync} = require('child_process');
-const {getEnabledMicroservices} = require('../.db/microservices');
+const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
 const {
-  ALL_MICROSERVICES,
+  ENABLED_PATH,
   PRISMA_SCHEMA_PATH,
-  MICROSERVICES_CODE_PATH,
   PRISMA_SCHEMA_APPLICATION,
-} = require('../newbie.constants');
+} = require('../constants/path.constants');
+const {execSync} = require('child_process');
+const {getEnabledMicroservices} = require('../utilities/microservices.util');
 
 const assembleSchemaFiles = (addedMicroservices, removedMicroservices) => {
   // [step 1] Add prisma schema for microservices.
@@ -19,8 +19,7 @@ const assembleSchemaFiles = (addedMicroservices, removedMicroservices) => {
     }
 
     if (schemaFileName) {
-      const sourceSchemaPath =
-        MICROSERVICES_CODE_PATH + '/' + key + '/' + schemaFileName;
+      const sourceSchemaPath = `${ENABLED_PATH}/${key}/${schemaFileName}`;
 
       if (fs.existsSync(sourceSchemaPath)) {
         const schema = fs.readFileSync(sourceSchemaPath, {
@@ -34,7 +33,7 @@ const assembleSchemaFiles = (addedMicroservices, removedMicroservices) => {
           fs.writeFileSync(PRISMA_SCHEMA_PATH + '/' + key + '.prisma', schema);
         }
       } else {
-        console.error(`[Error] Missing schema for microservice<${name}>!`);
+        console.error(`[Error] Missing ${name}.schema`);
       }
     }
   });

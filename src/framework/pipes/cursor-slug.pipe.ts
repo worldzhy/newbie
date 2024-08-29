@@ -1,5 +1,5 @@
 import {BadRequestException, Injectable, PipeTransform} from '@nestjs/common';
-import {CURSOR_PIPE_FORMAT} from '../../microservices/saas-starter/errors/errors.constants';
+import {CURSOR_PIPE_FORMAT} from './errors.constants';
 import {parseObjectLiteral} from '@framework/utilities/parse-object-literal.util';
 
 /** Convert a string like "slug: "ok", name: 'Anand'" to { slug: "ok", name: "Anand" } */

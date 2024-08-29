@@ -5,10 +5,7 @@ import {
   Injectable,
   PipeTransform,
 } from '@nestjs/common';
-import {
-  ORDER_BY_ASC_DESC,
-  ORDER_BY_FORMAT,
-} from '../../microservices/saas-starter/errors/errors.constants';
+import {ORDER_BY_ASC_DESC, ORDER_BY_FORMAT} from './errors.constants';
 
 /** Convert a string like "name asc, address desc" to { name: "asc", address: "desc" } */
 @Injectable()

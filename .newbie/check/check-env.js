@@ -3,7 +3,7 @@ const {
   getObjectFromEnvFile,
   getEnvArrayFromFrameworkConfig,
   getEnvObjectFromMicroservicesConfig,
-} = require('../.db/env');
+} = require('../utilities/env.util');
 
 const checkEnv = () => {
   const missingVariables = {};
