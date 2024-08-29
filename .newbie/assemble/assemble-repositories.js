@@ -1,16 +1,11 @@
 const fs = require('fs');
-const {
-  ENABLED_PATH,
-  GIT_MODULES,
-  NEWBIE_DEVELOPER,
-  ALL_MICROSERVICES,
-} = require('../constants/newbie.constants');
+const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
+const {ENABLED_PATH} = require('../constants/path.constants');
 const {execSync} = require('child_process');
 const {getObjectFromEnvFile} = require('../utilities/env.util');
 
 const envObj = getObjectFromEnvFile();
-
-const isNewbiwDeveloper = () => envObj[NEWBIE_DEVELOPER] === 'true';
+const isNewbieDeveloper = () => envObj['NEWBIE_DEVELOPER'] === 'true';
 
 const assembleRepositories = (addedMicroservices, removedMicroservices) => {
   addedMicroservices.forEach(name => {
@@ -38,7 +33,7 @@ const assembleRepositories = (addedMicroservices, removedMicroservices) => {
     if (!key) {
       return;
     }
-    if (isNewbiwDeveloper()) {
+    if (isNewbieDeveloper()) {
       try {
         execSync(`git submodule deinit -f ${srcPath}`);
         execSync(`git rm -r --cached ${srcPath}`);
@@ -52,11 +47,9 @@ const assembleRepositories = (addedMicroservices, removedMicroservices) => {
         `git config -f .gitmodules --remove-section submodule.${srcPath}`
       );
     } catch (error) {}
-
-    // execSync(`git add ${GIT_MODULES}`);
   });
 
-  if (!isNewbiwDeveloper() && addedMicroservices.length) {
+  if (!isNewbieDeveloper() && addedMicroservices.length) {
     addedMicroservices.forEach(name => {
       const {key, srcPath} = ALL_MICROSERVICES[name] || {};
       const newbiePath = `${srcPath}/.newbie`;

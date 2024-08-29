@@ -1,12 +1,14 @@
 const fs = require('fs');
+const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
 const {
-  LINE,
   ENABLED_PATH,
   ENV_PATH,
-  ALL_MICROSERVICES,
   FRAMEWORK_SETTINGS_JSON,
-} = require('../constants/newbie.constants');
+} = require('../constants/path.constants');
 const {getEnabledMicroservices} = require('./microservices.util');
+
+const LINE =
+  /(?:^|^)\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\'|[^'])*'|\s*"(?:\"|[^"])*"|\s*`(?:\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?(?:$|$)/gm;
 
 const getObjectFromEnvFile = () => {
   // [step 1] Copy .env.example to .env if .env is not existed.

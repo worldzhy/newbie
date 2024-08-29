@@ -1,10 +1,10 @@
 const fs = require('fs');
+const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
 const {
   ENABLED_PATH,
-  ALL_MICROSERVICES,
   MICROSERVICES_MODULE_TS,
   MICROSERVICES_CONFIG_TS,
-} = require('../constants/newbie.constants');
+} = require('../constants/path.constants');
 const {execSync} = require('child_process');
 const {getEnabledMicroservices} = require('../utilities/microservices.util');
 

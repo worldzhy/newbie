@@ -1,21 +1,3 @@
-const ENABLED_PATH = './.newbie/.enabled';
-const ENABLED_MICROSERVICES = './.newbie/.enabled/microservices.json';
-
-const FRAMEWORK_SETTINGS_JSON = './src/framework/framework.settings.json';
-const MICROSERVICES_MODULE_TS = './src/microservices/microservices.module.ts';
-const MICROSERVICES_CONFIG_TS = './src/microservices/microservices.config.ts';
-
-const PRISMA_SCHEMA_PATH = './prisma/schema/microservices';
-const PRISMA_SCHEMA_APPLICATION = './prisma/schema/application.prisma';
-
-const ENV_PATH = './.env';
-const GIT_MODULES = './.gitmodules';
-
-const NEWBIE_DEVELOPER = 'NEWBIE_DEVELOPER';
-
-const LINE =
-  /(?:^|^)\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\'|[^'])*'|\s*"(?:\"|[^"])*"|\s*`(?:\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?(?:$|$)/gm;
-
 const ALL_MICROSERVICES = {
   account: {
     key: 'account',
@@ -254,21 +236,5 @@ const ALL_MICROSERVICES = {
 };
 
 module.exports = {
-  ENABLED_PATH,
-  ENABLED_MICROSERVICES,
-
-  FRAMEWORK_SETTINGS_JSON,
-  MICROSERVICES_MODULE_TS,
-  MICROSERVICES_CONFIG_TS,
-
-  PRISMA_SCHEMA_PATH,
-  PRISMA_SCHEMA_APPLICATION,
-
-  ENV_PATH,
-  GIT_MODULES,
-
-  LINE,
   ALL_MICROSERVICES,
-
-  NEWBIE_DEVELOPER,
 };

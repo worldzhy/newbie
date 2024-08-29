@@ -1,10 +1,10 @@
 const fs = require('fs');
+const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
 const {
   ENABLED_PATH,
   ENV_PATH,
-  ALL_MICROSERVICES,
   FRAMEWORK_SETTINGS_JSON,
-} = require('../constants/newbie.constants');
+} = require('../constants/path.constants');
 const {getObjectFromEnvFile} = require('../utilities/env.util');
 const {getEnabledMicroservices} = require('../utilities/microservices.util');
 

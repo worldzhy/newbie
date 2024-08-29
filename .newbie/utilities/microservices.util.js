@@ -1,8 +1,6 @@
 const fs = require('fs');
-const {
-  ALL_MICROSERVICES,
-  ENABLED_MICROSERVICES,
-} = require('../constants/newbie.constants');
+const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
+const {ENABLED_MICROSERVICES} = require('../constants/path.constants');
 
 const getAddedMicroservices = enabledServiceNames => {
   const currentMicroservices = getEnabledMicroservices();

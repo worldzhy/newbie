@@ -6,7 +6,7 @@ const {assembleDependencies} = require('./assemble/assemble-dependencies');
 const {assembleEnvFile} = require('./assemble/assemble-env');
 const {assembleSchemaFiles} = require('./assemble/assemble-schema');
 const {assembleRepositories} = require('./assemble/assemble-repositories');
-const {ALL_MICROSERVICES} = require('./constants/newbie.constants');
+const {ALL_MICROSERVICES} = require('./constants/microservices.constants');
 const {
   getAddedMicroservices,
   getRemovedMicroservices,

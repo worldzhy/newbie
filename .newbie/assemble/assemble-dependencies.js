@@ -1,10 +1,8 @@
 const fs = require('fs');
 const {execSync} = require('child_process');
 const {getEnabledMicroservices} = require('../utilities/microservices.util');
-const {
-  ENABLED_PATH,
-  ALL_MICROSERVICES,
-} = require('../constants/newbie.constants');
+const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
+const {ENABLED_PATH} = require('../constants/path.constants');
 
 const assembleDependencies = (addedMicroservices, removedMicroservices) => {
   // [step 1] Add dependencies.
