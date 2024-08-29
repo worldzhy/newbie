@@ -1,11 +1,11 @@
 const fs = require('fs');
-const {getObjectFromEnvFile} = require('../.db/env');
 const {
+  DB_PATH,
   ENV_PATH,
   ALL_MICROSERVICES,
-  MICROSERVICES_CODE_PATH,
   FRAMEWORK_SETTINGS_JSON,
 } = require('../newbie.constants');
+const {getObjectFromEnvFile} = require('../.db/env');
 const {getEnabledMicroservices} = require('../.db/microservices');
 
 /**
@@ -42,8 +42,7 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
     }
 
     if (settingsFileName) {
-      const settingsFilePath =
-        MICROSERVICES_CODE_PATH + '/' + key + '/' + settingsFileName;
+      const settingsFilePath = `${DB_PATH}/${settingsFileName}`;
 
       if (fs.existsSync(settingsFilePath)) {
         const {env = {}} = JSON.parse(
@@ -71,10 +70,8 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
       console.error(`[Error] Non-existent microservice<${name}>`);
       return;
     }
-
     if (settingsFileName) {
-      const settingsFilePath =
-        MICROSERVICES_CODE_PATH + '/' + key + '/' + settingsFileName;
+      const settingsFilePath = `${DB_PATH}/${settingsFileName}`;
 
       if (fs.existsSync(settingsFilePath)) {
         const {env = {}} = JSON.parse(
@@ -159,8 +156,7 @@ const generateEnvExampleFile = () => {
       return;
     }
     if (settingsFileName) {
-      const settingsFilePath =
-        MICROSERVICES_CODE_PATH + '/' + key + '/' + settingsFileName;
+      const settingsFilePath = `${DB_PATH}/${settingsFileName}`;
 
       if (fs.existsSync(settingsFilePath)) {
         const {env = {}} = JSON.parse(

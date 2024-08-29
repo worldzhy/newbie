@@ -1,9 +1,8 @@
-const DB_ENV = './.newbie/.db/env.json';
+const DB_PATH = './.newbie/.db';
 const DB_MICROSERVICES = './.newbie/.db/microservices.json';
 
 const ENV_PATH = './.env';
 
-const MICROSERVICES_CODE_PATH = './src/microservices';
 const MICROSERVICES_MODULE_TS = './src/microservices/microservices.module.ts';
 const MICROSERVICES_CONFIG_TS = './src/microservices/microservices.config.ts';
 
@@ -11,9 +10,6 @@ const FRAMEWORK_SETTINGS_JSON = './src/framework/framework.settings.json';
 
 const PRISMA_SCHEMA_PATH = './prisma/schema/microservices';
 const PRISMA_SCHEMA_APPLICATION = './prisma/schema/application.prisma';
-
-const TS_CONFIG_BUILD_JSON = './tsconfig.build.json';
-const TS_CONFIG_JSON = './tsconfig.json';
 
 const GIT_MODULES = './.gitmodules';
 
@@ -286,12 +282,12 @@ const ALL_MICROSERVICES = {
 };
 
 module.exports = {
+  DB_PATH,
   DB_MICROSERVICES,
 
   ENV_PATH,
   GIT_MODULES,
 
-  MICROSERVICES_CODE_PATH,
   MICROSERVICES_MODULE_TS,
   MICROSERVICES_CONFIG_TS,
 
@@ -299,9 +295,6 @@ module.exports = {
 
   PRISMA_SCHEMA_PATH,
   PRISMA_SCHEMA_APPLICATION,
-
-  TS_CONFIG_JSON,
-  TS_CONFIG_BUILD_JSON,
 
   LINE,
   ALL_MICROSERVICES,

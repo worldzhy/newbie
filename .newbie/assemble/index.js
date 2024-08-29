@@ -12,7 +12,7 @@ const {assembleSourceCodeFiles} = require('./assemble-code');
 const {assembleDependencies} = require('./assemble-dependencies');
 const {assembleEnvFile} = require('./assemble-env');
 const {assembleSchemaFiles} = require('./assemble-schema');
-const {cloneSubmodules, removeSubmodules} = require('./assemble-clone');
+const {assembleSubmodules} = require('./assemble-clone');
 
 const main = async () => {
   // [step 1] Print the logo of the command-line tool.
@@ -108,7 +108,7 @@ const main = async () => {
     // Assemable project files.
     console.info(' ' + underline('                             ') + ' ');
     console.info('|' + underline(' 1. clone submodules... ') + '|');
-    cloneSubmodules(addedMicroservices);
+    assembleSubmodules(addedMicroservices, removedMicroservices);
 
     console.info('|' + underline(' 2. updating dependencies... ') + '|');
     assembleDependencies(addedMicroservices, removedMicroservices);
@@ -120,10 +120,7 @@ const main = async () => {
     assembleSchemaFiles(addedMicroservices, removedMicroservices);
 
     console.info('|' + underline(' 5. updating code...         ') + '|');
-    assembleSourceCodeFiles();
-
-    console.info('|' + underline(' 6. remove submodules...     ') + '|');
-    removeSubmodules(addedMicroservices, removedMicroservices);
+    assembleSourceCodeFiles(removedMicroservices);
 
     console.log(bold(green('     C O M P L E T E\n')));
   } else {

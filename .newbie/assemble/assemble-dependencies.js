@@ -1,10 +1,7 @@
 const fs = require('fs');
 const {execSync} = require('child_process');
-const {
-  ALL_MICROSERVICES,
-  MICROSERVICES_CODE_PATH,
-} = require('../newbie.constants');
 const {getEnabledMicroservices} = require('../.db/microservices');
+const {DB_PATH, ALL_MICROSERVICES} = require('../newbie.constants');
 
 const assembleDependencies = (addedMicroservices, removedMicroservices) => {
   // [step 1] Add dependencies.
@@ -12,12 +9,11 @@ const assembleDependencies = (addedMicroservices, removedMicroservices) => {
   const willBeAddedDevDependencies = [];
   addedMicroservices.forEach(name => {
     const {key, settingsFileName} = ALL_MICROSERVICES[name] || {};
+
     if (!key || !settingsFileName) {
       return;
     }
-
-    const settingsFilePath =
-      MICROSERVICES_CODE_PATH + '/' + key + '/' + settingsFileName;
+    const settingsFilePath = `${DB_PATH}/${settingsFileName}`;
 
     if (fs.existsSync(settingsFilePath)) {
       const {dependencies = {}, devDependencies = {}} = JSON.parse(
@@ -36,7 +32,6 @@ const assembleDependencies = (addedMicroservices, removedMicroservices) => {
       console.error(`[Error] Missing settings.json for microservice<${name}>!`);
     }
   });
-
   if (
     willBeAddedDependencies.length > 0 ||
     willBeAddedDevDependencies.length > 0
@@ -56,12 +51,11 @@ const assembleDependencies = (addedMicroservices, removedMicroservices) => {
   const enabledDevDependencies = [];
   getEnabledMicroservices().forEach(name => {
     const {key, settingsFileName} = ALL_MICROSERVICES[name] || {};
+
     if (!key || !settingsFileName) {
       return;
     }
-
-    const settingsFilePath =
-      MICROSERVICES_CODE_PATH + '/' + key + '/' + settingsFileName;
+    const settingsFilePath = `${DB_PATH}/${settingsFileName}`;
 
     if (fs.existsSync(settingsFilePath)) {
       const {dependencies = {}, devDependencies = {}} = JSON.parse(
@@ -72,17 +66,16 @@ const assembleDependencies = (addedMicroservices, removedMicroservices) => {
       enabledDevDependencies.push(...Object.keys(devDependencies));
     }
   });
-
   const willBeRemovedDependencies = [];
   const willBeRemovedDevDependencies = [];
+
   removedMicroservices.forEach(name => {
     const {key, settingsFileName} = ALL_MICROSERVICES[name] || {};
+
     if (!key || !settingsFileName) {
       return;
     }
-
-    const settingsFilePath =
-      MICROSERVICES_CODE_PATH + '/' + key + '/' + settingsFileName;
+    const settingsFilePath = `${DB_PATH}/${settingsFileName}`;
 
     if (fs.existsSync(settingsFilePath)) {
       const {dependencies = {}, devDependencies = {}} = JSON.parse(

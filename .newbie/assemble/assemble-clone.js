@@ -1,5 +1,6 @@
 const fs = require('fs');
 const {
+  DB_PATH,
   GIT_MODULES,
   NEWBIE_DEVELOPER,
   ALL_MICROSERVICES,
@@ -13,10 +14,18 @@ const isNewbiwDeveloper = () => envObj[NEWBIE_DEVELOPER] === 'true';
 
 const cloneSubmodules = addedMicroservices => {
   addedMicroservices.forEach(name => {
-    const {repo, repoPath} = ALL_MICROSERVICES[name] || {};
+    const {key, srcPath, repo, repoPath, schemaFileName, settingsFileName} =
+      ALL_MICROSERVICES[name] || {};
+    const schemaPath = `${srcPath}/.newbie/${schemaFileName}`;
+    const settingsPath = `${srcPath}/.newbie/${settingsFileName}`;
 
-    if (repo && repoPath) {
-      execSync(`git submodule add ${repo} ${repoPath}`);
+    if (!key) return;
+    execSync(`git submodule add ${repo} ${repoPath}`);
+    if (schemaFileName && fs.existsSync(schemaPath)) {
+      execSync(`cp -f ${schemaPath} ${DB_PATH}/${schemaFileName}`);
+    }
+    if (settingsFileName && fs.existsSync(settingsPath)) {
+      execSync(`cp -f ${settingsPath} ${DB_PATH}/${settingsFileName}`);
     }
   });
 };
@@ -49,21 +58,28 @@ const removeSubmodules = (addedMicroservices, removedMicroservices) => {
   }
   if (!isNewbiwDeveloper() && addedMicroservices.length) {
     addedMicroservices.forEach(name => {
-      const {srcPath, repoPath} = ALL_MICROSERVICES[name] || {};
+      const {key, srcPath, repoPath} = ALL_MICROSERVICES[name] || {};
+      const newbiePath = `${srcPath}/.newbie`;
 
-      if (srcPath && repoPath) {
-        execSync(`cp -r ${repoPath} ${repoPath}_temp`);
-        execSync(`git submodule deinit -f ${repoPath}`);
-        execSync(`git rm --cached ${repoPath} -r`);
-        execSync(`rm -rf .git/modules/${repoPath}`);
-        execSync(`rm -rf ${srcPath}`);
-        execSync(`mv ${repoPath}_temp ${repoPath}`);
+      if (!key) return;
+      execSync(`cp -r ${repoPath} ${repoPath}_temp`);
+      execSync(`git submodule deinit -f ${repoPath}`);
+      execSync(`git rm --cached ${repoPath} -r`);
+      execSync(`rm -rf .git/modules/${repoPath}`);
+      execSync(`rm -rf ${srcPath}`);
+      execSync(`mv ${repoPath}_temp ${repoPath}`);
+      if (fs.existsSync(newbiePath)) {
+        execSync(`rm -rf ${newbiePath}`);
       }
     });
   }
 };
 
+const assembleSubmodules = (addedMicroservices, removedMicroservices) => {
+  cloneSubmodules(addedMicroservices);
+  removeSubmodules(addedMicroservices, removedMicroservices);
+};
+
 module.exports = {
-  cloneSubmodules,
-  removeSubmodules,
+  assembleSubmodules,
 };
