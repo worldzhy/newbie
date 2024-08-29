@@ -1,12 +1,12 @@
 const fs = require('fs');
 const {
-  DB_PATH,
+  ENABLED_PATH,
   ENV_PATH,
   ALL_MICROSERVICES,
   FRAMEWORK_SETTINGS_JSON,
-} = require('../newbie.constants');
-const {getObjectFromEnvFile} = require('../.db/env');
-const {getEnabledMicroservices} = require('../.db/microservices');
+} = require('../constants/newbie.constants');
+const {getObjectFromEnvFile} = require('../utilities/env.util');
+const {getEnabledMicroservices} = require('../utilities/microservices.util');
 
 /**
  * The assembleEnvFile function does 2 things:
@@ -42,7 +42,7 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
     }
 
     if (settingsFileName) {
-      const settingsFilePath = `${DB_PATH}/${settingsFileName}`;
+      const settingsFilePath = `${ENABLED_PATH}/${settingsFileName}`;
 
       if (fs.existsSync(settingsFilePath)) {
         const {env = {}} = JSON.parse(
@@ -71,7 +71,7 @@ const assembleEnvFile = (addedMicroservices, removedMicroservices) => {
       return;
     }
     if (settingsFileName) {
-      const settingsFilePath = `${DB_PATH}/${settingsFileName}`;
+      const settingsFilePath = `${ENABLED_PATH}/${settingsFileName}`;
 
       if (fs.existsSync(settingsFilePath)) {
         const {env = {}} = JSON.parse(
@@ -156,7 +156,7 @@ const generateEnvExampleFile = () => {
       return;
     }
     if (settingsFileName) {
-      const settingsFilePath = `${DB_PATH}/${settingsFileName}`;
+      const settingsFilePath = `${ENABLED_PATH}/${settingsFileName}`;
 
       if (fs.existsSync(settingsFilePath)) {
         const {env = {}} = JSON.parse(

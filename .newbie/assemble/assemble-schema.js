@@ -1,12 +1,12 @@
 const fs = require('fs');
 const {
-  DB_PATH,
+  ENABLED_PATH,
   ALL_MICROSERVICES,
   PRISMA_SCHEMA_PATH,
   PRISMA_SCHEMA_APPLICATION,
-} = require('../newbie.constants');
+} = require('../constants/newbie.constants');
 const {execSync} = require('child_process');
-const {getEnabledMicroservices} = require('../.db/microservices');
+const {getEnabledMicroservices} = require('../utilities/microservices.util');
 
 const assembleSchemaFiles = (addedMicroservices, removedMicroservices) => {
   // [step 1] Add prisma schema for microservices.
@@ -19,7 +19,7 @@ const assembleSchemaFiles = (addedMicroservices, removedMicroservices) => {
     }
 
     if (schemaFileName) {
-      const sourceSchemaPath = `${DB_PATH}/${schemaFileName}`;
+      const sourceSchemaPath = `${ENABLED_PATH}/${schemaFileName}`;
 
       if (fs.existsSync(sourceSchemaPath)) {
         const schema = fs.readFileSync(sourceSchemaPath, {

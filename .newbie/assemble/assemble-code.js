@@ -1,12 +1,12 @@
 const fs = require('fs');
 const {
-  DB_PATH,
+  ENABLED_PATH,
   ALL_MICROSERVICES,
   MICROSERVICES_MODULE_TS,
   MICROSERVICES_CONFIG_TS,
-} = require('../newbie.constants');
+} = require('../constants/newbie.constants');
 const {execSync} = require('child_process');
-const {getEnabledMicroservices} = require('../.db/microservices');
+const {getEnabledMicroservices} = require('../utilities/microservices.util');
 
 const assembleSourceCodeFiles = removedMicroservices => {
   const enabledMicroservices = getEnabledMicroservices();
@@ -29,7 +29,7 @@ const assembleSourceCodeFiles = removedMicroservices => {
       return;
     }
     if (settingsFileName) {
-      const settingsFilePath = `${DB_PATH}/${settingsFileName}`;
+      const settingsFilePath = `${ENABLED_PATH}/${settingsFileName}`;
 
       if (fs.existsSync(settingsFilePath)) {
         const {'config-service': config = {}} = JSON.parse(
@@ -49,8 +49,8 @@ const assembleSourceCodeFiles = removedMicroservices => {
   // [step 3] Remove newbie config files.
   removedMicroservices.forEach(name => {
     const {schemaFileName, settingsFileName} = ALL_MICROSERVICES[name] || {};
-    const schemaPath = `${DB_PATH}/${schemaFileName}`;
-    const settingsPath = `${DB_PATH}/${settingsFileName}`;
+    const schemaPath = `${ENABLED_PATH}/${schemaFileName}`;
+    const settingsPath = `${ENABLED_PATH}/${settingsFileName}`;
 
     if (schemaFileName && fs.existsSync(schemaPath)) {
       execSync(`rm ${schemaPath}`);

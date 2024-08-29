@@ -1,5 +1,8 @@
 const fs = require('fs');
-const {ALL_MICROSERVICES, DB_MICROSERVICES} = require('../newbie.constants');
+const {
+  ALL_MICROSERVICES,
+  ENABLED_MICROSERVICES,
+} = require('../constants/newbie.constants');
 
 const getAddedMicroservices = enabledServiceNames => {
   const currentMicroservices = getEnabledMicroservices();
@@ -20,11 +23,14 @@ const getRemovedMicroservices = enabledServiceNames => {
 };
 
 const getEnabledMicroservices = () => {
-  if (!fs.existsSync(DB_MICROSERVICES)) {
-    fs.writeFileSync(DB_MICROSERVICES, JSON.stringify({enabled: []}, null, 2));
+  if (!fs.existsSync(ENABLED_MICROSERVICES)) {
+    fs.writeFileSync(
+      ENABLED_MICROSERVICES,
+      JSON.stringify({enabled: []}, null, 2)
+    );
   }
 
-  const json = JSON.parse(fs.readFileSync(DB_MICROSERVICES, 'utf8'));
+  const json = JSON.parse(fs.readFileSync(ENABLED_MICROSERVICES, 'utf8'));
   if (!json.enabled) {
     json.enabled = [];
   }
@@ -34,7 +40,7 @@ const getEnabledMicroservices = () => {
 
 const updateEnabledMicroservices = enabledMicroservices => {
   fs.writeFileSync(
-    DB_MICROSERVICES,
+    ENABLED_MICROSERVICES,
     JSON.stringify({enabled: enabledMicroservices}, null, 2)
   );
 };

@@ -1,7 +1,10 @@
 const fs = require('fs');
 const {execSync} = require('child_process');
-const {getEnabledMicroservices} = require('../.db/microservices');
-const {DB_PATH, ALL_MICROSERVICES} = require('../newbie.constants');
+const {getEnabledMicroservices} = require('../utilities/microservices.util');
+const {
+  ENABLED_PATH,
+  ALL_MICROSERVICES,
+} = require('../constants/newbie.constants');
 
 const assembleDependencies = (addedMicroservices, removedMicroservices) => {
   // [step 1] Add dependencies.
@@ -13,7 +16,7 @@ const assembleDependencies = (addedMicroservices, removedMicroservices) => {
     if (!key || !settingsFileName) {
       return;
     }
-    const settingsFilePath = `${DB_PATH}/${settingsFileName}`;
+    const settingsFilePath = `${ENABLED_PATH}/${settingsFileName}`;
 
     if (fs.existsSync(settingsFilePath)) {
       const {dependencies = {}, devDependencies = {}} = JSON.parse(
@@ -55,7 +58,7 @@ const assembleDependencies = (addedMicroservices, removedMicroservices) => {
     if (!key || !settingsFileName) {
       return;
     }
-    const settingsFilePath = `${DB_PATH}/${settingsFileName}`;
+    const settingsFilePath = `${ENABLED_PATH}/${settingsFileName}`;
 
     if (fs.existsSync(settingsFilePath)) {
       const {dependencies = {}, devDependencies = {}} = JSON.parse(
@@ -75,7 +78,7 @@ const assembleDependencies = (addedMicroservices, removedMicroservices) => {
     if (!key || !settingsFileName) {
       return;
     }
-    const settingsFilePath = `${DB_PATH}/${settingsFileName}`;
+    const settingsFilePath = `${ENABLED_PATH}/${settingsFileName}`;
 
     if (fs.existsSync(settingsFilePath)) {
       const {dependencies = {}, devDependencies = {}} = JSON.parse(

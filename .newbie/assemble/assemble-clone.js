@@ -1,12 +1,12 @@
 const fs = require('fs');
 const {
-  DB_PATH,
+  ENABLED_PATH,
   GIT_MODULES,
   NEWBIE_DEVELOPER,
   ALL_MICROSERVICES,
-} = require('../newbie.constants');
+} = require('../constants/newbie.constants');
 const {execSync} = require('child_process');
-const {getObjectFromEnvFile} = require('../.db/env');
+const {getObjectFromEnvFile} = require('../utilities/env.util');
 
 const envObj = getObjectFromEnvFile();
 
@@ -22,10 +22,10 @@ const cloneSubmodules = addedMicroservices => {
     if (!key) return;
     execSync(`git submodule add ${repo} ${repoPath}`);
     if (schemaFileName && fs.existsSync(schemaPath)) {
-      execSync(`cp -f ${schemaPath} ${DB_PATH}/${schemaFileName}`);
+      execSync(`cp -f ${schemaPath} ${ENABLED_PATH}/${schemaFileName}`);
     }
     if (settingsFileName && fs.existsSync(settingsPath)) {
-      execSync(`cp -f ${settingsPath} ${DB_PATH}/${settingsFileName}`);
+      execSync(`cp -f ${settingsPath} ${ENABLED_PATH}/${settingsFileName}`);
     }
   });
 };

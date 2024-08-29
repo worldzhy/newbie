@@ -1,18 +1,18 @@
 const figlet = require('figlet');
 const {checkbox, select} = require('@inquirer/prompts');
 const {bold, cyan, green, inverse, underline} = require('colorette');
+const {assembleSourceCodeFiles} = require('./assemble/assemble-code');
+const {assembleDependencies} = require('./assemble/assemble-dependencies');
+const {assembleEnvFile} = require('./assemble/assemble-env');
+const {assembleSchemaFiles} = require('./assemble/assemble-schema');
+const {assembleSubmodules} = require('./assemble/assemble-clone');
+const {ALL_MICROSERVICES} = require('./constants/newbie.constants');
 const {
   getAddedMicroservices,
   getRemovedMicroservices,
   getEnabledMicroservices,
   updateEnabledMicroservices,
-} = require('../.db/microservices');
-const {ALL_MICROSERVICES} = require('../newbie.constants');
-const {assembleSourceCodeFiles} = require('./assemble-code');
-const {assembleDependencies} = require('./assemble-dependencies');
-const {assembleEnvFile} = require('./assemble-env');
-const {assembleSchemaFiles} = require('./assemble-schema');
-const {assembleSubmodules} = require('./assemble-clone');
+} = require('./utilities/microservices.util');
 
 const main = async () => {
   // [step 1] Print the logo of the command-line tool.
