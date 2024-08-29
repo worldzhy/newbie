@@ -1,9 +1,8 @@
-const DB_ENV = './.newbie/.db/env.json';
+const DB_PATH = './.newbie/.db';
 const DB_MICROSERVICES = './.newbie/.db/microservices.json';
 
 const ENV_PATH = './.env';
 
-const MICROSERVICES_CODE_PATH = './src/microservices';
 const MICROSERVICES_MODULE_TS = './src/microservices/microservices.module.ts';
 const MICROSERVICES_CONFIG_TS = './src/microservices/microservices.config.ts';
 
@@ -12,8 +11,9 @@ const FRAMEWORK_SETTINGS_JSON = './src/framework/framework.settings.json';
 const PRISMA_SCHEMA_PATH = './prisma/schema/microservices';
 const PRISMA_SCHEMA_APPLICATION = './prisma/schema/application.prisma';
 
-const TS_CONFIG_BUILD_JSON = './tsconfig.build.json';
-const TS_CONFIG_JSON = './tsconfig.json';
+const GIT_MODULES = './.gitmodules';
+
+const NEWBIE_DEVELOPER = 'NEWBIE_DEVELOPER';
 
 const LINE =
   /(?:^|^)\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\'|[^'])*'|\s*"(?:\"|[^"])*"|\s*`(?:\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?(?:$|$)/gm;
@@ -26,6 +26,8 @@ const ALL_MICROSERVICES = {
     settingsFileName: 'account.settings.json',
     moduleNames: 'AccountModule',
     importCode: `import {AccountModule} from './account/account.module';`,
+    repo: 'https://github.com/worldzhy/newbie.account.git',
+    repoPath: 'src/microservices/account',
   },
   'aws-s3': {
     key: 'aws-s3',
@@ -34,6 +36,8 @@ const ALL_MICROSERVICES = {
     settingsFileName: 'aws-s3.settings.json',
     moduleNames: 'AwsS3Module',
     importCode: `import {AwsS3Module} from './aws-s3/aws-s3.module';`,
+    repo: 'https://github.com/worldzhy/newbie.aws-s3.git',
+    repoPath: 'src/microservices/aws-s3',
   },
   'aws-sqs': {
     key: 'aws-sqs',
@@ -42,6 +46,8 @@ const ALL_MICROSERVICES = {
     settingsFileName: 'aws-sqs.settings.json',
     moduleNames: 'AwsSqsModule',
     importCode: `import {AwsSqsModule} from './aws-sqs/aws-sqs.module';`,
+    repo: 'https://github.com/worldzhy/newbie.aws-sqs.git',
+    repoPath: 'src/microservices/aws-sqs',
   },
   cache: {
     key: 'cache',
@@ -50,6 +56,8 @@ const ALL_MICROSERVICES = {
     settingsFileName: 'cache.settings.json',
     moduleNames: 'NewbieCacheModule',
     importCode: `import {NewbieCacheModule} from './cache/cache.module';`,
+    repo: 'https://github.com/worldzhy/newbie.cache.git',
+    repoPath: 'src/microservices/cache',
   },
   cloudformation: {
     key: 'cloudformation',
@@ -58,6 +66,8 @@ const ALL_MICROSERVICES = {
     settingsFileName: 'cloudformation.settings.json',
     moduleNames: 'AwsCloudformationModule',
     importCode: `import {AwsCloudformationModule} from './cloudformation/cloudformation.module';`,
+    repo: 'https://github.com/worldzhy/newbie.cloudformation.git',
+    repoPath: 'src/microservices/cloudformation',
   },
   cloudinary: {
     key: 'cloudinary',
@@ -66,6 +76,8 @@ const ALL_MICROSERVICES = {
     settingsFileName: 'cloudinary.settings.json',
     moduleNames: 'CloudinaryModule',
     importCode: `import {CloudinaryModule} from './cloudinary/cloudinary.module';`,
+    repo: 'https://github.com/worldzhy/newbie.cloudinary.git',
+    repoPath: 'src/microservices/cloudinary',
   },
   elasticsearch: {
     key: 'elasticsearch',
@@ -74,6 +86,8 @@ const ALL_MICROSERVICES = {
     settingsFileName: 'elasticsearch.settings.json',
     moduleNames: 'ElasticsearchModule',
     importCode: `import {ElasticsearchModule} from './elasticsearch/elasticsearch.module';`,
+    repo: 'https://github.com/worldzhy/newbie.elasticsearch.git',
+    repoPath: 'src/microservices/elasticsearch',
   },
   'event-scheduling': {
     key: 'event-scheduling',
@@ -82,6 +96,8 @@ const ALL_MICROSERVICES = {
     settingsFileName: 'event-scheduling.settings.json',
     moduleNames: 'EventSchedulingModule',
     importCode: `import {EventSchedulingModule} from './event-scheduling/event-scheduling.module';`,
+    repo: 'https://github.com/worldzhy/newbie.event-scheduling.git',
+    repoPath: 'src/microservices/event-scheduling',
   },
   github: {
     key: 'github',
@@ -90,6 +106,8 @@ const ALL_MICROSERVICES = {
     settingsFileName: 'github.settings.json',
     moduleNames: 'GitHubModule',
     importCode: `import {GitHubModule} from './github/github.module';`,
+    repo: 'https://github.com/worldzhy/newbie.github.git',
+    repoPath: 'src/microservices/github',
   },
   googleapis: {
     key: 'googleapis',
@@ -98,6 +116,8 @@ const ALL_MICROSERVICES = {
     settingsFileName: 'googleapis.settings.json',
     moduleNames: 'GoogleAPIsModule',
     importCode: `import {GoogleAPIsModule} from './googleapis/googleapis.module';`,
+    repo: 'https://github.com/worldzhy/newbie.googleapis.git',
+    repoPath: 'src/microservices/googleapis',
   },
   map: {
     key: 'map',
@@ -106,6 +126,8 @@ const ALL_MICROSERVICES = {
     settingsFileName: null,
     moduleNames: 'MapModule',
     importCode: `import {MapModule} from './map/map.module';`,
+    repo: 'https://github.com/worldzhy/newbie.map.git',
+    repoPath: 'src/microservices/map',
   },
   notification: {
     key: 'notification',
@@ -114,6 +136,8 @@ const ALL_MICROSERVICES = {
     settingsFileName: 'notification.settings.json',
     moduleNames: 'NotificationModule',
     importCode: `import {NotificationModule} from './notification/notification.module';`,
+    repo: 'https://github.com/worldzhy/newbie.notification.git',
+    repoPath: 'src/microservices/notification',
   },
   'order-mgmt': {
     key: 'order-mgmt',
@@ -122,6 +146,8 @@ const ALL_MICROSERVICES = {
     settingsFileName: 'order-mgmt.settings.json',
     moduleNames: 'OrderManagementModule',
     importCode: `import {OrderManagementModule} from './order-mgmt/order-mgmt.module';`,
+    repo: 'https://github.com/worldzhy/newbie.order-mgmt.git',
+    repoPath: 'src/microservices/order-mgmt',
   },
   pdf: {
     key: 'pdf',
@@ -130,6 +156,8 @@ const ALL_MICROSERVICES = {
     settingsFileName: 'pdf.settings.json',
     moduleNames: 'PdfModule',
     importCode: `import {PdfModule} from './pdf/pdf.module';`,
+    repo: 'https://github.com/worldzhy/newbie.pdf.git',
+    repoPath: 'src/microservices/pdf',
   },
   'people-finder': {
     key: 'people-finder',
@@ -138,6 +166,8 @@ const ALL_MICROSERVICES = {
     settingsFileName: 'people-finder.settings.json',
     moduleNames: 'PeopleFinderModule',
     importCode: `import {PeopleFinderModule} from './people-finder/people-finder.module';`,
+    repo: 'https://github.com/worldzhy/newbie.people-finder.git',
+    repoPath: 'src/microservices/people-finder',
   },
   puppeteer: {
     key: 'puppeteer',
@@ -146,6 +176,8 @@ const ALL_MICROSERVICES = {
     settingsFileName: 'puppeteer.settings.json',
     moduleNames: 'PuppeteerModule',
     importCode: `import {PuppeteerModule} from './puppeteer/puppeteer.module';`,
+    repo: 'https://github.com/worldzhy/newbie.puppeteer.git',
+    repoPath: 'src/microservices/puppeteer',
   },
   queue: {
     key: 'queue',
@@ -154,14 +186,8 @@ const ALL_MICROSERVICES = {
     settingsFileName: 'queue.settings.json',
     moduleNames: 'NewbieQueueModule',
     importCode: `import {NewbieQueueModule} from './queue/queue.module';`,
-  },
-  'saas-starter': {
-    key: 'saas-starter',
-    srcPath: './src/microservices/saas-starter',
-    schemaFileName: 'saas-starter.schema',
-    settingsFileName: 'saas-starter.settings.json',
-    moduleNames: 'SaaSStarterModule',
-    importCode: `import {SaaSStarterModule} from './saas-starter/saas-starter.module';`,
+    repo: 'https://github.com/worldzhy/newbie.queue.git',
+    repoPath: 'src/microservices/queue',
   },
   shortcut: {
     key: 'shortcut',
@@ -170,6 +196,8 @@ const ALL_MICROSERVICES = {
     settingsFileName: null,
     moduleNames: 'ShortcutModule',
     importCode: `import {ShortcutModule} from './shortcut/shortcut.module';`,
+    repo: 'https://github.com/worldzhy/newbie.shortcut.git',
+    repoPath: 'src/microservices/shortcut',
   },
   slack: {
     key: 'slack',
@@ -178,6 +206,8 @@ const ALL_MICROSERVICES = {
     settingsFileName: 'slack.settings.json',
     moduleNames: 'SlackModule',
     importCode: `import {SlackModule} from './slack/slack.module';`,
+    repo: 'https://github.com/worldzhy/newbie.slack.git',
+    repoPath: 'src/microservices/slack',
   },
   snowflake: {
     key: 'snowflake',
@@ -186,6 +216,8 @@ const ALL_MICROSERVICES = {
     settingsFileName: 'snowflake.settings.json',
     moduleNames: 'SnowflakeModule',
     importCode: `import {SnowflakeModule} from './snowflake/snowflake.module';`,
+    repo: 'https://github.com/worldzhy/newbie.snowflake.git',
+    repoPath: 'src/microservices/snowflake',
   },
   'stock-mgmt': {
     key: 'stock-mgmt',
@@ -194,6 +226,8 @@ const ALL_MICROSERVICES = {
     settingsFileName: null,
     moduleNames: 'StockManagementModule',
     importCode: `import {StockManagementModule} from './stock-mgmt/stock-mgmt.module';`,
+    repo: 'https://github.com/worldzhy/newbie.stock-mgmt.git',
+    repoPath: 'src/microservices/stock-mgmt',
   },
   storage: {
     key: 'storage',
@@ -202,6 +236,8 @@ const ALL_MICROSERVICES = {
     settingsFileName: 'storage.settings.json',
     moduleNames: 'StorageModule',
     importCode: `import {StorageModule} from './storage/storage.module';`,
+    repo: 'https://github.com/worldzhy/newbie.storage.git',
+    repoPath: 'src/microservices/storage',
   },
   tag: {
     key: 'tag',
@@ -210,6 +246,8 @@ const ALL_MICROSERVICES = {
     settingsFileName: null,
     moduleNames: 'TagModule',
     importCode: `import {TagModule} from './tag/tag.module';`,
+    repo: 'https://github.com/worldzhy/newbie.tag.git',
+    repoPath: 'src/microservices/tag',
   },
   'task-scheduling': {
     key: 'task-scheduling',
@@ -218,6 +256,8 @@ const ALL_MICROSERVICES = {
     settingsFileName: 'task-scheduling.settings.json',
     moduleNames: 'TaskSchedulingModule',
     importCode: `import {TaskSchedulingModule} from './task-scheduling/task-scheduling.module';`,
+    repo: 'https://github.com/worldzhy/newbie.task-scheduling.git',
+    repoPath: 'src/microservices/task-scheduling',
   },
   workflow: {
     key: 'workflow',
@@ -226,6 +266,8 @@ const ALL_MICROSERVICES = {
     settingsFileName: null,
     moduleNames: 'WorkflowModule',
     importCode: `import {WorkflowModule} from './workflow/workflow.module';`,
+    repo: 'https://github.com/worldzhy/newbie.workflow.git',
+    repoPath: 'src/microservices/workflow',
   },
   xlsx: {
     key: 'xlsx',
@@ -234,15 +276,18 @@ const ALL_MICROSERVICES = {
     settingsFileName: 'xlsx.settings.json',
     moduleNames: 'XLSXModule',
     importCode: `import {XLSXModule} from './xlsx/xlsx.module';`,
+    repo: 'https://github.com/worldzhy/newbie.xlsx.git',
+    repoPath: 'src/microservices/xlsx',
   },
 };
 
 module.exports = {
+  DB_PATH,
   DB_MICROSERVICES,
 
   ENV_PATH,
+  GIT_MODULES,
 
-  MICROSERVICES_CODE_PATH,
   MICROSERVICES_MODULE_TS,
   MICROSERVICES_CONFIG_TS,
 
@@ -251,9 +296,8 @@ module.exports = {
   PRISMA_SCHEMA_PATH,
   PRISMA_SCHEMA_APPLICATION,
 
-  TS_CONFIG_JSON,
-  TS_CONFIG_BUILD_JSON,
-
   LINE,
   ALL_MICROSERVICES,
+
+  NEWBIE_DEVELOPER,
 };

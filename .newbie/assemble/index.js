@@ -12,7 +12,7 @@ const {assembleSourceCodeFiles} = require('./assemble-code');
 const {assembleDependencies} = require('./assemble-dependencies');
 const {assembleEnvFile} = require('./assemble-env');
 const {assembleSchemaFiles} = require('./assemble-schema');
-const {assembleTsConfigFiles} = require('./assemble-tsconfig');
+const {assembleSubmodules} = require('./assemble-clone');
 
 const main = async () => {
   // [step 1] Print the logo of the command-line tool.
@@ -107,20 +107,20 @@ const main = async () => {
 
     // Assemable project files.
     console.info(' ' + underline('                             ') + ' ');
-    console.info('|' + underline(' 1. updating dependencies... ') + '|');
+    console.info('|' + underline(' 1. clone submodules... ') + '|');
+    assembleSubmodules(addedMicroservices, removedMicroservices);
+
+    console.info('|' + underline(' 2. updating dependencies... ') + '|');
     assembleDependencies(addedMicroservices, removedMicroservices);
 
-    console.info('|' + underline(' 2. updating env...          ') + '|');
+    console.info('|' + underline(' 3. updating env...          ') + '|');
     assembleEnvFile(addedMicroservices, removedMicroservices);
 
-    console.info('|' + underline(' 3. updating schema...       ') + '|');
+    console.info('|' + underline(' 4. updating schema...       ') + '|');
     assembleSchemaFiles(addedMicroservices, removedMicroservices);
 
-    console.info('|' + underline(' 4. updating code...         ') + '|');
-    assembleSourceCodeFiles();
-
-    console.info('|' + underline(' 5. updating tsconfig...     ') + '|');
-    assembleTsConfigFiles();
+    console.info('|' + underline(' 5. updating code...         ') + '|');
+    assembleSourceCodeFiles(removedMicroservices);
 
     console.log(bold(green('     C O M P L E T E\n')));
   } else {

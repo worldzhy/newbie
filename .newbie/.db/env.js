@@ -1,10 +1,10 @@
 const fs = require('fs');
 const {
   LINE,
+  DB_PATH,
   ENV_PATH,
   ALL_MICROSERVICES,
   FRAMEWORK_SETTINGS_JSON,
-  MICROSERVICES_CODE_PATH,
 } = require('../newbie.constants');
 const {getEnabledMicroservices} = require('../.db/microservices');
 
@@ -56,12 +56,11 @@ const getEnvObjectFromMicroservicesConfig = () => {
     const {key, settingsFileName} = ALL_MICROSERVICES[name] || {};
 
     if (key && settingsFileName) {
-      const settingsFilePath =
-        MICROSERVICES_CODE_PATH + '/' + key + '/' + settingsFileName;
+      const settingsFilePath = `${DB_PATH}/${settingsFileName}`;
+
       if (!envObj[key]) {
         envObj[key] = [];
       }
-
       if (fs.existsSync(settingsFilePath)) {
         const {env = {}} = JSON.parse(
           fs.readFileSync(settingsFilePath, {encoding: 'utf8', flag: 'r'})
@@ -74,7 +73,6 @@ const getEnvObjectFromMicroservicesConfig = () => {
       }
     }
   });
-
   return envObj;
 };
 
