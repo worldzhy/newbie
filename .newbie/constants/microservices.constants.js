@@ -152,6 +152,15 @@ const ALL_MICROSERVICES = {
     moduleNames: 'NewbieQueueModule',
     importCode: `import {NewbieQueueModule} from './queue/queue.module';`,
   },
+  'saas-starter': {
+    key: 'saas-starter',
+    srcPath: 'src/microservices/saas-starter',
+    repositoryUrl: 'https://github.com/worldzhy/newbie.saas-starter.git',
+    schemaFileName: 'saas-starter.schema',
+    settingsFileName: 'saas-starter.settings.json',
+    moduleNames: 'SaaSStarterModule',
+    importCode: `import {SaaSStarterModule} from './saas-starter/saas-starter.module';`,
+  },
   shortcut: {
     key: 'shortcut',
     srcPath: 'src/microservices/shortcut',
