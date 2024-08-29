@@ -106,23 +106,35 @@ const main = async () => {
     updateEnabledMicroservices(enabledMicroservices);
 
     // Assemable project files.
-    console.info(' ' + underline('                             ') + ' ');
-    console.info('|' + underline(' 1. clone submodules... ') + '|');
+    console.info(
+      ' ' + underline('                                       ') + ' '
+    );
+    console.info(
+      '|' + underline(' 1. synchronizing code repositories... ') + '|'
+    );
     assembleSubmodules(addedMicroservices, removedMicroservices);
 
-    console.info('|' + underline(' 2. updating dependencies... ') + '|');
+    console.info(
+      '|' + underline(' 2. updating package dependencies...   ') + '|'
+    );
     assembleDependencies(addedMicroservices, removedMicroservices);
 
-    console.info('|' + underline(' 3. updating env...          ') + '|');
+    console.info(
+      '|' + underline(' 3. updating environment variables...  ') + '|'
+    );
     assembleEnvFile(addedMicroservices, removedMicroservices);
 
-    console.info('|' + underline(' 4. updating schema...       ') + '|');
+    console.info(
+      '|' + underline(' 4. updating database schema...        ') + '|'
+    );
     assembleSchemaFiles(addedMicroservices, removedMicroservices);
 
-    console.info('|' + underline(' 5. updating code...         ') + '|');
+    console.info(
+      '|' + underline(' 5. mounting modules...                ') + '|'
+    );
     assembleSourceCodeFiles(removedMicroservices);
 
-    console.log(bold(green('     C O M P L E T E\n')));
+    console.log(bold(green('            C O M P L E T E\n')));
   } else {
     console.info(
       '\n[info] You did not make any changes to the microservices.\n'

@@ -1,5 +1,5 @@
 import {BadRequestException, Injectable, PipeTransform} from '@nestjs/common';
-import {WHERE_PIPE_FORMAT} from '../../microservices/saas-starter/errors/errors.constants';
+import {WHERE_PIPE_FORMAT} from './errors.constants';
 import {parseObjectLiteral} from '@framework/utilities/parse-object-literal.util';
 
 /** Convert a string like "id: 12, b: 'Anand'" to { id: 12, name: "Anand" } */

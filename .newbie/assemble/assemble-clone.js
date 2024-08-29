@@ -12,7 +12,7 @@ const envObj = getObjectFromEnvFile();
 
 const isNewbiwDeveloper = () => envObj[NEWBIE_DEVELOPER] === 'true';
 
-const cloneSubmodules = addedMicroservices => {
+const cloneGitSubmodules = addedMicroservices => {
   addedMicroservices.forEach(name => {
     const {key, srcPath, repo, repoPath, schemaFileName, settingsFileName} =
       ALL_MICROSERVICES[name] || {};
@@ -76,7 +76,7 @@ const removeSubmodules = (addedMicroservices, removedMicroservices) => {
 };
 
 const assembleSubmodules = (addedMicroservices, removedMicroservices) => {
-  cloneSubmodules(addedMicroservices);
+  cloneGitSubmodules(addedMicroservices);
   removeSubmodules(addedMicroservices, removedMicroservices);
 };
 

@@ -1,5 +1,5 @@
 import {BadRequestException, Injectable, PipeTransform} from '@nestjs/common';
-import {SELECT_INCLUDE_PIPE_FORMAT} from '../../microservices/saas-starter/errors/errors.constants';
+import {SELECT_INCLUDE_PIPE_FORMAT} from './errors.constants';
 var dot = require('dot-object');
 
 /**

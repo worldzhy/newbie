@@ -1,5 +1,5 @@
 const ENABLED_PATH = './.newbie/.enabled';
-const ENABLED_MICROSERVICES = './.newbie/.enabled/microservices.json';
+const ENABLED_MICROSERVICES = './.newbie/.enabled/.microservices.json';
 
 const FRAMEWORK_SETTINGS_JSON = './src/framework/framework.settings.json';
 const MICROSERVICES_MODULE_TS = './src/microservices/microservices.module.ts';
@@ -29,7 +29,7 @@ const ALL_MICROSERVICES = {
   },
   'aws-s3': {
     key: 'aws-s3',
-    srcPath: './src/microservices/aws-s3',
+    srcPath: 'src/microservices/aws-s3',
     schemaFileName: 'aws-s3.schema',
     settingsFileName: 'aws-s3.settings.json',
     moduleNames: 'AwsS3Module',
