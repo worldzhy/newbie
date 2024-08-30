@@ -1,18 +1,18 @@
-const fs = require('fs');
-const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
+const fs = require('fs/promises');
 const {
   ENABLED_PATH,
   MICROSERVICES_MODULE_TS,
   MICROSERVICES_CONFIG_TS,
 } = require('../constants/path.constants');
-const {execSync} = require('child_process');
+const {exec, exists} = require('../utilities/promise.util');
+const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
 const {getEnabledMicroservices} = require('../utilities/microservices.util');
 
-const assembleSourceCodeFiles = () => {
-  const enabledMicroservices = getEnabledMicroservices();
+const assembleSourceCodeFiles = async () => {
+  const enabledMicroservices = await getEnabledMicroservices();
 
   // [step 1] Assemble microservice.module.ts
-  fs.writeFileSync(
+  await fs.writeFile(
     MICROSERVICES_MODULE_TS,
     enabledMicroservices.length
       ? MicroservicesModuleTemplate(enabledMicroservices)
@@ -21,7 +21,8 @@ const assembleSourceCodeFiles = () => {
 
   // [step 2] Assemble microservice.config.ts
   let configs = {};
-  enabledMicroservices.forEach(name => {
+  for (let i = 0; i < enabledMicroservices.length; i++) {
+    const name = enabledMicroservices[i];
     const {key, settingsFileName} = ALL_MICROSERVICES[name] || {};
 
     if (!key) {
@@ -30,16 +31,19 @@ const assembleSourceCodeFiles = () => {
     }
     if (settingsFileName) {
       const settingsFilePath = `${ENABLED_PATH}/${key}/${settingsFileName}`;
+      const isExists = await exists(settingsFilePath);
 
-      if (fs.existsSync(settingsFilePath)) {
-        const {'config-service': config = {}} = JSON.parse(
-          fs.readFileSync(settingsFilePath, {encoding: 'utf8', flag: 'r'})
-        );
+      if (isExists) {
+        const file = await fs.readFile(settingsFilePath, {
+          encoding: 'utf8',
+          flag: 'r',
+        });
+        const {'config-service': config = {}} = JSON.parse(file);
         configs = {...configs, ...config};
       }
     }
-  });
-  fs.writeFileSync(
+  }
+  await fs.writeFile(
     MICROSERVICES_CONFIG_TS,
     Object.keys(configs).length
       ? MicroservicesConfigTemplate(configs)
@@ -48,7 +52,7 @@ const assembleSourceCodeFiles = () => {
 
   // [step 3] Format code.
   try {
-    execSync('npm run format');
+    await exec('npm run format');
   } catch (error) {}
 };
 

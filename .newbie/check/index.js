@@ -5,10 +5,10 @@ const main = async () => {
   // [step 1] Print the logo of the command-line tool.
   console.info(
     figlet.textSync('Newbie', {
-      font: 'Epic',
-      horizontalLayout: 'default',
-      verticalLayout: 'default',
       width: 80,
+      font: 'Epic',
+      verticalLayout: 'default',
+      horizontalLayout: 'default',
       whitespaceBreak: true,
     })
   );
@@ -24,7 +24,7 @@ const main = async () => {
   );
 
   // [step 3] Check .env and print missing env variables.
-  checkEnv();
+  await checkEnv();
 };
 
 main();

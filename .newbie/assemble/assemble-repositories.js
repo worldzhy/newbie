@@ -1,8 +1,8 @@
-const fs = require('fs');
-const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
-const {ENABLED_PATH, GIT_MODULES} = require('../constants/path.constants');
-const {execSync} = require('child_process');
+const fs = require('fs/promises');
+const {exec, exists} = require('../utilities/promise.util');
 const {isNewbieDeveloper} = require('../utilities/env.util');
+const {ENABLED_PATH, GIT_MODULES} = require('../constants/path.constants');
+const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
 
 /**
  * ! Related files:
@@ -14,7 +14,7 @@ const {isNewbieDeveloper} = require('../utilities/env.util');
  */
 
 /**
- * execSync(`git submodule add ${repositoryUrl} ${srcPath}`)
+ * exec(`git submodule add ${repositoryUrl} ${srcPath}`)
  *
  * ! Possible errors:
  *
@@ -30,74 +30,88 @@ const {isNewbieDeveloper} = require('../utilities/env.util');
  *
  */
 
-const addRepositories = addedMicroservices => {
-  execSync(`touch ${GIT_MODULES}`);
+const addRepositories = async addedMicroservices => {
+  const isNewbieDev = await isNewbieDeveloper();
+  const exitGitModules = await exists(GIT_MODULES);
 
-  addedMicroservices.forEach(name => {
+  if (!exitGitModules) {
+    await fs.writeFile(GIT_MODULES, '');
+  }
+  for (let i = 0; i < addedMicroservices.length; i++) {
+    const name = addedMicroservices[i];
     const {key, srcPath, repositoryUrl} = ALL_MICROSERVICES[name] || {};
     const srcPathDotNewbiePath = `${srcPath}/.newbie`;
 
     if (!key) return;
-    execSync(`rm -rf ${srcPath}`);
+    const isExistsSrc = await exists(srcPath);
+    if (isExistsSrc) {
+      await exec(`rm -rf ${srcPath}`);
+    }
 
     // [step 1] Clone code repository
     try {
-      execSync(`git submodule add ${repositoryUrl} ${srcPath}`);
+      await exec(`git submodule add ${repositoryUrl} ${srcPath}`);
     } catch (error) {}
 
     // [step 2] Copy settings file and schema file to .newbie/.enabled folder
-    if (srcPathDotNewbiePath && fs.existsSync(srcPathDotNewbiePath)) {
-      execSync(`cp -rf ${srcPathDotNewbiePath} ${ENABLED_PATH}/${key}`);
+    const isExistsPath = await exists(srcPathDotNewbiePath);
+    if (srcPathDotNewbiePath && isExistsPath) {
+      await exec(`cp -rf ${srcPathDotNewbiePath} ${ENABLED_PATH}/${key}`);
     }
 
     // [step 3] Remove useless files for newbie user.
-    if (!isNewbieDeveloper) {
-      execSync(`git rm -r --cached ${srcPath}`);
+    if (!isNewbieDev) {
+      await exec(`git rm -r --cached ${srcPath}`);
 
       // Remove submodule section in .git/config file
-      execSync(`git config --remove-section submodule.${srcPath}`);
+      await exec(`git config --remove-section submodule.${srcPath}`);
 
       // Delete .git/modules/[key]
-      execSync(`rm -rf .git/modules/${srcPath}`);
+      await exec(`rm -rf .git/modules/${srcPath}`);
 
       // Remove useless files for newbie user.
-      execSync(`rm -rf ${srcPathDotNewbiePath}`);
+      await exec(`rm -rf ${srcPathDotNewbiePath}`);
     }
-  });
+  }
 
-  if (!isNewbieDeveloper) {
-    execSync(`rm -f ${GIT_MODULES}`);
+  if (!isNewbieDev) {
+    await exec(`rm -f ${GIT_MODULES}`);
   }
 };
 
-const removeRepositories = removedMicroservices => {
-  removedMicroservices.forEach(name => {
+const removeRepositories = async removedMicroservices => {
+  const isNewbieDev = await isNewbieDeveloper();
+
+  for (let i = 0; i < removedMicroservices.length; i++) {
+    const name = removedMicroservices[i];
     const {key, srcPath} = ALL_MICROSERVICES[name] || {};
 
     if (!key) return;
 
     // [step 1] Delete ./newbie.enabled/[key]/
     const enabledMicroservicesPath = `${ENABLED_PATH}/${key}`;
-    if (enabledMicroservicesPath && fs.existsSync(enabledMicroservicesPath)) {
-      execSync(`rm -r ${enabledMicroservicesPath}`);
+    const isExists = await exists(enabledMicroservicesPath);
+
+    if (enabledMicroservicesPath && isExists) {
+      await exec(`rm -r ${enabledMicroservicesPath}`);
     }
 
     // [step 2] Remove git submodule link for newbie developer.
-    if (isNewbieDeveloper) {
+    if (isNewbieDev) {
       try {
         // Delete source code and remove the submodule in the .gitmodules
-        execSync(`git rm -rf ${srcPath}`);
+        await exec(`git rm -rf ${srcPath}`);
 
         // Remove submodule section in .git/config file
-        execSync(`git config --remove-section submodule.${srcPath}`);
+        await exec(`git config --remove-section submodule.${srcPath}`);
 
         // Delete .git/modules/[key]
-        execSync(`rm -rf .git/modules/${srcPath}`);
+        await exec(`rm -rf .git/modules/${srcPath}`);
       } catch (error) {}
     } else {
-      execSync(`rm -rf ${srcPath}`);
+      await exec(`rm -rf ${srcPath}`);
     }
-  });
+  }
 };
 
 module.exports = {

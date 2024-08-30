@@ -1,45 +1,55 @@
-const fs = require('fs');
-const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
+const fs = require('fs/promises');
 const {
   ENABLED_PATH,
   PRISMA_SCHEMA_PATH,
   PRISMA_SCHEMA_APPLICATION,
 } = require('../constants/path.constants');
-const {execSync} = require('child_process');
+const {exec, exists} = require('../utilities/promise.util');
+const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
 const {getEnabledMicroservices} = require('../utilities/microservices.util');
 
-const assembleSchemaFiles = (addedMicroservices, removedMicroservices) => {
+const assembleSchemaFiles = async (
+  addedMicroservices,
+  removedMicroservices
+) => {
   // [step 1] Add prisma schema for microservices.
-  addedMicroservices.forEach(name => {
+  for (let i = 0; i < addedMicroservices.length; i++) {
+    const name = addedMicroservices[i];
     const {key, schemaFileName} = ALL_MICROSERVICES[name] || {};
 
     if (!key) {
       console.error(`[Error] non-existent microservice<${name}>`);
       return;
     }
-
     if (schemaFileName) {
       const sourceSchemaPath = `${ENABLED_PATH}/${key}/${schemaFileName}`;
+      const isExists = await exists(sourceSchemaPath);
 
-      if (fs.existsSync(sourceSchemaPath)) {
-        const schema = fs.readFileSync(sourceSchemaPath, {
+      if (isExists) {
+        const isExists = await exists(PRISMA_SCHEMA_PATH);
+        const schema = await fs.readFile(sourceSchemaPath, {
           encoding: 'utf8',
           flag: 'r',
         });
+
         if (schema) {
-          if (!fs.existsSync(PRISMA_SCHEMA_PATH)) {
-            fs.mkdirSync(PRISMA_SCHEMA_PATH);
+          if (!isExists) {
+            await fs.mkdir(PRISMA_SCHEMA_PATH);
           }
-          fs.writeFileSync(PRISMA_SCHEMA_PATH + '/' + key + '.prisma', schema);
+          await fs.writeFile(
+            PRISMA_SCHEMA_PATH + '/' + key + '.prisma',
+            schema
+          );
         }
       } else {
         console.error(`[Error] Missing ${name}.schema`);
       }
     }
-  });
+  }
 
   // [step 2] Remove prisma schema for microservices.
-  removedMicroservices.forEach(name => {
+  for (let i = 0; i < removedMicroservices.length; i++) {
+    const name = removedMicroservices[i];
     const {key, schemaFileName} = ALL_MICROSERVICES[name] || {};
 
     if (!key) {
@@ -49,26 +59,27 @@ const assembleSchemaFiles = (addedMicroservices, removedMicroservices) => {
 
     if (schemaFileName) {
       const targetSchemaPath = PRISMA_SCHEMA_PATH + '/' + key + '.prisma';
+      const isExists = await exists(targetSchemaPath);
 
-      if (targetSchemaPath && fs.existsSync(targetSchemaPath)) {
-        fs.unlinkSync(targetSchemaPath);
+      if (targetSchemaPath && isExists) {
+        await fs.unlink(targetSchemaPath);
       } else {
         // Do nothing.
       }
     }
-  });
+  }
 
   // [step 3] Assemble application.prisma file
-  assembleApplicationPrisma();
+  await assembleApplicationPrisma();
 
   // [step 4] Generate prisma client.
   try {
-    execSync('npx prisma generate --allow-no-models');
+    await exec('npx prisma generate --allow-no-models');
   } catch (error) {}
 };
 
-const assembleApplicationPrisma = () => {
-  const enabledMicroservices = getEnabledMicroservices();
+const assembleApplicationPrisma = async () => {
+  const enabledMicroservices = await getEnabledMicroservices();
   const removedMicroservices = Object.keys(ALL_MICROSERVICES).filter(
     key => !enabledMicroservices.includes(key)
   );
@@ -78,7 +89,7 @@ const assembleApplicationPrisma = () => {
   const removedPrismaPath = removedMicroservices.map(
     name => `microservice/${name}`
   );
-  const prismaFile = fs.readFileSync(PRISMA_SCHEMA_APPLICATION, {
+  const prismaFile = await fs.readFile(PRISMA_SCHEMA_APPLICATION, {
     encoding: 'utf8',
     flag: 'r',
   });
@@ -99,7 +110,7 @@ const assembleApplicationPrisma = () => {
     }
   );
 
-  fs.writeFileSync(PRISMA_SCHEMA_APPLICATION, updatePrismaFile);
+  await fs.writeFile(PRISMA_SCHEMA_APPLICATION, updatePrismaFile);
 };
 
 module.exports = {

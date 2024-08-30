@@ -1,25 +1,33 @@
-const fs = require('fs');
-const {execSync} = require('child_process');
-const {getEnabledMicroservices} = require('../utilities/microservices.util');
-const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
+const fs = require('fs/promises');
+const {exec, exists} = require('../utilities/promise.util');
 const {ENABLED_PATH} = require('../constants/path.constants');
+const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
+const {getEnabledMicroservices} = require('../utilities/microservices.util');
 
-const assembleDependencies = (addedMicroservices, removedMicroservices) => {
+const assembleDependencies = async (
+  addedMicroservices,
+  removedMicroservices
+) => {
   // [step 1] Add dependencies.
   const willBeAddedDependencies = [];
   const willBeAddedDevDependencies = [];
-  addedMicroservices.forEach(name => {
+
+  for (let i = 0; i < addedMicroservices.length; i++) {
+    const name = addedMicroservices[i];
     const {key, settingsFileName} = ALL_MICROSERVICES[name] || {};
 
     if (!key || !settingsFileName) {
       return;
     }
     const settingsFilePath = `${ENABLED_PATH}/${key}/${settingsFileName}`;
+    const isExists = await exists(settingsFilePath);
 
-    if (fs.existsSync(settingsFilePath)) {
-      const {dependencies = {}, devDependencies = {}} = JSON.parse(
-        fs.readFileSync(settingsFilePath, {encoding: 'utf8', flag: 'r'})
-      );
+    if (isExists) {
+      const file = await fs.readFile(settingsFilePath, {
+        encoding: 'utf8',
+        flag: 'r',
+      });
+      const {dependencies = {}, devDependencies = {}} = JSON.parse(file);
 
       willBeAddedDependencies.push(
         ...Object.keys(dependencies).map(key => key + '@' + dependencies[key])
@@ -32,15 +40,16 @@ const assembleDependencies = (addedMicroservices, removedMicroservices) => {
     } else {
       console.error(`[Error] Missing ${name}.settings.json`);
     }
-  });
+  }
+
   if (
     willBeAddedDependencies.length > 0 ||
     willBeAddedDevDependencies.length > 0
   ) {
-    execSync(
+    await exec(
       `npm install ${willBeAddedDependencies.toString().replaceAll(',', ' ')}`
     );
-    execSync(
+    await exec(
       `npm install --save-dev ${willBeAddedDevDependencies
         .toString()
         .replaceAll(',', ' ')}`
@@ -50,38 +59,48 @@ const assembleDependencies = (addedMicroservices, removedMicroservices) => {
   // [step 2] Remove dependencies.
   const enabledDependencies = [];
   const enabledDevDependencies = [];
-  getEnabledMicroservices().forEach(name => {
+  const microservices = await getEnabledMicroservices();
+
+  for (let i = 0; i < microservices.length; i++) {
+    const name = microservices[i];
     const {key, settingsFileName} = ALL_MICROSERVICES[name] || {};
 
     if (!key || !settingsFileName) {
       return;
     }
     const settingsFilePath = `${ENABLED_PATH}/${key}/${settingsFileName}`;
+    const isExists = await exists(settingsFilePath);
 
-    if (fs.existsSync(settingsFilePath)) {
-      const {dependencies = {}, devDependencies = {}} = JSON.parse(
-        fs.readFileSync(settingsFilePath, {encoding: 'utf8', flag: 'r'})
-      );
+    if (isExists) {
+      const file = await fs.readFile(settingsFilePath, {
+        encoding: 'utf8',
+        flag: 'r',
+      });
+      const {dependencies = {}, devDependencies = {}} = JSON.parse(file);
 
       enabledDependencies.push(...Object.keys(dependencies));
       enabledDevDependencies.push(...Object.keys(devDependencies));
     }
-  });
+  }
   const willBeRemovedDependencies = [];
   const willBeRemovedDevDependencies = [];
 
-  removedMicroservices.forEach(name => {
+  for (let i = 0; i < removedMicroservices.length; i++) {
+    const name = removedMicroservices[i];
     const {key, settingsFileName} = ALL_MICROSERVICES[name] || {};
 
     if (!key || !settingsFileName) {
       return;
     }
     const settingsFilePath = `${ENABLED_PATH}/${key}/${settingsFileName}`;
+    const isExists = await exists(settingsFilePath);
 
-    if (fs.existsSync(settingsFilePath)) {
-      const {dependencies = {}, devDependencies = {}} = JSON.parse(
-        fs.readFileSync(settingsFilePath, {encoding: 'utf8', flag: 'r'})
-      );
+    if (isExists) {
+      const file = await fs.readFile(settingsFilePath, {
+        encoding: 'utf8',
+        flag: 'r',
+      });
+      const {dependencies = {}, devDependencies = {}} = JSON.parse(file);
 
       Object.keys(dependencies).forEach(key => {
         if (!enabledDependencies.includes(key))
@@ -94,13 +113,13 @@ const assembleDependencies = (addedMicroservices, removedMicroservices) => {
     } else {
       console.error(`[Error] Missing ${name}.settings.json`);
     }
-  });
+  }
 
   if (
     willBeRemovedDependencies.length > 0 ||
     willBeRemovedDevDependencies.length > 0
   ) {
-    execSync(
+    await exec(
       `npm uninstall ${willBeRemovedDependencies
         .toString()
         .replaceAll(',', ' ')} ${willBeRemovedDevDependencies
