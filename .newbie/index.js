@@ -5,7 +5,11 @@ const {assembleSourceCodeFiles} = require('./assemble/assemble-code');
 const {assembleDependencies} = require('./assemble/assemble-dependencies');
 const {assembleEnvFile} = require('./assemble/assemble-env');
 const {assembleSchemaFiles} = require('./assemble/assemble-schema');
-const {assembleRepositories} = require('./assemble/assemble-repositories');
+const {
+  addRepositories,
+  removeRepositories,
+} = require('./assemble/assemble-repositories');
+const {checkMode} = require('./check/check-mode');
 const {ALL_MICROSERVICES} = require('./constants/microservices.constants');
 const {
   getAddedMicroservices,
@@ -26,7 +30,12 @@ const main = async () => {
     })
   );
 
-  // [step 2] Print the usage of the command-line tool.
+  // [step 2] Check the mode.
+  if (!checkMode()) {
+    process.exit(0);
+  }
+
+  // [step 3] Print the usage of the command-line tool.
   console.info('What is newbie?');
   console.info(' -----------------------------------------------------------');
   console.info('| Newbie is a backend development framework based on NestJS.|');
@@ -48,11 +57,11 @@ const main = async () => {
     ' -----------------------------------------------------------\n'
   );
 
-  // [step 3] Main function.
+  // [step 4] Main function.
   const allMicroservices = Object.keys(ALL_MICROSERVICES);
   const currentMicroervices = getEnabledMicroservices();
 
-  // [step 3-1] Enable and disable services.
+  // [step 4-1] Enable and disable services.
   const enabledMicroservices = await checkbox({
     message: 'Which microservices do you want to enable for your project:',
     choices: allMicroservices.map(microservice => {
@@ -70,7 +79,7 @@ const main = async () => {
   const addedMicroservices = getAddedMicroservices(enabledMicroservices);
   const removedMicroservices = getRemovedMicroservices(enabledMicroservices);
 
-  // [step 3-2] Confirm the operation.
+  // [step 4-2] Confirm the operation.
   let message = '';
   if (!addedMicroservices.length && !removedMicroservices.length) {
     console.info(
@@ -100,41 +109,41 @@ const main = async () => {
     theme: {prefix: '', helpMode: 'never'},
   });
 
-  // [step 3-3] Execute the operation.
+  // [step 4-3] Execute the operation.
   if (result === 'yes') {
     // Update enable.json first.
     updateEnabledMicroservices(enabledMicroservices);
 
     // Assemable project files.
-    console.info(
-      ' ' + underline('                                       ') + ' '
-    );
-    console.info(
-      '|' + underline(' 1. synchronizing code repositories... ') + '|'
-    );
-    assembleRepositories(addedMicroservices, removedMicroservices);
+    console.info(' ' + underline('                                    ') + ' ');
 
-    console.info(
-      '|' + underline(' 2. updating package dependencies...   ') + '|'
-    );
+    if (addedMicroservices.length > 0) {
+      console.info(
+        '|' + underline(' cloning code repositories...       ') + '|'
+      );
+      addRepositories(addedMicroservices);
+    }
+
+    console.info('|' + underline(' updating package dependencies...   ') + '|');
     assembleDependencies(addedMicroservices, removedMicroservices);
 
-    console.info(
-      '|' + underline(' 3. updating environment variables...  ') + '|'
-    );
+    console.info('|' + underline(' updating environment variables...  ') + '|');
     assembleEnvFile(addedMicroservices, removedMicroservices);
 
-    console.info(
-      '|' + underline(' 4. updating database schema...        ') + '|'
-    );
+    console.info('|' + underline(' updating database schema...        ') + '|');
     assembleSchemaFiles(addedMicroservices, removedMicroservices);
 
-    console.info(
-      '|' + underline(' 5. mounting modules...                ') + '|'
-    );
-    assembleSourceCodeFiles(removedMicroservices);
+    console.info('|' + underline(' updating nestjs modules...         ') + '|');
+    assembleSourceCodeFiles();
 
-    console.log(bold(green('            C O M P L E T E\n')));
+    if (removedMicroservices.length > 0) {
+      console.info(
+        '|' + underline(' removing code repositories...      ') + '|'
+      );
+      removeRepositories(removedMicroservices);
+    }
+
+    console.log(bold(green('          C O M P L E T E\n')));
   } else {
     console.info(
       '\n[info] You did not make any changes to the microservices.\n'

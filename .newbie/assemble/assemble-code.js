@@ -8,7 +8,7 @@ const {
 const {execSync} = require('child_process');
 const {getEnabledMicroservices} = require('../utilities/microservices.util');
 
-const assembleSourceCodeFiles = removedMicroservices => {
+const assembleSourceCodeFiles = () => {
   const enabledMicroservices = getEnabledMicroservices();
 
   // [step 1] Assemble microservice.module.ts
@@ -46,16 +46,7 @@ const assembleSourceCodeFiles = removedMicroservices => {
       : EmptyServicesConfigTemplate()
   );
 
-  // [step 3] Remove newbie config files.
-  removedMicroservices.forEach(name => {
-    const enabledMicroservicesPath = `${ENABLED_PATH}/${name}`;
-
-    if (enabledMicroservicesPath && fs.existsSync(enabledMicroservicesPath)) {
-      execSync(`rm -r ${enabledMicroservicesPath}`);
-    }
-  });
-
-  // [step 4] Format code.
+  // [step 3] Format code.
   try {
     execSync('npm run format');
   } catch (error) {}

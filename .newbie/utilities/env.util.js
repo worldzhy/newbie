@@ -5,6 +5,7 @@ const {
   ENV_PATH,
   FRAMEWORK_SETTINGS_JSON,
 } = require('../constants/path.constants');
+const {NEWBIE_DEVELOPER} = require('../constants/env.constants');
 const {getEnabledMicroservices} = require('./microservices.util');
 
 const LINE =
@@ -76,8 +77,11 @@ const getEnvObjectFromMicroservicesConfig = () => {
   return envObj;
 };
 
+const isNewbieDeveloper = getObjectFromEnvFile()[NEWBIE_DEVELOPER] === 'true';
+
 module.exports = {
   getObjectFromEnvFile,
   getEnvArrayFromFrameworkConfig,
   getEnvObjectFromMicroservicesConfig,
+  isNewbieDeveloper,
 };
