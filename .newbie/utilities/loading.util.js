@@ -1,16 +1,19 @@
 const readline = require('readline');
-const {underline} = require('colorette');
+const {green, underline} = require('colorette');
 
-const loadingAnimation = (
-  text = '',
-  chars = ['⠙', '⠘', '⠰', '⠴', '⠤', '⠦', '⠆', '⠃', '⠋', '⠉'],
-  delay = 100
-) => {
+const loadingAnimation = (text = '', delay = 100) => {
   let x = 0;
+  const solidTriangle = '▸';
+  const hollowArray = ['▹', '▹', '▹', '▹', '▹'];
 
   return setInterval(() => {
-    process.stdout.write(`\r${chars[x++]}${text}`);
-    x = x % chars.length;
+    x++;
+    const showedArray = hollowArray.map((icon, i) =>
+      i === x ? solidTriangle : icon
+    );
+
+    process.stdout.write(`\r${green(showedArray.join(''))}${text}☕`);
+    x = x % hollowArray.length;
   }, delay);
 };
 
@@ -21,7 +24,7 @@ const handleLoading = async (text, func) => {
   clearInterval(intervalId);
   readline.cursorTo(process.stdout, 0);
   readline.clearLine(process.stdout, 0);
-  console.info('|' + underline(text) + '|');
+  console.info('|' + underline(`✅${text.replace('...', ' done')}`) + '|');
 };
 
 module.exports = {

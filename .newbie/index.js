@@ -118,7 +118,9 @@ const main = async () => {
     await updateEnabledMicroservices(enabledMicroservices);
 
     // Assemable project files.
-    console.info(' ' + underline('                                    ') + ' ');
+    console.info(
+      ' ' + underline('                                        ') + ' '
+    );
 
     if (addedMicroservices.length > 0) {
       await handleLoading(' cloning code repositories...       ', async () => {

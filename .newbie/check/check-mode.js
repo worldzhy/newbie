@@ -8,7 +8,7 @@ const checkMode = async () => {
   const isNewbieDev = await isNewbieDeveloper();
   const isNewbieDevBefore = enabledMode.isNewbieDeveloper;
 
-  const enabledMicroservices = getEnabledMicroservices();
+  const enabledMicroservices = await getEnabledMicroservices();
 
   if (isNewbieDevBefore === isNewbieDev) {
     return true;
