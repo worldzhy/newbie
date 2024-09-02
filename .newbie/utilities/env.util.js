@@ -1,26 +1,28 @@
-const fs = require('fs');
-const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
+const fs = require('fs/promises');
 const {
-  ENABLED_PATH,
   ENV_PATH,
+  ENABLED_PATH,
   FRAMEWORK_SETTINGS_JSON,
 } = require('../constants/path.constants');
+const {exists} = require('../utilities/exists.util');
 const {NEWBIE_DEVELOPER} = require('../constants/env.constants');
 const {getEnabledMicroservices} = require('./microservices.util');
+const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
 
 const LINE =
   /(?:^|^)\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\'|[^'])*'|\s*"(?:\"|[^"])*"|\s*`(?:\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?(?:$|$)/gm;
 
-const getObjectFromEnvFile = () => {
+const getObjectFromEnvFile = async () => {
   // [step 1] Copy .env.example to .env if .env is not existed.
-  if (!fs.existsSync(ENV_PATH)) {
-    fs.writeFileSync(ENV_PATH, '');
+  const isExists = await exists(ENV_PATH);
+  if (!isExists) {
+    await fs.writeFile(ENV_PATH, '');
   }
 
   // [step 2] Read .env
   let match;
   const envObj = {};
-  const env = fs.readFileSync(ENV_PATH, {encoding: 'utf8', flag: 'r'});
+  const env = await fs.readFile(ENV_PATH, {encoding: 'utf8', flag: 'r'});
   const lines = env.toString().replace(/\r\n?/gm, '\n');
 
   while ((match = LINE.exec(lines)) != null) {
@@ -40,48 +42,59 @@ const getObjectFromEnvFile = () => {
   return envObj;
 };
 
-const getEnvArrayFromFrameworkConfig = () => {
-  if (fs.existsSync(FRAMEWORK_SETTINGS_JSON)) {
-    const {env = {}} = JSON.parse(
-      fs.readFileSync(FRAMEWORK_SETTINGS_JSON, {encoding: 'utf8', flag: 'r'})
-    );
+const getEnvArrayFromFrameworkConfig = async () => {
+  const isExists = await exists(FRAMEWORK_SETTINGS_JSON);
+
+  if (isExists) {
+    const file = await fs.readFile(FRAMEWORK_SETTINGS_JSON, {
+      encoding: 'utf8',
+      flag: 'r',
+    });
+    const {env = {}} = JSON.parse(file);
     return Object.keys(env);
   }
-
   return [];
 };
 
-const getEnvObjectFromMicroservicesConfig = () => {
+const getEnvObjectFromMicroservicesConfig = async () => {
   const envObj = {};
-  const enabledMicroservices = getEnabledMicroservices();
+  const enabledMicroservices = await getEnabledMicroservices();
 
-  enabledMicroservices.forEach(name => {
+  for (let i = 0; i < enabledMicroservices.length; i++) {
+    const name = enabledMicroservices[i];
     const {key, settingsFileName} = ALL_MICROSERVICES[name] || {};
 
     if (key && settingsFileName) {
       const settingsFilePath = `${ENABLED_PATH}/${key}/${settingsFileName}`;
+      const isExists = await exists(settingsFilePath);
 
       if (!envObj[key]) {
         envObj[key] = [];
       }
-      if (fs.existsSync(settingsFilePath)) {
-        const {env = {}} = JSON.parse(
-          fs.readFileSync(settingsFilePath, {encoding: 'utf8', flag: 'r'})
-        );
+      if (isExists) {
+        const file = await fs.readFile(settingsFilePath, {
+          encoding: 'utf8',
+          flag: 'r',
+        });
+        const {env = {}} = JSON.parse(file);
         envObj[key] = Object.keys(env);
       } else {
         console.error(`[Error] Missing ${name}.settings.json`);
       }
     }
-  });
+  }
   return envObj;
 };
 
-const isNewbieDeveloper = getObjectFromEnvFile()[NEWBIE_DEVELOPER] === 'true';
+const isNewbieDeveloper = async () => {
+  const envObj = await getObjectFromEnvFile();
+
+  return envObj[NEWBIE_DEVELOPER] === 'true';
+};
 
 module.exports = {
+  isNewbieDeveloper,
   getObjectFromEnvFile,
   getEnvArrayFromFrameworkConfig,
   getEnvObjectFromMicroservicesConfig,
-  isNewbieDeveloper,
 };
