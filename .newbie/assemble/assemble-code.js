@@ -4,7 +4,8 @@ const {
   MICROSERVICES_MODULE_TS,
   MICROSERVICES_CONFIG_TS,
 } = require('../constants/path.constants');
-const {exec, exists} = require('../utilities/promise.util');
+const {exec} = require('../utilities/exec.util');
+const {exists} = require('../utilities/exists.util');
 const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
 const {getEnabledMicroservices} = require('../utilities/microservices.util');
 

@@ -1,5 +1,5 @@
 const fs = require('fs/promises');
-const {exists} = require('../utilities/promise.util');
+const {exists} = require('../utilities/exists.util');
 const {ENABLED_MODE} = require('../constants/path.constants');
 
 const getEnabledMode = async () => {

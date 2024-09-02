@@ -1,5 +1,6 @@
 const fs = require('fs/promises');
-const {exec, exists} = require('../utilities/promise.util');
+const {exec} = require('../utilities/exec.util');
+const {exists} = require('../utilities/exists.util');
 const {isNewbieDeveloper} = require('../utilities/env.util');
 const {ENABLED_PATH, GIT_MODULES} = require('../constants/path.constants');
 const {ALL_MICROSERVICES} = require('../constants/microservices.constants');

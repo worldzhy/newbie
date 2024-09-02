@@ -4,7 +4,7 @@ const {
   ENABLED_PATH,
   FRAMEWORK_SETTINGS_JSON,
 } = require('../constants/path.constants');
-const {exists} = require('../utilities/promise.util');
+const {exists} = require('../utilities/exists.util');
 const {NEWBIE_DEVELOPER} = require('../constants/env.constants');
 const {getEnabledMicroservices} = require('./microservices.util');
 const {ALL_MICROSERVICES} = require('../constants/microservices.constants');

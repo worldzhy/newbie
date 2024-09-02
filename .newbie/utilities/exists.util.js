@@ -1,7 +1,4 @@
-const util = require('util');
 const fs = require('fs/promises');
-
-const exec = util.promisify(require('child_process').exec);
 
 const exists = async path => {
   try {
@@ -13,6 +10,5 @@ const exists = async path => {
 };
 
 module.exports = {
-  exec,
   exists,
 };

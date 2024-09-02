@@ -1,5 +1,5 @@
 const fs = require('fs/promises');
-const {exists} = require('../utilities/promise.util');
+const {exists} = require('../utilities/exists.util');
 const {ENABLED_MICROSERVICES} = require('../constants/path.constants');
 const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
 
