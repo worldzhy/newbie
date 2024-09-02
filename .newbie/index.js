@@ -1,22 +1,23 @@
 const figlet = require('figlet');
-const {checkbox, select} = require('@inquirer/prompts');
-const {bold, cyan, green, inverse, underline} = require('colorette');
-const {assembleSourceCodeFiles} = require('./assemble/assemble-code');
-const {assembleDependencies} = require('./assemble/assemble-dependencies');
-const {assembleEnvFile} = require('./assemble/assemble-env');
-const {assembleSchemaFiles} = require('./assemble/assemble-schema');
-const {
-  addRepositories,
-  removeRepositories,
-} = require('./assemble/assemble-repositories');
-const {checkMode} = require('./check/check-mode');
-const {ALL_MICROSERVICES} = require('./constants/microservices.constants');
 const {
   getAddedMicroservices,
   getRemovedMicroservices,
   getEnabledMicroservices,
   updateEnabledMicroservices,
 } = require('./utilities/microservices.util');
+const {
+  addRepositories,
+  removeRepositories,
+} = require('./assemble/assemble-repositories');
+const {checkMode} = require('./check/check-mode');
+const {checkbox, select} = require('@inquirer/prompts');
+const {handleLoading} = require('./utilities/loading.util');
+const {assembleEnvFile} = require('./assemble/assemble-env');
+const {assembleSchemaFiles} = require('./assemble/assemble-schema');
+const {bold, cyan, green, inverse} = require('colorette');
+const {assembleNestJsModules} = require('./assemble/assemble-modules');
+const {assembleDependencies} = require('./assemble/assemble-dependencies');
+const {ALL_MICROSERVICES} = require('./constants/microservices.constants');
 
 const main = async () => {
   // [step 1] Print the logo of the command-line tool.
@@ -31,7 +32,8 @@ const main = async () => {
   );
 
   // [step 2] Check the mode.
-  if (!checkMode()) {
+  const modeCheck = await checkMode();
+  if (!modeCheck) {
     process.exit(0);
   }
 
@@ -59,7 +61,7 @@ const main = async () => {
 
   // [step 4] Main function.
   const allMicroservices = Object.keys(ALL_MICROSERVICES);
-  const currentMicroervices = getEnabledMicroservices();
+  const currentMicroervices = await getEnabledMicroservices();
 
   // [step 4-1] Enable and disable services.
   const enabledMicroservices = await checkbox({
@@ -76,8 +78,9 @@ const main = async () => {
     loop: true,
     theme: {helpMode: 'never'},
   });
-  const addedMicroservices = getAddedMicroservices(enabledMicroservices);
-  const removedMicroservices = getRemovedMicroservices(enabledMicroservices);
+  const addedMicroservices = await getAddedMicroservices(enabledMicroservices);
+  const removedMicroservices =
+    await getRemovedMicroservices(enabledMicroservices);
 
   // [step 4-2] Confirm the operation.
   let message = '';
@@ -112,38 +115,37 @@ const main = async () => {
   // [step 4-3] Execute the operation.
   if (result === 'yes') {
     // Update enable.json first.
-    updateEnabledMicroservices(enabledMicroservices);
+    await updateEnabledMicroservices(enabledMicroservices);
 
     // Assemable project files.
-    console.info(' ' + underline('                                    ') + ' ');
-
     if (addedMicroservices.length > 0) {
-      console.info(
-        '|' + underline(' cloning code repositories...       ') + '|'
-      );
-      addRepositories(addedMicroservices);
+      await handleLoading('🥥 Clone code repositories ', async () => {
+        await addRepositories(addedMicroservices);
+      });
     }
 
-    console.info('|' + underline(' updating package dependencies...   ') + '|');
-    assembleDependencies(addedMicroservices, removedMicroservices);
+    await handleLoading('🍎 Update environment variables', async () => {
+      await assembleEnvFile(addedMicroservices, removedMicroservices);
+    });
 
-    console.info('|' + underline(' updating environment variables...  ') + '|');
-    assembleEnvFile(addedMicroservices, removedMicroservices);
+    await handleLoading('🫐 Update database schema', async () => {
+      await assembleSchemaFiles(addedMicroservices, removedMicroservices);
+    });
 
-    console.info('|' + underline(' updating database schema...        ') + '|');
-    assembleSchemaFiles(addedMicroservices, removedMicroservices);
+    await handleLoading('🍉 Update nestjs modules', async () => {
+      await assembleNestJsModules();
+    });
 
-    console.info('|' + underline(' updating nestjs modules...         ') + '|');
-    assembleSourceCodeFiles();
+    await handleLoading('🥝 Update package dependencies', async () => {
+      await assembleDependencies(addedMicroservices, removedMicroservices);
+    });
 
     if (removedMicroservices.length > 0) {
-      console.info(
-        '|' + underline(' removing code repositories...      ') + '|'
-      );
-      removeRepositories(removedMicroservices);
+      await handleLoading('🍒 Delete code repositories', async () => {
+        await removeRepositories(removedMicroservices);
+      });
     }
-
-    console.log(bold(green('          C O M P L E T E\n')));
+    console.info(bold(green('🍺 C O M P L E T E\n')));
   } else {
     console.info(
       '\n[info] You did not make any changes to the microservices.\n'

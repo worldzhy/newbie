@@ -69,6 +69,14 @@ $ npx commitizen init cz-conventional-changelog --save-dev --save-exact
 $ echo "module.exports = {extends: ['@commitlint/config-conventional']};" > commitlint.config.js
 ```
 
+### Set version
+
+```bash
+$npm version major
+$npm version minor
+$npm version patch
+```
+
 ### Start application
 
 ```bash

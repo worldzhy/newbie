@@ -4,11 +4,12 @@ const {
   getEnvObjectFromMicroservicesConfig,
 } = require('../utilities/env.util');
 
-const checkEnv = () => {
+const checkEnv = async () => {
   const missingVariables = {};
-  const frameworkEnvArray = getEnvArrayFromFrameworkConfig();
-  const microservicesEnvObj = getEnvObjectFromMicroservicesConfig();
-  const envObj = Object.keys(getObjectFromEnvFile());
+  const frameworkEnvArray = await getEnvArrayFromFrameworkConfig();
+  const microservicesEnvObj = await getEnvObjectFromMicroservicesConfig();
+  const objectEnvObj = await getObjectFromEnvFile();
+  const envObj = Object.keys(objectEnvObj);
 
   frameworkEnvArray.forEach(value => {
     if (!envObj.includes(value)) {
