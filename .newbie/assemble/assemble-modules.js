@@ -9,7 +9,7 @@ const {exists} = require('../utilities/exists.util');
 const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
 const {getEnabledMicroservices} = require('../utilities/microservices.util');
 
-const assembleSourceCodeFiles = async () => {
+const assembleNestJsModules = async () => {
   const enabledMicroservices = await getEnabledMicroservices();
 
   // [step 1] Assemble microservice.module.ts
@@ -53,7 +53,9 @@ const assembleSourceCodeFiles = async () => {
 
   // [step 3] Format code.
   try {
-    await exec('npm run format');
+    await exec(
+      `npx prettier --write ${MICROSERVICES_MODULE_TS} ${MICROSERVICES_CONFIG_TS}`
+    );
   } catch (error) {}
 };
 
@@ -119,5 +121,5 @@ const MicroservicesConfigTemplate = configs => `
   `;
 
 module.exports = {
-  assembleSourceCodeFiles,
+  assembleNestJsModules,
 };

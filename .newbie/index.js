@@ -14,8 +14,8 @@ const {checkbox, select} = require('@inquirer/prompts');
 const {handleLoading} = require('./utilities/loading.util');
 const {assembleEnvFile} = require('./assemble/assemble-env');
 const {assembleSchemaFiles} = require('./assemble/assemble-schema');
-const {bold, cyan, green, inverse, underline} = require('colorette');
-const {assembleSourceCodeFiles} = require('./assemble/assemble-code');
+const {bold, cyan, green, inverse} = require('colorette');
+const {assembleNestJsModules} = require('./assemble/assemble-modules');
 const {assembleDependencies} = require('./assemble/assemble-dependencies');
 const {ALL_MICROSERVICES} = require('./constants/microservices.constants');
 
@@ -124,20 +124,20 @@ const main = async () => {
       });
     }
 
-    await handleLoading('🍎 Update package dependencies', async () => {
-      await assembleDependencies(addedMicroservices, removedMicroservices);
-    });
-
-    await handleLoading('🫐 Update environment variables', async () => {
+    await handleLoading('🍎 Update environment variables', async () => {
       await assembleEnvFile(addedMicroservices, removedMicroservices);
     });
 
-    await handleLoading('🍉 Update database schema', async () => {
+    await handleLoading('🫐 Update database schema', async () => {
       await assembleSchemaFiles(addedMicroservices, removedMicroservices);
     });
 
-    await handleLoading('🥝 Update nestjs modules', async () => {
-      await assembleSourceCodeFiles();
+    await handleLoading('🍉 Update nestjs modules', async () => {
+      await assembleNestJsModules();
+    });
+
+    await handleLoading('🥝 Update package dependencies', async () => {
+      await assembleDependencies(addedMicroservices, removedMicroservices);
     });
 
     if (removedMicroservices.length > 0) {

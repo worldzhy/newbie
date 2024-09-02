@@ -33,19 +33,20 @@ const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
 
 const addRepositories = async addedMicroservices => {
   const isNewbieDev = await isNewbieDeveloper();
-  const exitGitModules = await exists(GIT_MODULES);
+  const existsGitModulesFile = await exists(GIT_MODULES);
 
-  if (!exitGitModules) {
+  if (!existsGitModulesFile) {
     await fs.writeFile(GIT_MODULES, '');
   }
+
   for (let i = 0; i < addedMicroservices.length; i++) {
     const name = addedMicroservices[i];
     const {key, srcPath, repositoryUrl} = ALL_MICROSERVICES[name] || {};
     const srcPathDotNewbiePath = `${srcPath}/.newbie`;
 
     if (!key) return;
-    const isExistsSrc = await exists(srcPath);
-    if (isExistsSrc) {
+    const existsSrcPath = await exists(srcPath);
+    if (existsSrcPath) {
       await exec(`rm -rf ${srcPath}`);
     }
 
@@ -55,8 +56,8 @@ const addRepositories = async addedMicroservices => {
     } catch (error) {}
 
     // [step 2] Copy settings file and schema file to .newbie/.enabled folder
-    const isExistsPath = await exists(srcPathDotNewbiePath);
-    if (srcPathDotNewbiePath && isExistsPath) {
+    const existsDotNewbiePath = await exists(srcPathDotNewbiePath);
+    if (srcPathDotNewbiePath && existsDotNewbiePath) {
       await exec(`cp -rf ${srcPathDotNewbiePath} ${ENABLED_PATH}/${key}`);
     }
 
