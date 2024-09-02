@@ -118,39 +118,34 @@ const main = async () => {
     await updateEnabledMicroservices(enabledMicroservices);
 
     // Assemable project files.
-    console.info(
-      ' ' + underline('                                        ') + ' '
-    );
-
     if (addedMicroservices.length > 0) {
-      await handleLoading(' cloning code repositories...       ', async () => {
+      await handleLoading('🥥 Clone code repositories ', async () => {
         await addRepositories(addedMicroservices);
       });
     }
 
-    await handleLoading(' updating package dependencies...   ', async () => {
+    await handleLoading('🍎 Update package dependencies', async () => {
       await assembleDependencies(addedMicroservices, removedMicroservices);
     });
 
-    await handleLoading(' updating environment variables...  ', async () => {
+    await handleLoading('🫐 Update environment variables', async () => {
       await assembleEnvFile(addedMicroservices, removedMicroservices);
     });
 
-    await handleLoading(' updating database schema...        ', async () => {
+    await handleLoading('🍉 Update database schema', async () => {
       await assembleSchemaFiles(addedMicroservices, removedMicroservices);
     });
 
-    await handleLoading(' updating nestjs modules...         ', async () => {
+    await handleLoading('🥝 Update nestjs modules', async () => {
       await assembleSourceCodeFiles();
     });
 
     if (removedMicroservices.length > 0) {
-      await handleLoading(' removing code repositories...      ', async () => {
+      await handleLoading('🍒 Delete code repositories', async () => {
         await removeRepositories(removedMicroservices);
       });
     }
-
-    console.log(bold(green('          C O M P L E T E\n')));
+    console.info(bold(green('🍺 C O M P L E T E\n')));
   } else {
     console.info(
       '\n[info] You did not make any changes to the microservices.\n'
