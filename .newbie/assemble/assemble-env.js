@@ -43,7 +43,7 @@ const assembleEnvFile = async (addedMicroservices, removedMicroservices) => {
 
     if (!key) {
       console.error(`[Error] Non-existent microservice<${name}>`);
-      return;
+      continue;
     }
 
     if (settingsFileName) {
@@ -75,7 +75,7 @@ const assembleEnvFile = async (addedMicroservices, removedMicroservices) => {
 
     if (!key) {
       console.error(`[Error] Non-existent microservice<${name}>`);
-      return;
+      continue;
     }
     if (settingsFileName) {
       const settingsFilePath = `${ENABLED_PATH}/${key}/${settingsFileName}`;
@@ -165,7 +165,7 @@ const generateEnvExampleFile = async () => {
     const {key, settingsFileName} = ALL_MICROSERVICES[name] || {};
 
     if (!key) {
-      return;
+      continue;
     }
     if (settingsFileName) {
       const settingsFilePath = `${ENABLED_PATH}/${settingsFileName}`;

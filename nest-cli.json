@@ -2,9 +2,7 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
   "compilerOptions": {
-    "assets": [
-      "microservices/saas-starter/providers/mail/templates/"
-    ],
+    "assets": [],
     "watchAssets": true
   }
 }

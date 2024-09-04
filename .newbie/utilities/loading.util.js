@@ -10,8 +10,8 @@ const loadingAnimation = (text = '', delay = 200) => {
     const showedArray = hollowArray.map((icon, i) =>
       i === x ? solidTriangle : icon
     );
-    process.stdout.write(`\r${text} ${green(showedArray.join(''))}`);
 
+    process.stdout.write(`\r${text} ${green(showedArray.join(''))}`);
     x++;
     x = x % hollowArray.length;
   }, delay);

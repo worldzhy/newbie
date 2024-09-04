@@ -28,7 +28,7 @@ const assembleNestJsModules = async () => {
 
     if (!key) {
       console.error(`[Error] Non-existent microservice<${name}>`);
-      return;
+      continue;
     }
     if (settingsFileName) {
       const settingsFilePath = `${ENABLED_PATH}/${key}/${settingsFileName}`;

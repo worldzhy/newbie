@@ -98,6 +98,15 @@ const ALL_MICROSERVICES = {
     moduleNames: 'MapModule',
     importCode: `import {MapModule} from './map/map.module';`,
   },
+  'message-bot': {
+    key: 'message-bot',
+    srcPath: 'src/microservices/message-bot',
+    repositoryUrl: 'https://github.com/worldzhy/newbie.message-bot.git',
+    schemaFileName: 'message-bot.schema',
+    settingsFileName: 'message-bot.settings.json',
+    moduleNames: 'MessageBotModule',
+    importCode: `import {MessageBotModule} from './message-bot/message-bot.module';`,
+  },
   notification: {
     key: 'notification',
     srcPath: 'src/microservices/notification',

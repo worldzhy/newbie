@@ -18,7 +18,7 @@ const assembleDependencies = async (
     const {key, settingsFileName} = ALL_MICROSERVICES[name] || {};
 
     if (!key || !settingsFileName) {
-      return;
+      continue;
     }
     const settingsFilePath = `${ENABLED_PATH}/${key}/${settingsFileName}`;
     const isExists = await exists(settingsFilePath);
@@ -67,7 +67,7 @@ const assembleDependencies = async (
     const {key, settingsFileName} = ALL_MICROSERVICES[name] || {};
 
     if (!key || !settingsFileName) {
-      return;
+      continue;
     }
     const settingsFilePath = `${ENABLED_PATH}/${key}/${settingsFileName}`;
     const isExists = await exists(settingsFilePath);
@@ -91,7 +91,7 @@ const assembleDependencies = async (
     const {key, settingsFileName} = ALL_MICROSERVICES[name] || {};
 
     if (!key || !settingsFileName) {
-      return;
+      continue;
     }
     const settingsFilePath = `${ENABLED_PATH}/${key}/${settingsFileName}`;
     const isExists = await exists(settingsFilePath);

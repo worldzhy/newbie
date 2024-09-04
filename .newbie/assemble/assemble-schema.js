@@ -20,7 +20,7 @@ const assembleSchemaFiles = async (
 
     if (!key) {
       console.error(`[Error] non-existent microservice<${name}>`);
-      return;
+      continue;
     }
     if (schemaFileName) {
       const sourceSchemaPath = `${ENABLED_PATH}/${key}/${schemaFileName}`;
@@ -55,7 +55,7 @@ const assembleSchemaFiles = async (
 
     if (!key) {
       console.error(`[Error] non-existent microservice<${name}>`);
-      return;
+      continue;
     }
 
     if (schemaFileName) {

@@ -44,7 +44,7 @@ const addRepositories = async addedMicroservices => {
     const {key, srcPath, repositoryUrl} = ALL_MICROSERVICES[name] || {};
     const srcPathDotNewbiePath = `${srcPath}/.newbie`;
 
-    if (!key) return;
+    if (!key) continue;
     const existsSrcPath = await exists(srcPath);
     if (existsSrcPath) {
       await exec(`rm -rf ${srcPath}`);
@@ -88,7 +88,7 @@ const removeRepositories = async removedMicroservices => {
     const name = removedMicroservices[i];
     const {key, srcPath} = ALL_MICROSERVICES[name] || {};
 
-    if (!key) return;
+    if (!key) continue;
 
     // [step 1] Delete ./newbie.enabled/[key]/
     const enabledMicroservicesPath = `${ENABLED_PATH}/${key}`;
