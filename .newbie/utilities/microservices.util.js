@@ -30,13 +30,12 @@ const getEnabledMicroservices = async () => {
       JSON.stringify({enabled: []}, null, 2)
     );
   }
-
   const file = await fs.readFile(ENABLED_MICROSERVICES, 'utf8');
   const json = JSON.parse(file);
+
   if (!json.enabled) {
     json.enabled = [];
   }
-
   return json.enabled;
 };
 
