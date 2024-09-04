@@ -3,7 +3,10 @@ const {exists} = require('../utilities/exists.util');
 const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
 const {ENABLED_PATH, NEST_CLI_PATH} = require('../constants/path.constants');
 
-const assembleAssets = async (addedMicroservices, removedMicroservices) => {
+const assembleNestJsAssets = async (
+  addedMicroservices,
+  removedMicroservices
+) => {
   const isExists = await exists(NEST_CLI_PATH);
 
   if (!isExists) {
@@ -83,5 +86,5 @@ const assembleAssets = async (addedMicroservices, removedMicroservices) => {
 };
 
 module.exports = {
-  assembleAssets,
+  assembleNestJsAssets,
 };
