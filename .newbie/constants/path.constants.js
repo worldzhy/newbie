@@ -11,6 +11,7 @@ const PRISMA_SCHEMA_APPLICATION = './prisma/schema/application.prisma';
 
 const ENV_PATH = './.env';
 const GIT_MODULES = '.gitmodules';
+const NEST_CLI_PATH = './nest-cli.json';
 
 module.exports = {
   ENABLED_PATH,
@@ -26,4 +27,5 @@ module.exports = {
 
   ENV_PATH,
   GIT_MODULES,
+  NEST_CLI_PATH,
 };

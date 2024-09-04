@@ -11,10 +11,11 @@ const {
 } = require('./assemble/assemble-repositories');
 const {checkMode} = require('./check/check-mode');
 const {checkbox, select} = require('@inquirer/prompts');
+const {bold, cyan, green, inverse} = require('colorette');
 const {handleLoading} = require('./utilities/loading.util');
 const {assembleEnvFile} = require('./assemble/assemble-env');
+const {assembleAssets} = require('./assemble/assemble-assets');
 const {assembleSchemaFiles} = require('./assemble/assemble-schema');
-const {bold, cyan, green, inverse} = require('colorette');
 const {assembleNestJsModules} = require('./assemble/assemble-modules');
 const {assembleDependencies} = require('./assemble/assemble-dependencies');
 const {ALL_MICROSERVICES} = require('./constants/microservices.constants');
@@ -134,6 +135,10 @@ const main = async () => {
 
     await handleLoading('🍉 Update nestjs modules', async () => {
       await assembleNestJsModules();
+    });
+
+    await handleLoading('🍌 Update nestjs-cli assets', async () => {
+      await assembleAssets(addedMicroservices, removedMicroservices);
     });
 
     await handleLoading('🥝 Update package dependencies', async () => {
