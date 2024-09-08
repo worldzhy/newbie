@@ -61,6 +61,24 @@ export class ContactSearchPeopleBase {
   @IsString()
   @IsOptional()
   linkedin?: string;
+
+  @ApiProperty({
+    type: Boolean,
+    required: false,
+  })
+  @IsBoolean()
+  @IsOptional()
+  skipProxyCurl?: boolean;
+}
+
+export class ContactSearchPeopleRule {
+  @ApiProperty({
+    type: Boolean,
+    required: false,
+  })
+  @IsBoolean()
+  @IsOptional()
+  skipProxyCurl?: boolean;
 }
 export class PeopleFinderCallThirdPartyDto extends ContactSearchPeopleBase {}
 
@@ -79,6 +97,13 @@ export class ContactSearchPeopleTaskDto extends ContactSearchPeopleBase {
   // @IsBoolean()
   // @IsOptional()
   // findEmail?: boolean;
+
+  @ApiProperty({
+    type: ContactSearchPeopleRule,
+    required: false,
+  })
+  @IsOptional()
+  rules?: object;
 }
 
 export class CreateContactSearchTaskBatchReqDto {

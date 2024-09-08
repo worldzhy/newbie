@@ -60,6 +60,7 @@ model PeopleFinderTask {
   emails            Json[]
   phones            Json[]
   linkedins         Json[]
+  rules             Json?
   status            String // pending | completed
   createdAt         DateTime               @default(now())
   updatedAt         DateTime               @updatedAt

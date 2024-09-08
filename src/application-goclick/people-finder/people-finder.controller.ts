@@ -118,13 +118,14 @@ export class PeopleFinderController {
     if ((findEmail && findPhone) || (!findEmail && !findPhone))
       throw new BadRequestException('Choose one of findEmail and findPhone');
     const lastPeoples: CreateContactSearchTaskBatchReqDto['peoples'] = [];
-    body.peoples.forEach(item => {
+    body.peoples.forEach(({skipProxyCurl, ...item}) => {
       // If it is the same people. Linkedin is prioritized for stack entry, and subsequent logic needs to prioritize the execution of linkedin queries
       item.linkedin?.split(splitStr).forEach(linkedin => {
         lastPeoples.push({
           ...findParam,
           ...item,
           linkedin,
+          rules: {skipProxyCurl: skipProxyCurl || false},
           companyDomain: '',
         });
       });
@@ -133,6 +134,7 @@ export class PeopleFinderController {
           ...findParam,
           ...item,
           companyDomain,
+          rules: {skipProxyCurl: skipProxyCurl || false},
           linkedin: '',
         });
       });
@@ -154,6 +156,7 @@ export class PeopleFinderController {
           linkedin: item.linkedin,
           findEmail: item.findEmail,
           findPhone: item.findPhone,
+          rules: item.rules,
         }) as PeopleFinderTaskBullJob
     );
     await this.queue.addBulk(datas.map(item => ({data: item})));
@@ -188,6 +191,7 @@ export class PeopleFinderController {
           linkedin: item.linkedin,
           findEmail: item.findEmail,
           findPhone: item.findPhone,
+          rules: item.rules,
         }) as PeopleFinderTaskBullJob
     );
     await this.queue.addBulk(datas.map(item => ({data: item})));
@@ -372,10 +376,19 @@ export class PeopleFinderController {
           sourceMode: PeopleFinderSourceMode.searchPeopleByLinkedin,
         });
 
+        const oldData = await this.prisma.peopleFinderTask.findFirst({
+          where: {id: Number(taskId)},
+        });
         let callThirdPartyId: number = 0;
 
         if (isExistTask) {
           callThirdPartyId = isExistTask.id;
+        } else if (
+          oldData?.rules &&
+          (oldData?.rules as any).skipProxyCurl &&
+          findRes?.callThirdPartyId
+        ) {
+          // skipProxyCurl
         } else {
           const findRes = await this.proxycurlService.find(
             {
@@ -399,10 +412,6 @@ export class PeopleFinderController {
         }
 
         if (callThirdPartyId) {
-          const oldData = await this.prisma.peopleFinderTask.findFirst({
-            where: {id: Number(taskId)},
-          });
-
           await this.prisma.peopleFinderTask.update({
             where: {id: Number(taskId)},
             data: {

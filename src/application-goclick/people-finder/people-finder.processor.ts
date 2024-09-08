@@ -42,7 +42,7 @@ export class PeopleFinderJobProcessor {
 
     if (data) {
       let isGetEmail = false;
-      let isGetEmailIng = false;
+      let isVoilanorbertGetEmailIng = false;
       const {
         findEmail,
         findPhone,
@@ -56,10 +56,13 @@ export class PeopleFinderJobProcessor {
         isGetEmail = findPhoneRes.isGetEmail;
       }
       if (findEmail && !isGetEmail) {
-        isGetEmailIng = await this.findEmail(peopleFinderTaskId, user);
+        isVoilanorbertGetEmailIng = await this.findEmail(
+          peopleFinderTaskId,
+          user
+        );
       }
 
-      if (!isGetEmailIng) {
+      if (!isVoilanorbertGetEmailIng) {
         await this.prisma.peopleFinderTask.update({
           where: {id: Number(peopleFinderTaskId)},
           data: {
@@ -76,8 +79,9 @@ export class PeopleFinderJobProcessor {
   /** only need domain */
   private async findPhone(
     peopleFinderTaskId: number,
-    data: PeopleFinderUserReq
+    findData: PeopleFinderUserReq
   ) {
+    const {rules, ...data} = findData;
     let isGetEmail = false;
 
     let sourceMode;
@@ -147,9 +151,11 @@ export class PeopleFinderJobProcessor {
 
   private async findEmail(
     peopleFinderTaskId: number,
-    data: PeopleFinderUserReq
+    findData: PeopleFinderUserReq
   ) {
-    let isGetEmailIng = false;
+    const {rules, ...data} = findData;
+
+    let isVoilanorbertGetEmailIng = false;
     // Check if the current personnel have records on the current platform, and do not execute those with records
     const isExistVoilanorbertTask = await this.peopleFinder.isExist({
       platform: PeopleFinderPlatforms.voilanorbert,
@@ -183,6 +189,11 @@ export class PeopleFinderJobProcessor {
         });
         if (isExistTask) {
           callThirdPartyId = isExistTask.id;
+        } else if (rules && rules.skipProxyCurl) {
+          // If skipProxyCurl
+          if (findRes?.callThirdPartyId) {
+            callThirdPartyId = findRes.callThirdPartyId;
+          }
         } else {
           const findRes2 = await this.proxycurlService.find(data, {
             needPhone: true,
@@ -200,7 +211,7 @@ export class PeopleFinderJobProcessor {
       }
 
       if (findRes?.res?.searching) {
-        isGetEmailIng = true;
+        isVoilanorbertGetEmailIng = true;
       }
     }
 
@@ -220,6 +231,6 @@ export class PeopleFinderJobProcessor {
       });
     }
 
-    return isGetEmailIng;
+    return isVoilanorbertGetEmailIng;
   }
 }

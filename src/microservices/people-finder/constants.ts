@@ -42,6 +42,7 @@ export type PeopleFinderUserReq = {
   lastName?: string;
   companyDomain?: string;
   linkedin?: string;
+  rules?: {skipProxyCurl?: boolean};
 };
 
 export type PeopleFinderTaskBullJob = {
