@@ -187,37 +187,70 @@ export class PeopleFinderService {
       });
 
       // get emails \ phones \ linkedins
-      let emails: string[] = [];
-      let phones: string[] = [];
-      let linkedins: string[] = [];
+      let emails: {email: string; source: string}[] = [];
+      let phones: {phone: string; source: string}[] = [];
+      let linkedins: {linkedin: string; source: string}[] = [];
       resultList.map(item => {
         if (item.emails && item.emails.length) {
           if (item.source === PeopleFinderPlatforms.voilanorbert) {
-            item.emails = item.emails.map(
-              (emailCon: {email: string; score: number}) => emailCon.email
+            const _emails = item.emails.map(
+              (emailCon: {email: string; score: number}) => {
+                return {
+                  email: emailCon.email,
+                  source: item.source,
+                };
+              }
+            );
+            emails = emails.concat(_emails);
+          } else if (item.source === PeopleFinderPlatforms.peopledatalabs) {
+            const _emails = item.emails.map(
+              (emailCon: {address: string; type: string}) => {
+                return {
+                  email: emailCon.address,
+                  source: item.source,
+                };
+              }
+            );
+            emails = emails.concat(_emails);
+          } else {
+            emails = emails.concat(
+              (item.emails as string[]).map(email => {
+                return {
+                  email,
+                  source: item.source,
+                };
+              })
             );
           }
-          if (item.source === PeopleFinderPlatforms.peopledatalabs) {
-            item.emails = item.emails.map(
-              (emailCon: {address: string; type: string}) => emailCon.address
-            );
-          }
-          emails = emails.concat(item.emails as string[]);
         }
         if (item.phones && item.phones.length) {
-          phones = phones.concat(item.phones as string[]);
+          phones = phones.concat(
+            (item.phones as string[]).map(phone => {
+              return {
+                phone: phone,
+                source: item.source,
+              };
+            })
+          );
         }
         if (item.linkedins && item.linkedins.length) {
-          linkedins = linkedins.concat(item.linkedins as string[]);
+          linkedins = linkedins.concat(
+            (item.linkedins as string[]).map(linkedin => {
+              return {
+                linkedin: linkedin,
+                source: item.source,
+              };
+            })
+          );
         }
       });
 
       await this.prisma.peopleFinderTask.update({
         where: {id: task.id},
         data: {
-          emails: Array.from(new Set(emails)),
-          phones: Array.from(new Set(phones)),
-          linkedins: Array.from(new Set(linkedins)),
+          emails,
+          phones,
+          linkedins,
         },
       });
     }
