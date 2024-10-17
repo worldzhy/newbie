@@ -26,8 +26,9 @@ async function bootstrap() {
   const app = await NestFactory.create(ApplicationModule);
   app.use(cookieParser());
 
-  // set max body size
-  app.use(json({limit: '10mb'}));
+  // bodyParser was added back to express in release 4.16.0
+  // https://stackoverflow.com/questions/47232187/express-json-vs-bodyparser-json
+  app.use(json({limit: '10mb'})); // set max body size
   app.use(urlencoded({limit: '10mb', extended: true}));
 
   // [step 2] Enable features.
