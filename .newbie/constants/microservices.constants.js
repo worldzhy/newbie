@@ -233,6 +233,15 @@ const ALL_MICROSERVICES = {
     moduleNames: 'TaskSchedulingModule',
     importCode: `import {TaskSchedulingModule} from './task-scheduling/task-scheduling.module';`,
   },
+  webhook: {
+    key: 'webhook',
+    srcPath: 'src/microservices/webhook',
+    repositoryUrl: 'https://github.com/worldzhy/newbie.webhook.git',
+    schemaFileName: 'webhook.schema',
+    settingsFileName: 'webhook.settings.json',
+    moduleNames: 'WebhookModule',
+    importCode: `import {WebhookModule} from './webhook/webhook.module';`,
+  },
   workflow: {
     key: 'workflow',
     srcPath: 'src/microservices/workflow',

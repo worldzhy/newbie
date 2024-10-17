@@ -8,24 +8,30 @@ export class HttpMiddleware implements NestMiddleware {
   constructor(private readonly logger: Logger) {}
 
   use(request: Request, response: Response, next: NextFunction) {
-    response.on('finish', () => {
-      const {method, originalUrl} = request;
-      const {statusCode, statusMessage} = response;
+    const startDate = new Date();
 
+    response.on('finish', () => {
       // [step 1] Assemble log content.
-      let content = `${statusCode} ${statusMessage} >> ${method} ${originalUrl}`;
-      if (request.body && Object.keys(request.body).length > 0) {
-        content += ` ${JSON.stringify(request.body)}`;
-      }
+      let authorizationKey = '';
+      if (typeof request.query.api_key === 'string')
+        authorizationKey = request.query.api_key.replace('Bearer ', '');
+      else if (typeof request.headers['x-api-key'] === 'string')
+        authorizationKey = request.headers['x-api-key'].replace('Bearer ', '');
+      else if (request.headers.authorization)
+        authorizationKey = request.headers.authorization.replace('Bearer ', '');
+
+      const logObj = {
+        date: startDate,
+        duration: new Date().getTime() - startDate.getTime(),
+        method: request.method,
+        originalUrl: request.originalUrl,
+        body: request.body,
+        status: response.statusCode,
+        authorization: authorizationKey,
+      };
 
       // [step 2] Write log.
-      if (statusCode >= 500) {
-        return this.logger.error(content, this.loggerContext);
-      } else if (statusCode >= 400) {
-        return this.logger.warn(content, this.loggerContext);
-      } else {
-        return this.logger.log(content, this.loggerContext);
-      }
+      return this.logger.log(logObj, this.loggerContext);
     });
 
     next();
