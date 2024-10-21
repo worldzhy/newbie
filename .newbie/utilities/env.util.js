@@ -12,7 +12,7 @@ const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
 const LINE =
   /(?:^|^)\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\'|[^'])*'|\s*"(?:\"|[^"])*"|\s*`(?:\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?(?:$|$)/gm;
 
-const getObjectFromEnvFile = async () => {
+const convertEnvFileToObject = async () => {
   // [step 1] Copy .env.example to .env if .env is not existed.
   const isExists = await exists(ENV_PATH);
   if (!isExists) {
@@ -42,7 +42,7 @@ const getObjectFromEnvFile = async () => {
   return envObj;
 };
 
-const getEnvArrayFromFrameworkConfig = async () => {
+const getEnvsInFrameworkSettingsFile = async () => {
   const isExists = await exists(FRAMEWORK_SETTINGS_JSON);
 
   if (isExists) {
@@ -56,7 +56,7 @@ const getEnvArrayFromFrameworkConfig = async () => {
   return [];
 };
 
-const getEnvObjectFromMicroservicesConfig = async () => {
+const getEnvObjectFromMicroserviceSettingsFiles = async () => {
   const envObj = {};
   const enabledMicroservices = await getEnabledMicroservices();
 
@@ -87,14 +87,14 @@ const getEnvObjectFromMicroservicesConfig = async () => {
 };
 
 const isNewbieDeveloper = async () => {
-  const envObj = await getObjectFromEnvFile();
+  const envObj = await convertEnvFileToObject();
 
   return envObj[NEWBIE_DEVELOPER] === 'true';
 };
 
 module.exports = {
   isNewbieDeveloper,
-  getObjectFromEnvFile,
-  getEnvArrayFromFrameworkConfig,
-  getEnvObjectFromMicroservicesConfig,
+  convertEnvFileToObject,
+  getEnvsInFrameworkSettingsFile,
+  getEnvObjectFromMicroserviceSettingsFiles,
 };

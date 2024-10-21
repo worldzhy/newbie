@@ -1,4 +1,24 @@
+const {checkbox, select} = require('@inquirer/prompts');
+const {bold, cyan, green, inverse} = require('colorette');
 const figlet = require('figlet');
+
+const {assembleEnvFile} = require('./assemble/assemble-env');
+const {assembleSchemaFiles} = require('./assemble/assemble-schema');
+const {assembleNestJsAssets} = require('./assemble/assemble-assets');
+const {assembleNestJsModules} = require('./assemble/assemble-modules');
+const {assembleDependencies} = require('./assemble/assemble-dependencies');
+const {
+  addRepositories,
+  removeRepositories,
+} = require('./assemble/assemble-repositories');
+const {
+  ACCOUNT_MICROSERVICE,
+  SAAS_MICROSERVICE,
+  ALL_MICROSERVICES,
+} = require('./constants/microservices.constants');
+const {ApplicationMode} = require('./constants/mode.constants');
+const {isNewbieDeveloper} = require('./utilities/env.util');
+const {handleLoading} = require('./utilities/loading.util');
 const {
   getAddedMicroservices,
   getRemovedMicroservices,
@@ -6,22 +26,12 @@ const {
   updateEnabledMicroservices,
 } = require('./utilities/microservices.util');
 const {
-  addRepositories,
-  removeRepositories,
-} = require('./assemble/assemble-repositories');
-const {checkMode} = require('./check/check-mode');
-const {checkbox, select} = require('@inquirer/prompts');
-const {bold, cyan, green, inverse} = require('colorette');
-const {handleLoading} = require('./utilities/loading.util');
-const {assembleEnvFile} = require('./assemble/assemble-env');
-const {assembleSchemaFiles} = require('./assemble/assemble-schema');
-const {assembleNestJsAssets} = require('./assemble/assemble-assets');
-const {assembleNestJsModules} = require('./assemble/assemble-modules');
-const {assembleDependencies} = require('./assemble/assemble-dependencies');
-const {ALL_MICROSERVICES} = require('./constants/microservices.constants');
+  checkApplicationMode,
+  checkDeveloperMode,
+} = require('./utilities/mode.util');
 
 const main = async () => {
-  // [step 1] Print the logo of the command-line tool.
+  // [step 1] Print the introduction of the command-line tool.
   console.info(
     figlet.textSync('Newbie', {
       font: 'Epic',
@@ -32,13 +42,12 @@ const main = async () => {
     })
   );
 
-  // [step 2] Check the mode.
-  const modeCheck = await checkMode();
-  if (!modeCheck) {
-    process.exit(0);
-  }
+  console.info(
+    green(
+      `                               ${(await isNewbieDeveloper()) ? '     [newbie developer]\n' : '[application developer]\n'}`
+    )
+  );
 
-  // [step 3] Print the usage of the command-line tool.
   console.info('What is newbie?');
   console.info(' -----------------------------------------------------------');
   console.info('| Newbie is a backend development framework based on NestJS.|');
@@ -50,19 +59,23 @@ const main = async () => {
     ' -----------------------------------------------------------\n'
   );
 
-  console.info('How to use newbie?');
-  console.info(' -----------------------------------------------------------');
-  console.info('|* Press <Up> and <Down> to move the cursor.                |');
-  console.info('|* Press <Space> to toggle between enabled and disabled.    |');
-  console.info('|* Press <Enter> to finish the configuration.               |');
-  console.info('|* Press <Q> to quit without saving the configuration.      |');
-  console.info(
-    ' -----------------------------------------------------------\n'
-  );
+  // [step 2] Check developer mode.
+  if (!(await checkDeveloperMode())) {
+    process.exit(0);
+  }
+
+  // [step 3] Check application mode.
+  const applicationMode = await checkApplicationMode();
 
   // [step 4] Main function.
-  const allMicroservices = Object.keys(ALL_MICROSERVICES);
   const currentMicroervices = await getEnabledMicroservices();
+  const allMicroservices = Object.keys(ALL_MICROSERVICES);
+  if (applicationMode === ApplicationMode.SAAS_APPLICATION) {
+    allMicroservices.splice(allMicroservices.indexOf(ACCOUNT_MICROSERVICE), 1);
+    // allMicroservices.splice(allMicroservices.indexOf(SAAS_MICROSERVICE), 1);
+  } else {
+    allMicroservices.splice(allMicroservices.indexOf(SAAS_MICROSERVICE), 1);
+  }
 
   // [step 4-1] Enable and disable services.
   const enabledMicroservices = await checkbox({
@@ -77,7 +90,7 @@ const main = async () => {
     }),
     pageSize: 100,
     loop: true,
-    theme: {helpMode: 'never'},
+    theme: {helpMode: 'auto'},
   });
   const addedMicroservices = await getAddedMicroservices(enabledMicroservices);
   const removedMicroservices =
@@ -105,12 +118,12 @@ const main = async () => {
   }
 
   const result = await select({
-    message: `\n${message}`,
+    message: `${message}`,
     choices: [
       {name: 'Yes', value: 'yes'},
       {name: 'No', value: 'no'},
     ],
-    theme: {prefix: '', helpMode: 'never'},
+    theme: {helpMode: 'auto'},
   });
 
   // [step 4-3] Execute the operation.

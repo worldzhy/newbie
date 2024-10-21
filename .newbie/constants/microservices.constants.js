@@ -1,4 +1,16 @@
+const ACCOUNT_MICROSERVICE = 'account';
+const SAAS_MICROSERVICE = 'saas';
+
 const ALL_MICROSERVICES = {
+  saas: {
+    key: 'saas-starter',
+    srcPath: 'src/microservices/saas-starter',
+    repositoryUrl: 'https://github.com/worldzhy/newbie.saas-starter.git',
+    schemaFileName: 'saas-starter.schema',
+    settingsFileName: 'saas-starter.settings.json',
+    moduleNames: 'SaaSStarterModule',
+    importCode: `import {SaaSStarterModule} from './saas-starter/saas-starter.module';`,
+  },
   account: {
     key: 'account',
     srcPath: 'src/microservices/account',
@@ -161,15 +173,6 @@ const ALL_MICROSERVICES = {
     moduleNames: 'NewbieQueueModule',
     importCode: `import {NewbieQueueModule} from './queue/queue.module';`,
   },
-  'saas-starter': {
-    key: 'saas-starter',
-    srcPath: 'src/microservices/saas-starter',
-    repositoryUrl: 'https://github.com/worldzhy/newbie.saas-starter.git',
-    schemaFileName: 'saas-starter.schema',
-    settingsFileName: 'saas-starter.settings.json',
-    moduleNames: 'SaaSStarterModule',
-    importCode: `import {SaaSStarterModule} from './saas-starter/saas-starter.module';`,
-  },
   shortcut: {
     key: 'shortcut',
     srcPath: 'src/microservices/shortcut',
@@ -263,5 +266,7 @@ const ALL_MICROSERVICES = {
 };
 
 module.exports = {
+  ACCOUNT_MICROSERVICE,
+  SAAS_MICROSERVICE,
   ALL_MICROSERVICES,
 };

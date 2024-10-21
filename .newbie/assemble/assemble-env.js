@@ -5,7 +5,7 @@ const {
   FRAMEWORK_SETTINGS_JSON,
 } = require('../constants/path.constants');
 const {exists} = require('../utilities/exists.util');
-const {getObjectFromEnvFile} = require('../utilities/env.util');
+const {convertEnvFileToObject} = require('../utilities/env.util');
 const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
 const {getEnabledMicroservices} = require('../utilities/microservices.util');
 
@@ -16,7 +16,7 @@ const {getEnabledMicroservices} = require('../utilities/microservices.util');
  */
 
 const assembleEnvFile = async (addedMicroservices, removedMicroservices) => {
-  const envObj = await getObjectFromEnvFile();
+  const envObj = await convertEnvFileToObject();
   const isExists = await exists(FRAMEWORK_SETTINGS_JSON);
 
   // [step 1] Assemble framework environment variables
