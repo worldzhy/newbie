@@ -3,13 +3,13 @@ const SAAS_MICROSERVICE = 'saas';
 
 const ALL_MICROSERVICES = {
   saas: {
-    key: 'saas-starter',
-    srcPath: 'src/microservices/saas-starter',
-    repositoryUrl: 'https://github.com/worldzhy/newbie.saas-starter.git',
-    schemaFileName: 'saas-starter.schema',
-    settingsFileName: 'saas-starter.settings.json',
-    moduleNames: 'SaaSStarterModule',
-    importCode: `import {SaaSStarterModule} from './saas-starter/saas-starter.module';`,
+    key: 'saas',
+    srcPath: 'src/microservices/saas',
+    repositoryUrl: 'https://github.com/worldzhy/newbie.saas.git',
+    schemaFileName: 'saas.schema',
+    settingsFileName: 'saas.settings.json',
+    moduleNames: 'SaasModule',
+    importCode: `import {SaasModule} from './saas/saas.module';`,
   },
   account: {
     key: 'account',
