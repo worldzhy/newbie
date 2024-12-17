@@ -11,6 +11,7 @@ export class NewbieException extends HttpException {
 
 export enum NewbieExceptionType {
   Login_WrongInput,
+  Login_InactiveUser,
   Login_NoPassword,
   Login_ExceededAttempts,
   Login_HighFrequency,
@@ -30,6 +31,7 @@ const NewbieExceptionMap = new Map<
       error: {message: 'Invalid combination of account and password'},
     },
   ],
+
   [
     NewbieExceptionType.Login_NoPassword,
     {
@@ -69,6 +71,15 @@ const NewbieExceptionMap = new Map<
   [
     NewbieExceptionType.ResetPassword_InvalidCode,
     {code: 1006, error: {message: 'Invalid verification code'}},
+  ],
+  [
+    NewbieExceptionType.Login_InactiveUser,
+    {
+      code: 1007,
+      error: {
+        message: 'You have closed your account, do you want to recover it?',
+      },
+    },
   ],
   [
     NewbieExceptionType.Access_HighFrequency,

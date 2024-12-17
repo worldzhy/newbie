@@ -34,13 +34,13 @@ export function generateRandomCode(length = 6): string {
   return result;
 }
 
-export async function generateHash(password: string): Promise<string> {
+export async function generateHash(password: string | null): Promise<string> {
   const salt = await bcrypt.genSalt();
   return await bcrypt.hash(password, salt);
 }
 
 export async function compareHash(
-  password: string,
+  password: string | null,
   hash: string | null
 ): Promise<boolean> {
   return await bcrypt.compare(password, hash);
