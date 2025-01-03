@@ -116,6 +116,35 @@ $ npm run build
 $ pm2 start newbie
 ```
 
+### Proxy for geolite2-redist
+npm i proxy-agent  
+> edit: node_modules/geolite2-redist/dist/download-helpers.js
+import {ProxyAgent} from 'proxy-agent';
+
+got() set proxyAgent
+```
+await import('got')
+  .then(({ got }) => got(mirrorUrls.checksum[dbName],{
+      agent: {
+          https: new ProxyAgent('http://127.0.0.1:54960') // local vpn port
+      }
+  }).text())
+  .then(checksum => checksum.trim())
+```
+
+```
+await pipeline(got.stream(mirrorUrls.download[dbName], {
+    agent: {
+        https: new ProxyAgent('http://127.0.0.1:54960') // local vpn port
+    }
+}), tar.x({
+    cwd: hotDownloadDir,
+    filter: (entryPath) => path.basename(entryPath) === `${dbName}.mmdb`,
+    strip: 1
+}));
+```
+
 ## 📄 License
 
 Newbie is [MIT licensed](LICENSE).
+
