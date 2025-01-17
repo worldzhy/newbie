@@ -1,0 +1,34 @@
+// !! ------------------------------------------------------------ //
+// !!            [Microservice] MessageBot models                  //
+// !! ------------------------------------------------------------ //
+// * MessageBotChannel                                             //
+// * MessageBotRecord                                              //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
+
+model MessageBotChannel {
+  id          Int                @id @default(autoincrement())
+  name        String
+  description String?
+  webhook     String
+  platform    String // lark, slack ...
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  deletedAt   DateTime?
+  records     MessageBotRecord[]
+
+  @@unique([name, platform])
+  @@schema("microservice/message-bot")
+}
+
+model MessageBotRecord {
+  id        Int               @id @default(autoincrement())
+  request   Json
+  response  Json?
+  status    String // pending, succeeded, failed
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  channel   MessageBotChannel @relation(fields: [channelId], references: [id])
+  channelId Int
+
+  @@schema("microservice/message-bot")
+}

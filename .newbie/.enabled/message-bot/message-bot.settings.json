@@ -1,0 +1,10 @@
+{
+  "config-service": {
+    "message-bot": {
+    }
+  },
+  "env": {
+  },
+  "dependencies": {
+  }
+}
