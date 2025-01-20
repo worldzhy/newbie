@@ -1,3 +1,4 @@
+import {ValidationPipe} from '@nestjs/common';
 import {NestFactory} from '@nestjs/core';
 import * as cookieParser from 'cookie-parser';
 import {urlencoded, json} from 'express';
@@ -32,6 +33,21 @@ async function bootstrap() {
 
   // [step 2] Enable features.
   app.enableCors({credentials: true, origin: allowedOrigins});
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      /**
+       * By default, every path parameter and query parameter comes over the network as a string.
+       * When we enable this behavior globally, the ValidationPipe will try to automatically convert a string identifier
+       * to a number if we specified the id type as a number (in the method signature).
+       */
+      transform: true,
+      /**
+       * If set to true, validator will strip validated (returned) object of any properties that do not use any validation decorators.
+       */
+      whitelist: true,
+    })
+  );
 
   if (environment === Environment.Production) {
     // helmet is only available in production environment.
