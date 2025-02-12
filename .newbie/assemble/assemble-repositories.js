@@ -52,8 +52,10 @@ const addRepositories = async addedMicroservices => {
 
     // [step 1] Clone code repository
     try {
-      await exec(`git submodule add ${repositoryUrl} ${srcPath}`);
-    } catch (error) {}
+      await exec(`git submodule add  --force ${repositoryUrl} ${srcPath}`);
+    } catch (error) {
+      console.error(error)
+    }
 
     // [step 2] Copy settings file and schema file to .newbie/.enabled folder
     const existsDotNewbiePath = await exists(srcPathDotNewbiePath);
