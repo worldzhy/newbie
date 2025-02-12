@@ -65,14 +65,13 @@ const main = async () => {
   }
 
   // [step 3] Check application mode.
-  const applicationMode = await checkApplicationMode();
+  const applicationMode = ApplicationMode.NON_SAAS_APPLICATION; // const applicationMode = await checkApplicationMode();
 
   // [step 4] Main function.
   const currentMicroervices = await getEnabledMicroservices();
   const allMicroservices = Object.keys(ALL_MICROSERVICES);
   if (applicationMode === ApplicationMode.SAAS_APPLICATION) {
     allMicroservices.splice(allMicroservices.indexOf(ACCOUNT_MICROSERVICE), 1);
-    // allMicroservices.splice(allMicroservices.indexOf(SAAS_MICROSERVICE), 1);
   } else {
     allMicroservices.splice(allMicroservices.indexOf(SAAS_MICROSERVICE), 1);
   }
