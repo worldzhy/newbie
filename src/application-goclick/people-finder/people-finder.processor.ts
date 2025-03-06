@@ -16,11 +16,13 @@ import {
 } from '@microservices/people-finder/constants';
 
 export const PeopleFinderQueue = 'people-finder';
+export const PauseTaskBatchIds = 'PAUSE_TASK_BATCH_IDS';
 
 @Processor(PeopleFinderQueue)
 @Injectable()
 export class PeopleFinderJobProcessor {
   callBackOrigin: string;
+  currentPauseTaskBatchIds?: number[];
 
   constructor(
     private readonly configService: ConfigService,
@@ -36,13 +38,40 @@ export class PeopleFinderJobProcessor {
     );
   }
 
+  private async getPauseTaskBatchIds(): Promise<number[]> {
+    const pauseTaskBatchIdsJson =
+      await this.queue.client.get(PauseTaskBatchIds);
+    return pauseTaskBatchIdsJson ? JSON.parse(pauseTaskBatchIdsJson) : [];
+  }
+
+  private async setPauseTaskBatchIds(
+    pauseTaskBatchIds: number[]
+  ): Promise<void> {
+    const uniquePauseTaskBatchIds = Array.from(new Set(pauseTaskBatchIds));
+    console.log(
+      'setPauseTaskBatchIds',
+      JSON.stringify(uniquePauseTaskBatchIds)
+    );
+    await this.queue.client.set(
+      PauseTaskBatchIds,
+      JSON.stringify(uniquePauseTaskBatchIds)
+    );
+  }
+
   @Process({concurrency: 1})
   async peopleFinderProcess(job: Job) {
+    const currentPauseTaskBatchIds = await this.getPauseTaskBatchIds();
     const {data}: {data: PeopleFinderTaskBullJob} = job;
 
     if (data) {
-      let isGetEmail = false;
-      let isVoilanorbertGetEmailIng = false;
+      if (currentPauseTaskBatchIds.includes(data.taskBatchId)) {
+        await job.moveToFailed({message: 'Not Credits'});
+        await job.retry(); //  Move the job to the end of the queue
+        return;
+      }
+      let _isGetEmail = false;
+      let _isVoilanorbertGetEmailIng = false;
+      let _isNoCredits = false;
       const {
         findEmail,
         findPhone,
@@ -52,17 +81,32 @@ export class PeopleFinderJobProcessor {
       } = data;
 
       if (findPhone) {
-        const findPhoneRes = await this.findPhone(peopleFinderTaskId, user);
-        isGetEmail = findPhoneRes.isGetEmail;
-      }
-      if (findEmail && !isGetEmail) {
-        isVoilanorbertGetEmailIng = await this.findEmail(
+        const {isGetEmail, isNoCredits} = await this.findPhone(
           peopleFinderTaskId,
           user
         );
+        _isGetEmail = isGetEmail;
+        _isNoCredits = !!isNoCredits;
+      }
+      if (findEmail && !_isGetEmail) {
+        const {isVoilanorbertGetEmailIng, isNoCredits} = await this.findEmail(
+          peopleFinderTaskId,
+          user
+        );
+        _isVoilanorbertGetEmailIng = isVoilanorbertGetEmailIng;
+        _isNoCredits = isNoCredits;
       }
 
-      if (!isVoilanorbertGetEmailIng) {
+      if (_isNoCredits) {
+        await job.moveToFailed({message: 'Not Credits'});
+        await job.retry();
+        const newIds = currentPauseTaskBatchIds.concat([data.taskBatchId]);
+        await this.setPauseTaskBatchIds(newIds);
+        console.log('_isNoCredits', JSON.stringify(data));
+        return;
+      }
+
+      if (!_isVoilanorbertGetEmailIng) {
         await this.prisma.peopleFinderTask.update({
           where: {id: Number(peopleFinderTaskId)},
           data: {
@@ -83,6 +127,7 @@ export class PeopleFinderJobProcessor {
   ) {
     const {rules, ...data} = findData;
     let isGetEmail = false;
+    let isNoCredits = false;
 
     let sourceMode;
     let findWay;
@@ -127,7 +172,8 @@ export class PeopleFinderJobProcessor {
       if (findRes) {
         if (findRes.dataFlag.email) isGetEmail = findRes.dataFlag.email;
         if (findRes.noCredits) {
-          await this.queue.pause();
+          isNoCredits = true;
+          // await this.queue.pause();
         }
         callThirdPartyId = findRes.callThirdPartyId;
       }
@@ -146,7 +192,7 @@ export class PeopleFinderJobProcessor {
       },
     });
 
-    return {isGetEmail};
+    return {isGetEmail, isNoCredits};
   }
 
   private async findEmail(
@@ -155,6 +201,7 @@ export class PeopleFinderJobProcessor {
   ) {
     const {rules, ...data} = findData;
 
+    let isNoCredits = false;
     let isVoilanorbertGetEmailIng = false;
     // Check if the current personnel have records on the current platform, and do not execute those with records
     const isExistVoilanorbertTask = await this.peopleFinder.isExist({
@@ -173,7 +220,8 @@ export class PeopleFinderJobProcessor {
       );
 
       if (findRes?.noCredits) {
-        await this.queue.pause();
+        isNoCredits = true;
+        // await this.queue.pause();
       }
 
       // not domain or not name || searching completed && no email
@@ -200,7 +248,8 @@ export class PeopleFinderJobProcessor {
             needEmail: true,
           });
           if (findRes2?.noCredits) {
-            await this.queue.pause();
+            isNoCredits = true;
+            // await this.queue.pause();
           }
           if (findRes2.callThirdPartyId) {
             callThirdPartyId = findRes2.callThirdPartyId;
@@ -231,6 +280,6 @@ export class PeopleFinderJobProcessor {
       });
     }
 
-    return isVoilanorbertGetEmailIng;
+    return {isVoilanorbertGetEmailIng, isNoCredits};
   }
 }

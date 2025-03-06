@@ -39,7 +39,7 @@ import {
   PeopleFinderService,
   PeopleFinderPlatforms,
 } from '@microservices/people-finder/people-finder.service';
-import {PeopleFinderQueue} from './people-finder.processor';
+import {PeopleFinderQueue, PauseTaskBatchIds} from './people-finder.processor';
 
 @ApiTags('People Finder')
 @ApiBearerAuth()
@@ -80,6 +80,28 @@ export class PeopleFinderController {
   @Get('contact-search-queue-is-pause')
   async isQueuePause() {
     return await this.queue.isPaused();
+  }
+
+  @NoGuard()
+  @Post('contact-search-all-batch-resume')
+  async queueAllBatchResume() {
+    return await this.queue.client.set(PauseTaskBatchIds, JSON.stringify([]));
+  }
+
+  @NoGuard()
+  @Get('contact-search-queue-pause-list')
+  async queuePauseList() {
+    const ids = await this.queue.client.get(PauseTaskBatchIds);
+    if (ids) {
+      return await this.prisma.peopleFinderTaskBatch.findMany({
+        where: {
+          id: {
+            in: JSON.parse(ids),
+          },
+        },
+      });
+    }
+    return ids;
   }
 
   @NoGuard()
