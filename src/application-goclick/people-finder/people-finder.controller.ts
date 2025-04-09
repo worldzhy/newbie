@@ -153,24 +153,28 @@ export class PeopleFinderController {
     const lastPeoples: CreateContactSearchTaskBatchReqDto['peoples'] = [];
     body.peoples.forEach(({skipProxyCurl, ...item}) => {
       // If it is the same people. Linkedin is prioritized for stack entry, and subsequent logic needs to prioritize the execution of linkedin queries
-      item.linkedin?.split(splitStr).forEach(linkedin => {
-        lastPeoples.push({
-          ...findParam,
-          ...item,
-          linkedin,
-          rules: {skipProxyCurl: skipProxyCurl || false},
-          companyDomain: '',
+      if (item.linkedin) {
+        item.linkedin.split(splitStr).forEach(linkedin => {
+          lastPeoples.push({
+            ...findParam,
+            ...item,
+            linkedin,
+            rules: {skipProxyCurl: skipProxyCurl || false},
+            companyDomain: '',
+          });
         });
-      });
-      item.companyDomain?.split(splitStr).forEach(companyDomain => {
-        lastPeoples.push({
-          ...findParam,
-          ...item,
-          companyDomain,
-          rules: {skipProxyCurl: skipProxyCurl || false},
-          linkedin: '',
+      }
+      if (item.companyDomain) {
+        item.companyDomain.split(splitStr).forEach(companyDomain => {
+          lastPeoples.push({
+            ...findParam,
+            ...item,
+            companyDomain,
+            rules: {skipProxyCurl: skipProxyCurl || false},
+            linkedin: '',
+          });
         });
-      });
+      }
     });
     await this.peopleFinder.createTaskBatch({...body, peoples: lastPeoples});
     const tasks = await this.peopleFinder.getTaskBatchTasks(batchId);
