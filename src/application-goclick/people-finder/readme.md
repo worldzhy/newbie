@@ -1,0 +1,5 @@
+people-finder 逻辑：
+如果需要查电话
+先使用peopledatalabs，如果不存在linkedin地址，先用domain+name去peopledatalabs查linkedin，最终需要用linkedin去查电话，如果返回的数据里刚好有email，那么也不需要再去用voilanorbert或者proxycurl查这个用户的email了。
+如果需要查邮件
+先使用voilanorbert，没有查到再用proxycurl，也可以设置参数跳过proxycurl

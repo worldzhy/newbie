@@ -2,6 +2,7 @@ export enum PeopleFinderPlatforms {
   voilanorbert = 'voilanorbert',
   proxycurl = 'proxycurl',
   peopledatalabs = 'peopledatalabs',
+  mixrank = 'mixrank',
 }
 export enum PeopleFinderStatus {
   pending = 'pending',

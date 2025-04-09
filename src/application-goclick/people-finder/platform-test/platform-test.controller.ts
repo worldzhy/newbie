@@ -20,7 +20,7 @@ import {
   GetContactSearchBatchReqDto,
   GetBatchListStatusResDto,
   GetContactSearchBatchListReqDto,
-} from './people-finder.dto';
+} from './platform-test.dto';
 import {
   SearchEmailThirdResDto,
   SearchEmailContentResDto,
@@ -39,14 +39,16 @@ import {
   PeopleFinderService,
   PeopleFinderPlatforms,
 } from '@microservices/people-finder/people-finder.service';
-import {PeopleFinderQueue, PauseTaskBatchIds} from './people-finder.processor';
+import {
+  PeopleFinderTestQueue,
+  PauseTaskBatchIds,
+} from './platform-test.processor';
 
-@ApiTags('People Finder')
+@ApiTags('People Finder Platform Test')
 @ApiBearerAuth()
-@Controller('people-finder')
-export class PeopleFinderController {
-  private loggerContext = 'PeopleFinder';
-  callBackOrigin: string;
+@Controller('people-finder/platform-test')
+export class PeopleFinderTestController {
+  private loggerContext = 'PeopleFinder[platform-test]';
 
   constructor(
     private readonly configService: ConfigService,
@@ -55,48 +57,27 @@ export class PeopleFinderController {
     private readonly peopleFinder: PeopleFinderService,
     private readonly logger: CustomLoggerService,
     private readonly prisma: PrismaService,
-    @InjectQueue(PeopleFinderQueue) public queue: Queue
+    @InjectQueue(PeopleFinderTestQueue) public queue: Queue
+  ) {}
+
+  @NoGuard()
+  @Post('task-batch-callback')
+  async taskBatchCallback(
+    @Body()
+    body: {
+      batchId: string;
+    }
   ) {
-    this.callBackOrigin = this.configService.getOrThrow<string>(
-      'microservice.peopleFinder.voilanorbert.callbackOrigin'
-    );
-  }
-
-  @NoGuard()
-  @Get('queue-health')
-  async checkQueueHealth() {
-    const workers = await this.queue.getWorkers();
-    return {
-      workers,
-      isPaused: await this.queue.isPaused(),
-      jobCounts: await this.queue.getJobCounts(),
-    };
-  }
-
-  @NoGuard()
-  @Post('contact-search-queue-resume')
-  async queueResume() {
-    this.queue.resume();
-    return 'ok';
-  }
-
-  @NoGuard()
-  @Post('contact-search-queue-pause')
-  async queuePause() {
-    this.queue.pause();
-    return 'ok';
-  }
-
-  @NoGuard()
-  @Get('contact-search-queue-is-pause')
-  async isQueuePause() {
-    return await this.queue.isPaused();
-  }
-
-  @NoGuard()
-  @Post('contact-search-all-batch-resume')
-  async queueAllBatchResume() {
-    return await this.queue.client.set(PauseTaskBatchIds, JSON.stringify([]));
+    const taskBatch = await this.prisma.peopleFinderTaskBatch.findFirst({
+      where: {
+        batchId: body.batchId,
+      },
+    });
+    if (taskBatch) {
+      return await this.peopleFinder.checkAndExecuteTaskBatchCallback(
+        taskBatch.id
+      );
+    }
   }
 
   @NoGuard()
@@ -116,7 +97,7 @@ export class PeopleFinderController {
   }
 
   @NoGuard()
-  @Post('create-contact-search-batch-id')
+  @Post('create-test-batch-id')
   @ApiResponse({
     type: CreateContactSearchBatchResDto,
   })
@@ -132,7 +113,7 @@ export class PeopleFinderController {
   }
 
   @NoGuard()
-  @Post('create-contact-search-batch')
+  @Post('create-test-batch')
   @ApiResponse({
     description: `If there are multiple entries in companyDomain or linkedin, use ;*_*; For example, abc.com;*_*;123.com.
     If findPhone only requires a domain`,
@@ -142,37 +123,9 @@ export class PeopleFinderController {
     @Body()
     body: CreateContactSearchTaskBatchReqDto
   ) {
-    const splitStr = ';*_*;';
-    const {batchId, findEmail, findPhone} = body;
-    const findParam = {
-      findEmail: !!findEmail,
-      findPhone: !!findPhone,
-    };
-    if ((findEmail && findPhone) || (!findEmail && !findPhone))
-      throw new BadRequestException('Choose one of findEmail and findPhone');
-    const lastPeoples: CreateContactSearchTaskBatchReqDto['peoples'] = [];
-    body.peoples.forEach(({skipProxyCurl, ...item}) => {
-      // If it is the same people. Linkedin is prioritized for stack entry, and subsequent logic needs to prioritize the execution of linkedin queries
-      item.linkedin?.split(splitStr).forEach(linkedin => {
-        lastPeoples.push({
-          ...findParam,
-          ...item,
-          linkedin,
-          rules: {skipProxyCurl: skipProxyCurl || false},
-          companyDomain: '',
-        });
-      });
-      item.companyDomain?.split(splitStr).forEach(companyDomain => {
-        lastPeoples.push({
-          ...findParam,
-          ...item,
-          companyDomain,
-          rules: {skipProxyCurl: skipProxyCurl || false},
-          linkedin: '',
-        });
-      });
-    });
-    await this.peopleFinder.createTaskBatch({...body, peoples: lastPeoples});
+    const {batchId} = body;
+
+    await this.peopleFinder.createTaskBatch(body);
     const tasks = await this.peopleFinder.getTaskBatchTasks(batchId);
     const datas: PeopleFinderTaskBullJob[] = tasks.map(
       item =>
@@ -187,44 +140,9 @@ export class PeopleFinderController {
           lastName: item.lastName,
           companyDomain: item.companyDomain,
           linkedin: item.linkedin,
-          findEmail: item.findEmail,
-          findPhone: item.findPhone,
-          rules: item.rules,
-        }) as PeopleFinderTaskBullJob
-    );
-    await this.queue.addBulk(datas.map(item => ({data: item})));
-    return {batchId};
-  }
-
-  @NoGuard()
-  @Post('retry-contact-search-batch')
-  @ApiResponse({
-    type: CreateContactSearchBatchResDto,
-  })
-  async retryContactSearchTaskBatch(
-    @Body()
-    body: GetContactSearchBatchReqDto
-  ) {
-    const {batchId} = body;
-    const tasks = await this.peopleFinder.getTaskBatchTasks(batchId, {
-      status: PeopleFinderTaskStatus.pending,
-    });
-    const datas: PeopleFinderTaskBullJob[] = tasks.map(
-      item =>
-        ({
-          id: item.id,
-          taskBatchId: item.taskBatchId,
-          userId: item.userId,
-          userSource: item.userSource,
-          name: item.name,
-          firstName: item.firstName,
-          middleName: item.middleName,
-          lastName: item.lastName,
-          companyDomain: item.companyDomain,
-          linkedin: item.linkedin,
-          findEmail: item.findEmail,
-          findPhone: item.findPhone,
-          rules: item.rules,
+          // findEmail: item.findEmail,
+          // findPhone: item.findPhone,
+          // rules: item.rules,
         }) as PeopleFinderTaskBullJob
     );
     await this.queue.addBulk(datas.map(item => ({data: item})));

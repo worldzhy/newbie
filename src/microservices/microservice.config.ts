@@ -123,6 +123,9 @@ export default registerAs('microservice', () => ({
     peopledatalabs: {
       apiKey: process.env.PEOPLE_FINDER_PEOPLEDATALABS_API_KEY,
     },
+    mixrank: {
+      apiKey: process.env.PEOPLE_FINDER_MIXRANK_API_KEY,
+    },
     notification: {
       webhookFeishu: process.env.PEOPLE_FINDER_WEBHOOK_FEISHU,
       accessKey: process.env.PEOPLE_FINDER_ACCESS_KEY,
