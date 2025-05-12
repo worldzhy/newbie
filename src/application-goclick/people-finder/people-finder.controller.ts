@@ -439,7 +439,7 @@ export class PeopleFinderController {
               lastName: record.lastName as string,
             },
             {
-              needPhone: true,
+              needPhone: false,
               needEmail: true,
             }
           );
