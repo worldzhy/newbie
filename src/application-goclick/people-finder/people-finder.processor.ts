@@ -244,7 +244,7 @@ export class PeopleFinderJobProcessor {
           }
         } else {
           const findRes2 = await this.proxycurlService.find(data, {
-            needPhone: true,
+            needPhone: false,
             needEmail: true,
           });
           if (findRes2?.noCredits) {
