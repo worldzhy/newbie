@@ -42,6 +42,7 @@ export class PeopleFinderCallbackController {
     @Body()
     data: SnovEmailByDomainCallbackResDto
   ) {
+    console.log('snov-hook', id, taskId, data);
     let status;
     let emails;
 

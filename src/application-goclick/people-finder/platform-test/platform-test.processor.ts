@@ -46,6 +46,7 @@ export class PeopleFinderJobProcessor {
       name,
       ...user
     } = data;
+    console.log('peopleFinderProcess', JSON.stringify(data));
 
     let params = {};
     let callThirdPartyId = 0;
@@ -110,7 +111,7 @@ export class PeopleFinderJobProcessor {
         });
 
         // callback mode
-        return;
+        return true;
       }
     }
 
