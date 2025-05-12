@@ -131,5 +131,10 @@ export default registerAs('microservice', () => ({
       accessKey: process.env.PEOPLE_FINDER_ACCESS_KEY,
       channelName: process.env.PEOPLE_FINDER_SYSTEM_CHANNEL,
     },
+    snov: {
+      callback: process.env.PEOPLE_FINDER_SNOV_CALLBACK,
+      client_id: process.env.PEOPLE_FINDER_SNOV_CLIENT_ID,
+      client_secret: process.env.PEOPLE_FINDER_SNOV_CLIENT_SECRET,
+    },
   },
 }));

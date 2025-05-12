@@ -3,6 +3,7 @@ import {VoilaNorbertModule} from '@microservices/people-finder/voila-norbert/mod
 import {ProxycurlModule} from '@microservices/people-finder/proxycurl/module';
 import {PeopledatalabsModule} from '@microservices/people-finder/peopledatalabs/module';
 import {MixRankModule} from '@microservices/people-finder/mixrank/module';
+import {SnovModule} from '@microservices/people-finder/snov/module';
 import {PeopleFinderService} from './people-finder.service';
 import {PeopleFinderNotificationService} from './people-finder.notification.service';
 
@@ -13,6 +14,7 @@ import {PeopleFinderNotificationService} from './people-finder.notification.serv
     ProxycurlModule,
     PeopledatalabsModule,
     MixRankModule,
+    SnovModule,
   ],
   providers: [PeopleFinderService, PeopleFinderNotificationService],
   exports: [
@@ -22,6 +24,7 @@ import {PeopleFinderNotificationService} from './people-finder.notification.serv
     ProxycurlModule,
     PeopledatalabsModule,
     MixRankModule,
+    SnovModule,
   ],
 })
 export class PeopleFinderModule {}

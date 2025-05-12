@@ -44,6 +44,7 @@ export class MixRankService {
     domain,
     name,
   }: PersonMatchReqDto): Promise<PersonMatchResDto> {
+    // https://mixrank.com/api/documentation#/person/match
     const url = `${baseUrl}/${this.apiKey}/person/match`;
     return new Promise(resolve => {
       let noCredits = false;

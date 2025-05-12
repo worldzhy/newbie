@@ -1,5 +1,6 @@
 import {Module} from '@nestjs/common';
 import {PeopleFinderController} from './people-finder.controller';
+import {PeopleFinderCallbackController} from './callback.controller';
 import {PeopleFinderModule} from '@microservices/people-finder/people-finder.module';
 import {PeopleFinderTestModule} from './platform-test/platform-test.module';
 import {BullModule} from '@nestjs/bull';
@@ -23,6 +24,6 @@ const PeopleFinderQueueDynamicModule = BullModule.registerQueue({
     PeopleFinderTestModule,
   ],
   providers: [PeopleFinderJobProcessor],
-  controllers: [PeopleFinderController],
+  controllers: [PeopleFinderController, PeopleFinderCallbackController],
 })
 export class AppPeopleFinderModule {}
