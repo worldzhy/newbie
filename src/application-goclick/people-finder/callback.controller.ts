@@ -4,7 +4,7 @@ import {ConfigService} from '@nestjs/config';
 import {PrismaService} from '@toolkit/prisma/prisma.service';
 import {CustomLoggerService} from '@toolkit/logger/logger.service';
 import {NoGuard} from '@microservices/account/security/passport/public/public.decorator';
-import {SnovEmailByDomainResDto} from '@microservices/people-finder/snov/snov.dto';
+import {SnovEmailByDomainCallbackResDto} from '@microservices/people-finder/snov/snov.dto';
 import {
   PeopleFinderTaskStatus,
   PeopleFinderStatus,
@@ -40,7 +40,7 @@ export class PeopleFinderCallbackController {
     @Query('taskId')
     taskId: number,
     @Body()
-    data: SnovEmailByDomainResDto
+    data: SnovEmailByDomainCallbackResDto
   ) {
     let status;
     let emails;

@@ -14,8 +14,9 @@ import {
 import {
   ByDomainSearchResDto,
   ByLinkedinSearchResDto,
-  SnovEmailByDomainResDto,
+  SnovEmailByDomainCallbackResDto,
   SnovEmailByLinkedinResDto,
+  SnovEmailByDomainResDto,
 } from './snov.dto';
 export * from './snov.dto';
 
@@ -107,22 +108,29 @@ export class SnovService {
     return new Promise(resolve => {
       let noCredits = false;
       this.httpService.axiosRef
-        .post<any, any>(url, {
-          headers: {
-            authorization: `${this.token_type} ${this.access_token}`,
-            'Content-Type': 'application/json',
-            Cookie: this.cookie,
+        .post<any, any>(
+          url,
+          {
+            rows: [
+              {
+                ...(domain && {domain}),
+                ...(firstName && {first_name: firstName}),
+                ...(lastName && {last_name: lastName}),
+              },
+            ],
+            webhook_url: webhook,
           },
-          params: {
-            ...(domain && {domain}),
-            ...(firstName && {first_name: firstName}),
-            ...(lastName && {last_name: lastName}),
-            webhook,
-          },
-        })
+          {
+            headers: {
+              authorization: `${this.token_type} ${this.access_token}`,
+              'Content-Type': 'application/json',
+              Cookie: this.cookie,
+            },
+          }
+        )
         .then(async res => {
           const data: SnovEmailByDomainResDto = res.data;
-          if (data.status === 'completed') {
+          if (data?.data?.task_hash) {
             resolve({res: data});
             this.logger.log(
               'Snov searchEmailByBomain success: ' + JSON.stringify(data),
@@ -136,7 +144,7 @@ export class SnovService {
             //   noCredits = true;
             // }
             const resError = {
-              error: data.status || 'data.errors',
+              error: data,
               status: res.status,
             };
             resolve({error: resError, noCredits});
@@ -150,7 +158,12 @@ export class SnovService {
           // 处理 token 失效
           if (await this.handleTokenError(e)) {
             // token 刷新成功，重试请求
-            return this.searchEmailByDomain({domain, firstName, lastName, webhook});
+            return this.searchEmailByDomain({
+              domain,
+              firstName,
+              lastName,
+              webhook,
+            });
           }
           const resError = {error: e.response.data};
           resolve({error: resError, noCredits});
@@ -299,7 +312,7 @@ export class SnovService {
     emails,
   }: {
     id: number;
-    data: SnovEmailByDomainResDto | SnovEmailByLinkedinResDto;
+    data: SnovEmailByDomainCallbackResDto | SnovEmailByLinkedinResDto;
     status: string;
     emails?: string[];
   }) {

@@ -261,6 +261,22 @@ export class ByLinkedinSearchResDto implements CommonResDto {
 }
 
 // email
+interface SnovEmailByDomainRow {
+  first_name: string;
+  last_name: string;
+  domain: string;
+}
+
+interface SnovEmailByDomainResDto {
+  data: {
+    task_hash: string;
+  };
+  meta: {
+    rows: SnovEmailByDomainRow[];
+  };
+}
+
+export {SnovEmailByDomainRow, SnovEmailByDomainResDto};
 interface EmailFinderResult {
   email: string;
   smtp_status: 'valid' | 'unknown';
@@ -282,7 +298,7 @@ interface MetaRow {
   first_name: string;
 }
 
-interface SnovEmailByDomainResDto {
+interface SnovEmailByDomainCallbackResDto {
   status: 'completed';
   data: PersonResult[];
   meta: {
@@ -291,7 +307,12 @@ interface SnovEmailByDomainResDto {
   };
 }
 
-export {EmailFinderResult, PersonResult, MetaRow, SnovEmailByDomainResDto};
+export {
+  EmailFinderResult,
+  PersonResult,
+  MetaRow,
+  SnovEmailByDomainCallbackResDto,
+};
 
 // linkedin
 interface LastUpdateDate {
