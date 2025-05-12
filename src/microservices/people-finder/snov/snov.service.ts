@@ -239,7 +239,7 @@ export class SnovService {
   }: {
     mode: 'byLinkedin' | 'byDomain';
     user: PeopleFinderCallThirdPartyDto;
-    taskId?: string;
+    taskId?: number;
   }) {
     const {companyDomain, firstName, lastName, linkedin} = user;
     if (!this.access_token) {

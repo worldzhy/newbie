@@ -106,6 +106,7 @@ export class PeopleFinderJobProcessor {
             ...user,
             ...params,
           },
+          taskId: peopleFinderTaskId,
         });
 
         // callback mode
