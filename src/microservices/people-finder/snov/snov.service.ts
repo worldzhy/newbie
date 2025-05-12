@@ -103,6 +103,7 @@ export class SnovService {
     lastName,
     webhook,
   }: any): Promise<ByDomainSearchResDto> {
+    console.log('snov searchEmailByDomain webhook', webhook);
     // https://snov.io/api
     const url = `${baseUrl}/v2/emails-by-domain-by-name/start`;
     return new Promise(resolve => {
