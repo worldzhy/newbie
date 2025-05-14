@@ -182,11 +182,11 @@ export interface Result {
 // Usage example:
 // const data: ApiResponse = {...};
 
-export enum MixRankStatus {
-  SUCCESS = 200,
-  INVALID_REQUEST_ERROR = 400,
-  INSUFFICIENT_CREDITS = 402,
-}
+// export enum SnovStatus {
+//   SUCCESS = 200,
+//   INVALID_REQUEST_ERROR = 400,
+//   INSUFFICIENT_CREDITS = 402,
+// }
 
 class CommonResDto {
   error?: unknown;

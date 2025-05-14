@@ -136,5 +136,8 @@ export default registerAs('microservice', () => ({
       client_id: process.env.PEOPLE_FINDER_SNOV_CLIENT_ID,
       client_secret: process.env.PEOPLE_FINDER_SNOV_CLIENT_SECRET,
     },
+    hunter: {
+      apiKey: process.env.PEOPLE_FINDER_HUNTER_API_KEY,
+    },
   },
 }));

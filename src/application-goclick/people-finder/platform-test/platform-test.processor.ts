@@ -7,6 +7,7 @@ import {PeopleFinderService} from '@microservices/people-finder/people-finder.se
 import {MixRankService} from '@microservices/people-finder/mixrank/mixrank.service';
 import {ProxycurlService} from '@microservices/people-finder/proxycurl/proxycurl.service';
 import {SnovService} from '@microservices/people-finder/snov/snov.service';
+import {HunterService} from '@microservices/people-finder/hunter/hunter.service';
 
 import {
   PeopleFinderTaskBullJob,
@@ -17,7 +18,7 @@ export const PeopleFinderTestQueue = 'people-finder-platform-test';
 export const PauseTaskBatchIds = 'PAUSE_TASK_BATCH_IDS';
 
 // mixrank | proxycurl | snov
-const TestPlatform: 'mixrank' | 'proxycurl' | 'snov' = 'snov';
+const TestPlatform: 'mixrank' | 'proxycurl' | 'snov' | 'hunter' = 'hunter';
 
 @Processor(PeopleFinderTestQueue)
 @Injectable()
@@ -31,6 +32,7 @@ export class PeopleFinderJobProcessor {
     private mixRankService: MixRankService,
     private proxycurlService: ProxycurlService,
     private snovService: SnovService,
+    private hunterService: HunterService,
     @InjectQueue(PeopleFinderTestQueue) public queue: Queue
   ) {}
 
@@ -112,6 +114,16 @@ export class PeopleFinderJobProcessor {
 
         // callback mode
         return true;
+      }
+    } else if (TestPlatform === 'hunter') {
+      if (companyDomain && user.firstName && user.lastName) {
+        params = {companyDomain};
+        const {callThirdPartyId: _callThirdPartyId} =
+          await this.hunterService.find({
+            ...user,
+            ...params,
+          });
+        callThirdPartyId = _callThirdPartyId;
       }
     }
 

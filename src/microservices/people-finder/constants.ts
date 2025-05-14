@@ -4,6 +4,7 @@ export enum PeopleFinderPlatforms {
   peopledatalabs = 'peopledatalabs',
   mixrank = 'mixrank',
   snov = 'snov',
+  hunter = 'hunter',
 }
 export enum PeopleFinderStatus {
   pending = 'pending',

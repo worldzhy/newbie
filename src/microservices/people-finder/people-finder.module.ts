@@ -4,6 +4,7 @@ import {ProxycurlModule} from '@microservices/people-finder/proxycurl/module';
 import {PeopledatalabsModule} from '@microservices/people-finder/peopledatalabs/module';
 import {MixRankModule} from '@microservices/people-finder/mixrank/module';
 import {SnovModule} from '@microservices/people-finder/snov/module';
+import {HunterModule} from '@microservices/people-finder/hunter/module';
 import {PeopleFinderService} from './people-finder.service';
 import {PeopleFinderNotificationService} from './people-finder.notification.service';
 
@@ -15,6 +16,7 @@ import {PeopleFinderNotificationService} from './people-finder.notification.serv
     PeopledatalabsModule,
     MixRankModule,
     SnovModule,
+    HunterModule,
   ],
   providers: [PeopleFinderService, PeopleFinderNotificationService],
   exports: [
@@ -25,6 +27,7 @@ import {PeopleFinderNotificationService} from './people-finder.notification.serv
     PeopledatalabsModule,
     MixRankModule,
     SnovModule,
+    HunterModule,
   ],
 })
 export class PeopleFinderModule {}
