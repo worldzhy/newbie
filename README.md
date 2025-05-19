@@ -63,6 +63,11 @@ $ npx prisma db seed
 ### Install husky
 
 ```bash
+$ npx husky install
+```
+
+```bash
+// [Deprecated] Below is for the old version husky.
 $ npm i --save-dev husky commitizen @commitlint/{cli,config-conventional}
 $ npx husky init
 $ npx commitizen init cz-conventional-changelog --save-dev --save-exact
@@ -117,11 +122,16 @@ $ pm2 start newbie
 ```
 
 ### Proxy for geolite2-redist
-npm i proxy-agent  
+
+```bash
+npm i proxy-agent
+```
+
 > edit: node_modules/geolite2-redist/dist/download-helpers.js
-import {ProxyAgent} from 'proxy-agent';
+> import {ProxyAgent} from 'proxy-agent';
 
 got() set proxyAgent
+
 ```
 await import('got')
   .then(({ got }) => got(mirrorUrls.checksum[dbName],{
@@ -147,4 +157,3 @@ await pipeline(got.stream(mirrorUrls.download[dbName], {
 ## 📄 License
 
 Newbie is [MIT licensed](LICENSE).
-
