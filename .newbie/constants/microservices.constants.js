@@ -236,6 +236,15 @@ const ALL_MICROSERVICES = {
     moduleNames: 'TaskSchedulingModule',
     importCode: `import {TaskSchedulingModule} from './task-scheduling/task-scheduling.module';`,
   },
+  'tencent-cos': {
+    key: 'tencent-cos',
+    srcPath: 'src/microservices/tencent-cos',
+    repositoryUrl: 'https://github.com/worldzhy/newbie.tencent-cos.git',
+    schemaFileName: 'tencent-cos.schema',
+    settingsFileName: 'tencent-cos.settings.json',
+    moduleNames: 'TencentCosModule',
+    importCode: `import {TencentCosModule} from './tencent-cos/tencent-cos.module';`,
+  },
   webhook: {
     key: 'webhook',
     srcPath: 'src/microservices/webhook',
