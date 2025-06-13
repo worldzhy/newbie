@@ -1,8 +1,8 @@
 const fs = require('fs/promises');
 const {
   ENABLED_PATH,
-  PRISMA_SCHEMA_PATH,
-  PRISMA_SCHEMA_APPLICATION,
+  PRISMA_SCHEMA_MAIN_PATH,
+  PRISMA_SCHEMA_MODELS_PATH,
 } = require('../constants/path.constants');
 const {exec} = require('../utilities/exec.util');
 const {exists} = require('../utilities/exists.util');
@@ -27,7 +27,7 @@ const assembleSchemaFiles = async (
       const isExists = await exists(sourceSchemaPath);
 
       if (isExists) {
-        const isExists = await exists(PRISMA_SCHEMA_PATH);
+        const isExists = await exists(PRISMA_SCHEMA_MODELS_PATH);
         const schema = await fs.readFile(sourceSchemaPath, {
           encoding: 'utf8',
           flag: 'r',
@@ -35,10 +35,10 @@ const assembleSchemaFiles = async (
 
         if (schema) {
           if (!isExists) {
-            await fs.mkdir(PRISMA_SCHEMA_PATH);
+            await fs.mkdir(PRISMA_SCHEMA_MODELS_PATH);
           }
           await fs.writeFile(
-            PRISMA_SCHEMA_PATH + '/' + key + '.prisma',
+            PRISMA_SCHEMA_MODELS_PATH + '/' + key + '.prisma',
             schema
           );
         }
@@ -59,7 +59,8 @@ const assembleSchemaFiles = async (
     }
 
     if (schemaFileName) {
-      const targetSchemaPath = PRISMA_SCHEMA_PATH + '/' + key + '.prisma';
+      const targetSchemaPath =
+        PRISMA_SCHEMA_MODELS_PATH + '/' + key + '.prisma';
       const isExists = await exists(targetSchemaPath);
 
       if (targetSchemaPath && isExists) {
@@ -70,8 +71,8 @@ const assembleSchemaFiles = async (
     }
   }
 
-  // [step 3] Assemble application.prisma file
-  await assembleApplicationPrisma();
+  // [step 3] Assemble main prisma schema.
+  await assembleMainPrismaSchema();
 
   // [step 4] Generate prisma client.
   try {
@@ -79,7 +80,7 @@ const assembleSchemaFiles = async (
   } catch (error) {}
 };
 
-const assembleApplicationPrisma = async () => {
+const assembleMainPrismaSchema = async () => {
   const enabledMicroservices = await getEnabledMicroservices();
   const removedMicroservices = Object.keys(ALL_MICROSERVICES).filter(
     key => !enabledMicroservices.includes(key)
@@ -90,28 +91,31 @@ const assembleApplicationPrisma = async () => {
   const removedPrismaPath = removedMicroservices.map(
     name => `microservice/${name}`
   );
-  const prismaFile = await fs.readFile(PRISMA_SCHEMA_APPLICATION, {
+
+  const prismaFile = await fs.readFile(PRISMA_SCHEMA_MAIN_PATH, {
     encoding: 'utf8',
     flag: 'r',
   });
-  const updatePrismaFile = prismaFile.replace(
+
+  const newPrismaFile = prismaFile.replace(
     /(datasource db \{(?:.|\n|\r)*schemas\s*\=\s*)(\[.*?\])/g,
     (...res) => {
-      const codeHeader = res[1];
-      const schemaStr = res[2];
-      const schemaArray = JSON.parse(`{"val": ${schemaStr}}`)?.val;
-      const schemaCode = Array.from(
+      const firstHalfStr = res[1];
+      const secondHalfStr = res[2];
+
+      const currentSchemaArr = JSON.parse(`{"val": ${secondHalfStr}}`)?.val;
+      const newSchemaArr = Array.from(
         new Set([
-          ...schemaArray.filter(val => !removedPrismaPath.includes(val)),
+          ...currentSchemaArr.filter(val => !removedPrismaPath.includes(val)),
           ...enabledPrismaPath,
         ])
       );
 
-      return codeHeader + JSON.stringify(schemaCode);
+      return firstHalfStr + JSON.stringify(newSchemaArr).replaceAll(',', ', ');
     }
   );
 
-  await fs.writeFile(PRISMA_SCHEMA_APPLICATION, updatePrismaFile);
+  await fs.writeFile(PRISMA_SCHEMA_MAIN_PATH, newPrismaFile);
 };
 
 module.exports = {

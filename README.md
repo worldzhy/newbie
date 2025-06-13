@@ -69,7 +69,7 @@ $ npx husky install
 ```bash
 // [Deprecated] Below is for the old version husky.
 $ npm i --save-dev husky commitizen @commitlint/{cli,config-conventional}
-$ npx husky init
+$ npx husky install
 $ npx commitizen init cz-conventional-changelog --save-dev --save-exact
 $ echo "module.exports = {extends: ['@commitlint/config-conventional']};" > commitlint.config.js
 ```

@@ -8,14 +8,8 @@
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
 
 generator client {
-  provider = "prisma-client-js"
-
-  // Enable Full-Text Search which is only available for PostgreSQL.
-  previewFeatures = ["multiSchema", "fullTextSearch", "prismaSchemaFolder"]
-
-  // For production deployment.
-  // binaryTargets   = ["native", "rhel-openssl-1.0.x"]
-  // binaryTargets   = ["native", "linux-arm64-openssl-1.0.x"]
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearchPostgres", "multiSchema"]
 }
 
 datasource db {

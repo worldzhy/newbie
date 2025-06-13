@@ -119,6 +119,15 @@ const ALL_MICROSERVICES = {
     moduleNames: 'MessageBotModule',
     importCode: `import {MessageBotModule} from './message-bot/message-bot.module';`,
   },
+  'message-tracker': {
+    key: 'message-tracker',
+    srcPath: 'src/microservices/message-tracker',
+    repositoryUrl: 'https://github.com/worldzhy/newbie.message-tracker.git',
+    schemaFileName: 'message-tracker.schema',
+    settingsFileName: 'message-tracker.settings.json',
+    moduleNames: 'MessageTrackerModule',
+    importCode: `import {MessageTrackerModule} from './message-tracker/message-tracker.module';`,
+  },
   notification: {
     key: 'notification',
     srcPath: 'src/microservices/notification',
