@@ -9,10 +9,10 @@
     "APP_NAME": "Newbie",
     "APP_FRONTEND_URL": "http://localhost:3000"
   },
-  "dependencies": { 
+  "dependencies": {
     "@nestjs/axios": "^3.0.1",
     "@nestjs/throttler": "^6.0.0",
-    "@prisma/client": "^5.17.0",
+    "@prisma/client": "^6.9.0",
     "axios": "^1.6.2",
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",
@@ -22,6 +22,6 @@
     "uuid": "^10.0.0"
   },
   "devDependencies": {
-    "prisma": "^5.17.0"
+    "prisma": "^6.9.0"
   }
 }

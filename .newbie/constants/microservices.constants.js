@@ -119,6 +119,15 @@ const ALL_MICROSERVICES = {
     moduleNames: 'MessageBotModule',
     importCode: `import {MessageBotModule} from './message-bot/message-bot.module';`,
   },
+  'message-tracker': {
+    key: 'message-tracker',
+    srcPath: 'src/microservices/message-tracker',
+    repositoryUrl: 'https://github.com/worldzhy/newbie.message-tracker.git',
+    schemaFileName: 'message-tracker.schema',
+    settingsFileName: 'message-tracker.settings.json',
+    moduleNames: 'MessageTrackerModule',
+    importCode: `import {MessageTrackerModule} from './message-tracker/message-tracker.module';`,
+  },
   notification: {
     key: 'notification',
     srcPath: 'src/microservices/notification',
@@ -235,6 +244,15 @@ const ALL_MICROSERVICES = {
     settingsFileName: 'task-scheduling.settings.json',
     moduleNames: 'TaskSchedulingModule',
     importCode: `import {TaskSchedulingModule} from './task-scheduling/task-scheduling.module';`,
+  },
+  'tencent-cos': {
+    key: 'tencent-cos',
+    srcPath: 'src/microservices/tencent-cos',
+    repositoryUrl: 'https://github.com/worldzhy/newbie.tencent-cos.git',
+    schemaFileName: 'tencent-cos.schema',
+    settingsFileName: 'tencent-cos.settings.json',
+    moduleNames: 'TencentCosModule',
+    importCode: `import {TencentCosModule} from './tencent-cos/tencent-cos.module';`,
   },
   webhook: {
     key: 'webhook',
