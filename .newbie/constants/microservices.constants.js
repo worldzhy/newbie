@@ -101,6 +101,15 @@ const ALL_MICROSERVICES = {
     moduleNames: 'GoogleAPIsModule',
     importCode: `import {GoogleAPIsModule} from './googleapis/googleapis.module';`,
   },
+  'local-storage': {
+    key: 'local-storage',
+    srcPath: 'src/microservices/local-storage',
+    repositoryUrl: 'https://github.com/worldzhy/newbie.local-storage.git',
+    schemaFileName: 'local-storage.schema',
+    settingsFileName: 'local-storage.settings.json',
+    moduleNames: 'LocalStorageModule',
+    importCode: `import {LocalStorageModule} from './local-storage/local-storage.module';`,
+  },
   map: {
     key: 'map',
     srcPath: 'src/microservices/map',
@@ -217,15 +226,6 @@ const ALL_MICROSERVICES = {
     settingsFileName: null,
     moduleNames: 'StockManagementModule',
     importCode: `import {StockManagementModule} from './stock-mgmt/stock-mgmt.module';`,
-  },
-  storage: {
-    key: 'storage',
-    srcPath: 'src/microservices/storage',
-    repositoryUrl: 'https://github.com/worldzhy/newbie.storage.git',
-    schemaFileName: 'storage.schema',
-    settingsFileName: 'storage.settings.json',
-    moduleNames: 'StorageModule',
-    importCode: `import {StorageModule} from './storage/storage.module';`,
   },
   tag: {
     key: 'tag',
