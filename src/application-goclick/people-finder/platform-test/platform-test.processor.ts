@@ -18,7 +18,7 @@ export const PeopleFinderTestQueue = 'people-finder-platform-test';
 export const PauseTaskBatchIds = 'PAUSE_TASK_BATCH_IDS';
 
 // mixrank | proxycurl | snov
-const TestPlatform: 'mixrank' | 'proxycurl' | 'snov' | 'hunter' = 'hunter';
+const TestPlatform: 'mixrank' | 'proxycurl' | 'snov' | 'hunter' = 'snov';
 
 @Processor(PeopleFinderTestQueue)
 @Injectable()
@@ -103,17 +103,19 @@ export class PeopleFinderJobProcessor {
       } else if (companyDomain && user.firstName && user.lastName) {
         params = {companyDomain};
 
-        await this.snovService.find({
-          mode: 'byDomain',
-          user: {
-            ...user,
-            ...params,
-          },
-          taskId: peopleFinderTaskId,
-        });
+        const {callThirdPartyId: _callThirdPartyId} =
+          await this.snovService.find({
+            mode: 'byDomain',
+            user: {
+              ...user,
+              ...params,
+            },
+            taskId: peopleFinderTaskId,
+          });
+        callThirdPartyId = _callThirdPartyId;
 
         // callback mode
-        return true;
+        // return true;
       }
     } else if (TestPlatform === 'hunter') {
       if (companyDomain && user.firstName && user.lastName) {

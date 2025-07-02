@@ -106,73 +106,94 @@ export class SnovService {
     console.log('snov searchEmailByDomain webhook', webhook);
     // https://snov.io/api
     const url = `${baseUrl}/v2/emails-by-domain-by-name/start`;
+    const resultUrl = `${baseUrl}/v2/emails-by-domain-by-name/result`;
+    const searchRes = await this.httpService.axiosRef.post<any, any>(
+      url,
+      {
+        rows: [
+          {
+            ...(domain && {domain}),
+            ...(firstName && {first_name: firstName}),
+            ...(lastName && {last_name: lastName}),
+          },
+        ],
+        // webhook_url: webhook,
+      },
+      {
+        headers: {
+          authorization: `${this.token_type} ${this.access_token}`,
+          'Content-Type': 'application/json',
+          Cookie: this.cookie,
+        },
+      }
+    );
+    await new Promise(resolve => setTimeout(resolve, 5000));
+
     return new Promise(resolve => {
       let noCredits = false;
-      this.httpService.axiosRef
-        .post<any, any>(
-          url,
-          {
-            rows: [
-              {
-                ...(domain && {domain}),
-                ...(firstName && {first_name: firstName}),
-                ...(lastName && {last_name: lastName}),
-              },
-            ],
-            webhook_url: webhook,
-          },
-          {
+      const getResult = async () => {
+        this.httpService.axiosRef
+          .get<any, any>(resultUrl, {
             headers: {
               authorization: `${this.token_type} ${this.access_token}`,
               'Content-Type': 'application/json',
               Cookie: this.cookie,
             },
-          }
-        )
-        .then(async res => {
-          const data: SnovEmailByDomainResDto = res.data;
-          if (data?.data?.task_hash) {
-            resolve({res: data});
-            this.logger.log(
-              'Snov searchEmailByBomain success: ' + JSON.stringify(data),
-              this.loggerContext
-            );
-          } else {
-            // if (res.status === MixRankStatus.INSUFFICIENT_CREDITS) {
-            //   await this.peopleFinderNotification.send({
-            //     message: '[MixRank] Not have enough credits',
-            //   });
-            //   noCredits = true;
-            // }
-            const resError = {
-              error: data,
-              status: res.status,
-            };
+            params: {
+              task_hash: searchRes.data.data.task_hash,
+            },
+          })
+          .then(async res => {
+            const data: SnovEmailByDomainCallbackResDto = res.data;
+            if (data.status === 'in_progress') {
+              await new Promise(resolve => setTimeout(resolve, 5000));
+              await getResult();
+              return;
+            }
+            if (data) {
+              resolve({res: data});
+              this.logger.log(
+                'Snov searchEmailByBomain success: ' + JSON.stringify(data),
+                this.loggerContext
+              );
+            } else {
+              // if (res.status === MixRankStatus.INSUFFICIENT_CREDITS) {
+              //   await this.peopleFinderNotification.send({
+              //     message: '[MixRank] Not have enough credits',
+              //   });
+              //   noCredits = true;
+              // }
+              const resError = {
+                error: data,
+                status: res.status,
+              };
+              resolve({error: resError, noCredits});
+              this.logger.error(
+                'Snov searchEmailByBomain error: ' + JSON.stringify(resError),
+                this.loggerContext
+              );
+            }
+          })
+          .catch(async e => {
+            // 处理 token 失效
+            if (await this.handleTokenError(e)) {
+              // token 刷新成功，重试请求
+              return this.searchEmailByDomain({
+                domain,
+                firstName,
+                lastName,
+                webhook,
+              });
+            }
+            const resError = {error: e.response.data};
             resolve({error: resError, noCredits});
             this.logger.error(
               'Snov searchEmailByBomain error: ' + JSON.stringify(resError),
               this.loggerContext
             );
-          }
-        })
-        .catch(async e => {
-          // 处理 token 失效
-          if (await this.handleTokenError(e)) {
-            // token 刷新成功，重试请求
-            return this.searchEmailByDomain({
-              domain,
-              firstName,
-              lastName,
-              webhook,
-            });
-          }
-          const resError = {error: e.response.data};
-          resolve({error: resError, noCredits});
-          this.logger.error(
-            'Snov searchEmailByBomain error: ' + JSON.stringify(resError),
-            this.loggerContext
-          );
-        });
+          });
+      };
+      getResult();
     });
   }
 
@@ -204,7 +225,7 @@ export class SnovService {
       this.httpService.axiosRef
         .post<any, any>(getResultUrl, params, {headers})
         .then(async res => {
-          console.log(res);
+          // console.log(res);
           const data: SnovEmailByLinkedinResDto = res.data;
           if (data.success) {
             resolve({res: data as SnovEmailByLinkedinResDto});
@@ -220,8 +241,8 @@ export class SnovService {
             //   noCredits = true;
             // }
             const resError = {
-              error: 'error', // || data.errors,
-              status: res.status,
+              error: data.message,
+              status: PeopleFinderStatus.failed,
             };
             resolve({error: resError, noCredits});
             this.logger.error(
@@ -273,12 +294,26 @@ export class SnovService {
     });
 
     if (mode === 'byDomain') {
-      await this.searchEmailByDomain({
+      const {res} = await this.searchEmailByDomain({
         domain: companyDomain,
         firstName,
         lastName,
         webhook: `${this.webhook}?id=${newRecord.id}&taskId=${taskId}`,
       });
+      if (res) {
+        const emails = res?.data[0]?.result.map(item => item.email);
+        const status =
+          res.status === 'completed'
+            ? PeopleFinderStatus.completed
+            : PeopleFinderStatus.failed;
+
+        await this.searchCallback({
+          id: Number(newRecord.id),
+          status,
+          emails,
+          data: res,
+        });
+      }
     } else if (mode === 'byLinkedin') {
       const {res} = await this.searchEmailByLinkedin({linkedin});
       if (res) {

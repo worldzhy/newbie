@@ -250,7 +250,7 @@ export class PersonMatchThirdResDto {
 
 export class ByDomainSearchResDto implements CommonResDto {
   error?: CommonErrorResDto;
-  res?: SnovEmailByDomainResDto;
+  res?: SnovEmailByDomainCallbackResDto; //SnovEmailByDomainResDto;
   noCredits?: boolean;
 }
 
@@ -299,7 +299,7 @@ interface MetaRow {
 }
 
 interface SnovEmailByDomainCallbackResDto {
-  status: 'completed';
+  status: 'completed' | 'in_progress';
   data: PersonResult[];
   meta: {
     rows: MetaRow[];
@@ -364,6 +364,8 @@ interface ByLinkedInPersonInfo {
 }
 
 interface SnovEmailByLinkedinResDto {
+  // if error
+  message?: string;
   success: boolean;
   data: ByLinkedInPersonInfo;
 }
