@@ -18,7 +18,7 @@ export const PeopleFinderTestQueue = 'people-finder-platform-test';
 export const PauseTaskBatchIds = 'PAUSE_TASK_BATCH_IDS';
 
 // mixrank | proxycurl | snov
-const TestPlatform: 'mixrank' | 'proxycurl' | 'snov' | 'hunter' = 'snov';
+const TestPlatform: 'mixrank' | 'proxycurl' | 'snov' | 'hunter' = 'proxycurl';
 
 @Processor(PeopleFinderTestQueue)
 @Injectable()

@@ -36,11 +36,32 @@ export class ProxycurlService {
     this.apiKey = this.configService.getOrThrow<string>(
       'microservice.peopleFinder.proxycurl.apiKey'
     );
+    /** old
     const defaultClient = ProxycurlApi.ApiClient.instance;
     // Configure Bearer access token for authorization: BearerAuth
     const BearerAuth = defaultClient.authentications['BearerAuth'];
     BearerAuth.accessToken = this.apiKey;
     this.api = new ProxycurlApi.PeopleAPIApi();
+    old END*/
+
+    /**
+     *  Proxycurl migrate EnrichLayer
+     * https://enrichlayer.com/docs/pc/#transition-guide-transition-from-proxycurl-to-enrichlayer
+     */
+    const defaultClient = new ProxycurlApi.ApiClient('https://enrichlayer.com');
+    // Configure Bearer access token for authorization: BearerAuth
+    const BearerAuth = defaultClient.authentications['BearerAuth'];
+    BearerAuth.accessToken = this.apiKey;
+    // override callApi
+    const oldCallApi = defaultClient.callApi;
+    defaultClient.callApi = (path, ...rest) => {
+      if (path === '/api/linkedin/profile/resolve') {
+        path = '/api/v2/profile/resolve';
+      }
+      if (path === '/api/v2/linkedin') path = '/api/v2/profile';
+      return oldCallApi.call(defaultClient, path, ...rest);
+    };
+    this.api = new ProxycurlApi.PeopleAPIApi(defaultClient);
 
     // this.searchPeopleLinkedin({
     //   firstName: 'yiwen',
@@ -76,10 +97,10 @@ export class ProxycurlService {
             if (
               response &&
               response.header &&
-              response.header['x-proxycurl-credit-cost']
+              response.header['x-enrichlayer-credit-cost']
             ) {
               try {
-                spent = Number(response.header['x-proxycurl-credit-cost']);
+                spent = Number(response.header['x-enrichlayer-credit-cost']);
               } catch (e) {
                 spent = 0;
               }
@@ -140,10 +161,10 @@ export class ProxycurlService {
             if (
               response &&
               response.header &&
-              response.header['x-proxycurl-credit-cost']
+              response.header['x-enrichlayer-credit-cost']
             ) {
               try {
-                spent = Number(response.header['x-proxycurl-credit-cost']);
+                spent = Number(response.header['x-enrichlayer-credit-cost']);
               } catch (e) {
                 spent = 0;
               }
@@ -180,11 +201,11 @@ export class ProxycurlService {
     errorTitle,
     resolve,
   }: {
-    error: unknown;
+    error: object;
     errorTitle: string;
     resolve: (error: object) => void;
   }) => {
-    const resError = {error, spent: 0};
+    const resError = {error: error.toString(), spent: 0};
     resolve({error: resError});
     this.logger.error(
       errorTitle + JSON.stringify(resError),
