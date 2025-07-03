@@ -1,8 +1,9 @@
-const ENABLED_PATH = './.newbie/.enabled';
-const ENABLED_MICROSERVICES = './.newbie/.enabled/microservices.json';
-const ENABLED_MODE = './.newbie/.enabled/mode.json';
+const CONFIG_PATH = './.newbie/.config';
+const CONFIG_JSON = './.newbie/.config/config.json';
 
 const FRAMEWORK_SETTINGS_JSON = './src/framework/framework.settings.json';
+
+const MICROSERVICES_PATH = './src/microservices';
 const MICROSERVICES_MODULE_TS = './src/microservices/microservices.module.ts';
 const MICROSERVICES_CONFIG_TS = './src/microservices/microservices.config.ts';
 
@@ -14,11 +15,12 @@ const GIT_MODULES = '.gitmodules';
 const NEST_CLI_PATH = './nest-cli.json';
 
 module.exports = {
-  ENABLED_PATH,
-  ENABLED_MICROSERVICES,
-  ENABLED_MODE,
+  CONFIG_PATH,
+  CONFIG_JSON,
 
   FRAMEWORK_SETTINGS_JSON,
+
+  MICROSERVICES_PATH,
   MICROSERVICES_MODULE_TS,
   MICROSERVICES_CONFIG_TS,
 

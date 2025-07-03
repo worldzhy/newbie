@@ -2,7 +2,7 @@ const fs = require('fs/promises');
 const {exec} = require('../utilities/exec.util');
 const {exists} = require('../utilities/exists.util');
 const {isNewbieDeveloper} = require('../utilities/env.util');
-const {ENABLED_PATH, GIT_MODULES} = require('../constants/path.constants');
+const {CONFIG_PATH, GIT_MODULES} = require('../constants/path.constants');
 const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
 
 /**
@@ -54,13 +54,13 @@ const addRepositories = async addedMicroservices => {
     try {
       await exec(`git submodule add  --force ${repositoryUrl} ${srcPath}`);
     } catch (error) {
-      console.error(error)
+      console.error(error);
     }
 
-    // [step 2] Copy settings file and schema file to .newbie/.enabled folder
+    // [step 2] Copy settings file and schema file to .newbie/.config folder
     const existsDotNewbiePath = await exists(srcPathDotNewbiePath);
     if (srcPathDotNewbiePath && existsDotNewbiePath) {
-      await exec(`cp -rf ${srcPathDotNewbiePath} ${ENABLED_PATH}/${key}`);
+      await exec(`cp -rf ${srcPathDotNewbiePath} ${CONFIG_PATH}/${key}`);
     }
 
     // [step 3] Remove useless files for newbie user.
@@ -93,7 +93,7 @@ const removeRepositories = async removedMicroservices => {
     if (!key) continue;
 
     // [step 1] Delete ./newbie.enabled/[key]/
-    const enabledMicroservicesPath = `${ENABLED_PATH}/${key}`;
+    const enabledMicroservicesPath = `${CONFIG_PATH}/${key}`;
     const isExists = await exists(enabledMicroservicesPath);
 
     if (enabledMicroservicesPath && isExists) {

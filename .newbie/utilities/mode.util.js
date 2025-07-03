@@ -1,38 +1,38 @@
 const {select} = require('@inquirer/prompts');
 const fs = require('fs/promises');
-const {ENABLED_MODE} = require('../constants/path.constants');
+const {CONFIG_JSON} = require('../constants/path.constants');
 const {NEWBIE_DEVELOPER} = require('../constants/env.constants');
 const {ApplicationMode, DeveloperMode} = require('../constants/mode.constants');
 const {isNewbieDeveloper} = require('../utilities/env.util');
 const {exists} = require('../utilities/exists.util');
-const {getEnabledMicroservices} = require('../utilities/microservices.util');
+const {getMicroservicesInConfig} = require('../utilities/microservices.util');
 
 const getApplicationMode = async () => {
-  const isExists = await exists(ENABLED_MODE);
+  const isExists = await exists(CONFIG_JSON);
   if (!isExists) {
     return null;
   }
 
-  const file = await fs.readFile(ENABLED_MODE, 'utf8');
+  const file = await fs.readFile(CONFIG_JSON, 'utf8');
   const obj = JSON.parse(file);
 
   return obj.applicationMode;
 };
 
 const setApplicationMode = async mode => {
-  const isExists = await exists(ENABLED_MODE);
+  const isExists = await exists(CONFIG_JSON);
   if (!isExists) {
     return await fs.writeFile(
-      ENABLED_MODE,
+      CONFIG_JSON,
       JSON.stringify({applicationMode: mode}, null, 2)
     );
   }
 
-  const file = await fs.readFile(ENABLED_MODE, 'utf8');
+  const file = await fs.readFile(CONFIG_JSON, 'utf8');
   const obj = JSON.parse(file);
   obj.applicationMode = mode;
 
-  return await fs.writeFile(ENABLED_MODE, JSON.stringify(obj, null, 2));
+  return await fs.writeFile(CONFIG_JSON, JSON.stringify(obj, null, 2));
 };
 
 const checkApplicationMode = async () => {
@@ -57,31 +57,31 @@ const checkApplicationMode = async () => {
 };
 
 const getDeveloperMode = async () => {
-  const isExists = await exists(ENABLED_MODE);
+  const isExists = await exists(CONFIG_JSON);
   if (!isExists) {
     return null;
   }
 
-  const file = await fs.readFile(ENABLED_MODE, 'utf8');
+  const file = await fs.readFile(CONFIG_JSON, 'utf8');
   const obj = JSON.parse(file);
 
   return obj.developerMode;
 };
 
 const setDeveloperMode = async mode => {
-  const isExists = await exists(ENABLED_MODE);
+  const isExists = await exists(CONFIG_JSON);
   if (!isExists) {
     return await fs.writeFile(
-      ENABLED_MODE,
+      CONFIG_JSON,
       JSON.stringify({developerMode: mode}, null, 2)
     );
   }
 
-  const file = await fs.readFile(ENABLED_MODE, 'utf8');
+  const file = await fs.readFile(CONFIG_JSON, 'utf8');
   const obj = JSON.parse(file);
   obj.developerMode = mode;
 
-  return await fs.writeFile(ENABLED_MODE, JSON.stringify(obj, null, 2));
+  return await fs.writeFile(CONFIG_JSON, JSON.stringify(obj, null, 2));
 };
 
 const checkDeveloperMode = async () => {
@@ -100,7 +100,7 @@ const checkDeveloperMode = async () => {
   const isNewbieDeveloperBefore =
     developerMode === DeveloperMode.NEWBIE_DEVELOPER;
 
-  const enabledMicroservices = await getEnabledMicroservices();
+  const enabledMicroservices = await getMicroservicesInConfig();
 
   if (isNewbieDeveloperBefore === isNewbieDeveloperNow) {
     return true;

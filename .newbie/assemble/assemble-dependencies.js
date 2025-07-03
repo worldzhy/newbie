@@ -1,9 +1,9 @@
 const fs = require('fs/promises');
 const {exec} = require('../utilities/exec.util');
 const {exists} = require('../utilities/exists.util');
-const {ENABLED_PATH} = require('../constants/path.constants');
+const {CONFIG_PATH} = require('../constants/path.constants');
 const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
-const {getEnabledMicroservices} = require('../utilities/microservices.util');
+const {getMicroservicesInConfig} = require('../utilities/microservices.util');
 
 const assembleDependencies = async (
   addedMicroservices,
@@ -20,7 +20,7 @@ const assembleDependencies = async (
     if (!key || !settingsFileName) {
       continue;
     }
-    const settingsFilePath = `${ENABLED_PATH}/${key}/${settingsFileName}`;
+    const settingsFilePath = `${CONFIG_PATH}/${key}/${settingsFileName}`;
     const isExists = await exists(settingsFilePath);
 
     if (isExists) {
@@ -60,7 +60,7 @@ const assembleDependencies = async (
   // [step 2] Remove dependencies.
   const enabledDependencies = [];
   const enabledDevDependencies = [];
-  const microservices = await getEnabledMicroservices();
+  const microservices = await getMicroservicesInConfig();
 
   for (let i = 0; i < microservices.length; i++) {
     const name = microservices[i];
@@ -69,7 +69,7 @@ const assembleDependencies = async (
     if (!key || !settingsFileName) {
       continue;
     }
-    const settingsFilePath = `${ENABLED_PATH}/${key}/${settingsFileName}`;
+    const settingsFilePath = `${CONFIG_PATH}/${key}/${settingsFileName}`;
     const isExists = await exists(settingsFilePath);
 
     if (isExists) {
@@ -93,7 +93,7 @@ const assembleDependencies = async (
     if (!key || !settingsFileName) {
       continue;
     }
-    const settingsFilePath = `${ENABLED_PATH}/${key}/${settingsFileName}`;
+    const settingsFilePath = `${CONFIG_PATH}/${key}/${settingsFileName}`;
     const isExists = await exists(settingsFilePath);
 
     if (isExists) {

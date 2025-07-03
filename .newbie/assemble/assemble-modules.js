@@ -1,16 +1,16 @@
 const fs = require('fs/promises');
 const {
-  ENABLED_PATH,
+  CONFIG_PATH,
   MICROSERVICES_MODULE_TS,
   MICROSERVICES_CONFIG_TS,
 } = require('../constants/path.constants');
 const {exec} = require('../utilities/exec.util');
 const {exists} = require('../utilities/exists.util');
 const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
-const {getEnabledMicroservices} = require('../utilities/microservices.util');
+const {getMicroservicesInConfig} = require('../utilities/microservices.util');
 
 const assembleNestJsModules = async () => {
-  const enabledMicroservices = await getEnabledMicroservices();
+  const enabledMicroservices = await getMicroservicesInConfig();
 
   // [step 1] Assemble microservice.module.ts
   await fs.writeFile(
@@ -31,7 +31,7 @@ const assembleNestJsModules = async () => {
       continue;
     }
     if (settingsFileName) {
-      const settingsFilePath = `${ENABLED_PATH}/${key}/${settingsFileName}`;
+      const settingsFilePath = `${CONFIG_PATH}/${key}/${settingsFileName}`;
       const isExists = await exists(settingsFilePath);
 
       if (isExists) {
