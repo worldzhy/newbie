@@ -4,7 +4,7 @@
     "APP_FRONTEND_URL": "http://localhost:3001",
     "ALLOWED_ORIGINS": "http://localhost:3000,http://localhost:3001",
     "ENVIRONMENT": "development",
-    "NEWBIE_DEVELOPER": false,
+    "NEWBIE_DEVELOPER": true,
     "PORT": "3000",
     "PRISMA_DATABASE_URL": "postgresql://postgres:postgres@localhost:5432/newbie",
     "SERVER_SERIAL_NUMBER": "1"
