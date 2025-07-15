@@ -164,14 +164,14 @@ const ALL_MICROSERVICES = {
     moduleNames: 'NotificationModule',
     importCode: `import {NotificationModule} from './notification/notification.module';`,
   },
-  'order-mgmt': {
-    key: 'order-mgmt',
-    srcPath: 'src/microservices/order-mgmt',
-    repositoryUrl: 'https://github.com/worldzhy/newbie.order-mgmt.git',
-    schemaFileName: 'order-mgmt.schema',
-    settingsFileName: 'order-mgmt.settings.json',
-    moduleNames: 'OrderManagementModule',
-    importCode: `import {OrderManagementModule} from './order-mgmt/order-mgmt.module';`,
+  order: {
+    key: 'order',
+    srcPath: 'src/microservices/order',
+    repositoryUrl: 'https://github.com/worldzhy/newbie.order.git',
+    schemaFileName: 'order.schema',
+    settingsFileName: 'order.settings.json',
+    moduleNames: 'OrderModule',
+    importCode: `import {OrderModule} from './order/order.module';`,
   },
   pdf: {
     key: 'pdf',

@@ -1,34 +1,20 @@
 const {checkbox, select} = require('@inquirer/prompts');
-const {bold, cyan, green, inverse} = require('colorette');
+const {cyan, inverse} = require('colorette');
 const figlet = require('figlet');
 
-const {assembleEnvFile} = require('./assemble/assemble-env');
-const {assembleSchemaFiles} = require('./assemble/assemble-schema');
-const {assembleNestJsAssets} = require('./assemble/assemble-assets');
-const {assembleNestJsModules} = require('./assemble/assemble-modules');
-const {assembleDependencies} = require('./assemble/assemble-dependencies');
-const {
-  addRepositories,
-  removeRepositories,
-} = require('./assemble/assemble-repositories');
 const {
   ACCOUNT_MICROSERVICE,
   SAAS_MICROSERVICE,
   ALL_MICROSERVICES,
 } = require('./constants/microservices.constants');
-const {ApplicationMode, DeveloperMode} = require('./constants/mode.constants');
-const {isNewbieDeveloper} = require('./utilities/env.util');
-const {handleLoading} = require('./utilities/loading.util');
+const {ApplicationMode} = require('./constants/mode.constants');
 const {
-  getMicroservicesInConfig,
   getMicroservicesToBeAddedToConfig,
   getMicroservicesToBeRemovedFromConfig,
+  getMicroservicesInConfig,
   updateMicroservicesInConfig,
 } = require('./utilities/microservices.util');
-const {
-  checkApplicationMode,
-  checkDeveloperMode,
-} = require('./utilities/mode.util');
+const {checkDeveloperMode} = require('./utilities/mode.util');
 
 const main = async () => {
   // [step 1] Print the introduction of the command-line tool.
@@ -40,12 +26,6 @@ const main = async () => {
       width: 80,
       whitespaceBreak: true,
     })
-  );
-
-  console.info(
-    green(
-      `                               ${(await isNewbieDeveloper()) ? '     [' + DeveloperMode.NEWBIE_DEVELOPER + ']\n' : '[' + DeveloperMode.APPLICATION_DEVELOPER + ']\n'}`
-    )
   );
 
   console.info('What is newbie?');
@@ -65,7 +45,8 @@ const main = async () => {
   }
 
   // [step 3] Check application mode.
-  const applicationMode = await checkApplicationMode();
+  // const applicationMode = await checkApplicationMode();
+  const applicationMode = ApplicationMode.NON_SAAS_APPLICATION;
 
   // [step 4] Main function.
   const currentMicroervices = await getMicroservicesInConfig();
@@ -77,8 +58,8 @@ const main = async () => {
   }
 
   // [step 4-1] Enable and disable services.
-  const enabledMicroservices = await checkbox({
-    message: 'Which microservices do you want to enable for your project:',
+  const newEnabledMicroservices = await checkbox({
+    message: 'Config microservices:',
     choices: allMicroservices.map(microservice => {
       const checked = currentMicroervices.includes(microservice);
       return {
@@ -91,28 +72,30 @@ const main = async () => {
     loop: true,
     theme: {helpMode: 'auto'},
   });
-  const addedMicroservices =
-    await getMicroservicesToBeAddedToConfig(enabledMicroservices);
-  const removedMicroservices =
-    await getMicroservicesToBeRemovedFromConfig(enabledMicroservices);
+  const addedMicroservices = await getMicroservicesToBeAddedToConfig(
+    newEnabledMicroservices
+  );
+  const removedMicroservices = await getMicroservicesToBeRemovedFromConfig(
+    newEnabledMicroservices
+  );
 
   // [step 4-2] Confirm the operation.
   let message = '';
   if (!addedMicroservices.length && !removedMicroservices.length) {
     console.info(
-      '\n[info] You did not make any changes to the microservices.\n'
+      '\n[info] You did not make any changes to the configuration.\n'
     );
     process.exit(0);
   } else if (!removedMicroservices.length && addedMicroservices.length) {
-    message = `Do you want to ENABLE ${cyan(addedMicroservices.join(', '))} ?`;
+    message = `Do you want to ADD ${cyan(addedMicroservices.join(', '))} ?`;
   } else if (removedMicroservices.length && !addedMicroservices.length) {
-    message = `Do you want to DISABLE ${inverse(
+    message = `Do you want to REMOVE ${inverse(
       removedMicroservices.join(', ')
     )} ?`;
   } else {
-    message = `Do you want to DISABLE ${inverse(
+    message = `Do you want to REMOVE ${inverse(
       removedMicroservices.join(', ')
-    )} and ENABLE ${cyan(addedMicroservices.join(', '))} ?`;
+    )} and ADD ${cyan(addedMicroservices.join(', '))} ?`;
   }
 
   const result = await select({
@@ -127,44 +110,10 @@ const main = async () => {
   // [step 4-3] Execute the operation.
   if (result === 'yes') {
     // Update enable.json first.
-    await updateMicroservicesInConfig(enabledMicroservices);
-
-    // Assemable project files.
-    if (addedMicroservices.length > 0) {
-      await handleLoading('🥥 Clone code repositories ', async () => {
-        await addRepositories(addedMicroservices);
-      });
-    }
-
-    await handleLoading('🍎 Update environment variables', async () => {
-      await assembleEnvFile(addedMicroservices, removedMicroservices);
-    });
-
-    await handleLoading('🫐 Update database schema', async () => {
-      await assembleSchemaFiles(addedMicroservices, removedMicroservices);
-    });
-
-    await handleLoading('🍌 Update nestjs assets', async () => {
-      await assembleNestJsAssets(addedMicroservices, removedMicroservices);
-    });
-
-    await handleLoading('🍉 Update nestjs modules', async () => {
-      await assembleNestJsModules();
-    });
-
-    await handleLoading('🥝 Update package dependencies', async () => {
-      await assembleDependencies(addedMicroservices, removedMicroservices);
-    });
-
-    if (removedMicroservices.length > 0) {
-      await handleLoading('🍒 Delete code repositories', async () => {
-        await removeRepositories(removedMicroservices);
-      });
-    }
-    console.info(bold(green('🍺 C O M P L E T E\n')));
+    await updateMicroservicesInConfig(newEnabledMicroservices);
   } else {
     console.info(
-      '\n[info] You did not make any changes to the microservices.\n'
+      '\n[info] You did not make any changes to the configuration.\n'
     );
   }
 };
@@ -175,7 +124,7 @@ main();
 process.stdin.on('keypress', (_, key) => {
   if (key.name === 'q' || (key.ctrl === true && key.name === 'c')) {
     console.info(
-      '\n\n[info] You did not make any changes to the microservices.'
+      '\n\n[info] You did not make any changes to the configuration.'
     );
     process.exit(0);
   }

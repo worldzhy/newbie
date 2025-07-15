@@ -1,13 +1,13 @@
 const fs = require('fs/promises');
 const {
-  ENABLED_PATH,
+  CONFIG_PATH,
   PRISMA_SCHEMA_MAIN_PATH,
   PRISMA_SCHEMA_MODELS_PATH,
 } = require('../constants/path.constants');
 const {exec} = require('../utilities/exec.util');
 const {exists} = require('../utilities/exists.util');
 const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
-const {getEnabledMicroservices} = require('../utilities/microservices.util');
+const {getMicroservicesInConfig} = require('../utilities/microservices.util');
 
 const assembleSchemaFiles = async (
   addedMicroservices,
@@ -23,7 +23,7 @@ const assembleSchemaFiles = async (
       continue;
     }
     if (schemaFileName) {
-      const sourceSchemaPath = `${ENABLED_PATH}/${key}/${schemaFileName}`;
+      const sourceSchemaPath = `${CONFIG_PATH}/${key}/${schemaFileName}`;
       const isExists = await exists(sourceSchemaPath);
 
       if (isExists) {
@@ -81,7 +81,7 @@ const assembleSchemaFiles = async (
 };
 
 const assembleMainPrismaSchema = async () => {
-  const enabledMicroservices = await getEnabledMicroservices();
+  const enabledMicroservices = await getMicroservicesInConfig();
   const removedMicroservices = Object.keys(ALL_MICROSERVICES).filter(
     key => !enabledMicroservices.includes(key)
   );

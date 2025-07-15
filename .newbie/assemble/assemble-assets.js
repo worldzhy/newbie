@@ -1,7 +1,7 @@
 const fs = require('fs/promises');
 const {exists} = require('../utilities/exists.util');
 const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
-const {ENABLED_PATH, NEST_CLI_PATH} = require('../constants/path.constants');
+const {CONFIG_PATH, NEST_CLI_PATH} = require('../constants/path.constants');
 
 const assembleNestJsAssets = async (
   addedMicroservices,
@@ -33,7 +33,7 @@ const assembleNestJsAssets = async (
       continue;
     }
     if (settingsFileName) {
-      const settingsFilePath = `${ENABLED_PATH}/${key}/${settingsFileName}`;
+      const settingsFilePath = `${CONFIG_PATH}/${key}/${settingsFileName}`;
       const isExists = await exists(settingsFilePath);
 
       if (isExists) {
@@ -59,7 +59,7 @@ const assembleNestJsAssets = async (
       continue;
     }
     if (settingsFileName) {
-      const settingsFilePath = `${ENABLED_PATH}/${key}/${settingsFileName}`;
+      const settingsFilePath = `${CONFIG_PATH}/${key}/${settingsFileName}`;
       const isExists = await exists(settingsFilePath);
 
       if (isExists) {

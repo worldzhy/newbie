@@ -1,12 +1,12 @@
 const fs = require('fs/promises');
 const {
   ENV_PATH,
-  ENABLED_PATH,
+  CONFIG_PATH,
   FRAMEWORK_SETTINGS_JSON,
 } = require('../constants/path.constants');
 const {exists} = require('../utilities/exists.util');
 const {NEWBIE_DEVELOPER} = require('../constants/env.constants');
-const {getEnabledMicroservices} = require('./microservices.util');
+const {getMicroservicesInConfig} = require('./microservices.util');
 const {ALL_MICROSERVICES} = require('../constants/microservices.constants');
 
 const LINE =
@@ -58,14 +58,14 @@ const getEnvsInFrameworkSettingsFile = async () => {
 
 const getEnvObjectFromMicroserviceSettingsFiles = async () => {
   const envObj = {};
-  const enabledMicroservices = await getEnabledMicroservices();
+  const enabledMicroservices = await getMicroservicesInConfig();
 
   for (let i = 0; i < enabledMicroservices.length; i++) {
     const name = enabledMicroservices[i];
     const {key, settingsFileName} = ALL_MICROSERVICES[name] || {};
 
     if (key && settingsFileName) {
-      const settingsFilePath = `${ENABLED_PATH}/${key}/${settingsFileName}`;
+      const settingsFilePath = `${CONFIG_PATH}/${key}/${settingsFileName}`;
       const isExists = await exists(settingsFilePath);
 
       if (!envObj[key]) {

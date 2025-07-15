@@ -14,8 +14,10 @@
     "start:prod": "node dist/main",
     "lint": "eslint \"{src}/**/*.ts\" --fix",
     "prebuild": "rimraf dist",
-    "newbie": "node .newbie/index.js",
-    "newbie:check": "node .newbie/check/index.js"
+    "newbie:dev": "node .newbie/index.js",
+    "newbie:check": "node .newbie/newbie.check.js",
+    "newbie:config": "node .newbie/newbie.config.js",
+    "newbie:install": "node .newbie/newbie.install.js"
   },
   "dependencies": {
     "@nestjs/axios": "^3.0.1",
