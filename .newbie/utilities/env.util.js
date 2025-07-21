@@ -89,7 +89,10 @@ const getEnvObjectFromMicroserviceSettingsFiles = async () => {
 const isNewbieDeveloper = async () => {
   const envObj = await convertEnvFileToObject();
 
-  return envObj[NEWBIE_DEVELOPER] === 'true';
+  return (
+    envObj[NEWBIE_DEVELOPER] === 'true' ||
+    envObj[NEWBIE_DEVELOPER] === undefined // If not set, assume true
+  );
 };
 
 module.exports = {
