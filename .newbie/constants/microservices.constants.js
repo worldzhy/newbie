@@ -119,6 +119,15 @@ const ALL_MICROSERVICES = {
     moduleNames: 'GoogleAPIsModule',
     importCode: `import {GoogleAPIsModule} from './googleapis/googleapis.module';`,
   },
+  googlemaps: {
+    key: 'googlemaps',
+    srcPath: 'src/microservices/googlemaps',
+    repositoryUrl: 'https://github.com/worldzhy/newbie.googlemaps.git',
+    schemaFileName: 'googlemaps.schema',
+    settingsFileName: 'googlemaps.settings.json',
+    moduleNames: 'GoogleMapsModule',
+    importCode: `import {GoogleMapsModule} from './googlemaps/googlemaps.module';`,
+  },
   'local-storage': {
     key: 'local-storage',
     srcPath: 'src/microservices/local-storage',
