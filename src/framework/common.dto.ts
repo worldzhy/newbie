@@ -5,21 +5,25 @@ import {Type} from 'class-transformer';
 export class CommonPaginationResDto {
   @ApiProperty({
     type: Number,
+    description: 'Number of items in the current page',
   })
   countOfCurrentPage: number;
 
   @ApiProperty({
     type: Number,
+    description: 'Total number of items across all pages',
   })
   countOfTotal: number;
 
   @ApiProperty({
     type: Number,
+    description: 'Page number, starts from 0',
   })
   page: number;
 
   @ApiProperty({
     type: Number,
+    description: 'Page size, the number of items per page',
   })
   pageSize: number;
 }
@@ -27,6 +31,7 @@ export class CommonPaginationResDto {
 export class CommonPaginationReqDto {
   @ApiProperty({
     type: Number,
+    description: 'Page size, the number of items per page',
   })
   @IsNotEmpty()
   @IsNumber()
@@ -35,6 +40,7 @@ export class CommonPaginationReqDto {
 
   @ApiProperty({
     type: Number,
+    description: 'Page number, starts from 0',
   })
   @IsNotEmpty()
   @IsNumber()
