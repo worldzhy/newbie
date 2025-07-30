@@ -2,7 +2,7 @@ import {ApiProperty} from '@nestjs/swagger';
 import {IsNumber, IsNotEmpty} from 'class-validator';
 import {Type} from 'class-transformer';
 
-export class CommonPaginationResDto {
+class CommonPagination {
   @ApiProperty({
     type: Number,
     description: 'Number of items in the current page',
@@ -28,7 +28,7 @@ export class CommonPaginationResDto {
   pageSize: number;
 }
 
-export class CommonPaginationReqDto {
+export class CommonListRequestDto {
   @ApiProperty({
     type: Number,
     description: 'Page size, the number of items per page',
@@ -47,6 +47,22 @@ export class CommonPaginationReqDto {
   @Type(() => Number)
   page: number;
 }
+
+export class CommonListResponseDto {
+  @ApiProperty({
+    type: CommonPagination,
+    description: 'Pagination information for the response',
+  })
+  pagination: CommonPagination;
+
+  @ApiProperty({
+    type: Object,
+    isArray: true,
+    description: 'List of records in the current page',
+  })
+  records: any[];
+}
+
 /** CUD: Create Update Delete */
 export class CommonCUDResDto {
   @ApiProperty({

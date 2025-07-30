@@ -114,7 +114,7 @@ const ALL_MICROSERVICES = {
     key: 'googleapis',
     srcPath: 'src/microservices/googleapis',
     repositoryUrl: 'https://github.com/worldzhy/newbie.googleapis.git',
-    schemaFileName: null,
+    schemaFileName: 'googleapis.schema',
     settingsFileName: 'googleapis.settings.json',
     moduleNames: 'GoogleAPIsModule',
     importCode: `import {GoogleAPIsModule} from './googleapis/googleapis.module';`,
