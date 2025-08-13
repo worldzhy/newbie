@@ -146,6 +146,15 @@ const ALL_MICROSERVICES = {
     moduleNames: 'MapModule',
     importCode: `import {MapModule} from './map/map.module';`,
   },
+  membership: {
+    key: 'membership',
+    srcPath: 'src/microservices/membership',
+    repositoryUrl: 'https://github.com/worldzhy/newbie.membership.git',
+    schemaFileName: 'membership.schema',
+    settingsFileName: null,
+    moduleNames: 'MembershipModule',
+    importCode: `import {MembershipModule} from './membership/membership.module';`,
+  },
   'message-bot': {
     key: 'message-bot',
     srcPath: 'src/microservices/message-bot',
@@ -181,6 +190,15 @@ const ALL_MICROSERVICES = {
     settingsFileName: 'order.settings.json',
     moduleNames: 'OrderModule',
     importCode: `import {OrderModule} from './order/order.module';`,
+  },
+  organization: {
+    key: 'organization',
+    srcPath: 'src/microservices/organization',
+    repositoryUrl: 'https://github.com/worldzhy/newbie.organization.git',
+    schemaFileName: 'organization.schema',
+    settingsFileName: null,
+    moduleNames: 'OrganizationModule',
+    importCode: `import {OrganizationModule} from './organization/organization.module';`,
   },
   pdf: {
     key: 'pdf',
