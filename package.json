@@ -20,6 +20,7 @@
     "newbie:install": "node .newbie/newbie.install.js"
   },
   "dependencies": {
+    "@inquirer/prompts": "^7.8.4",
     "@nestjs/axios": "^3.0.1",
     "@nestjs/common": "^10.4.16",
     "@nestjs/config": "^3.1.1",
@@ -45,7 +46,6 @@
   "devDependencies": {
     "@commitlint/cli": "^18.6.1",
     "@commitlint/config-conventional": "^18.6.3",
-    "@inquirer/prompts": "^7.2.0",
     "@nestjs/cli": "^10.2.1",
     "@nestjs/schematics": "^10.0.3",
     "@types/cookie-parser": "^1.4.6",
