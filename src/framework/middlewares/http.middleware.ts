@@ -31,7 +31,7 @@ export class HttpMiddleware implements NestMiddleware {
       };
 
       // [step 2] Write log.
-      return this.logger.log(JSON.stringify(logObj), this.loggerContext);
+      this.logger.log(JSON.stringify(logObj), this.loggerContext);
     });
 
     next();
