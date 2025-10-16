@@ -3,6 +3,7 @@
   "exclude": [
     "node_modules",
     "dist",
-    "./prisma"
+    "./prisma",
+    "**/sst",
   ]
 }
