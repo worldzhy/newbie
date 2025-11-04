@@ -83,6 +83,15 @@ const ALL_MICROSERVICES = {
     moduleNames: 'CloudinaryModule',
     importCode: `import {CloudinaryModule} from './cloudinary/cloudinary.module';`,
   },
+  cloudwatch: {
+    key: 'cloudwatch',
+    srcPath: 'src/microservices/cloudwatch',
+    repositoryUrl: 'https://github.com/worldzhy/newbie.cloudwatch.git',
+    schemaFileName: null,
+    settingsFileName: 'cloudwatch.settings.json',
+    moduleNames: 'AwsCloudwatchModule',
+    importCode: `import {AwsCloudwatchModule} from './cloudwatch/cloudwatch.module';`,
+  },
   elasticsearch: {
     key: 'elasticsearch',
     srcPath: 'src/microservices/elasticsearch',
