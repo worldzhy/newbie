@@ -18,20 +18,20 @@ const CONFIG_PATH = path.join(__dirname, '.config', 'aws-secrets.config.json');
 const ENV_PATH = path.join(__dirname, '..', '.env');
 
 /**
- * 读取配置文件
+ * Load configuration file
  */
 async function loadConfig() {
   try {
     const configContent = await fs.readFile(CONFIG_PATH, 'utf-8');
     return JSON.parse(configContent);
   } catch (error) {
-    console.error(red('❌ 无法读取配置文件:'), CONFIG_PATH);
+    console.error(red('❌ Failed to read config file:'), CONFIG_PATH);
     throw error;
   }
 }
 
 /**
- * 读取 .env 文件
+ * Load .env file
  */
 async function loadEnvFile() {
   try {
@@ -41,12 +41,12 @@ async function loadEnvFile() {
     content.split('\n').forEach(line => {
       line = line.trim();
 
-      // 跳过注释和空行
+      // Jump empty lines and comments
       if (!line || line.startsWith('#')) {
         return;
       }
 
-      // 解析 KEY=VALUE
+      // Parse 'KEY=VALUE' format
       const match = line.match(/^([^=]+)=(.*)$/);
       if (match) {
         const key = match[1].trim();
@@ -58,15 +58,15 @@ async function loadEnvFile() {
     return envVars;
   } catch (error) {
     if (error.code === 'ENOENT') {
-      console.error(red('❌ .env 文件不存在:'), ENV_PATH);
-      throw new Error('.env 文件不存在');
+      console.error(red('❌ .env file not found:'), ENV_PATH);
+      throw new Error('.env file not found');
     }
     throw error;
   }
 }
 
 /**
- * 检查 secret 是否存在
+ * Check if secret exists
  */
 async function secretExists(client, secretName) {
   try {
@@ -81,7 +81,7 @@ async function secretExists(client, secretName) {
 }
 
 /**
- * 获取现有的 secret 值
+ * Get existing secret value
  */
 async function getExistingSecret(client, secretName) {
   try {
@@ -92,31 +92,31 @@ async function getExistingSecret(client, secretName) {
     if (error.name === 'ResourceNotFoundException') {
       return null;
     }
-    console.error(red(`❌ 获取现有 secret 失败: ${secretName}`), error.message);
+    console.error(red(`❌ Failed to get existing secret: ${secretName}`), error.message);
     throw error;
   }
 }
 
 /**
- * 创建新的 secret
+ * Create new secret
  */
 async function createSecret(client, secretName, secretValue, description) {
   try {
     const command = new CreateSecretCommand({
       Name: secretName,
-      Description: description || `由 aws-secrets-push 工具创建`,
+      Description: description || `Created by aws-secrets-push tool`,
       SecretString: JSON.stringify(secretValue, null, 2),
     });
     await client.send(command);
-    console.info(green(`  ✓ 创建成功: ${secretName}`));
+    console.info(green(`  ✓ Created successfully: ${secretName}`));
   } catch (error) {
-    console.error(red(`  ✗ 创建失败: ${secretName}`), error.message);
+    console.error(red(`  ✗ Creation failed: ${secretName}`), error.message);
     throw error;
   }
 }
 
 /**
- * 更新现有的 secret
+ * Update existing secret
  */
 async function updateSecret(client, secretName, secretValue) {
   try {
@@ -125,18 +125,18 @@ async function updateSecret(client, secretName, secretValue) {
       SecretString: JSON.stringify(secretValue, null, 2),
     });
     await client.send(command);
-    console.info(green(`  ✓ 更新成功: ${secretName}`));
+    console.info(green(`  ✓ Updated successfully: ${secretName}`));
   } catch (error) {
-    console.error(red(`  ✗ 更新失败: ${secretName}`), error.message);
+    console.error(red(`  ✗ Update failed: ${secretName}`), error.message);
     throw error;
   }
 }
 
 /**
- * 主函数
+ * Main function
  */
 async function main() {
-  // [step 1] 打印工具介绍
+  // [step 1] Print tool introduction
   console.info(
     magenta(
       figlet.textSync('AWS Push', {
@@ -149,56 +149,46 @@ async function main() {
     )
   );
 
-  console.info('AWS Secrets Manager 环境变量推送工具');
-  console.info(
-    '---------------------------------------------------------------'
-  );
-  console.info('| 将本地 .env 文件的环境变量推送到 AWS Secrets Manager       |');
-  console.info('| 支持创建新 secret 或更新现有 secret                         |');
-  console.info(
-    '---------------------------------------------------------------\n'
-  );
+  console.info('AWS Secrets Manager Environment Variables Push Tool');
+  console.info('---------------------------------------------------------------');
+  console.info('| Push local .env file environment variables to AWS Secrets Manager |');
+  console.info('| Supports creating new secrets or updating existing ones           |');
+  console.info('---------------------------------------------------------------\n');
 
   try {
-    // [step 2] 读取配置
+    // [step 2] Load configuration
     const config = await loadConfig();
 
-    // [step 3] 读取 .env 文件
-    console.info(cyan('📖 读取本地 .env 文件...\n'));
+    // [step 3] Load .env file
+    console.info(cyan('📖 Reading local .env file...\n'));
     const localEnvVars = await loadEnvFile();
-    console.info(
-      green(`✓ 读取成功，共 ${Object.keys(localEnvVars).length} 个环境变量\n`)
-    );
+    console.info(green(`✓ Successfully read ${Object.keys(localEnvVars).length} environment variables\n`));
 
-    // [step 4] 选择环境
+    // [step 4] Select environment
     const environments = Object.keys(config.environments);
     const selectedEnv = await select({
-      message: '请选择要推送到哪个环境:',
+      message: 'Please select the environment to push to:',
       choices: environments.map(env => ({
-        name: env === config.defaultEnvironment ? `${env} (默认)` : env,
+        name: env === config.defaultEnvironment ? `${env} (default)` : env,
         value: env,
       })),
       default: config.defaultEnvironment,
     });
 
     const envConfig = config.environments[selectedEnv];
-    console.info(green(`\n✓ 已选择环境: ${bold(selectedEnv)}`));
+    console.info(green(`\n✓ Selected environment: ${bold(selectedEnv)}`));
     console.info(`  Region: ${envConfig.region}\n`);
 
-    // [step 5] 检查 AWS 凭证
+    // [step 5] Check AWS credentials
     if (!process.env.AWS_ACCESS_KEY_ID && !process.env.AWS_SECRET_ACCESS_KEY) {
       if (process.env.AWS_PROFILE) {
-        console.info(
-          cyan(`ℹ️  使用 AWS Profile: ${bold(process.env.AWS_PROFILE)}\n`)
-        );
+        console.info(cyan(`ℹ️  Using AWS Profile: ${bold(process.env.AWS_PROFILE)}\n`));
       } else {
-        console.info(
-          cyan('ℹ️  将使用 AWS CLI 默认配置或 IAM 角色\n')
-        );
+        console.info(cyan('ℹ️  Using AWS CLI default configuration or IAM role\n'));
       }
     }
 
-    // [step 6] 创建 AWS Secrets Manager 客户端
+    // [step 6] Create AWS Secrets Manager client
     const client = new SecretsManagerClient({
       region: envConfig.region,
       credentials:
@@ -210,32 +200,23 @@ async function main() {
           : undefined,
     });
 
-    // [step 7] 处理每个 secret 配置
+    // [step 7] Process each secret configuration
     for (const secretConfig of envConfig.secrets) {
-      if (secretConfig.type !== 'json') {
-        console.warn(
-          yellow(
-            `⚠️  跳过 ${secretConfig.name}: 推送功能目前只支持 JSON 类型的 secret`
-          )
-        );
-        continue;
-      }
-
-      console.info(cyan(`\n📦 处理 secret: ${bold(secretConfig.name)}`));
+      console.info(cyan(`\n📦 Processing secret: ${bold(secretConfig.name)}`));
       if (secretConfig.description) {
         console.info(`   ${secretConfig.description}`);
       }
 
-      // [step 7-1] 确定要推送的 keys
+      // [step 7-1] Determine keys to push
       let keysToInclude = secretConfig.keys || [];
 
       if (keysToInclude.length === 0) {
-        // 如果配置中没有指定 keys，让用户选择
-        console.info(yellow('\n  配置中未指定要推送的 keys，请选择:'));
+        // If keys are not specified in the configuration, let the user choose
+        console.info(yellow('\n  Keys to push are not specified in the configuration, please select:'));
 
         const availableKeys = Object.keys(localEnvVars);
         keysToInclude = await checkbox({
-          message: `选择要推送到 ${secretConfig.name} 的环境变量:`,
+          message: `Select environment variables to push to ${secretConfig.name}:`,
           choices: availableKeys.map(key => ({
             name: `${key} = ${localEnvVars[key].substring(0, 50)}${localEnvVars[key].length > 50 ? '...' : ''}`,
             value: key,
@@ -244,12 +225,12 @@ async function main() {
         });
 
         if (keysToInclude.length === 0) {
-          console.info(yellow('  - 未选择任何变量，跳过此 secret\n'));
+          console.info(yellow('  - No variables selected, skipping this secret\n'));
           continue;
         }
       }
 
-      // [step 7-2] 构建要推送的值
+      // [step 7-2] Build values to push
       const valuesToPush = {};
       const missingKeys = [];
 
@@ -263,19 +244,17 @@ async function main() {
 
       if (missingKeys.length > 0) {
         console.warn(
-          yellow(
-            `  ⚠️  警告: 以下变量在 .env 中不存在: ${missingKeys.join(', ')}`
-          )
+          yellow(`  ⚠️  Warning: The following keys do not exist in the .env file: ${missingKeys.join(', ')}`)
         );
       }
 
-      // [step 7-2.5] 处理 keysOnly（只确保 key 存在，不推送值）
+      // [step 7-2.5] Handle keysOnly (ensure key exists, do not push value)
       const keysOnly = secretConfig.keysOnly || [];
-      const keysOnlyToAdd = {}; // 记录需要添加占位符的 keysOnly
+      const keysOnlyToAdd = {}; // Record keysOnly that need placeholders
 
       if (keysOnly.length > 0) {
         console.info(
-          cyan(`\n  ℹ️  检测到 ${keysOnly.length} 个 keysOnly 配置（只确保存在，不推送值）`)
+          cyan(`\n  ℹ️  Detected ${keysOnly.length} keysOnly configurations (ensure existence, do not push values)`)
         );
 
         // 检查 secret 是否存在以及是否有这些 keys
@@ -288,35 +267,33 @@ async function main() {
 
         for (const key of keysOnly) {
           if (!existingValue || !existingValue.hasOwnProperty(key)) {
-            // Secret 不存在或没有这个 key，添加占位符
+            // Secret does not exist or does not have this key, add placeholder
             keysOnlyToAdd[key] = '<PLEASE_SET_THIS_VALUE>';
-            console.info(
-              yellow(`    • ${key}: 将添加占位符（需要手动设置实际值）`)
-            );
+            console.info(yellow(`    • ${key}: Adding placeholder (manual value required)`));
           } else {
-            // Secret 已存在且有这个 key，保持不变
-            console.info(cyan(`    • ${key}: 已存在，保持原值`));
+            // Secret exists and has this key, keep unchanged
+            console.info(cyan(`    • ${key}: Exists, keeping original value`));
           }
         }
       }
 
-      // 合并 valuesToPush 和 keysOnlyToAdd
+      // Merge valuesToPush and keysOnlyToAdd
       Object.assign(valuesToPush, keysOnlyToAdd);
 
       if (Object.keys(valuesToPush).length === 0 && keysOnly.length === 0) {
-        console.warn(yellow('  - 没有可推送的变量，跳过此 secret\n'));
+        console.warn(yellow('  - No variables to push, skipping this secret\n'));
         continue;
       }
 
-      // [step 7-3] 检查 secret 是否存在
+      // [step 7-3] Check if secret exists
       const exists = await secretExists(client, secretConfig.name);
 
       if (exists) {
-        // Secret 存在，获取现有值并对比
-        console.info(cyan('  ℹ️  Secret 已存在，正在对比差异...'));
+        // Secret exists, get existing values and compare
+        console.info(cyan('  ℹ️  Secret exists, comparing differences...'));
         const existingValue = await getExistingSecret(client, secretConfig.name);
 
-        // 对比差异
+        // Compare differences
         const changes = {added: [], modified: [], unchanged: [], keysOnlyPreserved: []};
 
         for (const [key, newValue] of Object.entries(valuesToPush)) {
@@ -324,7 +301,7 @@ async function main() {
             const isPlaceholder = newValue === '<PLEASE_SET_THIS_VALUE>';
             changes.added.push({key, value: newValue, isPlaceholder});
           } else if (existingValue[key] !== newValue) {
-            // 如果是占位符但 secret 中已有值，不应该修改
+            // If it's a placeholder but the secret already has a value, do not modify
             if (newValue === '<PLEASE_SET_THIS_VALUE>') {
               changes.keysOnlyPreserved.push(key);
             } else {
@@ -339,108 +316,82 @@ async function main() {
           }
         }
 
-        // 显示差异
+        // Display differences
         if (changes.added.length > 0) {
-          console.info(green('\n  新增的变量:'));
+          console.info(green('\n  Added variables:'));
           changes.added.forEach(({key, value, isPlaceholder}) => {
             if (isPlaceholder) {
-              console.info(
-                green(`    + ${key} = ${yellow('<占位符>')} ${cyan('(需要手动设置)')}`)
-              );
+              console.info(green(`    + ${key} = ${yellow('<placeholder>')} ${cyan('(manual setting required)')}`));
             } else {
-              console.info(
-                green(
-                  `    + ${key} = ${value.substring(0, 50)}${value.length > 50 ? '...' : ''}`
-                )
-              );
+              console.info(green(`    + ${key} = ${value.substring(0, 50)}${value.length > 50 ? '...' : ''}`));
             }
           });
         }
 
         if (changes.modified.length > 0) {
-          console.info(yellow('\n  修改的变量:'));
+          console.info(yellow('\n  Modified variables:'));
           changes.modified.forEach(({key, oldValue, newValue}) => {
             console.info(yellow(`    ~ ${key}`));
-            console.info(
-              `      旧值: ${oldValue.substring(0, 50)}${oldValue.length > 50 ? '...' : ''}`
-            );
-            console.info(
-              `      新值: ${newValue.substring(0, 50)}${newValue.length > 50 ? '...' : ''}`
-            );
+            console.info(`      Old value: ${oldValue.substring(0, 50)}${oldValue.length > 50 ? '...' : ''}`);
+            console.info(`      New value: ${newValue.substring(0, 50)}${newValue.length > 50 ? '...' : ''}`);
           });
         }
 
         if (changes.keysOnlyPreserved.length > 0) {
-          console.info(
-            cyan(`\n  保持原值的变量 (keysOnly): ${changes.keysOnlyPreserved.join(', ')}`)
-          );
+          console.info(cyan(`\n  KeysOnly variables preserved: ${changes.keysOnlyPreserved.join(', ')}`));
         }
 
         if (changes.unchanged.length > 0) {
-          console.info(
-            cyan(`\n  未改变的变量: ${changes.unchanged.join(', ')}`)
-          );
+          console.info(cyan(`\n  Unchanged variables: ${changes.unchanged.join(', ')}`));
         }
 
         if (changes.added.length === 0 && changes.modified.length === 0) {
-          console.info(cyan('  ℹ️  没有变化，跳过更新\n'));
+          console.info(cyan('  ℹ️  No changes, skipping update\n'));
           continue;
         }
 
-        // 确认更新
+        // Confirm update
         const shouldUpdate = await confirm({
-          message: `确认更新 ${secretConfig.name}?`,
+          message: `Confirm update for ${secretConfig.name}?`,
           default: true,
         });
 
         if (shouldUpdate) {
-          // 合并现有值和新值
+          // Merge existing values and new values
           const mergedValue = {...existingValue, ...valuesToPush};
           await updateSecret(client, secretConfig.name, mergedValue);
         } else {
-          console.info(yellow('  - 已跳过更新\n'));
+          console.info(yellow('  - Update skipped\n'));
         }
       } else {
-        // Secret 不存在，创建新的
-        console.info(cyan('  ℹ️  Secret 不存在，将创建新的 secret'));
-
-        console.info(green('\n  将要推送的变量:'));
+        // Secret does not exist, create new
+        console.info(cyan('  ℹ️  Secret does not exist, creating new secret'));
+        console.info(green('\n  Variables to be pushed:'));
         for (const [key, value] of Object.entries(valuesToPush)) {
           const isPlaceholder = value === '<PLEASE_SET_THIS_VALUE>';
           if (isPlaceholder) {
-            console.info(
-              green(`    + ${key} = ${yellow('<占位符>')} ${cyan('(需要手动设置)')}`)
-            );
+            console.info(green(`    + ${key} = ${yellow('<placeholder>')} ${cyan('(manual setting required)')}`));
           } else {
-            console.info(
-              green(
-                `    + ${key} = ${value.substring(0, 50)}${value.length > 50 ? '...' : ''}`
-              )
-            );
+            console.info(green(`    + ${key} = ${value.substring(0, 50)}${value.length > 50 ? '...' : ''}`));
           }
         }
 
         const shouldCreate = await confirm({
-          message: `确认创建新 secret: ${secretConfig.name}?`,
+          message: `Confirm creation of new secret: ${secretConfig.name}?`,
           default: true,
         });
 
         if (shouldCreate) {
-          await createSecret(
-            client,
-            secretConfig.name,
-            valuesToPush,
-            secretConfig.description
-          );
+          await createSecret(client, secretConfig.name, valuesToPush, secretConfig.description);
         } else {
-          console.info(yellow('  - 已跳过创建\n'));
+          console.info(yellow('  - Creation skipped\n'));
         }
       }
     }
 
-    console.info(bold(green('\n🍺 完成!\n')));
+    console.info(bold(green('\n🍺 Done!\n')));
   } catch (error) {
-    console.error(red('\n❌ 发生错误:'), error.message);
+    console.error(red('\n❌ Error occurred:'), error.message);
     if (error.stack) {
       console.error(error.stack);
     }
@@ -450,8 +401,8 @@ async function main() {
 
 main();
 
-// 处理 Ctrl-C
+// Handle Ctrl-C
 process.on('SIGINT', () => {
-  console.info(yellow('\n\n已取消操作\n'));
+  console.info(yellow('\n\nOperation cancelled\n'));
   process.exit(0);
 });

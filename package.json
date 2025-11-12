@@ -15,11 +15,13 @@
     "lint": "eslint \"{src}/**/*.ts\" --fix",
     "prebuild": "rimraf dist",
     "newbie": "node .newbie/index.js",
-    "newbie:check": "node .newbie/newbie.check.js",
     "newbie:config": "node .newbie/newbie.config.js",
-    "newbie:install": "node .newbie/newbie.install.js"
+    "newbie:install": "node .newbie/newbie.install.js",
+    "newbie:env": "node .newbie/newbie.env.js",
+    "newbie:env:check": "node .newbie/newbie.check.js"
   },
   "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.929.0",
     "@inquirer/prompts": "^7.8.4",
     "@nestjs/axios": "^3.0.1",
     "@nestjs/common": "^10.4.16",
