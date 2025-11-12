@@ -1,10 +1,6 @@
 const {select, confirm, checkbox} = require('@inquirer/prompts');
-const {bold, cyan, green, yellow, red, magenta} = require('colorette');
-const figlet = require('figlet');
+const {bold, cyan, green, yellow, red} = require('colorette');
 const fs = require('fs').promises;
-const path = require('path');
-
-// AWS SDK
 const {
   SecretsManagerClient,
   GetSecretValueCommand,
@@ -12,23 +8,7 @@ const {
   UpdateSecretCommand,
   DescribeSecretCommand,
 } = require('@aws-sdk/client-secrets-manager');
-
-// Constants
-const CONFIG_PATH = path.join(__dirname, '.config', 'config.json');
-const ENV_PATH = path.join(__dirname, '..', '.env');
-
-/**
- * Load configuration file
- */
-async function loadConfig() {
-  try {
-    const configContent = await fs.readFile(CONFIG_PATH, 'utf-8');
-    return JSON.parse(configContent);
-  } catch (error) {
-    console.error(red('❌ Failed to read config file:'), CONFIG_PATH);
-    throw error;
-  }
-}
+const {CONFIG_PATH, ENV_PATH} = require('./constants/path.constants');
 
 /**
  * Load .env file
@@ -136,43 +116,22 @@ async function updateSecret(client, secretName, secretValue) {
  * Main function
  */
 async function main() {
-  // [step 1] Print tool introduction
-  console.info(
-    magenta(
-      figlet.textSync('AWS Push', {
-        font: 'Standard',
-        horizontalLayout: 'default',
-        verticalLayout: 'default',
-        width: 80,
-        whitespaceBreak: true,
-      })
-    )
-  );
-
-  console.info('AWS Secrets Manager Environment Variables Push Tool');
-  console.info('---------------------------------------------------------------');
-  console.info('| Push local .env file environment variables to AWS Secrets Manager |');
-  console.info('| Supports creating new secrets or updating existing ones           |');
-  console.info('---------------------------------------------------------------\n');
-
   try {
     // [step 2] Load configuration
-    const config = await loadConfig();
+    const configContent = await fs.readFile(CONFIG_PATH, 'utf-8');
+    const config = JSON.parse(configContent);
 
     // [step 3] Load .env file
-    console.info(cyan('📖 Reading local .env file...\n'));
     const localEnvVars = await loadEnvFile();
-    console.info(green(`✓ Successfully read ${Object.keys(localEnvVars).length} environment variables\n`));
 
     // [step 4] Select environment
     const environments = Object.keys(config.environments);
     const selectedEnv = await select({
-      message: 'Please select the environment to push to:',
+      message: 'Select env set:',
       choices: environments.map(env => ({
-        name: env === config.defaultEnvironment ? `${env} (default)` : env,
+        name: env,
         value: env,
       })),
-      default: config.defaultEnvironment,
     });
 
     const envConfig = config.environments[selectedEnv];
@@ -401,8 +360,10 @@ async function main() {
 
 main();
 
-// Handle Ctrl-C
-process.on('SIGINT', () => {
-  console.info(yellow('\n\nOperation cancelled\n'));
-  process.exit(0);
+// Close inquirer input if user press "Q" or "Ctrl-C" key
+process.stdin.on('keypress', (_, key) => {
+  if (key.name === 'q' || (key.ctrl === true && key.name === 'c')) {
+    console.info('\n\nOperation cancelled\n');
+    process.exit(0);
+  }
 });

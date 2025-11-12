@@ -1,5 +1,4 @@
 {
-  "defaultEnvironment": "development",
   "environments": {
     "development": {
       "region": "us-east-1",

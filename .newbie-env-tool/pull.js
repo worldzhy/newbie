@@ -1,15 +1,8 @@
 const {select, confirm} = require('@inquirer/prompts');
 const {bold, cyan, green, yellow, red} = require('colorette');
-const figlet = require('figlet');
 const fs = require('fs').promises;
-const path = require('path');
-
-// AWS SDK
 const {SecretsManagerClient, GetSecretValueCommand} = require('@aws-sdk/client-secrets-manager');
-
-// Constants
-const CONFIG_PATH = path.join(__dirname, '.config', 'config.json');
-const ENV_PATH = path.join(__dirname, '..', '.env');
+const {CONFIG_PATH, ENV_PATH} = require('./constants/path.constants');
 
 /**
  * Load configuration file
@@ -215,25 +208,6 @@ async function writeEnvFile(envVars) {
  * Main function
  */
 async function main() {
-  // [step 1] Print tool introduction
-  console.info(
-    cyan(
-      figlet.textSync('AWS Secrets', {
-        font: 'Standard',
-        horizontalLayout: 'default',
-        verticalLayout: 'default',
-        width: 80,
-        whitespaceBreak: true,
-      })
-    )
-  );
-
-  console.info('AWS Secrets Manager environment variable pull tool');
-  console.info('---------------------------------------------------------------');
-  console.info('| Pull environment variables from AWS Secrets Manager to local .env file |');
-  console.info('| Supports multi-environment configuration, JSON/string formats, interactive conflict handling |');
-  console.info('---------------------------------------------------------------\n');
-
   try {
     // [step 2] Load configuration
     const config = await loadConfig();
@@ -241,17 +215,14 @@ async function main() {
     // [step 3] Select environment
     const environments = Object.keys(config.environments);
     const selectedEnv = await select({
-      message: 'Select environment to pull:',
+      message: 'Select env set:',
       choices: environments.map(env => ({
-        name: env === config.defaultEnvironment ? `${env} (default)` : env,
+        name: env,
         value: env,
       })),
-      default: config.defaultEnvironment,
     });
 
     const envConfig = config.environments[selectedEnv];
-    console.info(green(`\n✓ Selected environment: ${bold(selectedEnv)}`));
-    console.info(`  Region: ${envConfig.region}\n`);
 
     // [step 4] Check AWS credentials
     if (!process.env.AWS_ACCESS_KEY_ID && !process.env.AWS_SECRET_ACCESS_KEY) {
@@ -405,8 +376,10 @@ async function main() {
 
 main();
 
-// Handle Ctrl-C
-process.on('SIGINT', () => {
-  console.info(yellow('\n\nOperation cancelled\n'));
-  process.exit(0);
+// Close inquirer input if user press "Q" or "Ctrl-C" key
+process.stdin.on('keypress', (_, key) => {
+  if (key.name === 'q' || (key.ctrl === true && key.name === 'c')) {
+    console.info('\n\nOperation cancelled\n');
+    process.exit(0);
+  }
 });

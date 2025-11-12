@@ -57,7 +57,7 @@ async function main() {
   try {
     // [step 2] Select operation
     const operation = await select({
-      message: 'Select an operation:',
+      message: 'Select action:',
       choices: [
         {
           name: 'Pull',
