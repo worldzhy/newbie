@@ -13,12 +13,10 @@ export class HttpMiddleware implements NestMiddleware {
     response.on('finish', () => {
       // [step 1] Assemble log content.
       let authorizationKey = '';
-      if (typeof request.query.api_key === 'string')
-        authorizationKey = request.query.api_key.replace('Bearer ', '');
+      if (typeof request.query.api_key === 'string') authorizationKey = request.query.api_key.replace('Bearer ', '');
       else if (typeof request.headers['x-api-key'] === 'string')
         authorizationKey = request.headers['x-api-key'].replace('Bearer ', '');
-      else if (request.headers.authorization)
-        authorizationKey = request.headers.authorization.replace('Bearer ', '');
+      else if (request.headers.authorization) authorizationKey = request.headers.authorization.replace('Bearer ', '');
 
       const logObj = {
         date: startDate,

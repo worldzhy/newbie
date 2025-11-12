@@ -1,24 +1,12 @@
-import {
-  BadRequestException,
-  Logger,
-  INestApplication,
-  Injectable,
-  OnModuleInit,
-  OnModuleDestroy,
-} from '@nestjs/common';
+import {BadRequestException, Logger, INestApplication, Injectable, OnModuleInit, OnModuleDestroy} from '@nestjs/common';
 import {Prisma, PrismaClient} from '@prisma/client';
 import {prismaExtension} from './alpha.prisma.extension';
 
-export type AlphaPrismaService = ReturnType<
-  BasePrismaService['withExtensions']
->;
+export type AlphaPrismaService = ReturnType<BasePrismaService['withExtensions']>;
 
 @Injectable()
 export class BasePrismaService
-  extends PrismaClient<
-    Prisma.PrismaClientOptions,
-    'query' | 'info' | 'warn' | 'error' | 'beforeExit'
-  >
+  extends PrismaClient<Prisma.PrismaClientOptions, 'query' | 'info' | 'warn' | 'error' | 'beforeExit'>
   implements OnModuleInit, OnModuleDestroy
 {
   private logger = new Logger('Prisma');
@@ -91,17 +79,13 @@ export class BasePrismaService
     });
   }
 
-  async findManyInOnePage(params: {
-    model: Prisma.ModelName;
-    findManyArgs?: any;
-  }) {
+  async findManyInOnePage(params: {model: Prisma.ModelName; findManyArgs?: any}) {
     const {findManyArgs} = params;
 
     // ! Handle the situation where there is no Prisma model to prevent the following code from reporting an error.
     const model = params.model as string;
 
-    const modelLowercaseFirstLetter =
-      model.charAt(0).toLowerCase() + model.slice(1);
+    const modelLowercaseFirstLetter = model.charAt(0).toLowerCase() + model.slice(1);
 
     const records = await this[modelLowercaseFirstLetter].findMany({
       ...findManyArgs,
@@ -131,8 +115,7 @@ export class BasePrismaService
     // ! Handle the situation where there is no Prisma model to prevent the following code from reporting an error.
     const model = params.model as string;
 
-    const modelLowercaseFirstLetter =
-      model.charAt(0).toLowerCase() + model.slice(1);
+    const modelLowercaseFirstLetter = model.charAt(0).toLowerCase() + model.slice(1);
 
     const {skip, take} = this.getSkipAndTake(pagination);
 
@@ -163,9 +146,7 @@ export class BasePrismaService
         take: pageSize,
       };
     } else {
-      throw new BadRequestException(
-        'The minimum page is 0 and the pageSize must be larger than 0.'
-      );
+      throw new BadRequestException('The minimum page is 0 and the pageSize must be larger than 0.');
     }
   }
 }

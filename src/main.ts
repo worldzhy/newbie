@@ -3,11 +3,7 @@ import {NestFactory} from '@nestjs/core';
 import * as cookieParser from 'cookie-parser';
 import {urlencoded, json} from 'express';
 import helmet from 'helmet';
-import {
-  DocumentBuilder,
-  SwaggerModule,
-  SwaggerCustomOptions,
-} from '@nestjs/swagger';
+import {DocumentBuilder, SwaggerModule, SwaggerCustomOptions} from '@nestjs/swagger';
 import {ApplicationModule} from './application/application.module';
 const nodeCluster = require('node:cluster');
 const numCPUs = require('node:os').availableParallelism();

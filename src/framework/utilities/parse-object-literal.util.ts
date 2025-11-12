@@ -3,9 +3,7 @@
  * @param objectLiteralString - String to parse
  * @source https://github.com/mbest/js-object-literal-parse
  */
-export const parseObjectLiteral = (
-  objectLiteralString: string
-): [string, string | undefined][] => {
+export const parseObjectLiteral = (objectLiteralString: string): [string, string | undefined][] => {
   const stringDouble = '"(?:[^"\\\\]|\\\\.)*"';
   const stringSingle = "'(?:[^'\\\\]|\\\\.)*'";
   const stringRegexp = '/(?:[^/\\\\]|\\\\.)*/w*';
@@ -13,15 +11,7 @@ export const parseObjectLiteral = (
   const everyThingElse = '[^\\s:,/][^' + specials + ']*[^\\s' + specials + ']';
   const oneNotSpace = '[^\\s]';
   const token = RegExp(
-    stringDouble +
-      '|' +
-      stringSingle +
-      '|' +
-      stringRegexp +
-      '|' +
-      everyThingElse +
-      '|' +
-      oneNotSpace,
+    stringDouble + '|' + stringSingle + '|' + stringRegexp + '|' + everyThingElse + '|' + oneNotSpace,
     'g'
   );
   const divisionLookBehind = /[\])"'A-Za-z0-9_$]+$/;
@@ -46,8 +36,7 @@ export const parseObjectLiteral = (
         if (!key && values.length === 1) {
           key = values.pop();
         }
-        if (key)
-          result.push([key, values.length ? values.join('') : undefined]);
+        if (key) result.push([key, values.length ? values.join('') : undefined]);
         key = undefined;
         values = [];
         depth = 0;

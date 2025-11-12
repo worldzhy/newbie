@@ -113,20 +113,14 @@ export function weekOfYear(year: number, month: number, day: number) {
 }
 
 export function floorByMinutes(datetimeOfStart: Date, minutes: number) {
-  return dateMinusMinutes(
-    datetimeOfStart,
-    datetimeOfStart.getMinutes() % minutes
-  );
+  return dateMinusMinutes(datetimeOfStart, datetimeOfStart.getMinutes() % minutes);
 }
 
 export function ceilByMinutes(datetimeOfEnd: Date, minutes: number) {
   if (datetimeOfEnd.getMinutes() % minutes === 0) {
     return datetimeOfEnd;
   } else {
-    return datePlusMinutes(
-      datetimeOfEnd,
-      minutes - (datetimeOfEnd.getMinutes() % minutes)
-    );
+    return datePlusMinutes(datetimeOfEnd, minutes - (datetimeOfEnd.getMinutes() % minutes));
   }
 }
 
@@ -146,36 +140,12 @@ export function constructDateTime(
     const tmpDate = new Date(year, month - 1, dayOfMonth, hour, minute);
     offset = getTimeZoneOffset(tmpDate, timeZone);
     const tmpDate2 = new Date(
-      year +
-        '-' +
-        month +
-        '-' +
-        dayOfMonth +
-        ' ' +
-        hour +
-        ':' +
-        minute +
-        ':' +
-        second +
-        offset
+      year + '-' + month + '-' + dayOfMonth + ' ' + hour + ':' + minute + ':' + second + offset
     );
     offset = getTimeZoneOffset(tmpDate2, timeZone);
   }
 
-  return new Date(
-    year +
-      '-' +
-      month +
-      '-' +
-      dayOfMonth +
-      ' ' +
-      hour +
-      ':' +
-      minute +
-      ':' +
-      second +
-      offset
-  );
+  return new Date(year + '-' + month + '-' + dayOfMonth + ' ' + hour + ':' + minute + ':' + second + offset);
 }
 
 /**
@@ -247,11 +217,7 @@ export function getTimeZoneOffset(date: Date = new Date(), timeZone?: string) {
     ...
   ]
  */
-export function daysOfMonth(
-  year: number,
-  month: number,
-  selectedWeek?: number
-) {
+export function daysOfMonth(year: number, month: number, selectedWeek?: number) {
   const numberOfDays = new Date(year, month, 0).getDate(); // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/Date#syntax
 
   const daysOfMonth: {
@@ -331,11 +297,7 @@ export function daysOfWeek(
   return daysOfWeek;
 }
 
-export function sameWeekdaysOfMonth(
-  year: number,
-  month: number,
-  dayOfMonth: number
-) {
+export function sameWeekdaysOfMonth(year: number, month: number, dayOfMonth: number) {
   const numberOfDays = new Date(year, month, 0).getDate(); // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/Date#syntax
   const specificDayOfWeek = new Date(year, month - 1, dayOfMonth).getDay();
 

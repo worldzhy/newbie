@@ -10,10 +10,7 @@ import * as _ from 'lodash';
   compareArraysContent(a, b); // true
   compareArraysContent(c, d); // true
  */
-export function compareArraysContent(
-  array1: Array<string | number>,
-  array2: Array<string | number>
-) {
+export function compareArraysContent(array1: Array<string | number>, array2: Array<string | number>) {
   const result1 = _.difference(array1, array2);
   const result2 = _.difference(array2, array1);
 

@@ -4,10 +4,7 @@ import {Prisma} from '@prisma/client';
 export const prismaExtension = Prisma.defineExtension({
   model: {
     $allModels: {
-      async findManyInOnePage<T>(
-        this: T,
-        findManyArgs: Prisma.Args<T, 'findMany'>
-      ) {
+      async findManyInOnePage<T>(this: T, findManyArgs: Prisma.Args<T, 'findMany'>) {
         // Get the current model at runtime
         const model = Prisma.getExtensionContext(this);
 
@@ -44,9 +41,7 @@ export const prismaExtension = Prisma.defineExtension({
           skip = pageSize * page;
           take = pageSize;
         } else {
-          throw new BadRequestException(
-            'The minimum page is 0 and the pageSize must be larger than 0.'
-          );
+          throw new BadRequestException('The minimum page is 0 and the pageSize must be larger than 0.');
         }
 
         const records = await (model as any).findMany({

@@ -6,20 +6,11 @@ import {v4} from 'uuid';
  * @param length - Length of returned string
  * @param charactersOrType - Characters or one of the supported types
  */
-export async function generateRandomString(
-  length = 32,
-  charactersOrType = 'alphanumeric'
-): Promise<string> {
+export async function generateRandomString(length = 32, charactersOrType = 'alphanumeric'): Promise<string> {
   if (
-    [
-      'hex',
-      'base64',
-      'url-safe',
-      'numeric',
-      'distinguishable',
-      'ascii-printable',
-      'alphanumeric',
-    ].includes(charactersOrType)
+    ['hex', 'base64', 'url-safe', 'numeric', 'distinguishable', 'ascii-printable', 'alphanumeric'].includes(
+      charactersOrType
+    )
   )
     return cryptoRandomString({
       length,
