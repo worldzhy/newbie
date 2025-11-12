@@ -15,10 +15,10 @@
     "lint": "eslint \"{src}/**/*.ts\" --fix",
     "prebuild": "rimraf dist",
     "newbie": "node .newbie/index.js",
+    "newbie:check": "node .newbie/newbie.check.js",
     "newbie:config": "node .newbie/newbie.config.js",
     "newbie:install": "node .newbie/newbie.install.js",
-    "newbie:env": "node .newbie/newbie.env.js",
-    "newbie:env:check": "node .newbie/newbie.check.js"
+    "newbie-env-tool": "node .newbie-env-tool/index.js"
   },
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.929.0",

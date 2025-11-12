@@ -73,8 +73,7 @@ async function main() {
     });
 
     // [step 3] Execute corresponding script
-    const scriptPath =
-      operation === 'pull' ? path.join(__dirname, 'aws-secrets-pull.js') : path.join(__dirname, 'aws-secrets-push.js');
+    const scriptPath = operation === 'pull' ? path.join(__dirname, 'pull.js') : path.join(__dirname, 'push.js');
 
     await runScript(scriptPath);
   } catch (error) {

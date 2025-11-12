@@ -8,7 +8,7 @@ const path = require('path');
 const {SecretsManagerClient, GetSecretValueCommand} = require('@aws-sdk/client-secrets-manager');
 
 // Constants
-const CONFIG_PATH = path.join(__dirname, '.config', 'aws-secrets.config.json');
+const CONFIG_PATH = path.join(__dirname, '.config', 'config.json');
 const ENV_PATH = path.join(__dirname, '..', '.env');
 
 /**
