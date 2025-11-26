@@ -110,6 +110,15 @@ const ALL_MICROSERVICES = {
     moduleNames: 'EventSchedulingModule',
     importCode: `import {EventSchedulingModule} from './event-scheduling/event-scheduling.module';`,
   },
+  'frontend-monitor': {
+    key: 'frontend-monitor',
+    srcPath: 'src/microservices/frontend-monitor',
+    repositoryUrl: 'https://github.com/worldzhy/newbie.frontend-monitor.git',
+    schemaFileName: null,
+    settingsFileName: 'frontend-monitor.settings.json',
+    moduleNames: 'FrontendMonitorModule',
+    importCode: `import {FrontendMonitorModule} from './frontend-monitor/frontend-monitor.module';`,
+  },
   github: {
     key: 'github',
     srcPath: 'src/microservices/github',
