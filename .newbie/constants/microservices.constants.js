@@ -20,6 +20,15 @@ const ALL_MICROSERVICES = {
     moduleNames: 'AccountModule',
     importCode: `import {AccountModule} from './account/account.module';`,
   },
+  'aws-cloudwatch': {
+    key: 'aws-cloudwatch',
+    srcPath: 'src/microservices/aws-cloudwatch',
+    repositoryUrl: 'https://github.com/worldzhy/newbie.aws-cloudwatch.git',
+    schemaFileName: 'aws-cloudwatch.schema',
+    settingsFileName: 'aws-cloudwatch.settings.json',
+    moduleNames: 'AwsCloudwatchModule',
+    importCode: `import {AwsCloudwatchModule} from './aws-cloudwatch/aws-cloudwatch.module';`,
+  },
   'aws-s3': {
     key: 'aws-s3',
     srcPath: 'src/microservices/aws-s3',
@@ -28,6 +37,15 @@ const ALL_MICROSERVICES = {
     settingsFileName: 'aws-s3.settings.json',
     moduleNames: 'AwsS3Module',
     importCode: `import {AwsS3Module} from './aws-s3/aws-s3.module';`,
+  },
+  'aws-secrets-manager': {
+    key: 'aws-secrets-manager',
+    srcPath: 'src/microservices/aws-secrets-manager',
+    repositoryUrl: 'https://github.com/worldzhy/newbie.aws-secrets-manager.git',
+    schemaFileName: 'aws-secrets-manager.schema',
+    settingsFileName: 'aws-secrets-manager.settings.json',
+    moduleNames: 'AwsSecretsManagerModule',
+    importCode: `import {AwsSecretsManagerModule} from './aws-secrets-manager/aws-secrets-manager.module';`,
   },
   'aws-ses': {
     key: 'aws-ses',
@@ -82,15 +100,6 @@ const ALL_MICROSERVICES = {
     settingsFileName: 'cloudinary.settings.json',
     moduleNames: 'CloudinaryModule',
     importCode: `import {CloudinaryModule} from './cloudinary/cloudinary.module';`,
-  },
-  cloudwatch: {
-    key: 'cloudwatch',
-    srcPath: 'src/microservices/cloudwatch',
-    repositoryUrl: 'https://github.com/worldzhy/newbie.cloudwatch.git',
-    schemaFileName: null,
-    settingsFileName: 'cloudwatch.settings.json',
-    moduleNames: 'AwsCloudwatchModule',
-    importCode: `import {AwsCloudwatchModule} from './cloudwatch/cloudwatch.module';`,
   },
   elasticsearch: {
     key: 'elasticsearch',
