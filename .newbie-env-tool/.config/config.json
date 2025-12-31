@@ -4,8 +4,14 @@
       "region": "us-east-1",
       "secrets": [
         {
-          "name": "development/app/config",
-          "description": "开发环境应用配置 (JSON 格式)",
+          "name": "development/Newbie/SNSEnvConfig",
+          "description": "开发环境配置 (JSON 格式)",
+          "keys": [],
+          "keysOnly": ["PORT"]
+        },
+        {
+          "name": "development/Newbie/EC2EnvConfig",
+          "description": "开发环境配置 (JSON 格式)",
           "keys": [],
           "keysOnly": ["PORT"]
         }
@@ -15,8 +21,8 @@
       "region": "us-east-1",
       "secrets": [
         {
-          "name": "staging/app/config",
-          "description": "测试环境应用配置 (JSON 格式)",
+          "name": "staging/Newbie/EnvConfig",
+          "description": "测试环境配置 (JSON 格式)",
           "keys": [],
           "keysOnly": []
         }
@@ -26,8 +32,8 @@
       "region": "us-east-1",
       "secrets": [
         {
-          "name": "production/app/config",
-          "description": "生产环境应用配置 (JSON 格式)",
+          "name": "production/Newbie/EnvConfig",
+          "description": "生产环境配置 (JSON 格式)",
           "keys": [],
           "keysOnly": []
         }

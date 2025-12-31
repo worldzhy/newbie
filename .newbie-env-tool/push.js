@@ -128,15 +128,9 @@ async function main() {
     const environments = Object.keys(config.environments);
     const selectedEnv = await select({
       message: 'Select env set:',
-      choices: environments.map(env => ({
-        name: env,
-        value: env,
-      })),
+      choices: environments.map(env => ({name: env, value: env})),
     });
-
-    const envConfig = config.environments[selectedEnv];
-    console.info(green(`\n✓ Selected environment: ${bold(selectedEnv)}`));
-    console.info(`  Region: ${envConfig.region}\n`);
+    const selectedEnvConfig = config.environments[selectedEnv];
 
     // [step 5] Check AWS credentials
     if (!process.env.AWS_ACCESS_KEY_ID && !process.env.AWS_SECRET_ACCESS_KEY) {
@@ -149,7 +143,7 @@ async function main() {
 
     // [step 6] Create AWS Secrets Manager client
     const client = new SecretsManagerClient({
-      region: envConfig.region,
+      region: selectedEnvConfig.region,
       credentials:
         process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
           ? {
@@ -160,7 +154,7 @@ async function main() {
     });
 
     // [step 7] Process each secret configuration
-    for (const secretConfig of envConfig.secrets) {
+    for (const secretConfig of selectedEnvConfig.secrets) {
       console.info(cyan(`\n📦 Processing secret: ${bold(secretConfig.name)}`));
       if (secretConfig.description) {
         console.info(`   ${secretConfig.description}`);

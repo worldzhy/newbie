@@ -21,7 +21,6 @@
     "newbie-env-tool": "node .newbie-env-tool/index.js"
   },
   "dependencies": {
-    "@aws-sdk/client-secrets-manager": "^3.929.0",
     "@inquirer/prompts": "^7.8.4",
     "@nestjs/axios": "^3.0.1",
     "@nestjs/common": "^10.4.16",
