@@ -110,6 +110,15 @@ const ALL_MICROSERVICES = {
     moduleNames: 'ElasticsearchModule',
     importCode: `import {ElasticsearchModule} from './elasticsearch/elasticsearch.module';`,
   },
+  engined: {
+    key: 'engined',
+    srcPath: 'src/microservices/engined',
+    repositoryUrl: 'https://github.com/worldzhy/newbie.engined.git',
+    schemaFileName: 'engined.schema',
+    settingsFileName: null,
+    moduleNames: 'EnginedModule',
+    importCode: `import {EnginedModule} from './engined/engined.module';`,
+  },
   'event-scheduling': {
     key: 'event-scheduling',
     srcPath: 'src/microservices/event-scheduling',
