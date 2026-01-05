@@ -17,3 +17,6 @@
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+# Prisma generated client (v7+)
+generated

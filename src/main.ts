@@ -1,10 +1,11 @@
 import {ValidationPipe} from '@nestjs/common';
 import {NestFactory} from '@nestjs/core';
-import * as cookieParser from 'cookie-parser';
-import {urlencoded, json} from 'express';
+import cookieParser from 'cookie-parser';
+import {json, urlencoded} from 'express';
 import helmet from 'helmet';
-import {DocumentBuilder, SwaggerModule, SwaggerCustomOptions} from '@nestjs/swagger';
-import {ApplicationModule} from './application/application.module';
+import {DocumentBuilder, SwaggerCustomOptions, SwaggerModule} from '@nestjs/swagger';
+import {ApplicationModule} from './application/application.module.js';
+
 const nodeCluster = require('node:cluster');
 const numCPUs = require('node:os').availableParallelism();
 

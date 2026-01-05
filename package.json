@@ -5,6 +5,7 @@
   "author": "worldzhy",
   "private": true,
   "license": "MIT",
+  "type": "module",
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\"",
@@ -29,7 +30,8 @@
     "@nestjs/platform-express": "^10.4.19",
     "@nestjs/swagger": "^8.1.0",
     "@nestjs/throttler": "^6.0.0",
-    "@prisma/client": "^6.13.0",
+    "@prisma/adapter-pg": "^7.2.0",
+    "@prisma/client": "^7.2.0",
     "axios": "^1.8.3",
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
@@ -62,20 +64,30 @@
     "figlet": "^1.7.0",
     "husky": "^8.0.3",
     "prettier": "^3.1.0",
-    "prisma": "^6.13.0",
+    "prisma": "^7.2.0",
     "source-map-support": "^0.5.21",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.3.2"
+    "typescript": "5.9"
   },
   "config": {
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
     }
   },
-  "prisma": {
-    "schema": "./prisma",
-    "seed": "ts-node -r tsconfig-paths/register ./prisma/seed.ts"
+  "imports": {
+    "#generated/*": [
+      "generated/*"
+    ],
+    "#framework/*": [
+      "src/framework/*"
+    ],
+    "#microservices/*": [
+      "src/microservices/*"
+    ],
+    "#/*": [
+      "src/*"
+    ]
   }
 }

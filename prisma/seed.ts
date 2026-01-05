@@ -1,4 +1,4 @@
-import {PrismaClient} from '@prisma/client';
+import {PrismaClient} from '#generated/prisma/client.js';
 
 async function main() {
   console.info('** seeding start');

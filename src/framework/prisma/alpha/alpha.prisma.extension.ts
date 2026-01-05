@@ -1,5 +1,5 @@
 import {BadRequestException} from '@nestjs/common';
-import {Prisma} from '@prisma/client';
+import {Prisma} from '#generated/prisma/client.js';
 
 export const prismaExtension = Prisma.defineExtension({
   model: {

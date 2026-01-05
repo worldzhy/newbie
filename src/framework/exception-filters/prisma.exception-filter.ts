@@ -1,7 +1,7 @@
-import {Catch, ArgumentsHost, ExceptionFilter, HttpStatus} from '@nestjs/common';
-import {Prisma} from '@prisma/client';
+import {ArgumentsHost, Catch, ExceptionFilter, HttpStatus} from '@nestjs/common';
+import {Prisma} from '#generated/prisma/client.js';
 import {Response} from 'express';
-import {getPrismaExceptionMessage} from '@framework/prisma/prisma.exception';
+import {getPrismaExceptionMessage} from '#framework/prisma/prisma.exception.js';
 
 enum PrismaExceptionCode {
   PrismaClientKnownRequestError = 9001,

@@ -1,5 +1,5 @@
-import {BadRequestException, Logger, INestApplication, Injectable, OnModuleInit, OnModuleDestroy} from '@nestjs/common';
-import {Prisma, PrismaClient} from '@prisma/client';
+import {BadRequestException, INestApplication, Injectable, Logger, OnModuleDestroy, OnModuleInit} from '@nestjs/common';
+import {Prisma, PrismaClient} from '#generated/prisma/client.js';
 
 @Injectable()
 export class PrismaService

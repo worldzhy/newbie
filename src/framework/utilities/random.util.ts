@@ -1,4 +1,4 @@
-import * as cryptoRandomString from 'crypto-random-string';
+import cryptoRandomString from 'crypto-random-string';
 import {v4} from 'uuid';
 
 /**

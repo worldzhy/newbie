@@ -1,5 +1,5 @@
 import {Global, Module} from '@nestjs/common';
-import {BasePrismaService, AlphaPrismaService} from './alpha.prisma.service';
+import {AlphaPrismaService, BasePrismaService} from './alpha.prisma.service.js';
 
 const PRISMA_INJECTION_TOKEN = 'AlphaPrismaService';
 
