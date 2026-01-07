@@ -6,9 +6,10 @@ import helmet from 'helmet';
 import {DocumentBuilder, SwaggerCustomOptions, SwaggerModule} from '@nestjs/swagger';
 import {ApplicationModule} from './application/application.module.js';
 import {NestExpressApplication} from '@nestjs/platform-express';
+import nodeCluster from 'node:cluster';
+import nodeOS from 'node:os';
 
-const nodeCluster = require('node:cluster');
-const numCPUs = require('node:os').availableParallelism();
+const numCPUs = nodeOS.availableParallelism();
 
 const enum Environment {
   Development = 'development',
