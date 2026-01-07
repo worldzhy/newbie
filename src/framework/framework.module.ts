@@ -39,6 +39,6 @@ import FrameworkConfiguration from './framework.config.js';
 })
 export class FrameworkModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(HttpMiddleware).forRoutes('*');
+    consumer.apply(HttpMiddleware).forRoutes('{*splat}');
   }
 }

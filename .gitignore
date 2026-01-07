@@ -18,5 +18,8 @@
 !.vscode/launch.json
 !.vscode/extensions.json
 
+# IDE - WebStorm
+.idea
+
 # Prisma generated client (v7+)
 generated

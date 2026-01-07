@@ -5,6 +5,7 @@ import {json, urlencoded} from 'express';
 import helmet from 'helmet';
 import {DocumentBuilder, SwaggerCustomOptions, SwaggerModule} from '@nestjs/swagger';
 import {ApplicationModule} from './application/application.module.js';
+import {NestExpressApplication} from '@nestjs/platform-express';
 
 const nodeCluster = require('node:cluster');
 const numCPUs = require('node:os').availableParallelism();
@@ -20,7 +21,11 @@ const timeoutOfHttpRequest = 60000; // milliseconds
 
 async function bootstrap() {
   // [step 1] Create a nestjs application.
-  const app = await NestFactory.create(ApplicationModule);
+  const app = await NestFactory.create<NestExpressApplication>(ApplicationModule);
+
+  // Use v4 query parser.
+  app.set('query parser', 'extended');
+
   app.use(cookieParser());
 
   // bodyParser was added back to express in release 4.16.0
