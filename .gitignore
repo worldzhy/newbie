@@ -20,6 +20,3 @@
 
 # IDE - WebStorm
 .idea
-
-# Prisma generated client (v7+)
-generated

@@ -1,5 +1,5 @@
 import {BadRequestException, INestApplication, Injectable, Logger, OnModuleDestroy, OnModuleInit} from '@nestjs/common';
-import {Prisma, PrismaClient} from '#generated/prisma/client.js';
+import {Prisma, PrismaClient} from '@newbie/prisma/client.js';
 import {prismaExtension} from './alpha.prisma.extension.js';
 
 export type AlphaPrismaService = ReturnType<BasePrismaService['withExtensions']>;

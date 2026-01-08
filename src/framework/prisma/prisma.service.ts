@@ -1,5 +1,6 @@
 import {BadRequestException, INestApplication, Injectable, Logger, OnModuleDestroy, OnModuleInit} from '@nestjs/common';
-import {Prisma, PrismaClient} from '#generated/prisma/client.js';
+import {Prisma, PrismaClient} from '@newbie/prisma/client.js';
+import {PrismaPg} from '@prisma/adapter-pg';
 
 @Injectable()
 export class PrismaService
@@ -9,6 +10,9 @@ export class PrismaService
   private logger = new Logger('Prisma');
 
   constructor() {
+    const adapter = new PrismaPg({
+      url: process.env.PRISMA_DATABASE_URL as string,
+    });
     super({
       /* About log levels
       -query:	Logs all queries run by Prisma.
@@ -20,6 +24,7 @@ export class PrismaService
       -warn:	Warnings.
       -error:	Errors.
       */
+      adapter,
 
       // We care about 'info', 'warn' and 'error' levels among [info, query, warn, error].
       log: [

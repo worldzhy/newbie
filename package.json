@@ -75,19 +75,5 @@
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
     }
-  },
-  "imports": {
-    "#generated/*": [
-      "generated/*"
-    ],
-    "#framework/*": [
-      "src/framework/*"
-    ],
-    "#microservices/*": [
-      "src/microservices/*"
-    ],
-    "#/*": [
-      "src/*"
-    ]
   }
 }
