@@ -1,5 +1,5 @@
 import {registerAs} from '@nestjs/config';
-import {int} from './utilities/int.util.js';
+import {int} from '@framework/utilities/int.util';
 
 export default registerAs('framework', () => ({
   nodeFramework: 'express', // support 'express' and 'fastify'.

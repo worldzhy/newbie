@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
-    "module": "NodeNext",
-    "moduleResolution": "nodenext",
+    "module": "CommonJS",
     "target": "ES2023",
     "esModuleInterop": true,
     "declaration": true,
@@ -18,6 +17,13 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@generated/*": ["generated/*"],
+      "@framework/*": ["src/framework/*"],
+      "@microservices/*": ["src/microservices/*"],
+      "@/*": ["src/*"]
+    },
+    "exclude"
   }
 }

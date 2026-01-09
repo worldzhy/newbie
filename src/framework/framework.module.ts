@@ -3,15 +3,15 @@ import {APP_FILTER, APP_GUARD, APP_INTERCEPTOR} from '@nestjs/core';
 import {HttpModule} from '@nestjs/axios';
 import {ConfigModule} from '@nestjs/config';
 import {ThrottlerGuard, ThrottlerModule} from '@nestjs/throttler';
-import {AllExceptionFilter} from './exception-filters/all.exception-filter.js';
-import {PrismaExceptionFilter} from './exception-filters/prisma.exception-filter.js';
-import {ThrottlerExceptionFilter} from './exception-filters/throttler.exception-filter.js';
-import {HttpExceptionFilter} from './exception-filters/http.exception-filter.js';
-import {NewbieExceptionFilter} from './exception-filters/newbie.exception-filter.js';
-import {HttpResponseInterceptor} from './interceptors/http-response.interceptor.js';
-import {HttpMiddleware} from './middlewares/http.middleware.js';
-import {PrismaModule} from './prisma/prisma.module.js';
-import FrameworkConfiguration from './framework.config.js';
+import FrameworkConfiguration from './framework.config';
+import {PrismaModule} from '@framework/prisma/prisma.module';
+import {AllExceptionFilter} from '@framework/exception-filters/all.exception-filter';
+import {HttpExceptionFilter} from '@framework/exception-filters/http.exception-filter';
+import {NewbieExceptionFilter} from '@framework/exception-filters/newbie.exception-filter';
+import {PrismaExceptionFilter} from '@framework/exception-filters/prisma.exception-filter';
+import {ThrottlerExceptionFilter} from '@framework/exception-filters/throttler.exception-filter';
+import {HttpResponseInterceptor} from '@framework/interceptors/http-response.interceptor';
+import {HttpMiddleware} from '@framework/middlewares/http.middleware';
 
 @Global()
 @Module({

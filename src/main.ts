@@ -4,12 +4,11 @@ import cookieParser from 'cookie-parser';
 import {json, urlencoded} from 'express';
 import helmet from 'helmet';
 import {DocumentBuilder, SwaggerCustomOptions, SwaggerModule} from '@nestjs/swagger';
-import {ApplicationModule} from './application/application.module.js';
 import {NestExpressApplication} from '@nestjs/platform-express';
-import nodeCluster from 'node:cluster';
-import nodeOS from 'node:os';
+import {ApplicationModule} from '@/application/application.module';
 
-const numCPUs = nodeOS.availableParallelism();
+const nodeCluster = require('node:cluster');
+const numCPUs = require('node:os').availableParallelism();
 
 const enum Environment {
   Development = 'development',

@@ -1,5 +1,5 @@
 import {ArgumentMetadata, BadGatewayException, BadRequestException, Injectable, PipeTransform} from '@nestjs/common';
-import {ORDER_BY_ASC_DESC, ORDER_BY_FORMAT} from './errors.constants.js';
+import {ORDER_BY_ASC_DESC, ORDER_BY_FORMAT} from '@framework/pipes/errors.constants';
 
 /** Convert a string like "name asc, address desc" to { name: "asc", address: "desc" } */
 @Injectable()

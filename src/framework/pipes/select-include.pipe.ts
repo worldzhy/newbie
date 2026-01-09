@@ -1,5 +1,5 @@
 import {BadRequestException, Injectable, PipeTransform} from '@nestjs/common';
-import {SELECT_INCLUDE_PIPE_FORMAT} from './errors.constants.js';
+import {SELECT_INCLUDE_PIPE_FORMAT} from '@framework/pipes/errors.constants';
 var dot = require('dot-object');
 
 /**

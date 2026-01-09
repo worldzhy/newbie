@@ -1,12 +1,9 @@
-import {BadRequestException, INestApplication, Injectable, Logger, OnModuleDestroy, OnModuleInit} from '@nestjs/common';
-import {Prisma, PrismaClient} from '@newbie/prisma/client.js';
+import {BadRequestException, Injectable, Logger, OnModuleDestroy, OnModuleInit} from '@nestjs/common';
+import {Prisma, PrismaClient} from '@generated/prisma/client';
 import {PrismaPg} from '@prisma/adapter-pg';
 
 @Injectable()
-export class PrismaService
-  extends PrismaClient<Prisma.PrismaClientOptions, 'query' | 'info' | 'warn' | 'error' | 'beforeExit'>
-  implements OnModuleInit, OnModuleDestroy
-{
+export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   private logger = new Logger('Prisma');
 
   constructor() {
@@ -37,30 +34,30 @@ export class PrismaService
     });
 
     // Register event handlers.
-    this.$on('query', (e: Prisma.QueryEvent) => {
-      this.logger.log('👇👇👇');
-      this.logger.log(`time: ${e.timestamp}`);
-      this.logger.log(`query: ${e.query}`);
-      this.logger.log(`params: ${e.params}`);
-      this.logger.log(`duration: ${e.duration} ms`);
-      this.logger.log(`target: ${e.target}`);
-      this.logger.log('');
-    });
-
-    this.$on('info', (e: Prisma.LogEvent) => {
-      const message = `${e.timestamp} >> ${e.message} >> [Target] ${e.target}`;
-      this.logger.log(message);
-    });
-
-    this.$on('warn', (e: Prisma.LogEvent) => {
-      const message = `${e.timestamp} >> ${e.message} >> [Target] ${e.target}`;
-      this.logger.warn(message);
-    });
-
-    this.$on('error', (e: Prisma.LogEvent) => {
-      const message = `${e.timestamp} >> ${e.message} >> [Target] ${e.target}`;
-      this.logger.error(message);
-    });
+    // this.$on('query', (e: Prisma.QueryEvent) => {
+    //   this.logger.log('👇👇👇');
+    //   this.logger.log(`time: ${e.timestamp}`);
+    //   this.logger.log(`query: ${e.query}`);
+    //   this.logger.log(`params: ${e.params}`);
+    //   this.logger.log(`duration: ${e.duration} ms`);
+    //   this.logger.log(`target: ${e.target}`);
+    //   this.logger.log('');
+    // });
+    //
+    // this.$on('info', (e: Prisma.LogEvent) => {
+    //   const message = `${e.timestamp} >> ${e.message} >> [Target] ${e.target}`;
+    //   this.logger.log(message);
+    // });
+    //
+    // this.$on('warn', (e: Prisma.LogEvent) => {
+    //   const message = `${e.timestamp} >> ${e.message} >> [Target] ${e.target}`;
+    //   this.logger.warn(message);
+    // });
+    //
+    // this.$on('error', (e: Prisma.LogEvent) => {
+    //   const message = `${e.timestamp} >> ${e.message} >> [Target] ${e.target}`;
+    //   this.logger.error(message);
+    // });
 
     // Register middlewares.
     // this.$extends({
@@ -122,11 +119,11 @@ export class PrismaService
     await this.$disconnect();
   }
 
-  async enableShutdownHooks(app: INestApplication) {
-    this.$on('beforeExit', async () => {
-      await app.close();
-    });
-  }
+  // async enableShutdownHooks(app: INestApplication) {
+  //   this.$on('beforeExit', async () => {
+  //     await app.close();
+  //   });
+  // }
 
   async findManyInOnePage(params: {model: Prisma.ModelName; findManyArgs?: any}) {
     const {findManyArgs} = params;
