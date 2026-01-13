@@ -1,6 +1,6 @@
-import { TransformFnParams } from 'class-transformer';
+import {TransformFnParams} from 'class-transformer';
 
-export function BooleanTransformer({ value }: TransformFnParams): boolean | undefined {
+export function BooleanTransformer({value}: TransformFnParams): boolean | undefined {
   if (typeof value !== 'string') return undefined;
 
   const normalized = value.toLowerCase();
