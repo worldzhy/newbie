@@ -23,7 +23,6 @@
       "@framework/*": ["src/framework/*"],
       "@microservices/*": ["src/microservices/*"],
       "@/*": ["src/*"]
-    },
-    "exclude"
+    }
   }
 }
