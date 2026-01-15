@@ -65,7 +65,7 @@ const assembleSchemaFiles = async (addedMicroservices, removedMicroservices) => 
 
   // [step 4] Generate prisma client.
   try {
-    await exec('npx prisma generate --allow-no-models');
+    await exec('npx prisma generate');
   } catch (error) {}
 };
 
