@@ -17,3 +17,11 @@
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+# IDE - WebStorm
+.idea
+
+# Prisma v7+ generated
+generated
+
+.newbie

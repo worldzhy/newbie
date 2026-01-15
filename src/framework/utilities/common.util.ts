@@ -1,4 +1,4 @@
-import * as bcrypt from 'bcrypt';
+import bcrypt from 'bcrypt';
 
 export function generateRandomNumber(max: number): number {
   return Math.ceil(Math.random() * max);

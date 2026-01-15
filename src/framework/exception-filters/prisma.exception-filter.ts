@@ -1,6 +1,6 @@
-import {Catch, ArgumentsHost, ExceptionFilter, HttpStatus} from '@nestjs/common';
-import {Prisma} from '@prisma/client';
+import {ArgumentsHost, Catch, ExceptionFilter, HttpStatus} from '@nestjs/common';
 import {Response} from 'express';
+import {Prisma} from '@generated/prisma/client';
 import {getPrismaExceptionMessage} from '@framework/prisma/prisma.exception';
 
 enum PrismaExceptionCode {

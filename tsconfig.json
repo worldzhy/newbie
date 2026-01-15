@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "module": "commonjs",
+    "esModuleInterop": true,
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -18,15 +19,10 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@framework/*": [
-        "src/framework/*"
-      ],
-      "@microservices/*": [
-        "src/microservices/*"
-      ],
-      "@/*": [
-        "src/*"
-      ]
+      "@generated/*": ["generated/*"],
+      "@framework/*": ["src/framework/*"],
+      "@microservices/*": ["src/microservices/*"],
+      "@/*": ["src/*"]
     }
   }
 }

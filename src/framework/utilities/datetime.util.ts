@@ -1,4 +1,4 @@
-import * as moment from 'moment';
+import moment from 'moment';
 
 // !>>> Unix timestamp
 export function secondsUntilUnixTimestamp(unixTimestamp: number): number {
