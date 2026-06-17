@@ -23,7 +23,7 @@
   "dependencies": {
     "@inquirer/prompts": "latest",
     "@nestjs/axios": "latest",
-    "@nestjs/common": "latest",
+    "@nestjs/common": "11.1.17",
     "@nestjs/config": "latest",
     "@nestjs/core": "latest",
     "@nestjs/platform-express": "latest",
@@ -31,7 +31,7 @@
     "@nestjs/throttler": "latest",
     "@prisma/adapter-pg": "latest",
     "@prisma/client": "latest",
-    "axios": "latest",
+    "axios": "1.16.0",
     "bcrypt": "latest",
     "class-transformer": "latest",
     "class-validator": "latest",
