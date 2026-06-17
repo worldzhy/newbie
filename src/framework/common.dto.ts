@@ -1,5 +1,5 @@
 import {ApiProperty} from '@nestjs/swagger';
-import {IsNumber, IsNotEmpty} from 'class-validator';
+import {IsNumber, IsNotEmpty, IsString} from 'class-validator';
 import {Type} from 'class-transformer';
 
 class CommonPagination {
@@ -63,11 +63,14 @@ export class CommonListResponseDto {
   records: any[];
 }
 
-/** CUD: Create Update Delete */
-export class CommonCUDResDto {
-  @ApiProperty({
-    type: Number,
-  })
+export class CommonGetByStringIdRequestDto {
+  @ApiProperty({type: String})
+  @IsString()
+  id: string;
+}
+
+export class CommonGetByNumberIdRequestDto {
+  @ApiProperty({type: Number})
   @IsNumber()
   id: number;
 }

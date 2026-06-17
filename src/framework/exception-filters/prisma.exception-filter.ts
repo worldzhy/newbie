@@ -1,11 +1,6 @@
-import {
-  Catch,
-  ArgumentsHost,
-  ExceptionFilter,
-  HttpStatus,
-} from '@nestjs/common';
-import {Prisma} from '@prisma/client';
+import {ArgumentsHost, Catch, ExceptionFilter, HttpStatus} from '@nestjs/common';
 import {Response} from 'express';
+import {Prisma} from '@generated/prisma/client';
 import {getPrismaExceptionMessage} from '@framework/prisma/prisma.exception';
 
 enum PrismaExceptionCode {
@@ -89,8 +84,7 @@ export class PrismaExceptionFilter implements ExceptionFilter {
       response.status(HttpStatus.BAD_REQUEST).json({
         code: PrismaExceptionCode.PrismaClientValidationError,
         error: {
-          message:
-            'Validation failed due to missing field, incorrect field name, incorrect field types, etc.',
+          message: 'Validation failed due to missing field, incorrect field name, incorrect field types, etc.',
         },
         data: null,
       });

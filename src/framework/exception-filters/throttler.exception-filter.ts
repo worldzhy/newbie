@@ -1,9 +1,4 @@
-import {
-  Catch,
-  ArgumentsHost,
-  HttpStatus,
-  ExceptionFilter,
-} from '@nestjs/common';
+import {Catch, ArgumentsHost, HttpStatus, ExceptionFilter} from '@nestjs/common';
 import {ThrottlerException} from '@nestjs/throttler';
 import {Response} from 'express';
 

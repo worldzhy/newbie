@@ -1,4 +1,4 @@
-import * as bcrypt from 'bcrypt';
+import bcrypt from 'bcrypt';
 
 export function generateRandomNumber(max: number): number {
   return Math.ceil(Math.random() * max);
@@ -39,10 +39,7 @@ export async function generateHash(password: string | null): Promise<string> {
   return await bcrypt.hash(password, salt);
 }
 
-export async function compareHash(
-  password: string | null,
-  hash: string | null
-): Promise<boolean> {
+export async function compareHash(password: string | null, hash: string | null): Promise<boolean> {
   return await bcrypt.compare(password, hash);
 }
 

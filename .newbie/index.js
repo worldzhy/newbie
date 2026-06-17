@@ -7,15 +7,8 @@ const {assembleSchemaFiles} = require('./assemble/assemble-schema');
 const {assembleNestJsAssets} = require('./assemble/assemble-assets');
 const {assembleNestJsModules} = require('./assemble/assemble-modules');
 const {assembleDependencies} = require('./assemble/assemble-dependencies');
-const {
-  addRepositories,
-  removeRepositories,
-} = require('./assemble/assemble-repositories');
-const {
-  ACCOUNT_MICROSERVICE,
-  SAAS_MICROSERVICE,
-  ALL_MICROSERVICES,
-} = require('./constants/microservices.constants');
+const {addRepositories, removeRepositories} = require('./assemble/assemble-repositories');
+const {ACCOUNT_MICROSERVICE, SAAS_MICROSERVICE, ALL_MICROSERVICES} = require('./constants/microservices.constants');
 const {ApplicationMode, DeveloperMode} = require('./constants/mode.constants');
 const {isNewbieDeveloper} = require('./utilities/env.util');
 const {handleLoading} = require('./utilities/loading.util');
@@ -25,39 +18,36 @@ const {
   getMicroservicesToBeRemovedFromConfig,
   updateMicroservicesInConfig,
 } = require('./utilities/microservices.util');
-const {
-  checkApplicationMode,
-  checkDeveloperMode,
-} = require('./utilities/mode.util');
+const {checkApplicationMode, checkDeveloperMode} = require('./utilities/mode.util');
 
 const main = async () => {
   // [step 1] Print the introduction of the command-line tool.
   console.info(
-    figlet.textSync('Newbie', {
-      font: 'Epic',
-      horizontalLayout: 'default',
-      verticalLayout: 'default',
-      width: 80,
-      whitespaceBreak: true,
-    })
+    cyan(
+      figlet.textSync('Newbie', {
+        font: 'Standard',
+        horizontalLayout: 'default',
+        verticalLayout: 'default',
+        width: 120,
+        whitespaceBreak: true,
+      })
+    )
   );
 
   console.info(
-    green(
+    cyan(
       `                               ${(await isNewbieDeveloper()) ? '     [' + DeveloperMode.NEWBIE_DEVELOPER + ']\n' : '[' + DeveloperMode.APPLICATION_DEVELOPER + ']\n'}`
     )
   );
 
-  console.info('What is newbie?');
+  console.info('What is Newbie?');
   console.info(' -----------------------------------------------------------');
   console.info('| Newbie is a backend development framework based on NestJS.|');
   console.info('| The main goal of the framework is to allow developers to  |');
   console.info('| reuse ready-made modules such as account, workflow, etc.  |');
   console.info('| We can flexibly add or remove these ready-made modules in |');
   console.info('| the project.                                              |');
-  console.info(
-    ' -----------------------------------------------------------\n'
-  );
+  console.info(' -----------------------------------------------------------\n');
 
   // [step 2] Check developer mode.
   if (!(await checkDeveloperMode())) {
@@ -91,24 +81,18 @@ const main = async () => {
     loop: true,
     theme: {helpMode: 'auto'},
   });
-  const addedMicroservices =
-    await getMicroservicesToBeAddedToConfig(enabledMicroservices);
-  const removedMicroservices =
-    await getMicroservicesToBeRemovedFromConfig(enabledMicroservices);
+  const addedMicroservices = await getMicroservicesToBeAddedToConfig(enabledMicroservices);
+  const removedMicroservices = await getMicroservicesToBeRemovedFromConfig(enabledMicroservices);
 
   // [step 4-2] Confirm the operation.
   let message = '';
   if (!addedMicroservices.length && !removedMicroservices.length) {
-    console.info(
-      '\n[info] You did not make any changes to the microservices.\n'
-    );
+    console.info('\n[info] You did not make any changes to the microservices.\n');
     process.exit(0);
   } else if (!removedMicroservices.length && addedMicroservices.length) {
     message = `Do you want to ENABLE ${cyan(addedMicroservices.join(', '))} ?`;
   } else if (removedMicroservices.length && !addedMicroservices.length) {
-    message = `Do you want to DISABLE ${inverse(
-      removedMicroservices.join(', ')
-    )} ?`;
+    message = `Do you want to DISABLE ${inverse(removedMicroservices.join(', '))} ?`;
   } else {
     message = `Do you want to DISABLE ${inverse(
       removedMicroservices.join(', ')
@@ -163,9 +147,7 @@ const main = async () => {
     }
     console.info(bold(green('🍺 C O M P L E T E\n')));
   } else {
-    console.info(
-      '\n[info] You did not make any changes to the microservices.\n'
-    );
+    console.info('\n[info] You did not make any changes to the microservices.\n');
   }
 };
 
@@ -174,9 +156,7 @@ main();
 // Close inquirer input if user press "Q" or "Ctrl-C" key
 process.stdin.on('keypress', (_, key) => {
   if (key.name === 'q' || (key.ctrl === true && key.name === 'c')) {
-    console.info(
-      '\n\n[info] You did not make any changes to the microservices.'
-    );
+    console.info('\n\n[info] You did not make any changes to the microservices.');
     process.exit(0);
   }
 });

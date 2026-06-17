@@ -1,0 +1,43 @@
+{
+  "environments": {
+    "development": {
+      "region": "us-east-1",
+      "secrets": [
+        {
+          "name": "development/Newbie/SNSEnvConfig",
+          "description": "开发环境配置 (JSON 格式)",
+          "keys": [],
+          "keysOnly": ["PORT"]
+        },
+        {
+          "name": "development/Newbie/EC2EnvConfig",
+          "description": "开发环境配置 (JSON 格式)",
+          "keys": [],
+          "keysOnly": ["PORT"]
+        }
+      ]
+    },
+    "staging": {
+      "region": "us-east-1",
+      "secrets": [
+        {
+          "name": "staging/Newbie/EnvConfig",
+          "description": "测试环境配置 (JSON 格式)",
+          "keys": [],
+          "keysOnly": []
+        }
+      ]
+    },
+    "production": {
+      "region": "us-east-1",
+      "secrets": [
+        {
+          "name": "production/Newbie/EnvConfig",
+          "description": "生产环境配置 (JSON 格式)",
+          "keys": [],
+          "keysOnly": []
+        }
+      ]
+    }
+  }
+}

@@ -20,10 +20,7 @@ export enum NewbieExceptionType {
   Access_HighFrequency,
 }
 
-const NewbieExceptionMap = new Map<
-  NewbieExceptionType,
-  {code: number; error: object}
->([
+const NewbieExceptionMap = new Map<NewbieExceptionType, {code: number; error: object}>([
   [
     NewbieExceptionType.Login_WrongInput,
     {
@@ -37,8 +34,7 @@ const NewbieExceptionMap = new Map<
     {
       code: 1002,
       error: {
-        message:
-          'The password has not been set. Please login via verification code',
+        message: 'The password has not been set. Please login via verification code',
       },
     },
   ],
@@ -64,14 +60,8 @@ const NewbieExceptionMap = new Map<
       },
     },
   ],
-  [
-    NewbieExceptionType.ResetPassword_WrongInput,
-    {code: 1005, error: {message: 'Invalid email or phone'}},
-  ],
-  [
-    NewbieExceptionType.ResetPassword_InvalidCode,
-    {code: 1006, error: {message: 'Invalid verification code'}},
-  ],
+  [NewbieExceptionType.ResetPassword_WrongInput, {code: 1005, error: {message: 'Invalid email or phone'}}],
+  [NewbieExceptionType.ResetPassword_InvalidCode, {code: 1006, error: {message: 'Invalid verification code'}}],
   [
     NewbieExceptionType.Login_InactiveUser,
     {
