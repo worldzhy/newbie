@@ -1,13 +1,16 @@
-import moment from 'moment';
+import dayjs from 'dayjs';
+import isoWeek from 'dayjs/plugin/isoWeek';
+
+dayjs.extend(isoWeek);
 
 // !>>> Unix timestamp
 export function secondsUntilUnixTimestamp(unixTimestamp: number): number {
-  const unixNow = moment().unix();
+  const unixNow = Math.floor(Date.now() / 1000);
   return unixTimestamp - unixNow;
 }
 
 export function dateOfUnixTimestamp(unixTimestamp: number): Date {
-  return moment.unix(unixTimestamp).toDate();
+  return new Date(unixTimestamp * 1000);
 }
 
 // !>>> Calculate date
@@ -54,7 +57,7 @@ export function lastDayOfMonth(year: number, month: number) {
 }
 
 export function currentQuarter(): number {
-  return moment().quarter();
+  return Math.floor(new Date().getMonth() / 3) + 1;
 }
 
 export function dateMinusDateByDays(bigDate: Date, smallDate: Date): number {
@@ -109,7 +112,8 @@ export function weekOfMonth(year: number, month: number, day: number) {
  */
 export function weekOfYear(year: number, month: number, day: number) {
   const date = new Date(year, month - 1, day);
-  return parseInt(moment(date).format('W'));
+  // dayjs isoWeek() matches moment's 'W' format: ISO week number (1~53).
+  return dayjs(date).isoWeek();
 }
 
 export function floorByMinutes(datetimeOfStart: Date, minutes: number) {
