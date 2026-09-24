@@ -9,6 +9,7 @@
 - [x] **Stage 0 完成**：workspaces 骨架（packages/core、packages/cli、templates/basic）、tsconfig.base、.gitignore；旧项目 tsc/nest build 零影响。
 - [x] **Stage 1 完成**：`@devbie/newbie@0.1.0`。git mv 保留历史；19 处 `@framework` 自别名→相对路径；Prisma 解耦（`PrismaModule.forRoot({PrismaClient})`、`FrameworkModule.forRoot`、错误类取 `@prisma/client/runtime/client`）；新增 NewbieFactory（含 cluster/swagger/bodyLimit/requestTimeout）；子路径 exports 全保留（codemod 可纯替换前缀）。容器内 tsc 通过、npm pack 无 settings/schema、barrel+子路径运行时加载验证通过。
 - [x] **Stage 2 完成**：templates/basic 以 workspace 依赖消费 core（薄 main.ts 5 行、`FrameworkModule.forRoot({prisma:{PrismaClient}})`）。容器内 prisma generate → tsc --noEmit → nest build 通过；启动冒烟：Swagger `/api-json` 200、`/` 302、PrismaModule 用注入的生成端 client 初始化成功（无可达 PG 不阻断启动）。
+- [x] **Stage 3a 完成**：`packages/cli`（`@devbie/newbie-cli@0.1.0`，TS+commander）等价移植 nightwatch `.newbie/` 全管线并并入 env-tool；dry-run、非零退出、env 注释保留、无 shell 注入、DO NOT EDIT 头均落地；38 个纯函数单测 + 容器内 fixture 全流程（生成物 tsc 通过、幂等、disable 回收）验证。
 - [ ] Stage 3 待执行；Stage 4 待执行。
 - [x] **2026-09-24 收尾清理**：删除旧 Dockerfile（模板不内置部署文件）；删除 `packages/core/src/prisma/alpha/` 3 个整体注释的死代码文件（零引用、未进 barrel）；同步 split-plan 与本计划的 Dockerfile 表述；Stage 0-2 成果分批提交。
 
@@ -111,7 +112,7 @@
 
 > 真源：`nightwatch-backend/.newbie/`（2647 行版本，含 update/release.util），移植到 `packages/cli/`，语言保持 JS 或升 TS（建议 TS，配合 §记忆中「纯函数补单测」）。
 
-1. **3a 等价移植**：commander/yargs 骨架；现有 install / config / check + 6 个 assemble 步骤 + env-tool（D3）迁入；修已知缺陷：任一步失败非零退出、env 保留注释分组、shell 参数化防注入、JSON/schema 校验、dry-run、生成物加 DO NOT EDIT 头。
+1. **[x] 3a 等价移植（完成）**：`@devbie/newbie-cli@0.1.0`（TS + commander）。命令面：交互默认（enable/disable）、`install`（config↔项目对齐）、`config`（交互/`--add`/`--remove`/`--list`）、`check`（缺失变量非零退出）、`update`（semver tag 选择与 pin）、`env pull/push`（env-tool 并入，支持 `--environment/--yes`）；全局 `--cwd/--dry-run/--skip-prisma-generate`。架构：`core/*` 纯函数（node:test 38 例）、`lib/*` IO 层、`assemble/*` 6 步管线。缺陷修复：Sink 统一写边界（dry-run 全程有效）、`execFile/spawn` 参数数组消灭 shell 注入、IssueBag 汇总非零退出（替代吞错+exit 0）、.env 结构解析保留注释分组、.env.example marker 块、生成物 DO NOT EDIT 头、prisma generate/prettier 失败即错、git ref 白名单校验、push 时 keysOnly 占位符不再覆盖远端真值。模板 devDep 接入 `newbie` script；容器内构建/测试/类型检查/dry-run 与 fixture 全流程（enable 幂等、disable 回收）验证通过。
 2. **3b 新命令**：`doctor`（子模块/settings 漂移、patch-id）、`status --json`、`apply --config --ci`、`agent`（出站轮询占位）、`create <name>`（供 nightwatch 创建流程模式 A 消费）、`update-template`（Stage 4）。
 3. **3c module 化绑定交付**（与 nightwatch 侧改名同期，不可拆发）：
    - 概念重命名 `microservices → modules`：目录、`@modules/` 别名、`modules.*` 配置键、生成物 `modules.module.ts/config.ts`；
