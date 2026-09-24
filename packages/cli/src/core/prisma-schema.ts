@@ -1,7 +1,7 @@
 /**
  * Update the `schemas = [...]` array inside the prisma datasource block.
  * Non-module entries (e.g. "application") are preserved; module entries are
- * addressed by their PostgreSQL namespace name (`microservice/<key>`).
+ * addressed by their PostgreSQL namespace name (`module/<key>`).
  */
 
 const DATASOURCE_SCHEMAS_RE =
@@ -38,5 +38,16 @@ export function updateDatasourceSchemas(
 
 /** Namespace name used inside the datasource schemas array for a module key. */
 export function moduleSchemaNamespace(key: string): string {
-  return `microservice/${key}`;
+  return `module/${key}`;
+}
+
+/** Read the current datasource schemas list; null when absent/unparseable. */
+export function readDatasourceSchemas(content: string): string[] | null {
+  const match = content.match(DATASOURCE_SCHEMAS_RE);
+  if (!match) return null;
+  try {
+    return JSON.parse(`{"val": ${match[2]}}`).val as string[];
+  } catch {
+    return null;
+  }
 }

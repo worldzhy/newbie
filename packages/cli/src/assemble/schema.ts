@@ -6,13 +6,16 @@ import {
   updateDatasourceSchemas,
 } from "../core/prisma-schema";
 import {
+  MODULES_DIR,
   PRISMA_SCHEMA_MAIN,
   PRISMA_SCHEMA_MODELS_DIR,
 } from "../constants/paths";
-import { ModuleMeta } from "../modules-catalog";
 import { IssueBag, reportIssue } from "../lib/issues";
-import { readModuleSchema } from "../lib/module-settings";
-import { fileExists } from "../lib/release";
+import {
+  readInstalledManifest,
+  readInstalledSchema,
+} from "../lib/module-install";
+import { fileExists } from "../lib/fs-util";
 import { Sink } from "../lib/sink";
 
 const DO_NOT_EDIT_HEADER = `// THIS FILE IS MANAGED BY @devbie/newbie-cli. DO NOT EDIT.
@@ -20,47 +23,60 @@ const DO_NOT_EDIT_HEADER = `// THIS FILE IS MANAGED BY @devbie/newbie-cli. DO NO
 
 `;
 
+/** Keys of modules (among the given ones) that declare a Prisma fragment. */
+async function keysWithSchema(
+  cwd: string,
+  keys: string[],
+): Promise<{ key: string; fragment: string | null }[]> {
+  const result: { key: string; fragment: string | null }[] = [];
+  for (const key of keys) {
+    const manifest = await readInstalledManifest(cwd, key);
+    if (!manifest) continue; // dry-run before copy: reported elsewhere
+    if (!manifest.schema) continue;
+    const fragment = await readInstalledSchema(cwd, key, manifest);
+    result.push({ key, fragment });
+  }
+  return result;
+}
+
 export async function assembleSchemaFiles(params: {
   cwd: string;
   sink: Sink;
   issues: IssueBag;
-  added: ModuleMeta[];
-  removed: ModuleMeta[];
+  added: string[];
+  removed: string[];
   skipPrismaGenerate?: boolean;
 }): Promise<void> {
   const { cwd, sink, issues, added, removed, skipPrismaGenerate } = params;
 
-  // [step 1] Copy added module schemas into prisma/models/<key>.prisma
-  for (const meta of added) {
-    if (!meta.schemaFileName) continue;
-
-    const schema = await readModuleSchema(cwd, meta);
-    if (schema === null) {
+  // [step 1] Copy added module fragments into prisma/models/<key>.prisma
+  for (const { key, fragment } of await keysWithSchema(cwd, added)) {
+    if (fragment === null) {
       reportIssue(
         issues,
         sink,
-        `Missing ${meta.key}.schema in ${path.posix.join(".newbie/.config", meta.key)}`,
+        `Declared Prisma fragment is missing inside ${path.posix.join(MODULES_DIR, key)}`,
       );
       continue;
     }
-
     await sink.writeText(
-      path.posix.join(PRISMA_SCHEMA_MODELS_DIR, `${meta.key}.prisma`),
-      `${DO_NOT_EDIT_HEADER}${schema}`,
+      path.posix.join(PRISMA_SCHEMA_MODELS_DIR, `${key}.prisma`),
+      `${DO_NOT_EDIT_HEADER}${fragment}`,
     );
   }
 
-  // [step 2] Remove module schema files.
-  for (const meta of removed) {
-    if (!meta.schemaFileName) continue;
+  // [step 2] Remove fragments of removed modules.
+  for (const { key } of await keysWithSchema(cwd, removed)) {
     await sink.remove(
-      path.posix.join(PRISMA_SCHEMA_MODELS_DIR, `${meta.key}.prisma`),
+      path.posix.join(PRISMA_SCHEMA_MODELS_DIR, `${key}.prisma`),
     );
   }
 
-  // [step 3] Rewrite the datasource schemas array (nothing to do when neither side has schemas).
-  const addedWithSchema = added.filter((meta) => meta.schemaFileName);
-  const removedWithSchema = removed.filter((meta) => meta.schemaFileName);
+  // [step 3] Rewrite the datasource schemas array (nothing to do when neither side declares fragments).
+  const addedWithSchema = (await keysWithSchema(cwd, added)).filter(
+    (entry) => entry.fragment !== null,
+  );
+  const removedWithSchema = await keysWithSchema(cwd, removed);
 
   if (addedWithSchema.length > 0 || removedWithSchema.length > 0) {
     const mainSchemaPath = path.resolve(cwd, PRISMA_SCHEMA_MAIN);
@@ -78,8 +94,8 @@ export async function assembleSchemaFiles(params: {
 
     const next = updateDatasourceSchemas(
       content,
-      addedWithSchema.map((meta) => moduleSchemaNamespace(meta.key)),
-      removedWithSchema.map((meta) => moduleSchemaNamespace(meta.key)),
+      addedWithSchema.map((entry) => moduleSchemaNamespace(entry.key)),
+      removedWithSchema.map((entry) => moduleSchemaNamespace(entry.key)),
     );
     if (next !== content) {
       await sink.writeText(PRISMA_SCHEMA_MAIN, next);

@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 
 import {
   moduleSchemaNamespace,
+  readDatasourceSchemas,
   updateDatasourceSchemas,
 } from "../src/core/prisma-schema";
 
@@ -19,39 +20,37 @@ generator client {
 
 describe("updateDatasourceSchemas", () => {
   it("appends module namespaces while preserving application", () => {
-    const next = updateDatasourceSchemas(SCHEMA, ["microservice/account"], []);
+    const next = updateDatasourceSchemas(SCHEMA, ["module/account"], []);
     assert.match(
       next,
-      /schemas\s*=\s*\["application", "microservice\/account"\]/,
+      /schemas\s*=\s*\["application", "module\/account"\]/,
     );
   });
 
   it("removes disabled namespaces and keeps others", () => {
     const withTwo = updateDatasourceSchemas(
       SCHEMA,
-      ["microservice/account", "microservice/workflow"],
+      ["module/account", "module/workflow"],
       [],
     );
-    const removed = updateDatasourceSchemas(
-      withTwo,
-      [],
-      ["microservice/account"],
-    );
-    assert.match(removed, /"microservice\/workflow"/);
-    assert.doesNotMatch(removed, /"microservice\/account"/);
+    const removed = updateDatasourceSchemas(withTwo, [], [
+      "module/account",
+    ]);
+    assert.match(removed, /"module\/workflow"/);
+    assert.doesNotMatch(removed, /"module\/account"/);
     assert.match(removed, /"application"/);
   });
 
   it("is idempotent", () => {
-    const once = updateDatasourceSchemas(SCHEMA, ["microservice/account"], []);
-    const twice = updateDatasourceSchemas(once, ["microservice/account"], []);
+    const once = updateDatasourceSchemas(SCHEMA, ["module/account"], []);
+    const twice = updateDatasourceSchemas(once, ["module/account"], []);
     assert.equal(once, twice);
   });
 
   it("leaves content without a schemas array untouched", () => {
     const content = 'datasource db {\n  provider = "postgresql"\n}\n';
     assert.equal(
-      updateDatasourceSchemas(content, ["microservice/account"], []),
+      updateDatasourceSchemas(content, ["module/account"], []),
       content,
     );
   });
@@ -69,7 +68,20 @@ describe("updateDatasourceSchemas", () => {
 });
 
 describe("moduleSchemaNamespace", () => {
-  it("uses the microservice/ namespace convention", () => {
-    assert.equal(moduleSchemaNamespace("aws-s3"), "microservice/aws-s3");
+  it("uses the module/ namespace convention", () => {
+    assert.equal(moduleSchemaNamespace("aws-s3"), "module/aws-s3");
+  });
+});
+
+describe("readDatasourceSchemas", () => {
+  it("parses the current schemas list", () => {
+    assert.deepEqual(readDatasourceSchemas(SCHEMA), ["application"]);
+  });
+
+  it("returns null when the array is absent", () => {
+    assert.equal(
+      readDatasourceSchemas("datasource db {\n provider = \"postgresql\"\n}\n"),
+      null,
+    );
   });
 });

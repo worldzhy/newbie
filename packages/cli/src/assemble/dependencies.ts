@@ -2,46 +2,46 @@ import {
   buildInstallSpecs,
   planDependencyRemovals,
 } from "../core/dependency-plan";
-import { ModuleMeta } from "../modules-catalog";
+import { ModuleManifest } from "../core/module-manifest";
 import { IssueBag, reportIssue } from "../lib/issues";
-import { ModuleSettings, readModuleSettings } from "../lib/module-settings";
+import { readInstalledManifest } from "../lib/module-install";
 import { Sink } from "../lib/sink";
 
-async function loadSettings(
+async function loadManifests(
   cwd: string,
   issues: IssueBag,
   sink: Sink,
-  modules: ModuleMeta[],
+  keys: string[],
   label: string,
-) {
-  const decls: ModuleSettings[] = [];
-  for (const meta of modules) {
-    const settings = await readModuleSettings(cwd, meta);
-    if (settings === null) {
+): Promise<ModuleManifest[]> {
+  const manifests: ModuleManifest[] = [];
+  for (const key of keys) {
+    const manifest = await readInstalledManifest(cwd, key);
+    if (manifest === null) {
       reportIssue(
         issues,
         sink,
-        `Missing ${meta.key}.settings.json; dependencies of ${label} modules may be incomplete.`,
+        `Missing newbie.module.json for '${key}'; dependencies of ${label} modules may be incomplete.`,
       );
       continue;
     }
-    decls.push(settings);
+    manifests.push(manifest);
   }
-  return decls;
+  return manifests;
 }
 
 export async function assembleDependencies(params: {
   cwd: string;
   sink: Sink;
   issues: IssueBag;
-  added: ModuleMeta[];
-  removed: ModuleMeta[];
-  enabled: ModuleMeta[];
+  added: string[];
+  removed: string[];
+  enabled: string[];
 }): Promise<void> {
   const { cwd, sink, issues, added, removed, enabled } = params;
 
   // [step 1] Install dependencies of added modules.
-  const addedDecls = await loadSettings(cwd, issues, sink, added, "added");
+  const addedDecls = await loadManifests(cwd, issues, sink, added, "added");
   const { dependencies: addSpecs, devDependencies: addDevSpecs } =
     buildInstallSpecs(addedDecls);
 
@@ -57,14 +57,14 @@ export async function assembleDependencies(params: {
   }
 
   // [step 2] Uninstall deps that were only owned by removed modules.
-  const enabledDecls = await loadSettings(
+  const enabledDecls = await loadManifests(
     cwd,
     issues,
     sink,
     enabled,
     "enabled",
   );
-  const removedDecls = await loadSettings(
+  const removedDecls = await loadManifests(
     cwd,
     issues,
     sink,

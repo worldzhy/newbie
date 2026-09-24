@@ -10,7 +10,7 @@
 - [x] **Stage 1 完成**：`@devbie/newbie@0.1.0`。git mv 保留历史；19 处 `@framework` 自别名→相对路径；Prisma 解耦（`PrismaModule.forRoot({PrismaClient})`、`FrameworkModule.forRoot`、错误类取 `@prisma/client/runtime/client`）；新增 NewbieFactory（含 cluster/swagger/bodyLimit/requestTimeout）；子路径 exports 全保留（codemod 可纯替换前缀）。容器内 tsc 通过、npm pack 无 settings/schema、barrel+子路径运行时加载验证通过。
 - [x] **Stage 2 完成**：templates/basic 以 workspace 依赖消费 core（薄 main.ts 5 行、`FrameworkModule.forRoot({prisma:{PrismaClient}})`）。容器内 prisma generate → tsc --noEmit → nest build 通过；启动冒烟：Swagger `/api-json` 200、`/` 302、PrismaModule 用注入的生成端 client 初始化成功（无可达 PG 不阻断启动）。
 - [x] **Stage 3a 完成**：`packages/cli`（`@devbie/newbie-cli@0.1.0`，TS+commander）等价移植 nightwatch `.newbie/` 全管线并并入 env-tool；dry-run、非零退出、env 注释保留、无 shell 注入、DO NOT EDIT 头均落地；38 个纯函数单测 + 容器内 fixture 全流程（生成物 tsc 通过、幂等、disable 回收）验证。
-- [ ] Stage 3 待执行；Stage 4 待执行。
+- [x] Stage 3a/3b/3c 完成（3c 本仓侧：registry 复制模型、modules 改名、47 模块 registry 仓填充；两仓代码待授权提交）；Stage 4 待执行。
 - [x] **2026-09-24 收尾清理**：删除旧 Dockerfile（模板不内置部署文件）；删除 `packages/core/src/prisma/alpha/` 3 个整体注释的死代码文件（零引用、未进 barrel）；同步 split-plan 与本计划的 Dockerfile 表述；Stage 0-2 成果分批提交。
 
 ### 已决议/偏差记录
@@ -113,12 +113,13 @@
 > 真源：`nightwatch-backend/.newbie/`（2647 行版本，含 update/release.util），移植到 `packages/cli/`，语言保持 JS 或升 TS（建议 TS，配合 §记忆中「纯函数补单测」）。
 
 1. **[x] 3a 等价移植（完成）**：`@devbie/newbie-cli@0.1.0`（TS + commander）。命令面：交互默认（enable/disable）、`install`（config↔项目对齐）、`config`（交互/`--add`/`--remove`/`--list`）、`check`（缺失变量非零退出）、`update`（semver tag 选择与 pin）、`env pull/push`（env-tool 并入，支持 `--environment/--yes`）；全局 `--cwd/--dry-run/--skip-prisma-generate`。架构：`core/*` 纯函数（node:test 38 例）、`lib/*` IO 层、`assemble/*` 6 步管线。缺陷修复：Sink 统一写边界（dry-run 全程有效）、`execFile/spawn` 参数数组消灭 shell 注入、IssueBag 汇总非零退出（替代吞错+exit 0）、.env 结构解析保留注释分组、.env.example marker 块、生成物 DO NOT EDIT 头、prisma generate/prettier 失败即错、git ref 白名单校验、push 时 keysOnly 占位符不再覆盖远端真值。模板 devDep 接入 `newbie` script；容器内构建/测试/类型检查/dry-run 与 fixture 全流程（enable 幂等、disable 回收）验证通过。
-2. **3b 新命令**：`doctor`（子模块/settings 漂移、patch-id）、`status --json`、`apply --config --ci`、`agent`（出站轮询占位）、`create <name>`（供 nightwatch 创建流程模式 A 消费）、`update-template`（Stage 4）。
-3. **3c module 化绑定交付**（与 nightwatch 侧改名同期，不可拆发）：
-   - 概念重命名 `microservices → modules`：目录、`@modules/` 别名、`modules.*` 配置键、生成物 `modules.module.ts/config.ts`；
-   - 分发模型改为 monorepo registry 复制：消费项目根 `modules.json`（key/version/sourceCommit/localPatches）+ 各 module 的 `newbie.module.json`；新增 `dev-sync`；
-   - 18 个旧子模块迁移到 `~/src/newbie-modules`（在 registry 仓执行）、nightwatch 移除 submodule 改复制（在 nightwatch 仓执行）——本仓只交付 CLI 能力与文档。
-4. 验证：在容器内用模板项目跑 add/install/update/doctor/apply/status 全流程；doctor 能正确报漂移；生成物与键名全部为 modules.\*。
+2. **[x] 3b 新命令（完成）**：`doctor`（registry/wiring/manifest/schema/env/update/drift/多余目录体检，error 非零、notice 仅信息）、`status`（默认纯 JSON，`--drift` 带逐模块 added/removed/changed）、`apply --config/--ci`（消费 `{modules:[...]}` 声明）、`agent`（出站轮询占位，env：`NIGHTWATCH_REPORT_ENDPOINT/NIGHTWATCH_APPLICATION_TOKEN`）、`create <name>`（`--template-path/NEWBIE_TEMPLATE_PATH` → 内置 templates/basic → git clone；`--no-git-init`）。drift 基线经 `git archive <commit> -- <module> | tar -x` 提取临时快照，避免 worktree 元数据与覆盖层竞态；node:test 累计 45 例。
+3. **[x] 3c module 化（本仓侧完成，与 nightwatch 侧改名绑定关系解除为 CLI 能力先行）**：
+   - 概念重命名 `microservices → modules` 已全量落地：目录、`@modules/` 别名、生成物 `modules.module.ts/config.ts`、Prisma `@@schema("module/<key>")`；`DeveloperMode/ApplicationMode` 概念删除；
+   - 分发模型改为 monorepo registry 源码复制：消费项目根 `modules.json`（registry.url/ref/sourceCommit + modules[key/version/sourceCommit/localPatches]）+ 各 module 的 `newbie.module.json`；registry 发现顺序 `NEWBIE_MODULES_PATH` → `~/src/newbie-modules` → `~/.newbie/registry` 缓存（`NEWBIE_MODULES_REF` 指定 ref）；
+   - registry 仓 `~/src/newbie-modules` 已由 `scripts/import-modules.mjs` 按旧 repositoryUrl 全量导入 **47 个模块**（catalog 自由选择，saas/account 不互斥），自动完成 `@framework/* → @devbie/newbie/*` 与 `microservice/ → module/` schema 命名空间改写（该仓尚未 git commit）；
+   - 模板 templates/basic 同步为 src/modules 布局；nightwatch 仓移除 submodule 改复制属其他仓工作，不在本 Stage。
+4. **[x] 验证（完成）**：容器内 `tsc` 构建通过、node:test 45/45；fixture 项目全流程演练：doctor 干净态 exit 0、制造漂移（changed+added）后 exit 1、status --drift JSON 正确、`--dry-run` 零写盘（哈希比对）、config --remove + install 回收目录与 wiring、重新 add/install 恢复干净；`grep` 确认 packages/cli/src、packages/core/src、templates 中 microservice/DeveloperMode/ApplicationMode/@framework 零残留（仅保留 `@nestjs/microservices` 依赖名）。
 
 ### Stage 4：`update-template` 与模板定稿（对应 Phase 4）
 

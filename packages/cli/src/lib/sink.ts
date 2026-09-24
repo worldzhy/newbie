@@ -14,6 +14,7 @@ export interface Sink {
   writeText(file: string, content: string): Promise<void>;
   writeJson(file: string, value: unknown): Promise<void>;
   remove(fileOrDir: string): Promise<void>;
+  copy(fromAbsolute: string, toRelative: string): Promise<void>;
   run(command: string, args: string[], label?: string): Promise<void>;
 }
 
@@ -48,6 +49,17 @@ export function createSink(cwd: string, dryRun: boolean): Sink {
         return;
       }
       await fs.rm(resolve(fileOrDir), { recursive: true, force: true });
+    },
+
+    async copy(fromAbsolute: string, toRelative: string): Promise<void> {
+      if (dryRun) {
+        plan(`copy ${path.basename(fromAbsolute)} -> ${toRelative}`);
+        return;
+      }
+      const target = resolve(toRelative);
+      await fs.rm(target, { recursive: true, force: true });
+      await fs.mkdir(path.dirname(target), { recursive: true });
+      await fs.cp(fromAbsolute, target, { recursive: true });
     },
 
     async run(command: string, args: string[], _label?: string): Promise<void> {

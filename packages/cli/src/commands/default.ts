@@ -1,53 +1,19 @@
 import { checkbox, select } from "@inquirer/prompts";
 import { bold, cyan, green, inverse } from "colorette";
 
-import { applyModuleChanges } from "../assemble/pipeline";
-import { ApplicationMode, DeveloperMode } from "../constants/modes";
-import { selectableModules } from "../core/module-plan";
-import { ProjectConfig } from "../core/project-config";
-import { ALL_MODULE_NAMES } from "../modules-catalog";
-import { CONFIG_JSON } from "../constants/paths";
+import { applyModuleKeys } from "../assemble/pipeline";
+import { moduleKeys } from "../core/modules-state";
+import { listRegistryKeys } from "../lib/registry";
 
 import { createContext, GlobalOptions, printBanner } from "./shared";
 
-async function ensureApplicationMode(
-  config: ProjectConfig,
-  sink: { writeJson(file: string, value: unknown): Promise<void> },
-): Promise<string> {
-  if (
-    config.applicationMode === ApplicationMode.SAAS_APPLICATION ||
-    config.applicationMode === ApplicationMode.NON_SAAS_APPLICATION
-  ) {
-    return config.applicationMode;
-  }
-
-  const mode = await select({
-    message: "Which application mode do you want to enable for your project:",
-    choices: [
-      {
-        name: "Non-SaaS Application",
-        value: ApplicationMode.NON_SAAS_APPLICATION,
-      },
-      { name: "SaaS Application", value: ApplicationMode.SAAS_APPLICATION },
-    ],
+export async function runInteractive(options: GlobalOptions): Promise<void> {
+  const { ctx } = await createContext(options, {
+    ensureConfig: true,
+    fetch: true,
   });
 
-  config.applicationMode = mode;
-  await sink.writeJson(CONFIG_JSON, config);
-  return mode;
-}
-
-export async function runInteractive(options: GlobalOptions): Promise<void> {
-  const { ctx, config, isNewbieDeveloper, sink } = await createContext(
-    options,
-    { ensureConfig: true },
-  );
-
-  printBanner(
-    isNewbieDeveloper
-      ? DeveloperMode.NEWBIE_DEVELOPER
-      : DeveloperMode.APPLICATION_DEVELOPER,
-  );
+  printBanner();
   console.info("What is Newbie?");
   console.info(" -----------------------------------------------------------");
   console.info("| Newbie is a backend development framework based on NestJS.|");
@@ -57,17 +23,15 @@ export async function runInteractive(options: GlobalOptions): Promise<void> {
     " -----------------------------------------------------------\n",
   );
 
-  const applicationMode = await ensureApplicationMode(config, sink);
-  const choices = selectableModules(
-    ALL_MODULE_NAMES,
-    applicationMode,
-    applicationMode === ApplicationMode.SAAS_APPLICATION,
+  const available = await listRegistryKeys(ctx.registry.root);
+  const enabled = moduleKeys(ctx.state).filter((key) =>
+    available.includes(key),
   );
 
   const chosen = await checkbox({
     message: "Which modules do you want to enable for your project:",
-    choices: choices.map((name) => {
-      const checked = config.enabled.includes(name);
+    choices: available.map((name) => {
+      const checked = enabled.includes(name);
       return {
         value: name,
         name: `${name}${checked ? " (enabled)" : ""}`,
@@ -79,15 +43,15 @@ export async function runInteractive(options: GlobalOptions): Promise<void> {
   });
 
   if (
-    chosen.length === config.enabled.length &&
-    chosen.every((name) => config.enabled.includes(name))
+    chosen.length === enabled.length &&
+    chosen.every((name) => enabled.includes(name))
   ) {
     console.info("\n[info] You did not make any changes to the modules.\n");
     return;
   }
 
-  const added = chosen.filter((name) => !config.enabled.includes(name));
-  const removed = config.enabled.filter((name) => !chosen.includes(name));
+  const added = chosen.filter((name) => !enabled.includes(name));
+  const removed = enabled.filter((name) => !chosen.includes(name));
 
   let message: string;
   if (!removed.length && added.length) {
@@ -111,7 +75,7 @@ export async function runInteractive(options: GlobalOptions): Promise<void> {
     return;
   }
 
-  await applyModuleChanges(ctx, chosen);
+  await applyModuleKeys(ctx, chosen);
   ctx.issues.assertEmpty();
   console.info(bold(green("\n🍺 C O M P L E T E\n")));
 }

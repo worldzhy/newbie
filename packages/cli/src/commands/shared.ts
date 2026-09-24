@@ -3,18 +3,12 @@ import path from "node:path";
 import figlet from "figlet";
 import { cyan } from "colorette";
 
-import {
-  decideDeveloperMode,
-  isNewbieDeveloperEnabled,
-} from "../core/dev-mode";
 import { envValues, parseEnv } from "../core/env-file";
-import { DeveloperMode, NEWBIE_DEVELOPER_ENV } from "../constants/modes";
 import { ENV_PATH } from "../constants/paths";
-import { ProjectConfig } from "../core/project-config";
-import { PipelineContext } from "../assemble/pipeline";
-import { CliError } from "../lib/errors";
+import { PipelineContext } from "../assemble/types";
 import { IssueBag } from "../lib/issues";
-import { ensureProjectConfig, readProjectConfig } from "../lib/project-config";
+import { ensureModulesState, readModulesState } from "../lib/modules-state";
+import { RegistryLocation, requireRegistry } from "../lib/registry";
 import { createSink, Sink } from "../lib/sink";
 
 export interface GlobalOptions {
@@ -32,7 +26,7 @@ export async function readEnvMap(cwd: string): Promise<Record<string, string>> {
   }
 }
 
-export function printBanner(mode: string | null): void {
+export function printBanner(): void {
   console.info(
     cyan(
       figlet.textSync("Newbie", {
@@ -42,73 +36,46 @@ export function printBanner(mode: string | null): void {
       }),
     ),
   );
-  if (mode) console.info(cyan(`                               [${mode}]\n`));
+}
+
+export interface ContextOptions {
+  /** Create modules.json when it does not exist yet. */
+  ensureConfig?: boolean;
+  /** Update (or clone) the remote registry cache; otherwise use it as-is. */
+  fetch?: boolean;
 }
 
 /**
- * Build the shared pipeline context and enforce the developer-mode migration
- * guard. Unlike the legacy CLI (which exited 0), a blocked mode switch is a
- * non-zero failure with the migration instructions.
+ * Build the shared pipeline context: sink (dry-run boundary), issue bag,
+ * project modules.json state and the resolved newbie-modules registry.
  */
 export async function createContext(
   options: GlobalOptions,
-  opts: { ensureConfig?: boolean } = {},
+  opts: ContextOptions = {},
 ): Promise<{
   ctx: PipelineContext;
-  config: ProjectConfig;
-  isNewbieDeveloper: boolean;
   sink: Sink;
+  registry: RegistryLocation;
 }> {
   const cwd = path.resolve(options.cwd);
   const sink = createSink(cwd, options.dryRun);
   const issues = new IssueBag();
 
   if (opts.ensureConfig) {
-    await ensureProjectConfig(cwd, sink);
+    await ensureModulesState(cwd, sink);
   }
 
-  const config = await readProjectConfig(cwd);
-  const envMap = await readEnvMap(cwd);
-  const isNewbieDeveloper = isNewbieDeveloperEnabled(envMap);
-
-  const decision = decideDeveloperMode(
-    config.developerMode ?? null,
-    isNewbieDeveloper,
-    config.enabled,
-  );
-  if (decision.persist) {
-    config.developerMode = decision.persist;
-    await sink.writeJson(".newbie/.config/config.json", config);
-  }
-
-  if (!decision.allowed) {
-    const fromMode = isNewbieDeveloper
-      ? DeveloperMode.APPLICATION_DEVELOPER
-      : DeveloperMode.NEWBIE_DEVELOPER;
-    const toMode = isNewbieDeveloper
-      ? DeveloperMode.NEWBIE_DEVELOPER
-      : DeveloperMode.APPLICATION_DEVELOPER;
-    throw new CliError(
-      `Changing developer mode (${fromMode} -> ${toMode}) is blocked while modules are enabled.
-
-      Please follow the steps below:
-
-      1. Set ${NEWBIE_DEVELOPER_ENV}=${!isNewbieDeveloper} in .env
-      2. Run 'newbie' and disable all modules
-      3. Set ${NEWBIE_DEVELOPER_ENV}=${isNewbieDeveloper} in .env
-
-      Then the mode will be changed.`,
-    );
-  }
+  const state = await readModulesState(cwd);
+  const registry = await requireRegistry({ fetch: opts.fetch });
 
   const ctx: PipelineContext = {
     cwd,
     sink,
     issues,
-    config,
-    isNewbieDeveloper,
+    state,
+    registry,
     skipPrismaGenerate: options.skipPrismaGenerate,
   };
 
-  return { ctx, config, isNewbieDeveloper, sink };
+  return { ctx, sink, registry };
 }

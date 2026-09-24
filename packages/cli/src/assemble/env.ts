@@ -11,9 +11,8 @@ import {
   upsertEnvSection,
 } from "../core/env-file";
 import { ENV_EXAMPLE_PATH, ENV_PATH } from "../constants/paths";
-import { ModuleMeta } from "../modules-catalog";
 import { IssueBag, reportIssue } from "../lib/issues";
-import { readModuleSettings } from "../lib/module-settings";
+import { readInstalledManifest } from "../lib/module-install";
 import { Sink } from "../lib/sink";
 
 function sectionTitle(key: string): string {
@@ -28,8 +27,8 @@ export async function assembleEnv(params: {
   cwd: string;
   sink: Sink;
   issues: IssueBag;
-  added: ModuleMeta[];
-  removed: ModuleMeta[];
+  added: string[];
+  removed: string[];
 }): Promise<void> {
   const { cwd, sink, issues, added, removed } = params;
 
@@ -42,24 +41,25 @@ export async function assembleEnv(params: {
 
   let lines: EnvLine[] = parseEnv(raw);
 
-  for (const meta of added) {
-    const settings = await readModuleSettings(cwd, meta);
-    if (settings === null) {
+  for (const key of added) {
+    const manifest = await readInstalledManifest(cwd, key);
+    if (manifest === null) {
       reportIssue(
         issues,
         sink,
-        `Missing ${meta.key}.settings.json; its env variables were not added.`,
+        `Missing newbie.module.json for '${key}'; its env variables were not added.`,
       );
       continue;
     }
-    lines = upsertEnvSection(lines, sectionTitle(meta.key), settings.env ?? {});
+    lines = upsertEnvSection(lines, sectionTitle(key), manifest.env ?? {});
   }
 
   const removedKeys = new Set<string>();
-  for (const meta of removed) {
-    const settings = await readModuleSettings(cwd, meta);
-    if (settings === null) continue;
-    for (const key of Object.keys(settings.env ?? {})) removedKeys.add(key);
+  for (const key of removed) {
+    const manifest = await readInstalledManifest(cwd, key);
+    if (manifest === null) continue;
+    for (const envKey of Object.keys(manifest.env ?? {}))
+      removedKeys.add(envKey);
   }
   if (removedKeys.size > 0) {
     lines = pruneEmptySections(removeEnvKeys(lines, removedKeys));
@@ -80,30 +80,30 @@ export async function assembleEnvExample(params: {
   cwd: string;
   sink: Sink;
   issues: IssueBag;
-  enabled: ModuleMeta[];
+  enabled: string[];
 }): Promise<void> {
   const { cwd, sink, issues, enabled } = params;
 
   const decoration =
     "# ----------------------------------------------------------------------------------";
   const sectionLines: string[] = [];
-  for (const meta of enabled) {
-    const settings = await readModuleSettings(cwd, meta);
-    if (settings === null) {
+  for (const key of enabled) {
+    const manifest = await readInstalledManifest(cwd, key);
+    if (manifest === null) {
       reportIssue(
         issues,
         sink,
-        `Missing ${meta.key}.settings.json; excluded from ${ENV_EXAMPLE_PATH}.`,
+        `Missing newbie.module.json for '${key}'; excluded from ${ENV_EXAMPLE_PATH}.`,
       );
       continue;
     }
     sectionLines.push(
       decoration,
-      `# ! ${sectionTitle(meta.key)} variables`,
+      `# ! ${sectionTitle(key)} variables`,
       decoration,
     );
-    for (const [key, value] of Object.entries(settings.env ?? {})) {
-      sectionLines.push(`${key}=${value}`);
+    for (const [envKey, value] of Object.entries(manifest.env ?? {})) {
+      sectionLines.push(`${envKey}=${value}`);
     }
   }
 

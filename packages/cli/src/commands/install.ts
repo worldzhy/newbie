@@ -8,18 +8,19 @@ import { createContext, GlobalOptions } from "./shared";
 export async function runInstall(
   options: GlobalOptions & { yes?: boolean },
 ): Promise<void> {
-  const { ctx } = await createContext(options);
+  const { ctx } = await createContext(options, { fetch: true });
 
   const plan = await planReconcile(ctx);
   const { installed, uninstalled } = plan;
 
+  // No copy/delete needed: still converge the generated wiring (idempotent),
+  // which also repairs a previous install interrupted mid-pipeline.
   if (installed.length === 0 && uninstalled.length === 0) {
-    console.info(
-      green(
-        "[info] Project is already in sync with .newbie/.config/config.json.",
-      ),
-    );
+    await applyPlanned(ctx, plan);
     ctx.issues.assertEmpty();
+    console.info(
+      green("[info] Project is in sync with modules.json; wiring refreshed."),
+    );
     return;
   }
 

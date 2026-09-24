@@ -5,28 +5,7 @@ import {
   buildInstallSpecs,
   planDependencyRemovals,
 } from "../src/core/dependency-plan";
-import {
-  sanitizeModuleNames,
-  selectableModules,
-} from "../src/core/module-plan";
-
-describe("selectableModules", () => {
-  const all = ["saas", "account", "queue"];
-
-  it("excludes account for SaaS applications", () => {
-    assert.deepEqual(selectableModules(all, "saas application", true), [
-      "saas",
-      "queue",
-    ]);
-  });
-
-  it("excludes saas for non-SaaS applications", () => {
-    assert.deepEqual(selectableModules(all, "non-saas application", false), [
-      "account",
-      "queue",
-    ]);
-  });
-});
+import { sanitizeModuleNames } from "../src/core/module-manifest";
 
 describe("sanitizeModuleNames", () => {
   const catalog = new Set(["account", "queue"]);

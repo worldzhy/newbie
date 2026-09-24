@@ -8,9 +8,8 @@ import {
   removeAssets,
 } from "../core/assets";
 import { NEST_CLI_JSON } from "../constants/paths";
-import { ModuleMeta } from "../modules-catalog";
 import { IssueBag, reportIssue } from "../lib/issues";
-import { readModuleSettings } from "../lib/module-settings";
+import { readInstalledManifest } from "../lib/module-install";
 import { Sink } from "../lib/sink";
 
 interface NestCliConfig {
@@ -36,8 +35,8 @@ export async function assembleNestJsAssets(params: {
   cwd: string;
   sink: Sink;
   issues: IssueBag;
-  added: ModuleMeta[];
-  removed: ModuleMeta[];
+  added: string[];
+  removed: string[];
 }): Promise<void> {
   const { cwd, sink, issues, added, removed } = params;
 
@@ -54,23 +53,23 @@ export async function assembleNestJsAssets(params: {
   nestCli.compilerOptions = nestCli.compilerOptions ?? {};
   let assets: NestAsset[] = nestCli.compilerOptions.assets ?? [];
 
-  for (const meta of added) {
-    const settings = await readModuleSettings(cwd, meta);
-    if (settings === null) {
+  for (const key of added) {
+    const manifest = await readInstalledManifest(cwd, key);
+    if (manifest === null) {
       reportIssue(
         issues,
         sink,
-        `Missing ${meta.key}.settings.json; its assets were not added.`,
+        `Missing newbie.module.json for '${key}'; its assets were not added.`,
       );
       continue;
     }
-    assets = addAssets(assets, settings.assets ?? []);
+    assets = addAssets(assets, manifest.assets ?? []);
   }
 
-  for (const meta of removed) {
-    const settings = await readModuleSettings(cwd, meta);
-    if (settings === null) continue; // already gone; nothing to remove
-    assets = removeAssets(assets, settings.assets ?? []);
+  for (const key of removed) {
+    const manifest = await readInstalledManifest(cwd, key);
+    if (manifest === null) continue; // already gone; nothing to remove
+    assets = removeAssets(assets, manifest.assets ?? []);
   }
 
   nestCli.compilerOptions.assets = dedupeAssets(assets);

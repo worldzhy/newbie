@@ -2,91 +2,38 @@ import figlet from "figlet";
 import { checkbox, select } from "@inquirer/prompts";
 import { bold, cyan, green, inverse, yellow } from "colorette";
 
-import { MODULES, ModuleMeta } from "../modules-catalog";
+import { runSteps } from "../assemble/pipeline";
+import { diffSnapshots, driftPatchIds } from "../core/drift";
+import { moduleKeys } from "../core/modules-state";
 import {
-  checkoutReleaseRef,
-  fetchReleaseRefs,
-  fileExists,
-  getCurrentCommit,
-  getUpdateReleaseRefCandidates,
-  getWorkingTreeStatus,
-  isGitRepository,
-  resolveReleaseRef,
-  setModuleReleaseRef,
-} from "../lib/release";
+  snapshotInstalledModule,
+  snapshotPristineModule,
+} from "../lib/drift";
+import { fileExists } from "../lib/fs-util";
+import { MODULES_DIR } from "../constants/paths";
+import { writeModulesState } from "../lib/modules-state";
 
 import { createContext, GlobalOptions } from "./shared";
 
-type InspectStatus =
-  | "unknown"
-  | "missing"
-  | "not-git"
-  | "dirty"
-  | "update-available"
-  | "up-to-date"
-  | "missing-release";
+type UpdateStatus = "missing" | "drifted" | "update-available" | "up-to-date";
 
-interface InspectResult {
-  name: string;
-  meta: ModuleMeta | null;
-  status: InspectStatus;
-  currentCommit?: string;
-  targetCommit?: string;
-  releaseRef?: string;
-  releaseRefCandidates: string[];
+interface UpdateInspection {
+  key: string;
+  status: UpdateStatus;
+  fromCommit: string | null;
+  toCommit: string | null;
+  patchIds: string[];
 }
 
-const shortCommit = (commit: string): string => commit.slice(0, 7);
-
-async function inspectModule(
-  cwd: string,
-  name: string,
-): Promise<InspectResult> {
-  const meta = MODULES[name] ?? null;
-  const base: InspectResult = {
-    name,
-    meta,
-    status: "unknown",
-    releaseRefCandidates: [],
-  };
-  if (!meta) return base;
-
-  if (!(await fileExists(cwd, meta.srcPath)))
-    return { ...base, status: "missing" };
-  if (!(await isGitRepository(cwd, meta.srcPath)))
-    return { ...base, status: "not-git" };
-  if (await getWorkingTreeStatus(cwd, meta.srcPath))
-    return { ...base, status: "dirty" };
-
-  try {
-    await fetchReleaseRefs(cwd, meta.srcPath);
-    const candidates = await getUpdateReleaseRefCandidates(cwd, meta);
-    const currentCommit = await getCurrentCommit(cwd, meta.srcPath);
-    const target = await resolveReleaseRef(cwd, meta.srcPath, candidates);
-    return {
-      ...base,
-      status:
-        currentCommit === target.commit ? "up-to-date" : "update-available",
-      currentCommit,
-      targetCommit: target.commit,
-      releaseRef: target.releaseRef,
-      releaseRefCandidates: candidates,
-    };
-  } catch {
-    return { ...base, status: "missing-release" };
-  }
-}
-
-const SKIP_MESSAGES: Record<string, string> = {
-  dirty: "local changes exist",
-  "missing-release": "target release cannot be resolved",
-  missing: "source directory is missing",
-  "not-git": "source directory is not a Git repository",
-  unknown: "unknown module",
-};
+const short = (commit: string | null): string =>
+  commit ? commit.slice(0, 7) : "unknown";
 
 export async function runUpdate(
-  options: GlobalOptions & { all?: boolean; yes?: boolean },
+  options: GlobalOptions & {
+    all?: boolean;
+    yes?: boolean;
+    force?: boolean;
+  },
 ): Promise<void> {
   console.info(
     figlet.textSync("Newbie", {
@@ -96,31 +43,79 @@ export async function runUpdate(
     }),
   );
 
-  const { ctx, config, sink } = await createContext(options);
-  if (config.enabled.length === 0) {
+  const { ctx } = await createContext(options, { fetch: true });
+  const { cwd, sink, registry, state } = ctx;
+
+  const keys = moduleKeys(state);
+  if (keys.length === 0) {
     console.info("\n[info] No modules are enabled.\n");
     return;
   }
 
-  const results: InspectResult[] = [];
-  for (const name of config.enabled) {
-    process.stdout.write(`Checking ${name}...\r`);
-    results.push(await inspectModule(ctx.cwd, name));
+  const targetCommit = registry.sourceCommit;
+  const inspections: UpdateInspection[] = [];
+
+  for (const key of keys) {
+    process.stdout.write(`Checking ${key}...\r`);
+    const record = state.modules.find((entry) => entry.key === key);
+    const fromCommit = record?.sourceCommit ?? null;
+    const base: UpdateInspection = {
+      key,
+      status: "up-to-date",
+      fromCommit,
+      toCommit: targetCommit,
+      patchIds: [],
+    };
+
+    if (!(await fileExists(cwd, `${MODULES_DIR}/${key}`))) {
+      inspections.push({ ...base, status: "missing" });
+      continue;
+    }
+    if (fromCommit && targetCommit && fromCommit === targetCommit) {
+      inspections.push(base);
+      continue;
+    }
+
+    // Guard local customisation: compare the copy with its pinned pristine tree.
+    if (fromCommit && !options.force) {
+      const pristine = await snapshotPristineModule(
+        registry,
+        key,
+        fromCommit,
+      );
+      if (pristine) {
+        const drift = diffSnapshots(
+          await snapshotInstalledModule(cwd, key),
+          pristine,
+        );
+        if (!drift.clean) {
+          inspections.push({
+            ...base,
+            status: "drifted",
+            patchIds: driftPatchIds(drift),
+          });
+          continue;
+        }
+      }
+    }
+
+    inspections.push({ ...base, status: "update-available" });
   }
   process.stdout.write("\x1b[2K\r");
 
-  for (const result of results) {
-    if (
-      result.status in SKIP_MESSAGES &&
-      result.status !== "update-available"
-    ) {
+  for (const result of inspections) {
+    if (result.status === "missing") {
+      console.info(yellow(`[skip] ${result.key}: directory missing; run 'newbie install'.`));
+    } else if (result.status === "drifted") {
       console.info(
-        yellow(`[skip] ${result.name}: ${SKIP_MESSAGES[result.status]}.`),
+        yellow(
+          `[skip] ${result.key}: local changes detected (${result.patchIds.length} file(s)); re-run with --force to overwrite.`,
+        ),
       );
     }
   }
 
-  const updatable = results.filter(
+  const updatable = inspections.filter(
     (result) => result.status === "update-available",
   );
   if (updatable.length === 0) {
@@ -128,16 +123,16 @@ export async function runUpdate(
     return;
   }
 
-  let selected: InspectResult[];
+  let selected: UpdateInspection[];
   if (options.all || options.dryRun) {
     selected = updatable;
   } else {
-    const selectedNames = await checkbox({
+    const selectedKeys = await checkbox({
       message: "Which modules do you want to update:",
       choices: updatable.map((result) => ({
-        value: result.name,
-        name: `${result.name} ${inverse(shortCommit(result.currentCommit!))} -> ${cyan(
-          `${result.releaseRef}@${shortCommit(result.targetCommit!)}`,
+        value: result.key,
+        name: `${result.key} ${inverse(short(result.fromCommit))} -> ${cyan(
+          short(result.toCommit),
         )}`,
         checked: true,
       })),
@@ -145,7 +140,7 @@ export async function runUpdate(
       loop: true,
     });
     selected = updatable.filter((result) =>
-      selectedNames.includes(result.name),
+      selectedKeys.includes(result.key),
     );
   }
 
@@ -156,7 +151,9 @@ export async function runUpdate(
 
   if (!options.yes && !options.dryRun) {
     const confirmed = await select({
-      message: `Do you want to UPDATE ${cyan(selected.map((result) => result.name).join(", "))}?`,
+      message: `Do you want to UPDATE ${cyan(
+        selected.map((result) => result.key).join(", "),
+      )}?`,
       choices: [
         { name: "Yes", value: "yes" },
         { name: "No", value: "no" },
@@ -168,21 +165,16 @@ export async function runUpdate(
     }
   }
 
-  for (const result of selected) {
-    if (!result.meta) continue;
-    if (sink.dryRun) {
-      console.info(`[dry-run] update ${result.name} -> ${result.releaseRef}`);
-      continue;
-    }
-    await fetchReleaseRefs(ctx.cwd, result.meta.srcPath);
-    const checkedOut = await checkoutReleaseRef(
-      ctx.cwd,
-      result.meta.srcPath,
-      result.releaseRefCandidates,
-    );
-    await setModuleReleaseRef(ctx.cwd, sink, config, result.name, checkedOut);
-    console.info(green(`[done] ${result.name} -> ${checkedOut}`));
+  const selectedKeys = selected.map((result) => result.key);
+  await runSteps(ctx, {
+    added: selectedKeys,
+    removed: [],
+    enabledKeys: keys,
+  });
+  if (!sink.dryRun) {
+    await writeModulesState(cwd, sink, ctx.state);
   }
 
-  console.info(bold(green("C O M P L E T E\n")));
+  ctx.issues.assertEmpty();
+  console.info(bold(green("\nC O M P L E T E\n")));
 }

@@ -1,11 +1,9 @@
 import { checkbox } from "@inquirer/prompts";
 import { cyan, green } from "colorette";
 
-import { ApplicationMode } from "../constants/modes";
-import { selectableModules, sanitizeModuleNames } from "../core/module-plan";
-import { withEnabledModules } from "../core/project-config";
-import { ALL_MODULE_NAMES } from "../modules-catalog";
-import { writeProjectConfig } from "../lib/project-config";
+import { moduleKeys, withModuleKeys } from "../core/modules-state";
+import { listRegistryKeys } from "../lib/registry";
+import { writeModulesState } from "../lib/modules-state";
 import { CliError } from "../lib/errors";
 
 import { createContext, GlobalOptions } from "./shared";
@@ -24,28 +22,32 @@ function parseModuleList(values: string[] | undefined): string[] {
     .filter(Boolean);
 }
 
-function assertKnown(names: string[]): void {
-  const known = new Set(ALL_MODULE_NAMES);
-  const unknown = names.filter((name) => !known.has(name));
+function assertKnown(names: string[], known: string[]): void {
+  const knownSet = new Set(known);
+  const unknown = names.filter((name) => !knownSet.has(name));
   if (unknown.length > 0) {
     throw new CliError(
-      `Unknown module(s): ${unknown.join(", ")}. Known modules: ${ALL_MODULE_NAMES.join(", ")}`,
+      `Unknown module(s): ${unknown.join(", ")}. Available modules: ${known.join(", ")}`,
     );
   }
 }
 
 export async function runConfig(options: ConfigOptions): Promise<void> {
-  const { ctx, config, sink } = await createContext(options, {
+  const { ctx } = await createContext(options, {
     ensureConfig: true,
+    fetch: false,
   });
+  const { cwd, sink } = ctx;
+
+  const known = await listRegistryKeys(ctx.registry.root);
 
   if (options.list) {
-    console.info(green(`developerMode: ${config.developerMode ?? "(unset)"}`));
-    console.info(
-      green(`applicationMode: ${config.applicationMode ?? "(unset)"}`),
-    );
     console.info(green("enabled modules:"));
-    for (const name of config.enabled) console.info(`  - ${name}`);
+    for (const record of ctx.state.modules) {
+      const version =
+        record.version ?? (record.sourceCommit ? record.sourceCommit.slice(0, 7) : "(not installed)");
+      console.info(`  - ${record.key} (${version})`);
+    }
     return;
   }
 
@@ -53,36 +55,29 @@ export async function runConfig(options: ConfigOptions): Promise<void> {
   const removeNames = parseModuleList(options.remove);
 
   if (addNames.length > 0 || removeNames.length > 0) {
-    assertKnown(addNames);
-    assertKnown(removeNames);
+    assertKnown(addNames, known);
+    assertKnown(removeNames, known);
 
-    const next = [...config.enabled];
+    const next = [...moduleKeys(ctx.state)];
     for (const name of addNames) if (!next.includes(name)) next.push(name);
     for (const name of removeNames) {
       const index = next.indexOf(name);
       if (index !== -1) next.splice(index, 1);
     }
 
-    await writeProjectConfig(ctx.cwd, sink, withEnabledModules(config, next));
+    await writeModulesState(cwd, sink, withModuleKeys(ctx.state, next));
     console.info(
       green(`[info] enabled modules: ${next.join(", ") || "(none)"}`),
     );
     return;
   }
 
-  // Interactive: edit config.json only (no assembly).
-  const isSaas = config.applicationMode === ApplicationMode.SAAS_APPLICATION;
-  const choices = selectableModules(
-    ALL_MODULE_NAMES,
-    config.applicationMode ?? null,
-    isSaas,
-  );
-  const known = new Set(ALL_MODULE_NAMES);
-  const current = sanitizeModuleNames(config.enabled, known);
+  // Interactive: edit modules.json only (no assembly).
+  const current = moduleKeys(ctx.state).filter((key) => known.includes(key));
 
   const chosen = await checkbox({
     message: "Config modules:",
-    choices: choices.map((name) => {
+    choices: known.map((name) => {
       const checked = current.includes(name);
       return {
         value: name,
@@ -104,7 +99,7 @@ export async function runConfig(options: ConfigOptions): Promise<void> {
     return;
   }
 
-  await writeProjectConfig(ctx.cwd, sink, withEnabledModules(config, chosen));
+  await writeModulesState(cwd, sink, withModuleKeys(ctx.state, chosen));
   for (const name of chosen.filter((n) => !current.includes(n)))
     console.info(cyan(`+ ${name}`));
   for (const name of current.filter((n) => !chosen.includes(n)))

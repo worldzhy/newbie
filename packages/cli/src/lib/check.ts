@@ -3,16 +3,15 @@ import path from "node:path";
 
 import { envValues, parseEnv } from "../core/env-file";
 import { ENV_PATH } from "../constants/paths";
-import { MODULES } from "../modules-catalog";
-import { readModuleSettings } from "./module-settings";
+import { readInstalledManifest } from "./module-install";
 
 /**
- * Collect missing .env variables per enabled module.
+ * Collect missing .env variables per installed module.
  * Returns a map moduleKey -> missing keys. Empty map means everything is set.
  */
 export async function collectMissingEnv(
   cwd: string,
-  enabledNames: string[],
+  enabledKeys: string[],
 ): Promise<Record<string, string[]>> {
   let raw = "";
   try {
@@ -24,14 +23,14 @@ export async function collectMissingEnv(
 
   const missing: Record<string, string[]> = {};
 
-  for (const name of enabledNames) {
-    const meta = MODULES[name];
-    if (!meta) continue;
-    const settings = await readModuleSettings(cwd, meta);
-    if (!settings?.env) continue;
+  for (const key of enabledKeys) {
+    const manifest = await readInstalledManifest(cwd, key);
+    if (!manifest?.env) continue;
 
-    const absent = Object.keys(settings.env).filter((key) => !present.has(key));
-    if (absent.length > 0) missing[name] = absent;
+    const absent = Object.keys(manifest.env).filter(
+      (envKey) => !present.has(envKey),
+    );
+    if (absent.length > 0) missing[key] = absent;
   }
 
   return missing;

@@ -2,10 +2,15 @@
 import { Command } from "commander";
 import { red } from "colorette";
 
+import { runAgent } from "./commands/agent";
+import { runApply } from "./commands/apply";
 import { runCheck } from "./commands/check";
 import { runConfig } from "./commands/config";
+import { runCreate } from "./commands/create";
+import { runDoctor } from "./commands/doctor";
 import { runEnvPull, runEnvPush } from "./commands/env";
 import { runInstall } from "./commands/install";
+import { runStatus } from "./commands/status";
 import { runUpdate } from "./commands/update";
 import { runInteractive } from "./commands/default";
 import { GlobalOptions } from "./commands/shared";
@@ -16,9 +21,9 @@ const program = new Command();
 program
   .name("newbie")
   .description(
-    "Newbie framework CLI: enable/disable modules and sync project files",
+    "Newbie framework CLI: install modules from the newbie-modules registry and sync project files",
   )
-  .version("0.1.0")
+  .version("0.2.0")
   .option("-C, --cwd <dir>", "project root directory", process.cwd())
   .option(
     "--dry-run",
@@ -63,9 +68,9 @@ async function run(action: () => Promise<void>): Promise<void> {
 }
 
 program
-  .command("install", { isDefault: false })
+  .command("install")
   .description(
-    "Reconcile the project with .newbie/.config/config.json (clone missing / remove extra modules)",
+    "Reconcile the project with modules.json (copy missing modules / remove extra ones and regenerate wiring)",
   )
   .option("-y, --yes", "skip confirmation prompts", false)
   .action(function (this: Command) {
@@ -76,7 +81,7 @@ program
 program
   .command("config")
   .description(
-    "View or edit the enabled-module list in config.json without touching project files",
+    "View or edit the enabled-module list in modules.json without touching project files",
   )
   .option("--add <modules...>", "enable module(s), space or comma separated")
   .option(
@@ -107,9 +112,12 @@ program
 
 program
   .command("update")
-  .description("Update enabled modules to their latest semantic release tags")
+  .description(
+    "Update enabled module copies to the registry HEAD commit (blocks on local drift unless --force)",
+  )
   .option("--all", "select every module with an available update", false)
   .option("-y, --yes", "skip confirmation prompts", false)
+  .option("--force", "overwrite locally drifted module copies", false)
   .action(function (this: Command) {
     const flags = this.opts();
     return run(() =>
@@ -117,8 +125,79 @@ program
         ...collectOptions(this),
         all: Boolean(flags.all),
         yes: Boolean(flags.yes),
+        force: Boolean(flags.force),
       }),
     );
+  });
+
+program
+  .command("apply")
+  .description(
+    "Non-interactively sync the module set declared in a JSON spec ({\"modules\": [...]})",
+  )
+  .requiredOption("--config <file>", "path to the declarative apply spec JSON")
+  .option("--ci", "CI mode marker (apply is always non-interactive)", false)
+  .action(function (this: Command) {
+    const flags = this.opts();
+    return run(() =>
+      runApply({
+        ...collectOptions(this),
+        config: flags.config as string,
+        ci: Boolean(flags.ci),
+      }),
+    );
+  });
+
+program
+  .command("doctor")
+  .description(
+    "Audit the installation: registry pins, copied modules, drift, env and prisma wiring",
+  )
+  .action(function (this: Command) {
+    return run(() => runDoctor(collectOptions(this)));
+  });
+
+program
+  .command("status")
+  .description("Print machine-readable project state as JSON")
+  .option("--drift", "include content drift against pinned pristine copies", false)
+  .action(function (this: Command) {
+    const flags = this.opts();
+    return run(() =>
+      runStatus({ ...collectOptions(this), drift: Boolean(flags.drift) }),
+    );
+  });
+
+program
+  .command("create <name>")
+  .description("Scaffold a new project from the basic template")
+  .option(
+    "--template-path <dir>",
+    "use a local template directory instead of cloning the newbie repository",
+  )
+  .option(
+    "--template-ref <ref>",
+    "git ref of the newbie repository to clone the template from",
+  )
+  .option("--no-git-init", "skip 'git init' in the new project", undefined)
+  .action(function (this: Command, name: string) {
+    const flags = this.opts();
+    return run(() =>
+      runCreate({
+        ...collectOptions(this),
+        name,
+        templatePath: flags.templatePath as string | undefined,
+        templateRef: flags.templateRef as string | undefined,
+        gitInit: flags.gitInit as boolean | undefined,
+      }),
+    );
+  });
+
+program
+  .command("agent")
+  .description("Reserved entrypoint for the module-hub remote agent protocol")
+  .action(function (this: Command) {
+    return run(() => runAgent());
   });
 
 const env = program
