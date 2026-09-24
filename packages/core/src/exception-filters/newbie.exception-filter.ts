@@ -1,6 +1,6 @@
 import {ArgumentsHost, Catch, ExceptionFilter, HttpStatus} from '@nestjs/common';
 import {Response} from 'express';
-import {NewbieException} from '@framework/exceptions/newbie.exception';
+import {NewbieException} from '../exceptions/newbie.exception';
 
 @Catch(NewbieException)
 export class NewbieExceptionFilter implements ExceptionFilter {

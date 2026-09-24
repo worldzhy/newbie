@@ -1,6 +1,20 @@
 import {BadRequestException, Logger} from '@nestjs/common';
-import {Prisma, PrismaClient} from '@generated/prisma/client';
 import {PrismaPg} from '@prisma/adapter-pg';
+
+/**
+ * Constructor type of a project-generated PrismaClient.
+ * The framework never instantiates a generated client itself: each project
+ * generates its own client (prisma-client generator, e.g. `@generated/prisma/client`)
+ * and passes its constructor in via PrismaModule.forRoot / FrameworkModule.forRoot.
+ */
+export type PrismaClientConstructor = new (options?: Record<string, unknown>) => any;
+
+export interface CreateExtendedPrismaClientOptions {
+  /** Project-generated PrismaClient constructor. */
+  PrismaClient: PrismaClientConstructor;
+  /** Postgres connection string. Defaults to process.env.PRISMA_DATABASE_URL. */
+  connectionString?: string;
+}
 
 /**
  * Helper function to calculate pagination parameters.
@@ -19,19 +33,22 @@ function getSkipAndTake(params: {page: number; pageSize: number}) {
 
 /**
  * Factory function to create an extended Prisma Client.
+ * Model names are passed as plain strings because the framework has no
+ * knowledge of a project's generated models.
  */
-export const createExtendedPrismaClient = () => {
+export const createExtendedPrismaClient = (options: CreateExtendedPrismaClientOptions) => {
+  const {PrismaClient, connectionString} = options;
   const logger = new Logger('Prisma');
 
   const prisma = new PrismaClient({
     adapter: new PrismaPg({
-      connectionString: process.env.PRISMA_DATABASE_URL as string,
+      connectionString: (connectionString ?? process.env.PRISMA_DATABASE_URL) as string,
     }),
   });
 
   const extendedClient = prisma.$extends({
     client: {
-      async findManyInOnePage(params: {model: Prisma.ModelName; findManyArgs?: any}) {
+      async findManyInOnePage(params: {model: string; findManyArgs?: any}) {
         const {findManyArgs} = params;
         const model = params.model as string;
         const modelLowercaseFirstLetter = model.charAt(0).toLowerCase() + model.slice(1);
@@ -53,7 +70,7 @@ export const createExtendedPrismaClient = () => {
       },
 
       async findManyInManyPages(params: {
-        model: Prisma.ModelName;
+        model: string;
         pagination: {page: number; pageSize: number};
         findManyArgs?: any;
       }) {
@@ -88,14 +105,18 @@ export const createExtendedPrismaClient = () => {
 };
 
 /**
- * Manual type definition to ensure IDE intellisense works correctly.
- * This inherits from the base PrismaClient and adds custom method signatures.
+ * Minimal structural type of the extended client as seen by the framework.
+ * Projects should cast/augment with their own generated extended client type
+ * to retain full model intellisense at injection sites.
  */
-export type ExtendedPrismaClient = PrismaClient & {
-  findManyInOnePage: (params: {model: Prisma.ModelName; findManyArgs?: any}) => Promise<any>;
+export type ExtendedPrismaClient = {
+  findManyInOnePage: (params: {model: string; findManyArgs?: any}) => Promise<any>;
   findManyInManyPages: (params: {
-    model: Prisma.ModelName;
+    model: string;
     pagination: {page: number; pageSize: number};
     findManyArgs?: any;
   }) => Promise<any>;
-};
+  $connect: () => Promise<void>;
+  $disconnect: () => Promise<void>;
+  $transaction: (...args: any[]) => Promise<any>;
+} & Record<string, any>;
