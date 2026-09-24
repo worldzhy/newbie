@@ -7,6 +7,9 @@
 // * https://github.com/prisma/prisma/issues/4355                  //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
 
+// @@newbie-framework-start
+// Framework-managed block: generator + datasource. Preserve the markers when
+// adding project models; `newbie update-template` only touches this block.
 generator client {
   provider        = "prisma-client"
   previewFeatures = ["fullTextSearchPostgres"]
@@ -18,3 +21,5 @@ datasource db {
   provider = "postgresql"
   schemas  = ["application"]
 }
+// @@newbie-framework-end
+

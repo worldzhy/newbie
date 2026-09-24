@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "incremental": true,
+    "tsBuildInfoFile": "dist/.tsbuildinfo",
+    "paths": {
+      "@generated/*": ["generated/*"],
+      "@microservices/*": ["src/microservices/*"],
+      "@/*": ["src/*"]
+    }
+  }
+}
