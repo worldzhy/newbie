@@ -22,7 +22,6 @@ export interface SkeletonFile {
 /** Framework-managed skeleton files; everything else is business code. */
 export const SKELETON_FILES: readonly SkeletonFile[] = [
   { path: "src/main.ts", strategy: "whole-file" },
-  { path: "src/heartbeat.ts", strategy: "whole-file" },
   { path: "tsconfig.json", strategy: "whole-file" },
   { path: "tsconfig.build.json", strategy: "whole-file" },
   { path: "nest-cli.json", strategy: "whole-file" },
