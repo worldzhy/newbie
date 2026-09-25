@@ -2,6 +2,9 @@
 import { Command } from "commander";
 import { bold, red, yellow } from "colorette";
 
+import { runInit } from "./commands/init";
+import { CliError } from "./lib/errors";
+
 // Published package version, read at runtime (package.json sits one level
 // above both src/ during development and dist/ in the published tarball).
 export const VERSION = (require("../package.json") as { version: string })
@@ -24,23 +27,39 @@ program
     console.log(`\n${bold("@devbie/fewbie-cli")} ${VERSION}`);
   });
 
-// Report a milestone placeholder invocation. Commands are registered from M1
-// onwards; until then they exist so the command surface is discoverable.
+// Report a milestone placeholder invocation. Commands are registered from
+// their milestone onwards; until then they exist so the command surface is
+// discoverable.
 function notImplemented(command: string, milestone: string): void {
-  console.error(
-    `${red("error")} \`fewbie ${command}\` is not implemented yet (planned in ${yellow(milestone)}).`,
+  throw new CliError(
+    `\`fewbie ${command}\` is not implemented yet (planned in ${yellow(milestone)}).`,
   );
-  process.exitCode = 1;
 }
 
-// M1: create a project from templates/basic via the same resolver chain as
+// Create a project from templates/basic via the same resolver chain as
 // `newbie create` (--template-path -> monorepo template -> git clone --branch).
 program
   .command("init <project-name>")
   .description("create a new project from the fewbie basic template")
-  .option("--template-path <dir>", "use a local template directory")
-  .option("--template-ref <ref>", "git ref (tag/branch/commit) of the template")
-  .action(() => notImplemented("init", "M1"));
+  .option(
+    "--template-path <dir>",
+    "use a local template directory instead of cloning the fewbie repository",
+  )
+  .option(
+    "--template-ref <ref>",
+    "git ref of the fewbie repository to clone the template from",
+  )
+  .option("--no-git-init", "skip 'git init' in the new project", undefined)
+  .action(async function (this: Command, projectName: string) {
+    const flags = this.optsWithGlobals();
+    await runInit({
+      name: projectName,
+      cwd: (flags.cwd as string) ?? process.cwd(),
+      templatePath: flags.templatePath as string | undefined,
+      templateRef: flags.templateRef as string | undefined,
+      gitInit: flags.gitInit as boolean | undefined,
+    });
+  });
 
 // M2: copy a component/logic util from the shadcn-compatible fewbie registry.
 program
@@ -58,4 +77,8 @@ gen
 // v1 surface intentionally stops here. `doctor` and `update` are planned
 // after the 0.1.0 release.
 
-program.parse(process.argv);
+program.parseAsync(process.argv).catch((error: unknown) => {
+  const message = error instanceof Error ? error.message : String(error);
+  console.error(`${red("error")} ${message}`);
+  process.exit(1);
+});
