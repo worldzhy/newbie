@@ -19,6 +19,7 @@
 - **D4 调整**：模板 schema 保持 **0 个 model**（当前线上模板即如此，framework 运行时不引用 User/Session），仅加 `@@newbie-framework-start/end` 标记；User/Session 待认证模块有设计后再入模板。
 - 修正旧仓隐性缺依赖（原靠传递依赖侥幸可用）：core 补 `dot-object@^2.1.5`、`bcrypt` 版本改为实际存在的 `^6.0.0`、peer `reflect-metadata` 放宽为 `^0.1.12 || ^0.2.0`；模板补 `dotenv@^16.4.5`。
 - 修正模板 `start:prod` 旧脚本（原为 `node dist/main`，实际产物一直是 `dist/src/main.js`，原命令本就失效）。
+- 模板 `tsconfig.json` 改为自包含（2026-09-25，Stage 4 骨架冻结经用户确认后破例）：原 `extends: "../../tsconfig.base.json"` 仅 monorepo 内可解析，`newbie create` 复制出的独立项目 tsc 必失败；现将 base 编译选项原样内联，有效配置不变。
 - **安全待办（已关闭）**：旧 `Dockerfile`（含硬编码 Pulumi token 与无关的 SQS/Pulumi 构建步骤）已于 2026-09-24 删除，模板不再内置 Dockerfile；Pulumi 已弃用，历史中的 token 无需轮换（用户 2026-09-24 确认）。
 - `pipes/errors.constants` 与 `exceptions/errors.constants` 重复符号（`SELECT_INCLUDE_PIPE_FORMAT` 值 400019 vs 400020 不一致，存量问题）：barrel 只导出 exceptions 超集，pipes 文件仅子路径可访问，Phase 2 codemod 按原路径替换以保持运行时行为；收敛留待后续。
 
