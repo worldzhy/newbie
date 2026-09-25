@@ -16,7 +16,7 @@ export interface HeartbeatHandle {
   stop(): void;
 }
 
-const GLOBAL_KEY = Symbol.for('@devbie/heartbeat-sdk:active');
+const GLOBAL_KEY = Symbol.for('@devbie/nightwatch-heartbeat-sdk:active');
 
 /**
  * Starts a heartbeat loop that POSTs to

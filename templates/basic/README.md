@@ -45,7 +45,7 @@ Business code — `src/application/`, `src/modules/`, your Prisma models outside
 
 ## Nightwatch monitoring (optional)
 
-The template ships heartbeat wiring built on `@devbie/heartbeat-sdk` directly in `src/main.ts`. Once the app is listening, it reports liveness to nightwatch every 30s when all three variables are set:
+The template ships heartbeat wiring built on `@devbie/nightwatch-heartbeat-sdk` directly in `src/main.ts`. Once the app is listening, it reports liveness to nightwatch every 30s when all three variables are set:
 
 ```bash
 NIGHTWATCH_APPLICATION_ID=<uuid assigned by nightwatch>

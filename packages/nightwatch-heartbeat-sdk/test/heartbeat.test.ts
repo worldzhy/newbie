@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 
 import { startHeartbeat } from "../src/index";
 
-const GLOBAL_KEY = Symbol.for("@devbie/heartbeat-sdk:active");
+const GLOBAL_KEY = Symbol.for("@devbie/nightwatch-heartbeat-sdk:active");
 
 function cleanup(): void {
   const handle = (globalThis as Record<symbol, unknown>)[GLOBAL_KEY];

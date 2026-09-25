@@ -1,4 +1,4 @@
-import {startHeartbeat} from '@devbie/heartbeat-sdk';
+import {startHeartbeat} from '@devbie/nightwatch-heartbeat-sdk';
 import {NewbieFactory} from '@devbie/newbie';
 import {ApplicationModule} from '@/application/application.module';
 
