@@ -328,6 +328,15 @@ newbie/cli        ─newbie agent 命令通道───────────�
 - module-hub 管理所有 newbie（后端）项目的模块、版本、agent、升级、漂移检测；前端 fewbie 不在 Hub 管辖范围（fewbie 采用 shadcn 式 CLI + 源码复制模型，无中心化 Hub 需求）
 - nightwatch 的 `src/framework/` 迁移为 `@devbie/newbie` 依赖
 
+### 应用心跳契约（2026-09-25 新增）
+
+nightwatch 对**所有**被监控应用做进程级在线检测（online 派生自 `Agent.lastHeartbeatAt`，仅心跳写入；数据上报不影响在线判定）。契约真源：nightwatch `application-creation-flow-design.md` 7.3/7.4/9.11（端点、鉴权载体、阈值默认值 30s 心跳 / 90s 离线、写节流）。newbie 侧义务：
+
+1. **SERVER_MONITOR（newbie 内置监控 SDK/拦截器）**：服务进程启动后立即发 1 次心跳，之后每 30s 1 次（`setInterval(...).unref()`，随进程退出自动停止），调 `POST {endpoint 前缀}/applications/:applicationId/heartbeat`，凭证走 `X-Application-Token: $NIGHTWATCH_APPLICATION_TOKEN` 头。心跳与数据上报（`/backend-monitor/report`）相互独立。
+   - 实现形态：`@devbie/heartbeat-sdk`（框架无关心跳内核，`globalThis[Symbol]` 幂等防 HMR 重复启动），归 newbie 框架本体。**newbie 模板内置接线**（`src/heartbeat.ts` 在 main.ts `listen` 成功后检查 3 个 env，齐全才启动；未接入 nightwatch 的项目留空 env 即为 no-op，无需任何模块安装）；老项目可手动 `npm install @devbie/heartbeat-sdk` 后在启动流程调用 `startHeartbeat()`。fewbie 模板在 `instrumentation.ts` 内置同构接线。**心跳接收端不在 newbie-modules**，由 nightwatch 自身实现（已有 `POST /applications/:id/heartbeat` 端点，复用其 `Agent` 模型）。
+2. **web-monitor 服务**：SDK 两个组件的分工（2026-09-25 按现有 SDK 核实定稿）——**浏览器组件即现有的 `@inceptionpad/frontend-monitor-web-sdk@1.0.0`**（已核实产物：纯浏览器采集上报，PV/AJAX/资源/JS 错误/业务错误码/自定义事件，零心跳、零凭证逻辑，保持现状即可；演进约束：不得加心跳与密钥），**服务端心跳组件复用 `@devbie/heartbeat-sdk`**（与 newbie 后端共用同一心跳内核，Next.js 侧经 `instrumentation.ts` `register()` 在 `NEXT_RUNTIME === 'nodejs'` 时调用 `startHeartbeat()`，fewbie 模板内置接线）。
+3. **module-hub 边界**：NEWBIE_MANAGEMENT 的协商轮询是模块装配通道，不代表应用存活，不复用本契约。
+
 ---
 
 ## 八、实施步骤
