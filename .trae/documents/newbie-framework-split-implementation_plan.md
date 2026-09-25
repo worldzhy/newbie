@@ -10,7 +10,7 @@
 - [x] **Stage 1 完成**：`@devbie/newbie@0.1.0`。git mv 保留历史；19 处 `@framework` 自别名→相对路径；Prisma 解耦（`PrismaModule.forRoot({PrismaClient})`、`FrameworkModule.forRoot`、错误类取 `@prisma/client/runtime/client`）；新增 NewbieFactory（含 cluster/swagger/bodyLimit/requestTimeout）；子路径 exports 全保留（codemod 可纯替换前缀）。容器内 tsc 通过、npm pack 无 settings/schema、barrel+子路径运行时加载验证通过。
 - [x] **Stage 2 完成**：templates/basic 以 workspace 依赖消费 core（薄 main.ts 5 行、`FrameworkModule.forRoot({prisma:{PrismaClient}})`）。容器内 prisma generate → tsc --noEmit → nest build 通过；启动冒烟：Swagger `/api-json` 200、`/` 302、PrismaModule 用注入的生成端 client 初始化成功（无可达 PG 不阻断启动）。
 - [x] **Stage 3a 完成**：`packages/cli`（`@devbie/newbie-cli@0.1.0`，TS+commander）等价移植 nightwatch `.newbie/` 全管线并并入 env-tool；dry-run、非零退出、env 注释保留、无 shell 注入、DO NOT EDIT 头均落地；38 个纯函数单测 + 容器内 fixture 全流程（生成物 tsc 通过、幂等、disable 回收）验证。
-- [x] Stage 3a/3b/3c 完成（3c 本仓侧：registry 复制模型、modules 改名、47 模块 registry 仓填充；两仓代码待授权提交）；Stage 4 待执行。
+- [x] Stage 3a/3b/3c 完成（3c 本仓侧：registry 复制模型、modules 改名、47 模块 registry 仓填充；两仓代码待授权提交）；Stage 4 完成（2026-09-25，update-template + 模板 README/tag 规则，待授权提交）。
 - [x] **2026-09-24 收尾清理**：删除旧 Dockerfile（模板不内置部署文件）；删除 `packages/core/src/prisma/alpha/` 3 个整体注释的死代码文件（零引用、未进 barrel）；同步 split-plan 与本计划的 Dockerfile 表述；Stage 0-2 成果分批提交。
 
 ### 已决议/偏差记录
@@ -123,9 +123,9 @@
 
 ### Stage 4：`update-template` 与模板定稿（对应 Phase 4）
 
-1. CLI 实现骨架文件 diff（main.ts、tsconfig、prisma framework 标记块），跳过业务文件，输出可 review 的 diff/PR 指引。
-2. 模板打 tag 规则；README 写清 create → install → 启动流程。
-3. 用 templates/basic 自身做一次 update-template dry-run 验证幂等（无 diff）。
+1. [x] CLI 实现骨架文件 diff（`newbie update-template`）：骨架清单 `src/main.ts`、`tsconfig.json`、`tsconfig.build.json`、`nest-cli.json`、`prisma.config.ts` 整文件对比 + `prisma/schema.prisma` 仅 `@@newbie-framework-start/end` 标记块对比，业务文件跳过；输出 unified diff（自实现 LCS diff，免 git 依赖）与 PR 指引；`--write` 应用（经 Sink 支持 `--dry-run`）；项目 schema 丢标记块时按 missing-markers 跳过并提示。`create.ts` 的模板解析链导出复用（`--template-path/NEWBIE_TEMPLATE_PATH → monorepo → git clone --branch <ref>`），并修复 `create` 忽略全局 `--cwd` 的问题。新增 node:test 18 例（template-sync 9 + unified-diff 6 + 既有 45 → 累计 63）。
+2. [x] 模板打 tag 规则与 README：新增 `templates/basic/README.md`，写清 create → install → 启动流程、update-template 用法；tag 规则定为 newbie 仓上 `template-v<semver>`（如 `template-v1.0.0`），经 `--template-ref` 消费。
+3. [x] 幂等验证（容器内）：`update-template --cwd templates/basic --template-path templates/basic` 无 diff；fixture 演练（改 main.ts + 删 nest-cli.json + 改标记块 + 加业务 model/业务注释）正确只报 3 个骨架文件，`--write --dry-run` 零写盘，`--write` 应用后复跑幂等，业务内容（model Order、controller 注释）完整保留。
 
 ### Stage 5+：跨工作区协调（本仓只交付契约，不实施）
 

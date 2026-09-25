@@ -24,48 +24,71 @@ const COPY_IGNORE = new Set([
   ".env",
 ]);
 
-export interface CreateOptions {
-  name: string;
+export interface TemplateReference {
   templatePath?: string;
   templateRef?: string;
+}
+
+export interface CreateOptions extends TemplateReference {
+  name: string;
+  /** Parent directory of the new project (global --cwd). */
+  cwd?: string;
   gitInit?: boolean;
   dryRun?: boolean;
 }
 
+export interface ResolvedTemplate {
+  root: string;
+  /** Human-readable origin for reports. */
+  source: string;
+}
+
 /** Resolve the basic template: explicit path -> local checkout -> git clone. */
-async function resolveTemplate(options: CreateOptions): Promise<string> {
+export async function resolveTemplate(
+  options: TemplateReference,
+): Promise<ResolvedTemplate> {
   const explicit = options.templatePath ?? process.env[TEMPLATE_PATH_ENV];
   if (explicit) {
     const root = path.resolve(explicit);
     await fs.access(path.join(root, "package.json"));
-    return root;
+    return { root, source: root };
   }
 
   // Dev fallback: the CLI is executed from a newbie monorepo checkout.
-  const localDev = path.resolve(__dirname, "..", "..", "..", "..", TEMPLATE_SUBDIR);
+  const localDev = path.resolve(
+    __dirname,
+    "..",
+    "..",
+    "..",
+    "..",
+    TEMPLATE_SUBDIR,
+  );
   if (
     await fs
       .access(path.join(localDev, "package.json"))
       .then(() => true)
       .catch(() => false)
   ) {
-    return localDev;
+    return { root: localDev, source: `monorepo checkout (${localDev})` };
   }
 
+  const ref = options.templateRef;
   const temp = await fs.mkdtemp(path.join(os.tmpdir(), "newbie-template-"));
   const cloneArgs = ["clone", "--quiet"];
-  if (!options.templateRef) cloneArgs.push("--depth", "1");
-  if (options.templateRef) cloneArgs.push("--branch", options.templateRef);
+  if (!ref) cloneArgs.push("--depth", "1");
+  if (ref) cloneArgs.push("--branch", ref);
   cloneArgs.push(TEMPLATE_REPOSITORY_URL, temp);
   await execCapture("git", cloneArgs);
-  return path.join(temp, TEMPLATE_SUBDIR);
+  return {
+    root: path.join(temp, TEMPLATE_SUBDIR),
+    source: `${TEMPLATE_REPOSITORY_URL}#${ref ?? "HEAD"}`,
+  };
 }
 
 async function copyTemplate(from: string, to: string): Promise<void> {
   await fs.cp(from, to, {
     recursive: true,
-    filter: (src) =>
-      !COPY_IGNORE.has(path.basename(src)) || src === from,
+    filter: (src) => !COPY_IGNORE.has(path.basename(src)) || src === from,
   });
 }
 
@@ -77,14 +100,14 @@ export async function runCreate(options: CreateOptions): Promise<void> {
     );
   }
 
-  const targetDir = path.resolve(process.cwd(), name);
+  const targetDir = path.resolve(options.cwd ?? process.cwd(), name);
   const existing = await fs.readdir(targetDir).catch(() => null);
   if (existing && existing.length > 0) {
     throw new CliError(`Target directory ${targetDir} is not empty.`);
   }
 
   console.info(cyan(`Creating project '${name}' from the basic template...`));
-  const templateRoot = await resolveTemplate(options);
+  const templateRoot = (await resolveTemplate(options)).root;
 
   if (options.dryRun) {
     console.info(`[dry-run] copy ${templateRoot} -> ${targetDir}`);
@@ -96,12 +119,17 @@ export async function runCreate(options: CreateOptions): Promise<void> {
   await copyTemplate(templateRoot, targetDir);
 
   const packageJsonPath = path.join(targetDir, "package.json");
-  const packageJson = JSON.parse(await fs.readFile(packageJsonPath, "utf8")) as {
+  const packageJson = JSON.parse(
+    await fs.readFile(packageJsonPath, "utf8"),
+  ) as {
     name?: string;
     [key: string]: unknown;
   };
   packageJson.name = name;
-  await fs.writeFile(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`);
+  await fs.writeFile(
+    packageJsonPath,
+    `${JSON.stringify(packageJson, null, 2)}\n`,
+  );
 
   if (options.gitInit !== false) {
     await execCapture("git", ["init", "--quiet"], { cwd: targetDir });
