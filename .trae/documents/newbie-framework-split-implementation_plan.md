@@ -62,7 +62,7 @@
 ### 1.5 外部仓库就位情况
 
 - `~/src/fewbie`、`~/src/newbie-modules`：已占位（仅 README），Stage 3/5 之外的独立工作区。
-- `~/src/open-api-typescript-request-generator`（apits-gen）：**目录不存在**，fewbie `gen api` 的前置，需重新就位（不阻塞后端 Stage 1-4）。
+- ~~`~/src/open-api-typescript-request-generator`（apits-gen）：目录不存在，fewbie `gen api` 的前置，需重新就位~~（2026-09-25 用户更正：无需本地仓，直接安装已发布的 npm 包 `open-api-typescript-request-generator`）。
 - npm scope `@devbie` 可用性与发布凭证：需确认（影响发布方式，不影响本地构建验证）。
 
 ## 二、待决策项（动手前需确认）
@@ -130,7 +130,7 @@
 
 ### Stage 5+：跨工作区协调（本仓只交付契约，不实施）
 
-- **fewbie（`~/src/fewbie`）**：独立工作区按 fewbie-framework-design 建 monorepo；apits-gen 仓需先重新就位。
+- **fewbie（`~/src/fewbie`）**：独立工作区按 fewbie-framework-design 建 monorepo；apits-gen 直接消费已发布的 npm 包 `open-api-typescript-request-generator`（bin: `apits-gener`），无需本地仓重新就位。
 - **newbie-modules（`~/src/newbie-modules`）**：Stage 3c 的配套仓库，module-hub 作为其中一个普通 module（Phase 6）。
 - **nightwatch-backend**：Stage 1 产物发布后执行 Phase 2（删 src/framework、93 文件 codemod、薄 main.ts、容器验证）；Agent 模型与 module-hub 按其本地文档排期。
 - 本仓需对外稳定的契约：`newbie create/install/...` 命令面、`modules.json`/`newbie.module.json` schema、NewbieFactory options、上报相关 env 变量名（与创建流程文档一致）。
