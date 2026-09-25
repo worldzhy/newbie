@@ -267,4 +267,15 @@ export const apiClient = {
       .delete<unknown, AxiosResponse<T>>(url, config)
       .then((r) => r.data);
   },
+  // HEAD/OPTIONS responses carry no body; resolve to the full AxiosResponse
+  // so callers can still inspect status and headers.
+  head<T>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+    return api.head<unknown, AxiosResponse<T>>(url, config);
+  },
+  options<T>(
+    url: string,
+    config?: AxiosRequestConfig,
+  ): Promise<AxiosResponse<T>> {
+    return api.options<unknown, AxiosResponse<T>>(url, config);
+  },
 };

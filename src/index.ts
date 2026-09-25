@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 import { Command } from "commander";
-import { bold, red, yellow } from "colorette";
+import { bold, red } from "colorette";
 
 import { runInit } from "./commands/init";
 import { runAdd } from "./commands/add";
-import { CliError } from "./lib/errors";
+import { runGenApi } from "./commands/gen-api";
 
 // Published package version, read at runtime (package.json sits one level
 // above both src/ during development and dist/ in the published tarball).
@@ -27,15 +27,6 @@ program
     program.outputHelp();
     console.log(`\n${bold("@devbie/fewbie-cli")} ${VERSION}`);
   });
-
-// Report a milestone placeholder invocation. Commands are registered from
-// their milestone onwards; until then they exist so the command surface is
-// discoverable.
-function notImplemented(command: string, milestone: string): void {
-  throw new CliError(
-    `\`fewbie ${command}\` is not implemented yet (planned in ${yellow(milestone)}).`,
-  );
-}
 
 // Create a project from templates/basic via the same resolver chain as
 // `newbie create` (--template-path -> monorepo template -> git clone --branch).
@@ -93,9 +84,31 @@ program
 // M3: thin wrapper around the apits OpenAPI -> TS request generator.
 const gen = program.command("gen").description("code generation");
 gen
-  .command("api")
-  .description("generate typed API request code from an OpenAPI schema")
-  .action(() => notImplemented("gen api", "M3"));
+  .command("api [input]")
+  .description(
+    "generate typed API request code from an OpenAPI document (URL or local JSON/YAML); the first run scaffolds apits.config.ts",
+  )
+  .option("-n, --name <name>", "only generate the config source with this name")
+  .option(
+    "-w, --watch",
+    "watch a local OpenAPI document and regenerate on change",
+    false,
+  )
+  .option(
+    "--skip-install",
+    "do not install the generator dev dependency",
+    false,
+  )
+  .action(async function (this: Command, input: string) {
+    const flags = this.optsWithGlobals();
+    await runGenApi({
+      input,
+      name: flags.name as string | undefined,
+      watch: Boolean(flags.watch),
+      skipInstall: Boolean(flags.skipInstall),
+      cwd: (flags.cwd as string) ?? process.cwd(),
+    });
+  });
 
 // v1 surface intentionally stops here. `doctor` and `update` are planned
 // after the 0.1.0 release.
