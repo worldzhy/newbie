@@ -17,8 +17,10 @@ import { runInteractive } from "./commands/default";
 import { GlobalOptions } from "./commands/shared";
 import { CliError, isUserCancellation } from "./lib/errors";
 
-// package.json sits one level above both src/ (tsx) and dist/ (published).
-const cliVersion = (require("../package.json") as { version: string }).version;
+// Published package version, read at runtime (package.json sits one level
+// above both src/ during development and dist/ in the published tarball).
+export const VERSION = (require("../package.json") as { version: string })
+  .version;
 
 const program = new Command();
 
@@ -27,7 +29,7 @@ program
   .description(
     "Newbie framework CLI: install modules from the newbie-modules registry and sync project files",
   )
-  .version(cliVersion)
+  .version(VERSION)
   .option("-C, --cwd <dir>", "project root directory", process.cwd())
   .option(
     "--dry-run",
