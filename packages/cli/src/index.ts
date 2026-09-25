@@ -16,6 +16,7 @@ import { runUpdateTemplate } from "./commands/update-template";
 import { runInteractive } from "./commands/default";
 import { GlobalOptions } from "./commands/shared";
 import { CliError, isUserCancellation } from "./lib/errors";
+import { readCliVersion } from "./lib/version";
 
 const program = new Command();
 
@@ -24,7 +25,7 @@ program
   .description(
     "Newbie framework CLI: install modules from the newbie-modules registry and sync project files",
   )
-  .version("0.2.0")
+  .version(readCliVersion())
   .option("-C, --cwd <dir>", "project root directory", process.cwd())
   .option(
     "--dry-run",
