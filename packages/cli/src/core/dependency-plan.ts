@@ -62,3 +62,73 @@ export function buildInstallSpecs(decls: DependencyDecls[]): {
 
   return { dependencies, devDependencies };
 }
+
+export interface DependencyConflict {
+  name: string;
+  /** Distinct ranges declared for this dependency across enabled modules. */
+  ranges: string[];
+}
+
+/**
+ * Reconcile the npm dependencies of ALL enabled modules against the
+ * project's package.json. Unlike an "added-only" install, this is safe to
+ * re-run after an interrupted assembly: a dependency is installed whenever it
+ * is declared but missing from package.json, regardless of whether this run
+ * newly added the owning module.
+ *
+ * Distinct ranges declared for the same package are returned as conflicts
+ * (the first range in sorted order is used for the install spec) so the CLI
+ * can surface them instead of letting npm pick a silent winner.
+ */
+export function planDependencyInstalls(
+  enabledDecls: DependencyDecls[],
+  installed: DependencyDecls,
+): {
+  dependencies: string[];
+  devDependencies: string[];
+  conflicts: DependencyConflict[];
+} {
+  const mergeDecls = (
+    pick: (decl: DependencyDecls) => Record<string, string> | undefined,
+    otherKind: Record<string, string> | undefined,
+  ) => {
+    // name -> declared ranges (insertion order preserved, de-duplicated).
+    const ranges = new Map<string, Set<string>>();
+    for (const decl of enabledDecls) {
+      for (const [name, range] of Object.entries(pick(decl) ?? {})) {
+        if (!ranges.has(name)) ranges.set(name, new Set<string>());
+        ranges.get(name)!.add(range);
+      }
+    }
+
+    // A package declared under either dependency kind counts as present.
+    const present = new Set([
+      ...Object.keys(pick(installed) ?? {}),
+      ...Object.keys(otherKind ?? {}),
+    ]);
+
+    const specs: string[] = [];
+    const conflicts: DependencyConflict[] = [];
+    for (const [name, declared] of ranges) {
+      const ordered = [...declared].sort();
+      if (ordered.length > 1) conflicts.push({ name, ranges: ordered });
+      if (!present.has(name)) specs.push(`${name}@${ordered[0]}`);
+    }
+    return { specs, conflicts };
+  };
+
+  const deps = mergeDecls(
+    (decl) => decl.dependencies,
+    installed.devDependencies,
+  );
+  const devDeps = mergeDecls(
+    (decl) => decl.devDependencies,
+    installed.dependencies,
+  );
+
+  return {
+    dependencies: deps.specs,
+    devDependencies: devDeps.specs,
+    conflicts: [...deps.conflicts, ...devDeps.conflicts],
+  };
+}

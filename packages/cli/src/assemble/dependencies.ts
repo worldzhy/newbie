@@ -1,7 +1,11 @@
+import fs from "node:fs/promises";
+import path from "node:path";
+
 import {
-  buildInstallSpecs,
+  planDependencyInstalls,
   planDependencyRemovals,
 } from "../core/dependency-plan";
+import { PACKAGE_JSON_PATH } from "../constants/paths";
 import { ModuleManifest } from "../core/module-manifest";
 import { IssueBag, reportIssue } from "../lib/issues";
 import { readInstalledManifest } from "../lib/module-install";
@@ -38,12 +42,53 @@ export async function assembleDependencies(params: {
   removed: string[];
   enabled: string[];
 }): Promise<void> {
-  const { cwd, sink, issues, added, removed, enabled } = params;
+  const { cwd, sink, issues, removed, enabled } = params;
 
-  // [step 1] Install dependencies of added modules.
-  const addedDecls = await loadManifests(cwd, issues, sink, added, "added");
-  const { dependencies: addSpecs, devDependencies: addDevSpecs } =
-    buildInstallSpecs(addedDecls);
+  // [step 1] Reconcile dependencies of ALL enabled modules against
+  // package.json. Scoping this to the enabled set (instead of only newly
+  // added modules) makes the step idempotent and resumable: dependencies
+  // missing because a previous run aborted mid-pipeline are installed on the
+  // next run even when nothing new is added.
+  const enabledDecls = await loadManifests(
+    cwd,
+    issues,
+    sink,
+    enabled,
+    "enabled",
+  );
+
+  let installed: {
+    dependencies?: Record<string, string>;
+    devDependencies?: Record<string, string>;
+  } = {};
+  try {
+    installed = JSON.parse(
+      await fs.readFile(path.resolve(cwd, PACKAGE_JSON_PATH), "utf8"),
+    );
+  } catch {
+    reportIssue(
+      issues,
+      sink,
+      `Missing ${PACKAGE_JSON_PATH}; skipping module dependency reconciliation.`,
+    );
+    return;
+  }
+
+  const {
+    dependencies: addSpecs,
+    devDependencies: addDevSpecs,
+    conflicts,
+  } = planDependencyInstalls(enabledDecls, installed);
+
+  for (const conflict of conflicts) {
+    reportIssue(
+      issues,
+      sink,
+      `Conflicting versions declared for '${conflict.name}': ${conflict.ranges.join(
+        ", ",
+      )} (using ${conflict.ranges[0]}).`,
+    );
+  }
 
   if (addSpecs.length > 0) {
     await sink.run("npm", ["install", ...addSpecs], "npm install");
@@ -57,13 +102,6 @@ export async function assembleDependencies(params: {
   }
 
   // [step 2] Uninstall deps that were only owned by removed modules.
-  const enabledDecls = await loadManifests(
-    cwd,
-    issues,
-    sink,
-    enabled,
-    "enabled",
-  );
   const removedDecls = await loadManifests(
     cwd,
     issues,

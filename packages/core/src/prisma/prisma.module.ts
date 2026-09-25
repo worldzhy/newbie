@@ -16,21 +16,37 @@ export class PrismaModule {
     const prismaServiceProvider: Provider = {
       provide: PrismaService,
       useFactory: async () => {
-        const client = createExtendedPrismaClient(options);
+        // The client is `let` on purpose: registerExtension rebinds it through
+        // $extends so extensions registered after module init (e.g. by feature
+        // modules in their service constructors) still take effect. The Proxy
+        // below always forwards property access to the CURRENT client.
+        let client: any = createExtendedPrismaClient(options);
 
-        /**
-         * Manually bind NestJS lifecycle hooks to the extended Prisma client.
-         * Since the extended client is a plain object, we attach the hooks directly.
-         */
-        (client as any).onModuleInit = async () => {
-          await (client as any).$connect();
+        const wrapper = {
+          // Manually bind NestJS lifecycle hooks to the extended Prisma client.
+          async onModuleInit() {
+            await client.$connect();
+          },
+          async onModuleDestroy() {
+            await client.$disconnect();
+          },
+          registerExtension(extension: any) {
+            client = client.$extends(extension) as any;
+          },
         };
 
-        (client as any).onModuleDestroy = async () => {
-          await (client as any).$disconnect();
-        };
-
-        return client;
+        return new Proxy(wrapper, {
+          get: (target, prop) => {
+            if (prop in target) {
+              return target[prop as keyof typeof target];
+            }
+            const value = client[prop as keyof typeof client];
+            if (typeof value === 'function') {
+              return value.bind(client);
+            }
+            return value;
+          },
+        });
       },
     };
 

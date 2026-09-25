@@ -20,6 +20,7 @@ export const PRISMA_SCHEMA_MODELS_DIR = "prisma/models";
 export const ENV_PATH = ".env";
 export const ENV_EXAMPLE_PATH = ".env.example";
 export const NEST_CLI_JSON = "nest-cli.json";
+export const PACKAGE_JSON_PATH = "package.json";
 
 /** Layout of the newbie-modules registry monorepo. */
 export const REGISTRY_MODULES_DIR = "packages/modules";

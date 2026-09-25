@@ -1,13 +1,18 @@
-import {BadRequestException, Logger} from '@nestjs/common';
-import {PrismaPg} from '@prisma/adapter-pg';
+import { BadRequestException, Logger } from "@nestjs/common";
+import { PrismaPg } from "@prisma/adapter-pg";
 
 /**
  * Constructor type of a project-generated PrismaClient.
  * The framework never instantiates a generated client itself: each project
  * generates its own client (prisma-client generator, e.g. `@generated/prisma/client`)
  * and passes its constructor in via PrismaModule.forRoot / FrameworkModule.forRoot.
+ *
+ * Kept as a rest-args `any` signature on purpose: each Prisma version generates
+ * a constructor with its own option types (PrismaClientOptions, adapter config),
+ * and a narrower parameter type (e.g. `Record<string, unknown>`) is structurally
+ * incompatible with the generated one under strict-function-types checks.
  */
-export type PrismaClientConstructor = new (options?: Record<string, unknown>) => any;
+export type PrismaClientConstructor = new (...args: any[]) => any;
 
 export interface CreateExtendedPrismaClientOptions {
   /** Project-generated PrismaClient constructor. */
@@ -19,15 +24,17 @@ export interface CreateExtendedPrismaClientOptions {
 /**
  * Helper function to calculate pagination parameters.
  */
-function getSkipAndTake(params: {page: number; pageSize: number}) {
-  const {page, pageSize} = params;
+function getSkipAndTake(params: { page: number; pageSize: number }) {
+  const { page, pageSize } = params;
   if (page >= 0 && pageSize > 0) {
     return {
       skip: pageSize * page,
       take: pageSize,
     };
   } else {
-    throw new BadRequestException('The minimum page is 0 and the pageSize must be larger than 0.');
+    throw new BadRequestException(
+      "The minimum page is 0 and the pageSize must be larger than 0.",
+    );
   }
 }
 
@@ -36,27 +43,33 @@ function getSkipAndTake(params: {page: number; pageSize: number}) {
  * Model names are passed as plain strings because the framework has no
  * knowledge of a project's generated models.
  */
-export const createExtendedPrismaClient = (options: CreateExtendedPrismaClientOptions) => {
-  const {PrismaClient, connectionString} = options;
-  const logger = new Logger('Prisma');
+export const createExtendedPrismaClient = (
+  options: CreateExtendedPrismaClientOptions,
+) => {
+  const { PrismaClient, connectionString } = options;
+  const logger = new Logger("Prisma");
 
   const prisma = new PrismaClient({
     adapter: new PrismaPg({
-      connectionString: (connectionString ?? process.env.PRISMA_DATABASE_URL) as string,
+      connectionString: (connectionString ??
+        process.env.PRISMA_DATABASE_URL) as string,
     }),
   });
 
   const extendedClient = prisma.$extends({
     client: {
-      async findManyInOnePage(params: {model: string; findManyArgs?: any}) {
-        const {findManyArgs} = params;
+      async findManyInOnePage(params: { model: string; findManyArgs?: any }) {
+        const { findManyArgs } = params;
         const model = params.model as string;
-        const modelLowercaseFirstLetter = model.charAt(0).toLowerCase() + model.slice(1);
+        const modelLowercaseFirstLetter =
+          model.charAt(0).toLowerCase() + model.slice(1);
 
         const currentClient = this as any;
-        const records = await currentClient[modelLowercaseFirstLetter].findMany({
-          ...findManyArgs,
-        });
+        const records = await currentClient[modelLowercaseFirstLetter].findMany(
+          {
+            ...findManyArgs,
+          },
+        );
 
         return {
           records,
@@ -71,18 +84,23 @@ export const createExtendedPrismaClient = (options: CreateExtendedPrismaClientOp
 
       async findManyInManyPages(params: {
         model: string;
-        pagination: {page: number; pageSize: number};
+        pagination: { page: number; pageSize: number };
         findManyArgs?: any;
       }) {
-        const {pagination, findManyArgs} = params;
+        const { pagination, findManyArgs } = params;
         const model = params.model as string;
-        const modelLowercaseFirstLetter = model.charAt(0).toLowerCase() + model.slice(1);
-        const {skip, take} = getSkipAndTake(pagination);
+        const modelLowercaseFirstLetter =
+          model.charAt(0).toLowerCase() + model.slice(1);
+        const { skip, take } = getSkipAndTake(pagination);
 
         const currentClient = this as any;
 
         const [records, total] = await currentClient.$transaction([
-          currentClient[modelLowercaseFirstLetter].findMany({...findManyArgs, take, skip}),
+          currentClient[modelLowercaseFirstLetter].findMany({
+            ...findManyArgs,
+            take,
+            skip,
+          }),
           currentClient[modelLowercaseFirstLetter].count({
             where: findManyArgs ? findManyArgs.where : undefined,
           }),
@@ -106,17 +124,39 @@ export const createExtendedPrismaClient = (options: CreateExtendedPrismaClientOp
 
 /**
  * Minimal structural type of the extended client as seen by the framework.
- * Projects should cast/augment with their own generated extended client type
- * to retain full model intellisense at injection sites.
+ * Declared as an interface (not a type alias) so that projects can augment it
+ * via declaration merging with their own generated client type, restoring full
+ * model intellisense at injection sites:
+ *
+ *   // src/types/prisma.d.ts (project side)
+ *   import type {PrismaClient} from '@generated/prisma/client';
+ *   declare module '@devbie/newbie/prisma/prisma.extension' {
+ *     interface ExtendedPrismaClient extends PrismaClient {}
+ *   }
  */
-export type ExtendedPrismaClient = {
-  findManyInOnePage: (params: {model: string; findManyArgs?: any}) => Promise<any>;
-  findManyInManyPages: (params: {
+export interface ExtendedPrismaClient {
+  // Only the framework's own extension methods are declared here. Native
+  // PrismaClient members ($connect/$transaction/...) are intentionally NOT
+  // redeclared: a narrower redeclaration would shadow the generated client's
+  // generic overloads when a project augments this interface.
+  findManyInOnePage: (params: {
     model: string;
-    pagination: {page: number; pageSize: number};
     findManyArgs?: any;
   }) => Promise<any>;
-  $connect: () => Promise<void>;
-  $disconnect: () => Promise<void>;
-  $transaction: (...args: any[]) => Promise<any>;
-} & Record<string, any>;
+  findManyInManyPages: (params: {
+    model: string;
+    pagination: { page: number; pageSize: number };
+    findManyArgs?: any;
+  }) => Promise<any>;
+  /**
+   * Rebinds the underlying client through $extends. Feature modules call this
+   * in their service constructors to register model extensions; the rebind is
+   * visible to all injection sites because the service proxies to the current
+   * client.
+   */
+  registerExtension: (extension: any) => void;
+  // Model delegates and native client members are unknown to the framework;
+  // the index signature keeps them accessible (as any) until the project
+  // augments this interface.
+  [key: string]: any;
+}
