@@ -56,11 +56,11 @@ The token is globally unique, so nightwatch resolves the agent from it alone —
 
 ## Versioning
 
-Template releases are tagged on the [newbie repository](https://github.com/worldzhy/newbie) as `template-v<major>.<minor>.<patch>` (e.g. `template-v1.0.0`). Pin a project to a specific release:
+Template releases are tagged on the [newbie repository](https://github.com/worldzhy/newbie) as `template-v<semver>` and track the `@devbie/newbie` release line (e.g. `template-v0.1.0-stage.0`). Pin a project to a specific release:
 
 ```bash
-npx @devbie/newbie-cli create my-service --template-ref template-v1.0.0
-npx newbie update-template --template-ref template-v1.1.0
+npx @devbie/newbie-cli create my-service --template-ref template-v0.1.0-stage.0
+npx newbie update-template --template-ref template-v0.1.0-stage.0
 ```
 
 ## License

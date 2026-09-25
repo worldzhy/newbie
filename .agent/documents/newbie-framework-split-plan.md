@@ -347,7 +347,7 @@ nightwatch 对**所有**被监控应用做进程级在线检测（online 派生�
 2. 将 `src/framework/` 全部移入 `packages/core/src/`
 3. 新增 `packages/core/src/newbie-factory.ts`（NewbieFactory）
 4. 配置 `packages/core/package.json`（name: `@devbie/newbie`，peerDependencies: `@nestjs/*`）
-5. 构建发布 `@devbie/newbie@0.1.0`
+5. 构建发布 `@devbie/newbie`：首发预发布版 `0.1.0-stage.0`（dist-tag `stage`），GA 时发布 `0.1.0`
 
 ### Phase 2：nightwatch 迁移到 @devbie/newbie
 
