@@ -1,6 +1,6 @@
 {
   "name": "@devbie/nightwatch-heartbeat-sdk",
-  "version": "0.1.0",
+  "version": "0.1.0-stage.0",
   "description": "Framework-agnostic heartbeat client for nightwatch online detection",
   "license": "MIT",
   "author": "worldzhy",
