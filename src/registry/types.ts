@@ -20,7 +20,7 @@ export interface RegistryFileRef {
 
 /** File entry in the built shadcn-compatible manifest. */
 export interface RegistryFileEntry {
-  /** Project-relative target path, e.g. src/api/client.ts. */
+  /** Project-relative target path, e.g. src/lib/api-client.ts. */
   path: string;
   /** Inlined file content. */
   content: string;

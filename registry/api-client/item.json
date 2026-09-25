@@ -5,6 +5,6 @@
   "description": "Axios instance with bearer-token auth, httpOnly refresh-cookie rotation, single-flight 401 retry and proactive token refresh.",
   "dependencies": ["axios@^1.20.0"],
   "registryDependencies": [],
-  "files": ["src/api/client.ts"],
-  "postInstall": "Adjust BASE_URL / storage keys / REFRESH_PATH in src/api/client.ts to match your backend contract."
+  "files": ["src/lib/api-client.ts"],
+  "postInstall": "Adjust BASE_URL / storage keys / REFRESH_PATH in src/lib/api-client.ts to match your backend contract."
 }
