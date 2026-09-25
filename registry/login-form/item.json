@@ -1,0 +1,9 @@
+{
+  "name": "login-form",
+  "type": "registry:block",
+  "title": "Login form",
+  "description": "Account/password login card built on shadcn ui primitives; submits through the auth util and honors the ?redirect= query parameter.",
+  "dependencies": [],
+  "registryDependencies": ["auth"],
+  "files": ["src/components/fewbie/login-form.tsx"]
+}

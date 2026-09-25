@@ -3,6 +3,7 @@ import { Command } from "commander";
 import { bold, red, yellow } from "colorette";
 
 import { runInit } from "./commands/init";
+import { runAdd } from "./commands/add";
 import { CliError } from "./lib/errors";
 
 // Published package version, read at runtime (package.json sits one level
@@ -61,11 +62,33 @@ program
     });
   });
 
-// M2: copy a component/logic util from the shadcn-compatible fewbie registry.
+// M2: copy components/logic utils from the shadcn-compatible fewbie registry.
 program
-  .command("add <name>")
-  .description("add a component or logic util from the fewbie registry")
-  .action(() => notImplemented("add", "M2"));
+  .command("add <names...>")
+  .description(
+    "add one or more components or logic utils from the fewbie registry",
+  )
+  .option("-f, --force", "overwrite files that already exist", false)
+  .option(
+    "--skip-install",
+    "do not run npm install for missing dependencies",
+    false,
+  )
+  .option(
+    "--with-login-form",
+    "also install the login-form block (e.g. `fewbie add auth --with-login-form`)",
+    false,
+  )
+  .action(async function (this: Command, names: string[]) {
+    const flags = this.optsWithGlobals();
+    await runAdd({
+      names,
+      cwd: (flags.cwd as string) ?? process.cwd(),
+      force: Boolean(flags.force),
+      skipInstall: Boolean(flags.skipInstall),
+      withLoginForm: Boolean(flags.withLoginForm),
+    });
+  });
 
 // M3: thin wrapper around the apits OpenAPI -> TS request generator.
 const gen = program.command("gen").description("code generation");

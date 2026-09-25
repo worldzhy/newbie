@@ -14,7 +14,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json && chmod +x dist/index.js",
+    "build": "tsc -p tsconfig.json && node --import tsx scripts/build-registry.ts && chmod +x dist/index.js",
     "clean": "rimraf dist",
     "test": "node --import tsx --test test/*.test.ts",
     "prepublishOnly": "npm run build"
