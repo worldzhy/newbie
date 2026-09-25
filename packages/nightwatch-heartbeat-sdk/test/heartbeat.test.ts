@@ -40,7 +40,6 @@ describe("startHeartbeat", () => {
     cleanup();
     const handle = startHeartbeat({
       endpoint: "http://localhost:3000",
-      applicationId: "app-1",
       token: "tok-1",
     });
     assert.equal(typeof handle.stop, "function");
@@ -51,12 +50,10 @@ describe("startHeartbeat", () => {
     cleanup();
     const first = startHeartbeat({
       endpoint: "http://a",
-      applicationId: "a",
       token: "t",
     });
     const second = startHeartbeat({
       endpoint: "http://b",
-      applicationId: "b",
       token: "t",
     });
     assert.strictEqual(first, second);
@@ -68,7 +65,6 @@ describe("startHeartbeat", () => {
     const spy = mockFetch(async () => new Response(null, { status: 204 }));
     const handle = startHeartbeat({
       endpoint: "http://localhost:3000/",
-      applicationId: "app-123",
       token: "secret-token",
       intervalMs: 60_000,
     });
@@ -76,7 +72,7 @@ describe("startHeartbeat", () => {
     await new Promise((resolve) => setTimeout(resolve, 50));
     assert.equal(spy.calls.length, 1);
     const [url, init] = spy.calls[0];
-    assert.equal(url, "http://localhost:3000/applications/app-123/heartbeat");
+    assert.equal(url, "http://localhost:3000/applications/heartbeat");
     assert.equal(init.method, "POST");
     assert.equal(
       (init.headers as Record<string, string>)["X-Application-Token"],
@@ -93,7 +89,6 @@ describe("startHeartbeat", () => {
     });
     const handle = startHeartbeat({
       endpoint: "http://localhost:3000",
-      applicationId: "app-1",
       token: "tok-1",
       intervalMs: 60_000,
     });
@@ -109,7 +104,6 @@ describe("startHeartbeat", () => {
     const spy = mockFetch(async () => new Response(null, { status: 204 }));
     const handle = startHeartbeat({
       endpoint: "http://localhost:3000",
-      applicationId: "app-1",
       token: "tok-1",
       intervalMs: 50,
     });
@@ -125,13 +119,11 @@ describe("startHeartbeat", () => {
     cleanup();
     const first = startHeartbeat({
       endpoint: "http://a",
-      applicationId: "a",
       token: "t",
     });
     first.stop();
     const second = startHeartbeat({
       endpoint: "http://b",
-      applicationId: "b",
       token: "t",
     });
     assert.notStrictEqual(first, second);

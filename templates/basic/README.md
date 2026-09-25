@@ -45,15 +45,14 @@ Business code — `src/application/`, `src/modules/`, your Prisma models outside
 
 ## Nightwatch monitoring (optional)
 
-The template ships heartbeat wiring built on `@devbie/nightwatch-heartbeat-sdk` directly in `src/main.ts`. Once the app is listening, it reports liveness to nightwatch every 30s when all three variables are set:
+The template ships heartbeat wiring built on `@devbie/nightwatch-heartbeat-sdk` directly in `src/main.ts`. Once the app is listening, it reports liveness to nightwatch every 30s when both variables are set:
 
 ```bash
-NIGHTWATCH_APPLICATION_ID=<uuid assigned by nightwatch>
 NIGHTWATCH_APPLICATION_TOKEN=<agent token>
 NIGHTWATCH_REPORT_ENDPOINT=https://<nightwatch-host>/api/v1
 ```
 
-With the variables unset the wiring is a silent no-op, so projects not enrolled in nightwatch need no extra setup.
+The token is globally unique, so nightwatch resolves the agent from it alone — no application id is needed. With the variables unset the wiring is a silent no-op, so projects not enrolled in nightwatch need no extra setup.
 
 ## Versioning
 

@@ -2,9 +2,7 @@
 export interface HeartbeatOptions {
   /** Nightwatch endpoint prefix (no trailing slash). */
   endpoint: string;
-  /** Application UUID assigned by nightwatch. */
-  applicationId: string;
-  /** Application report token sent as X-Application-Token header. */
+  /** Agent token sent as X-Application-Token header; globally unique. */
   token: string;
   /** Heartbeat interval in milliseconds. Defaults to 30000. */
   intervalMs?: number;
@@ -16,12 +14,15 @@ export interface HeartbeatHandle {
   stop(): void;
 }
 
-const GLOBAL_KEY = Symbol.for('@devbie/nightwatch-heartbeat-sdk:active');
+const GLOBAL_KEY = Symbol.for("@devbie/nightwatch-heartbeat-sdk:active");
 
 /**
  * Starts a heartbeat loop that POSTs to
- * `{endpoint}/applications/{applicationId}/heartbeat` immediately and then
- * every `intervalMs` (default 30s).
+ * `{endpoint}/applications/heartbeat` immediately and then every
+ * `intervalMs` (default 30s).
+ *
+ * The agent token is globally unique, so the server resolves the agent
+ * from the X-Application-Token header alone; no application id is sent.
  *
  * Idempotent: calling startHeartbeat twice returns the existing handle.
  * The timer is `unref()`-ed so the process can exit naturally.
@@ -33,14 +34,14 @@ export function startHeartbeat(options: HeartbeatOptions): HeartbeatHandle {
     return existing as HeartbeatHandle;
   }
 
-  const {endpoint, applicationId, token, intervalMs = 30_000} = options;
-  const url = `${endpoint.replace(/\/+$/, '')}/applications/${applicationId}/heartbeat`;
+  const { endpoint, token, intervalMs = 30_000 } = options;
+  const url = `${endpoint.replace(/\/+$/, "")}/applications/heartbeat`;
 
   async function beat(): Promise<void> {
     try {
       await fetch(url, {
-        method: 'POST',
-        headers: {'X-Application-Token': token},
+        method: "POST",
+        headers: { "X-Application-Token": token },
       });
     } catch {
       // Heartbeat failures are intentionally silent.
@@ -49,8 +50,8 @@ export function startHeartbeat(options: HeartbeatOptions): HeartbeatHandle {
 
   void beat();
   const timer = setInterval(beat, intervalMs);
-  if (typeof (timer as {unref?: unknown}).unref === 'function') {
-    (timer as {unref(): void}).unref();
+  if (typeof (timer as { unref?: unknown }).unref === "function") {
+    (timer as { unref(): void }).unref();
   }
 
   const handle: HeartbeatHandle = {
