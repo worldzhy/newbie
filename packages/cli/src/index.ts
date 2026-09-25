@@ -16,7 +16,9 @@ import { runUpdateTemplate } from "./commands/update-template";
 import { runInteractive } from "./commands/default";
 import { GlobalOptions } from "./commands/shared";
 import { CliError, isUserCancellation } from "./lib/errors";
-import { readCliVersion } from "./lib/version";
+
+// package.json sits one level above both src/ (tsx) and dist/ (published).
+const cliVersion = (require("../package.json") as { version: string }).version;
 
 const program = new Command();
 
@@ -25,7 +27,7 @@ program
   .description(
     "Newbie framework CLI: install modules from the newbie-modules registry and sync project files",
   )
-  .version(readCliVersion())
+  .version(cliVersion)
   .option("-C, --cwd <dir>", "project root directory", process.cwd())
   .option(
     "--dry-run",
