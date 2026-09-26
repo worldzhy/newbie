@@ -44,6 +44,11 @@ export * from "./interceptors/http-response.interceptor";
 export * from "./middlewares/http.middleware";
 export * from "./middlewares/raw-body.middleware";
 
+// Built-in backend monitor probe (disabled unless forRoot({enabled:true}))
+export * from "./monitoring/backend-monitor.module";
+export * from "./monitoring/backend-monitor.types";
+export * from "./monitoring/backend-monitor.reporter";
+
 // Pipes (their local errors.constants is subpath-only, see note above)
 export * from "./pipes/cursor-slug.pipe";
 export * from "./pipes/cursor.pipe";

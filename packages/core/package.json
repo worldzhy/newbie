@@ -26,6 +26,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "clean": "rimraf dist",
+    "test": "node --import tsx --test test/*.test.ts",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
