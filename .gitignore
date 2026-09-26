@@ -1,6 +1,7 @@
 # compiled output
 /dist
 /node_modules
+*.tsbuildinfo
 
 # dotenv environment variables file
 .env
@@ -25,3 +26,10 @@
 generated
 
 .newbie
+
+# monorepo workspaces
+packages/*/dist
+packages/*/node_modules
+templates/*/dist
+templates/*/node_modules
+templates/*/generated

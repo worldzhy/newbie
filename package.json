@@ -1,76 +1,15 @@
 {
-  "name": "newbie",
+  "name": "newbie-monorepo",
   "version": "3.2.0",
-  "description": "",
+  "description": "newbie framework monorepo (@devbie/newbie, @devbie/newbie-cli, project templates)",
   "author": "worldzhy",
   "private": true,
   "license": "MIT",
+  "workspaces": [
+    "packages/*",
+    "templates/*"
+  ],
   "scripts": {
-    "build": "nest build",
-    "format": "prettier --write \"src/**/*.ts\"",
-    "start": "nest start",
-    "start:dev": "nest start --watch",
-    "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
-    "lint": "eslint \"{src}/**/*.ts\" --fix",
-    "prebuild": "rimraf dist",
-    "newbie": "node .newbie/index.js",
-    "newbie:check": "node .newbie/newbie.check.js",
-    "newbie:config": "node .newbie/newbie.config.js",
-    "newbie:install": "node .newbie/newbie.install.js",
-    "newbie-env-tool": "node .newbie-env-tool/index.js"
-  },
-  "dependencies": {
-    "@inquirer/prompts": "latest",
-    "@nestjs/axios": "latest",
-    "@nestjs/common": "latest",
-    "@nestjs/config": "latest",
-    "@nestjs/core": "latest",
-    "@nestjs/platform-express": "latest",
-    "@nestjs/swagger": "latest",
-    "@nestjs/throttler": "latest",
-    "@prisma/adapter-pg": "latest",
-    "@prisma/client": "latest",
-    "axios": "latest",
-    "bcrypt": "latest",
-    "class-transformer": "latest",
-    "class-validator": "latest",
-    "colorette": "latest",
-    "cookie-parser": "latest",
-    "crypto-random-string": "latest",
-    "express": "latest",
-    "helmet": "latest",
-    "moment": "latest",
-    "pg": "latest",
-    "reflect-metadata": "latest",
-    "rimraf": "latest",
-    "rxjs": "latest",
-    "tsx": "latest",
-    "uuid": "latest"
-  },
-  "devDependencies": {
-    "@nestjs/cli": "latest",
-    "@nestjs/schematics": "latest",
-    "@types/cookie-parser": "latest",
-    "@types/express": "latest",
-    "@types/node": "latest",
-    "@types/pg": "latest",
-    "@typescript-eslint/eslint-plugin": "latest",
-    "@typescript-eslint/parser": "latest",
-    "eslint-config-prettier": "latest",
-    "eslint-plugin-prettier": "latest",
-    "figlet": "latest",
-    "prettier": "latest",
-    "prisma": "latest",
-    "source-map-support": "latest",
-    "ts-loader": "latest",
-    "ts-node": "latest",
-    "tsconfig-paths": "latest",
-    "typescript": "latest"
-  },
-  "config": {
-    "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
-    }
+    "build:core": "npm run build -w @devbie/newbie"
   }
 }
