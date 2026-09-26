@@ -33,3 +33,6 @@ packages/*/node_modules
 templates/*/dist
 templates/*/node_modules
 templates/*/generated
+
+# npm pack tarballs (staging artifacts, consumed from the registry)
+*.tgz
