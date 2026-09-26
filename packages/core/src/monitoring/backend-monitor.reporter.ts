@@ -10,6 +10,9 @@ type QueueItem =
   | { kind: "request"; payload: MonitoredRequestEvent }
   | { kind: "error"; payload: MonitoredErrorEvent };
 
+/** Timeout for one ingest HTTP call, so a hung platform cannot hold the flush lock. */
+const TRANSPORT_TIMEOUT_MS = 10_000;
+
 /**
  * Transport abstraction; the default posts to
  * {endpoint}/backend-monitor/ingest. Injected in tests with a fake function.
@@ -29,6 +32,8 @@ export class MonitorEventReporter implements OnModuleInit, OnModuleDestroy {
   private queue: QueueItem[] = [];
   private timer: ReturnType<typeof setInterval> | null = null;
   private flushing = false;
+  /** Guards against duplicate beforeExit listeners across start/stop cycles. */
+  private beforeExitHandler: (() => void) | null = null;
 
   /** Total events discarded because the queue was full. */
   droppedCount = 0;
@@ -62,9 +67,12 @@ export class MonitorEventReporter implements OnModuleInit, OnModuleDestroy {
     this.timer.unref?.();
     // Best-effort drain when the event loop empties. May not complete (e.g. on
     // a hard kill); it must never throw and must never block exit.
-    process.once("beforeExit", () => {
-      void this.flush();
-    });
+    if (!this.beforeExitHandler) {
+      this.beforeExitHandler = () => {
+        void this.flush();
+      };
+      process.once("beforeExit", this.beforeExitHandler);
+    }
   }
 
   /** Stops the timer. */
@@ -72,6 +80,10 @@ export class MonitorEventReporter implements OnModuleInit, OnModuleDestroy {
     if (this.timer) {
       clearInterval(this.timer);
       this.timer = null;
+    }
+    if (this.beforeExitHandler) {
+      process.removeListener("beforeExit", this.beforeExitHandler);
+      this.beforeExitHandler = null;
     }
   }
 
@@ -175,7 +187,7 @@ export class MonitorEventReporter implements OnModuleInit, OnModuleDestroy {
 
   /** Real network transport used outside tests. */
   private defaultTransport: MonitorTransport = async (payload) => {
-    await fetch(
+    const response = await fetch(
       `${this.options.endpoint.replace(/\/+$/, "")}/backend-monitor/ingest`,
       {
         method: "POST",
@@ -187,7 +199,14 @@ export class MonitorEventReporter implements OnModuleInit, OnModuleDestroy {
           "X-Backend-Monitor": "1",
         },
         body: JSON.stringify(payload),
+        // Bounded wait: otherwise a hanging platform would pin the flush lock.
+        signal: AbortSignal.timeout(TRANSPORT_TIMEOUT_MS),
       },
     );
+    // fetch only rejects on network/timeout errors; non-2xx must count as a
+    // failed (dropped) batch so the platform rejection is observable.
+    if (!response.ok) {
+      throw new Error(`ingest responded with ${response.status}`);
+    }
   };
 }
