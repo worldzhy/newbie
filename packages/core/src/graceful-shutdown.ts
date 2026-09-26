@@ -1,4 +1,4 @@
-import {INestApplication} from '@nestjs/core';
+import {INestApplication} from '@nestjs/common';
 import http from 'node:http';
 
 /**
