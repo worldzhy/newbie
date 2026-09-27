@@ -50,10 +50,10 @@
 
 ### Phase C — 中心化控制面（核心未做项）
 
-| #   | 功能                                                | 归属                | 优先级 | 前置                                  |
-| --- | --------------------------------------------------- | ------------------- | ------ | ------------------------------------- |
-| C1  | module-hub 控制面（Prisma 模型 + API + agent 通道） | newbie-modules      | 高     | nightwatch Application/Agent 模型落地 |
-| C2  | Modules 前端面板                                    | nightwatch-frontend | 高     | C1 + UI 层次重构                      |
+| #   | 功能                                                                                 | 归属                | 优先级 | 前置                   |
+| --- | ------------------------------------------------------------------------------------ | ------------------- | ------ | ---------------------- |
+| C1  | module-hub 控制面（4 表模型 + token-only API + webhook + CLI 轮询）✅ 设计方向已定稿 | newbie-modules      | 高     | 无（框架侧可独立设计） |
+| C2  | Modules 前端面板（宿主通过 externalRef 自行映射 project/application 层级）           | nightwatch-frontend | 中     | C1 API + UI 层次重构   |
 
 ### Phase D — GA 发布
 
@@ -134,36 +134,51 @@
 
 #### C1. module-hub 控制面
 
-- **目标**：跨项目 module 全生命周期管理（安装状态、版本编排、变更单、agent 心跳）
-- **形态**：作为普通 module 收录在 `newbie-modules` registry（`packages/modules/module-hub/`），经 `newbie add module-hub` 复制装配
-- **数据模型**（独立 PG schema `module/module-hub`）：
-  | 表                   | 职责                                                        |
-  | -------------------- | ----------------------------------------------------------- |
-  | `hub-project`        | 项目在 Hub 的纳管登记（非 Project CRUD，归 Application 层） |
-  | `hub-module-release` | registry 版本目录登记                                       |
-  | `hub-installation`   | 各项目 `modules.json` 安装状态视图                          |
-  | `hub-change-request` | 升级变更单                                                  |
-  | `hub-agent`          | 统一 Agent 表的 Hub 侧注册与心跳视图                        |
-  | `hub-audit-log`      | 操作审计                                                    |
-- **API**：
-  - 模块目录浏览（registry 镜像）
-  - 安装清单查询（按 project/agent）
-  - 变更单创建/审批/执行
-  - GitHub webhook（registry 发布触发升级通知）
-  - `newbie agent` 出站轮询通道（NEWBIE_MANAGEMENT 类型）
-- **前置依赖**：nightwatch Application/Agent 统一数据模型落地（UI 层次重构 Phase 1）
-- **验证**：nightwatch `newbie add module-hub` → 启动 → agent 注册 → 心跳上报 → 安装清单可见
+> **2026-09-27 设计方向定稿（讨论结论，代码未开始）**：hub 不含 project/application 概念，
+> 只认"安装实例"，token 即身份（与心跳 token-only 契约同一模式）。因此 **C1 不再阻塞于
+> nightwatch Application/Agent 模型**，schema / API / CLI 对接均可在 newbie 工作区独立推进；
+> 唯一跨仓环节是 C2 面板嵌入宿主 UI。
 
-#### C2. Modules 前端面板
+- **目标**：跨安装实例的 module 全生命周期管理（版本目录、安装可见性、变更单编排、执行回执、审计）
+- **形态**：作为普通 module 收录在 `newbie-modules` registry（`packages/modules/module-hub/`），经 `newbie add module-hub` 复制装配。hub 部署在宿主实例内部，无多租户问题，UI 读权限复用宿主自身鉴权
+- **身份模型（去 project 化）**：
+  - hub 只有 **installation** 实体：一个 token = 一个安装实例；dev/staging/prod 各发一个 token 即天然多实例，无需 project 层级
+  - 自注册：CLI 首次带 token 轮询时 hub 自动登记 installation
+  - `externalRef`（opaque 自由文本）留给宿主贴自己的 project/application 标签，hub 不解释
+- **数据模型**（独立 PG schema `module/module-hub`，4 表）：
+  | 表 | 职责 |
+  | -------------------- | ------------------------------------------------------------------------------------- |
+  | `hub-installation` | tokenHash、label、repoUrl?、externalRef?、newbieVersion、已装模块快照、lastSeenAt（agent 状态并入本表，无独立 hub-agent 表） |
+  | `hub-module-release` | registry 版本目录登记（GitHub webhook 写入） |
+  | `hub-change-request` | 变更单，scoped to installationId；状态机 pending → running → done/failed，含 diff 摘要与失败原因 |
+  | `hub-audit-log` | 操作审计（谁/何时/哪个实例/什么变更） |
+- **API（token-only，`MODULE_HUB_TOKEN`）**：
+  - CLI 出站：拉取待执行变更单、上报安装清单/心跳、回执执行结果
+  - 宿主集成：installation 列表、模块清单、变更单查询（宿主服务端调用，UI 权限归宿主）
+  - GitHub webhook：registry 发布 → 登记 release → 与 installation 快照对账 → 生成可升级项
+- **执行通道（复用现有 CLI，无新组件）**：
+  - `newbie agent` 扩展 hub 模式（daemon 轮询 / `--once` 单次）：拉单 → **直接复用现有 install/update 代码路径** → 回执
+  - 复用而非重新实现，保证"hub 触发的变更"与"人手动跑命令"结果完全一致
+  - 变更只落 git 工作区（保守：留 diff 人工 commit；激进：自动建分支/开 PR，做成单子选项）
+  - 无 daemon 在线时退化为"派单"：单子停在 pending，提示项目方手动执行
+  - 漂移保护：doctor 不过时可按单子策略拒绝执行
+- **"如何得知有更新"的四条通道**（演进链）：被动看 git release → `newbie status/doctor`（CI 可挂）→ hub webhook 对账后宿主通知 → agent 自动捡到变更单
+- **通知边界**：hub **不直接发送**邮件/短信/IM（hub 无用户概念）；宿主应用读 hub 查询 API 后用自己的用户体系与通知系统触达 owner
+- **运行时 SDK 列为 v1.1**：进程内上报"实际加载的模块版本"（与 modules.json 声明对账），复用心跳 SDK 模式；v1 不做。变更执行永不进运行时进程（生产镜像无 git/npm/prisma、文件系统可不持久、改后需重启、变更必须落 git）
+- **验证**：nightwatch `newbie add module-hub` → CLI token 自注册 → webhook 登记 release → UI/API 看到可升级项 → 生成变更单 → CLI 轮询执行 → done 回执
 
-- **路由**：`/projects/[projectId]/applications/[applicationId]/modules/{overview,modules,upgrades,doctor}`
+#### C2. Modules 前端面板（宿主侧）
+
+- **归属 nightwatch-frontend**；hub 自身只提供数据 API，面板是宿主应用的页面
+- **路由**：宿主自定（原案 `/projects/[projectId]/applications/[applicationId]/modules/{overview,modules,upgrades,doctor}` 仍可沿用），project/application 分组通过 installation 的 `externalRef` 映射，不进 hub 数据模型
 - **页面**：
-  - overview：项目 module 安装概览 + 在线状态
+  - overview：installation 概览 + 在线状态（lastSeenAt）
   - modules：已装 module 列表 + 版本 + 漂移状态
-  - upgrades：可用升级 + 变更单
+  - upgrades：可用升级 + 一键生成变更单（异步执行，UI 展示 pending/done/failed）
   - doctor：漂移检测报告 + 本地修改清单
-- **前置**：C1 API + UI 层次重构路由框架
-- **边界**：不存在顶层 `/module-hub/` 路由，统一嵌套在 project/application 下
+- **一键升级语义**：UI 操作 = 创建变更单（决策端）；执行异步发生在项目侧 CLI，延迟取决于轮询间隔；多实例时按 installation 选择（先 staging 后 prod）
+- **前置**：C1 API + 宿主 UI 层次重构路由框架
+- **通知**：面板待办 + 宿主自有通知渠道（邮件/短信/IM），hub 不参与发送
 
 ---
 
@@ -193,23 +208,16 @@
 ## 四、依赖关系图
 
 ```
-nightwatch Application/Agent 模型（UI 层次重构 Phase 1）
+   C1 module-hub 控制面（4 表 + token-only；框架侧无阻塞，可立即启动）
+        │
+        ├──→ C2 Modules 前端面板（宿主侧；仍依赖 nightwatch UI 层次重构）
         │
         ▼
-   C1 module-hub 控制面
-        │
-        ├──→ C2 Modules 前端面板
-        │
-        ▼
-   A1 backend-monitor Nit  ──┐
-   A2 web-monitor-sdk 改名   │
-   A3 fewbie doctor          │── 并行 ──→ D1 GA 发布
-   A4 fewbie update          │
-   A5 fewbie 其余 add 件      │
-   B1 newbie dev-sync        ┘
-        │
-        ▼
-   D2 MUI → shadcn 迁移（依赖 fewbie 稳定）
+   A1 backend-monitor Nit（阻塞：等 nightwatch Nit 清单）──┐
+                                                            │
+   已完成：A2/A3/A4/A5/B1（2026-09-27）                     ├──→ D1 GA 发布
+                                                            │
+   D2 MUI → shadcn 迁移（依赖 fewbie 稳定 + UI 重构）───────┘
 ```
 
 ---
@@ -228,10 +236,10 @@ nightwatch Application/Agent 模型（UI 层次重构 Phase 1）
 
 ## 六、当前阻塞项
 
-| 阻塞项                                  | 影响                   | 责任方            |
-| --------------------------------------- | ---------------------- | ----------------- |
-| nightwatch Application/Agent 模型未落地 | C1/C2 无法启动         | nightwatch 工作区 |
-| nightwatch-backend-next 生产切换未完成  | D1 GA 缺乏稳定验证环境 | nightwatch 工作区 |
-| backend-monitor Nit 清单未输出          | A1 无法启动            | nightwatch 工作区 |
+| 阻塞项/待办                            | 影响                                                                                                                          | 责任方            |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| ~~nightwatch Application/Agent 模型~~  | ~~C1 阻塞~~ **已解除**：C1 改为去 project 化的 token-only installation 模型，框架侧可独立设计；仅 C2 面板仍待宿主 UI 层次重构 | —                 |
+| nightwatch-backend-next 生产切换未完成 | D1 GA 缺乏稳定验证环境                                                                                                        | nightwatch 工作区 |
+| backend-monitor Nit 清单未输出         | A1 无法启动                                                                                                                   | nightwatch 工作区 |
 
-**建议下一步**：先推进 Phase A 的 A2（web-monitor-sdk 改名）和 A3/A4/A5（fewbie doctor/update/add 件），这些不依赖 nightwatch 侧，可在本工作区立即执行。
+**建议下一步**：C1（module-hub 控制面）设计已定稿且无前置，可在 newbie 工作区启动实现（4 表 schema → token-only API → GitHub webhook → `newbie agent` hub 轮询模式）；A2/A3/A4/A5/B1 已于 2026-09-27 完成。
