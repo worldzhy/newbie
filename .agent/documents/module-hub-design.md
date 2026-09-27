@@ -339,6 +339,8 @@ export class HubAgentPollResponseDto {
 
 服务端行为：
 
+0. **响应会经过宿主框架信封**：`@devbie/newbie` 的 `HttpResponseInterceptor` 把所有响应包成 `{code, error, data}`，agent 端须解包取 `data`（CLI 已实现，2026-09-27 E2E 验证发现）。
+
 1. 反查 installation（401/吊销拒绝）；首 poll 写 `firstSeenAt`，每次写 `lastSeenAt`、`newbieVersion`、`registrySourceCommit`、`modulesSnapshot`（直接存 status JSON）。
 2. 处理 `results`：校验单子属于该 installation 且处于 RUNNING → 置 DONE（存 `resultSummary`）或 FAILED（存 `errorReason`）+ `finishedAt` + 审计。
 3. 取该 installation 的 PENDING 单（最旧优先；v1 一次全量下发，agent 顺序执行）置 RUNNING 后返回。
