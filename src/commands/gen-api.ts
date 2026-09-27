@@ -46,9 +46,7 @@ async function exists(target: string): Promise<boolean> {
 }
 
 async function readPackageJson(projectRoot: string): Promise<PackageJson> {
-  return JSON.parse(
-    await fs.readFile(path.join(projectRoot, "package.json"), "utf8"),
-  ) as PackageJson;
+  return JSON.parse(await fs.readFile(path.join(projectRoot, "package.json"), "utf8")) as PackageJson;
 }
 
 /** Run the project-local generator binary through the current Node runtime. */
@@ -70,16 +68,12 @@ export async function runGenApi(options: GenApiOptions): Promise<void> {
   const projectRoot = path.resolve(options.cwd ?? process.cwd());
 
   if (!(await exists(path.join(projectRoot, "package.json")))) {
-    throw new CliError(
-      `No package.json found in ${projectRoot}. Run 'fewbie gen api' inside a fewbie project.`,
-    );
+    throw new CliError(`No package.json found in ${projectRoot}. Run 'fewbie gen api' inside a fewbie project.`);
   }
 
   // The generated adapter imports the fewbie api client.
   if (!(await exists(path.join(projectRoot, API_CLIENT_PROJECT_PATH)))) {
-    throw new CliError(
-      `'fewbie gen api' requires the api-client item. Run 'fewbie add api-client' first.`,
-    );
+    throw new CliError(`'fewbie gen api' requires the api-client item. Run 'fewbie add api-client' first.`);
   }
 
   // First run: scaffold apits.config.ts from the positional input. The
@@ -117,29 +111,18 @@ export async function runGenApi(options: GenApiOptions): Promise<void> {
 
   // Ensure the generator is available as a project dev dependency.
   const pkg = await readPackageJson(projectRoot);
-  const declared = new Set([
-    ...Object.keys(pkg.dependencies ?? {}),
-    ...Object.keys(pkg.devDependencies ?? {}),
-  ]);
+  const declared = new Set([...Object.keys(pkg.dependencies ?? {}), ...Object.keys(pkg.devDependencies ?? {})]);
   if (!declared.has(GENERATOR_PACKAGE_NAME)) {
     if (options.skipInstall) {
-      throw new CliError(
-        `Generator not installed. Run: npm install -D ${GENERATOR_PACKAGE_SPEC}`,
-      );
+      throw new CliError(`Generator not installed. Run: npm install -D ${GENERATOR_PACKAGE_SPEC}`);
     }
     console.info(`\nInstalling dev dependency: ${GENERATOR_PACKAGE_SPEC}`);
-    await execInteractive(
-      "npm",
-      ["install", "-D", GENERATOR_PACKAGE_SPEC],
-      projectRoot,
-    );
+    await execInteractive("npm", ["install", "-D", GENERATOR_PACKAGE_SPEC], projectRoot);
   }
 
   const binPath = path.join(projectRoot, GENERATOR_BIN_RELATIVE);
   if (!(await exists(binPath))) {
-    throw new CliError(
-      `Generator binary not found at ${GENERATOR_BIN_RELATIVE}. Run 'npm install' and retry.`,
-    );
+    throw new CliError(`Generator binary not found at ${GENERATOR_BIN_RELATIVE}. Run 'npm install' and retry.`);
   }
 
   const genArgs = [binPath, "gen"];
@@ -149,11 +132,7 @@ export async function runGenApi(options: GenApiOptions): Promise<void> {
   // The upstream generator exits 0 even when generation fails, so verify
   // success via the expected output file's mtime (skipped in watch mode,
   // where the generator keeps running).
-  const expectedOutput = path.join(
-    projectRoot,
-    DEFAULT_OUTPUT_DIR,
-    `${options.name ?? DEFAULT_GENERATED_NAME}.ts`,
-  );
+  const expectedOutput = path.join(projectRoot, DEFAULT_OUTPUT_DIR, `${options.name ?? DEFAULT_GENERATED_NAME}.ts`);
   const beforeStat = await fs.stat(expectedOutput).catch(() => null);
 
   console.info(cyan(`\nGenerating API code (${DEFAULT_OUTPUT_DIR})...`));
@@ -161,9 +140,7 @@ export async function runGenApi(options: GenApiOptions): Promise<void> {
 
   if (!options.watch) {
     const afterStat = await fs.stat(expectedOutput).catch(() => null);
-    const refreshed =
-      afterStat !== null &&
-      (beforeStat === null || afterStat.mtimeMs > beforeStat.mtimeMs);
+    const refreshed = afterStat !== null && (beforeStat === null || afterStat.mtimeMs > beforeStat.mtimeMs);
     if (!refreshed) {
       throw new CliError(
         `Code generation failed: ${DEFAULT_OUTPUT_DIR}/${
@@ -174,9 +151,7 @@ export async function runGenApi(options: GenApiOptions): Promise<void> {
   }
 
   console.info(`\n${bold("Next steps")}:`);
-  console.info(
-    `  - Set ${yellow(PUBLIC_BASE_URL_ENV)} in .env.local (generated requests read it at runtime).`,
-  );
+  console.info(`  - Set ${yellow(PUBLIC_BASE_URL_ENV)} in .env.local (generated requests read it at runtime).`);
   console.info(
     `  - Import generated functions from ${DEFAULT_OUTPUT_DIR}/api.ts (re-run after schema changes, or use --watch).`,
   );

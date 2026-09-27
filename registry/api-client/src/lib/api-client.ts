@@ -1,8 +1,4 @@
-import axios, {
-  type AxiosRequestConfig,
-  type AxiosResponse,
-  type InternalAxiosRequestConfig,
-} from "axios";
+import axios, { type AxiosRequestConfig, type AxiosResponse, type InternalAxiosRequestConfig } from "axios";
 
 // ---------------------------------------------------------------------------
 // Project-specific configuration — edit these for your backend contract.
@@ -50,10 +46,7 @@ export function setSession(token: string, expiresInSeconds?: number): void {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(ACCESS_TOKEN_KEY, token);
   if (typeof expiresInSeconds === "number" && expiresInSeconds > 0) {
-    window.localStorage.setItem(
-      ACCESS_TOKEN_EXPIRES_AT_KEY,
-      String(Date.now() + expiresInSeconds * 1000),
-    );
+    window.localStorage.setItem(ACCESS_TOKEN_EXPIRES_AT_KEY, String(Date.now() + expiresInSeconds * 1000));
   }
 }
 
@@ -125,9 +118,7 @@ function refreshAccessToken(): Promise<string | null> {
     } catch (firstError) {
       if (!isUnauthorized(firstError)) return null;
       // Possible cross-tab cookie rotation: retry once after a short pause.
-      await new Promise((resolve) =>
-        setTimeout(resolve, REFRESH_RETRY_DELAY_MS),
-      );
+      await new Promise((resolve) => setTimeout(resolve, REFRESH_RETRY_DELAY_MS));
       try {
         return await requestRefreshOnce();
       } catch {
@@ -157,24 +148,15 @@ export function initProactiveTokenRefresh(): void {
 
   const refreshIfDue = (): void => {
     const token = getAccessToken();
-    const expiresAt = Number(
-      window.localStorage.getItem(ACCESS_TOKEN_EXPIRES_AT_KEY) ?? 0,
-    );
-    if (
-      token &&
-      expiresAt &&
-      Date.now() >= expiresAt - PROACTIVE_REFRESH_LEAD_MS
-    ) {
+    const expiresAt = Number(window.localStorage.getItem(ACCESS_TOKEN_EXPIRES_AT_KEY) ?? 0);
+    if (token && expiresAt && Date.now() >= expiresAt - PROACTIVE_REFRESH_LEAD_MS) {
       void refreshAccessToken();
     }
   };
 
   // Run immediately (tabs reopened after sleep) and then on an interval.
   refreshIfDue();
-  schedulerTimer = setInterval(
-    refreshIfDue,
-    PROACTIVE_REFRESH_CHECK_INTERVAL_MS,
-  );
+  schedulerTimer = setInterval(refreshIfDue, PROACTIVE_REFRESH_CHECK_INTERVAL_MS);
 }
 
 // ---------------------------------------------------------------------------
@@ -198,14 +180,10 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const original = error?.config as
-      | (InternalAxiosRequestConfig & { _retriedAfterRefresh?: boolean })
-      | undefined;
+    const original = error?.config as (InternalAxiosRequestConfig & { _retriedAfterRefresh?: boolean }) | undefined;
     const url: string = original?.url ?? "";
     const canSilentlyRefresh =
-      typeof window !== "undefined" &&
-      !original?._retriedAfterRefresh &&
-      !AUTH_PATH_PATTERN.test(url);
+      typeof window !== "undefined" && !original?._retriedAfterRefresh && !AUTH_PATH_PATTERN.test(url);
 
     if (isUnauthorized(error) && original && canSilentlyRefresh) {
       original._retriedAfterRefresh = true;
@@ -221,11 +199,7 @@ api.interceptors.response.use(
 
     if (axios.isAxiosError(error)) {
       const data = error.response?.data as { message?: string } | undefined;
-      throw new ApiError(
-        data?.message ?? error.message,
-        error.response?.status ?? 0,
-        data,
-      );
+      throw new ApiError(data?.message ?? error.message, error.response?.status ?? 0, data);
     }
     throw error;
   },
@@ -239,43 +213,24 @@ export const apiClient = {
   get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
     return api.get<unknown, AxiosResponse<T>>(url, config).then((r) => r.data);
   },
-  post<T>(
-    url: string,
-    data?: unknown,
-    config?: AxiosRequestConfig,
-  ): Promise<T> {
-    return api
-      .post<unknown, AxiosResponse<T>>(url, data, config)
-      .then((r) => r.data);
+  post<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
+    return api.post<unknown, AxiosResponse<T>>(url, data, config).then((r) => r.data);
   },
   put<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
-    return api
-      .put<unknown, AxiosResponse<T>>(url, data, config)
-      .then((r) => r.data);
+    return api.put<unknown, AxiosResponse<T>>(url, data, config).then((r) => r.data);
   },
-  patch<T>(
-    url: string,
-    data?: unknown,
-    config?: AxiosRequestConfig,
-  ): Promise<T> {
-    return api
-      .patch<unknown, AxiosResponse<T>>(url, data, config)
-      .then((r) => r.data);
+  patch<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
+    return api.patch<unknown, AxiosResponse<T>>(url, data, config).then((r) => r.data);
   },
   delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    return api
-      .delete<unknown, AxiosResponse<T>>(url, config)
-      .then((r) => r.data);
+    return api.delete<unknown, AxiosResponse<T>>(url, config).then((r) => r.data);
   },
   // HEAD/OPTIONS responses carry no body; resolve to the full AxiosResponse
   // so callers can still inspect status and headers.
   head<T>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
     return api.head<unknown, AxiosResponse<T>>(url, config);
   },
-  options<T>(
-    url: string,
-    config?: AxiosRequestConfig,
-  ): Promise<AxiosResponse<T>> {
+  options<T>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
     return api.options<unknown, AxiosResponse<T>>(url, config);
   },
 };

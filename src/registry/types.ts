@@ -8,10 +8,7 @@
  */
 
 /** shadcn registry item kinds fewbie uses. */
-export type RegistryItemType =
-  | "registry:lib"
-  | "registry:component"
-  | "registry:block";
+export type RegistryItemType = "registry:lib" | "registry:component" | "registry:block";
 
 /** File entry in the authored manifest: path relative to the item folder. */
 export interface RegistryFileRef {

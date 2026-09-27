@@ -4,14 +4,7 @@ import { useState, useMemo, type ReactNode } from "react";
 import { ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
 /** Column definition for the data table. */
@@ -113,10 +106,7 @@ export function DataTable<T extends Record<string, unknown>>({
           <TableBody>
             {pageData.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center text-muted-foreground"
-                >
+                <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
                   No results.
                 </TableCell>
               </TableRow>
@@ -125,9 +115,7 @@ export function DataTable<T extends Record<string, unknown>>({
                 <TableRow key={i}>
                   {columns.map((col) => (
                     <TableCell key={col.accessorKey}>
-                      {col.cell
-                        ? col.cell(row[col.accessorKey], row)
-                        : String(row[col.accessorKey] ?? "")}
+                      {col.cell ? col.cell(row[col.accessorKey], row) : String(row[col.accessorKey] ?? "")}
                     </TableCell>
                   ))}
                 </TableRow>
@@ -140,9 +128,7 @@ export function DataTable<T extends Record<string, unknown>>({
       {pageCount > 1 && (
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>
-            {safePage * pageSize + 1}–
-            {Math.min((safePage + 1) * pageSize, sorted.length)} of{" "}
-            {sorted.length}
+            {safePage * pageSize + 1}–{Math.min((safePage + 1) * pageSize, sorted.length)} of {sorted.length}
           </span>
           <div className="flex items-center gap-1">
             <Button

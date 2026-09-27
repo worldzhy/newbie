@@ -51,11 +51,7 @@ async function readOrNull(filePath: string): Promise<string | null> {
  * Find installed registry items whose on-disk content differs from the
  * current registry source. Returns the list of outdated files.
  */
-async function findOutdated(
-  registryRoot: string,
-  projectRoot: string,
-  requested: string[],
-): Promise<OutdatedFile[]> {
+async function findOutdated(registryRoot: string, projectRoot: string, requested: string[]): Promise<OutdatedFile[]> {
   const allItems = await listRegistryItems(registryRoot);
   const targets = requested.length > 0 ? requested : allItems;
   const outdated: OutdatedFile[] = [];
@@ -82,8 +78,7 @@ async function findOutdated(
         continue;
       }
 
-      const latest =
-        file.content ?? (await fs.readFile(file.source as string, "utf8"));
+      const latest = file.content ?? (await fs.readFile(file.source as string, "utf8"));
       if (current !== latest) {
         outdated.push({ item: name, target: file.target, current, latest });
       }
@@ -97,39 +92,24 @@ export async function runUpdate(options: UpdateOptions): Promise<void> {
   const projectRoot = path.resolve(options.cwd ?? process.cwd());
 
   await fs.access(path.join(projectRoot, "package.json")).catch(() => {
-    throw new CliError(
-      `No package.json found in ${projectRoot}. Run 'fewbie update' inside a Next.js project.`,
-    );
+    throw new CliError(`No package.json found in ${projectRoot}. Run 'fewbie update' inside a Next.js project.`);
   });
 
   const registryRoot = await resolveRegistryRoot();
-  const outdated = await findOutdated(
-    registryRoot,
-    projectRoot,
-    options.names ?? [],
-  );
+  const outdated = await findOutdated(registryRoot, projectRoot, options.names ?? []);
 
   if (outdated.length === 0) {
     console.info(green("All installed items are up to date."));
     return;
   }
 
-  console.info(
-    cyan(
-      `${outdated.length} file(s) differ from the registry:\n`,
-    ),
-  );
+  console.info(cyan(`${outdated.length} file(s) differ from the registry:\n`));
 
   for (const file of outdated) {
     const label = `${file.item} → ${file.target}`;
     console.info(bold(`# ${label}`));
 
-    const diff = unifiedDiff(
-      file.current,
-      file.latest,
-      `a/${file.target}`,
-      `b/${file.target}`,
-    );
+    const diff = unifiedDiff(file.current, file.latest, `a/${file.target}`, `b/${file.target}`);
     process.stdout.write(diff);
     console.info("");
   }
@@ -142,14 +122,8 @@ export async function runUpdate(options: UpdateOptions): Promise<void> {
       await fs.writeFile(path.join(projectRoot, file.target), file.latest);
       console.info(`${green("updated")} ${file.target}`);
     }
-    console.info(
-      green(`\nUpdated ${outdated.length} file(s). Review with git diff.`),
-    );
+    console.info(green(`\nUpdated ${outdated.length} file(s). Review with git diff.`));
   } else {
-    console.info(
-      yellow(
-        `Re-run with --write to apply these changes, or apply them manually.`,
-      ),
-    );
+    console.info(yellow(`Re-run with --write to apply these changes, or apply them manually.`));
   }
 }

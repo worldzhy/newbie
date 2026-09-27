@@ -4,11 +4,7 @@ import { bold, cyan, green, yellow } from "colorette";
 
 import { CliError } from "../lib/errors";
 import { execInteractive } from "../lib/exec-interactive";
-import {
-  type LoadedItem,
-  resolveInstallSet,
-  resolveRegistryRoot,
-} from "../registry/store";
+import { type LoadedItem, resolveInstallSet, resolveRegistryRoot } from "../registry/store";
 
 export interface AddOptions {
   /** Requested item names (registryDependencies are pulled in automatically). */
@@ -31,9 +27,7 @@ interface PackageJson {
 
 async function assertProjectRoot(projectRoot: string): Promise<void> {
   await fs.access(path.join(projectRoot, "package.json")).catch(() => {
-    throw new CliError(
-      `No package.json found in ${projectRoot}. Run 'fewbie add' inside a Next.js project.`,
-    );
+    throw new CliError(`No package.json found in ${projectRoot}. Run 'fewbie add' inside a Next.js project.`);
   });
 }
 
@@ -47,26 +41,14 @@ function packageNameOf(spec: string): string {
 }
 
 /** npm package specs missing from the project's dependencies. */
-async function missingPackages(
-  projectRoot: string,
-  specs: string[],
-): Promise<string[]> {
-  const pkg = JSON.parse(
-    await fs.readFile(path.join(projectRoot, "package.json"), "utf8"),
-  ) as PackageJson;
-  const declared = new Set([
-    ...Object.keys(pkg.dependencies ?? {}),
-    ...Object.keys(pkg.devDependencies ?? {}),
-  ]);
+async function missingPackages(projectRoot: string, specs: string[]): Promise<string[]> {
+  const pkg = JSON.parse(await fs.readFile(path.join(projectRoot, "package.json"), "utf8")) as PackageJson;
+  const declared = new Set([...Object.keys(pkg.dependencies ?? {}), ...Object.keys(pkg.devDependencies ?? {})]);
   return specs.filter((spec) => !declared.has(packageNameOf(spec)));
 }
 
 /** Write one item's files into the project, honoring --force on conflicts. */
-async function writeItemFiles(
-  item: LoadedItem,
-  projectRoot: string,
-  force: boolean,
-): Promise<string[]> {
+async function writeItemFiles(item: LoadedItem, projectRoot: string, force: boolean): Promise<string[]> {
   const written: string[] = [];
   const conflicts: string[] = [];
 
@@ -81,8 +63,7 @@ async function writeItemFiles(
       continue;
     }
     await fs.mkdir(path.dirname(target), { recursive: true });
-    const content =
-      file.content ?? (await fs.readFile(file.source as string, "utf8"));
+    const content = file.content ?? (await fs.readFile(file.source as string, "utf8"));
     await fs.writeFile(target, content);
     written.push(file.target);
   }
@@ -107,36 +88,22 @@ export async function runAdd(options: AddOptions): Promise<void> {
   const registryRoot = await resolveRegistryRoot();
   const items = await resolveInstallSet(registryRoot, requested);
 
-  console.info(
-    cyan(
-      `Installing ${items.map((i) => i.manifest.name).join(", ")} into ${projectRoot}...`,
-    ),
-  );
+  console.info(cyan(`Installing ${items.map((i) => i.manifest.name).join(", ")} into ${projectRoot}...`));
 
   const allWritten: string[] = [];
   for (const item of items) {
-    const written = await writeItemFiles(
-      item,
-      projectRoot,
-      options.force === true,
-    );
+    const written = await writeItemFiles(item, projectRoot, options.force === true);
     allWritten.push(...written);
     console.info(`  ${green("✓")} ${item.manifest.name}`);
   }
 
   // Install npm dependencies declared by the items but missing from the
   // project manifest.
-  const specs = [
-    ...new Set(items.flatMap((i) => i.manifest.dependencies ?? [])),
-  ];
+  const specs = [...new Set(items.flatMap((i) => i.manifest.dependencies ?? []))];
   const missing = await missingPackages(projectRoot, specs);
   if (missing.length > 0) {
     if (options.skipInstall) {
-      console.info(
-        yellow(
-          `\nSkipped npm install. Add manually: npm install ${missing.join(" ")}`,
-        ),
-      );
+      console.info(yellow(`\nSkipped npm install. Add manually: npm install ${missing.join(" ")}`));
     } else {
       console.info(`\nInstalling dependencies: ${missing.join(", ")}`);
       await execInteractive("npm", ["install", ...missing], projectRoot);
@@ -147,9 +114,7 @@ export async function runAdd(options: AddOptions): Promise<void> {
     console.info(`  ${green("added")} ${file}`);
   }
 
-  const hints = items
-    .map((i) => i.manifest.postInstall)
-    .filter((hint): hint is string => Boolean(hint));
+  const hints = items.map((i) => i.manifest.postInstall).filter((hint): hint is string => Boolean(hint));
   if (hints.length > 0) {
     console.info(`\n${bold("Next steps")}:`);
     for (const hint of hints) console.info(`  - ${hint}`);

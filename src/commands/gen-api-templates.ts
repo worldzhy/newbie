@@ -9,10 +9,8 @@
  * schema (`input`/`output`/`clientImportTemplate`) shipped as alpha.
  */
 export const GENERATOR_PACKAGE_NAME = "open-api-typescript-request-generator";
-export const GENERATOR_PACKAGE_SPEC =
-  "open-api-typescript-request-generator@^0.0.7-alpha.0";
-export const GENERATOR_BIN_RELATIVE =
-  "node_modules/open-api-typescript-request-generator/bin/apits";
+export const GENERATOR_PACKAGE_SPEC = "open-api-typescript-request-generator@^0.0.7-alpha.0";
+export const GENERATOR_BIN_RELATIVE = "node_modules/open-api-typescript-request-generator/bin/apits";
 
 export const CONFIG_PROJECT_PATH = "apits.config.ts";
 export const API_CLIENT_PROJECT_PATH = "src/lib/api-client.ts";

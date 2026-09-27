@@ -10,13 +10,10 @@
 function lcs(a: string[], b: string[]): number[][] {
   const m = a.length;
   const n = b.length;
-  const dp: number[][] = Array.from({ length: m + 1 }, () =>
-    new Array(n + 1).fill(0),
-  );
+  const dp: number[][] = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
   for (let i = 1; i <= m; i++) {
     for (let j = 1; j <= n; j++) {
-      dp[i][j] =
-        a[i - 1] === b[j - 1] ? dp[i - 1][j - 1] + 1 : Math.max(dp[i - 1][j], dp[i][j - 1]);
+      dp[i][j] = a[i - 1] === b[j - 1] ? dp[i - 1][j - 1] + 1 : Math.max(dp[i - 1][j], dp[i][j - 1]);
     }
   }
   return dp;
@@ -28,11 +25,7 @@ interface DiffLine {
 }
 
 /** Backtrack through the LCS table to produce the edit script. */
-function backtrack(
-  dp: number[][],
-  a: string[],
-  b: string[],
-): DiffLine[] {
+function backtrack(dp: number[][], a: string[], b: string[]): DiffLine[] {
   const result: DiffLine[] = [];
   let i = a.length;
   let j = b.length;
@@ -61,12 +54,7 @@ function backtrack(
  * @param newLabel Label for the new file (e.g. "b/src/lib/api-client.ts").
  * @returns Unified diff string, or empty string when contents are identical.
  */
-export function unifiedDiff(
-  oldContent: string,
-  newContent: string,
-  oldLabel: string,
-  newLabel: string,
-): string {
+export function unifiedDiff(oldContent: string, newContent: string, oldLabel: string, newLabel: string): string {
   const a = oldContent.split("\n");
   const b = newContent.split("\n");
 
@@ -93,7 +81,9 @@ export function unifiedDiff(
     if (hunkStart === -1) return;
     const start = Math.max(0, hunkStart - hunkSize);
     const end = Math.min(lines.length - 1, hunkEnd + hunkSize);
-    out.push(`@@ -${oldLineNumber(lines, start) + 1},${hunkOldLength(lines, start, end)} +${newLineNumber(lines, start) + 1},${hunkNewLength(lines, start, end)} @@`);
+    out.push(
+      `@@ -${oldLineNumber(lines, start) + 1},${hunkOldLength(lines, start, end)} +${newLineNumber(lines, start) + 1},${hunkNewLength(lines, start, end)} @@`,
+    );
     for (let k = start; k <= end; k++) {
       out.push(`${lines[k].type}${lines[k].text}`);
     }

@@ -51,34 +51,20 @@ export async function resolveRegistryRoot(): Promise<string> {
       return candidate;
     }
   }
-  throw new CliError(
-    "Registry not found (expected dist/registry or registry/).",
-  );
+  throw new CliError("Registry not found (expected dist/registry or registry/).");
 }
 
-async function readItemFile(
-  root: string,
-  name: string,
-): Promise<RegistryManifest | BuiltRegistryItem> {
+async function readItemFile(root: string, name: string): Promise<RegistryManifest | BuiltRegistryItem> {
   const raw = await fs.readFile(path.join(root, name, "item.json"), "utf8");
   return JSON.parse(raw) as RegistryManifest | BuiltRegistryItem;
 }
 
-function isBuilt(
-  item: RegistryManifest | BuiltRegistryItem,
-): item is BuiltRegistryItem {
-  return (
-    Array.isArray(item.files) &&
-    item.files.length > 0 &&
-    typeof item.files[0] === "object"
-  );
+function isBuilt(item: RegistryManifest | BuiltRegistryItem): item is BuiltRegistryItem {
+  return Array.isArray(item.files) && item.files.length > 0 && typeof item.files[0] === "object";
 }
 
 /** Load one registry item, normalizing authored and built forms. */
-export async function loadItem(
-  root: string,
-  name: string,
-): Promise<LoadedItem> {
+export async function loadItem(root: string, name: string): Promise<LoadedItem> {
   const item = await readItemFile(root, name);
 
   if (isBuilt(item)) {
@@ -112,10 +98,7 @@ export async function loadItem(
  * Resolve requested items plus their registryDependencies into a
  * deduplicated install order (dependencies first).
  */
-export async function resolveInstallSet(
-  root: string,
-  names: string[],
-): Promise<LoadedItem[]> {
+export async function resolveInstallSet(root: string, names: string[]): Promise<LoadedItem[]> {
   const ordered: LoadedItem[] = [];
   const seen = new Set<string>();
   const visiting = new Set<string>();
@@ -127,9 +110,7 @@ export async function resolveInstallSet(
     }
     visiting.add(name);
     const loaded = await loadItem(root, name).catch(() => {
-      throw new CliError(
-        `Registry item '${name}' not found. Run 'fewbie add' with a valid item name.`,
-      );
+      throw new CliError(`Registry item '${name}' not found. Run 'fewbie add' with a valid item name.`);
     });
     for (const dep of loaded.manifest.registryDependencies ?? []) {
       await visit(dep);

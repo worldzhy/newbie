@@ -8,13 +8,7 @@ import { login } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 function LoginFormFields() {
   const router = useRouter();
@@ -43,16 +37,10 @@ function LoginFormFields() {
     <Card className="w-full max-w-sm">
       <CardHeader>
         <CardTitle className="text-xl">Sign in</CardTitle>
-        <CardDescription>
-          Use your account and password to continue.
-        </CardDescription>
+        <CardDescription>Use your account and password to continue.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form
-          onSubmit={handleSubmit}
-          className="flex flex-col gap-4"
-          noValidate
-        >
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
           <div className="flex flex-col gap-2">
             <Label htmlFor="account">Account</Label>
             <Input
@@ -82,11 +70,7 @@ function LoginFormFields() {
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
           <Button type="submit" disabled={submitting} className="w-full">
-            {submitting ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              "Sign in"
-            )}
+            {submitting ? <Loader2 className="size-4 animate-spin" /> : "Sign in"}
           </Button>
         </form>
       </CardContent>

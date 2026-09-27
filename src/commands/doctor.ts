@@ -88,9 +88,7 @@ async function listRegistryItems(registryRoot: string): Promise<string[]> {
  * on project issues — those surface as `error`-severity findings. It only
  * throws for unrecoverable CLI failures (e.g. registry not found).
  */
-export async function runDoctor(
-  options: DoctorOptions,
-): Promise<DoctorResult> {
+export async function runDoctor(options: DoctorOptions): Promise<DoctorResult> {
   const projectRoot = path.resolve(options.cwd ?? process.cwd());
   const findings: Finding[] = [];
 
@@ -116,8 +114,7 @@ export async function runDoctor(
     findings.push({
       severity: "error",
       category: "structure",
-      message:
-        "No components.json found — run 'fewbie init' or add shadcn/ui to this project first.",
+      message: "No components.json found — run 'fewbie init' or add shadcn/ui to this project first.",
     });
     return finalize(projectRoot, findings, []);
   }
@@ -138,7 +135,10 @@ export async function runDoctor(
     const targets = item.files.map((f) => f.target);
     const present = await Promise.all(
       targets.map((t) =>
-        fs.access(path.join(projectRoot, t)).then(() => true).catch(() => false),
+        fs
+          .access(path.join(projectRoot, t))
+          .then(() => true)
+          .catch(() => false),
       ),
     );
     const allPresent = present.every(Boolean);
@@ -162,16 +162,11 @@ export async function runDoctor(
     dependencies?: Record<string, string>;
     devDependencies?: Record<string, string>;
   }>(path.join(projectRoot, "package.json")))!;
-  const declared = new Set([
-    ...Object.keys(pkg.dependencies ?? {}),
-    ...Object.keys(pkg.devDependencies ?? {}),
-  ]);
+  const declared = new Set([...Object.keys(pkg.dependencies ?? {}), ...Object.keys(pkg.devDependencies ?? {})]);
 
   for (const name of installed) {
     const item = await loadItem(registryRoot, name);
-    const missing = (item.manifest.dependencies ?? []).filter(
-      (spec) => !declared.has(packageNameOf(spec)),
-    );
+    const missing = (item.manifest.dependencies ?? []).filter((spec) => !declared.has(packageNameOf(spec)));
     if (missing.length > 0) {
       findings.push({
         severity: "warn",
@@ -230,11 +225,7 @@ export async function runDoctor(
   return finalize(projectRoot, findings, installed);
 }
 
-function finalize(
-  projectRoot: string,
-  findings: Finding[],
-  installed: string[],
-): DoctorResult {
+function finalize(projectRoot: string, findings: Finding[], installed: string[]): DoctorResult {
   const summary = { error: 0, warn: 0, info: 0 };
   for (const f of findings) summary[f.severity]++;
   return { projectRoot, findings, installed, summary };
@@ -258,17 +249,14 @@ export function formatDoctorReport(result: DoctorResult): string {
     return lines.join("\n");
   }
 
-  const icon = (s: Severity) =>
-    s === "error" ? red("✗") : s === "warn" ? yellow("!") : green("✓");
+  const icon = (s: Severity) => (s === "error" ? red("✗") : s === "warn" ? yellow("!") : green("✓"));
 
   for (const f of result.findings) {
     lines.push(`${icon(f.severity)} [${f.category}] ${f.message}`);
   }
 
   lines.push("");
-  lines.push(
-    `${result.summary.error} error(s), ${result.summary.warn} warning(s), ${result.summary.info} info`,
-  );
+  lines.push(`${result.summary.error} error(s), ${result.summary.warn} warning(s), ${result.summary.info} info`);
 
   return lines.join("\n");
 }

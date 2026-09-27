@@ -16,13 +16,7 @@ const TEMPLATE_PATH_ENV = "FEWBIE_TEMPLATE_PATH";
 const PACKAGE_NAME_RE = /^(?:@[a-z0-9][a-z0-9-._]*\/)?[a-z0-9][a-z0-9-._]*$/;
 
 /** Directories/files never copied out of the template. */
-const COPY_IGNORE = new Set([
-  "node_modules",
-  ".next",
-  "dist",
-  ".git",
-  ".env",
-]);
+const COPY_IGNORE = new Set(["node_modules", ".next", "dist", ".git", ".env"]);
 
 export interface InitOptions {
   name: string;
@@ -51,14 +45,7 @@ export async function resolveTemplate(
   }
 
   // Dev fallback: the CLI is executed from a fewbie monorepo checkout.
-  const localDev = path.resolve(
-    __dirname,
-    "..",
-    "..",
-    "..",
-    "..",
-    TEMPLATE_SUBDIR,
-  );
+  const localDev = path.resolve(__dirname, "..", "..", "..", "..", TEMPLATE_SUBDIR);
   if (
     await fs
       .access(path.join(localDev, "package.json"))
@@ -108,24 +95,17 @@ export async function runInit(options: InitOptions): Promise<void> {
   await copyTemplate(templateRoot, targetDir);
 
   const packageJsonPath = path.join(targetDir, "package.json");
-  const packageJson = JSON.parse(
-    await fs.readFile(packageJsonPath, "utf8"),
-  ) as {
+  const packageJson = JSON.parse(await fs.readFile(packageJsonPath, "utf8")) as {
     name?: string;
     [key: string]: unknown;
   };
   packageJson.name = name;
-  await fs.writeFile(
-    packageJsonPath,
-    `${JSON.stringify(packageJson, null, 2)}\n`,
-  );
+  await fs.writeFile(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`);
 
   if (options.gitInit !== false) {
     await execCapture("git", ["init", "--quiet"], { cwd: targetDir });
   }
 
   console.info(green(bold("\n✓ Project created.\n")));
-  console.info(
-    `Next steps:\n  cd ${name}\n  npm install\n  npm run dev\n`,
-  );
+  console.info(`Next steps:\n  cd ${name}\n  npm install\n  npm run dev\n`);
 }

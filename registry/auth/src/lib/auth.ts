@@ -48,9 +48,7 @@ export function initAuth(options?: { loginPath?: string }): void {
   // Avoid bouncing on the login page itself.
   onSessionExpired(() => {
     if (window.location.pathname !== loginPath) {
-      const redirect = encodeURIComponent(
-        window.location.pathname + window.location.search,
-      );
+      const redirect = encodeURIComponent(window.location.pathname + window.location.search);
       window.location.replace(`${loginPath}?redirect=${redirect}`);
     }
   });
@@ -59,9 +57,7 @@ export function initAuth(options?: { loginPath?: string }): void {
 }
 
 /** Log in, persist the session, and return the raw result for callers. */
-export async function login(
-  credentials: LoginCredentials,
-): Promise<LoginResult> {
+export async function login(credentials: LoginCredentials): Promise<LoginResult> {
   const result = await apiClient.post<LoginResult>(LOGIN_PATH, credentials);
   setSession(result.token, result.tokenExpiresInSeconds);
   return result;
