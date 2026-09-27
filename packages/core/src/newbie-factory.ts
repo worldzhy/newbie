@@ -126,6 +126,9 @@ export class NewbieFactory {
         (process.env.LOG_LEVEL ? process.env.LOG_LEVEL.split(",").map((s) => s.trim()) : ["log", "warn", "error"]);
       const app = await NestFactory.create<NestExpressApplication>(rootModule as any, {
         logger: logLevel as any,
+        // Keep the raw request body buffer on req.rawBody so that modules can
+        // verify webhook HMAC signatures (e.g. module-hub's registry webhook).
+        rawBody: true,
       });
 
       // Shutdown signal handling is installed after listen():
