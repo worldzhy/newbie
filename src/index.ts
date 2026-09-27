@@ -6,6 +6,7 @@ import { runInit } from "./commands/init";
 import { runAdd } from "./commands/add";
 import { runGenApi } from "./commands/gen-api";
 import { doctorCommand } from "./commands/doctor";
+import { runUpdate } from "./commands/update";
 
 // Published package version, read at runtime (package.json sits one level
 // above both src/ during development and dist/ in the published tarball).
@@ -127,6 +128,27 @@ program
     await doctorCommand({
       cwd: (flags.cwd as string) ?? process.cwd(),
       json: Boolean(flags.json),
+    });
+  });
+
+// Update installed registry items to the latest registry source. Prints a
+// unified diff by default; --write applies the changes.
+program
+  .command("update [names...]")
+  .description(
+    "show (or apply with --write) updates for installed registry items",
+  )
+  .option(
+    "-w, --write",
+    "apply the updates instead of only printing diffs",
+    false,
+  )
+  .action(async function (this: Command, names: string[]) {
+    const flags = this.optsWithGlobals();
+    await runUpdate({
+      cwd: (flags.cwd as string) ?? process.cwd(),
+      write: Boolean(flags.write),
+      names: names.length > 0 ? names : undefined,
     });
   });
 
