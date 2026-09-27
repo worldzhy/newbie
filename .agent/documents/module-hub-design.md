@@ -365,10 +365,10 @@ export class HubAgentPollResponseDto {
 
 ### 5.2 变更类型到现有命令的映射（复用，不重新实现）
 
-| 变更类型     | CLI 路径（已存在的命令）                                                             | 说明                                                                                                                                                                    |
-| ------------ | ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ADD / REMOVE | 生成临时 spec `{"modules": [全量目标集合]}` → `newbie apply --config <spec> --ci -y` | apply 按**全量目标集合**对账增删并重新生成接线；agent 本地计算目标集合（见 7.3）                                                                                        |
-| UPGRADE      | `NEWBIE_MODULES_REF=<targetSourceCommit?> newbie update --all -y [--force]`          | update 到 registry HEAD；CLI 已支持经 `NEWBIE_MODULES_REF`（[registry.ts](file:///Users/worldzhy/src/newbie/packages/cli/src/lib/registry.ts#L19)）钉住 registry commit |
+| 变更类型     | CLI 路径（已存在的命令）                                                             | 说明                                                                                                                                                                                                                             |
+| ------------ | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ADD / REMOVE | 生成临时 spec `{"modules": [全量目标集合]}` → `newbie apply --config <spec> --ci -y` | apply 按**全量目标集合**对账增删并重新生成接线；目标集合由 agent 本地以当前 `modules.json` 为准计算（2026-09-28 拍板，见 7.3），hub 只传 `moduleKey` + 动作                                                                      |
+| UPGRADE      | `NEWBIE_MODULES_REF=<targetSourceCommit?> newbie update --keys <a,b> -y [--force]`   | CLI 补 `--keys` 单模块选择器（2026-09-28 拍板，见 7.2）；update 到 registry HEAD；CLI 已支持经 `NEWBIE_MODULES_REF`（[registry.ts](file:///Users/worldzhy/src/newbie/packages/cli/src/lib/registry.ts#L19)）钉住 registry commit |
 
 **漂移保护（对齐 `driftPolicy`）**：执行前 agent 跑 `newbie status --json --drift`（机器可读）/ `newbie doctor`（退出码闸门）；存在 drift 且策略为 `reject`（默认）→ 不执行，回执 `FAILED + error="local drift detected"`；`force` → update 带 `--force`（apply 无 `--force`，其增删复制本身不受 drift 影响，但会覆盖被删 module 的本地文件——回执摘要必须列出）。
 
@@ -379,7 +379,7 @@ export class HubAgentPollResponseDto {
 ### 5.3 CLI 侧缺口（C1 验收前需在 newbie 仓补齐）
 
 1. **`newbie agent` 实现 hub 模式**：env 读取 `MODULE_HUB_*`、daemon/`--once`、HTTP 轮询、`apply`/`update` 调用编排、回执收集（`git diff --name-status` + 执行后 status 快照）。
-2. **`newbie update` 缺少单模块选择器**：现状交互式 checkbox 或 `--all`（全部可升级模块）。若 UPGRADE 单要求只升一个 module，需补 `--keys <a,b>` 过滤；否则 v1 语义退化为「升级该实例上全部可升级 module」（见开放问题 2）。
+2. **`newbie update` 补单模块选择器 `--keys <a,b>`**（2026-09-28 拍板，见 7.2）：现状交互式 checkbox 或 `--all`；C1 要求 UPGRADE 单可精确到单 module，需补 `--keys` 过滤。
 3. 执行摘要：agent 需自行收集 `git diff --name-status` 与执行后 status 快照作为回执（CLI 无现成命令，agent 内部实现）。
 4. `delivery: "pr"` 的建支/开 PR 能力（推迟，非 C1 阻塞）。
 
@@ -418,13 +418,9 @@ packages/modules/module-hub/
 
 1. **token 签发形态**：本文采用「host 预创建 installation → 发 token → 首 poll 自注册运行时事实」。框架定稿原文「CLI 首次带 token 轮询时 hub 自动登记 installation」也可解读为「一次性 enrollment token 换发 installation token」。前者更简单且与 nightwatch 现有凭证引导 UX 一致，**建议取前者**。
 
-2. **UPGRADE 范围**：接受 v1「升级该实例全部可升级 module」还是要求先补 `update --keys` 实现单模块升级？
-   - 选项 A：v1 退化语义。面板「单个 module 一键升级」语义不成立。
-   - 选项 B：CLI 补 `--keys`（小工作量，agent 轮询协议无需改）。**建议选 B**。
+2. **UPGRADE 范围**（2026-09-28 拍板：**选 B**）：CLI 补 `--keys` 实现单 module 升级，agent 轮询协议无需改。
 
-3. **ADD/REMOVE 目标集合在哪算**：
-   - 选项 A：hub 依据最近快照算（快照可能过期，存在误删风险）。
-   - 选项 B：agent 以本地当前 `modules.json` 为准本地增减；hub 只传 `moduleKey` + 动作。**建议选 B**，避免过期快照误删。
+3. **ADD/REMOVE 目标集合在哪算**（2026-09-28 拍板：**选 B**）：agent 以本地当前 `modules.json` 为准本地增减；hub 只传 `moduleKey` + 动作，避免过期快照误删。
 
 4. **轮询参数**：默认 60s、离线阈值 180s（3 跳）是否合适？daemon 在开发机上的资源占用与 git 操作并发是否需要单实例锁（同 token 两个进程同时执行）？
 
@@ -451,6 +447,7 @@ packages/modules/module-hub/
 
 ## 附录：文档变更记录
 
-| 版本 | 日期       | 变更                                                                                          |
-| ---- | ---------- | --------------------------------------------------------------------------------------------- |
-| v1   | 2026-09-28 | 初始定稿，基于 nightwatch 消费侧 v2 草案改写为框架真源；去 project 化、4 表结构、CLI 现状核对 |
+| 版本 | 日期       | 变更                                                                                           |
+| ---- | ---------- | ---------------------------------------------------------------------------------------------- |
+| v1   | 2026-09-28 | 初始定稿，基于 nightwatch 消费侧 v2 草案改写为框架真源；去 project 化、4 表结构、CLI 现状核对  |
+| v1.1 | 2026-09-28 | 开放问题 2/3 拍板：UPGRADE 支持单模块（CLI 补 `--keys`）；ADD/REMOVE 目标集合由 agent 本地计算 |
