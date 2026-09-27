@@ -5,6 +5,7 @@ import { bold, red } from "colorette";
 import { runInit } from "./commands/init";
 import { runAdd } from "./commands/add";
 import { runGenApi } from "./commands/gen-api";
+import { doctorCommand } from "./commands/doctor";
 
 // Published package version, read at runtime (package.json sits one level
 // above both src/ during development and dist/ in the published tarball).
@@ -112,6 +113,22 @@ gen
 
 // v1 surface intentionally stops here. `doctor` and `update` are planned
 // after the 0.1.0 release.
+
+// Health check: project structure, installed registry items, dependencies,
+// design tokens, and AI-readability.
+program
+  .command("doctor")
+  .description(
+    "check project health (structure, registry items, dependencies, tokens)",
+  )
+  .option("--json", "emit machine-readable JSON", false)
+  .action(async function (this: Command) {
+    const flags = this.optsWithGlobals();
+    await doctorCommand({
+      cwd: (flags.cwd as string) ?? process.cwd(),
+      json: Boolean(flags.json),
+    });
+  });
 
 program.parseAsync(process.argv).catch((error: unknown) => {
   const message = error instanceof Error ? error.message : String(error);
