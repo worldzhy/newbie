@@ -11,7 +11,7 @@ import { runDoctor } from "./commands/doctor";
 import { runEnvPull, runEnvPush } from "./commands/env";
 import { runInstall } from "./commands/install";
 import { runStatus } from "./commands/status";
-import { runUpdate } from "./commands/update";
+import { parseKeysFlag, runUpdate } from "./commands/update";
 import { runUpdateTemplate } from "./commands/update-template";
 import { runDevSync } from "./commands/dev-sync";
 import { runInteractive } from "./commands/default";
@@ -105,6 +105,7 @@ program
   .option("--all", "select every module with an available update", false)
   .option("-y, --yes", "skip confirmation prompts", false)
   .option("--force", "overwrite locally drifted module copies", false)
+  .option("--keys <moduleKeys...>", "non-interactive module selector (comma or space separated)")
   .action(function (this: Command) {
     const flags = this.opts();
     return run(() =>
@@ -113,6 +114,7 @@ program
         all: Boolean(flags.all),
         yes: Boolean(flags.yes),
         force: Boolean(flags.force),
+        keys: parseKeysFlag(flags.keys as string[] | undefined),
       }),
     );
   });
@@ -190,9 +192,13 @@ program
 
 program
   .command("agent")
-  .description("Reserved entrypoint for the module-hub remote agent protocol")
+  .description(
+    "Run the module-hub agent: poll the hub with `newbie status`, execute dispatched changes (apply/update), report receipts",
+  )
+  .option("--once", "single pass: drain pending changes, deliver receipts, then exit (CI/cron friendly)", false)
   .action(function (this: Command) {
-    return run(() => runAgent());
+    const flags = this.opts();
+    return run(() => runAgent({ ...collectOptions(this), once: Boolean(flags.once) }));
   });
 
 program
