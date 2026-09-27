@@ -79,11 +79,19 @@ async function postPoll(endpoint: string, token: string, body: Record<string, un
     throw new HubHttpError(response.status, `Hub poll failed with HTTP ${response.status}: ${text.slice(0, 500)}`);
   }
 
+  let parsed: unknown;
   try {
-    return JSON.parse(text) as HubPollResponse;
+    parsed = JSON.parse(text);
   } catch {
     throw new CliError(`Hub poll returned invalid JSON: ${text.slice(0, 500)}`);
   }
+  // Hosts built on @devbie/newbie wrap responses in {code, error, data}
+  // (HttpResponseInterceptor); unwrap the envelope when present.
+  const payload =
+    parsed && typeof parsed === "object" && "data" in parsed && "code" in parsed
+      ? (parsed as { data: unknown }).data
+      : parsed;
+  return payload as HubPollResponse;
 }
 
 /**
