@@ -138,6 +138,8 @@
 > 只认"安装实例"，token 即身份（与心跳 token-only 契约同一模式）。因此 **C1 不再阻塞于
 > nightwatch Application/Agent 模型**，schema / API / CLI 对接均可在 newbie 工作区独立推进；
 > 唯一跨仓环节是 C2 面板嵌入宿主 UI。
+>
+> **详细设计真源**：[module-hub-design.md](./module-hub-design.md)（v1，2026-09-28；含 4 表 Prisma DDL、API 契约、CLI 缺口清单与开放问题）。本节以下为方向摘要，细节冲突时以设计文档为准。
 
 - **目标**：跨安装实例的 module 全生命周期管理（版本目录、安装可见性、变更单编排、执行回执、审计）
 - **形态**：作为普通 module 收录在 `newbie-modules` registry（`packages/modules/module-hub/`），经 `newbie add module-hub` 复制装配。hub 部署在宿主实例内部，无多租户问题，UI 读权限复用宿主自身鉴权
@@ -146,12 +148,12 @@
   - 自注册：CLI 首次带 token 轮询时 hub 自动登记 installation
   - `externalRef`（opaque 自由文本）留给宿主贴自己的 project/application 标签，hub 不解释
 - **数据模型**（独立 PG schema `module/module-hub`，4 表）：
-  | 表 | 职责 |
-  | -------------------- | ------------------------------------------------------------------------------------- |
-  | `hub-installation` | tokenHash、label、repoUrl?、externalRef?、newbieVersion、已装模块快照、lastSeenAt（agent 状态并入本表，无独立 hub-agent 表） |
-  | `hub-module-release` | registry 版本目录登记（GitHub webhook 写入） |
-  | `hub-change-request` | 变更单，scoped to installationId；状态机 pending → running → done/failed，含 diff 摘要与失败原因 |
-  | `hub-audit-log` | 操作审计（谁/何时/哪个实例/什么变更） |
+  | 表                   | 职责                                                                                                                         |
+  | -------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+  | `hub-installation`   | tokenHash、label、repoUrl?、externalRef?、newbieVersion、已装模块快照、lastSeenAt（agent 状态并入本表，无独立 hub-agent 表） |
+  | `hub-module-release` | registry 版本目录登记（GitHub webhook 写入）                                                                                 |
+  | `hub-change-request` | 变更单，scoped to installationId；状态机 pending → running → done/failed，含 diff 摘要与失败原因                             |
+  | `hub-audit-log`      | 操作审计（谁/何时/哪个实例/什么变更）                                                                                        |
 - **API（token-only，`MODULE_HUB_TOKEN`）**：
   - CLI 出站：拉取待执行变更单、上报安装清单/心跳、回执执行结果
   - 宿主集成：installation 列表、模块清单、变更单查询（宿主服务端调用，UI 权限归宿主）

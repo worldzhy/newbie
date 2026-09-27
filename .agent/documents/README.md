@@ -8,3 +8,4 @@ nightwatch 项目通过各工作区内的 `devbie-docs-index.md` 关联引用本
 
 1. [newbie-framework-split-plan.md](file:///Users/worldzhy/src/newbie/.agent/documents/newbie-framework-split-plan.md) — 框架包拆分与中心化管理
 2. [devbie-framework-roadmap.md](file:///Users/worldzhy/src/newbie/.agent/documents/devbie-framework-roadmap.md) — v1 之后开发计划
+3. [module-hub-design.md](file:///Users/worldzhy/src/newbie/.agent/documents/module-hub-design.md) — module-hub 控制面设计（Phase C1，框架侧真源）
