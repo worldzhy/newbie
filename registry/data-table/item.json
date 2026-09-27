@@ -1,0 +1,9 @@
+{
+  "name": "data-table",
+  "title": "Data table",
+  "description": "Generic data table with client-side sorting and pagination, built on shadcn/ui table primitives.",
+  "type": "registry:component",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": ["src/components/data-table.tsx"]
+}
