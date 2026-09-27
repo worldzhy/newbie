@@ -13,6 +13,7 @@ import { runInstall } from "./commands/install";
 import { runStatus } from "./commands/status";
 import { runUpdate } from "./commands/update";
 import { runUpdateTemplate } from "./commands/update-template";
+import { runDevSync } from "./commands/dev-sync";
 import { runInteractive } from "./commands/default";
 import { GlobalOptions } from "./commands/shared";
 import { CliError, isUserCancellation } from "./lib/errors";
@@ -238,6 +239,26 @@ program
   .description("Reserved entrypoint for the module-hub remote agent protocol")
   .action(function (this: Command) {
     return run(() => runAgent());
+  });
+
+program
+  .command("dev-sync [keys...]")
+  .description(
+    "Watch the local newbie-modules registry and sync installed module sources into the project on change",
+  )
+  .option(
+    "--all",
+    "watch every registry module instead of only installed ones",
+    false,
+  )
+  .action(function (this: Command, keys: string[]) {
+    const flags = this.opts();
+    return run(() =>
+      runDevSync({
+        ...collectOptions(this),
+        all: Boolean(flags.all),
+      }),
+    );
   });
 
 const env = program
