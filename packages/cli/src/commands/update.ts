@@ -5,10 +5,7 @@ import { bold, cyan, green, inverse, yellow } from "colorette";
 import { runSteps } from "../assemble/pipeline";
 import { diffSnapshots, driftPatchIds } from "../core/drift";
 import { moduleKeys } from "../core/modules-state";
-import {
-  snapshotInstalledModule,
-  snapshotPristineModule,
-} from "../lib/drift";
+import { snapshotInstalledModule, snapshotPristineModule } from "../lib/drift";
 import { fileExists } from "../lib/fs-util";
 import { MODULES_DIR } from "../constants/paths";
 import { writeModulesState } from "../lib/modules-state";
@@ -25,8 +22,7 @@ interface UpdateInspection {
   patchIds: string[];
 }
 
-const short = (commit: string | null): string =>
-  commit ? commit.slice(0, 7) : "unknown";
+const short = (commit: string | null): string => (commit ? commit.slice(0, 7) : "unknown");
 
 export async function runUpdate(
   options: GlobalOptions & {
@@ -78,16 +74,9 @@ export async function runUpdate(
 
     // Guard local customisation: compare the copy with its pinned pristine tree.
     if (fromCommit && !options.force) {
-      const pristine = await snapshotPristineModule(
-        registry,
-        key,
-        fromCommit,
-      );
+      const pristine = await snapshotPristineModule(registry, key, fromCommit);
       if (pristine) {
-        const drift = diffSnapshots(
-          await snapshotInstalledModule(cwd, key),
-          pristine,
-        );
+        const drift = diffSnapshots(await snapshotInstalledModule(cwd, key), pristine);
         if (!drift.clean) {
           inspections.push({
             ...base,
@@ -115,9 +104,7 @@ export async function runUpdate(
     }
   }
 
-  const updatable = inspections.filter(
-    (result) => result.status === "update-available",
-  );
+  const updatable = inspections.filter((result) => result.status === "update-available");
   if (updatable.length === 0) {
     console.info(green("\n[info] All modules are up to date.\n"));
     return;
@@ -131,17 +118,13 @@ export async function runUpdate(
       message: "Which modules do you want to update:",
       choices: updatable.map((result) => ({
         value: result.key,
-        name: `${result.key} ${inverse(short(result.fromCommit))} -> ${cyan(
-          short(result.toCommit),
-        )}`,
+        name: `${result.key} ${inverse(short(result.fromCommit))} -> ${cyan(short(result.toCommit))}`,
         checked: true,
       })),
       pageSize: 100,
       loop: true,
     });
-    selected = updatable.filter((result) =>
-      selectedKeys.includes(result.key),
-    );
+    selected = updatable.filter((result) => selectedKeys.includes(result.key));
   }
 
   if (selected.length === 0) {
@@ -151,9 +134,7 @@ export async function runUpdate(
 
   if (!options.yes && !options.dryRun) {
     const confirmed = await select({
-      message: `Do you want to UPDATE ${cyan(
-        selected.map((result) => result.key).join(", "),
-      )}?`,
+      message: `Do you want to UPDATE ${cyan(selected.map((result) => result.key).join(", "))}?`,
       choices: [
         { name: "Yes", value: "yes" },
         { name: "No", value: "no" },

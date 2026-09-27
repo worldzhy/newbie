@@ -5,11 +5,7 @@ import { cyan, green, yellow } from "colorette";
 
 import { MODULES_DIR, MODULE_MANIFEST_FILE } from "../constants/paths";
 import { CliError } from "../lib/errors";
-import {
-  moduleRootInRegistry,
-  RegistryLocation,
-  resolveRegistry,
-} from "../lib/registry";
+import { moduleRootInRegistry, RegistryLocation, resolveRegistry } from "../lib/registry";
 
 export interface DevSyncOptions {
   cwd: string;
@@ -42,11 +38,7 @@ async function installedModuleKeys(projectRoot: string): Promise<string[]> {
  * install pipeline's addModules behaviour but runs outside the full
  * assemble context (env/prisma wiring is left to `newbie install`).
  */
-async function syncModule(
-  projectRoot: string,
-  registry: RegistryLocation,
-  key: string,
-): Promise<void> {
+async function syncModule(projectRoot: string, registry: RegistryLocation, key: string): Promise<void> {
   const source = moduleRootInRegistry(registry.root, key);
   const target = path.join(projectRoot, MODULES_DIR, key);
   await fsp.rm(target, { recursive: true, force: true });
@@ -55,10 +47,7 @@ async function syncModule(
 }
 
 /** Debounce a callback so rapid successive events trigger only one sync. */
-function debounce<T extends (...args: never[]) => void>(
-  fn: T,
-  delay: number,
-): (...args: Parameters<T>) => void {
+function debounce<T extends (...args: never[]) => void>(fn: T, delay: number): (...args: Parameters<T>) => void {
   let timer: ReturnType<typeof setTimeout> | null = null;
   return (...args: Parameters<T>) => {
     if (timer) clearTimeout(timer);
@@ -84,9 +73,7 @@ export async function runDevSync(options: DevSyncOptions): Promise<void> {
   }
 
   const installed = await installedModuleKeys(projectRoot);
-  const watchKeys = options.all
-    ? (await listRegistryKeys(registry.root))
-    : installed;
+  const watchKeys = options.all ? await listRegistryKeys(registry.root) : installed;
 
   if (watchKeys.length === 0) {
     console.info(
@@ -99,11 +86,7 @@ export async function runDevSync(options: DevSyncOptions): Promise<void> {
     return;
   }
 
-  console.info(
-    cyan(
-      `Watching ${watchKeys.length} module(s) for changes in ${registry.root}…`,
-    ),
-  );
+  console.info(cyan(`Watching ${watchKeys.length} module(s) for changes in ${registry.root}…`));
   console.info(`  ${watchKeys.join(", ")}`);
   console.info("Press Ctrl+C to stop.\n");
 
@@ -128,13 +111,9 @@ export async function runDevSync(options: DevSyncOptions): Promise<void> {
         });
     }, 150);
 
-    const watcher = fs.watch(
-      sourceDir,
-      { recursive: true },
-      (_event, filename) => {
-        if (filename) sync();
-      },
-    );
+    const watcher = fs.watch(sourceDir, { recursive: true }, (_event, filename) => {
+      if (filename) sync();
+    });
     watcher.on("error", (err) => {
       console.warn(yellow(`  ! watcher for ${key} error: ${err.message}`));
     });

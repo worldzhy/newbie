@@ -35,7 +35,5 @@ export async function runCheck(options: GlobalOptions): Promise<void> {
     console.info("");
   }
 
-  throw new CliError(
-    `${groups.length} module(s) have missing environment variables.`,
-  );
+  throw new CliError(`${groups.length} module(s) have missing environment variables.`);
 }

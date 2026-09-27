@@ -1,19 +1,10 @@
-import {
-  DynamicModule,
-  Inject,
-  MiddlewareConsumer,
-  Module,
-  NestModule,
-} from "@nestjs/common";
+import { DynamicModule, Inject, MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
 import { APP_INTERCEPTOR } from "@nestjs/core";
 import { hostname } from "node:os";
 import { BackendMonitorInterceptor } from "./backend-monitor.interceptor";
 import { BackendMonitorMiddleware } from "./backend-monitor.middleware";
 import { MonitorEventReporter } from "./backend-monitor.reporter";
-import {
-  BackendMonitorOptions,
-  ResolvedBackendMonitorOptions,
-} from "./backend-monitor.types";
+import { BackendMonitorOptions, ResolvedBackendMonitorOptions } from "./backend-monitor.types";
 
 /** DI token for the resolved monitoring options. */
 export const BACKEND_MONITOR_OPTIONS = Symbol("BACKEND_MONITOR_OPTIONS");
@@ -62,8 +53,7 @@ export class BackendMonitorModule {
         // plain option/transport arguments that Nest cannot infer by type.
         {
           provide: MonitorEventReporter,
-          useFactory: (monitorOptions: ResolvedBackendMonitorOptions) =>
-            new MonitorEventReporter(monitorOptions),
+          useFactory: (monitorOptions: ResolvedBackendMonitorOptions) => new MonitorEventReporter(monitorOptions),
           inject: [BACKEND_MONITOR_OPTIONS],
         },
         BackendMonitorMiddleware,

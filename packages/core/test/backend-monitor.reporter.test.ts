@@ -1,14 +1,8 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import {
-  MonitorEventReporter,
-  MonitorTransport,
-} from "../src/monitoring/backend-monitor.reporter";
-import {
-  IngestPayload,
-  ResolvedBackendMonitorOptions,
-} from "../src/monitoring/backend-monitor.types";
+import { MonitorEventReporter, MonitorTransport } from "../src/monitoring/backend-monitor.reporter";
+import { IngestPayload, ResolvedBackendMonitorOptions } from "../src/monitoring/backend-monitor.types";
 
 const baseOptions: ResolvedBackendMonitorOptions = {
   enabled: true,
@@ -72,10 +66,7 @@ describe("MonitorEventReporter", () => {
   });
 
   it("drops NEW events once the queue is full and counts them", () => {
-    const reporter = new MonitorEventReporter(
-      { ...baseOptions, maxQueueSize: 2 },
-      async () => undefined,
-    );
+    const reporter = new MonitorEventReporter({ ...baseOptions, maxQueueSize: 2 }, async () => undefined);
 
     reporter.enqueueRequest(requestEvent(1));
     reporter.enqueueRequest(requestEvent(2));

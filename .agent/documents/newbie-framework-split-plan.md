@@ -97,11 +97,7 @@ import { ValidationPipe } from "@nestjs/common";
 import cookieParser from "cookie-parser";
 import { json, urlencoded } from "express";
 import helmet from "helmet";
-import {
-  DocumentBuilder,
-  SwaggerCustomOptions,
-  SwaggerModule,
-} from "@nestjs/swagger";
+import { DocumentBuilder, SwaggerCustomOptions, SwaggerModule } from "@nestjs/swagger";
 import { NestExpressApplication } from "@nestjs/platform-express";
 
 export interface NewbieAppOptions {
@@ -126,16 +122,11 @@ export class NewbieFactory {
    * body parsing, cookies, CORS, validation pipe, helmet (prod), Swagger (dev).
    * Returns the configured app instance. Call listen() to start serving.
    */
-  static async create(
-    rootModule: Type<any>,
-    options: NewbieAppOptions = {},
-  ): Promise<NestExpressApplication> {
+  static async create(rootModule: Type<any>, options: NewbieAppOptions = {}): Promise<NestExpressApplication> {
     const app = await NestFactory.create<NestExpressApplication>(rootModule);
 
     const port = options.port ?? (parseInt(process.env.PORT ?? "") || 3000);
-    const allowedOrigins =
-      options.allowedOrigins ??
-      (process.env.ALLOWED_ORIGINS ?? "").split(",").filter(Boolean);
+    const allowedOrigins = options.allowedOrigins ?? (process.env.ALLOWED_ORIGINS ?? "").split(",").filter(Boolean);
     const environment = process.env.ENVIRONMENT ?? "development";
     const bodyLimit = options.bodyLimit ?? "10mb";
 
@@ -144,21 +135,16 @@ export class NewbieFactory {
     app.use(json({ limit: bodyLimit }));
     app.use(urlencoded({ limit: bodyLimit, extended: true }));
     app.enableCors({ credentials: true, origin: allowedOrigins });
-    app.useGlobalPipes(
-      new ValidationPipe({ transform: true, whitelist: true }),
-    );
+    app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
 
     const enableHelmet = options.enableHelmet ?? environment === "production";
     if (enableHelmet) app.use(helmet());
 
-    const enableSwagger =
-      options.enableSwagger ?? environment === "development";
+    const enableSwagger = options.enableSwagger ?? environment === "development";
     if (enableSwagger) {
       const config = new DocumentBuilder()
         .setTitle(options.swagger?.title ?? "API Document")
-        .setDescription(
-          options.swagger?.description ?? "It's good to see you guys 🥤",
-        )
+        .setDescription(options.swagger?.description ?? "It's good to see you guys 🥤")
         .setVersion(options.swagger?.version ?? "1.0")
         .addCookieAuth("refreshToken")
         .addBearerAuth()

@@ -28,24 +28,18 @@ async function readSpec(file: string): Promise<string[]> {
   try {
     raw = await fs.readFile(absolute, "utf8");
   } catch (error) {
-    throw new CliError(
-      `Cannot read apply spec ${file}: ${(error as Error).message}`,
-    );
+    throw new CliError(`Cannot read apply spec ${file}: ${(error as Error).message}`);
   }
 
   let spec: ApplySpec;
   try {
     spec = JSON.parse(raw) as ApplySpec;
   } catch (error) {
-    throw new CliError(
-      `Invalid JSON in apply spec ${file}: ${(error as Error).message}`,
-    );
+    throw new CliError(`Invalid JSON in apply spec ${file}: ${(error as Error).message}`);
   }
 
   if (!Array.isArray(spec.modules) || !spec.modules.every((key) => typeof key === "string")) {
-    throw new CliError(
-      `Apply spec ${file} must contain a string array "modules".`,
-    );
+    throw new CliError(`Apply spec ${file} must contain a string array "modules".`);
   }
   return spec.modules as string[];
 }

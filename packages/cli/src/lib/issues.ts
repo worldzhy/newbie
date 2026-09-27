@@ -23,9 +23,7 @@ export class IssueBag {
 
   assertEmpty(): void {
     if (this.items.length > 0) {
-      throw new CliError(
-        `Completed with ${this.items.length} warning(s); see above.`,
-      );
+      throw new CliError(`Completed with ${this.items.length} warning(s); see above.`);
     }
   }
 }
@@ -35,11 +33,7 @@ export class IssueBag {
  * expected (repositories were never cloned), so they are printed as skipped
  * notes instead of counting as failures.
  */
-export function reportIssue(
-  issues: IssueBag,
-  sink: Sink,
-  message: string,
-): void {
+export function reportIssue(issues: IssueBag, sink: Sink, message: string): void {
   if (sink.dryRun) {
     console.info(cyan(`[dry-run] skip: ${message}`));
   } else {

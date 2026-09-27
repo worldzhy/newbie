@@ -17,9 +17,7 @@ import { GlobalOptions } from "./shared";
  * Machine-readable project state for module-hub/agent consumers.
  * This command never mutates anything and never touches the network.
  */
-export async function runStatus(
-  options: GlobalOptions & { drift?: boolean },
-): Promise<void> {
+export async function runStatus(options: GlobalOptions & { drift?: boolean }): Promise<void> {
   const cwd = path.resolve(options.cwd);
   const state = await readModulesState(cwd);
   const registry = await resolveRegistry({ fetch: false });
@@ -52,23 +50,14 @@ export async function runStatus(
       hasSchema: Boolean(manifest?.schema),
       missingEnv: missingEnv[key] ?? [],
       updateAvailable: Boolean(
-        registry?.sourceCommit &&
-          record.sourceCommit &&
-          registry.sourceCommit !== record.sourceCommit,
+        registry?.sourceCommit && record.sourceCommit && registry.sourceCommit !== record.sourceCommit,
       ),
     };
 
     if (options.drift && installed && registry && record.sourceCommit) {
-      const pristine = await snapshotPristineModule(
-        registry,
-        key,
-        record.sourceCommit,
-      );
+      const pristine = await snapshotPristineModule(registry, key, record.sourceCommit);
       if (pristine) {
-        entry.drift = diffSnapshots(
-          await snapshotInstalledModule(cwd, key),
-          pristine,
-        );
+        entry.drift = diffSnapshots(await snapshotInstalledModule(cwd, key), pristine);
       }
     }
 

@@ -16,13 +16,7 @@ const TEMPLATE_PATH_ENV = "NEWBIE_TEMPLATE_PATH";
 const PACKAGE_NAME_RE = /^(?:@[a-z0-9][a-z0-9-._]*\/)?[a-z0-9][a-z0-9-._]*$/;
 
 /** Directories/files never copied out of the template. */
-const COPY_IGNORE = new Set([
-  "node_modules",
-  "dist",
-  "generated",
-  ".git",
-  ".env",
-]);
+const COPY_IGNORE = new Set(["node_modules", "dist", "generated", ".git", ".env"]);
 
 export interface TemplateReference {
   templatePath?: string;
@@ -44,9 +38,7 @@ export interface ResolvedTemplate {
 }
 
 /** Resolve the basic template: explicit path -> local checkout -> git clone. */
-export async function resolveTemplate(
-  options: TemplateReference,
-): Promise<ResolvedTemplate> {
+export async function resolveTemplate(options: TemplateReference): Promise<ResolvedTemplate> {
   const explicit = options.templatePath ?? process.env[TEMPLATE_PATH_ENV];
   if (explicit) {
     const root = path.resolve(explicit);
@@ -55,14 +47,7 @@ export async function resolveTemplate(
   }
 
   // Dev fallback: the CLI is executed from a newbie monorepo checkout.
-  const localDev = path.resolve(
-    __dirname,
-    "..",
-    "..",
-    "..",
-    "..",
-    TEMPLATE_SUBDIR,
-  );
+  const localDev = path.resolve(__dirname, "..", "..", "..", "..", TEMPLATE_SUBDIR);
   if (
     await fs
       .access(path.join(localDev, "package.json"))
@@ -119,17 +104,12 @@ export async function runCreate(options: CreateOptions): Promise<void> {
   await copyTemplate(templateRoot, targetDir);
 
   const packageJsonPath = path.join(targetDir, "package.json");
-  const packageJson = JSON.parse(
-    await fs.readFile(packageJsonPath, "utf8"),
-  ) as {
+  const packageJson = JSON.parse(await fs.readFile(packageJsonPath, "utf8")) as {
     name?: string;
     [key: string]: unknown;
   };
   packageJson.name = name;
-  await fs.writeFile(
-    packageJsonPath,
-    `${JSON.stringify(packageJson, null, 2)}\n`,
-  );
+  await fs.writeFile(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`);
 
   if (options.gitInit !== false) {
     await execCapture("git", ["init", "--quiet"], { cwd: targetDir });

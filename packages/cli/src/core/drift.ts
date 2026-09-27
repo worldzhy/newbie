@@ -20,10 +20,7 @@ export interface DriftReport {
   clean: boolean;
 }
 
-export function diffSnapshots(
-  local: FileSnapshot,
-  pristine: FileSnapshot,
-): DriftReport {
+export function diffSnapshots(local: FileSnapshot, pristine: FileSnapshot): DriftReport {
   const added: string[] = [];
   const removed: string[] = [];
   const changed: string[] = [];

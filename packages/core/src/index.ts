@@ -10,8 +10,7 @@
 
 // Published package version, read at runtime (package.json sits one level
 // above both src/ during development and dist/ in the published tarball).
-export const VERSION = (require("../package.json") as { version: string })
-  .version;
+export const VERSION = (require("../package.json") as { version: string }).version;
 
 // Application bootstrap
 export * from "./newbie-factory";

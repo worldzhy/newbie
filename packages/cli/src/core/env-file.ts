@@ -7,9 +7,7 @@
  */
 
 export type EnvLine =
-  | { kind: "blank" }
-  | { kind: "comment"; text: string }
-  | { kind: "entry"; key: string; value: string };
+  { kind: "blank" } | { kind: "comment"; text: string } | { kind: "entry"; key: string; value: string };
 
 const SINGLE_ENTRY_RE = /^\s*(?:export\s+)?([\w.-]+)\s*=\s*([\s\S]*?)\s*$/;
 const SECTION_TITLE_RE = /^# ! (.+) variables\s*$/;
@@ -82,11 +80,7 @@ export function serializeEnv(lines: EnvLine[]): string {
 }
 
 function formatValue(value: string): string {
-  if (
-    value.includes("\n") ||
-    /^[\s]|[\s]$/.test(value) ||
-    value.includes("#")
-  ) {
+  if (value.includes("\n") || /^[\s]|[\s]$/.test(value) || value.includes("#")) {
     return `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
   }
   return value;
@@ -104,21 +98,13 @@ export function envValues(lines: EnvLine[]): Record<string, string> {
 }
 
 /** Remove entries whose key is in `keys`. Comments and blank lines are kept. */
-export function removeEnvKeys(
-  lines: EnvLine[],
-  keys: ReadonlySet<string>,
-): EnvLine[] {
+export function removeEnvKeys(lines: EnvLine[], keys: ReadonlySet<string>): EnvLine[] {
   return lines.filter((line) => line.kind !== "entry" || !keys.has(line.key));
 }
 
-function findSectionRange(
-  lines: EnvLine[],
-  title: string,
-): { start: number; end: number } | null {
+function findSectionRange(lines: EnvLine[], title: string): { start: number; end: number } | null {
   const titleIndex = lines.findIndex(
-    (line) =>
-      line.kind === "comment" &&
-      line.text.match(SECTION_TITLE_RE)?.[1] === title,
+    (line) => line.kind === "comment" && line.text.match(SECTION_TITLE_RE)?.[1] === title,
   );
   if (titleIndex === -1) return null;
 
@@ -170,11 +156,7 @@ function sectionHeader(title: string): EnvLine[] {
  * Existing keys (in any section) are never duplicated or overwritten.
  * Idempotent across re-runs.
  */
-export function upsertEnvSection(
-  lines: EnvLine[],
-  title: string,
-  entries: Record<string, string>,
-): EnvLine[] {
+export function upsertEnvSection(lines: EnvLine[], title: string, entries: Record<string, string>): EnvLine[] {
   const newKeys = Object.keys(entries);
   if (newKeys.length === 0) return lines;
 

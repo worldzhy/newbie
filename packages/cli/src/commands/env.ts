@@ -15,12 +15,7 @@ import { EnvLine, envValues, parseEnv, serializeEnv } from "../core/env-file";
 import { ENV_PATH } from "../constants/paths";
 import { CliError } from "../lib/errors";
 import { IssueBag } from "../lib/issues";
-import {
-  EnvironmentConfig,
-  EnvToolConfig,
-  SecretConfig,
-  readEnvToolConfig,
-} from "../lib/env-tool-config";
+import { EnvironmentConfig, EnvToolConfig, SecretConfig, readEnvToolConfig } from "../lib/env-tool-config";
 
 import { GlobalOptions } from "./shared";
 
@@ -44,31 +39,19 @@ function createAwsClient(region: string): SecretsManagerClient {
 }
 
 function printCredentialHint(): void {
-  if (process.env.AWS_ACCESS_KEY_ID || process.env.AWS_SECRET_ACCESS_KEY)
-    return;
+  if (process.env.AWS_ACCESS_KEY_ID || process.env.AWS_SECRET_ACCESS_KEY) return;
   if (process.env.AWS_PROFILE) {
-    console.info(
-      cyan(`ℹ️  Using AWS Profile: ${bold(process.env.AWS_PROFILE)}\n`),
-    );
+    console.info(cyan(`ℹ️  Using AWS Profile: ${bold(process.env.AWS_PROFILE)}\n`));
   } else {
-    console.info(
-      cyan(
-        "ℹ️  No AWS credentials in env; falling back to SSO/login, ~/.aws/credentials or IAM role.\n",
-      ),
-    );
+    console.info(cyan("ℹ️  No AWS credentials in env; falling back to SSO/login, ~/.aws/credentials or IAM role.\n"));
   }
 }
 
-async function pickEnvironment(
-  config: EnvToolConfig,
-  preselected: string | undefined,
-): Promise<string> {
+async function pickEnvironment(config: EnvToolConfig, preselected: string | undefined): Promise<string> {
   const names = Object.keys(config.environments);
   if (preselected) {
     if (!names.includes(preselected)) {
-      throw new CliError(
-        `Unknown environment '${preselected}'. Available: ${names.join(", ")}`,
-      );
+      throw new CliError(`Unknown environment '${preselected}'. Available: ${names.join(", ")}`);
     }
     return preselected;
   }
@@ -102,10 +85,7 @@ function parseSecret(secret: string, secretConfig: SecretConfig): ParsedSecret {
   const placeholderKeys: string[] = [];
 
   const data = JSON.parse(secret) as Record<string, unknown>;
-  const picked =
-    secretConfig.keys && secretConfig.keys.length > 0
-      ? secretConfig.keys
-      : Object.keys(data);
+  const picked = secretConfig.keys && secretConfig.keys.length > 0 ? secretConfig.keys : Object.keys(data);
 
   for (const key of picked) {
     if (!Object.prototype.hasOwnProperty.call(data, key)) continue;
@@ -125,9 +105,7 @@ function parseSecret(secret: string, secretConfig: SecretConfig): ParsedSecret {
 }
 
 export async function runEnvPull(options: EnvCommandOptions): Promise<void> {
-  const { config: toolConfig, path: configPath } = await readEnvToolConfig(
-    options.cwd,
-  );
+  const { config: toolConfig, path: configPath } = await readEnvToolConfig(options.cwd);
   const issues = new IssueBag();
 
   const envName = await pickEnvironment(toolConfig, options.environment);
@@ -144,25 +122,17 @@ export async function runEnvPull(options: EnvCommandOptions): Promise<void> {
   for (const secretConfig of envConfig.secrets) {
     try {
       console.info(`  Pulling: ${secretConfig.name}`);
-      const response = await client.send(
-        new GetSecretValueCommand({ SecretId: secretConfig.name }),
-      );
-      const secretString =
-        response.SecretString ??
-        new TextDecoder().decode(response.SecretBinary);
+      const response = await client.send(new GetSecretValueCommand({ SecretId: secretConfig.name }));
+      const secretString = response.SecretString ?? new TextDecoder().decode(response.SecretBinary);
       const parsed = parseSecret(secretString, secretConfig);
       Object.assign(pulled, parsed.envVars);
       Object.assign(keysOnly, parsed.keysOnlyVars);
       placeholderKeys.push(...parsed.placeholderKeys);
       console.info(
-        green(
-          `    ✓ ${Object.keys(parsed.envVars).length + Object.keys(parsed.keysOnlyVars).length} variables\n`,
-        ),
+        green(`    ✓ ${Object.keys(parsed.envVars).length + Object.keys(parsed.keysOnlyVars).length} variables\n`),
       );
     } catch (error) {
-      issues.warn(
-        `Failed to pull ${secretConfig.name}: ${(error as Error).message}`,
-      );
+      issues.warn(`Failed to pull ${secretConfig.name}: ${(error as Error).message}`);
     }
   }
 
@@ -204,9 +174,7 @@ export async function runEnvPull(options: EnvCommandOptions): Promise<void> {
   if (next === raw) {
     console.info(cyan("[info] .env is already up to date."));
   } else if (options.dryRun) {
-    console.info(
-      yellow(`[dry-run] would update ${ENV_PATH} (config: ${configPath})`),
-    );
+    console.info(yellow(`[dry-run] would update ${ENV_PATH} (config: ${configPath})`));
   } else {
     let shouldWrite = options.yes ?? false;
     if (!shouldWrite && process.stdin.isTTY) {
@@ -225,11 +193,7 @@ export async function runEnvPull(options: EnvCommandOptions): Promise<void> {
 
   const placeholders = [...new Set([...placeholderKeys, ...addedKeysOnly])];
   if (placeholders.length > 0) {
-    console.info(
-      yellow(
-        `\n⚠️  Placeholder variables needing manual values: ${placeholders.join(", ")}`,
-      ),
-    );
+    console.info(yellow(`\n⚠️  Placeholder variables needing manual values: ${placeholders.join(", ")}`));
   }
 
   issues.assertEmpty();
@@ -238,34 +202,22 @@ export async function runEnvPull(options: EnvCommandOptions): Promise<void> {
 
 /* ------------------------------------------------------------------ push -- */
 
-async function secretExists(
-  client: SecretsManagerClient,
-  name: string,
-): Promise<boolean> {
+async function secretExists(client: SecretsManagerClient, name: string): Promise<boolean> {
   try {
     await client.send(new DescribeSecretCommand({ SecretId: name }));
     return true;
   } catch (error) {
-    if ((error as { name?: string }).name === "ResourceNotFoundException")
-      return false;
+    if ((error as { name?: string }).name === "ResourceNotFoundException") return false;
     throw error;
   }
 }
 
-async function getExistingSecret(
-  client: SecretsManagerClient,
-  name: string,
-): Promise<Record<string, string> | null> {
+async function getExistingSecret(client: SecretsManagerClient, name: string): Promise<Record<string, string> | null> {
   try {
-    const response = await client.send(
-      new GetSecretValueCommand({ SecretId: name }),
-    );
-    return response.SecretString
-      ? (JSON.parse(response.SecretString) as Record<string, string>)
-      : {};
+    const response = await client.send(new GetSecretValueCommand({ SecretId: name }));
+    return response.SecretString ? (JSON.parse(response.SecretString) as Record<string, string>) : {};
   } catch (error) {
-    if ((error as { name?: string }).name === "ResourceNotFoundException")
-      return null;
+    if ((error as { name?: string }).name === "ResourceNotFoundException") return null;
     throw error;
   }
 }
@@ -293,9 +245,7 @@ export async function runEnvPush(options: EnvCommandOptions): Promise<void> {
     let keys = secretConfig.keys ?? [];
     if (keys.length === 0) {
       if (!process.stdin.isTTY) {
-        throw new CliError(
-          `Secret ${secretConfig.name} has no "keys" list and cannot prompt in non-interactive mode.`,
-        );
+        throw new CliError(`Secret ${secretConfig.name} has no "keys" list and cannot prompt in non-interactive mode.`);
       }
       keys = await checkbox({
         message: `Select variables to push to ${secretConfig.name}:`,
@@ -340,14 +290,12 @@ export async function runEnvPush(options: EnvCommandOptions): Promise<void> {
     const exists = await secretExists(client, secretConfig.name);
 
     if (exists) {
-      const existing =
-        (await getExistingSecret(client, secretConfig.name)) ?? {};
+      const existing = (await getExistingSecret(client, secretConfig.name)) ?? {};
       const added: string[] = [];
       const modified: string[] = [];
       for (const [key, value] of Object.entries(valuesToPush)) {
         if (!(key in existing)) added.push(key);
-        else if (existing[key] !== value && value !== PLACEHOLDER)
-          modified.push(key);
+        else if (existing[key] !== value && value !== PLACEHOLDER) modified.push(key);
       }
 
       if (added.length === 0 && modified.length === 0) {
@@ -374,12 +322,7 @@ export async function runEnvPush(options: EnvCommandOptions): Promise<void> {
       // by the local placeholder (this fixes a legacy data-loss bug).
       const merged = { ...existing };
       for (const [key, value] of Object.entries(valuesToPush)) {
-        if (
-          value === PLACEHOLDER &&
-          preserveKeysOnly.has(key) &&
-          key in existing
-        )
-          continue;
+        if (value === PLACEHOLDER && preserveKeysOnly.has(key) && key in existing) continue;
         merged[key] = value;
       }
       await client.send(

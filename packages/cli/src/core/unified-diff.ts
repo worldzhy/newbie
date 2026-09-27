@@ -8,15 +8,10 @@ type Op = { type: "same" | "del" | "add"; line: string };
 function lcsDiff(a: string[], b: string[]): Op[] {
   const m = a.length;
   const n = b.length;
-  const dp: number[][] = Array.from({ length: m + 1 }, () =>
-    new Array<number>(n + 1).fill(0),
-  );
+  const dp: number[][] = Array.from({ length: m + 1 }, () => new Array<number>(n + 1).fill(0));
   for (let i = 1; i <= m; i++) {
     for (let j = 1; j <= n; j++) {
-      dp[i][j] =
-        a[i - 1] === b[j - 1]
-          ? dp[i - 1][j - 1] + 1
-          : Math.max(dp[i - 1][j], dp[i][j - 1]);
+      dp[i][j] = a[i - 1] === b[j - 1] ? dp[i - 1][j - 1] + 1 : Math.max(dp[i - 1][j], dp[i][j - 1]);
     }
   }
 
@@ -108,13 +103,7 @@ function hunkHeader(hunk: Hunk): string {
  * identical. Labels typically look like `a/tsconfig.json` / `b/tsconfig.json`
  * so the output stays reviewable (and pipeable into `git apply`).
  */
-export function unifiedDiff(
-  aText: string,
-  bText: string,
-  aLabel: string,
-  bLabel: string,
-  context = 3,
-): string {
+export function unifiedDiff(aText: string, bText: string, aLabel: string, bLabel: string, context = 3): string {
   const a = aText.split("\n");
   const b = bText.split("\n");
   // Ignore the empty element produced by a trailing newline.
@@ -128,8 +117,7 @@ export function unifiedDiff(
   for (const hunk of buildHunks(ops, context)) {
     out.push(hunkHeader(hunk));
     for (const line of hunk.lines) {
-      const prefix =
-        line.type === "same" ? " " : line.type === "del" ? "-" : "+";
+      const prefix = line.type === "same" ? " " : line.type === "del" ? "-" : "+";
       out.push(`${prefix}${line.text}`);
     }
   }

@@ -37,10 +37,7 @@ describe("diffSnapshots", () => {
 
 describe("driftPatchIds", () => {
   it("lists every drifted path sorted", () => {
-    const report = diffSnapshots(
-      snapshot({ "b.ts": "1", "a.ts": "1" }),
-      snapshot({ "c.ts": "1" }),
-    );
+    const report = diffSnapshots(snapshot({ "b.ts": "1", "a.ts": "1" }), snapshot({ "c.ts": "1" }));
     assert.deepEqual(driftPatchIds(report), ["a.ts", "b.ts", "c.ts"]);
   });
 });

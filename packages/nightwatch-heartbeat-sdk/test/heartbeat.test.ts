@@ -20,10 +20,7 @@ function mockFetch(impl: () => Promise<Response>): {
 } {
   const calls: Array<[string, RequestInit]> = [];
   const original = globalThis.fetch;
-  globalThis.fetch = (async (
-    url: string | URL | Request,
-    init?: RequestInit,
-  ) => {
+  globalThis.fetch = (async (url: string | URL | Request, init?: RequestInit) => {
     calls.push([String(url), init ?? {}]);
     return impl();
   }) as FetchFn;
@@ -74,10 +71,7 @@ describe("startHeartbeat", () => {
     const [url, init] = spy.calls[0];
     assert.equal(url, "http://localhost:3000/applications/heartbeat");
     assert.equal(init.method, "POST");
-    assert.equal(
-      (init.headers as Record<string, string>)["X-Application-Token"],
-      "secret-token",
-    );
+    assert.equal((init.headers as Record<string, string>)["X-Application-Token"], "secret-token");
     handle.stop();
     spy.restore();
   });

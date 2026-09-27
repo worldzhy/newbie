@@ -1,10 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import {
-  moduleImportLine,
-  normalizeModuleManifest,
-} from "../src/core/module-manifest";
+import { moduleImportLine, normalizeModuleManifest } from "../src/core/module-manifest";
 
 const valid = {
   key: "account",
@@ -34,10 +31,7 @@ describe("normalizeModuleManifest", () => {
   });
 
   it("enforces the expected directory key", () => {
-    assert.throws(
-      () => normalizeModuleManifest(valid, "workflow"),
-      /does not match directory/,
-    );
+    assert.throws(() => normalizeModuleManifest(valid, "workflow"), /does not match directory/);
   });
 
   it("drops a non-string schema field", () => {

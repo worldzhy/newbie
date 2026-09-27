@@ -10,34 +10,16 @@ describe("unifiedDiff", () => {
 
   it("diffs a single changed line with full context", () => {
     const diff = unifiedDiff("1\n2\n3\n", "1\n4\n3\n", "a/f", "b/f");
-    assert.equal(
-      diff,
-      [
-        "--- a/f",
-        "+++ b/f",
-        "@@ -1,3 +1,3 @@",
-        " 1",
-        "-2",
-        "+4",
-        " 3",
-        "",
-      ].join("\n"),
-    );
+    assert.equal(diff, ["--- a/f", "+++ b/f", "@@ -1,3 +1,3 @@", " 1", "-2", "+4", " 3", ""].join("\n"));
   });
 
   it("uses /dev/null-style all-added hunks for new content", () => {
     const diff = unifiedDiff("", "x\ny\n", "/dev/null", "b/f");
-    assert.equal(
-      diff,
-      ["--- /dev/null", "+++ b/f", "@@ -0,0 +1,2 @@", "+x", "+y", ""].join(
-        "\n",
-      ),
-    );
+    assert.equal(diff, ["--- /dev/null", "+++ b/f", "@@ -0,0 +1,2 @@", "+x", "+y", ""].join("\n"));
   });
 
   it("splits distant changes into separate hunks", () => {
-    const a =
-      Array.from({ length: 20 }, (_, i) => `${i + 1}`).join("\n") + "\n";
+    const a = Array.from({ length: 20 }, (_, i) => `${i + 1}`).join("\n") + "\n";
     const bLines = Array.from({ length: 20 }, (_, i) => `${i + 1}`);
     bLines[1] = "2*";
     bLines[17] = "18*";
@@ -67,8 +49,7 @@ describe("unifiedDiff", () => {
   });
 
   it("merges nearby changes into one hunk", () => {
-    const a =
-      Array.from({ length: 10 }, (_, i) => `${i + 1}`).join("\n") + "\n";
+    const a = Array.from({ length: 10 }, (_, i) => `${i + 1}`).join("\n") + "\n";
     const bLines = Array.from({ length: 10 }, (_, i) => `${i + 1}`);
     bLines[2] = "3*";
     bLines[5] = "6*";
@@ -79,9 +60,6 @@ describe("unifiedDiff", () => {
 
   it("handles a pure addition at the end", () => {
     const diff = unifiedDiff("1\n", "1\n2\n", "a/f", "b/f");
-    assert.equal(
-      diff,
-      ["--- a/f", "+++ b/f", "@@ -1 +1,2 @@", " 1", "+2", ""].join("\n"),
-    );
+    assert.equal(diff, ["--- a/f", "+++ b/f", "@@ -1 +1,2 @@", " 1", "+2", ""].join("\n"));
   });
 });

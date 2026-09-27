@@ -3,12 +3,7 @@ import path from "node:path";
 
 import { cyan } from "colorette";
 
-import {
-  diffModuleKeys,
-  ModulesState,
-  moduleKeys,
-  withModuleKeys,
-} from "../core/modules-state";
+import { diffModuleKeys, ModulesState, moduleKeys, withModuleKeys } from "../core/modules-state";
 import { MODULES_DIR, MODULE_MANIFEST_FILE } from "../constants/paths";
 import { writeModulesState } from "../lib/modules-state";
 
@@ -40,9 +35,7 @@ export async function readProjectModuleDirs(cwd: string): Promise<string[]> {
     for (const dirent of dirents) {
       if (!dirent.isDirectory()) continue;
       try {
-        await fs.stat(
-          path.resolve(cwd, MODULES_DIR, dirent.name, MODULE_MANIFEST_FILE),
-        );
+        await fs.stat(path.resolve(cwd, MODULES_DIR, dirent.name, MODULE_MANIFEST_FILE));
         keys.push(dirent.name);
       } catch {
         // Folder without a manifest: not CLI-managed, ignore it.
@@ -81,10 +74,7 @@ function stampCopiedModules(
   };
 }
 
-export async function runSteps(
-  ctx: PipelineContext,
-  changes: PlannedChange,
-): Promise<void> {
+export async function runSteps(ctx: PipelineContext, changes: PlannedChange): Promise<void> {
   const { cwd, sink, issues, registry, skipPrismaGenerate } = ctx;
   const { added, removed, enabledKeys } = changes;
 
@@ -135,10 +125,7 @@ export async function runSteps(
   await assembleEnvExample({ cwd, sink, issues, enabled: enabledKeys });
 }
 
-export async function applyPlanned(
-  ctx: PipelineContext,
-  changes: PlannedChange,
-): Promise<void> {
+export async function applyPlanned(ctx: PipelineContext, changes: PlannedChange): Promise<void> {
   await runSteps(ctx, changes);
 }
 

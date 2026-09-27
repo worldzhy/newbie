@@ -1,8 +1,8 @@
-import {execSync} from 'node:child_process';
-import fs from 'node:fs';
-import http from 'node:http';
-import net from 'node:net';
-import {NestExpressApplication} from '@nestjs/platform-express';
+import { execSync } from "node:child_process";
+import fs from "node:fs";
+import http from "node:http";
+import net from "node:net";
+import { NestExpressApplication } from "@nestjs/platform-express";
 
 /**
  * Port-race recovery for `nest start --watch` under Docker bind mounts.
@@ -47,8 +47,8 @@ let signalHandlersRegistered = false;
 function registerSignalHandlersOnce(): void {
   if (signalHandlersRegistered) return;
   signalHandlersRegistered = true;
-  process.on('SIGTERM', handleSignal);
-  process.on('SIGINT', handleSignal);
+  process.on("SIGTERM", handleSignal);
+  process.on("SIGINT", handleSignal);
 }
 
 /**
@@ -60,7 +60,7 @@ export async function listenWithPortRaceRecovery(
   port: number,
   host: string,
   maxRetries = 30,
-  retryDelayMs = 200
+  retryDelayMs = 200,
 ): Promise<http.Server> {
   registerSignalHandlersOnce();
   console.log(`[port-race] Probing port ${port} availability before listen...`);
@@ -75,14 +75,18 @@ export async function listenWithPortRaceRecovery(
         httpServer = server;
         return server;
       } catch (err: any) {
-        if (err?.code !== 'EADDRINUSE') throw err;
-        console.warn(`[port-race] app.listen() lost the port race on attempt ${attempt}, another instance bound first.`);
+        if (err?.code !== "EADDRINUSE") throw err;
+        console.warn(
+          `[port-race] app.listen() lost the port race on attempt ${attempt}, another instance bound first.`,
+        );
         // A sibling just won the bind — stand down immediately instead of
         // retrying for several seconds against a healthy instance.
         standDownIfSiblingWon(port);
       }
     } else {
-      console.warn(`[port-race] Port ${port} is still in use (probe ${attempt}/${maxRetries}), waiting ${retryDelayMs}ms...`);
+      console.warn(
+        `[port-race] Port ${port} is still in use (probe ${attempt}/${maxRetries}), waiting ${retryDelayMs}ms...`,
+      );
       // Only attempt eviction once: only previous-generation holders are
       // killable, so a same-generation sibling left alive is here to stay.
       if (attempt === 1) {
@@ -93,7 +97,7 @@ export async function listenWithPortRaceRecovery(
       }
     }
 
-    await new Promise(resolve => setTimeout(resolve, retryDelayMs));
+    await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
   }
 
   // Retries exhausted without an identifiable sibling — share the port via
@@ -110,9 +114,11 @@ export async function listenWithPortRaceRecovery(
  * one instance serves. Does nothing while holders are unknown or stale.
  */
 function standDownIfSiblingWon(port: number): void {
-  const holders = findPortHolderPids(port).filter(pid => pid !== process.pid);
-  if (holders.length > 0 && holders.every(pid => !isPreviousGeneration(pid))) {
-    console.log(`[port-race] A sibling instance [${holders.join(', ')}] is already serving port ${port}; standing down.`);
+  const holders = findPortHolderPids(port).filter((pid) => pid !== process.pid);
+  if (holders.length > 0 && holders.every((pid) => !isPreviousGeneration(pid))) {
+    console.log(
+      `[port-race] A sibling instance [${holders.join(", ")}] is already serving port ${port}; standing down.`,
+    );
     process.exit(0);
   }
 }
@@ -135,9 +141,9 @@ async function listenWithReusePort(app: NestExpressApplication, port: number, ho
       server.close();
       reject(err);
     };
-    server.once('error', onError);
-    server.listen({port, host, exclusive: false}, () => {
-      server.off('error', onError);
+    server.once("error", onError);
+    server.listen({ port, host, exclusive: false }, () => {
+      server.off("error", onError);
       resolve(server);
     });
   });
@@ -149,9 +155,9 @@ const clockTicksPerSecond = (() => {
   try {
     return (
       Number(
-        execSync('getconf CLK_TCK', {stdio: ['ignore', 'pipe', 'ignore']})
+        execSync("getconf CLK_TCK", { stdio: ["ignore", "pipe", "ignore"] })
           .toString()
-          .trim()
+          .trim(),
       ) || 100
     );
   } catch {
@@ -175,9 +181,9 @@ const STALE_GENERATION_MARGIN_TICKS = 3 * clockTicksPerSecond;
  */
 function readProcessStartTick(pid: number): number | null {
   try {
-    const stat = fs.readFileSync(`/proc/${pid}/stat`, 'utf-8');
+    const stat = fs.readFileSync(`/proc/${pid}/stat`, "utf-8");
     // Field 2 (comm) may contain spaces/parens, so cut at the LAST ')'.
-    const fields = stat.slice(stat.lastIndexOf(')') + 2).split(' ');
+    const fields = stat.slice(stat.lastIndexOf(")") + 2).split(" ");
     // After removing fields 1-2 (pid, comm), field 22 lands at index 19.
     return Number(fields[19]);
   } catch {
@@ -210,7 +216,7 @@ function killStalePortHolders(port: number): void {
     }
     console.log(`[port-race] Killing stale process ${pid} holding port ${port}.`);
     try {
-      process.kill(pid, 'SIGKILL');
+      process.kill(pid, "SIGKILL");
     } catch {
       /* already gone */
     }
@@ -227,12 +233,12 @@ function findPortHolderPids(port: number): number[] {
   // 1) Try lsof
   try {
     const out = execSync(`lsof -ti tcp:${port}`, {
-      encoding: 'utf-8',
-      stdio: ['ignore', 'pipe', 'ignore'],
+      encoding: "utf-8",
+      stdio: ["ignore", "pipe", "ignore"],
     });
     out
       .trim()
-      .split('\n')
+      .split("\n")
       .map((s: string) => parseInt(s.trim(), 10))
       .filter((n: number) => n > 0)
       .forEach((n: number) => pids.add(n));
@@ -243,8 +249,8 @@ function findPortHolderPids(port: number): number[] {
   // 2) Try fuser
   try {
     const out = execSync(`fuser ${port}/tcp 2>&1`, {
-      encoding: 'utf-8',
-      stdio: ['ignore', 'pipe', 'pipe'],
+      encoding: "utf-8",
+      stdio: ["ignore", "pipe", "pipe"],
     });
     out
       .match(/\d+/g)
@@ -258,24 +264,24 @@ function findPortHolderPids(port: number): number[] {
   // 3) Fallback: scan /proc/net/tcp (always available on Linux)
   if (pids.size === 0) {
     try {
-      const hexPort = port.toString(16).padStart(4, '0').toUpperCase();
-      const tcp = fs.readFileSync('/proc/net/tcp', 'utf-8');
+      const hexPort = port.toString(16).padStart(4, "0").toUpperCase();
+      const tcp = fs.readFileSync("/proc/net/tcp", "utf-8");
       // Find listening sockets (state 0A) on our port. Column format:
       // sl local_address rem_address st tx_queue rx_queue tr tm->when retrnsmt uid timeout inode
       const inodes = new Set<string>();
-      for (const line of tcp.split('\n').slice(1)) {
+      for (const line of tcp.split("\n").slice(1)) {
         const cols = line.trim().split(/\s+/);
         if (cols.length < 10) continue;
         const local = cols[1]; // address:port in hex
         const state = cols[3];
         const inode = cols[9];
-        if (state === '0A' && local.endsWith(':' + hexPort)) {
+        if (state === "0A" && local.endsWith(":" + hexPort)) {
           inodes.add(inode);
         }
       }
       if (inodes.size > 0) {
         // Walk /proc/*/fd to find which process owns the socket inode.
-        const procs = fs.readdirSync('/proc');
+        const procs = fs.readdirSync("/proc");
         for (const proc of procs) {
           if (!/^\d+$/.test(proc)) continue;
           const pid = parseInt(proc, 10);
@@ -306,7 +312,7 @@ function findPortHolderPids(port: number): number[] {
 
   // lsof/fuser may list our own PID; the /proc scan already skips it, so
   // filter ourselves uniformly for all callers.
-  return [...pids].filter(pid => pid !== process.pid);
+  return [...pids].filter((pid) => pid !== process.pid);
 }
 
 /**
@@ -314,11 +320,11 @@ function findPortHolderPids(port: number): number[] {
  * Returns true if the port is available, false if it is already in use.
  */
 function isPortAvailable(port: number, host: string): Promise<boolean> {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     const probe = net.createServer();
     probe.unref();
-    probe.once('error', (err: NodeJS.ErrnoException) => {
-      resolve(err.code !== 'EADDRINUSE');
+    probe.once("error", (err: NodeJS.ErrnoException) => {
+      resolve(err.code !== "EADDRINUSE");
     });
     probe.listen(port, host, () => {
       probe.close(() => resolve(true));

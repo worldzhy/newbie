@@ -44,11 +44,7 @@ export async function assembleEnv(params: {
   for (const key of added) {
     const manifest = await readInstalledManifest(cwd, key);
     if (manifest === null) {
-      reportIssue(
-        issues,
-        sink,
-        `Missing newbie.module.json for '${key}'; its env variables were not added.`,
-      );
+      reportIssue(issues, sink, `Missing newbie.module.json for '${key}'; its env variables were not added.`);
       continue;
     }
     lines = upsertEnvSection(lines, sectionTitle(key), manifest.env ?? {});
@@ -58,8 +54,7 @@ export async function assembleEnv(params: {
   for (const key of removed) {
     const manifest = await readInstalledManifest(cwd, key);
     if (manifest === null) continue;
-    for (const envKey of Object.keys(manifest.env ?? {}))
-      removedKeys.add(envKey);
+    for (const envKey of Object.keys(manifest.env ?? {})) removedKeys.add(envKey);
   }
   if (removedKeys.size > 0) {
     lines = pruneEmptySections(removeEnvKeys(lines, removedKeys));
@@ -84,24 +79,15 @@ export async function assembleEnvExample(params: {
 }): Promise<void> {
   const { cwd, sink, issues, enabled } = params;
 
-  const decoration =
-    "# ----------------------------------------------------------------------------------";
+  const decoration = "# ----------------------------------------------------------------------------------";
   const sectionLines: string[] = [];
   for (const key of enabled) {
     const manifest = await readInstalledManifest(cwd, key);
     if (manifest === null) {
-      reportIssue(
-        issues,
-        sink,
-        `Missing newbie.module.json for '${key}'; excluded from ${ENV_EXAMPLE_PATH}.`,
-      );
+      reportIssue(issues, sink, `Missing newbie.module.json for '${key}'; excluded from ${ENV_EXAMPLE_PATH}.`);
       continue;
     }
-    sectionLines.push(
-      decoration,
-      `# ! ${sectionTitle(key)} variables`,
-      decoration,
-    );
+    sectionLines.push(decoration, `# ! ${sectionTitle(key)} variables`, decoration);
     for (const [envKey, value] of Object.entries(manifest.env ?? {})) {
       sectionLines.push(`${envKey}=${value}`);
     }

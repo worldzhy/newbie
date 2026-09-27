@@ -5,9 +5,7 @@ import { applyPlanned, planReconcile } from "../assemble/pipeline";
 
 import { createContext, GlobalOptions } from "./shared";
 
-export async function runInstall(
-  options: GlobalOptions & { yes?: boolean },
-): Promise<void> {
+export async function runInstall(options: GlobalOptions & { yes?: boolean }): Promise<void> {
   const { ctx } = await createContext(options, { fetch: true });
 
   const plan = await planReconcile(ctx);
@@ -18,9 +16,7 @@ export async function runInstall(
   if (installed.length === 0 && uninstalled.length === 0) {
     await applyPlanned(ctx, plan);
     ctx.issues.assertEmpty();
-    console.info(
-      green("[info] Project is in sync with modules.json; wiring refreshed."),
-    );
+    console.info(green("[info] Project is in sync with modules.json; wiring refreshed."));
     return;
   }
 

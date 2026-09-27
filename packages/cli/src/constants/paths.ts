@@ -26,7 +26,4 @@ export const PACKAGE_JSON_PATH = "package.json";
 export const REGISTRY_MODULES_DIR = "packages/modules";
 
 /** env-tool config: new preferred location first, legacy location as fallback. */
-export const ENV_TOOL_CONFIG_CANDIDATES = [
-  ".newbie/env.config.json",
-  ".newbie-env-tool/.config/config.json",
-];
+export const ENV_TOOL_CONFIG_CANDIDATES = [".newbie/env.config.json", ".newbie-env-tool/.config/config.json"];

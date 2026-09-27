@@ -1,11 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import {
-  compareSemverTags,
-  parseSemverTag,
-  pickLatestSemverTag,
-} from "../src/core/semver";
+import { compareSemverTags, parseSemverTag, pickLatestSemverTag } from "../src/core/semver";
 
 describe("parseSemverTag", () => {
   it("parses plain and v-prefixed tags", () => {
@@ -27,9 +23,7 @@ describe("parseSemverTag", () => {
 
 describe("compareSemverTags / pickLatestSemverTag", () => {
   it("orders by major, minor then patch", () => {
-    const sorted = ["1.10.0", "2.0.0", "1.2.3"]
-      .map((t) => parseSemverTag(t)!)
-      .sort(compareSemverTags);
+    const sorted = ["1.10.0", "2.0.0", "1.2.3"].map((t) => parseSemverTag(t)!).sort(compareSemverTags);
     assert.deepEqual(
       sorted.map((t) => t.tag),
       ["1.2.3", "1.10.0", "2.0.0"],
@@ -37,10 +31,7 @@ describe("compareSemverTags / pickLatestSemverTag", () => {
   });
 
   it("picks the latest tag from a mixed list", () => {
-    assert.equal(
-      pickLatestSemverTag(["foo", "1.0.0", "1.0.2", "0.9.9"]),
-      "1.0.2",
-    );
+    assert.equal(pickLatestSemverTag(["foo", "1.0.0", "1.0.2", "0.9.9"]), "1.0.2");
   });
 
   it("returns null when no semver tag exists", () => {

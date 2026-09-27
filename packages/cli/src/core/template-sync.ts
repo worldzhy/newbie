@@ -41,10 +41,7 @@ export function extractMarkerBlock(content: string): string | null {
  * Replace the framework marker block inside `content` with `block`.
  * Returns null when `content` has no complete marker block.
  */
-export function replaceMarkerBlock(
-  content: string,
-  block: string,
-): string | null {
+export function replaceMarkerBlock(content: string, block: string): string | null {
   const current = extractMarkerBlock(content);
   if (current === null) return null;
   return content.replace(current, block);
@@ -109,10 +106,7 @@ export function planTemplateSync(
     // marker-block strategy
     const templateBlock = extractMarkerBlock(templateContent);
     if (templateBlock === null) {
-      throw new Error(
-        `Template ${file.path} is missing the framework block ` +
-          `(${MARKER_START} / ${MARKER_END}).`,
-      );
+      throw new Error(`Template ${file.path} is missing the framework block ` + `(${MARKER_START} / ${MARKER_END}).`);
     }
 
     if (projectContent == null) {

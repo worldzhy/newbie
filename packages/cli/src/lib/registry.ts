@@ -2,10 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
-import {
-  MODULE_MANIFEST_FILE,
-  REGISTRY_MODULES_DIR,
-} from "../constants/paths";
+import { MODULE_MANIFEST_FILE, REGISTRY_MODULES_DIR } from "../constants/paths";
 import { normalizeModuleManifest } from "../core/module-manifest";
 import { CliError } from "./errors";
 import { execCapture, trim } from "./exec";
@@ -45,9 +42,7 @@ async function pathIsUsable(root: string): Promise<boolean> {
 
 async function gitHead(root: string): Promise<string | null> {
   try {
-    return trim(
-      await execCapture("git", ["-C", root, "rev-parse", "HEAD"]),
-    );
+    return trim(await execCapture("git", ["-C", root, "rev-parse", "HEAD"]));
   } catch {
     return null;
   }
@@ -55,9 +50,7 @@ async function gitHead(root: string): Promise<string | null> {
 
 async function resolveLocalRegistry(): Promise<string | null> {
   const explicit = process.env[REGISTRY_PATH_ENV];
-  const candidate = explicit
-    ? path.resolve(explicit)
-    : DEFAULT_LOCAL_REGISTRY;
+  const candidate = explicit ? path.resolve(explicit) : DEFAULT_LOCAL_REGISTRY;
   return (await pathIsUsable(candidate)) ? candidate : null;
 }
 
@@ -86,10 +79,7 @@ async function updateCachedClone(ref?: string): Promise<string> {
     // Follow the remote default branch regardless of the clone vintage.
     await execCapture("git", ["-C", CACHE_DIR, "remote", "set-head", "origin", "-a"]);
     const symbolic = trim(
-      await execCapture(
-        "git",
-        ["-C", CACHE_DIR, "symbolic-ref", "--short", "refs/remotes/origin/HEAD"],
-      ),
+      await execCapture("git", ["-C", CACHE_DIR, "symbolic-ref", "--short", "refs/remotes/origin/HEAD"]),
     );
     const branch = symbolic.replace(/^origin\//, "");
     await execCapture("git", ["-C", CACHE_DIR, "checkout", "--quiet", "-B", branch, `origin/${branch}`]);
@@ -106,9 +96,7 @@ async function updateCachedClone(ref?: string): Promise<string> {
  * - `fetch: false` (status/doctor): never touch the network; use a local
  *   checkout or the cache as-is, and report unavailable when neither exists.
  */
-export async function resolveRegistry(options?: {
-  fetch?: boolean;
-}): Promise<RegistryLocation | null> {
+export async function resolveRegistry(options?: { fetch?: boolean }): Promise<RegistryLocation | null> {
   const localRoot = await resolveLocalRegistry();
   if (localRoot) {
     return {
@@ -136,9 +124,7 @@ export async function resolveRegistry(options?: {
 }
 
 /** Required registry variant; throws a guidance error when unavailable. */
-export async function requireRegistry(options?: {
-  fetch?: boolean;
-}): Promise<RegistryLocation> {
+export async function requireRegistry(options?: { fetch?: boolean }): Promise<RegistryLocation> {
   const registry = await resolveRegistry(options);
   if (!registry) {
     throw new CliError(
@@ -182,10 +168,7 @@ export interface RegistryModule {
   manifest: import("../core/module-manifest").ModuleManifest;
 }
 
-export async function readRegistryModule(
-  registryRoot: string,
-  key: string,
-): Promise<RegistryModule | null> {
+export async function readRegistryModule(registryRoot: string, key: string): Promise<RegistryModule | null> {
   const dir = moduleRootInRegistry(registryRoot, key);
   let raw: string;
   try {
@@ -198,9 +181,7 @@ export async function readRegistryModule(
   try {
     parsed = JSON.parse(raw);
   } catch (error) {
-    throw new CliError(
-      `Invalid newbie.module.json for registry module '${key}': ${(error as Error).message}`,
-    );
+    throw new CliError(`Invalid newbie.module.json for registry module '${key}': ${(error as Error).message}`);
   }
   return { dir, key, manifest: normalizeModuleManifest(parsed, key) };
 }

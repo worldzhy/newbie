@@ -1,11 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import {
-  moduleSchemaNamespace,
-  readDatasourceSchemas,
-  updateDatasourceSchemas,
-} from "../src/core/prisma-schema";
+import { moduleSchemaNamespace, readDatasourceSchemas, updateDatasourceSchemas } from "../src/core/prisma-schema";
 
 const SCHEMA = `datasource db {
   provider = "postgresql"
@@ -21,21 +17,12 @@ generator client {
 describe("updateDatasourceSchemas", () => {
   it("appends module namespaces while preserving application", () => {
     const next = updateDatasourceSchemas(SCHEMA, ["module/account"], []);
-    assert.match(
-      next,
-      /schemas\s*=\s*\["application", "module\/account"\]/,
-    );
+    assert.match(next, /schemas\s*=\s*\["application", "module\/account"\]/);
   });
 
   it("removes disabled namespaces and keeps others", () => {
-    const withTwo = updateDatasourceSchemas(
-      SCHEMA,
-      ["module/account", "module/workflow"],
-      [],
-    );
-    const removed = updateDatasourceSchemas(withTwo, [], [
-      "module/account",
-    ]);
+    const withTwo = updateDatasourceSchemas(SCHEMA, ["module/account", "module/workflow"], []);
+    const removed = updateDatasourceSchemas(withTwo, [], ["module/account"]);
     assert.match(removed, /"module\/workflow"/);
     assert.doesNotMatch(removed, /"module\/account"/);
     assert.match(removed, /"application"/);
@@ -49,10 +36,7 @@ describe("updateDatasourceSchemas", () => {
 
   it("leaves content without a schemas array untouched", () => {
     const content = 'datasource db {\n  provider = "postgresql"\n}\n';
-    assert.equal(
-      updateDatasourceSchemas(content, ["module/account"], []),
-      content,
-    );
+    assert.equal(updateDatasourceSchemas(content, ["module/account"], []), content);
   });
 
   it("throws on an unparsable schemas array", () => {
@@ -61,8 +45,7 @@ describe("updateDatasourceSchemas", () => {
   });
 
   it("silently ignores a datasource block without any schemas array", () => {
-    const broken =
-      'datasource db {\n  provider = "postgresql"\n  schemas =\n}\n';
+    const broken = 'datasource db {\n  provider = "postgresql"\n  schemas =\n}\n';
     assert.equal(updateDatasourceSchemas(broken, ["x"], []), broken);
   });
 });
@@ -79,9 +62,6 @@ describe("readDatasourceSchemas", () => {
   });
 
   it("returns null when the array is absent", () => {
-    assert.equal(
-      readDatasourceSchemas("datasource db {\n provider = \"postgresql\"\n}\n"),
-      null,
-    );
+    assert.equal(readDatasourceSchemas('datasource db {\n provider = "postgresql"\n}\n'), null);
   });
 });

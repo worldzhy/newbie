@@ -1,12 +1,12 @@
-import bcrypt from 'bcrypt';
+import bcrypt from "bcrypt";
 
 export function generateRandomNumber(max: number): number {
   return Math.ceil(Math.random() * max);
 }
 
 export function generateRandomNumbers(length = 6): string {
-  let result = '';
-  const characters = '0123456789';
+  let result = "";
+  const characters = "0123456789";
   const charactersLength = characters.length;
   for (let i = 0; i < length; i++) {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
@@ -15,8 +15,8 @@ export function generateRandomNumbers(length = 6): string {
 }
 
 export function generateRandomLetters(length = 6): string {
-  let result = '';
-  const characters = 'abcdefghijklmnopqrstuvwxyz';
+  let result = "";
+  const characters = "abcdefghijklmnopqrstuvwxyz";
   const charactersLength = characters.length;
   for (let i = 0; i < length; i++) {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
@@ -25,8 +25,8 @@ export function generateRandomLetters(length = 6): string {
 }
 
 export function generateRandomCode(length = 6): string {
-  let result = '';
-  const characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let result = "";
+  const characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const charactersLength = characters.length;
   for (let i = 0; i < length; i++) {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
@@ -48,7 +48,7 @@ export async function compareHash(password: string | null, hash: string | null):
  */
 export function number2alphabet(num: number) {
   let n = num;
-  let alphabet = '';
+  let alphabet = "";
 
   while (n > 0) {
     let m = n % 26;
@@ -68,7 +68,7 @@ export function alphabet2number(alphabet: string) {
 
   while (alphabet.length > 0) {
     num *= 26;
-    num += alphabet.charCodeAt(0) - 'A'.charCodeAt(0) + 1;
+    num += alphabet.charCodeAt(0) - "A".charCodeAt(0) + 1;
     alphabet = alphabet.slice(1);
   }
 

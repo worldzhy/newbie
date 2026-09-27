@@ -13,10 +13,7 @@ describe("sanitizeModuleNames", () => {
   const catalog = new Set(["account", "queue"]);
 
   it("trims, validates against the catalog and de-duplicates", () => {
-    assert.deepEqual(
-      sanitizeModuleNames(["account", " account", "unknown", "queue"], catalog),
-      ["account", "queue"],
-    );
+    assert.deepEqual(sanitizeModuleNames(["account", " account", "unknown", "queue"], catalog), ["account", "queue"]);
   });
 });
 
@@ -38,15 +35,10 @@ describe("planDependencyRemovals", () => {
 
 describe("buildInstallSpecs", () => {
   it("builds name@range specs for prod and dev separately", () => {
-    assert.deepEqual(
-      buildInstallSpecs([
-        { dependencies: { a: "^1.0.0" }, devDependencies: { b: "^2.0.0" } },
-      ]),
-      {
-        dependencies: ["a@^1.0.0"],
-        devDependencies: ["b@^2.0.0"],
-      },
-    );
+    assert.deepEqual(buildInstallSpecs([{ dependencies: { a: "^1.0.0" }, devDependencies: { b: "^2.0.0" } }]), {
+      dependencies: ["a@^1.0.0"],
+      devDependencies: ["b@^2.0.0"],
+    });
   });
 });
 
@@ -82,14 +74,9 @@ describe("planDependencyInstalls", () => {
   });
 
   it("reports distinct ranges declared for the same package as conflicts", () => {
-    const enabled: DependencyDecls[] = [
-      { dependencies: { a: "^2.0.0" } },
-      { dependencies: { a: "^1.0.0" } },
-    ];
+    const enabled: DependencyDecls[] = [{ dependencies: { a: "^2.0.0" } }, { dependencies: { a: "^1.0.0" } }];
     const result = planDependencyInstalls(enabled, {});
-    assert.deepEqual(result.conflicts, [
-      { name: "a", ranges: ["^1.0.0", "^2.0.0"] },
-    ]);
+    assert.deepEqual(result.conflicts, [{ name: "a", ranges: ["^1.0.0", "^2.0.0"] }]);
     // Sorted-first range is used for the install spec.
     assert.deepEqual(result.dependencies, ["a@^1.0.0"]);
   });

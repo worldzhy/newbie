@@ -28,9 +28,7 @@ export function compareSemverTags(a: SemverTag, b: SemverTag): number {
 
 /** Pick the highest semver tag from an arbitrary list of tags. */
 export function pickLatestSemverTag(tags: string[]): string | null {
-  const parsed = tags
-    .map((tag) => parseSemverTag(tag))
-    .filter((tag): tag is SemverTag => tag !== null);
+  const parsed = tags.map((tag) => parseSemverTag(tag)).filter((tag): tag is SemverTag => tag !== null);
   if (parsed.length === 0) return null;
   return parsed.sort(compareSemverTags).pop()!.tag;
 }

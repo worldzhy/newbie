@@ -66,10 +66,7 @@ export async function snapshotDirectory(root: string): Promise<FileSnapshot> {
  * Snapshot a module directory inside the consuming project.
  * Returns an empty snapshot when the directory does not exist.
  */
-export async function snapshotInstalledModule(
-  cwd: string,
-  key: string,
-): Promise<FileSnapshot> {
+export async function snapshotInstalledModule(cwd: string, key: string): Promise<FileSnapshot> {
   return snapshotDirectory(path.resolve(cwd, "src", "modules", key));
 }
 
@@ -83,21 +80,9 @@ export async function snapshotInstalledModule(
  * exists but does not contain the module extracts nothing; callers detect
  * that via the missing target directory.
  */
-function extractArchive(
-  registryRoot: string,
-  sourceCommit: string,
-  subpath: string,
-  dest: string,
-): Promise<boolean> {
+function extractArchive(registryRoot: string, sourceCommit: string, subpath: string, dest: string): Promise<boolean> {
   return new Promise((resolve, reject) => {
-    const git = spawn("git", [
-      "-C",
-      registryRoot,
-      "archive",
-      sourceCommit,
-      "--",
-      subpath,
-    ]);
+    const git = spawn("git", ["-C", registryRoot, "archive", sourceCommit, "--", subpath]);
     const tar = spawn("tar", ["-x", "-C", dest]);
     git.stdout.pipe(tar.stdin);
 
@@ -122,11 +107,7 @@ function extractArchive(
         // tar "not a tar archive" failure here is expected, not fatal.
         resolve(false);
       } else if (tarCode !== 0) {
-        reject(
-          new Error(
-            `tar extraction failed with code ${tarCode}: ${tarErr.trim() || "no stderr output"}`,
-          ),
-        );
+        reject(new Error(`tar extraction failed with code ${tarCode}: ${tarErr.trim() || "no stderr output"}`));
       } else {
         resolve(true);
       }
@@ -164,17 +145,10 @@ export async function snapshotPristineModule(
   key: string,
   sourceCommit: string,
 ): Promise<FileSnapshot | null> {
-  const tmp = await fs.mkdtemp(
-    path.join(os.tmpdir(), `newbie-pristine-${key}-`),
-  );
+  const tmp = await fs.mkdtemp(path.join(os.tmpdir(), `newbie-pristine-${key}-`));
   try {
     const subpath = `${REGISTRY_MODULES_DIR}/${key}`;
-    const archived = await extractArchive(
-      registry.root,
-      sourceCommit,
-      subpath,
-      tmp,
-    );
+    const archived = await extractArchive(registry.root, sourceCommit, subpath, tmp);
     if (!archived) return null;
     const moduleDir = path.join(tmp, ...REGISTRY_MODULES_DIR.split("/"), key);
     // The commit exists but predates this module: nothing to compare against.

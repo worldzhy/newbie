@@ -1,13 +1,13 @@
-import {ArgumentsHost, Catch, ExceptionFilter, HttpStatus} from '@nestjs/common';
-import {Response} from 'express';
+import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus } from "@nestjs/common";
+import { Response } from "express";
 import {
   PrismaClientKnownRequestError,
   PrismaClientUnknownRequestError,
   PrismaClientRustPanicError,
   PrismaClientInitializationError,
   PrismaClientValidationError,
-} from '@prisma/client/runtime/client';
-import {getPrismaExceptionMessage} from '../prisma/prisma.exception';
+} from "@prisma/client/runtime/client";
+import { getPrismaExceptionMessage } from "../prisma/prisma.exception";
 
 enum PrismaExceptionCode {
   PrismaClientKnownRequestError = 9001,
@@ -28,7 +28,7 @@ enum PrismaExceptionCode {
   PrismaClientUnknownRequestError,
   PrismaClientRustPanicError,
   PrismaClientInitializationError,
-  PrismaClientValidationError
+  PrismaClientValidationError,
 )
 export class PrismaExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
@@ -40,8 +40,8 @@ export class PrismaExceptionFilter implements ExceptionFilter {
      * Engine returns a known error related to the request
      */
     if (exception instanceof PrismaClientKnownRequestError) {
-      const {code, message} = exception;
-      if (code.startsWith('P2')) {
+      const { code, message } = exception;
+      if (code.startsWith("P2")) {
         statusCode = HttpStatus.BAD_REQUEST;
       } else {
         statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
@@ -49,7 +49,7 @@ export class PrismaExceptionFilter implements ExceptionFilter {
 
       response.status(statusCode).json({
         code: PrismaExceptionCode.PrismaClientKnownRequestError,
-        error: {message: code + ' ' + getPrismaExceptionMessage(code, message)},
+        error: { message: code + " " + getPrismaExceptionMessage(code, message) },
         data: null,
       });
     }
@@ -61,7 +61,7 @@ export class PrismaExceptionFilter implements ExceptionFilter {
     if (exception instanceof PrismaClientUnknownRequestError) {
       response.status(HttpStatus.OK).json({
         code: PrismaExceptionCode.PrismaClientUnknownRequestError,
-        error: {message: exception.message},
+        error: { message: exception.message },
         data: null,
       });
     }
@@ -71,9 +71,9 @@ export class PrismaExceptionFilter implements ExceptionFilter {
      * Something goes wrong when the query engine is started and the connection to the database is created
      */
     if (exception instanceof PrismaClientInitializationError) {
-      const {message} = exception;
+      const { message } = exception;
       const code = exception.errorCode;
-      if (code && code.startsWith('P2')) {
+      if (code && code.startsWith("P2")) {
         statusCode = HttpStatus.BAD_REQUEST;
       } else {
         statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
@@ -81,7 +81,7 @@ export class PrismaExceptionFilter implements ExceptionFilter {
 
       response.status(statusCode).json({
         code: PrismaExceptionCode.PrismaClientInitializationError,
-        error: {message: code + ' ' + getPrismaExceptionMessage(code, message)},
+        error: { message: code + " " + getPrismaExceptionMessage(code, message) },
         data: null,
       });
     }
@@ -94,7 +94,7 @@ export class PrismaExceptionFilter implements ExceptionFilter {
       response.status(HttpStatus.BAD_REQUEST).json({
         code: PrismaExceptionCode.PrismaClientValidationError,
         error: {
-          message: 'Validation failed due to missing field, incorrect field name, incorrect field types, etc.',
+          message: "Validation failed due to missing field, incorrect field name, incorrect field types, etc.",
         },
         data: null,
       });

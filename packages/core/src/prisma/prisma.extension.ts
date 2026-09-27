@@ -32,9 +32,7 @@ function getSkipAndTake(params: { page: number; pageSize: number }) {
       take: pageSize,
     };
   } else {
-    throw new BadRequestException(
-      "The minimum page is 0 and the pageSize must be larger than 0.",
-    );
+    throw new BadRequestException("The minimum page is 0 and the pageSize must be larger than 0.");
   }
 }
 
@@ -43,16 +41,13 @@ function getSkipAndTake(params: { page: number; pageSize: number }) {
  * Model names are passed as plain strings because the framework has no
  * knowledge of a project's generated models.
  */
-export const createExtendedPrismaClient = (
-  options: CreateExtendedPrismaClientOptions,
-) => {
+export const createExtendedPrismaClient = (options: CreateExtendedPrismaClientOptions) => {
   const { PrismaClient, connectionString } = options;
   const logger = new Logger("Prisma");
 
   const prisma = new PrismaClient({
     adapter: new PrismaPg({
-      connectionString: (connectionString ??
-        process.env.PRISMA_DATABASE_URL) as string,
+      connectionString: (connectionString ?? process.env.PRISMA_DATABASE_URL) as string,
     }),
   });
 
@@ -61,15 +56,12 @@ export const createExtendedPrismaClient = (
       async findManyInOnePage(params: { model: string; findManyArgs?: any }) {
         const { findManyArgs } = params;
         const model = params.model as string;
-        const modelLowercaseFirstLetter =
-          model.charAt(0).toLowerCase() + model.slice(1);
+        const modelLowercaseFirstLetter = model.charAt(0).toLowerCase() + model.slice(1);
 
         const currentClient = this as any;
-        const records = await currentClient[modelLowercaseFirstLetter].findMany(
-          {
-            ...findManyArgs,
-          },
-        );
+        const records = await currentClient[modelLowercaseFirstLetter].findMany({
+          ...findManyArgs,
+        });
 
         return {
           records,
@@ -89,8 +81,7 @@ export const createExtendedPrismaClient = (
       }) {
         const { pagination, findManyArgs } = params;
         const model = params.model as string;
-        const modelLowercaseFirstLetter =
-          model.charAt(0).toLowerCase() + model.slice(1);
+        const modelLowercaseFirstLetter = model.charAt(0).toLowerCase() + model.slice(1);
         const { skip, take } = getSkipAndTake(pagination);
 
         const currentClient = this as any;
@@ -139,10 +130,7 @@ export interface ExtendedPrismaClient {
   // PrismaClient members ($connect/$transaction/...) are intentionally NOT
   // redeclared: a narrower redeclaration would shadow the generated client's
   // generic overloads when a project augments this interface.
-  findManyInOnePage: (params: {
-    model: string;
-    findManyArgs?: any;
-  }) => Promise<any>;
+  findManyInOnePage: (params: { model: string; findManyArgs?: any }) => Promise<any>;
   findManyInManyPages: (params: {
     model: string;
     pagination: { page: number; pageSize: number };

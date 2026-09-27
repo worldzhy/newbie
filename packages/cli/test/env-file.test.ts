@@ -46,9 +46,7 @@ describe("removeEnvKeys", () => {
     const lines = parseEnv("# h\nA=1\nB=2\nC=3\n");
     const next = removeEnvKeys(lines, new Set(["A", "C"]));
     assert.deepEqual(envValues(next), { B: "2" });
-    assert.ok(
-      next.some((line) => line.kind === "comment" && line.text === "# h"),
-    );
+    assert.ok(next.some((line) => line.kind === "comment" && line.text === "# h"));
   });
 });
 
@@ -75,9 +73,7 @@ describe("upsertEnvSection", () => {
 describe("pruneEmptySections", () => {
   it("removes section blocks left without entries", () => {
     const lines = pruneEmptySections(
-      upsertEnvSection(parseEnv(""), "Account", { A: "1" }).filter(
-        (line) => line.kind !== "entry" || line.key !== "A",
-      ),
+      upsertEnvSection(parseEnv(""), "Account", { A: "1" }).filter((line) => line.kind !== "entry" || line.key !== "A"),
     );
     assert.ok(!serializeEnv(lines).includes("Account variables"));
   });
@@ -98,9 +94,6 @@ describe("replaceMarkedBlock", () => {
     assert.ok(!second.includes("A=1"));
     assert.ok(second.includes("B=2"));
     assert.ok(second.includes("APP_NAME=Newbie"));
-    assert.equal(
-      second.match(new RegExp(MODULES_MARKER_START, "g"))?.length,
-      1,
-    );
+    assert.equal(second.match(new RegExp(MODULES_MARKER_START, "g"))?.length, 1);
   });
 });

@@ -1,19 +1,9 @@
-import {
-  CallHandler,
-  ExecutionContext,
-  HttpException,
-  Injectable,
-  NestInterceptor,
-} from "@nestjs/common";
+import { CallHandler, ExecutionContext, HttpException, Injectable, NestInterceptor } from "@nestjs/common";
 import { Request } from "express";
 import { Observable } from "rxjs";
 import { tap } from "rxjs/operators";
 import { MonitorEventReporter } from "./backend-monitor.reporter";
-import {
-  getMonitorMeta,
-  routeTemplate,
-  safePathname,
-} from "./request-meta.util";
+import { getMonitorMeta, routeTemplate, safePathname } from "./request-meta.util";
 
 /**
  * Observes unhandled exceptions and enqueues an error event sharing the
@@ -43,17 +33,13 @@ export class BackendMonitorInterceptor implements NestInterceptor {
 
     this.reporter.enqueueError({
       requestId: meta.requestId,
-      type:
-        (exception as { constructor?: { name?: string } })?.constructor?.name ??
-        "UnknownError",
-      message:
-        exception instanceof Error ? exception.message : String(exception),
+      type: (exception as { constructor?: { name?: string } })?.constructor?.name ?? "UnknownError",
+      message: exception instanceof Error ? exception.message : String(exception),
       stack: exception instanceof Error ? exception.stack : undefined,
       route: routeTemplate(request),
       path: safePathname(request),
       method: request.method.toUpperCase(),
-      statusCode:
-        exception instanceof HttpException ? exception.getStatus() : 500,
+      statusCode: exception instanceof HttpException ? exception.getStatus() : 500,
       ip: request.ip,
       userAgent: request.headers["user-agent"],
       occurredAt: new Date().toISOString(),

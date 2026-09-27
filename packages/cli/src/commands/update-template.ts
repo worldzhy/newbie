@@ -2,22 +2,14 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { bold, cyan, green, yellow } from "colorette";
 
-import {
-  MARKER_END,
-  MARKER_START,
-  planTemplateSync,
-  SKELETON_FILES,
-  SkeletonChange,
-} from "../core/template-sync";
+import { MARKER_END, MARKER_START, planTemplateSync, SKELETON_FILES, SkeletonChange } from "../core/template-sync";
 import { unifiedDiff } from "../core/unified-diff";
 import { CliError } from "../lib/errors";
 import { createSink } from "../lib/sink";
 import { GlobalOptions } from "./shared";
 import { resolveTemplate, TemplateReference } from "./create";
 
-export interface UpdateTemplateOptions
-  extends GlobalOptions,
-    TemplateReference {
+export interface UpdateTemplateOptions extends GlobalOptions, TemplateReference {
   /** Apply the changes instead of only printing the diff. */
   write?: boolean;
 }
@@ -42,23 +34,15 @@ function printChangeDiff(change: SkeletonChange): void {
     return;
   }
 
-  const kindLabel =
-    change.kind === "create" ? "missing in project" : "differs from template";
+  const kindLabel = change.kind === "create" ? "missing in project" : "differs from template";
   console.info(bold(`\n# ${label} (${kindLabel})`));
 
   const aLabel = change.currentComparable === null ? "/dev/null" : `a/${label}`;
-  const diff = unifiedDiff(
-    change.currentComparable ?? "",
-    change.templateComparable ?? "",
-    aLabel,
-    `b/${label}`,
-  );
+  const diff = unifiedDiff(change.currentComparable ?? "", change.templateComparable ?? "", aLabel, `b/${label}`);
   process.stdout.write(diff);
 }
 
-export async function runUpdateTemplate(
-  options: UpdateTemplateOptions,
-): Promise<void> {
+export async function runUpdateTemplate(options: UpdateTemplateOptions): Promise<void> {
   const cwd = path.resolve(options.cwd);
   const sink = createSink(cwd, options.dryRun);
 
@@ -80,9 +64,7 @@ export async function runUpdateTemplate(
   }
 
   if (changes.length === 0) {
-    console.info(
-      green(bold("✓ Project skeleton is up to date with the template.")),
-    );
+    console.info(green(bold("✓ Project skeleton is up to date with the template.")));
     return;
   }
 
@@ -98,12 +80,8 @@ export async function runUpdateTemplate(
 
   if (!options.write) {
     console.info("\nNext steps:");
-    console.info(
-      "  newbie update-template --write   # apply these changes (supports --dry-run)",
-    );
-    console.info(
-      "  git checkout -b chore/template-sync   # then review `git diff` and open a PR",
-    );
+    console.info("  newbie update-template --write   # apply these changes (supports --dry-run)");
+    console.info("  git checkout -b chore/template-sync   # then review `git diff` and open a PR");
     return;
   }
 
@@ -116,8 +94,6 @@ export async function runUpdateTemplate(
     console.info("[dry-run] no files were modified");
   } else {
     console.info(green(bold("\n✓ Skeleton files updated.")));
-    console.info(
-      "Review with `git diff`, then commit on a branch and open a PR.",
-    );
+    console.info("Review with `git diff`, then commit on a branch and open a PR.");
   }
 }

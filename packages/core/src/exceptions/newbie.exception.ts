@@ -1,10 +1,10 @@
-import {HttpException, HttpStatus} from '@nestjs/common';
+import { HttpException, HttpStatus } from "@nestjs/common";
 
 export class NewbieException extends HttpException {
   constructor(type: NewbieExceptionType) {
     const exception = NewbieExceptionMap.get(type);
     if (exception) {
-      super({status: exception.code, error: exception.error}, HttpStatus.OK);
+      super({ status: exception.code, error: exception.error }, HttpStatus.OK);
     }
   }
 }
@@ -20,12 +20,12 @@ export enum NewbieExceptionType {
   Access_HighFrequency,
 }
 
-const NewbieExceptionMap = new Map<NewbieExceptionType, {code: number; error: object}>([
+const NewbieExceptionMap = new Map<NewbieExceptionType, { code: number; error: object }>([
   [
     NewbieExceptionType.Login_WrongInput,
     {
       code: 1001,
-      error: {message: 'Invalid combination of account and password'},
+      error: { message: "Invalid combination of account and password" },
     },
   ],
 
@@ -34,7 +34,7 @@ const NewbieExceptionMap = new Map<NewbieExceptionType, {code: number; error: ob
     {
       code: 1002,
       error: {
-        message: 'The password has not been set. Please login via verification code',
+        message: "The password has not been set. Please login via verification code",
       },
     },
   ],
@@ -43,7 +43,7 @@ const NewbieExceptionMap = new Map<NewbieExceptionType, {code: number; error: ob
     {
       code: 1003,
       error: {
-        message: 'Suspicious login prevented',
+        message: "Suspicious login prevented",
         description:
           "We blocked an attempt to access your account because we weren't sure it was really you. This happens when we notice unusual login activity, like an attempt to log in too many times, or from a different location or device. You'll need to wait before trying to log in again. Some blocks are removed automatically.",
       },
@@ -54,20 +54,20 @@ const NewbieExceptionMap = new Map<NewbieExceptionType, {code: number; error: ob
     {
       code: 1004,
       error: {
-        message: 'High frequency login prevented',
+        message: "High frequency login prevented",
         description:
           "We blocked an attempt to access your account because we weren't sure it was really you. This happens when we notice unusual login activity, like an attempt to log in too many times, or from a different location or device. You'll need to wait before trying to log in again. Some blocks are removed automatically.",
       },
     },
   ],
-  [NewbieExceptionType.ResetPassword_WrongInput, {code: 1005, error: {message: 'Invalid email or phone'}}],
-  [NewbieExceptionType.ResetPassword_InvalidCode, {code: 1006, error: {message: 'Invalid verification code'}}],
+  [NewbieExceptionType.ResetPassword_WrongInput, { code: 1005, error: { message: "Invalid email or phone" } }],
+  [NewbieExceptionType.ResetPassword_InvalidCode, { code: 1006, error: { message: "Invalid verification code" } }],
   [
     NewbieExceptionType.Login_InactiveUser,
     {
       code: 1007,
       error: {
-        message: 'You have closed your account, do you want to recover it?',
+        message: "You have closed your account, do you want to recover it?",
       },
     },
   ],
@@ -76,7 +76,7 @@ const NewbieExceptionMap = new Map<NewbieExceptionType, {code: number; error: ob
     {
       code: 2001,
       error: {
-        message: 'High frequency http requests prevented',
+        message: "High frequency http requests prevented",
         description:
           "We blocked an attempt to request your endpoints because we weren't sure it was really you. This happens when we notice unusual login activity, like an attempt to log in too many times, or from a different location or device. You'll need to wait before trying to log in again. Some blocks are removed automatically.",
       },

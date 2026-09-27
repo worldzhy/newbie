@@ -1,10 +1,10 @@
-import {Catch, Logger, ArgumentsHost, ExceptionFilter, HttpException} from '@nestjs/common';
-import {Request, Response} from 'express';
+import { Catch, Logger, ArgumentsHost, ExceptionFilter, HttpException } from "@nestjs/common";
+import { Request, Response } from "express";
 
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
   constructor(private readonly logger: Logger) {
-    this.logger = new Logger('HttpException');
+    this.logger = new Logger("HttpException");
   }
 
   catch(exception: HttpException, host: ArgumentsHost) {
@@ -32,7 +32,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     // [step 3] Response.
     response.status(httpStatus).json({
       code: httpStatus,
-      error: {message, info: exception.getResponse()},
+      error: { message, info: exception.getResponse() },
       data: null,
     });
   }

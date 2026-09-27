@@ -6,9 +6,7 @@ import {
   ResolvedBackendMonitorOptions,
 } from "./backend-monitor.types";
 
-type QueueItem =
-  | { kind: "request"; payload: MonitoredRequestEvent }
-  | { kind: "error"; payload: MonitoredErrorEvent };
+type QueueItem = { kind: "request"; payload: MonitoredRequestEvent } | { kind: "error"; payload: MonitoredErrorEvent };
 
 /** Timeout for one ingest HTTP call, so a hung platform cannot hold the flush lock. */
 const TRANSPORT_TIMEOUT_MS = 10_000;
@@ -136,9 +134,7 @@ export class MonitorEventReporter implements OnModuleInit, OnModuleDestroy {
     for (const item of this.queue) {
       const target = item.kind === "request" ? requests : errors;
       if (target.length < this.options.maxBatchSize) {
-        target.push(
-          item.payload as MonitoredRequestEvent & MonitoredErrorEvent,
-        );
+        target.push(item.payload as MonitoredRequestEvent & MonitoredErrorEvent);
       } else {
         remainder.push(item);
       }
@@ -187,22 +183,19 @@ export class MonitorEventReporter implements OnModuleInit, OnModuleDestroy {
 
   /** Real network transport used outside tests. */
   private defaultTransport: MonitorTransport = async (payload) => {
-    const response = await fetch(
-      `${this.options.endpoint.replace(/\/+$/, "")}/backend-monitor/ingest`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Application-Token": this.options.token,
-          // Loop guard: the server-side probe skips inbound requests tagged with
-          // this header so the ingest call is never reported about itself.
-          "X-Backend-Monitor": "1",
-        },
-        body: JSON.stringify(payload),
-        // Bounded wait: otherwise a hanging platform would pin the flush lock.
-        signal: AbortSignal.timeout(TRANSPORT_TIMEOUT_MS),
+    const response = await fetch(`${this.options.endpoint.replace(/\/+$/, "")}/backend-monitor/ingest`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Application-Token": this.options.token,
+        // Loop guard: the server-side probe skips inbound requests tagged with
+        // this header so the ingest call is never reported about itself.
+        "X-Backend-Monitor": "1",
       },
-    );
+      body: JSON.stringify(payload),
+      // Bounded wait: otherwise a hanging platform would pin the flush lock.
+      signal: AbortSignal.timeout(TRANSPORT_TIMEOUT_MS),
+    });
     // fetch only rejects on network/timeout errors; non-2xx must count as a
     // failed (dropped) batch so the platform rejection is observable.
     if (!response.ok) {

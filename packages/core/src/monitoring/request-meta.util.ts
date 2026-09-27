@@ -15,10 +15,7 @@ export const INGEST_PATH = "/backend-monitor/ingest";
 export const LOOP_GUARD_HEADER = "x-backend-monitor";
 
 /** Attaches probe metadata to the request. */
-export function setMonitorMeta(
-  request: Request,
-  meta: MonitorRequestMeta,
-): void {
+export function setMonitorMeta(request: Request, meta: MonitorRequestMeta): void {
   Object.defineProperty(request, META_KEY, {
     value: meta,
     enumerable: false,
@@ -28,12 +25,8 @@ export function setMonitorMeta(
 }
 
 /** Reads probe metadata; undefined for skipped (loop) requests. */
-export function getMonitorMeta(
-  request: Request,
-): MonitorRequestMeta | undefined {
-  return (request as unknown as Record<symbol, unknown>)[META_KEY] as
-    | MonitorRequestMeta
-    | undefined;
+export function getMonitorMeta(request: Request): MonitorRequestMeta | undefined {
+  return (request as unknown as Record<symbol, unknown>)[META_KEY] as MonitorRequestMeta | undefined;
 }
 
 /**

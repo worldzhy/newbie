@@ -17,16 +17,10 @@ export async function runAgent(): Promise<void> {
 
   if (!endpoint || !token) {
     console.info(
-      yellow(
-        `Agent protocol is not available yet. Set ${ENDPOINT_ENV} and ${TOKEN_ENV} once the server side ships.`,
-      ),
+      yellow(`Agent protocol is not available yet. Set ${ENDPOINT_ENV} and ${TOKEN_ENV} once the server side ships.`),
     );
     return;
   }
 
-  console.info(
-    cyan(
-      `Agent endpoint configured (${endpoint}); polling will be enabled in a later release.`,
-    ),
-  );
+  console.info(cyan(`Agent endpoint configured (${endpoint}); polling will be enabled in a later release.`));
 }

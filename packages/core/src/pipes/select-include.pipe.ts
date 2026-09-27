@@ -1,6 +1,6 @@
-import {BadRequestException, Injectable, PipeTransform} from '@nestjs/common';
-import {SELECT_INCLUDE_PIPE_FORMAT} from './errors.constants';
-var dot = require('dot-object');
+import { BadRequestException, Injectable, PipeTransform } from "@nestjs/common";
+import { SELECT_INCLUDE_PIPE_FORMAT } from "./errors.constants";
+var dot = require("dot-object");
 
 /**
  * Convert a string like "id,createdAt,user.name,user.id"
@@ -12,7 +12,7 @@ export class SelectIncludePipe implements PipeTransform {
     if (value == null) return undefined;
     try {
       const testRecord: Record<string, boolean> = {};
-      value.split(',').forEach(i => {
+      value.split(",").forEach((i) => {
         if (/^[a-z0-9\.]+$/i.test(i.trim())) testRecord[i.trim()] = true;
       });
       return dot(testRecord) as Record<string, boolean>;

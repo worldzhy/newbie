@@ -36,7 +36,7 @@ function identicalMaps(): {
   for (const file of SKELETON_FILES) {
     const content =
       file.strategy === "marker-block"
-        ? schemaWith(TEMPLATE_BLOCK, 'model User {\n  id Int @id\n}\n')
+        ? schemaWith(TEMPLATE_BLOCK, "model User {\n  id Int @id\n}\n")
         : `// ${file.path}\n`;
     project.set(file.path, content);
     template.set(file.path, content);
@@ -105,17 +105,11 @@ describe("planTemplateSync", () => {
   it("compares only the marker block of prisma/schema.prisma", () => {
     const { project, template } = identicalMaps();
     // Business part differs, framework block identical -> no change.
-    project.set(
-      "prisma/schema.prisma",
-      schemaWith(TEMPLATE_BLOCK, "model Order {\n  id Int @id\n}\n"),
-    );
+    project.set("prisma/schema.prisma", schemaWith(TEMPLATE_BLOCK, "model Order {\n  id Int @id\n}\n"));
     assert.deepEqual(planTemplateSync(project, template), []);
 
     // Framework block differs -> update preserving the business tail.
-    project.set(
-      "prisma/schema.prisma",
-      schemaWith(OLD_BLOCK, "model Order {\n  id Int @id\n}\n"),
-    );
+    project.set("prisma/schema.prisma", schemaWith(OLD_BLOCK, "model Order {\n  id Int @id\n}\n"));
     const changes = planTemplateSync(project, template);
     assert.equal(changes.length, 1);
     assert.equal(changes[0].kind, "update");
@@ -142,10 +136,7 @@ describe("planTemplateSync", () => {
     const { project, template } = identicalMaps();
     project.set("src/main.ts", "// stale main\n");
     project.set("tsconfig.json", null);
-    project.set(
-      "prisma/schema.prisma",
-      schemaWith(OLD_BLOCK, "model Order {\n  id Int @id\n}\n"),
-    );
+    project.set("prisma/schema.prisma", schemaWith(OLD_BLOCK, "model Order {\n  id Int @id\n}\n"));
     const changes = planTemplateSync(project, template);
     assert.equal(changes.length, 3);
     for (const change of changes) {

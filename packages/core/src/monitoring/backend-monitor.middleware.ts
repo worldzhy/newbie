@@ -2,13 +2,7 @@ import { Injectable, NestMiddleware } from "@nestjs/common";
 import { NextFunction, Request, Response } from "express";
 import { randomUUID } from "node:crypto";
 import { MonitorEventReporter } from "./backend-monitor.reporter";
-import {
-  getMonitorMeta,
-  isMonitoringTraffic,
-  routeTemplate,
-  safePathname,
-  setMonitorMeta,
-} from "./request-meta.util";
+import { getMonitorMeta, isMonitoringTraffic, routeTemplate, safePathname, setMonitorMeta } from "./request-meta.util";
 
 /**
  * Collects one request metric per inbound HTTP request.

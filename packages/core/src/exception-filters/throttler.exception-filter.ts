@@ -1,6 +1,6 @@
-import {Catch, ArgumentsHost, HttpStatus, ExceptionFilter} from '@nestjs/common';
-import {ThrottlerException} from '@nestjs/throttler';
-import {Response} from 'express';
+import { Catch, ArgumentsHost, HttpStatus, ExceptionFilter } from "@nestjs/common";
+import { ThrottlerException } from "@nestjs/throttler";
+import { Response } from "express";
 
 @Catch(ThrottlerException)
 export class ThrottlerExceptionFilter implements ExceptionFilter {
@@ -9,7 +9,7 @@ export class ThrottlerExceptionFilter implements ExceptionFilter {
 
     response.status(HttpStatus.TOO_MANY_REQUESTS).json({
       code: HttpStatus.TOO_MANY_REQUESTS,
-      error: {message: 'Too many requests. Please try again later.'},
+      error: { message: "Too many requests. Please try again later." },
       data: null,
     });
   }

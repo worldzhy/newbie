@@ -7,10 +7,7 @@ import { green } from "colorette";
  * On non-TTY stdout (CI, pipes, dry-run logs) we only print start/done lines
  * so output stays parseable instead of emitting carriage-return frames.
  */
-export async function handleLoading<T>(
-  text: string,
-  task: () => Promise<T>,
-): Promise<T> {
+export async function handleLoading<T>(text: string, task: () => Promise<T>): Promise<T> {
   if (!process.stdout.isTTY) {
     console.info(`${text} ...`);
     const result = await task();

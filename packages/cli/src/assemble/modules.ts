@@ -23,9 +23,7 @@ const EMPTY_CONFIG_TEMPLATE = `${DO_NOT_EDIT_HEADER}import {registerAs} from '@n
 export default registerAs('modules', () => ({}));
 `;
 
-function moduleTemplate(
-  entries: { key: string; manifest: ModuleManifest }[],
-): string {
+function moduleTemplate(entries: { key: string; manifest: ModuleManifest }[]): string {
   const hasConfigService = entries.length > 0;
   const importCode = [
     `import {Global, Module} from '@nestjs/common';`,
@@ -38,9 +36,7 @@ function moduleTemplate(
     .join("\n");
 
   const importModuleNames = [
-    hasConfigService
-      ? `ConfigModule.forRoot({load: [ModulesConfiguration], isGlobal: true})`
-      : "",
+    hasConfigService ? `ConfigModule.forRoot({load: [ModulesConfiguration], isGlobal: true})` : "",
     ...entries.map(({ manifest }) => manifest.module.className),
   ]
     .filter(Boolean)
@@ -85,20 +81,13 @@ export async function assembleNestJsModules(params: {
   for (const key of enabledKeys) {
     const manifest = await readInstalledManifest(cwd, key);
     if (manifest === null) {
-      reportIssue(
-        issues,
-        sink,
-        `Missing newbie.module.json for '${key}'; it was skipped in the NestJS module wiring.`,
-      );
+      reportIssue(issues, sink, `Missing newbie.module.json for '${key}'; it was skipped in the NestJS module wiring.`);
       continue;
     }
     entries.push({ key, manifest });
   }
 
-  await sink.writeText(
-    MODULES_MODULE_TS,
-    entries.length > 0 ? moduleTemplate(entries) : EMPTY_MODULE_TEMPLATE,
-  );
+  await sink.writeText(MODULES_MODULE_TS, entries.length > 0 ? moduleTemplate(entries) : EMPTY_MODULE_TEMPLATE);
 
   let configs: Record<string, unknown> = {};
   for (const { manifest } of entries) {
@@ -107,9 +96,7 @@ export async function assembleNestJsModules(params: {
 
   await sink.writeText(
     MODULES_CONFIG_TS,
-    Object.keys(configs).length > 0
-      ? configTemplate(configs)
-      : EMPTY_CONFIG_TEMPLATE,
+    Object.keys(configs).length > 0 ? configTemplate(configs) : EMPTY_CONFIG_TEMPLATE,
   );
 
   // Formatting failure is fatal (legacy CLI swallowed the non-zero exit).

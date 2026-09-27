@@ -1,5 +1,5 @@
-import dayjs from 'dayjs';
-import isoWeek from 'dayjs/plugin/isoWeek';
+import dayjs from "dayjs";
+import isoWeek from "dayjs/plugin/isoWeek";
 
 dayjs.extend(isoWeek);
 
@@ -39,7 +39,7 @@ export function datePlusYearsForString(dateStr: string, years: number): string {
   const date = new Date(dateStr);
   const year = date.getFullYear() + years;
   const newDate = new Date(date.setFullYear(year));
-  return newDate.toISOString().split('T')[0];
+  return newDate.toISOString().split("T")[0];
 }
 
 // !>>> Get date
@@ -135,21 +135,21 @@ export function constructDateTime(
   hour: number,
   minute: number,
   second: number,
-  timeZone: string | number
+  timeZone: string | number,
 ) {
-  let offset: string = '';
-  if (typeof timeZone === 'number') {
+  let offset: string = "";
+  if (typeof timeZone === "number") {
     offset = timeZone.toString();
   } else {
     const tmpDate = new Date(year, month - 1, dayOfMonth, hour, minute);
     offset = getTimeZoneOffset(tmpDate, timeZone);
     const tmpDate2 = new Date(
-      year + '-' + month + '-' + dayOfMonth + ' ' + hour + ':' + minute + ':' + second + offset
+      year + "-" + month + "-" + dayOfMonth + " " + hour + ":" + minute + ":" + second + offset,
     );
     offset = getTimeZoneOffset(tmpDate2, timeZone);
   }
 
-  return new Date(year + '-' + month + '-' + dayOfMonth + ' ' + hour + ':' + minute + ':' + second + offset);
+  return new Date(year + "-" + month + "-" + dayOfMonth + " " + hour + ":" + minute + ":" + second + offset);
 }
 
 /**
@@ -158,17 +158,17 @@ export function constructDateTime(
  */
 export function splitDateTime(
   date: Date = new Date(),
-  timeZone?: string // https://data.iana.org/time-zones/tz-link.html
+  timeZone?: string, // https://data.iana.org/time-zones/tz-link.html
 ) {
   // The format is '29/09/2019, 05:55:55'
-  const formatter = new Intl.DateTimeFormat('en-GB', {
-    dateStyle: 'short',
-    timeStyle: 'medium',
+  const formatter = new Intl.DateTimeFormat("en-GB", {
+    dateStyle: "short",
+    timeStyle: "medium",
     timeZone: timeZone,
   });
-  const arrayDateTime = formatter.format(date).split(', ');
-  const arrayDate = arrayDateTime[0].split('/');
-  const arrayTime = arrayDateTime[1].split(':');
+  const arrayDateTime = formatter.format(date).split(", ");
+  const arrayDate = arrayDateTime[0].split("/");
+  const arrayTime = arrayDateTime[1].split(":");
 
   const year = parseInt(arrayDate[2]);
   const month = parseInt(arrayDate[1]);
@@ -194,12 +194,12 @@ export function splitDateTime(
  * @returns string of number, like '-5'
  */
 export function getTimeZoneOffset(date: Date = new Date(), timeZone?: string) {
-  return new Intl.DateTimeFormat('en-GB', {
-    timeStyle: 'long',
+  return new Intl.DateTimeFormat("en-GB", {
+    timeStyle: "long",
     timeZone: timeZone,
   })
     .format(date)
-    .split('GMT')[1];
+    .split("GMT")[1];
 }
 
 /**
@@ -265,7 +265,7 @@ export function daysOfMonth(year: number, month: number, selectedWeek?: number) 
 export function daysOfWeek(
   year: number,
   month: number,
-  weekOfMonth: number // 1~6
+  weekOfMonth: number, // 1~6
 ) {
   const numberOfDays = new Date(year, month, 0).getDate(); // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/Date#syntax
 

@@ -20,28 +20,17 @@ import { CliError, isUserCancellation } from "./lib/errors";
 
 // Published package version, read at runtime (package.json sits one level
 // above both src/ during development and dist/ in the published tarball).
-export const VERSION = (require("../package.json") as { version: string })
-  .version;
+export const VERSION = (require("../package.json") as { version: string }).version;
 
 const program = new Command();
 
 program
   .name("newbie")
-  .description(
-    "Newbie framework CLI: install modules from the newbie-modules registry and sync project files",
-  )
+  .description("Newbie framework CLI: install modules from the newbie-modules registry and sync project files")
   .version(VERSION)
   .option("-C, --cwd <dir>", "project root directory", process.cwd())
-  .option(
-    "--dry-run",
-    "print planned changes without writing files or running mutating commands",
-    false,
-  )
-  .option(
-    "--skip-prisma-generate",
-    "skip `npx prisma generate` after schema changes",
-    false,
-  );
+  .option("--dry-run", "print planned changes without writing files or running mutating commands", false)
+  .option("--skip-prisma-generate", "skip `npx prisma generate` after schema changes", false);
 
 function collectOptions(command: Command): GlobalOptions {
   // Merge values of options registered on the root program regardless of
@@ -87,14 +76,9 @@ program
 
 program
   .command("config")
-  .description(
-    "View or edit the enabled-module list in modules.json without touching project files",
-  )
+  .description("View or edit the enabled-module list in modules.json without touching project files")
   .option("--add <modules...>", "enable module(s), space or comma separated")
-  .option(
-    "--remove <modules...>",
-    "disable module(s), space or comma separated",
-  )
+  .option("--remove <modules...>", "disable module(s), space or comma separated")
   .option("--list", "print current configuration", false)
   .action(function (this: Command) {
     const flags = this.opts();
@@ -110,18 +94,14 @@ program
 
 program
   .command("check")
-  .description(
-    "Check that every env variable required by enabled modules is present in .env",
-  )
+  .description("Check that every env variable required by enabled modules is present in .env")
   .action(function (this: Command) {
     return run(() => runCheck(collectOptions(this)));
   });
 
 program
   .command("update")
-  .description(
-    "Update enabled module copies to the registry HEAD commit (blocks on local drift unless --force)",
-  )
+  .description("Update enabled module copies to the registry HEAD commit (blocks on local drift unless --force)")
   .option("--all", "select every module with an available update", false)
   .option("-y, --yes", "skip confirmation prompts", false)
   .option("--force", "overwrite locally drifted module copies", false)
@@ -139,9 +119,7 @@ program
 
 program
   .command("apply")
-  .description(
-    'Non-interactively sync the module set declared in a JSON spec ({"modules": [...]})',
-  )
+  .description('Non-interactively sync the module set declared in a JSON spec ({"modules": [...]})')
   .requiredOption("--config <file>", "path to the declarative apply spec JSON")
   .option("--ci", "CI mode marker (apply is always non-interactive)", false)
   .action(function (this: Command) {
@@ -157,9 +135,7 @@ program
 
 program
   .command("doctor")
-  .description(
-    "Audit the installation: registry pins, copied modules, drift, env and prisma wiring",
-  )
+  .description("Audit the installation: registry pins, copied modules, drift, env and prisma wiring")
   .action(function (this: Command) {
     return run(() => runDoctor(collectOptions(this)));
   });
@@ -167,29 +143,17 @@ program
 program
   .command("status")
   .description("Print machine-readable project state as JSON")
-  .option(
-    "--drift",
-    "include content drift against pinned pristine copies",
-    false,
-  )
+  .option("--drift", "include content drift against pinned pristine copies", false)
   .action(function (this: Command) {
     const flags = this.opts();
-    return run(() =>
-      runStatus({ ...collectOptions(this), drift: Boolean(flags.drift) }),
-    );
+    return run(() => runStatus({ ...collectOptions(this), drift: Boolean(flags.drift) }));
   });
 
 program
   .command("create <name>")
   .description("Scaffold a new project from the basic template")
-  .option(
-    "--template-path <dir>",
-    "use a local template directory instead of cloning the newbie repository",
-  )
-  .option(
-    "--template-ref <ref>",
-    "git ref of the newbie repository to clone the template from",
-  )
+  .option("--template-path <dir>", "use a local template directory instead of cloning the newbie repository")
+  .option("--template-ref <ref>", "git ref of the newbie repository to clone the template from")
   .option("--no-git-init", "skip 'git init' in the new project", undefined)
   .action(function (this: Command, name: string) {
     const flags = this.opts();
@@ -209,19 +173,9 @@ program
   .description(
     "Diff framework-managed skeleton files (main.ts, tsconfig*, prisma framework block) against the template; business files are skipped",
   )
-  .option(
-    "--template-path <dir>",
-    "use a local template directory instead of cloning the newbie repository",
-  )
-  .option(
-    "--template-ref <ref>",
-    "git ref (e.g. a template tag) of the newbie repository to sync from",
-  )
-  .option(
-    "--write",
-    "apply the template version of differing skeleton files",
-    false,
-  )
+  .option("--template-path <dir>", "use a local template directory instead of cloning the newbie repository")
+  .option("--template-ref <ref>", "git ref (e.g. a template tag) of the newbie repository to sync from")
+  .option("--write", "apply the template version of differing skeleton files", false)
   .action(function (this: Command) {
     const flags = this.opts();
     return run(() =>
@@ -243,14 +197,8 @@ program
 
 program
   .command("dev-sync [keys...]")
-  .description(
-    "Watch the local newbie-modules registry and sync installed module sources into the project on change",
-  )
-  .option(
-    "--all",
-    "watch every registry module instead of only installed ones",
-    false,
-  )
+  .description("Watch the local newbie-modules registry and sync installed module sources into the project on change")
+  .option("--all", "watch every registry module instead of only installed ones", false)
   .action(function (this: Command, keys: string[]) {
     const flags = this.opts();
     return run(() =>
@@ -261,22 +209,13 @@ program
     );
   });
 
-const env = program
-  .command("env")
-  .description("Sync .env with AWS Secrets Manager");
+const env = program.command("env").description("Sync .env with AWS Secrets Manager");
 
 env
   .command("pull")
   .description("Pull environment variables from AWS Secrets Manager into .env")
-  .option(
-    "-e, --environment <name>",
-    "environment name from the env-tool config (skips the prompt)",
-  )
-  .option(
-    "-y, --yes",
-    "write .env without prompting (conflicting local values are kept)",
-    false,
-  )
+  .option("-e, --environment <name>", "environment name from the env-tool config (skips the prompt)")
+  .option("-y, --yes", "write .env without prompting (conflicting local values are kept)", false)
   .action(function (this: Command) {
     const flags = this.opts();
     return run(() =>
@@ -291,10 +230,7 @@ env
 env
   .command("push")
   .description("Push environment variables from .env to AWS Secrets Manager")
-  .option(
-    "-e, --environment <name>",
-    "environment name from the env-tool config (skips the prompt)",
-  )
+  .option("-e, --environment <name>", "environment name from the env-tool config (skips the prompt)")
   .option("-y, --yes", "create/update secrets without prompting", false)
   .action(function (this: Command) {
     const flags = this.opts();

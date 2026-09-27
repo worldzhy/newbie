@@ -137,14 +137,14 @@
 - **目标**：跨项目 module 全生命周期管理（安装状态、版本编排、变更单、agent 心跳）
 - **形态**：作为普通 module 收录在 `newbie-modules` registry（`packages/modules/module-hub/`），经 `newbie add module-hub` 复制装配
 - **数据模型**（独立 PG schema `module/module-hub`）：
-  | 表 | 职责 |
-  | --- | --- |
-  | `hub-project` | 项目在 Hub 的纳管登记（非 Project CRUD，归 Application 层） |
-  | `hub-module-release` | registry 版本目录登记 |
-  | `hub-installation` | 各项目 `modules.json` 安装状态视图 |
-  | `hub-change-request` | 升级变更单 |
-  | `hub-agent` | 统一 Agent 表的 Hub 侧注册与心跳视图 |
-  | `hub-audit-log` | 操作审计 |
+  | 表                   | 职责                                                        |
+  | -------------------- | ----------------------------------------------------------- |
+  | `hub-project`        | 项目在 Hub 的纳管登记（非 Project CRUD，归 Application 层） |
+  | `hub-module-release` | registry 版本目录登记                                       |
+  | `hub-installation`   | 各项目 `modules.json` 安装状态视图                          |
+  | `hub-change-request` | 升级变更单                                                  |
+  | `hub-agent`          | 统一 Agent 表的 Hub 侧注册与心跳视图                        |
+  | `hub-audit-log`      | 操作审计                                                    |
 - **API**：
   - 模块目录浏览（registry 镜像）
   - 安装清单查询（按 project/agent）

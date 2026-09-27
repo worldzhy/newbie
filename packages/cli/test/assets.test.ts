@@ -1,12 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import {
-  addAssets,
-  dedupeAssets,
-  isSameAsset,
-  removeAssets,
-} from "../src/core/assets";
+import { addAssets, dedupeAssets, isSameAsset, removeAssets } from "../src/core/assets";
 
 describe("isSameAsset", () => {
   it("compares glob strings by value", () => {
@@ -15,18 +10,9 @@ describe("isSameAsset", () => {
   });
 
   it("compares object assets structurally", () => {
-    assert.ok(
-      isSameAsset({ include: "a" }, { include: "a", outDir: undefined }),
-    );
-    assert.ok(
-      isSameAsset({ include: "a", outDir: "d" }, { include: "a", outDir: "d" }),
-    );
-    assert.ok(
-      !isSameAsset(
-        { include: "a", outDir: "d1" },
-        { include: "a", outDir: "d2" },
-      ),
-    );
+    assert.ok(isSameAsset({ include: "a" }, { include: "a", outDir: undefined }));
+    assert.ok(isSameAsset({ include: "a", outDir: "d" }, { include: "a", outDir: "d" }));
+    assert.ok(!isSameAsset({ include: "a", outDir: "d1" }, { include: "a", outDir: "d2" }));
   });
 });
 
@@ -38,9 +24,6 @@ describe("addAssets / removeAssets / dedupeAssets", () => {
 
     assert.deepEqual(removeAssets(twice, [{ include: "y" }]), ["x"]);
 
-    assert.deepEqual(
-      dedupeAssets(["x", "x", { include: "y" }, { include: "y" }]),
-      ["x", { include: "y" }],
-    );
+    assert.deepEqual(dedupeAssets(["x", "x", { include: "y" }, { include: "y" }]), ["x", { include: "y" }]);
   });
 });

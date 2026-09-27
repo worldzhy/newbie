@@ -1,11 +1,7 @@
 import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { NestExpressApplication } from "@nestjs/platform-express";
-import {
-  DocumentBuilder,
-  SwaggerCustomOptions,
-  SwaggerModule,
-} from "@nestjs/swagger";
+import { DocumentBuilder, SwaggerCustomOptions, SwaggerModule } from "@nestjs/swagger";
 import cookieParser from "cookie-parser";
 import { json, text, urlencoded } from "express";
 import helmet from "helmet";
@@ -56,10 +52,7 @@ export interface NewbieAppOptions {
    * set, it replaces the static {credentials, origin: corsAllowedOrigins}
    * config entirely.
    */
-  corsResolver?: (
-    req: any,
-    callback: (err: unknown, options?: unknown) => void,
-  ) => void;
+  corsResolver?: (req: any, callback: (err: unknown, options?: unknown) => void) => void;
   /**
    * Survive port races during `nest start --watch` under Docker bind mounts:
    * probe the port, kill stale previous-generation holders, stand down when a
@@ -84,9 +77,7 @@ export interface NewbieAppOptions {
 
 export interface NewbieBootstrapResult {
   app: NestExpressApplication;
-  server: ReturnType<NestExpressApplication["listen"]> extends Promise<infer T>
-    ? T
-    : never;
+  server: ReturnType<NestExpressApplication["listen"]> extends Promise<infer T> ? T : never;
 }
 
 function clusterize(callback: () => unknown): void {
@@ -117,18 +108,11 @@ export class NewbieFactory {
    *
    *   NewbieFactory.create(ApplicationModule, {swagger: {title: 'My API'}})
    */
-  static async create(
-    rootModule: unknown,
-    options: NewbieAppOptions = {},
-  ): Promise<NewbieBootstrapResult | void> {
+  static async create(rootModule: unknown, options: NewbieAppOptions = {}): Promise<NewbieBootstrapResult | void> {
     const environment: NewbieEnvironment =
-      options.environment ??
-      (process.env.ENVIRONMENT as NewbieEnvironment) ??
-      "development";
+      options.environment ?? (process.env.ENVIRONMENT as NewbieEnvironment) ?? "development";
     const port = options.port ?? (parseInt(process.env.PORT ?? "") || 3000);
-    const corsAllowedOrigins =
-      options.corsAllowedOrigins ??
-      (process.env.ALLOWED_ORIGINS ?? "").split(",");
+    const corsAllowedOrigins = options.corsAllowedOrigins ?? (process.env.ALLOWED_ORIGINS ?? "").split(",");
     const bodyLimit = options.bodyLimit ?? "10mb";
     const requestTimeout = options.requestTimeout ?? 60000; // milliseconds
 
@@ -139,15 +123,10 @@ export class NewbieFactory {
       // LOG_LEVEL=verbose (or debug) via env to enable troubleshooting.
       const logLevel =
         options.logger ??
-        (process.env.LOG_LEVEL
-          ? process.env.LOG_LEVEL.split(",").map((s) => s.trim())
-          : ["log", "warn", "error"]);
-      const app = await NestFactory.create<NestExpressApplication>(
-        rootModule as any,
-        {
-          logger: logLevel as any,
-        },
-      );
+        (process.env.LOG_LEVEL ? process.env.LOG_LEVEL.split(",").map((s) => s.trim()) : ["log", "warn", "error"]);
+      const app = await NestFactory.create<NestExpressApplication>(rootModule as any, {
+        logger: logLevel as any,
+      });
 
       // Shutdown signal handling is installed after listen():
       //  - dev (portRaceRecovery): hard exit to release the port instantly
@@ -220,12 +199,7 @@ export class NewbieFactory {
           },
           customSiteTitle: swagger.title ?? "API Document",
         };
-        SwaggerModule.setup(
-          swagger.path ?? "api",
-          app,
-          document,
-          customOptions,
-        );
+        SwaggerModule.setup(swagger.path ?? "api", app, document, customOptions);
       }
 
       // [step 3] Listen port. With portRaceRecovery enabled, probe the port,
@@ -241,11 +215,7 @@ export class NewbieFactory {
       if (!options.portRaceRecovery) {
         // Production-style shutdown: drain in-flight requests within a bounded
         // grace period and always terminate afterwards.
-        registerGracefulShutdown(
-          app,
-          server,
-          options.shutdownTimeoutMs ?? 10_000,
-        );
+        registerGracefulShutdown(app, server, options.shutdownTimeoutMs ?? 10_000);
       }
 
       console.log(`Application is running on: ${await app.getUrl()}`);

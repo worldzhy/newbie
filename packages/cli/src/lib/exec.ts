@@ -50,11 +50,7 @@ export function execLive(
       if (code === 0) {
         resolve();
       } else {
-        reject(
-          new Error(
-            `[Error] ${command} ${args.join(" ")} exited with code ${code}`,
-          ),
-        );
+        reject(new Error(`[Error] ${command} ${args.join(" ")} exited with code ${code}`));
       }
     });
   });

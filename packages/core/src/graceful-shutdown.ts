@@ -1,5 +1,5 @@
-import {INestApplication} from '@nestjs/common';
-import http from 'node:http';
+import { INestApplication } from "@nestjs/common";
+import http from "node:http";
 
 /**
  * Bounded graceful shutdown for production-style runs.
@@ -18,11 +18,7 @@ import http from 'node:http';
  *     destroy ALL connections so server.close() unblocks.
  *  4. Exit 0. A second signal exits 1 without further waiting.
  */
-export function registerGracefulShutdown(
-  app: INestApplication,
-  server: http.Server,
-  timeoutMs = 10_000
-): void {
+export function registerGracefulShutdown(app: INestApplication, server: http.Server, timeoutMs = 10_000): void {
   let shuttingDown = false;
 
   const handleSignal = (): void => {
@@ -38,7 +34,7 @@ export function registerGracefulShutdown(
 
     // Hard cap: destroy still-busy sockets (long-running/streaming requests).
     const forceTimer = setTimeout(() => {
-      console.warn('[shutdown] Grace period exceeded, forcing all connections closed.');
+      console.warn("[shutdown] Grace period exceeded, forcing all connections closed.");
       server.closeAllConnections?.();
     }, timeoutMs);
     // Do not let the timer itself keep the event loop alive.
@@ -51,13 +47,13 @@ export function registerGracefulShutdown(
         clearTimeout(forceTimer);
         process.exit(0);
       })
-      .catch(err => {
+      .catch((err) => {
         clearTimeout(forceTimer);
-        console.error('[shutdown] Error during graceful shutdown:', err);
+        console.error("[shutdown] Error during graceful shutdown:", err);
         process.exit(1);
       });
   };
 
-  process.on('SIGTERM', handleSignal);
-  process.on('SIGINT', handleSignal);
+  process.on("SIGTERM", handleSignal);
+  process.on("SIGINT", handleSignal);
 }

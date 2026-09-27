@@ -28,10 +28,7 @@ export interface ModuleManifest {
   [key: string]: unknown;
 }
 
-export function normalizeModuleManifest(
-  raw: unknown,
-  expectedKey?: string,
-): ModuleManifest {
+export function normalizeModuleManifest(raw: unknown, expectedKey?: string): ModuleManifest {
   if (!raw || typeof raw !== "object") {
     throw new Error("Invalid newbie.module.json: expected an object.");
   }
@@ -41,9 +38,7 @@ export function normalizeModuleManifest(
     throw new Error("Invalid newbie.module.json: string 'key' is required.");
   }
   if (expectedKey && data.key !== expectedKey) {
-    throw new Error(
-      `Invalid newbie.module.json: key '${data.key}' does not match directory '${expectedKey}'.`,
-    );
+    throw new Error(`Invalid newbie.module.json: key '${data.key}' does not match directory '${expectedKey}'.`);
   }
 
   const wiring = data.module as Partial<ModuleWiring> | undefined;
@@ -69,18 +64,12 @@ export function normalizeModuleManifest(
 }
 
 /** Import statement emitted into the generated modules.module.ts. */
-export function moduleImportLine(
-  key: string,
-  manifest: ModuleManifest,
-): string {
+export function moduleImportLine(key: string, manifest: ModuleManifest): string {
   return `import {${manifest.module.className}} from './${key}/${manifest.module.file}';`;
 }
 
 /** Validate/sanitise user-supplied module keys against a known key set. */
-export function sanitizeModuleNames(
-  names: string[],
-  knownKeys: ReadonlySet<string>,
-): string[] {
+export function sanitizeModuleNames(names: string[], knownKeys: ReadonlySet<string>): string[] {
   const seen = new Set<string>();
   const result: string[] = [];
   for (const name of names.map((name) => name.trim())) {

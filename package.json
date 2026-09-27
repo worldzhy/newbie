@@ -10,6 +10,11 @@
     "templates/*"
   ],
   "scripts": {
-    "build:core": "npm run build -w @devbie/newbie"
+    "build:core": "npm run build -w @devbie/newbie",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "^3.9.9"
   }
 }

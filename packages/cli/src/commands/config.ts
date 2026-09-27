@@ -26,9 +26,7 @@ function assertKnown(names: string[], known: string[]): void {
   const knownSet = new Set(known);
   const unknown = names.filter((name) => !knownSet.has(name));
   if (unknown.length > 0) {
-    throw new CliError(
-      `Unknown module(s): ${unknown.join(", ")}. Available modules: ${known.join(", ")}`,
-    );
+    throw new CliError(`Unknown module(s): ${unknown.join(", ")}. Available modules: ${known.join(", ")}`);
   }
 }
 
@@ -44,8 +42,7 @@ export async function runConfig(options: ConfigOptions): Promise<void> {
   if (options.list) {
     console.info(green("enabled modules:"));
     for (const record of ctx.state.modules) {
-      const version =
-        record.version ?? (record.sourceCommit ? record.sourceCommit.slice(0, 7) : "(not installed)");
+      const version = record.version ?? (record.sourceCommit ? record.sourceCommit.slice(0, 7) : "(not installed)");
       console.info(`  - ${record.key} (${version})`);
     }
     return;
@@ -66,9 +63,7 @@ export async function runConfig(options: ConfigOptions): Promise<void> {
     }
 
     await writeModulesState(cwd, sink, withModuleKeys(ctx.state, next));
-    console.info(
-      green(`[info] enabled modules: ${next.join(", ") || "(none)"}`),
-    );
+    console.info(green(`[info] enabled modules: ${next.join(", ") || "(none)"}`));
     return;
   }
 
@@ -89,19 +84,12 @@ export async function runConfig(options: ConfigOptions): Promise<void> {
     loop: true,
   });
 
-  if (
-    chosen.length === current.length &&
-    chosen.every((name) => current.includes(name))
-  ) {
-    console.info(
-      "\n[info] You did not make any changes to the configuration.\n",
-    );
+  if (chosen.length === current.length && chosen.every((name) => current.includes(name))) {
+    console.info("\n[info] You did not make any changes to the configuration.\n");
     return;
   }
 
   await writeModulesState(cwd, sink, withModuleKeys(ctx.state, chosen));
-  for (const name of chosen.filter((n) => !current.includes(n)))
-    console.info(cyan(`+ ${name}`));
-  for (const name of current.filter((n) => !chosen.includes(n)))
-    console.info(cyan(`- ${name}`));
+  for (const name of chosen.filter((n) => !current.includes(n))) console.info(cyan(`+ ${name}`));
+  for (const name of current.filter((n) => !chosen.includes(n))) console.info(cyan(`- ${name}`));
 }

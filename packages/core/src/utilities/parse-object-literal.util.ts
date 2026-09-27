@@ -6,13 +6,13 @@
 export const parseObjectLiteral = (objectLiteralString: string): [string, string | undefined][] => {
   const stringDouble = '"(?:[^"\\\\]|\\\\.)*"';
   const stringSingle = "'(?:[^'\\\\]|\\\\.)*'";
-  const stringRegexp = '/(?:[^/\\\\]|\\\\.)*/w*';
-  const specials = ',"\'{}()/:[\\]';
-  const everyThingElse = '[^\\s:,/][^' + specials + ']*[^\\s' + specials + ']';
-  const oneNotSpace = '[^\\s]';
+  const stringRegexp = "/(?:[^/\\\\]|\\\\.)*/w*";
+  const specials = ",\"'{}()/:[\\]";
+  const everyThingElse = "[^\\s:,/][^" + specials + "]*[^\\s" + specials + "]";
+  const oneNotSpace = "[^\\s]";
   const token = RegExp(
-    stringDouble + '|' + stringSingle + '|' + stringRegexp + '|' + everyThingElse + '|' + oneNotSpace,
-    'g'
+    stringDouble + "|" + stringSingle + "|" + stringRegexp + "|" + everyThingElse + "|" + oneNotSpace,
+    "g",
   );
   const divisionLookBehind = /[\])"'A-Za-z0-9_$]+$/;
   const keywordRegexLookBehind: Record<string, number> = {
@@ -28,7 +28,7 @@ export const parseObjectLiteral = (objectLiteralString: string): [string, string
   let key: string | undefined = undefined;
   let values: string[] = [];
   let depth = 0;
-  toks.push(',');
+  toks.push(",");
   for (let i = 0, tok: string; (tok = toks[i]); ++i) {
     const c = tok.charCodeAt(0);
     if (c === 44) {
@@ -36,7 +36,7 @@ export const parseObjectLiteral = (objectLiteralString: string): [string, string
         if (!key && values.length === 1) {
           key = values.pop();
         }
-        if (key) result.push([key, values.length ? values.join('') : undefined]);
+        if (key) result.push([key, values.length ? values.join("") : undefined]);
         key = undefined;
         values = [];
         depth = 0;
@@ -53,9 +53,9 @@ export const parseObjectLiteral = (objectLiteralString: string): [string, string
         str = str.substr(str.indexOf(tok) + 1);
         const result = str.match(token);
         if (result) toks = result;
-        toks.push(',');
+        toks.push(",");
         i = -1;
-        tok = '/';
+        tok = "/";
       }
     } else if (c === 40 || c === 123 || c === 91) {
       ++depth;

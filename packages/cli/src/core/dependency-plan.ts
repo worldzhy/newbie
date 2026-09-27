@@ -17,12 +17,8 @@ export function planDependencyRemovals(
   const keptDevDependencies = new Set<string>();
 
   for (const decl of enabledDecls) {
-    Object.keys(decl.dependencies ?? {}).forEach((name) =>
-      keptDependencies.add(name),
-    );
-    Object.keys(decl.devDependencies ?? {}).forEach((name) =>
-      keptDevDependencies.add(name),
-    );
+    Object.keys(decl.dependencies ?? {}).forEach((name) => keptDependencies.add(name));
+    Object.keys(decl.devDependencies ?? {}).forEach((name) => keptDevDependencies.add(name));
   }
 
   const removedDependencies = new Set<string>();
@@ -102,10 +98,7 @@ export function planDependencyInstalls(
     }
 
     // A package declared under either dependency kind counts as present.
-    const present = new Set([
-      ...Object.keys(pick(installed) ?? {}),
-      ...Object.keys(otherKind ?? {}),
-    ]);
+    const present = new Set([...Object.keys(pick(installed) ?? {}), ...Object.keys(otherKind ?? {})]);
 
     const specs: string[] = [];
     const conflicts: DependencyConflict[] = [];
@@ -117,14 +110,8 @@ export function planDependencyInstalls(
     return { specs, conflicts };
   };
 
-  const deps = mergeDecls(
-    (decl) => decl.dependencies,
-    installed.devDependencies,
-  );
-  const devDeps = mergeDecls(
-    (decl) => decl.devDependencies,
-    installed.dependencies,
-  );
+  const deps = mergeDecls((decl) => decl.dependencies, installed.devDependencies);
+  const devDeps = mergeDecls((decl) => decl.devDependencies, installed.dependencies);
 
   return {
     dependencies: deps.specs,

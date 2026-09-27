@@ -42,41 +42,27 @@ function normalizeRecord(raw: unknown): ModuleRecord | null {
   if (!raw || typeof raw !== "object") return null;
   const record = raw as Record<string, unknown>;
   if (typeof record.key !== "string" || record.key.length === 0) return null;
-  const sourceCommit =
-    typeof record.sourceCommit === "string" ? record.sourceCommit : null;
-  const version =
-    typeof record.version === "string" ? record.version : null;
+  const sourceCommit = typeof record.sourceCommit === "string" ? record.sourceCommit : null;
+  const version = typeof record.version === "string" ? record.version : null;
   const localPatches = Array.isArray(record.localPatches)
-    ? record.localPatches.filter(
-        (patch): patch is string => typeof patch === "string",
-      )
+    ? record.localPatches.filter((patch): patch is string => typeof patch === "string")
     : [];
   return { key: record.key, version, sourceCommit, localPatches };
 }
 
 export function normalizeModulesState(raw: unknown): ModulesState {
-  const data = (raw && typeof raw === "object"
-    ? raw
-    : {}) as Partial<ModulesState>;
-  const registryData =
-    data.registry && typeof data.registry === "object" ? data.registry : null;
+  const data = (raw && typeof raw === "object" ? raw : {}) as Partial<ModulesState>;
+  const registryData = data.registry && typeof data.registry === "object" ? data.registry : null;
   const registry = registryData
     ? {
-        url:
-          typeof registryData.url === "string" ? registryData.url : undefined,
-        ref:
-          typeof registryData.ref === "string" ? registryData.ref : null,
-        sourceCommit:
-          typeof registryData.sourceCommit === "string"
-            ? registryData.sourceCommit
-            : null,
+        url: typeof registryData.url === "string" ? registryData.url : undefined,
+        ref: typeof registryData.ref === "string" ? registryData.ref : null,
+        sourceCommit: typeof registryData.sourceCommit === "string" ? registryData.sourceCommit : null,
       }
     : null;
 
   const records = Array.isArray(data.modules)
-    ? data.modules
-        .map(normalizeRecord)
-        .filter((record): record is ModuleRecord => record !== null)
+    ? data.modules.map(normalizeRecord).filter((record): record is ModuleRecord => record !== null)
     : [];
 
   const seen = new Set<string>();
@@ -116,10 +102,7 @@ export function diffModuleKeys(current: string[], next: string[]): EnabledDiff {
  * new keys get empty records that the assemble step fills with the registry
  * sourceCommit; removed modules drop their records entirely.
  */
-export function withModuleKeys(
-  state: ModulesState,
-  nextKeys: string[],
-): ModulesState {
+export function withModuleKeys(state: ModulesState, nextKeys: string[]): ModulesState {
   const byKey = new Map(state.modules.map((record) => [record.key, record]));
   const seen = new Set<string>();
   const modules: ModuleRecord[] = [];

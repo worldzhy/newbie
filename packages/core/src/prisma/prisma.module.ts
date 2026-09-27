@@ -1,6 +1,6 @@
-import {DynamicModule, Global, Provider} from '@nestjs/common';
-import {PrismaService} from './prisma.service';
-import {CreateExtendedPrismaClientOptions, createExtendedPrismaClient} from './prisma.extension';
+import { DynamicModule, Global, Provider } from "@nestjs/common";
+import { PrismaService } from "./prisma.service";
+import { CreateExtendedPrismaClientOptions, createExtendedPrismaClient } from "./prisma.extension";
 
 export type PrismaModuleOptions = CreateExtendedPrismaClientOptions;
 
@@ -41,7 +41,7 @@ export class PrismaModule {
               return target[prop as keyof typeof target];
             }
             const value = client[prop as keyof typeof client];
-            if (typeof value === 'function') {
+            if (typeof value === "function") {
               return value.bind(client);
             }
             return value;
