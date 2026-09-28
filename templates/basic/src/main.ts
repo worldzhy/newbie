@@ -6,9 +6,9 @@ async function bootstrap(): Promise<void> {
   // Start reporting liveness only after the HTTP server is accepting traffic.
   await NewbieFactory.create(ApplicationModule);
 
-  // Enrolled projects set the two NIGHTWATCH_* vars; otherwise this is a no-op.
-  const heartbeatEndpoint = process.env.NIGHTWATCH_REPORT_ENDPOINT;
-  const heartbeatToken = process.env.NIGHTWATCH_APPLICATION_TOKEN;
+  // Enrolled projects set the two HEARTBEAT_* vars; otherwise this is a no-op.
+  const heartbeatEndpoint = process.env.HEARTBEAT_ENDPOINT;
+  const heartbeatToken = process.env.HEARTBEAT_TOKEN;
   if (heartbeatEndpoint && heartbeatToken) {
     startHeartbeat({endpoint: heartbeatEndpoint, token: heartbeatToken});
   }

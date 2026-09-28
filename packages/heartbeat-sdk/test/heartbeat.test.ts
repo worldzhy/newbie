@@ -57,7 +57,7 @@ describe("startHeartbeat", () => {
     first.stop();
   });
 
-  it("sends POST to correct URL with X-Application-Token header", async () => {
+  it("sends POST to correct URL with X-Heartbeat-Token header", async () => {
     cleanup();
     const spy = mockFetch(async () => new Response(null, { status: 204 }));
     const handle = startHeartbeat({
@@ -69,9 +69,34 @@ describe("startHeartbeat", () => {
     await new Promise((resolve) => setTimeout(resolve, 50));
     assert.equal(spy.calls.length, 1);
     const [url, init] = spy.calls[0];
-    assert.equal(url, "http://localhost:3000/applications/heartbeat");
+    assert.equal(url, "http://localhost:3000/heartbeat/ping");
     assert.equal(init.method, "POST");
-    assert.equal((init.headers as Record<string, string>)["X-Application-Token"], "secret-token");
+    assert.equal((init.headers as Record<string, string>)["X-Heartbeat-Token"], "secret-token");
+    assert.equal(init.body, undefined);
+    handle.stop();
+    spy.restore();
+  });
+
+  it("sends optional metadata as JSON body", async () => {
+    cleanup();
+    const spy = mockFetch(async () => new Response(null, { status: 204 }));
+    const handle = startHeartbeat({
+      endpoint: "http://localhost:3000",
+      token: "tok-meta",
+      intervalMs: 60_000,
+      appVersion: "1.2.3",
+      env: "prod",
+      instanceId: "i-abc",
+    });
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    const [, init] = spy.calls[0];
+    const headers = init.headers as Record<string, string>;
+    assert.equal(headers["Content-Type"], "application/json");
+    assert.deepEqual(JSON.parse(init.body as string), {
+      appVersion: "1.2.3",
+      env: "prod",
+      instanceId: "i-abc",
+    });
     handle.stop();
     spy.restore();
   });
