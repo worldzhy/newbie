@@ -48,6 +48,10 @@ export * from "./monitoring/backend-monitor.module";
 export * from "./monitoring/backend-monitor.types";
 export * from "./monitoring/backend-monitor.reporter";
 
+// Built-in module-hub reporter (env-gated; no-op without MODULE_HUB_*)
+export * from "./monitoring/module-hub.reporter";
+export * from "./monitoring/module-hub.snapshot";
+
 // Pipes (their local errors.constants is subpath-only, see note above)
 export * from "./pipes/cursor-slug.pipe";
 export * from "./pipes/cursor.pipe";
