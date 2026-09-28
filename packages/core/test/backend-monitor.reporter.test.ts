@@ -111,6 +111,58 @@ describe("MonitorEventReporter", () => {
     assert.equal(reporter.pendingCount, 0);
   });
 
+  it("flushes early once a kind reaches maxBatchSize, with counters reset per batch", async () => {
+    const sent: IngestPayload[] = [];
+    const reporter = new MonitorEventReporter(
+      { ...baseOptions, maxBatchSize: 2, maxQueueSize: 10 },
+      async (payload) => {
+        sent.push(payload);
+      },
+    );
+
+    reporter.enqueueRequest(requestEvent(1));
+    assert.equal(sent.length, 0);
+    reporter.enqueueRequest(requestEvent(2));
+    // Auto-flush took the batch synchronously; the transport settles in a microtask.
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(sent.length, 1);
+    assert.equal(sent[0].requests.length, 2);
+    assert.equal(reporter.pendingCount, 0);
+
+    // If per-kind counters were not decremented on take, the next two requests
+    // would each fire an early flush (batches of 1) instead of one batch of 2.
+    reporter.enqueueRequest(requestEvent(3));
+    reporter.enqueueRequest(requestEvent(4));
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(sent.length, 2);
+    assert.equal(sent[1].requests.length, 2);
+  });
+
+  it("keeps kind counters consistent when overflow drops interleave with takes", () => {
+    const reporter = new MonitorEventReporter(
+      { ...baseOptions, maxBatchSize: 100, maxQueueSize: 3 },
+      async () => undefined,
+    );
+
+    reporter.enqueueRequest(requestEvent(1));
+    reporter.enqueueError(errorEvent(1));
+    reporter.enqueueRequest(requestEvent(2));
+    reporter.enqueueError(errorEvent(2)); // dropped — queue full
+    assert.equal(reporter.droppedCount, 1);
+
+    const batch = reporter.takeBatch();
+    assert.equal(batch?.requests.length, 2);
+    assert.equal(batch?.errors.length, 1);
+    assert.equal(reporter.pendingCount, 0);
+
+    // Counts must not include the dropped event after the take.
+    reporter.enqueueError(errorEvent(3));
+    const second = reporter.takeBatch();
+    assert.equal(second?.requests.length, 0);
+    assert.equal(second?.errors.length, 1);
+    assert.equal(reporter.pendingCount, 0);
+  });
+
   it("never overlaps two flushes and drains items enqueued during a flush", async () => {
     let concurrent = 0;
     let maxConcurrent = 0;

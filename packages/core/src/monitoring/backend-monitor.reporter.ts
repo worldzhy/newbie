@@ -38,6 +38,10 @@ export class MonitorEventReporter implements OnModuleInit, OnModuleDestroy {
   /** Total batches abandoned after a transport failure. */
   failedBatchCount = 0;
 
+  /** Per-kind counters so enqueue never scans the queue (O(1) instead of O(n)). */
+  private requestCount = 0;
+  private errorCount = 0;
+
   private readonly logger = new Logger("BackendMonitor");
 
   constructor(
@@ -106,19 +110,15 @@ export class MonitorEventReporter implements OnModuleInit, OnModuleDestroy {
       return;
     }
     this.queue.push(item);
+    if (item.kind === "request") {
+      this.requestCount += 1;
+    } else {
+      this.errorCount += 1;
+    }
     // Ship immediately once either kind reaches the batch cap.
-    if (
-      this.countByKind("request") >= this.options.maxBatchSize ||
-      this.countByKind("error") >= this.options.maxBatchSize
-    ) {
+    if (this.requestCount >= this.options.maxBatchSize || this.errorCount >= this.options.maxBatchSize) {
       void this.flush();
     }
-  }
-
-  private countByKind(kind: QueueItem["kind"]): number {
-    let count = 0;
-    for (const item of this.queue) if (item.kind === kind) count += 1;
-    return count;
   }
 
   /**
@@ -140,6 +140,8 @@ export class MonitorEventReporter implements OnModuleInit, OnModuleDestroy {
       }
     }
     this.queue = remainder;
+    this.requestCount -= requests.length;
+    this.errorCount -= errors.length;
 
     if (requests.length === 0 && errors.length === 0) return null;
     return {

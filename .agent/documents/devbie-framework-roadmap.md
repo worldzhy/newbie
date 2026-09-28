@@ -36,7 +36,7 @@
 
 | #   | 功能                                                                                                                              | 归属            | 优先级 |
 | --- | --------------------------------------------------------------------------------------------------------------------------------- | --------------- | ------ |
-| A1  | backend-monitor 探针 Nit 优化（⛔ 阻塞：等 nightwatch 侧输出 Nit 清单）                                                           | newbie core     | 高     |
+| A1  | backend-monitor 探针 Nit 优化 ✅（2026-09-28，Nit-1 reporter 队列改 per-kind 计数器消除 O(n) 扫描；Nit-2 记为已知限制）           | newbie core     | 高     |
 | A2  | `@devbie/web-monitor-sdk` 包发布 + fewbie thin wrapper ✅（2026-09-27，`0.1.0-stage.0` 已发布，latest 直指；fewbie 件 `9cfa860`） | newbie + fewbie | 高     |
 | A3  | `fewbie doctor` 命令 ✅（2026-09-27）                                                                                             | fewbie CLI      | 中     |
 | A4  | `fewbie update` 命令（组件/token diff PR）✅（2026-09-27，含零依赖 LCS unified diff）                                             | fewbie CLI      | 中     |
@@ -215,7 +215,7 @@
         ├──→ C2 Modules 前端面板（宿主侧；仍依赖 nightwatch UI 层次重构）
         │
         ▼
-   A1 backend-monitor Nit（阻塞：等 nightwatch Nit 清单）──┐
+   A1 backend-monitor Nit ✅（2026-09-28）──────────────────┐
                                                             │
    已完成：A2/A3/A4/A5/B1（2026-09-27）                     ├──→ D1 GA 发布
                                                             │
@@ -242,6 +242,5 @@
 | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ----------------- |
 | ~~nightwatch Application/Agent 模型~~  | ~~C1 阻塞~~ **已解除**：C1 改为去 project 化的 token-only installation 模型，框架侧可独立设计；仅 C2 面板仍待宿主 UI 层次重构 | —                 |
 | nightwatch-backend-next 生产切换未完成 | D1 GA 缺乏稳定验证环境                                                                                                        | nightwatch 工作区 |
-| backend-monitor Nit 清单未输出         | A1 无法启动                                                                                                                   | nightwatch 工作区 |
 
-**建议下一步**：C1（module-hub 控制面）设计已定稿且无前置，可在 newbie 工作区启动实现（4 表 schema → token-only API → GitHub webhook → `newbie agent` hub 轮询模式）；A2/A3/A4/A5/B1 已于 2026-09-27 完成。
+**建议下一步**：C1（module-hub 控制面）框架侧已实现（`newbie agent` hub 轮询 + core reporter + rawBody，2026-09-28）；A1/A2/A3/A4/A5/B1 均已完成。剩余：消费侧 C1 端到端验收（nightwatch 工作区）与 D1 GA。

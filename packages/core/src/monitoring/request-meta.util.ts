@@ -8,7 +8,14 @@ export interface MonitorRequestMeta {
 
 const META_KEY = Symbol.for("@devbie/newbie:backend-monitor:meta");
 
-/** Ingest path; traffic on it is the probe's own and must never be recorded. */
+/**
+ * Ingest path; traffic on it is the probe's own and must never be recorded.
+ *
+ * Known limitation: the probe is protocol-agnostic and does not know the
+ * host's Nest `globalPrefix`. If a host mounts all routes under a prefix
+ * (e.g. `/api`), the literal path check below misses the self-loop; the
+ * `X-Backend-Monitor` loop-guard header remains the authoritative guard.
+ */
 export const INGEST_PATH = "/backend-monitor/ingest";
 
 /** Loop-guard header set by the reporter on every outgoing ingest call. */
