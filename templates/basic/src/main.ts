@@ -1,5 +1,5 @@
 import {NewbieFactory, startModuleHubReporting} from '@devbie/newbie';
-import {startHeartbeat} from '@devbie/nightwatch-heartbeat-sdk';
+import {startHeartbeat} from '@devbie/heartbeat-sdk';
 import {ApplicationModule} from '@/application/application.module';
 
 async function bootstrap(): Promise<void> {

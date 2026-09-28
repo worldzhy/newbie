@@ -10,7 +10,7 @@ import { readModuleSnapshot, type ModuleSnapshotEntry } from "./module-hub.snaps
  * `kind="ping"` every `reportIntervalSeconds` (returned by the hub,
  * currently 60s).
  *
- * Design constraints (mirrors `@devbie/nightwatch-heartbeat-sdk`):
+ * Design constraints (mirrors `@devbie/heartbeat-sdk`):
  *   - **Idempotent** via a `globalThis[Symbol]` singleton so Next.js HMR or
  *     double-init does not create duplicate timers.
  *   - **Non-blocking**: `setInterval().unref()` keeps the timer from holding

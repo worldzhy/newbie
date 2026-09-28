@@ -14,7 +14,7 @@
 | ---------------------------------------------------------------------------------------------------------------------------- | --------- | --------------- |
 | `@devbie/newbie` core（exception-filters / pipes / prisma / NewbieFactory / heartbeat / backend-monitor 探针）               | ✅ 已发布 | `0.1.0-stage.2` |
 | `@devbie/newbie-cli`（create / install / update / doctor / apply / status / agent / check / update-template / config / env） | ✅ 已发布 | `0.1.0-stage.1` |
-| `@devbie/nightwatch-heartbeat-sdk`（token-only 心跳内核）                                                                    | ✅ 已发布 | `0.1.0-stage.0` |
+| `@devbie/heartbeat-sdk`（token-only 心跳内核）                                                                               | ✅ 已发布 | `0.1.0-stage.0` |
 | newbie 模板（basic 骨架 + 薄 main.ts + 心跳接线）                                                                            | ✅ 已发布 | 随 core         |
 | `newbie-modules` registry（48 个 module 迁入，复制模型装配管线）                                                             | ✅ 可用   | —               |
 
@@ -85,7 +85,7 @@
   - 发布 `@devbie/web-monitor-sdk@0.1.0-stage.0`
 - **fewbie 侧**：
   - registry 新增 `web-monitor-sdk` 件：`fewbie add web-monitor-sdk` 脚手架 layout 注入采集组件 + 加 npm 依赖
-  - 心跳接线仍由模板 `instrumentation.ts` 负责（`@devbie/nightwatch-heartbeat-sdk`），与本件解耦
+  - 心跳接线仍由模板 `instrumentation.ts` 负责（`@devbie/heartbeat-sdk`），与本件解耦
 - **验证**：fewbie 模板 `add web-monitor-sdk` 后 `next build` 通过 + 浏览器控制台确认上报
 
 #### A3. `fewbie doctor` 命令
@@ -148,12 +148,12 @@
   - 自注册：CLI 首次带 token 轮询时 hub 自动登记 installation
   - `externalRef`（opaque 自由文本）留给宿主贴自己的 project/application 标签，hub 不解释
 - **数据模型**（独立 PG schema `module/module-hub`，4 表）：
-  | 表                   | 职责                                                                                                                         |
+  | 表 | 职责 |
   | -------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-  | `hub-installation`   | tokenHash、label、repoUrl?、externalRef?、newbieVersion、已装模块快照、lastSeenAt（agent 状态并入本表，无独立 hub-agent 表） |
-  | `hub-module-release` | registry 版本目录登记（GitHub webhook 写入）                                                                                 |
-  | `hub-change-request` | 变更单，scoped to installationId；状态机 pending → running → done/failed，含 diff 摘要与失败原因                             |
-  | `hub-audit-log`      | 操作审计（谁/何时/哪个实例/什么变更）                                                                                        |
+  | `hub-installation` | tokenHash、label、repoUrl?、externalRef?、newbieVersion、已装模块快照、lastSeenAt（agent 状态并入本表，无独立 hub-agent 表） |
+  | `hub-module-release` | registry 版本目录登记（GitHub webhook 写入） |
+  | `hub-change-request` | 变更单，scoped to installationId；状态机 pending → running → done/failed，含 diff 摘要与失败原因 |
+  | `hub-audit-log` | 操作审计（谁/何时/哪个实例/什么变更） |
 - **API（token-only，`MODULE_HUB_TOKEN`）**：
   - CLI 出站：拉取待执行变更单、上报安装清单/心跳、回执执行结果
   - 宿主集成：installation 列表、模块清单、变更单查询（宿主服务端调用，UI 权限归宿主）
