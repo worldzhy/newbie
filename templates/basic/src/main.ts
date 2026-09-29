@@ -1,26 +1,19 @@
-import {NewbieFactory, startModuleHubReporting} from '@devbie/newbie';
+import {NewbieFactory} from '@devbie/newbie';
 import {startHeartbeat} from '@devbie/heartbeat-sdk';
 import {ApplicationModule} from '@/application/application.module';
 
 async function bootstrap(): Promise<void> {
   // Start reporting liveness only after the HTTP server is accepting traffic.
+  // NewbieFactory auto-starts the module-hub reporter when
+  // MODULE_HUB_ENDPOINT + MODULE_HUB_TOKEN are set (no manual wiring needed).
   await NewbieFactory.create(ApplicationModule);
 
-  // Enrolled projects set the two HEARTBEAT_* vars; otherwise this is a no-op.
+  // Heartbeat is an independent framework-agnostic SDK: enrolled projects set
+  // the two HEARTBEAT_* vars; otherwise this is a no-op.
   const heartbeatEndpoint = process.env.HEARTBEAT_ENDPOINT;
   const heartbeatToken = process.env.HEARTBEAT_TOKEN;
   if (heartbeatEndpoint && heartbeatToken) {
     startHeartbeat({endpoint: heartbeatEndpoint, token: heartbeatToken});
-  }
-
-  // Module-hub self-registration: projects enrolled with a module-hub host set
-  // MODULE_HUB_ENDPOINT + MODULE_HUB_TOKEN. On startup the reporter sends a
-  // full report (with the assembled-module snapshot), then pings every 60s.
-  // Without both env vars this is a no-op.
-  const hubEndpoint = process.env.MODULE_HUB_ENDPOINT;
-  const hubToken = process.env.MODULE_HUB_TOKEN;
-  if (hubEndpoint && hubToken) {
-    startModuleHubReporting({endpoint: hubEndpoint, token: hubToken});
   }
 }
 

@@ -36,7 +36,7 @@
 
 - hub 世界里只有 **installation**（安装实例）实体。一个实例对应消费项目的一份工作副本（有 git、有 npm 的环境：开发者机器 / CI / 部署主机）。
 - dev/staging/prod 各发一个 token = 天然多实例，**无需 environment 字段、无需 project 层级**。
-- **自注册**：host 预创建 installation 并签发 token；CLI 首次带 token 轮询时，hub 补登运行时事实（CLI 版本、modules 快照、`lastSeenAt`）。创建到首次轮询之间 `lastSeenAt=null`，UI 显示「等待 agent 接入」。
+- **自注册**：host 预创建 installation 并签发 token；宿主进程启动时由 `@devbie/newbie` 框架钩子（§5.4，2026-09-29 已实现）首次带 token 发 `full` report，hub 补登运行时事实（framework 版本、modules 快照、`lastSeenAt`）。创建到首次上报之间 `lastSeenAt=null`，UI 显示「等待实例接入」。
 - **token 归 hub 所有**：存 `hub-installation.tokenHash`（SHA-256），明文仅在签发/轮转响应中一次性返回。**不经过、不引用 host 的 Application/Agent 模型**，因此没有跨 schema 外键，C1 框架侧可独立交付。
 - **`externalRef`（opaque 字符串）**：host 用来贴自己的 project/application 标签（nightwatch 可存 `projectId/applicationId` 或任意 JSON 字符串），hub 只存取不解释。C2 面板的 project/application 分组由 host 经此字段映射。
 
@@ -380,10 +380,23 @@ export class HubAgentPollResponseDto {
 
 ### 5.3 CLI 侧缺口（C1 验收前需在 newbie 仓补齐）
 
-1. **`newbie agent` 实现 hub 模式**：env 读取 `MODULE_HUB_*`、daemon/`--once`、HTTP 轮询、`apply`/`update` 调用编排、回执收集（`git diff --name-status` + 执行后 status 快照）。
-2. **`newbie update` 补单模块选择器 `--keys <a,b>`**（2026-09-28 拍板，见 7.2）：现状交互式 checkbox 或 `--all`；C1 要求 UPGRADE 单可精确到单 module，需补 `--keys` 过滤。
-3. 执行摘要：agent 需自行收集 `git diff --name-status` 与执行后 status 快照作为回执（CLI 无现成命令，agent 内部实现）。
+> **2026-09-29 状态订正**：第 2 项 `--keys` 已实现（`update.ts` 的 `parseKeysFlag`，支持逗号/空格分隔与未知 key 校验）；第 1 项的"轮询"改由框架启动钩子承担（见 §5.4），不再需要独立 `newbie agent` daemon。
+
+1. **`newbie agent` hub 模式（已取消 daemon 形态）**：v3 观察者模式下不再有独立轮询 agent；自注册改为 `@devbie/newbie` 框架启动钩子（进程启动发 `full`、每 60s `ping`，env `MODULE_HUB_*`）。仅当需要"变更执行通道"（ADD/REMOVE/UPGRADE 落 git 工作区）时才需 CLI 编排能力，属后续里程碑。
+2. ~~**`newbie update` 补单模块选择器 `--keys <a,b>`**~~：**已实现**。`newbie update --keys <a,b> [-y] [--force]`，非交互精确选择单/多 module，含未知或未启用 key 报错。
+3. 执行摘要：未来执行通道需自行收集 `git diff --name-status` 与执行后 status 快照作为回执（CLI 无现成命令，编排层内部实现）。
 4. `delivery: "pr"` 的建支/开 PR 能力（推迟，非 C1 阻塞）。
+
+### 5.4 框架启动钩子（2026-09-29 已实现）
+
+自注册不再依赖独立 CLI agent，改由 `@devbie/newbie` 框架内置：
+
+- 代码：`packages/core/src/monitoring/module-hub.reporter.ts` 的 `startModuleHubReporting()`，在 `newbie-factory.ts` 的 `app.listen()` 成功后由 `[step 4]` 自动调用。
+- env 门禁：仅当 `MODULE_HUB_ENDPOINT` + `MODULE_HUB_TOKEN` 同时存在时启动；fire-and-forget，绝不阻塞宿主启动。
+- 行为：进程启动立即发 `kind="full"`（含从 `modules.json` 读取的模块快照 + cliVersion + frameworkVersion），成功后按响应 `reportIntervalSeconds`（默认 60s）周期发 `kind="ping"`。
+- 健壮性：`globalThis[Symbol]` 单例（HMR/双初始化幂等）、`setInterval().unref()`（不挂住事件循环）、网络错误静默吞掉、10s 请求超时。
+- 随 `@devbie/newbie@1.0.0` 发布；宿主模板无需手动接线（模板 main.ts 已移除手动调用）。
+- 已端到端验证：nightwatch-backend 设置两个 env 启动后自动上报，hub DB 的 framework/frameworkVersion/firstSeenAt/lastSeenAt/modulesSnapshot 正确写入。
 
 ---
 
