@@ -9,6 +9,7 @@ import cluster from "node:cluster";
 import os from "node:os";
 import { listenWithPortRaceRecovery } from "./port-race";
 import { registerGracefulShutdown } from "./graceful-shutdown";
+import { startModuleHubReporting } from "./monitoring/module-hub.reporter";
 
 export type NewbieEnvironment = "development" | "production";
 
@@ -222,6 +223,16 @@ export class NewbieFactory {
       }
 
       console.log(`Application is running on: ${await app.getUrl()}`);
+
+      // [step 4] Module-hub self-registration. Env-gated: only starts when
+      // both MODULE_HUB_ENDPOINT and MODULE_HUB_TOKEN are present. The
+      // reporter sends a `kind="full"` snapshot immediately and `kind="ping"`
+      // every 60s. Fire-and-forget: never blocks the host process.
+      const hubEndpoint = process.env.MODULE_HUB_ENDPOINT;
+      const hubToken = process.env.MODULE_HUB_TOKEN;
+      if (hubEndpoint && hubToken) {
+        startModuleHubReporting({ endpoint: hubEndpoint, token: hubToken });
+      }
 
       return { app, server };
     };
