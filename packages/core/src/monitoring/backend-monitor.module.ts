@@ -17,6 +17,8 @@ export const BACKEND_MONITOR_OPTIONS = Symbol("BACKEND_MONITOR_OPTIONS");
  *   BackendMonitorModule.forRoot({
  *     enabled: bool(process.env.BACKEND_MONITOR_ENABLED),
  *     endpoint: process.env.BACKEND_MONITOR_API_URL,
+ *     // MonitorInstallation report token (module-hub design §9.2), issued by
+ *     // POST /backend-monitor/installations; sent as X-Backend-Monitor-Token.
  *     token: process.env.BACKEND_MONITOR_REPORT_TOKEN,
  *   })
  *

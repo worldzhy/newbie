@@ -189,7 +189,10 @@ export class MonitorEventReporter implements OnModuleInit, OnModuleDestroy {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-Application-Token": this.options.token,
+        // MonitorInstallation report token (module-hub design §9.2): the
+        // module-owned token returned once at enrollment, not an application
+        // agent token.
+        "X-Backend-Monitor-Token": this.options.token,
         // Loop guard: the server-side probe skips inbound requests tagged with
         // this header so the ingest call is never reported about itself.
         "X-Backend-Monitor": "1",

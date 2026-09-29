@@ -10,7 +10,10 @@ export interface BackendMonitorOptions {
   enabled?: boolean;
   /** Nightwatch platform base URL, without trailing slash (e.g. https://nightwatch.example.com). */
   endpoint: string;
-  /** SERVER_MONITOR agent token, sent as X-Application-Token. */
+  /**
+   * MonitorInstallation report token (module-hub design §9.2), returned once
+   * at installation enrollment; sent as X-Backend-Monitor-Token.
+   */
   token: string;
   /** Deployment environment label (e.g. production / staging). Defaults to process.env.ENVIRONMENT. */
   env?: string;
