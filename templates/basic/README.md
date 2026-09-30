@@ -48,8 +48,8 @@ Business code — `src/application/`, `src/modules/`, your Prisma models outside
 The template ships heartbeat wiring built on `@devbie/heartbeat-sdk` directly in `src/main.ts`. Once the app is listening, it reports liveness to the heartbeat server every 30s when both variables are set:
 
 ```bash
-HEARTBEAT_TOKEN=<installation token>
-HEARTBEAT_ENDPOINT=https://<heartbeat-host>/api/v1
+HEARTBEAT_TOKEN=<heartbeat installation token>
+HEARTBEAT_ENDPOINT=https://<host>
 ```
 
 The token is globally unique, so the server resolves the installation from it alone — no application id is needed. With the variables unset the wiring is a silent no-op, so projects without heartbeat monitoring need no extra setup.
