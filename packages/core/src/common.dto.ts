@@ -72,5 +72,6 @@ export class CommonGetByStringIdRequestDto {
 export class CommonGetByNumberIdRequestDto {
   @ApiProperty({ type: Number })
   @IsNumber()
+  @Type(() => Number)
   id: number;
 }
