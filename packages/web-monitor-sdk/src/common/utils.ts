@@ -17,7 +17,7 @@ const middle: Record<number, string> = {
 
 export function encryptP(value: string | number): string {
   const str = typeof value === "number" ? String(value) : value;
-  if (typeof str !== "string") throw new Error("p字段格式错误，只能是数字或者数字字符串");
+  if (typeof str !== "string") throw new Error("Invalid p field format: only a number or a numeric string is allowed");
   return str
     .split("")
     .map((item) => {

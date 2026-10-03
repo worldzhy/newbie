@@ -8,25 +8,25 @@ const monitor = webMonitorSdk({
   api: 'http://localhost/report',
 });
 
-//启动一个server,接收请求
+// Start a server to receive requests
 httpServer(mockBaseFetchApi);
 
-//重写monitor重写后的fetch，确认请求完成后是否有自动上报
-//拦截上报数据，存储，test()中测试校验
+// Override the fetch patched by monitor; verify auto-reporting after a request completes
+// Intercept and store reported payloads for assertions in test()
 let reportTypePage, reportTypeAjax;
 overrideFetch(function () {
   const body = JSON.parse(arguments[1].body);
-  //页面上报
+  // page report
   if (body.type === 'PagePerf') {
     reportTypePage = body;
   }
-  //ajax上报
+  // ajax report
   if (body.type === 'AjaxPerf') {
     reportTypeAjax = body;
   }
 });
 
-//测试:页面加载完成的上报，和fetch完成上报,完成2次上报
+// Test: one page-load report and one fetch-completion report, 2 reports total
 test('web api: fetch', (done) => {
   //GET
   const requestAddress = mockPerformanceResource.fetch.name;
@@ -35,11 +35,11 @@ test('web api: fetch', (done) => {
     method: 'GET',
   });
 
-  //发送请求后，需要模拟浏览器performace数据监听
+  // After sending requests, simulate the browser performance data observer
   window.mockPerformanceEntriesAdd(mockPerformanceResource.fetch);
 
   setTimeout(() => {
-    //页面性能上报数据
+    // page performance report payload
     expect(reportTypePage.appId).toEqual(appId);
     expect(reportTypePage.performance.andt).toEqual(
       window.performance.getEntriesByType('navigation')[0].domComplete -
@@ -50,7 +50,7 @@ test('web api: fetch', (done) => {
     expect(reportTypePage.markUv.length).toBeGreaterThan(0);
     expect(reportTypePage.resourceList.length).toEqual(0);
 
-    //ajax上报
+    // ajax report
     expect(reportTypeAjax.resourceList[0].name).toEqual(requestAddress);
     expect(reportTypeAjax.resourceList[0].options).toEqual(
       requestAddress.split('?')[1]

@@ -1,5 +1,5 @@
 import { encryptP, isObject } from "./common/utils";
-//_conf引用类型，谨慎使用
+// _conf is a reference type; use with care
 import report, { _conf, reportCustomsSoon, reportData } from "./core";
 import { InitOptions, ReportType } from "./types";
 
@@ -26,14 +26,14 @@ export function addCustom({
     customContent = JSON.stringify(customContent);
   }
   if (customFilter && !isObject(customFilter)) {
-    throw new Error("customFilter 必须是一个对象");
+    throw new Error("customFilter must be an object");
   }
   (_conf as any).customs.push({ customName, customContent, customFilter });
   reportCustomsSoon();
 }
 
 export function setConfig(config: { uid?: string | number; p?: string | number }): void {
-  if (!isObject(config)) throw new Error("setConfig 参数必须是一个对象");
+  if (!isObject(config)) throw new Error("setConfig parameter must be an object");
   if (config.uid !== undefined) (_conf as any).opt.user.uid = config.uid;
   if (config.p !== undefined) (_conf as any).opt.user.p = encryptP(config.p);
 }

@@ -11,35 +11,35 @@ const monitor = webMonitorSdk({
   appId,
   api: 'http://localhost/report',
 });
-//启动一个server,接收请求
+// Start a server to receive requests
 httpServer(mockBaseXhrApi);
 
-//拦截上报数据，存储，test()中测试校验
+// Intercept and store reported payloads for assertions in test()
 let reportTypePage, reportTypeAjax;
-//重写monitor重写后的fetch，确认请求完成后是否有自动上报
+// Override the fetch patched by monitor; verify auto-reporting after a request completes
 overrideFetch(function () {
   const body = JSON.parse(arguments[1].body);
-  //页面上报
+  // page report
   if (body.type === 'PagePerf') {
     reportTypePage = body;
   }
-  //ajax上报
+  // ajax report
   if (body.type === 'AjaxPerf') {
     reportTypeAjax = body;
   }
 });
 
-//测试:页面加载完成的上报，和ajax完成上报,完成2次上报
+// Test: one page-load report and one ajax-completion report, 2 reports total
 test('web api: XMLHttpRequest', (done) => {
   //GET
   const requestAddress = mockPerformanceResource.xhr.name;
 
-  //发送请求，能保障成功发出，覆写的收集逻辑能正常执行拿到相应数据，并且能在sdk中生成相应数据
+  // Send a request; ensure it is sent successfully, the patched collection logic runs and captures the data, and the SDK produces the corresponding record
   const xmlhttp = new XMLHttpRequest();
   xmlhttp.onreadystatechange = state_Change;
   xmlhttp.open('GET', requestAddress, true);
   xmlhttp.send(null);
-  //发送请求后，需要模拟浏览器performace数据监听
+  // After sending requests, simulate the browser performance data observer
   window.mockPerformanceEntriesAdd(mockPerformanceResource.xhr);
 
   function state_Change() {
@@ -50,12 +50,12 @@ test('web api: XMLHttpRequest', (done) => {
       }
     }
   }
-  //检查XMLHttpRequest可枚举属性重写后是否丢失
+  // Verify enumerable XMLHttpRequest properties are not lost after patching
   for (var attr in XMLHttpRequest) {
     expect(XMLHttpRequest[attr]).toEqual(XMLConstructorEnum[attr]);
   }
   setTimeout(() => {
-    //页面性能上报数据
+    // page performance report payload
     expect(reportTypePage.appId).toEqual(appId);
     expect(reportTypePage.performance.andt).toEqual(
       window.performance.getEntriesByType('navigation')[0].domComplete -
@@ -65,7 +65,7 @@ test('web api: XMLHttpRequest', (done) => {
     expect(reportTypePage.markUser.length).toBeGreaterThan(0);
     expect(reportTypePage.markUv.length).toBeGreaterThan(0);
     expect(reportTypePage.resourceList.length).toEqual(0);
-    //ajax上报
+    // ajax report
     expect(reportTypeAjax.resourceList[0].name).toEqual(requestAddress);
     expect(reportTypeAjax.markUser.length).toBeGreaterThan(0);
     expect(reportTypeAjax.markUv.length).toBeGreaterThan(0);

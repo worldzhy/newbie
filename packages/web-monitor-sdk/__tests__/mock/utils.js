@@ -1,10 +1,10 @@
 export function overrideFetch(cb) {
-  //重写monitor重写后的fetch，跳过上报
+  // Override the fetch patched by monitor to skip reporting
   const monitorFetch = window.fetch;
   window.fetch = function () {
     if (arguments[1] && arguments[1].type === 'report-data') {
       cb && cb.apply(this, arguments);
-      //上报
+      // report
       return Promise.resolve();
     }
     return monitorFetch.apply(this, arguments);

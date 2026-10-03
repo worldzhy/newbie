@@ -48,7 +48,7 @@ const ErrorInstanceReport = function (error: StackTrace, api: string): void {
 };
 
 function Performance(options: InitOptions): void {
-  if (!options.appId || !options.api) throw new Error("appId或者api未定义");
+  if (!options.appId || !options.api) throw new Error("appId or api is not defined");
   const filterUrlsDefault = ["/api/v1/report/web"];
   const opt: PerformanceOptions = {
     outTime: 300,
@@ -658,7 +658,7 @@ function Performance(options: InitOptions): void {
       filterResourceError({ conf, opt });
       const { resourceList, performance, preUrl, errorList } = conf;
       let time = new Date().getTime();
-      // 如果存在资源请求，用资源的第一个时间作为起始时间
+      // If resource requests exist, use the first resource timestamp as the start time
       if (resourceList && resourceList.length) {
         time = resourceList[0].requestTime;
       }

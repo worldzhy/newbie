@@ -1,4 +1,4 @@
-/** 简单一点的测试用例会直接放此文件，也可以单独抽离一个文件 */
+/** Simple test cases live directly in this file; larger ones can be split into separate files */
 import "./mock/web.env";
 import { filterResourceError } from "../src/utils";
 import { filterResource, perforPage } from "../src/performance";

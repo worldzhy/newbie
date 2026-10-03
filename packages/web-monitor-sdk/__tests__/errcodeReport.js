@@ -1,12 +1,12 @@
-/** 简单一点的测试用例会直接放此文件，也可以单独抽离一个文件 */
+/** Simple test cases live directly in this file; larger ones can be split into separate files */
 import './mock/web.env';
 import { mockErrcodeReportApi, mockPerformanceResource } from './mock/mock';
 import { overrideFetch, httpServer } from './mock/utils';
 import webMonitorSdk from '../src/index';
 const appId = 'appid_test';
-//启动一个server,接收请求
+// Start a server to receive requests
 httpServer(mockErrcodeReportApi);
-/** default env domain, 顺便作为errcodeReport、filterUrls的测试实例 */
+/** default env domain; also used as the test instance for errcodeReport and filterUrls */
 const monitor = webMonitorSdk({
   appId,
   api: 'http://localhost/report',
@@ -25,21 +25,21 @@ const monitor = webMonitorSdk({
  * errcodeReport
  */
 let errcodeReportData;
-//重写，避免真正发送报告数据
+// Override to avoid actually sending report data
 overrideFetch(function () {
   const body = JSON.parse(arguments[1].body);
-  //ajax和errcodeReport同时上报
+  // ajax and errcodeReport fire together
   if (body.type === 'AjaxPerf') {
     errcodeReportData = body;
   }
 });
 
-/** options errcodeReport 自定义业务接口错误上报 */
+/** options.errcodeReport custom business API error reporting */
 test('web options: errcodeReport', (done) => {
   fetch(mockErrcodeReportApi.api, {
     method: 'GET',
   }).then((res) => {});
-  //发送请求后，需要模拟浏览器performace数据监听
+  // After sending requests, simulate the browser performance data observer
   window.mockPerformanceEntriesAdd(mockPerformanceResource.fetchErrcode);
   setTimeout(() => {
     expect(errcodeReportData.resourceList.length).toEqual(1);

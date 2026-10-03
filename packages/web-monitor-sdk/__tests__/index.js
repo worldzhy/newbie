@@ -1,4 +1,4 @@
-/** 简单一点的测试用例会直接放此文件，也可以单独抽离一个文件 */
+/** Simple test cases live directly in this file; larger ones can be split into separate files */
 import './mock/web.env';
 import { encryptP } from '../src/common/utils';
 import { overrideFetch } from './mock/utils';
@@ -9,12 +9,12 @@ const monitor = webMonitorSdk({
   api: 'http://localhost/report',
 });
 
-//重写monitor重写后的fetch，确认请求完成后是否有自动上报
-//拦截上报数据，存储，test()中测试校验
+// Override the fetch patched by monitor; verify auto-reporting after a request completes
+// Intercept and store reported payloads for assertions in test()
 let reportTypePage;
 overrideFetch(function () {
   const body = JSON.parse(arguments[1].body);
-  //页面上报
+  // page report
   if (body.type === 'PagePerf') {
     reportTypePage = body;
   }

@@ -7,21 +7,21 @@ const monitor = webMonitorSdk({
   appId,
   api: 'http://localhost/report',
 });
-//启动一个server,接收请求
+// Start a server to receive requests
 httpServer(mockHttpStatusError);
 
-//重写monitor重写后的fetch，确认请求完成后是否有自动上报
-//拦截上报数据，存储，test()中测试校验
+// Override the fetch patched by monitor; verify auto-reporting after a request completes
+// Intercept and store reported payloads for assertions in test()
 let reportData;
 overrideFetch(function () {
   const body = JSON.parse(arguments[1].body);
-  //ajax上报
+  // ajax report
   if (body.type === 'AjaxPerf') {
     reportData = body;
   }
 });
 
-//测试:页面加载完成的上报，和fetch完成上报,完成2次上报
+// Test: one page-load report and one fetch-completion report, 2 reports total
 test('web api: fetch http error 404', (done) => {
   //GET
   const requestAddress = mockPerformanceResource.fetchHttpErr.name;
@@ -30,13 +30,13 @@ test('web api: fetch http error 404', (done) => {
     method: 'GET',
   }).then((res) => {});
 
-  //发送请求后，需要模拟浏览器performace数据监听
+  // After sending requests, simulate the browser performance data observer
   window.mockPerformanceEntriesAdd(mockPerformanceResource.fetchHttpErr);
   fetch(requestAddress, {
     method: 'GET',
   }).then((res) => {});
 
-  //发送请求后，需要模拟浏览器performace数据监听
+  // After sending requests, simulate the browser performance data observer
   window.mockPerformanceEntriesAdd(mockPerformanceResource.fetchHttpErr);
 
   setTimeout(() => {

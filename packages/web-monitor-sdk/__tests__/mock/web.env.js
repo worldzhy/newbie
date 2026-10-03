@@ -2,9 +2,9 @@ import { perResource } from './mock';
 import fetch from 'node-fetch';
 
 window.fetch = fetch;
-//jest自带window对象,jsdom
+// jest provides the window object via jsdom
 window.XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
-//枚举属性,虽然XMLHttpRequest实例化后也有枚举属性，但是XMLHttpRequest构造函数也有枚举属性，有些库会用到
+// Enumerable properties: XMLHttpRequest instances have them, but so does the XMLHttpRequest constructor, which some libraries rely on
 window.XMLHttpRequest.UNSENT = 0;
 window.XMLHttpRequest.OPENED = 1;
 window.XMLHttpRequest.HEADERS_RECEIVED = 2;
@@ -72,7 +72,7 @@ window.performance.getEntriesByType = function (type) {
   return _entriesByTypeArr;
 };
 
-/** 手动触发模拟performance资源队列 */
+/** Manually flush the simulated performance resource queue */
 window.mockPerformanceEntriesAdd = (resource) => {
   _entriesByTypeArr.push(resource);
   observerCallbacks.forEach((cb) => {
@@ -84,7 +84,7 @@ window.mockPerformanceEntriesAdd = (resource) => {
   });
 };
 
-/** 模拟PerformanceObserver对象，添加资源监听队列 */
+/** Simulated PerformanceObserver with a resource listener queue */
 window.PerformanceObserver = function (fn) {
   this.observe = function () {};
   observerCallbacks.push(fn);
