@@ -1,0 +1,25 @@
+// This is your Prisma schema file.
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// !! ------------------------------------------------------------ //
+// !!                       [Prisma] Issues                        //
+// !! ------------------------------------------------------------ //
+// * https://github.com/prisma/prisma/issues/4355                  //
+// * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
+
+// @@newbie-framework-start
+// Framework-managed block: generator + datasource. Preserve the markers when
+// adding project models; `newbie update-template` only touches this block.
+generator client {
+  provider        = "prisma-client"
+  previewFeatures = ["fullTextSearchPostgres"]
+  moduleFormat    = "cjs"
+  output          = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["application"]
+}
+// @@newbie-framework-end
+

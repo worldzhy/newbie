@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2022",
+    "sourceMap": true,
+    "incremental": true,
+    "skipLibCheck": true,
+    "strictNullChecks": true,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
+    "forceConsistentCasingInFileNames": false,
+    "noFallthroughCasesInSwitch": false,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "tsBuildInfoFile": "dist/.tsbuildinfo",
+    "paths": {
+      "@generated/*": ["generated/*"],
+      "@modules/*": ["src/modules/*"],
+      "@devbie/newbie/*": ["node_modules/@devbie/newbie/dist/*"],
+      "@/*": ["src/*"]
+    }
+  }
+}
