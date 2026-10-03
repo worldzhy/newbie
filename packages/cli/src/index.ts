@@ -4,16 +4,16 @@ import { red } from "colorette";
 
 import { runAgent } from "./commands/agent";
 import { runApply } from "./commands/apply";
-import { runCheck } from "./commands/check";
 import { runConfig } from "./commands/config";
 import { runCreate } from "./commands/create";
+import { runDevLint } from "./commands/dev/lint";
 import { runDoctor } from "./commands/doctor";
 import { runEnvPull, runEnvPush } from "./commands/env";
 import { runInstall } from "./commands/install";
 import { runStatus } from "./commands/status";
 import { parseKeysFlag, runUpdate } from "./commands/update";
 import { runUpdateTemplate } from "./commands/update-template";
-import { runDevSync } from "./commands/dev-sync";
+import { runWatch } from "./commands/watch";
 import { runInteractive } from "./commands/default";
 import { GlobalOptions } from "./commands/shared";
 import { CliError, isUserCancellation } from "./lib/errors";
@@ -90,13 +90,6 @@ program
         list: Boolean(flags.list),
       }),
     );
-  });
-
-program
-  .command("check")
-  .description("Check that every env variable required by enabled modules is present in .env")
-  .action(function (this: Command) {
-    return run(() => runCheck(collectOptions(this)));
   });
 
 program
@@ -202,17 +195,28 @@ program
   });
 
 program
-  .command("dev-sync [keys...]")
+  .command("watch [keys...]")
   .description("Watch the local newbie-modules registry and sync installed module sources into the project on change")
   .option("--all", "watch every registry module instead of only installed ones", false)
   .action(function (this: Command, keys: string[]) {
     const flags = this.opts();
     return run(() =>
-      runDevSync({
+      runWatch({
         ...collectOptions(this),
         all: Boolean(flags.all),
       }),
     );
+  });
+
+const dev = program
+  .command("dev")
+  .description("Registry development commands (run inside the newbie-modules repo, not a consuming project)");
+
+dev
+  .command("lint")
+  .description("Enforce the module layering rules (domain -> capability -> foundation) across registry sources")
+  .action(function (this: Command) {
+    return run(() => runDevLint(collectOptions(this)));
   });
 
 const env = program.command("env").description("Sync .env with AWS Secrets Manager");

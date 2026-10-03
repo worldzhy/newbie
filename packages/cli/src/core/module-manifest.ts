@@ -17,6 +17,8 @@ export interface ModuleWiring {
 
 export interface ModuleManifest {
   key: string;
+  /** Architectural layer of the module; absent for framework-special modules. */
+  layer?: string;
   module: ModuleWiring;
   /** Project-relative path of the Prisma model fragment; absent = no models. */
   schema?: string;

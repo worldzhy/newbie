@@ -7,7 +7,7 @@ import { MODULES_DIR, MODULE_MANIFEST_FILE } from "../constants/paths";
 import { CliError } from "../lib/errors";
 import { moduleRootInRegistry, RegistryLocation, resolveRegistry } from "../lib/registry";
 
-export interface DevSyncOptions {
+export interface WatchOptions {
   cwd: string;
   /** Watch every registry module instead of only installed ones. */
   all?: boolean;
@@ -55,19 +55,19 @@ function debounce<T extends (...args: never[]) => void>(fn: T, delay: number): (
   };
 }
 
-export async function runDevSync(options: DevSyncOptions): Promise<void> {
+export async function runWatch(options: WatchOptions): Promise<void> {
   const projectRoot = path.resolve(options.cwd);
 
   const registry = await resolveRegistry({ fetch: false });
   if (!registry) {
     throw new CliError(
-      "dev-sync requires a local newbie-modules checkout. " +
+      "watch requires a local newbie-modules checkout. " +
         "Set NEWBIE_MODULES_PATH or place the repo at ~/src/newbie-modules.",
     );
   }
   if (!registry.local) {
     throw new CliError(
-      "dev-sync only works with a local registry checkout, not the cached clone. " +
+      "watch only works with a local registry checkout, not the cached clone. " +
         "Set NEWBIE_MODULES_PATH to a local newbie-modules working tree.",
     );
   }
@@ -123,7 +123,7 @@ export async function runDevSync(options: DevSyncOptions): Promise<void> {
   // Keep the process alive until interrupted.
   process.on("SIGINT", () => {
     for (const w of watchers) w.close();
-    console.info("\nStopped dev-sync.");
+    console.info("\nStopped watch.");
     process.exit(0);
   });
 }
