@@ -5,13 +5,13 @@
       "secrets": [
         {
           "name": "development/Newbie/SNSEnvConfig",
-          "description": "开发环境配置 (JSON 格式)",
+          "description": "Development environment configuration (JSON)",
           "keys": [],
           "keysOnly": ["PORT"]
         },
         {
           "name": "development/Newbie/EC2EnvConfig",
-          "description": "开发环境配置 (JSON 格式)",
+          "description": "Development environment configuration (JSON)",
           "keys": [],
           "keysOnly": ["PORT"]
         }
@@ -22,7 +22,7 @@
       "secrets": [
         {
           "name": "staging/Newbie/EnvConfig",
-          "description": "测试环境配置 (JSON 格式)",
+          "description": "Staging environment configuration (JSON)",
           "keys": [],
           "keysOnly": []
         }
@@ -33,7 +33,7 @@
       "secrets": [
         {
           "name": "production/Newbie/EnvConfig",
-          "description": "生产环境配置 (JSON 格式)",
+          "description": "Production environment configuration (JSON)",
           "keys": [],
           "keysOnly": []
         }
