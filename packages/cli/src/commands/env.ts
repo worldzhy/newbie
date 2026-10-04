@@ -8,11 +8,13 @@ import {
   DescribeSecretCommand,
   GetSecretValueCommand,
   SecretsManagerClient,
+  TagResourceCommand,
   UpdateSecretCommand,
 } from "@aws-sdk/client-secrets-manager";
 
 import { EnvLine, envValues, parseEnv, serializeEnv } from "../core/env-file";
 import { ENV_PATH } from "../constants/paths";
+import { assertExpectedAccount, getCallerIdentity } from "../lib/aws-identity";
 import { CliError } from "../lib/errors";
 import { IssueBag } from "../lib/issues";
 import { EnvironmentConfig, EnvToolConfig, SecretConfig, readEnvToolConfig } from "../lib/env-tool-config";
@@ -21,12 +23,18 @@ import { GlobalOptions } from "./shared";
 
 const PLACEHOLDER = "<PLEASE_SET_THIS_VALUE>";
 
+/** Tag contract shared with the nightwatch management plane and the rotation Lambda. */
+const MANAGED_TAG_KEY = "nightwatch:managed";
+const SECRET_TYPE_TAG_KEY = "nightwatch:secret-type";
+
 export interface EnvCommandOptions extends GlobalOptions {
   environment?: string;
   yes?: boolean;
+  /** Pull only: abort without writing .env when any secret fails to pull. */
+  strict?: boolean;
 }
 
-function createAwsClient(region: string): SecretsManagerClient {
+export function createAwsClient(region: string): SecretsManagerClient {
   return new SecretsManagerClient({
     region,
     credentials: process.env.AWS_ACCESS_KEY_ID
@@ -38,7 +46,7 @@ function createAwsClient(region: string): SecretsManagerClient {
   });
 }
 
-function printCredentialHint(): void {
+export function printCredentialHint(): void {
   if (process.env.AWS_ACCESS_KEY_ID || process.env.AWS_SECRET_ACCESS_KEY) return;
   if (process.env.AWS_PROFILE) {
     console.info(cyan(`ℹ️  Using AWS Profile: ${bold(process.env.AWS_PROFILE)}\n`));
@@ -47,7 +55,7 @@ function printCredentialHint(): void {
   }
 }
 
-async function pickEnvironment(config: EnvToolConfig, preselected: string | undefined): Promise<string> {
+export async function pickEnvironment(config: EnvToolConfig, preselected: string | undefined): Promise<string> {
   const names = Object.keys(config.environments);
   if (preselected) {
     if (!names.includes(preselected)) {
@@ -112,6 +120,10 @@ export async function runEnvPull(options: EnvCommandOptions): Promise<void> {
   const envConfig: EnvironmentConfig = toolConfig.environments[envName];
   printCredentialHint();
 
+  if (envConfig.expectedAccountId) {
+    assertExpectedAccount(await getCallerIdentity(envConfig.region), envConfig.expectedAccountId);
+  }
+
   const client = createAwsClient(envConfig.region);
 
   const pulled: Record<string, string> = {};
@@ -135,6 +147,9 @@ export async function runEnvPull(options: EnvCommandOptions): Promise<void> {
       issues.warn(`Failed to pull ${secretConfig.name}: ${(error as Error).message}`);
     }
   }
+
+  // Strict mode (CI): never write a partially-pulled .env.
+  if (options.strict) issues.assertEmpty();
 
   const envTarget = path.resolve(options.cwd, ENV_PATH);
   let raw = "";
@@ -222,11 +237,22 @@ async function getExistingSecret(client: SecretsManagerClient, name: string): Pr
   }
 }
 
+/** Tags marking the secret as managed by the nightwatch plane, plus the type used for rotation routing. */
+function managementTags(secretConfig: SecretConfig): { Key: string; Value: string }[] {
+  const tags = [{ Key: MANAGED_TAG_KEY, Value: "true" }];
+  if (secretConfig.type) tags.push({ Key: SECRET_TYPE_TAG_KEY, Value: secretConfig.type });
+  return tags;
+}
+
 export async function runEnvPush(options: EnvCommandOptions): Promise<void> {
   const { config: toolConfig } = await readEnvToolConfig(options.cwd);
   const envName = await pickEnvironment(toolConfig, options.environment);
   const envConfig = toolConfig.environments[envName];
   printCredentialHint();
+
+  if (envConfig.expectedAccountId) {
+    assertExpectedAccount(await getCallerIdentity(envConfig.region), envConfig.expectedAccountId);
+  }
 
   const envTarget = path.resolve(options.cwd, ENV_PATH);
   let raw: string;
@@ -331,6 +357,8 @@ export async function runEnvPush(options: EnvCommandOptions): Promise<void> {
           SecretString: JSON.stringify(merged, null, 2),
         }),
       );
+      // TagResource overwrites existing tag keys, keeping the tag contract fresh on every push.
+      await client.send(new TagResourceCommand({ SecretId: secretConfig.name, Tags: managementTags(secretConfig) }));
       console.info(green(`  ✓ Updated ${secretConfig.name}`));
     } else {
       if (options.dryRun) {
@@ -351,6 +379,7 @@ export async function runEnvPush(options: EnvCommandOptions): Promise<void> {
           Name: secretConfig.name,
           Description: secretConfig.description || "Created by newbie env tool",
           SecretString: JSON.stringify(valuesToPush, null, 2),
+          Tags: managementTags(secretConfig),
         }),
       );
       console.info(green(`  ✓ Created ${secretConfig.name}`));

@@ -7,6 +7,8 @@ import { CliError } from "./errors";
 export interface SecretConfig {
   name: string;
   description?: string;
+  /** Secret type tag applied on push; consumed by the rotation Lambda strategy routing. */
+  type?: "RDS_CREDENTIALS" | "DOCUMENTDB_CREDENTIALS" | "AWS_API_KEY" | "GENERIC_SECRET";
   /** Only these keys are pulled/pushed. Empty means "all keys" (push prompts). */
   keys?: string[];
   /** Keys that must exist in the secret but whose value is never pulled/pushed. */
@@ -15,6 +17,8 @@ export interface SecretConfig {
 
 export interface EnvironmentConfig {
   region: string;
+  /** When set, pull/push/setup abort unless the active AWS credentials belong to this account. */
+  expectedAccountId?: string;
   secrets: SecretConfig[];
 }
 

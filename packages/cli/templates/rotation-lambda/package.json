@@ -1,0 +1,32 @@
+{
+  "name": "aws-secrets-manager-rotation-lambda",
+  "version": "1.0.0",
+  "description": "AWS Secrets Manager rotation Lambda functions using SST",
+  "type": "module",
+  "scripts": {
+    "dev": "sst dev",
+    "deploy": "sst deploy --stage production",
+    "deploy:dev": "sst deploy --stage dev",
+    "remove": "sst remove",
+    "remove:dev": "sst remove --stage dev",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aws-sdk/client-iam": "^3.969.0",
+    "@aws-sdk/client-secrets-manager": "^3.929.0",
+    "@aws-sdk/client-sts": "^3.969.0",
+    "@types/pg": "^8.16.0",
+    "mongodb": "^7.0.0",
+    "mysql2": "^3.16.0",
+    "pg": "^8.17.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "sst": "^3.3.62",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
