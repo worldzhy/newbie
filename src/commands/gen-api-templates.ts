@@ -3,14 +3,15 @@
 // and need no runtime asset resolution.
 
 /**
- * The generator is intentionally pinned to the alpha line: the 0.0.x stable
- * line uses the legacy `serverUrl`/`outputFilePath` config schema and the
- * `apits-gener` bin, while real-world fewbie projects consume the rewritten
- * schema (`input`/`output`/`clientImportTemplate`) shipped as alpha.
+ * The apits generator is consumed as a project dev dependency (not bundled
+ * with the CLI) so users own the tool version and can rerun it manually.
+ * `apits-gen@1.0.0` is the released line carrying the rewritten config
+ * schema (`input`/`output`/`clientImportTemplate`); the legacy unscoped
+ * `open-api-typescript-request-generator` package is abandoned.
  */
-export const GENERATOR_PACKAGE_NAME = "open-api-typescript-request-generator";
-export const GENERATOR_PACKAGE_SPEC = "open-api-typescript-request-generator@^0.0.7-alpha.0";
-export const GENERATOR_BIN_RELATIVE = "node_modules/open-api-typescript-request-generator/bin/apits";
+export const GENERATOR_PACKAGE_NAME = "apits-gen";
+export const GENERATOR_PACKAGE_SPEC = "apits-gen@^1.0.0";
+export const GENERATOR_BIN_RELATIVE = "node_modules/apits-gen/bin/apits";
 
 export const CONFIG_PROJECT_PATH = "apits.config.ts";
 export const API_CLIENT_PROJECT_PATH = "src/lib/api-client.ts";
