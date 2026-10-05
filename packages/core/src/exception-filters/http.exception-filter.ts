@@ -13,14 +13,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const httpStatus = exception.getStatus(); // such as: 401
     const message = exception.message;
 
-    // [step 1] Assemble log content.
-    let content = `${request.method} ${request.url}`;
-    if (request.body && Object.keys(request.body).length > 0) {
-      content += ` ${JSON.stringify(request.body)}`;
-    }
-    content += ` >> ${message}`;
+    // Log the request line and error message only. The request body is
+    // deliberately excluded: failed login bodies carry passwords and other
+    // credentials that would otherwise be written to the logs.
+    const content = `${request.method} ${request.url} >> ${message}`;
 
-    // [step 2] Write log.
     if (httpStatus >= 500) {
       this.logger.error(content);
     } else if (httpStatus >= 400) {
@@ -29,7 +26,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
       this.logger.log(content);
     }
 
-    // [step 3] Response.
     response.status(httpStatus).json({
       code: httpStatus,
       error: { message, info: exception.getResponse() },

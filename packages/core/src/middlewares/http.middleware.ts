@@ -11,24 +11,17 @@ export class HttpMiddleware implements NestMiddleware {
     const startDate = new Date();
 
     response.on("finish", () => {
-      // [step 1] Assemble log content.
-      let authorizationKey = "";
-      if (typeof request.query.api_key === "string") authorizationKey = request.query.api_key.replace("Bearer ", "");
-      else if (typeof request.headers["x-api-key"] === "string")
-        authorizationKey = request.headers["x-api-key"].replace("Bearer ", "");
-      else if (request.headers.authorization) authorizationKey = request.headers.authorization.replace("Bearer ", "");
-
+      // Whitelist of logged fields only. Credentials (Authorization / API key
+      // headers) and request bodies are deliberately excluded: tokens can be
+      // replayed from logs and bodies routinely carry passwords.
       const logObj = {
         date: startDate,
         duration: new Date().getTime() - startDate.getTime(),
         method: request.method,
         originalUrl: request.originalUrl,
-        body: request.body,
         status: response.statusCode,
-        authorization: authorizationKey,
       };
 
-      // [step 2] Write log.
       this.logger.log(JSON.stringify(logObj), this.loggerContext);
     });
 
