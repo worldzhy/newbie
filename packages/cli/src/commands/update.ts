@@ -3,6 +3,7 @@ import { checkbox, select } from "@inquirer/prompts";
 import { bold, cyan, green, inverse, yellow } from "colorette";
 
 import { runSteps } from "../assemble/pipeline";
+import { describeMissingDependencies, expandRegistryClosure } from "../assemble/module-graph";
 import { diffSnapshots, driftPatchIds } from "../core/drift";
 import { moduleKeys } from "../core/modules-state";
 import { snapshotInstalledModule, snapshotPristineModule } from "../lib/drift";
@@ -166,9 +167,26 @@ export async function runUpdate(
     return;
   }
 
+  const selectedKeys = selected.map((result) => result.key);
+
+  // Updated manifests may gain moduleDependencies; pull those modules in too,
+  // treating every currently enabled module as already satisfied.
+  const closure = await expandRegistryClosure(ctx.registry.root, selectedKeys, {
+    satisfied: new Set(keys),
+  });
+  const missing = describeMissingDependencies(closure);
+  if (missing.length > 0) {
+    throw new CliError(`Cannot resolve module dependencies:\n  - ${missing.join("\n  - ")}`);
+  }
+  const addedKeys = [...selectedKeys, ...closure.added];
+  const enabledKeys = [...keys, ...closure.added.filter((key) => !keys.includes(key))];
+  for (const key of closure.added) {
+    console.info(cyan(`[info] ${key} is a new module dependency and will also be enabled.`));
+  }
+
   if (!options.yes && !options.dryRun) {
     const confirmed = await select({
-      message: `Do you want to UPDATE ${cyan(selected.map((result) => result.key).join(", "))}?`,
+      message: `Do you want to UPDATE ${cyan(addedKeys.join(", "))}?`,
       choices: [
         { name: "Yes", value: "yes" },
         { name: "No", value: "no" },
@@ -180,11 +198,10 @@ export async function runUpdate(
     }
   }
 
-  const selectedKeys = selected.map((result) => result.key);
   await runSteps(ctx, {
-    added: selectedKeys,
+    added: addedKeys,
     removed: [],
-    enabledKeys: keys,
+    enabledKeys,
   });
   if (!sink.dryRun) {
     await writeModulesState(cwd, sink, ctx.state);

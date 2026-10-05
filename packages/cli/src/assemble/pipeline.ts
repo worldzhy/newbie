@@ -4,21 +4,55 @@ import path from "node:path";
 import { cyan } from "colorette";
 
 import { diffModuleKeys, ModulesState, moduleKeys, withModuleKeys } from "../core/modules-state";
+import { directDependents } from "../core/module-closure";
 import { MODULES_DIR, MODULE_MANIFEST_FILE } from "../constants/paths";
+import { CliError } from "../lib/errors";
 import { writeModulesState } from "../lib/modules-state";
 
 import { assembleDependencies } from "./dependencies";
 import { assembleEnv, assembleEnvExample } from "./env";
+import { describeMissingDependencies, expandRegistryClosure } from "./module-graph";
 import { assembleNestJsAssets } from "./assets";
 import { assembleNestJsModules } from "./modules";
 import { addModules, removeModules } from "./modules-copy";
 import { assembleSchemaFiles } from "./schema";
 import { PipelineContext } from "./types";
 
+export interface ClosureAddition {
+  key: string;
+  requiredBy: string[];
+}
+
 export interface PlannedChange {
   added: string[];
   removed: string[];
   enabledKeys: string[];
+  /** Modules pulled in automatically by moduleDependencies. */
+  closureAdded?: ClosureAddition[];
+}
+
+/** Fail early when declared module dependencies cannot be found in the registry. */
+async function assertClosureResolvable(
+  registryRoot: string,
+  roots: readonly string[],
+  options?: { satisfied?: ReadonlySet<string> },
+): Promise<ReturnType<typeof expandRegistryClosure>> {
+  const closure = await expandRegistryClosure(registryRoot, roots, options);
+  const missing = describeMissingDependencies(closure);
+  if (missing.length > 0) {
+    throw new CliError(`Cannot resolve module dependencies:\n  - ${missing.join("\n  - ")}`);
+  }
+  return closure;
+}
+
+/** Explain why a transitive module dependency is being enabled. */
+function describeClosureAdditions(
+  added: readonly string[],
+  graph: ReadonlyMap<string, readonly string[]>,
+  enabledKeys: readonly string[],
+): ClosureAddition[] {
+  const among = new Set(enabledKeys);
+  return added.map((key) => ({ key, requiredBy: directDependents(key, graph, among) }));
 }
 
 function step(title: string): void {
@@ -54,6 +88,23 @@ function stampCopiedModules(
   registry: { url: string; sourceCommit: string | null },
 ): ModulesState {
   const added = new Set(addedKeys);
+  const stamped = state.modules.map((record) =>
+    added.has(record.key)
+      ? {
+          ...record,
+          version: null,
+          sourceCommit: registry.sourceCommit,
+          localPatches: [],
+        }
+      : record,
+  );
+  // Closure-expanded dependencies may have no modules.json record yet.
+  const known = new Set(stamped.map((record) => record.key));
+  for (const key of addedKeys) {
+    if (!known.has(key)) {
+      stamped.push({ key, version: null, sourceCommit: registry.sourceCommit, localPatches: [] });
+    }
+  }
   return {
     ...state,
     registry: {
@@ -61,16 +112,7 @@ function stampCopiedModules(
       url: registry.url,
       sourceCommit: registry.sourceCommit,
     },
-    modules: state.modules.map((record) =>
-      added.has(record.key)
-        ? {
-            ...record,
-            version: null,
-            sourceCommit: registry.sourceCommit,
-            localPatches: [],
-          }
-        : record,
-    ),
+    modules: stamped,
   };
 }
 
@@ -126,27 +168,51 @@ export async function runSteps(ctx: PipelineContext, changes: PlannedChange): Pr
 }
 
 export async function applyPlanned(ctx: PipelineContext, changes: PlannedChange): Promise<void> {
+  // Planning stays read-only: adopt the closure-expanded enabled set into
+  // modules.json only when the plan is actually applied.
+  if (changes.enabledKeys) {
+    ctx.state = withModuleKeys(ctx.state, changes.enabledKeys);
+    if (!ctx.sink.dryRun) {
+      await writeModulesState(ctx.cwd, ctx.sink, ctx.state);
+    }
+  }
   await runSteps(ctx, changes);
 }
 
 /**
  * Interactive/`apply` flow: modules.json changes from old keys to next keys.
- * The new state is persisted before assembling (legacy behaviour).
+ * The requested set is expanded to the transitive moduleDependencies closure
+ * before assembling. The new state is persisted before assembling.
  */
 export async function applyModuleKeys(
   ctx: PipelineContext,
   nextKeys: string[],
 ): Promise<{ added: string[]; removed: string[] }> {
   const { cwd, sink } = ctx;
-  const diff = diffModuleKeys(moduleKeys(ctx.state), nextKeys);
+  const closure = await assertClosureResolvable(ctx.registry.root, nextKeys);
+  const expandedKeys = closure.keys;
+  const currentSet = new Set(moduleKeys(ctx.state));
 
-  ctx.state = withModuleKeys(ctx.state, nextKeys);
+  for (const key of closure.added) {
+    const requiredBy = directDependents(key, closure.graph, new Set(expandedKeys));
+    const suffix = `(required by: ${requiredBy.join(", ") || "?"})`;
+    if (currentSet.has(key)) {
+      console.info(cyan(`[info] keeping ${key} enabled ${suffix}`));
+    } else {
+      console.info(cyan(`[info] also enabling ${key} ${suffix}`));
+    }
+  }
+
+  const diff = diffModuleKeys(moduleKeys(ctx.state), expandedKeys);
+
+  ctx.state = withModuleKeys(ctx.state, expandedKeys);
   await writeModulesState(cwd, sink, ctx.state);
 
   await runSteps(ctx, {
     added: diff.added,
     removed: diff.removed,
-    enabledKeys: nextKeys,
+    enabledKeys: expandedKeys,
+    closureAdded: describeClosureAdditions(closure.added, closure.graph, expandedKeys),
   });
   return diff;
 }
@@ -155,14 +221,21 @@ export async function applyModuleKeys(
  * `newbie install` planning (read-only): modules.json is the source of truth;
  * modules missing from src/modules (or lacking a registry pin, e.g. after an
  * interrupted install) are reinstalled, extra copied modules are removed.
- * The module list in modules.json is never modified.
+ *
+ * The declared set is expanded to the transitive moduleDependencies closure:
+ * dependencies added by a newer manifest (or missing since an interrupted
+ * install) are adopted into modules.json when the plan is applied.
  */
 export async function planReconcile(
   ctx: PipelineContext,
 ): Promise<PlannedChange & { installed: string[]; uninstalled: string[] }> {
   const inProject = new Set(await readProjectModuleDirs(ctx.cwd));
-  const enabled = moduleKeys(ctx.state);
+  const declared = moduleKeys(ctx.state);
+
+  const closure = await assertClosureResolvable(ctx.registry.root, declared);
+  const enabled = closure.keys;
   const enabledSet = new Set(enabled);
+  const closureAdded = describeClosureAdditions(closure.added, closure.graph, enabled);
 
   const installed = enabled.filter((key) => {
     if (!inProject.has(key)) return true;
@@ -175,6 +248,7 @@ export async function planReconcile(
     added: installed,
     removed: uninstalled,
     enabledKeys: enabled,
+    closureAdded,
     installed,
     uninstalled,
   };

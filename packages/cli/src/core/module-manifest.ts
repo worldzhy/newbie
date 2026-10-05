@@ -26,8 +26,25 @@ export interface ModuleManifest {
   env?: Record<string, string>;
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
+  /**
+   * Registry module keys this module imports via `@modules/<key>`. The CLI
+   * expands enabled modules to the transitive closure of these declarations
+   * when planning installs, so a required module can never be left behind.
+   */
+  moduleDependencies?: string[];
   assets?: NestAsset[];
   [key: string]: unknown;
+}
+
+/** Validate and normalise the optional `moduleDependencies` manifest field. */
+function normalizeModuleDependencies(raw: unknown, key: string): string[] | undefined {
+  if (raw === undefined) return undefined;
+  if (!Array.isArray(raw) || !raw.every((item) => typeof item === "string" && item.trim().length > 0)) {
+    throw new Error(
+      `Invalid newbie.module.json for '${key}': moduleDependencies must be an array of non-empty strings.`,
+    );
+  }
+  return [...new Set(raw.map((item) => (item as string).trim()))];
 }
 
 export function normalizeModuleManifest(raw: unknown, expectedKey?: string): ModuleManifest {
@@ -56,12 +73,18 @@ export function normalizeModuleManifest(raw: unknown, expectedKey?: string): Mod
     );
   }
 
+  const moduleDependencies = normalizeModuleDependencies(data.moduleDependencies, data.key);
   const manifest: ModuleManifest = {
     ...(data as object),
     key: data.key,
     module: { file: wiring.file, className: wiring.className },
   };
   if (typeof data.schema !== "string") delete manifest.schema;
+  if (moduleDependencies) {
+    manifest.moduleDependencies = moduleDependencies;
+  } else {
+    delete manifest.moduleDependencies;
+  }
   return manifest;
 }
 

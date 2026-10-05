@@ -38,6 +38,23 @@ describe("normalizeModuleManifest", () => {
     const manifest = normalizeModuleManifest({ ...valid, schema: 42 });
     assert.equal(manifest.schema, undefined);
   });
+
+  it("normalises moduleDependencies (trim, dedupe) and leaves it absent when undeclared", () => {
+    const withDeps = normalizeModuleManifest({
+      ...valid,
+      moduleDependencies: [" audit", "audit", "security"],
+    });
+    assert.deepEqual(withDeps.moduleDependencies, ["audit", "security"]);
+    assert.equal(normalizeModuleManifest(valid).moduleDependencies, undefined);
+  });
+
+  it("rejects malformed moduleDependencies", () => {
+    assert.throws(
+      () => normalizeModuleManifest({ ...valid, moduleDependencies: "audit" }),
+      /moduleDependencies must be an array/,
+    );
+    assert.throws(() => normalizeModuleManifest({ ...valid, moduleDependencies: ["audit", ""] }), /non-empty strings/);
+  });
 });
 
 describe("moduleImportLine", () => {

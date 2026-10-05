@@ -12,6 +12,7 @@ import {
   PRISMA_SCHEMA_MODELS_DIR,
 } from "../constants/paths";
 import { diffSnapshots } from "../core/drift";
+import { findMissingEnabledModules } from "../core/module-closure";
 import { moduleKeys } from "../core/modules-state";
 import { moduleSchemaNamespace, readDatasourceSchemas } from "../core/prisma-schema";
 import { collectMissingEnv } from "../lib/check";
@@ -78,6 +79,7 @@ export async function runDoctor(options: GlobalOptions): Promise<void> {
   }
 
   // [check 4] per-module state
+  const moduleGraph = new Map<string, readonly string[]>();
   const missingEnv = await collectMissingEnv(cwd, keys);
   const datasourceContent = await fs.readFile(path.resolve(cwd, PRISMA_SCHEMA_MAIN), "utf8").catch(() => null);
   const datasourceSchemas = datasourceContent ? readDatasourceSchemas(datasourceContent) : null;
@@ -98,6 +100,7 @@ export async function runDoctor(options: GlobalOptions): Promise<void> {
       error(`${label}: newbie.module.json missing or unreadable.`);
       continue;
     }
+    moduleGraph.set(key, manifest.moduleDependencies ?? []);
 
     if (manifest.schema) {
       if (!(await fileExists(cwd, path.posix.join(PRISMA_SCHEMA_MODELS_DIR, `${key}.prisma`)))) {
@@ -134,6 +137,13 @@ export async function runDoctor(options: GlobalOptions): Promise<void> {
         }
       }
     }
+  }
+
+  // [check 4b] declared moduleDependencies must all be enabled.
+  for (const { module, dependency } of findMissingEnabledModules(keys, moduleGraph)) {
+    error(
+      `'${dependency}' must be enabled because module '${module}' declares it as a module dependency; run 'newbie install'.`,
+    );
   }
 
   // [check 5] copied module directories that modules.json does not know about.

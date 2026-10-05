@@ -9,7 +9,13 @@ export async function runInstall(options: GlobalOptions & { yes?: boolean }): Pr
   const { ctx } = await createContext(options, { fetch: true });
 
   const plan = await planReconcile(ctx);
-  const { installed, uninstalled } = plan;
+  const { installed, uninstalled, closureAdded } = plan;
+
+  for (const addition of closureAdded ?? []) {
+    console.info(
+      cyan(`[info] ${addition.key} is required by ${addition.requiredBy.join(", ")} and will also be enabled.`),
+    );
+  }
 
   // No copy/delete needed: still converge the generated wiring (idempotent),
   // which also repairs a previous install interrupted mid-pipeline.

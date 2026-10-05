@@ -1,6 +1,8 @@
 import { checkbox } from "@inquirer/prompts";
 import { cyan, green } from "colorette";
 
+import { describeMissingDependencies, expandRegistryClosure } from "../assemble/module-graph";
+import { directDependents, expandModuleClosure, findRemovalBlocks } from "../core/module-closure";
 import { moduleKeys, withModuleKeys } from "../core/modules-state";
 import { listRegistryKeys } from "../lib/registry";
 import { writeModulesState } from "../lib/modules-state";
@@ -55,14 +57,35 @@ export async function runConfig(options: ConfigOptions): Promise<void> {
     assertKnown(addNames, known);
     assertKnown(removeNames, known);
 
-    const next = [...moduleKeys(ctx.state)];
-    for (const name of addNames) if (!next.includes(name)) next.push(name);
-    for (const name of removeNames) {
-      const index = next.indexOf(name);
-      if (index !== -1) next.splice(index, 1);
+    const current = moduleKeys(ctx.state);
+    // Traverse the graph including modules marked for removal, so removal
+    // guards can see dependencies declared from either side of the change.
+    const rootsWithAdds = [...new Set([...current, ...addNames])];
+    const preClosure = await expandRegistryClosure(ctx.registry.root, rootsWithAdds);
+    const missing = describeMissingDependencies(preClosure);
+    if (missing.length > 0) {
+      throw new CliError(`Cannot resolve module dependencies:\n  - ${missing.join("\n  - ")}`);
     }
 
+    const keptRoots = rootsWithAdds.filter((name) => !removeNames.includes(name));
+    const blocks = findRemovalBlocks(removeNames, keptRoots, preClosure.graph);
+    if (blocks.length > 0) {
+      const lines = blocks.map(
+        (block) => `cannot remove '${block.key}': still required by ${block.requiredBy.join(", ")}`,
+      );
+      throw new CliError(`${lines.join("\n")}. Remove the dependent modules first.`);
+    }
+
+    const next = expandModuleClosure(keptRoots, preClosure.graph).keys;
+    const nextSet = new Set(next);
+    const currentSet = new Set(current);
+
     await writeModulesState(cwd, sink, withModuleKeys(ctx.state, next));
+    for (const name of next.filter((key) => !currentSet.has(key))) {
+      const requiredBy = directDependents(name, preClosure.graph, nextSet);
+      console.info(cyan(`+ ${name}${requiredBy.length ? ` (required by: ${requiredBy.join(", ")})` : ""}`));
+    }
+    for (const name of current.filter((key) => !nextSet.has(key))) console.info(cyan(`- ${name}`));
     console.info(green(`[info] enabled modules: ${next.join(", ") || "(none)"}`));
     return;
   }
@@ -84,12 +107,27 @@ export async function runConfig(options: ConfigOptions): Promise<void> {
     loop: true,
   });
 
-  if (chosen.length === current.length && chosen.every((name) => current.includes(name))) {
+  const closure = await expandRegistryClosure(ctx.registry.root, chosen);
+  const missing = describeMissingDependencies(closure);
+  if (missing.length > 0) {
+    throw new CliError(`Cannot resolve module dependencies:\n  - ${missing.join("\n  - ")}`);
+  }
+  const next = closure.keys;
+  const currentSet = new Set(current);
+  const nextSet = new Set(next);
+
+  if (next.length === current.length && next.every((name) => current.includes(name))) {
     console.info("\n[info] You did not make any changes to the configuration.\n");
     return;
   }
 
-  await writeModulesState(cwd, sink, withModuleKeys(ctx.state, chosen));
-  for (const name of chosen.filter((n) => !current.includes(n))) console.info(cyan(`+ ${name}`));
-  for (const name of current.filter((n) => !chosen.includes(n))) console.info(cyan(`- ${name}`));
+  // Modules the user unchecked but a kept module still depends on stay enabled.
+  for (const name of closure.added.filter((key) => currentSet.has(key))) {
+    const requiredBy = directDependents(name, closure.graph, nextSet);
+    console.info(cyan(`= ${name} kept enabled (required by: ${requiredBy.join(", ") || "?"})`));
+  }
+
+  await writeModulesState(cwd, sink, withModuleKeys(ctx.state, next));
+  for (const name of next.filter((n) => !currentSet.has(n))) console.info(cyan(`+ ${name}`));
+  for (const name of current.filter((n) => !nextSet.has(n))) console.info(cyan(`- ${name}`));
 }

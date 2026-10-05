@@ -22,8 +22,14 @@ export interface LayeredModule {
   key: string;
   /** Undefined for framework-special modules such as module-hub. */
   layer?: string;
-  /** Keys of other registry modules this module imports (self excluded). */
+  /** Keys of other registry modules this module physically imports (self excluded). */
   dependencies: string[];
+  /**
+   * Keys declared via the manifest `moduleDependencies` field. When omitted,
+   * callers are treated as legacy inputs and declaration reconciliation is
+   * skipped; the dev-lint command always supplies it explicitly.
+   */
+  declaredDependencies?: string[];
 }
 
 export interface LayerLintFinding {
@@ -94,13 +100,19 @@ export function lintModuleLayers(modules: LayeredModule[]): LayerLintFinding[] {
   }
 
   for (const mod of modules) {
-    for (const dep of mod.dependencies) {
+    // Direction and existence rules apply to both physical imports and the
+    // declared dependency set: a declared edge forces installation coupling.
+    const declared = mod.declaredDependencies ?? mod.dependencies;
+    const edges = [...new Set([...mod.dependencies, ...declared])];
+    for (const dep of edges) {
+      if (dep === mod.key) continue;
       const target = byKey.get(dep);
+      const isPhysical = mod.dependencies.includes(dep);
       if (!target) {
         findings.push({
           level: "error",
           module: mod.key,
-          message: `imports '@modules/${dep}' which is not a registry module`,
+          message: `${isPhysical ? "imports" : "declares dependency on"} '@modules/${dep}' which is not a registry module`,
         });
         continue;
       }
@@ -124,11 +136,44 @@ export function lintModuleLayers(modules: LayeredModule[]): LayerLintFinding[] {
           module: mod.key,
           message: `${mod.layer} module must not depend on ${target.layer} module '${dep}'`,
         });
-      } else if (to === from) {
+      } else if (to === from && isPhysical) {
+        // Physical same-layer edges are the ones that can form import cycles;
+        // a declaration-only same-layer edge is reported by reconciliation.
         findings.push({
           level: "warning",
           module: mod.key,
           message: `same-layer dependency on '${dep}' (allowed; review recommended)`,
+        });
+      }
+    }
+  }
+
+  // Reconcile manifest declarations with physical imports.
+  for (const mod of modules) {
+    if (mod.declaredDependencies === undefined) continue;
+    const declaredSet = new Set(mod.declaredDependencies);
+    const actualSet = new Set(mod.dependencies);
+    for (const dep of mod.dependencies) {
+      if (declaredSet.has(dep) || !byKey.has(dep)) continue;
+      findings.push({
+        level: "error",
+        module: mod.key,
+        message: `imports '@modules/${dep}' but does not declare it in moduleDependencies`,
+      });
+    }
+    for (const dep of mod.declaredDependencies) {
+      if (actualSet.has(dep) || !byKey.has(dep)) continue;
+      if (dep === mod.key) {
+        findings.push({
+          level: "warning",
+          module: mod.key,
+          message: `declares itself in moduleDependencies`,
+        });
+      } else {
+        findings.push({
+          level: "warning",
+          module: mod.key,
+          message: `declares module dependency '${dep}' but never imports it`,
         });
       }
     }

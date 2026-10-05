@@ -3,8 +3,13 @@ import { describe, it } from "node:test";
 
 import { LayeredModule, lintModuleLayers } from "../src/core/layer-lint";
 
-function mod(key: string, layer: string | undefined, dependencies: string[] = []): LayeredModule {
-  return { key, layer, dependencies };
+function mod(
+  key: string,
+  layer: string | undefined,
+  dependencies: string[] = [],
+  declaredDependencies?: string[],
+): LayeredModule {
+  return { key, layer, dependencies, declaredDependencies };
 }
 
 describe("lintModuleLayers", () => {
@@ -61,5 +66,48 @@ describe("lintModuleLayers", () => {
     assert.ok(findings.every((finding) => finding.level === "error"));
     assert.match(findings[0].message, /unknown layer 'core'/);
     assert.match(findings[1].message, /'@modules\/ghost' which is not a registry module/);
+  });
+
+  it("errors on a physical import missing from moduleDependencies", () => {
+    const findings = lintModuleLayers([
+      mod("security", "foundation", [], []),
+      mod("account", "capability", ["security"], []),
+    ]);
+    const undeclared = findings.find((finding) => finding.message.includes("does not declare it"));
+    assert.ok(undeclared);
+    assert.equal(undeclared!.level, "error");
+    assert.match(undeclared!.message, /imports '@modules\/security' but does not declare it/);
+  });
+
+  it("accepts a physical import that is declared in moduleDependencies", () => {
+    const findings = lintModuleLayers([
+      mod("security", "foundation", [], []),
+      mod("account", "capability", ["security"], ["security"]),
+    ]);
+    assert.deepEqual(findings, []);
+  });
+
+  it("warns on a declared dependency that is never imported", () => {
+    const findings = lintModuleLayers([
+      mod("security", "foundation", [], []),
+      mod("account", "capability", [], ["security"]),
+    ]);
+    assert.equal(findings.length, 1);
+    assert.equal(findings[0].level, "warning");
+    assert.match(findings[0].message, /declares module dependency 'security' but never imports it/);
+  });
+
+  it("warns on a self declaration", () => {
+    const findings = lintModuleLayers([mod("account", "capability", [], ["account"])]);
+    assert.equal(findings.length, 1);
+    assert.equal(findings[0].level, "warning");
+    assert.match(findings[0].message, /declares itself in moduleDependencies/);
+  });
+
+  it("errors on a declared dependency on an unknown registry module", () => {
+    const findings = lintModuleLayers([mod("account", "capability", [], ["ghost"])]);
+    assert.equal(findings.length, 1);
+    assert.equal(findings[0].level, "error");
+    assert.match(findings[0].message, /declares dependency on '@modules\/ghost' which is not a registry module/);
   });
 });
