@@ -19,7 +19,7 @@ import {
   renderApitsConfig,
 } from "./apits-templates";
 
-export interface GenApiOptions {
+export interface ApitsOptions {
   /** OpenAPI URL or local file; only used to scaffold the first config. */
   input?: string;
   /** Config source name filter, forwarded as `apits gen -n <name>`. */
@@ -64,7 +64,7 @@ function runGenerator(projectRoot: string, args: string[]): Promise<void> {
   });
 }
 
-export async function runGenApi(options: GenApiOptions): Promise<void> {
+export async function runApits(options: ApitsOptions): Promise<void> {
   const projectRoot = path.resolve(options.cwd ?? process.cwd());
 
   if (!(await exists(path.join(projectRoot, "package.json")))) {

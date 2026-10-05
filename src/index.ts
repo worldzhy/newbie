@@ -4,7 +4,7 @@ import { bold, red } from "colorette";
 
 import { runInit } from "./commands/init";
 import { runAdd } from "./commands/add";
-import { runGenApi } from "./commands/gen-api";
+import { runApits } from "./commands/apits";
 import { doctorCommand } from "./commands/doctor";
 import { runUpdate } from "./commands/update";
 
@@ -77,7 +77,7 @@ program
   .option("--skip-install", "do not install the generator dev dependency", false)
   .action(async function (this: Command, input: string) {
     const flags = this.optsWithGlobals();
-    await runGenApi({
+    await runApits({
       input,
       name: flags.name as string | undefined,
       watch: Boolean(flags.watch),
