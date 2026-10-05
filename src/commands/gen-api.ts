@@ -17,7 +17,7 @@ import {
   GENERATOR_PACKAGE_SPEC,
   PUBLIC_BASE_URL_ENV,
   renderApitsConfig,
-} from "./gen-api-templates";
+} from "./apits-templates";
 
 export interface GenApiOptions {
   /** OpenAPI URL or local file; only used to scaffold the first config. */
@@ -68,12 +68,12 @@ export async function runGenApi(options: GenApiOptions): Promise<void> {
   const projectRoot = path.resolve(options.cwd ?? process.cwd());
 
   if (!(await exists(path.join(projectRoot, "package.json")))) {
-    throw new CliError(`No package.json found in ${projectRoot}. Run 'fewbie gen api' inside a fewbie project.`);
+    throw new CliError(`No package.json found in ${projectRoot}. Run 'fewbie apits' inside a fewbie project.`);
   }
 
   // The generated adapter imports the fewbie api client.
   if (!(await exists(path.join(projectRoot, API_CLIENT_PROJECT_PATH)))) {
-    throw new CliError(`'fewbie gen api' requires the api-client item. Run 'fewbie add api-client' first.`);
+    throw new CliError(`'fewbie apits' requires the api-client item. Run 'fewbie add api-client' first.`);
   }
 
   // First run: scaffold apits.config.ts from the positional input. The
@@ -86,7 +86,7 @@ export async function runGenApi(options: GenApiOptions): Promise<void> {
     if (!options.input) {
       throw new CliError(
         `No OpenAPI input and no ${CONFIG_PROJECT_PATH} found.\n` +
-          `  First run: fewbie gen api <openapi-url-or-json-file>\n` +
+          `  First run: fewbie apits <openapi-url-or-json-file>\n` +
           `  Afterwards: edit ${CONFIG_PROJECT_PATH} to manage sources.`,
       );
     }

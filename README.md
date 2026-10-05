@@ -71,7 +71,7 @@ installed automatically.
 | `--skip-install`    | Do not run `npm install` for missing dependencies.                           |
 | `--with-login-form` | Also install the login-form block, e.g. `fewbie add auth --with-login-form`. |
 
-### `fewbie gen api [input]`
+### `fewbie apits [input]`
 
 Generate typed API request code from an OpenAPI document (a URL or a local
 JSON/YAML file). On the first run the command scaffolds `apits.config.ts`;

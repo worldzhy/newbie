@@ -66,10 +66,9 @@ program
     });
   });
 
-// M3: thin wrapper around the apits OpenAPI -> TS request generator.
-const gen = program.command("gen").description("code generation");
-gen
-  .command("api [input]")
+// Thin wrapper around the apits-gen OpenAPI -> TS request generator.
+program
+  .command("apits [input]")
   .description(
     "generate typed API request code from an OpenAPI document (URL or local JSON/YAML); the first run scaffolds apits.config.ts",
   )
