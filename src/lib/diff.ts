@@ -81,8 +81,14 @@ export function unifiedDiff(oldContent: string, newContent: string, oldLabel: st
     if (hunkStart === -1) return;
     const start = Math.max(0, hunkStart - hunkSize);
     const end = Math.min(lines.length - 1, hunkEnd + hunkSize);
+    // Git prints a 0-based start for empty ranges (e.g. "@@ -0,0 +1,2 @@" for
+    // a wholly new file); non-empty ranges are 1-based.
+    const oldStart = oldLineNumber(lines, start);
+    const newStart = newLineNumber(lines, start);
+    const oldLen = hunkOldLength(lines, start, end);
+    const newLen = hunkNewLength(lines, start, end);
     out.push(
-      `@@ -${oldLineNumber(lines, start) + 1},${hunkOldLength(lines, start, end)} +${newLineNumber(lines, start) + 1},${hunkNewLength(lines, start, end)} @@`,
+      `@@ -${oldLen === 0 ? oldStart : oldStart + 1},${oldLen} +${newLen === 0 ? newStart : newStart + 1},${newLen} @@`,
     );
     for (let k = start; k <= end; k++) {
       out.push(`${lines[k].type}${lines[k].text}`);

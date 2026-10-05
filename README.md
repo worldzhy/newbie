@@ -52,11 +52,11 @@ npx fewbie add data-table
 
 Create a new project from the Fewbie basic template.
 
-| Option               | Description                                                        |
-| -------------------- | ------------------------------------------------------------------ |
+| Option                  | Description                                                       |
+| ----------------------- | ----------------------------------------------------------------- |
 | `--template-path <dir>` | Use a local template directory instead of cloning the repository. |
-| `--template-ref <ref>`  | Git ref of the fewbie repository to clone the template from.     |
-| `--no-git-init`         | Skip `git init` in the new project.                              |
+| `--template-ref <ref>`  | Git ref of the fewbie repository to clone the template from.      |
+| `--no-git-init`         | Skip `git init` in the new project.                               |
 
 ### `fewbie add <names...>`
 
@@ -65,11 +65,11 @@ Registry dependencies are resolved automatically (e.g. `login-form` pulls in
 `auth`, which pulls in `api-client`), and missing npm dependencies are
 installed automatically.
 
-| Option               | Description                                                                 |
-| -------------------- | --------------------------------------------------------------------------- |
-| `-f, --force`        | Overwrite files that already exist.                                        |
-| `--skip-install`     | Do not run `npm install` for missing dependencies.                         |
-| `--with-login-form`  | Also install the login-form block, e.g. `fewbie add auth --with-login-form`. |
+| Option              | Description                                                                  |
+| ------------------- | ---------------------------------------------------------------------------- |
+| `-f, --force`       | Overwrite files that already exist.                                          |
+| `--skip-install`    | Do not run `npm install` for missing dependencies.                           |
+| `--with-login-form` | Also install the login-form block, e.g. `fewbie add auth --with-login-form`. |
 
 ### `fewbie gen api [input]`
 
@@ -77,50 +77,50 @@ Generate typed API request code from an OpenAPI document (a URL or a local
 JSON/YAML file). On the first run the command scaffolds `apits.config.ts`;
 subsequent runs generate the typed request layer via the apits generator.
 
-| Option             | Description                                                          |
-| ------------------ | ------------------------------------------------------------------- |
-| `-n, --name <name>` | Only generate the config source with this name.                    |
-| `-w, --watch`      | Watch a local OpenAPI document and regenerate on change.            |
-| `--skip-install`   | Do not install the generator dev dependency.                        |
+| Option              | Description                                              |
+| ------------------- | -------------------------------------------------------- |
+| `-n, --name <name>` | Only generate the config source with this name.          |
+| `-w, --watch`       | Watch a local OpenAPI document and regenerate on change. |
+| `--skip-install`    | Do not install the generator dev dependency.             |
 
 ### `fewbie doctor`
 
 Check project health: structure, installed registry items, dependencies,
 design tokens and AI-readability.
 
-| Option   | Description                    |
-| -------- | ------------------------------ |
-| `--json` | Emit machine-readable JSON.    |
+| Option   | Description                 |
+| -------- | --------------------------- |
+| `--json` | Emit machine-readable JSON. |
 
 ### `fewbie update [names...]`
 
 Show updates for installed registry items as a unified diff. Pass `--write` to
 apply the changes instead of only previewing them.
 
-| Option     | Description                                              |
-| ---------- | -------------------------------------------------------- |
-| `-w, --write` | Apply the updates instead of only printing diffs.     |
+| Option        | Description                                       |
+| ------------- | ------------------------------------------------- |
+| `-w, --write` | Apply the updates instead of only printing diffs. |
 
 ## Registry items
 
 The built-in registry follows the shadcn item conventions
 (`registry:lib`, `registry:component`, `registry:block`):
 
-| Item                      | Type      | Description                                                                 |
-| ------------------------- | --------- | --------------------------------------------------------------------------- |
-| `api-client`              | `lib`     | Axios instance with bearer-token auth, httpOnly refresh-cookie rotation, single-flight 401 retry and proactive token refresh. |
-| `auth`                    | `lib`     | Login/logout helpers, session-expired redirect binding and proactive-refresh bootstrap built on the api-client. |
-| `data-table`              | `component` | Generic data table with client-side sorting and pagination.              |
-| `login-form`              | `block`   | Account/password login card; submits through the auth util and honors `?redirect=`. |
-| `page-header`             | `component` | Standard page header with title, description and a right-aligned actions slot. |
-| `settings-required-state` | `block`   | Empty state shown when required configuration is missing, with a setup call-to-action. |
-| `theme`                   | `component` | `next-themes` ThemeProvider wrapper and a light/dark toggle button.      |
+| Item                      | Type        | Description                                                                                                                        |
+| ------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `api-client`              | `lib`       | Axios instance with bearer-token auth, httpOnly refresh-cookie rotation, single-flight 401 retry and proactive token refresh.      |
+| `auth`                    | `lib`       | Login/logout helpers, session-expired redirect binding and proactive-refresh bootstrap built on the api-client.                    |
+| `data-table`              | `component` | Generic data table with client-side sorting and pagination.                                                                        |
+| `login-form`              | `block`     | Account/password login card; submits through the auth util and honors `?redirect=`.                                                |
+| `page-header`             | `component` | Standard page header with title, description and a right-aligned actions slot.                                                     |
+| `settings-required-state` | `block`     | Empty state shown when required configuration is missing, with a setup call-to-action.                                             |
+| `theme`                   | `component` | `next-themes` ThemeProvider wrapper and a light/dark toggle button.                                                                |
 | `web-monitor-sdk`         | `component` | Browser-side monitoring (PV/AJAX/resource/errors) via `@devbie/web-monitor-sdk`; scaffolds a client component for the root layout. |
 
 ## Global options
 
-| Option            | Description                                                          |
-| ----------------- | -------------------------------------------------------------------- |
+| Option            | Description                                                         |
+| ----------------- | ------------------------------------------------------------------- |
 | `-C, --cwd <dir>` | Project root directory (defaults to the current working directory). |
 
 Running `fewbie` with no arguments prints help and exits successfully.
