@@ -1,6 +1,6 @@
 {
   "name": "@devbie/fewbie-cli",
-  "version": "0.1.0-stage.0",
+  "version": "0.1.0",
   "description": "fewbie frontend framework CLI",
   "license": "MIT",
   "author": "worldzhy",
