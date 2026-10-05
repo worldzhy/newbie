@@ -130,22 +130,44 @@ export async function runGenApi(options: GenApiOptions): Promise<void> {
   if (options.watch) genArgs.push("--watch");
 
   // The upstream generator exits 0 even when generation fails, so verify
-  // success via the expected output file's mtime (skipped in watch mode,
-  // where the generator keeps running).
-  const expectedOutput = path.join(projectRoot, DEFAULT_OUTPUT_DIR, `${options.name ?? DEFAULT_GENERATED_NAME}.ts`);
-  const beforeStat = await fs.stat(expectedOutput).catch(() => null);
+  // success via refreshed mtimes (skipped in watch mode, where the generator
+  // keeps running). With -n only the named output counts; otherwise any
+  // refreshed .ts file in the default output dir counts, so additional
+  // sources scaffolded into that dir cannot fail silently.
+  const outputDir = path.join(projectRoot, DEFAULT_OUTPUT_DIR);
+  const namedOutput = path.join(outputDir, `${options.name ?? DEFAULT_GENERATED_NAME}.ts`);
+  const beforeStat = await fs.stat(namedOutput).catch(() => null);
+  const beforeDirMtimes = new Map<string, number>();
+  if (!options.name) {
+    const entries = await fs.readdir(outputDir).catch(() => [] as string[]);
+    for (const entry of entries.filter((name) => name.endsWith(".ts"))) {
+      const stat = await fs.stat(path.join(outputDir, entry)).catch(() => null);
+      if (stat) beforeDirMtimes.set(entry, stat.mtimeMs);
+    }
+  }
 
   console.info(cyan(`\nGenerating API code (${DEFAULT_OUTPUT_DIR})...`));
   await runGenerator(projectRoot, genArgs);
 
   if (!options.watch) {
-    const afterStat = await fs.stat(expectedOutput).catch(() => null);
-    const refreshed = afterStat !== null && (beforeStat === null || afterStat.mtimeMs > beforeStat.mtimeMs);
+    let refreshed: boolean;
+    if (options.name) {
+      const afterStat = await fs.stat(namedOutput).catch(() => null);
+      refreshed = afterStat !== null && (beforeStat === null || afterStat.mtimeMs > beforeStat.mtimeMs);
+    } else {
+      const entries = await fs.readdir(outputDir).catch(() => [] as string[]);
+      refreshed = false;
+      for (const entry of entries.filter((name) => name.endsWith(".ts"))) {
+        const stat = await fs.stat(path.join(outputDir, entry)).catch(() => null);
+        if (stat && stat.mtimeMs > (beforeDirMtimes.get(entry) ?? 0)) {
+          refreshed = true;
+          break;
+        }
+      }
+    }
     if (!refreshed) {
       throw new CliError(
-        `Code generation failed: ${DEFAULT_OUTPUT_DIR}/${
-          options.name ?? DEFAULT_GENERATED_NAME
-        }.ts was not produced or updated. See the generator output above.`,
+        `Code generation failed: no file in ${DEFAULT_OUTPUT_DIR} was produced or updated. See the generator output above.`,
       );
     }
   }

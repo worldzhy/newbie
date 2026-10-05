@@ -87,9 +87,6 @@ gen
     });
   });
 
-// v1 surface intentionally stops here. `doctor` and `update` are planned
-// after the 0.1.0 release.
-
 // Health check: project structure, installed registry items, dependencies,
 // design tokens, and AI-readability.
 program

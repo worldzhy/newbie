@@ -31,8 +31,15 @@ async function assertProjectRoot(projectRoot: string): Promise<void> {
   });
 }
 
+async function exists(target: string): Promise<boolean> {
+  return fs
+    .access(target)
+    .then(() => true)
+    .catch(() => false);
+}
+
 /** Extract the package name from an npm spec ("axios@^1" or "@scope/pkg@^2"). */
-function packageNameOf(spec: string): string {
+export function packageNameOf(spec: string): string {
   if (spec.startsWith("@")) {
     const at = spec.indexOf("@", 1);
     return at === -1 ? spec : spec.slice(0, at);
@@ -47,32 +54,31 @@ async function missingPackages(projectRoot: string, specs: string[]): Promise<st
   return specs.filter((spec) => !declared.has(packageNameOf(spec)));
 }
 
-/** Write one item's files into the project, honoring --force on conflicts. */
-async function writeItemFiles(item: LoadedItem, projectRoot: string, force: boolean): Promise<string[]> {
-  const written: string[] = [];
+/** Targets across all items that already exist in the project. */
+async function findConflicts(items: LoadedItem[], projectRoot: string): Promise<string[]> {
   const conflicts: string[] = [];
+  for (const item of items) {
+    for (const file of item.files) {
+      if (await exists(path.join(projectRoot, file.target))) {
+        conflicts.push(file.target);
+      }
+    }
+  }
+  return conflicts;
+}
+
+/** Write one item's files into the project; conflicts must be pre-checked. */
+async function writeItemFiles(item: LoadedItem, projectRoot: string): Promise<string[]> {
+  const written: string[] = [];
 
   for (const file of item.files) {
     const target = path.join(projectRoot, file.target);
-    const exists = await fs
-      .access(target)
-      .then(() => true)
-      .catch(() => false);
-    if (exists && !force) {
-      conflicts.push(file.target);
-      continue;
-    }
     await fs.mkdir(path.dirname(target), { recursive: true });
     const content = file.content ?? (await fs.readFile(file.source as string, "utf8"));
     await fs.writeFile(target, content);
     written.push(file.target);
   }
 
-  if (conflicts.length > 0) {
-    throw new CliError(
-      `The following files already exist (re-run with --force to overwrite):\n  ${conflicts.join("\n  ")}`,
-    );
-  }
   return written;
 }
 
@@ -90,9 +96,20 @@ export async function runAdd(options: AddOptions): Promise<void> {
 
   console.info(cyan(`Installing ${items.map((i) => i.manifest.name).join(", ")} into ${projectRoot}...`));
 
+  // Detect every conflict up front so a failed `add` never leaves a
+  // partially written project behind.
+  if (options.force !== true) {
+    const conflicts = await findConflicts(items, projectRoot);
+    if (conflicts.length > 0) {
+      throw new CliError(
+        `The following files already exist (re-run with --force to overwrite):\n  ${conflicts.join("\n  ")}`,
+      );
+    }
+  }
+
   const allWritten: string[] = [];
   for (const item of items) {
-    const written = await writeItemFiles(item, projectRoot, options.force === true);
+    const written = await writeItemFiles(item, projectRoot);
     allWritten.push(...written);
     console.info(`  ${green("✓")} ${item.manifest.name}`);
   }
