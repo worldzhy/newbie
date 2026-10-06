@@ -1,9 +1,9 @@
-import { perResource } from './mock';
-import fetch from 'node-fetch';
+import { perResource } from "./mock";
+import fetch from "node-fetch";
 
 window.fetch = fetch;
 // jest provides the window object via jsdom
-window.XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
+window.XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 // Enumerable properties: XMLHttpRequest instances have them, but so does the XMLHttpRequest constructor, which some libraries rely on
 window.XMLHttpRequest.UNSENT = 0;
 window.XMLHttpRequest.OPENED = 1;
@@ -16,44 +16,46 @@ window.performance.getEntries = function () {
 let _entriesByTypeArr = [],
   observerCallbacks = [];
 window.performance.getEntriesByType = function (type) {
-  if (type === 'navigation') {
-    return [{
-      connectEnd: 1.4800000935792923,
-      connectStart: 1.4800000935792923,
-      decodedBodySize: 738,
-      domComplete: 583.9700000360608,
-      domContentLoadedEventEnd: 267.86500005982816,
-      domContentLoadedEventStart: 267.750000115484,
-      domInteractive: 267.7150000818074,
-      domainLookupEnd: 1.4800000935792923,
-      domainLookupStart: 1.4800000935792923,
-      duration: 584.000000031665,
-      encodedBodySize: 738,
-      entryType: "navigation",
-      fetchStart: 1.4800000935792923,
-      initiatorType: "navigation",
-      loadEventEnd: 584.000000031665,
-      loadEventStart: 583.9900001883507,
-      name: "https://localhost/",
-      nextHopProtocol: "h2",
-      redirectCount: 0,
-      redirectEnd: 0,
-      redirectStart: 0,
-      requestStart: 6.880000000819564,
-      responseEnd: 48.7900001462549,
-      responseStart: 47.17000015079975,
-      secureConnectionStart: 0,
-      serverTiming: [],
-      startTime: 0,
-      transferSize: 95,
-      type: "reload",
-      unloadEventEnd: 53.7650000769645,
-      unloadEventStart: 53.7650000769645,
-      workerStart: 0,
-      workerTiming: [],
-    }]
+  if (type === "navigation") {
+    return [
+      {
+        connectEnd: 1.4800000935792923,
+        connectStart: 1.4800000935792923,
+        decodedBodySize: 738,
+        domComplete: 583.9700000360608,
+        domContentLoadedEventEnd: 267.86500005982816,
+        domContentLoadedEventStart: 267.750000115484,
+        domInteractive: 267.7150000818074,
+        domainLookupEnd: 1.4800000935792923,
+        domainLookupStart: 1.4800000935792923,
+        duration: 584.000000031665,
+        encodedBodySize: 738,
+        entryType: "navigation",
+        fetchStart: 1.4800000935792923,
+        initiatorType: "navigation",
+        loadEventEnd: 584.000000031665,
+        loadEventStart: 583.9900001883507,
+        name: "https://localhost/",
+        nextHopProtocol: "h2",
+        redirectCount: 0,
+        redirectEnd: 0,
+        redirectStart: 0,
+        requestStart: 6.880000000819564,
+        responseEnd: 48.7900001462549,
+        responseStart: 47.17000015079975,
+        secureConnectionStart: 0,
+        serverTiming: [],
+        startTime: 0,
+        transferSize: 95,
+        type: "reload",
+        unloadEventEnd: 53.7650000769645,
+        unloadEventStart: 53.7650000769645,
+        workerStart: 0,
+        workerTiming: [],
+      },
+    ];
   }
-  if (type === 'paint') {
+  if (type === "paint") {
     return [
       {
         duration: 0,
@@ -67,7 +69,7 @@ window.performance.getEntriesByType = function (type) {
         name: "first-contentful-paint",
         startTime: 581.9850000552833,
       },
-    ]
+    ];
   }
   return _entriesByTypeArr;
 };

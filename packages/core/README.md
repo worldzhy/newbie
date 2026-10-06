@@ -34,18 +34,18 @@ optional self-reporting — without forcing you to wire it all together.
 `@devbie/newbie` is a runtime library; NestJS, Prisma and related packages are
 declared as peer dependencies so your project controls their versions:
 
-| Peer dependency        | Version      |
-| ---------------------- | ------------ |
-| `@nestjs/common`       | `^11.0.0`    |
-| `@nestjs/core`         | `^11.0.0`    |
+| Peer dependency            | Version   |
+| -------------------------- | --------- |
+| `@nestjs/common`           | `^11.0.0` |
+| `@nestjs/core`             | `^11.0.0` |
 | `@nestjs/platform-express` | `^11.0.0` |
-| `@nestjs/config`       | `^4.0.0`     |
-| `@nestjs/swagger`      | `^11.0.0`    |
-| `@nestjs/throttler`    | `^6.0.0`     |
-| `@nestjs/axios`        | `^4.0.0`     |
-| `@prisma/client`       | `^7.0.0`     |
-| `@prisma/adapter-pg`   | `^7.0.0`     |
-| `express`              | `^5.0.0`     |
+| `@nestjs/config`           | `^4.0.0`  |
+| `@nestjs/swagger`          | `^11.0.0` |
+| `@nestjs/throttler`        | `^6.0.0`  |
+| `@nestjs/axios`            | `^4.0.0`  |
+| `@prisma/client`           | `^7.0.0`  |
+| `@prisma/adapter-pg`       | `^7.0.0`  |
+| `express`                  | `^5.0.0`  |
 
 ## Installation
 
@@ -100,22 +100,22 @@ npx @devbie/newbie-cli create my-app
 `NewbieFactory.create(rootModule, options)` accepts the following options
 (every field is optional):
 
-| Option                | Type       | Default               | Description                                                        |
-| --------------------- | ---------- | --------------------- | ------------------------------------------------------------------ |
-| `environment`         | `string`   | `ENVIRONMENT` or `development` | `development` enables Swagger; `production` enables Helmet. |
-| `port`                | `number`   | `PORT` or `3000`      | Port the HTTP server listens on.                                   |
-| `corsAllowedOrigins`  | `string[]` | `ALLOWED_ORIGINS`     | Allowed CORS origins (credentials enabled).                       |
-| `corsResolver`        | `function` | —                     | Custom function-style CORS resolver; replaces static origins.      |
-| `bodyLimit`           | `string`   | `10mb`                | Maximum request body size.                                         |
-| `requestTimeout`      | `number`   | `60000`               | Request timeout in milliseconds.                                   |
-| `keepAliveTimeout`    | `number`   | —                     | Keep-alive timeout in milliseconds.                                |
-| `logger`              | `string[]` | `LOG_LEVEL` or `['log','warn','error']` | NestJS log levels.                              |
-| `textBodyParser`      | `boolean`  | `false`               | Also parse `text/plain` bodies (for `sendBeacon` endpoints).       |
-| `beforeCors`          | `function` | —                     | Express middleware registered before the global CORS middleware.   |
-| `swagger`             | `object \| false` | enabled in development | Swagger config (`title`, `description`, `version`, `path`, default path `/api`). |
-| `portRaceRecovery`    | `boolean`  | `false`               | Survive port races during `nest start --watch` under bind mounts.  |
-| `shutdownTimeoutMs`   | `number`   | `10000`               | Grace period for in-flight requests on SIGTERM/SIGINT.             |
-| `cluster`             | `boolean`  | `false`               | Run one worker per available CPU core.                             |
+| Option               | Type              | Default                                 | Description                                                                      |
+| -------------------- | ----------------- | --------------------------------------- | -------------------------------------------------------------------------------- |
+| `environment`        | `string`          | `ENVIRONMENT` or `development`          | `development` enables Swagger; `production` enables Helmet.                      |
+| `port`               | `number`          | `PORT` or `3000`                        | Port the HTTP server listens on.                                                 |
+| `corsAllowedOrigins` | `string[]`        | `ALLOWED_ORIGINS`                       | Allowed CORS origins (credentials enabled).                                      |
+| `corsResolver`       | `function`        | —                                       | Custom function-style CORS resolver; replaces static origins.                    |
+| `bodyLimit`          | `string`          | `10mb`                                  | Maximum request body size.                                                       |
+| `requestTimeout`     | `number`          | `60000`                                 | Request timeout in milliseconds.                                                 |
+| `keepAliveTimeout`   | `number`          | —                                       | Keep-alive timeout in milliseconds.                                              |
+| `logger`             | `string[]`        | `LOG_LEVEL` or `['log','warn','error']` | NestJS log levels.                                                               |
+| `textBodyParser`     | `boolean`         | `false`                                 | Also parse `text/plain` bodies (for `sendBeacon` endpoints).                     |
+| `beforeCors`         | `function`        | —                                       | Express middleware registered before the global CORS middleware.                 |
+| `swagger`            | `object \| false` | enabled in development                  | Swagger config (`title`, `description`, `version`, `path`, default path `/api`). |
+| `portRaceRecovery`   | `boolean`         | `false`                                 | Survive port races during `nest start --watch` under bind mounts.                |
+| `shutdownTimeoutMs`  | `number`          | `10000`                                 | Grace period for in-flight requests on SIGTERM/SIGINT.                           |
+| `cluster`            | `boolean`         | `false`                                 | Run one worker per available CPU core.                                           |
 
 ### What the framework wires for you
 
@@ -144,14 +144,14 @@ provides typed access to request cookies.
 
 ## Environment variables
 
-| Variable           | Used for                                                        |
-| ------------------ | --------------------------------------------------------------- |
-| `ENVIRONMENT`      | `development` or `production`.                                  |
-| `PORT`             | HTTP listen port.                                               |
-| `ALLOWED_ORIGINS`  | Comma-separated CORS origin list.                               |
-| `LOG_LEVEL`        | Comma-separated NestJS log levels (e.g. `log,warn,error`).      |
+| Variable              | Used for                                                                     |
+| --------------------- | ---------------------------------------------------------------------------- |
+| `ENVIRONMENT`         | `development` or `production`.                                               |
+| `PORT`                | HTTP listen port.                                                            |
+| `ALLOWED_ORIGINS`     | Comma-separated CORS origin list.                                            |
+| `LOG_LEVEL`           | Comma-separated NestJS log levels (e.g. `log,warn,error`).                   |
 | `MODULE_HUB_ENDPOINT` | Enables module-hub self-reporting when set together with `MODULE_HUB_TOKEN`. |
-| `MODULE_HUB_TOKEN` | Token sent to the module hub.                                   |
+| `MODULE_HUB_TOKEN`    | Token sent to the module hub.                                                |
 
 When both `MODULE_HUB_ENDPOINT` and `MODULE_HUB_TOKEN` are present, the
 framework automatically sends a full snapshot on boot and a ping every 60

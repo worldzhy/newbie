@@ -71,20 +71,20 @@ The component is a no-op until both environment variables are present.
 
 ## Init options
 
-| Option              | Type       | Default                | Required | Description                                                          |
-| ------------------- | ---------- | ---------------------- | -------- | -------------------------------------------------------------------- |
-| `appId`             | `string`   | —                      | Yes      | Application identifier sent with every report.                     |
-| `api`               | `string`   | —                      | Yes      | Collector endpoint that receives report payloads.                  |
-| `isPage`            | `boolean`  | `true`                 | No       | Collect page-view / page performance data.                         |
-| `isAjax`            | `boolean`  | `true`                 | No       | Instrument XHR and `fetch` requests.                               |
-| `isResource`        | `boolean`  | `true`                 | No       | Collect resource timing and slow/failed resources.                 |
-| `isError`           | `boolean`  | `true`                 | No       | Collect JS errors, rejections, resource errors and console errors. |
-| `filterUrls`        | `string[]` | `[]`                   | No       | URLs excluded from AJAX/resource collection. The collector endpoint (`/api/v1/report/web`) is always filtered automatically. |
-| `user`              | `object`   | `{}`                   | No       | Initial user identity: `{ uid?, p? }` (`p` should be pre-encrypted). |
-| `isTraceId`         | `boolean`  | `false`                | No       | Capture the trace ID response header from AJAX calls.              |
-| `traceIdHeaderName` | `string`   | `x-trace-id`           | No       | Response header name to read when `isTraceId` is enabled.          |
-| `customsThrottleMs` | `number`   | `1000`                 | No       | Throttle window for batching custom events, in milliseconds.       |
-| `errcodeReport`     | `function` | —                      | No       | Business error resolver, see below.                                 |
+| Option              | Type       | Default      | Required | Description                                                                                                                  |
+| ------------------- | ---------- | ------------ | -------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `appId`             | `string`   | —            | Yes      | Application identifier sent with every report.                                                                               |
+| `api`               | `string`   | —            | Yes      | Collector endpoint that receives report payloads.                                                                            |
+| `isPage`            | `boolean`  | `true`       | No       | Collect page-view / page performance data.                                                                                   |
+| `isAjax`            | `boolean`  | `true`       | No       | Instrument XHR and `fetch` requests.                                                                                         |
+| `isResource`        | `boolean`  | `true`       | No       | Collect resource timing and slow/failed resources.                                                                           |
+| `isError`           | `boolean`  | `true`       | No       | Collect JS errors, rejections, resource errors and console errors.                                                           |
+| `filterUrls`        | `string[]` | `[]`         | No       | URLs excluded from AJAX/resource collection. The collector endpoint (`/api/v1/report/web`) is always filtered automatically. |
+| `user`              | `object`   | `{}`         | No       | Initial user identity: `{ uid?, p? }` (`p` should be pre-encrypted).                                                         |
+| `isTraceId`         | `boolean`  | `false`      | No       | Capture the trace ID response header from AJAX calls.                                                                        |
+| `traceIdHeaderName` | `string`   | `x-trace-id` | No       | Response header name to read when `isTraceId` is enabled.                                                                    |
+| `customsThrottleMs` | `number`   | `1000`       | No       | Throttle window for batching custom events, in milliseconds.                                                                 |
+| `errcodeReport`     | `function` | —            | No       | Business error resolver, see below.                                                                                          |
 
 ## Returned API
 
@@ -149,14 +149,14 @@ init({
 
 Reports carry one of the following types:
 
-| Type        | Content                                              |
-| ----------- | ---------------------------------------------------- |
-| `PagePerf`  | Page performance, resources and errors on navigation. |
-| `AjaxPerf`  | AJAX activity and errors between page reports.       |
-| `Error`     | Errors captured immediately (debounced).             |
-| `Custom`    | Batched custom events.                               |
-| `Unload`    | Final report on page unload.                         |
-| `SdkError`  | Errors thrown inside the SDK itself.                 |
+| Type       | Content                                               |
+| ---------- | ----------------------------------------------------- |
+| `PagePerf` | Page performance, resources and errors on navigation. |
+| `AjaxPerf` | AJAX activity and errors between page reports.        |
+| `Error`    | Errors captured immediately (debounced).              |
+| `Custom`   | Batched custom events.                                |
+| `Unload`   | Final report on page unload.                          |
+| `SdkError` | Errors thrown inside the SDK itself.                  |
 
 Payloads are POSTed with `Content-Type: text/plain` via `fetch` (so monitoring
 requests are never re-instrumented), and the final `Unload` report uses

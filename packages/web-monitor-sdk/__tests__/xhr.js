@@ -1,15 +1,11 @@
-import './mock/web.env';
-import {
-  mockPerformanceResource,
-  XMLConstructorEnum,
-  mockBaseXhrApi,
-} from './mock/mock';
-import { overrideFetch, httpServer } from './mock/utils';
-import webMonitorSdk from '../src/index';
-const appId = 'appid_test';
+import "./mock/web.env";
+import { mockPerformanceResource, XMLConstructorEnum, mockBaseXhrApi } from "./mock/mock";
+import { overrideFetch, httpServer } from "./mock/utils";
+import webMonitorSdk from "../src/index";
+const appId = "appid_test";
 const monitor = webMonitorSdk({
   appId,
-  api: 'http://localhost/report',
+  api: "http://localhost/report",
 });
 // Start a server to receive requests
 httpServer(mockBaseXhrApi);
@@ -20,24 +16,24 @@ let reportTypePage, reportTypeAjax;
 overrideFetch(function () {
   const body = JSON.parse(arguments[1].body);
   // page report
-  if (body.type === 'PagePerf') {
+  if (body.type === "PagePerf") {
     reportTypePage = body;
   }
   // ajax report
-  if (body.type === 'AjaxPerf') {
+  if (body.type === "AjaxPerf") {
     reportTypeAjax = body;
   }
 });
 
 // Test: one page-load report and one ajax-completion report, 2 reports total
-test('web api: XMLHttpRequest', (done) => {
+test("web api: XMLHttpRequest", (done) => {
   //GET
   const requestAddress = mockPerformanceResource.xhr.name;
 
   // Send a request; ensure it is sent successfully, the patched collection logic runs and captures the data, and the SDK produces the corresponding record
   const xmlhttp = new XMLHttpRequest();
   xmlhttp.onreadystatechange = state_Change;
-  xmlhttp.open('GET', requestAddress, true);
+  xmlhttp.open("GET", requestAddress, true);
   xmlhttp.send(null);
   // After sending requests, simulate the browser performance data observer
   window.mockPerformanceEntriesAdd(mockPerformanceResource.xhr);
@@ -58,8 +54,8 @@ test('web api: XMLHttpRequest', (done) => {
     // page performance report payload
     expect(reportTypePage.appId).toEqual(appId);
     expect(reportTypePage.performance.andt).toEqual(
-      window.performance.getEntriesByType('navigation')[0].domComplete -
-        window.performance.getEntriesByType('navigation')[0].domInteractive
+      window.performance.getEntriesByType("navigation")[0].domComplete -
+        window.performance.getEntriesByType("navigation")[0].domInteractive,
     );
     expect(reportTypePage.isFristIn).toEqual(true);
     expect(reportTypePage.markUser.length).toBeGreaterThan(0);

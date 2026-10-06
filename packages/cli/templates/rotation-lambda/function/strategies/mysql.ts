@@ -2,28 +2,28 @@ import {
   PutSecretValueCommand,
   GetRandomPasswordCommand,
   UpdateSecretVersionStageCommand,
-} from '@aws-sdk/client-secrets-manager';
-import * as mysql from 'mysql2/promise.js';
-import {RotationStrategy, smClient} from '../common.js';
+} from "@aws-sdk/client-secrets-manager";
+import * as mysql from "mysql2/promise.js";
+import { RotationStrategy, smClient } from "../common.js";
 
 export class RdsMysqlStrategy implements RotationStrategy {
   async createSecret(secretId: string, token: string, currentDict: any): Promise<void> {
     const passwordRes = await smClient.send(
       new GetRandomPasswordCommand({
         PasswordLength: 32,
-        ExcludeCharacters: '/@"\'\\',
+        ExcludeCharacters: "/@\"'\\",
         ExcludePunctuation: true,
-      })
+      }),
     );
-    const newDict = {...currentDict, password: passwordRes.RandomPassword};
+    const newDict = { ...currentDict, password: passwordRes.RandomPassword };
 
     await smClient.send(
       new PutSecretValueCommand({
         SecretId: secretId,
         ClientRequestToken: token,
         SecretString: JSON.stringify(newDict),
-        VersionStages: ['AWSPENDING'],
-      })
+        VersionStages: ["AWSPENDING"],
+      }),
     );
   }
 
@@ -56,10 +56,10 @@ export class RdsMysqlStrategy implements RotationStrategy {
     await smClient.send(
       new UpdateSecretVersionStageCommand({
         SecretId: secretId,
-        VersionStage: 'AWSCURRENT',
+        VersionStage: "AWSCURRENT",
         MoveToVersionId: token,
         RemoveFromVersionId: currentSecret.VersionId,
-      })
+      }),
     );
   }
 }

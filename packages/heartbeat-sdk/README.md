@@ -46,19 +46,19 @@ heartbeat.stop();
 
 `startHeartbeat(options)` takes the following configuration:
 
-| Option        | Type     | Default   | Required | Description                                                           |
-| ------------- | -------- | --------- | -------- | --------------------------------------------------------------------- |
-| `endpoint`    | `string` | —         | Yes      | Heartbeat server endpoint prefix, without a trailing slash.         |
-| `token`       | `string` | —         | Yes      | Installation token, sent as the `X-Heartbeat-Token` header; globally unique. |
-| `intervalMs`  | `number` | `30000`   | No       | Heartbeat interval in milliseconds.                                  |
-| `appVersion`  | `string` | —         | No       | Deployed application version (git SHA or semver), self-reported.    |
-| `env`         | `string` | —         | No       | Self-reported deployment environment, e.g. `prod`.                  |
-| `instanceId`  | `string` | —         | No       | Self-reported instance identifier (hostname, EC2 instance ID, ...). |
+| Option       | Type     | Default | Required | Description                                                                  |
+| ------------ | -------- | ------- | -------- | ---------------------------------------------------------------------------- |
+| `endpoint`   | `string` | —       | Yes      | Heartbeat server endpoint prefix, without a trailing slash.                  |
+| `token`      | `string` | —       | Yes      | Installation token, sent as the `X-Heartbeat-Token` header; globally unique. |
+| `intervalMs` | `number` | `30000` | No       | Heartbeat interval in milliseconds.                                          |
+| `appVersion` | `string` | —       | No       | Deployed application version (git SHA or semver), self-reported.             |
+| `env`        | `string` | —       | No       | Self-reported deployment environment, e.g. `prod`.                           |
+| `instanceId` | `string` | —       | No       | Self-reported instance identifier (hostname, EC2 instance ID, ...).          |
 
 The returned `HeartbeatHandle` exposes:
 
-| Method  | Description                                            |
-| ------- | ------------------------------------------------------ |
+| Method   | Description                                               |
+| -------- | --------------------------------------------------------- |
 | `stop()` | Stop the heartbeat loop and release the global singleton. |
 
 ## Server contract

@@ -2,28 +2,28 @@ import {
   PutSecretValueCommand,
   GetRandomPasswordCommand,
   UpdateSecretVersionStageCommand,
-} from '@aws-sdk/client-secrets-manager';
-import {Client as PgClient} from 'pg';
-import {RotationStrategy, smClient} from '../common.js';
+} from "@aws-sdk/client-secrets-manager";
+import { Client as PgClient } from "pg";
+import { RotationStrategy, smClient } from "../common.js";
 
 export class RdsPostgresStrategy implements RotationStrategy {
   async createSecret(secretId: string, token: string, currentDict: any): Promise<void> {
     const passwordRes = await smClient.send(
       new GetRandomPasswordCommand({
         PasswordLength: 32,
-        ExcludeCharacters: '/@"\'\\',
+        ExcludeCharacters: "/@\"'\\",
         ExcludePunctuation: true,
-      })
+      }),
     );
-    const newDict = {...currentDict, password: passwordRes.RandomPassword};
+    const newDict = { ...currentDict, password: passwordRes.RandomPassword };
 
     await smClient.send(
       new PutSecretValueCommand({
         SecretId: secretId,
         ClientRequestToken: token,
         SecretString: JSON.stringify(newDict),
-        VersionStages: ['AWSPENDING'],
-      })
+        VersionStages: ["AWSPENDING"],
+      }),
     );
   }
 
@@ -34,7 +34,7 @@ export class RdsPostgresStrategy implements RotationStrategy {
       user: currentDict.username,
       password: currentDict.password,
       database: currentDict.dbname,
-      ssl: {rejectUnauthorized: false},
+      ssl: { rejectUnauthorized: false },
     });
     await client.connect();
     await client.query(`ALTER USER "${currentDict.username}" WITH PASSWORD '${pendingDict.password}'`);
@@ -48,10 +48,10 @@ export class RdsPostgresStrategy implements RotationStrategy {
       user: pendingDict.username,
       password: pendingDict.password,
       database: pendingDict.dbname,
-      ssl: {rejectUnauthorized: false},
+      ssl: { rejectUnauthorized: false },
     });
     await client.connect();
-    await client.query('SELECT 1');
+    await client.query("SELECT 1");
     await client.end();
   }
 
@@ -59,10 +59,10 @@ export class RdsPostgresStrategy implements RotationStrategy {
     await smClient.send(
       new UpdateSecretVersionStageCommand({
         SecretId: secretId,
-        VersionStage: 'AWSCURRENT',
+        VersionStage: "AWSCURRENT",
         MoveToVersionId: token,
         RemoveFromVersionId: currentSecret.VersionId,
-      })
+      }),
     );
   }
 }

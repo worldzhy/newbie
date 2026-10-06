@@ -1,11 +1,11 @@
-import {IAMClient} from '@aws-sdk/client-iam';
-import {SecretsManagerClient} from '@aws-sdk/client-secrets-manager';
+import { IAMClient } from "@aws-sdk/client-iam";
+import { SecretsManagerClient } from "@aws-sdk/client-secrets-manager";
 
 export const iamClient = new IAMClient({});
 export const smClient = new SecretsManagerClient({});
 
 export interface RotationEvent {
-  Step: 'createSecret' | 'setSecret' | 'testSecret' | 'finishSecret';
+  Step: "createSecret" | "setSecret" | "testSecret" | "finishSecret";
   SecretId: string;
   ClientRequestToken: string;
 }

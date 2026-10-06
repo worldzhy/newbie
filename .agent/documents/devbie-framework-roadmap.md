@@ -148,12 +148,12 @@
   - 自注册：CLI 首次带 token 轮询时 hub 自动登记 installation
   - `externalRef`（opaque 自由文本）留给宿主贴自己的 project/application 标签，hub 不解释
 - **数据模型**（独立 PG schema `module/module-hub`，4 表）：
-  | 表 | 职责 |
+  | 表                   | 职责                                                                                                                         |
   | -------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-  | `hub-installation` | tokenHash、label、repoUrl?、externalRef?、newbieVersion、已装模块快照、lastSeenAt（agent 状态并入本表，无独立 hub-agent 表） |
-  | `hub-module-release` | registry 版本目录登记（GitHub webhook 写入） |
-  | `hub-change-request` | 变更单，scoped to installationId；状态机 pending → running → done/failed，含 diff 摘要与失败原因 |
-  | `hub-audit-log` | 操作审计（谁/何时/哪个实例/什么变更） |
+  | `hub-installation`   | tokenHash、label、repoUrl?、externalRef?、newbieVersion、已装模块快照、lastSeenAt（agent 状态并入本表，无独立 hub-agent 表） |
+  | `hub-module-release` | registry 版本目录登记（GitHub webhook 写入）                                                                                 |
+  | `hub-change-request` | 变更单，scoped to installationId；状态机 pending → running → done/failed，含 diff 摘要与失败原因                             |
+  | `hub-audit-log`      | 操作审计（谁/何时/哪个实例/什么变更）                                                                                        |
 - **API（token-only，`MODULE_HUB_TOKEN`）**：
   - CLI 出站：拉取待执行变更单、上报安装清单/心跳、回执执行结果
   - 宿主集成：installation 列表、模块清单、变更单查询（宿主服务端调用，UI 权限归宿主）
