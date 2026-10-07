@@ -3,25 +3,29 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 interface PageHeaderProps {
-  title: string;
-  description?: string;
-  /** Right-aligned action area (buttons, etc.). */
+  /** Main page title, usually matching the sidebar entry label. */
+  title: ReactNode;
+  /** Optional short explanation rendered under the title. */
+  subtitle?: ReactNode;
+  /** Optional action area (buttons, filters) aligned to the right. */
   actions?: ReactNode;
+  /** Augment the outer container (e.g. override the default mb-6 margin). */
   className?: string;
 }
 
 /**
- * Standard page header: title with optional description on the left and an
- * actions slot on the right.
+ * Standard page header: title with optional subtitle on the left and an
+ * actions slot on the right. Keeps title typography and spacing consistent
+ * across feature modules so each page does not render its own header variant.
  */
-export function PageHeader({ title, description, actions, className }: PageHeaderProps) {
+export function PageHeader({ title, subtitle, actions, className }: PageHeaderProps) {
   return (
-    <div className={cn("flex flex-col gap-2 border-b pb-4 sm:flex-row sm:items-center sm:justify-between", className)}>
-      <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-        {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
+    <div className={cn("mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between", className)}>
+      <div className="min-w-0">
+        <h1 className="text-xl font-semibold text-foreground">{title}</h1>
+        {subtitle ? <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p> : null}
       </div>
-      {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
+      {actions ? <div className="flex flex-shrink-0 flex-wrap items-center gap-2">{actions}</div> : null}
     </div>
   );
 }

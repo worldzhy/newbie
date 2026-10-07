@@ -1,9 +1,9 @@
 {
   "name": "settings-required-state",
   "title": "Settings required state",
-  "description": "Empty state shown when required configuration is missing, with a call-to-action to set it up.",
+  "description": "Empty state shown when required configuration is missing, with a call-to-action linking to the settings page.",
   "type": "registry:block",
   "dependencies": [],
-  "registryDependencies": ["page-header"],
+  "registryDependencies": [],
   "files": ["src/components/settings-required-state.tsx"]
 }

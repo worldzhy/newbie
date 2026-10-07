@@ -1,48 +1,64 @@
+"use client";
+
 import type { ReactNode } from "react";
-import { Settings } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, Settings2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PageHeader } from "@/components/page-header";
+import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 interface SettingsRequiredStateProps {
+  /** Short headline shown below the icon, e.g. "AWS credential required". */
   title: string;
-  description: string;
-  /** Label for the primary call-to-action button. */
-  actionLabel: string;
-  /** Called when the user clicks the primary action. */
-  onAction: () => void;
-  /** Optional secondary action (e.g. learn more link). */
-  secondary?: ReactNode;
+  /** Explanation of which setting is missing and why it is needed. */
+  description?: ReactNode;
+  /** Destination of the settings call-to-action, usually the project settings page. */
+  settingsHref: string;
+  /** Label of the call-to-action button. */
+  actionLabel?: string;
+  /** Optional custom icon rendered inside the tinted badge. */
+  icon?: ReactNode;
+  /** Stretch the state to fill the parent height (used by full-screen panels). */
+  fullHeight?: boolean;
+  /** Allow callers to tweak the outer container when needed. */
+  className?: string;
 }
 
 /**
- * Empty state shown when a feature requires setup that has not been completed.
- * Renders a card with an icon, explanatory text, and a primary action button.
+ * Unified "required settings are missing" state. Feature modules render this
+ * when their backing configuration has not been set up yet, so the
+ * empty-state visuals and the settings entry point stay consistent.
  */
 export function SettingsRequiredState({
   title,
   description,
-  actionLabel,
-  onAction,
-  secondary,
+  settingsHref,
+  actionLabel = "Open Settings",
+  icon,
+  fullHeight = false,
+  className,
 }: SettingsRequiredStateProps) {
   return (
-    <div className="flex flex-col gap-4">
-      <PageHeader title="Setup required" description="Complete configuration to continue." />
-      <Card className="mx-auto max-w-lg">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-3 flex size-12 items-center justify-center rounded-full bg-primary/10">
-            <Settings className="size-6 text-primary" />
+    <div className={cn("flex w-full items-center justify-center", fullHeight ? "h-full" : "py-8 md:py-16", className)}>
+      <Card className="w-full max-w-xl text-center">
+        <CardContent className="flex flex-col items-center px-6 py-10 md:px-12">
+          {/* Tinted icon badge */}
+          <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+            {icon ?? <Settings2 className="size-8" />}
           </div>
-          <CardTitle>{title}</CardTitle>
-          <CardDescription>{description}</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col items-center gap-3">
-          <Button onClick={onAction} className="w-full sm:w-auto">
-            {actionLabel}
+
+          <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+
+          {description ? <p className="mt-2 max-w-md text-sm leading-7 text-muted-foreground">{description}</p> : null}
+
+          {/* settingsHref may be a full in-app path; Link handles client-side navigation. */}
+          <Button asChild className="mt-6">
+            <Link href={settingsHref}>
+              {actionLabel}
+              <ArrowRight className="size-4" />
+            </Link>
           </Button>
-          {secondary}
         </CardContent>
       </Card>
     </div>

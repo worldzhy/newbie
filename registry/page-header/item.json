@@ -1,7 +1,7 @@
 {
   "name": "page-header",
   "title": "Page header",
-  "description": "Standard page header with title, description, and a right-aligned actions slot.",
+  "description": "Standard page header with title, optional subtitle, and a right-aligned actions slot.",
   "type": "registry:component",
   "dependencies": [],
   "registryDependencies": [],
