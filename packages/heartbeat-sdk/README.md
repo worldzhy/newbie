@@ -85,6 +85,40 @@ otherwise it contains only the provided fields:
 Because the installation token is globally unique, the server resolves the
 installation from the `X-Heartbeat-Token` header alone.
 
+## Security notes
+
+This SDK is a liveness probe, not a remote operations channel. The following
+properties are verifiable in the source (a single ~90-line file,
+`src/index.ts`) and observable on the wire:
+
+- **Outbound only** — the SDK opens no listening port and accepts no inbound
+  connections. Its only network activity is the outbound `POST` shown above.
+- **No command channel** — the server response carries only `serverTime` and
+  `reportIntervalSeconds`, and the SDK does not read the response body. There
+  is no mechanism for the server to push instructions to your process.
+- **No data collection** — the SDK reads no environment variables, files,
+  process details, or network topology. The only payload fields are the ones
+  your own configuration explicitly passes in (`appVersion`, `env`,
+  `instanceId`), and all of them are optional.
+- **Zero runtime dependencies** — the entire trust surface is the single
+  source file and the Node.js global `fetch`. Audit time is measured in
+  minutes; pin the version or its tarball hash for supply-chain certainty.
+- **Verifiable on the wire** — the traffic is plain HTTP semantics; capture it
+  with `tcpdump` or `mitmproxy` for 30 seconds to confirm exactly what leaves
+  your network.
+- **Token safety** — the server stores only a SHA-256 hash of the installation
+  token. Tokens can be rotated or revoked at any time, after which pings are
+  rejected with `401`.
+- **Clean removal** — deleting the `startHeartbeat()` call removes the
+  integration completely: no resident process, no startup hooks, no leftover
+  state.
+- **Fail-safe** — heartbeat network failures are silently swallowed and never
+  crash or delay the host process.
+
+If your policy still disallows reporting to an external endpoint, point
+`endpoint` at a heartbeat server inside your own network, or simply do not
+call `startHeartbeat()` — the SDK is fully opt-in.
+
 ## Framework integrations
 
 The SDK is framework-agnostic, but it is wired automatically into the project
