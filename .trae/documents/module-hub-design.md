@@ -13,8 +13,8 @@
 >
 > 框架侧真源（设计方向以此为准）：
 >
-> - Roadmap C1：`/Users/worldzhy/src/newbie/.agent/documents/devbie-framework-roadmap.md`「Phase C1. module-hub 控制面」（2026-09-27 定稿）
-> - 拆分计划 Phase 6：`/Users/worldzhy/src/newbie/.agent/documents/newbie-framework-split-plan.md`
+> - Roadmap C1：`/Users/worldzhy/src/newbie/.trae/documents/devbie-framework-roadmap.md`「Phase C1. module-hub 控制面」（2026-09-27 定稿）
+> - 拆分计划 Phase 6：`/Users/worldzhy/src/newbie/.trae/documents/newbie-framework-split-plan.md`
 >
 > 宿主侧依据：
 >
@@ -365,7 +365,7 @@ packages/modules/module-hub/
 2. **纯静态前端的 installation**：无运行时进程，v1 不注册。是否需要 CI 部署时注册 `framework="static"` 行以获得「这个前端部署到了哪」的可见性？建议 v1 不做。
 3. **fewbie runtime 上报**：fewbie 框架尚无运行时上报通道，排期归属 fewbie 工作区；nightwatch 侧只需保证 API 对 `framework="fewbie"` 兼容（本设计已含）。
 4. **多实例同 token 上报**：同一 deployment token 被多个进程实例使用时（如未来容器多副本），`instanceId` 区分实例但 installation 行只有一行——lastSeenAt 被多个实例共享刷新，单实例离线不可见。v1 接受（EC2 单实例场景）；容器化时需重估「token 粒度退到 env + instanceId 自报」的实例列表模型。
-5. **设计文档归属**：框架工作区边界约定「框架设计真源在 newbie `.agent/documents/`」。本文件当前在 nightwatch 仓；评审后是否将定稿同步一份到 newbie 工作区（或改为 newbie 主笔、nightwatch 仅留宿主集成章节）？
+5. **设计文档归属**：框架工作区边界约定「框架设计真源在 newbie `.trae/documents/`」。本文件当前在 nightwatch 仓；评审后是否将定稿同步一份到 newbie 工作区（或改为 newbie 主笔、nightwatch 仅留宿主集成章节）？
 
 ---
 

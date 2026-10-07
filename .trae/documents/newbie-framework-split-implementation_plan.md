@@ -1,6 +1,6 @@
 # newbie 框架拆分实施计划
 
-> 依据：`.agent/documents/newbie-framework-split-plan.md`（设计决议 2026-09-23，09-24 修订）、`.agent/documents/fewbie-framework-design.md`
+> 依据：`newbie-framework-split-plan.md`（同目录，设计决议 2026-09-23，09-24 修订）、`/Users/worldzhy/src/fewbie/.trae/documents/fewbie-framework-design.md`
 > 范围：本工作区（`/Users/worldzhy/src/newbie`，git: github.com/worldzhy/newbie，分支 `dev`）内的交付与验证。
 > nightwatch / fewbie / newbie-modules / apits 仓仅作为协调点列出，执行发生在各自工作区，不在本计划内动手。
 

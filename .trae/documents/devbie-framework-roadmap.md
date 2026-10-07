@@ -4,7 +4,7 @@
 > 前置文档：
 >
 > - [newbie-framework-split-plan.md](./newbie-framework-split-plan.md) — 后端框架拆分方案（Phase 1-6）
-> - [fewbie-framework-design.md](file:///Users/worldzhy/src/fewbie/.agent/documents/fewbie-framework-design.md) — 前端框架设计决议
+> - [fewbie-framework-design.md](file:///Users/worldzhy/src/fewbie/.trae/documents/fewbie-framework-design.md) — 前端框架设计决议
 
 ## 一、v1 已完成范围
 
