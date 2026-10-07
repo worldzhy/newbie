@@ -1,5 +1,0 @@
-const NEWBIE_DEVELOPER = 'NEWBIE_DEVELOPER';
-
-module.exports = {
-  NEWBIE_DEVELOPER,
-};
