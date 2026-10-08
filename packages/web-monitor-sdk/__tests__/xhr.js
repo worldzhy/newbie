@@ -54,10 +54,12 @@ test("web api: XMLHttpRequest", (done) => {
     // page performance report payload
     expect(reportTypePage.appId).toEqual(appId);
     expect(reportTypePage.performance.andt).toEqual(
-      window.performance.getEntriesByType("navigation")[0].domComplete -
-        window.performance.getEntriesByType("navigation")[0].domInteractive,
+      Math.round(
+        window.performance.getEntriesByType("navigation")[0].domComplete -
+          window.performance.getEntriesByType("navigation")[0].domInteractive,
+      ),
     );
-    expect(reportTypePage.isFristIn).toEqual(true);
+    expect(reportTypePage.isFirstIn).toEqual(true);
     expect(reportTypePage.markUser.length).toBeGreaterThan(0);
     expect(reportTypePage.markUv.length).toBeGreaterThan(0);
     expect(reportTypePage.resourceList.length).toEqual(0);
