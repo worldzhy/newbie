@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import { moduleSchemaNamespace, updateDatasourceSchemas } from "../core/prisma-schema";
+import { moduleSchemaNamespace, reconcileDatasourceSchemas } from "../core/prisma-schema";
 import { MODULES_DIR, PRISMA_SCHEMA_MAIN, PRISMA_SCHEMA_MODELS_DIR } from "../constants/paths";
 import { IssueBag, reportIssue } from "../lib/issues";
 import { readInstalledManifest, readInstalledSchema } from "../lib/module-install";
@@ -31,10 +31,11 @@ export async function assembleSchemaFiles(params: {
   sink: Sink;
   issues: IssueBag;
   added: string[];
-  removed: string[];
+  enabledKeys: string[];
   skipPrismaGenerate?: boolean;
 }): Promise<void> {
-  const { cwd, sink, issues, added, removed, skipPrismaGenerate } = params;
+  const { cwd, sink, issues, added, enabledKeys, skipPrismaGenerate } = params;
+  const enabledSet = new Set(enabledKeys);
 
   // [step 1] Copy added module fragments into prisma/models/<key>.prisma
   for (const { key, fragment } of await keysWithSchema(cwd, added)) {
@@ -48,30 +49,44 @@ export async function assembleSchemaFiles(params: {
     );
   }
 
-  // [step 2] Remove fragments of removed modules.
-  for (const { key } of await keysWithSchema(cwd, removed)) {
-    await sink.remove(path.posix.join(PRISMA_SCHEMA_MODELS_DIR, `${key}.prisma`));
+  // [step 2] Convergent removal: delete any prisma/models/<key>.prisma whose
+  // key is no longer in the enabled set. The previous diff-based removal
+  // relied on the src/modules/<key> manifest still being readable, which
+  // missed modules whose directory was removed out-of-band.
+  const modelsDir = path.resolve(cwd, PRISMA_SCHEMA_MODELS_DIR);
+  let modelFiles: string[] = [];
+  try {
+    modelFiles = await fs.readdir(modelsDir);
+  } catch {
+    // prisma/models may not exist yet (fresh project); nothing to reconcile.
+  }
+  for (const file of modelFiles) {
+    if (!file.endsWith(".prisma")) continue;
+    const key = file.slice(0, -".prisma".length);
+    if (!enabledSet.has(key)) {
+      await sink.remove(path.posix.join(PRISMA_SCHEMA_MODELS_DIR, file));
+    }
   }
 
-  // [step 3] Rewrite the datasource schemas array (nothing to do when neither side declares fragments).
-  const addedWithSchema = (await keysWithSchema(cwd, added)).filter((entry) => entry.fragment !== null);
-  const removedWithSchema = await keysWithSchema(cwd, removed);
+  // [step 3] Convergent datasource schemas: rewrite the module entries to
+  // exactly the enabled modules that declare a schema, preserving any
+  // non-module entries (e.g. "application"). This drops orphan namespaces
+  // left by out-of-band module removal.
+  const mainSchemaPath = path.resolve(cwd, PRISMA_SCHEMA_MAIN);
+  let content: string;
+  try {
+    content = await fs.readFile(mainSchemaPath, "utf8");
+  } catch {
+    reportIssue(issues, sink, `Missing ${PRISMA_SCHEMA_MAIN}; skipping datasource schemas update.`);
+    content = "";
+  }
 
-  if (addedWithSchema.length > 0 || removedWithSchema.length > 0) {
-    const mainSchemaPath = path.resolve(cwd, PRISMA_SCHEMA_MAIN);
-    let content: string;
-    try {
-      content = await fs.readFile(mainSchemaPath, "utf8");
-    } catch {
-      reportIssue(issues, sink, `Missing ${PRISMA_SCHEMA_MAIN}; skipping datasource schemas update.`);
-      return;
-    }
-
-    const next = updateDatasourceSchemas(
-      content,
-      addedWithSchema.map((entry) => moduleSchemaNamespace(entry.key)),
-      removedWithSchema.map((entry) => moduleSchemaNamespace(entry.key)),
+  if (content) {
+    const enabledWithSchema = (await keysWithSchema(cwd, enabledKeys)).filter(
+      (entry) => entry.fragment !== null,
     );
+    const moduleNamespaces = enabledWithSchema.map((entry) => moduleSchemaNamespace(entry.key));
+    const next = reconcileDatasourceSchemas(content, moduleNamespaces);
     if (next !== content) {
       await sink.writeText(PRISMA_SCHEMA_MAIN, next);
     }

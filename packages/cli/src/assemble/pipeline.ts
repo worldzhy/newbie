@@ -138,7 +138,7 @@ export async function runSteps(ctx: PipelineContext, changes: PlannedChange): Pr
     sink,
     issues,
     added,
-    removed,
+    enabledKeys,
     skipPrismaGenerate,
   });
 

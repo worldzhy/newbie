@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { moduleSchemaNamespace, readDatasourceSchemas, updateDatasourceSchemas } from "../src/core/prisma-schema";
+import {
+  moduleSchemaNamespace,
+  readDatasourceSchemas,
+  reconcileDatasourceSchemas,
+  updateDatasourceSchemas,
+} from "../src/core/prisma-schema";
 
 const SCHEMA = `datasource db {
   provider = "postgresql"
@@ -47,6 +52,41 @@ describe("updateDatasourceSchemas", () => {
   it("silently ignores a datasource block without any schemas array", () => {
     const broken = 'datasource db {\n  provider = "postgresql"\n  schemas =\n}\n';
     assert.equal(updateDatasourceSchemas(broken, ["x"], []), broken);
+  });
+});
+
+describe("reconcileDatasourceSchemas", () => {
+  it("sets module entries to exactly the supplied namespaces", () => {
+    const withOrphans = updateDatasourceSchemas(
+      SCHEMA,
+      ["module/account", "module/llm-agent", "module/workflow"],
+      [],
+    );
+    const next = reconcileDatasourceSchemas(withOrphans, ["module/account", "module/copilot"]);
+    const schemas = readDatasourceSchemas(next);
+    assert.deepEqual(schemas, ["application", "module/account", "module/copilot"]);
+  });
+
+  it("preserves non-module entries when clearing all modules", () => {
+    const withModules = updateDatasourceSchemas(SCHEMA, ["module/account", "module/workflow"], []);
+    const next = reconcileDatasourceSchemas(withModules, []);
+    assert.deepEqual(readDatasourceSchemas(next), ["application"]);
+  });
+
+  it("is idempotent", () => {
+    const once = reconcileDatasourceSchemas(SCHEMA, ["module/account"]);
+    const twice = reconcileDatasourceSchemas(once, ["module/account"]);
+    assert.equal(once, twice);
+  });
+
+  it("deduplicates entries", () => {
+    const next = reconcileDatasourceSchemas(SCHEMA, ["module/account", "module/account"]);
+    assert.deepEqual(readDatasourceSchemas(next), ["application", "module/account"]);
+  });
+
+  it("leaves content without a schemas array untouched", () => {
+    const content = 'datasource db {\n  provider = "postgresql"\n}\n';
+    assert.equal(reconcileDatasourceSchemas(content, ["module/account"]), content);
   });
 });
 
