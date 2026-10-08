@@ -1,6 +1,6 @@
 {
   "name": "@devbie/heartbeat-sdk",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Framework-agnostic heartbeat client for installation liveness reporting",
   "license": "MIT",
   "author": "worldzhy",
