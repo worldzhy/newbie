@@ -6,8 +6,9 @@
 
 Command-line tool for the [Newbie](https://www.npmjs.com/package/@devbie/newbie)
 backend framework. Scaffold new projects, install modules from the
-newbie-modules registry, reconcile module copies and project wiring, and keep
-environment variables in sync with AWS Secrets Manager.
+newbie-modules registry, reconcile module copies and project wiring, and load
+module-bundled command namespaces (e.g. `newbie secrets`) declared by the
+installed modules.
 
 ## Requirements
 
@@ -172,25 +173,49 @@ Enforce the module layering rules (`domain` -> `capability` -> `foundation`)
 across registry sources: upward dependencies and same-layer import cycles are
 errors; same-layer dependencies are warnings for review.
 
-### Environment secrets
+### Module-provided commands
 
-#### `newbie env pull`
+Modules can attach their own command namespace to the CLI. When an installed
+module's manifest declares `"cli": "<namespace>"`, the CLI loads
+`src/modules/<key>/cli/index.ts` at startup and calls its exported
+`register(parent, options)` hook to attach subcommands under `newbie <namespace>`.
 
-Pull environment variables from AWS Secrets Manager into `.env`.
+The module's `cli/index.ts` is typically a thin entry that re-exports the
+`register` function from the module's companion npm package, so the
+implementation ships versioned through npm instead of being copied into every
+project. Example: the `aws-secrets-manager` module declares `"cli": "secrets"`
+and pairs with [`@devbie/aws-secrets-cli`](https://www.npmjs.com/package/@devbie/aws-secrets-cli),
+providing:
 
-| Option                     | Description                                                        |
-| -------------------------- | ------------------------------------------------------------------ |
-| `-e, --environment <name>` | Environment name from the env-tool config (skips the prompt).      |
-| `-y, --yes`                | Write `.env` without prompting; conflicting local values are kept. |
+| Command                        | Description                                                            |
+| ------------------------------ | ---------------------------------------------------------------------- |
+| `newbie secrets pull`          | Pull environment variables from AWS Secrets Manager into `.env`.       |
+| `newbie secrets push`          | Push environment variables from `.env` to AWS Secrets Manager.         |
+| `newbie secrets deploy-rotation` | Provision the per-account rotation Lambda and print its ARN.         |
 
-#### `newbie env push`
+Module CLI entries consume shared building blocks (error handling, env-file
+parsing, exec helpers, `GlobalOptions`) via the `@devbie/newbie-cli/lib`
+export; they never import framework internals by relative path.
 
-Push environment variables from `.env` to AWS Secrets Manager.
+## Module manifest
 
-| Option                     | Description                                                   |
-| -------------------------- | ------------------------------------------------------------- |
-| `-e, --environment <name>` | Environment name from the env-tool config (skips the prompt). |
-| `-y, --yes`                | Create/update secrets without prompting.                      |
+Every registry module carries a `newbie.module.json` at its root:
+
+| Field                | Type            | Description                                                                                  |
+| -------------------- | --------------- | -------------------------------------------------------------------------------------------- |
+| `key`                | string          | Module key; must match the directory name.                                                   |
+| `layer`              | string          | Architectural layer (`domain` / `capability` / `foundation`); absent for framework-specials. |
+| `module.file`        | string          | NestJS module file without extension, e.g. `account.module`.                                 |
+| `module.className`   | string          | Exported NestJS module class name, e.g. `AccountModule`.                                     |
+| `schema`             | string          | Project-relative path of the Prisma model fragment; absent = no models.                      |
+| `config-service`     | object          | Config keys merged into the generated `modules.config.ts`.                                   |
+| `env`                | object          | Environment variables the module requires (doctor reports missing ones).                     |
+| `dependencies`       | object          | npm dependencies merged into the consuming project's `package.json`.                         |
+| `devDependencies`    | object          | npm devDependencies merged into the consuming project's `package.json`.                      |
+| `moduleDependencies` | string[]        | Registry module keys imported via `@modules/<key>`; installs expand to the transitive closure. |
+| `assets`             | object[]        | Extra NestJS assets (e.g. resolvers) wired into the generated module index.                  |
+| `cli`                | string          | Command namespace this module exposes (see "Module-provided commands").                      |
+| `sdk`                | string          | Package name of the companion SDK shipped alongside the module (pairing record for tooling). |
 
 ## Global options
 
@@ -209,6 +234,10 @@ name:
   backend framework runtime.
 - [`@devbie/heartbeat-sdk`](https://www.npmjs.com/package/@devbie/heartbeat-sdk)
   — framework-agnostic installation liveness reporting.
+- [`@devbie/aws-secrets-cli`](https://www.npmjs.com/package/@devbie/aws-secrets-cli)
+  — companion CLI of the `aws-secrets-manager` module (`newbie secrets`).
+- [`@devbie/web-monitor-sdk`](https://www.npmjs.com/package/@devbie/web-monitor-sdk)
+  — browser-side web monitoring, companion of the `web-monitor` module.
 
 ## License
 
