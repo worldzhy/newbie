@@ -1,6 +1,5 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
 
 import type { Command } from "commander";
 
@@ -32,38 +31,36 @@ interface ModuleCliEntry {
   register: ModuleCliRegister;
 }
 
-interface TsxApi {
-  tsImport?: (specifier: string, parentURL: string) => Promise<Record<string, unknown>>;
+interface TsxCjsApi {
+  register(): void;
 }
 
-/** Resolve a stable parent URL for tsx's programmatic loader. */
-function parentModuleUrl(): string {
-  if (typeof __filename === "string") {
-    return pathToFileURL(__filename).href;
-  }
-  return pathToFileURL(process.cwd() + path.sep).href;
-}
+let tsxRegistered = false;
 
 /**
- * Load a TypeScript module by path. Prefers tsx's programmatic API when the
- * host project still ships the entry as `.ts`; falls back to a native dynamic
- * import for production layouts that emit `.js` next to the source.
+ * Register tsx's CommonJS hooks globally (idempotent) so the module CLI entry
+ * — a `.ts` file in the host project — can be loaded with a plain `require`.
+ *
+ * We deliberately use the CJS API instead of tsx's ESM `tsImport`: this file
+ * compiles to CommonJS, and entries are TS files treated as CommonJS by tsx,
+ * so `tsImport` ends up driving an ESM resolution chain in which the entry's
+ * own relative imports (e.g. "./deploy-rotation") fail with
+ * ERR_MODULE_NOT_FOUND. The CJS hooks resolve extensionless sibling imports
+ * correctly from the entry's directory.
  */
-async function loadEntryModule(specifier: string): Promise<Record<string, unknown>> {
-  try {
-    // @ts-expect-error `tsx/esm/api` is an ESM subpath export; our legacy
-    // moduleResolution does not resolve it statically but Node does at runtime.
-    const api = (await import("tsx/esm/api")) as TsxApi;
-    if (typeof api.tsImport === "function") {
-      return api.tsImport(specifier, parentModuleUrl());
-    }
-  } catch (error) {
-    const code = (error as NodeJS.ErrnoException).code;
-    if (code !== "MODULE_NOT_FOUND") {
-      throw error;
-    }
-  }
-  return import(specifier);
+function ensureTsxRegistered(): void {
+  if (tsxRegistered) return;
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const api = require("tsx/cjs/api") as TsxCjsApi;
+  api.register();
+  tsxRegistered = true;
+}
+
+/** Load the module CLI entry (a TypeScript file) via the registered hooks. */
+function loadEntryModule(entryPath: string): Record<string, unknown> {
+  ensureTsxRegistered();
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  return require(entryPath) as Record<string, unknown>;
 }
 
 /**
@@ -87,10 +84,9 @@ export async function loadModuleCliEntry(
     );
   }
 
-  const specifier = pathToFileURL(entryPath).href;
   let mod: Record<string, unknown>;
   try {
-    mod = await loadEntryModule(specifier);
+    mod = loadEntryModule(entryPath);
   } catch (error) {
     throw new CliError(`Failed to load cli entry for module '${key}' (${manifest.cli}): ${(error as Error).message}`);
   }
