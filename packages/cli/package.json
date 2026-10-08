@@ -7,6 +7,9 @@
   "bin": {
     "newbie": "dist/index.js"
   },
+  "exports": {
+    "./lib": "./dist/public.js"
+  },
   "files": [
     "dist",
     "templates"

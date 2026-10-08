@@ -17,8 +17,8 @@ import { runUpdateTemplate } from "./commands/update-template";
 import { runWatch } from "./commands/watch";
 import { runInteractive } from "./commands/default";
 import { GlobalOptions } from "./commands/shared";
-import { CliError, isUserCancellation } from "./lib/errors";
 import { registerModuleCommands } from "./lib/module-cli";
+import { run } from "./lib/cli-runner";
 
 // Published package version, read at runtime (package.json sits one level
 // above both src/ during development and dist/ in the published tarball).
@@ -68,26 +68,6 @@ function findCwdInArgv(): string {
     }
   }
   return process.cwd();
-}
-
-async function run(action: () => Promise<void>): Promise<void> {
-  try {
-    await action();
-  } catch (error) {
-    if (isUserCancellation(error)) {
-      console.info("\nOperation cancelled\n");
-      process.exit(0);
-    }
-    if (error instanceof CliError) {
-      console.error(red(`\n${error.message}\n`));
-      process.exit(1);
-    }
-    console.error(red(`\n${(error as Error).message}\n`));
-    if (process.env.NEWBIE_DEBUG && (error as Error).stack) {
-      console.error((error as Error).stack);
-    }
-    process.exit(1);
-  }
 }
 
 program
