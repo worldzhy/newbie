@@ -31,10 +31,10 @@
     "colorette": "^2.0.20"
   },
   "peerDependencies": {
-    "@devbie/newbie-cli": ">=0.1.0-stage.1"
+    "@devbie/newbie-cli": ">=0.1.0"
   },
   "devDependencies": {
-    "@devbie/newbie-cli": "^0.1.0-stage.1",
+    "@devbie/newbie-cli": "^0.1.0",
     "@types/node": "^22.0.0",
     "commander": "^12.1.0",
     "rimraf": "^6.1.3",

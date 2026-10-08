@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import { describe, it } from "node:test";
 
 import { loadModuleCliEntry } from "../src/lib/module-cli";
@@ -37,5 +40,89 @@ describe("registerModuleCommands", () => {
     // /nonexistent/path has no modules.json; the loader must skip silently.
     await registerModuleCommands(program, { cwd: "/nonexistent/path", dryRun: false, skipPrismaGenerate: false });
     assert.equal(program.commands.length, 0);
+  });
+
+  it("degrades broken module CLIs to warnings and still registers healthy namespaces", async () => {
+    const { registerModuleCommands } = await import("../src/lib/module-cli");
+    const { Command } = await import("commander");
+
+    const project = await fs.mkdtemp(path.join(os.tmpdir(), "newbie-module-cli-"));
+    try {
+      // healthy: valid manifest + cli entry registering a subcommand.
+      await fs.mkdir(path.join(project, "src", "modules", "healthy", "cli"), { recursive: true });
+      await fs.writeFile(
+        path.join(project, "src", "modules", "healthy", "newbie.module.json"),
+        JSON.stringify({
+          key: "healthy",
+          module: { file: "healthy.module", className: "HealthyModule" },
+          cli: "healthy",
+        }),
+      );
+      await fs.writeFile(
+        path.join(project, "src", "modules", "healthy", "cli", "index.ts"),
+        "export function register(parent) {\n  parent.command('ping').description('ping');\n}\n",
+      );
+
+      // broken: declares cli but the entry file is missing.
+      await fs.mkdir(path.join(project, "src", "modules", "broken"), { recursive: true });
+      await fs.writeFile(
+        path.join(project, "src", "modules", "broken", "newbie.module.json"),
+        JSON.stringify({
+          key: "broken",
+          module: { file: "broken.module", className: "BrokenModule" },
+          cli: "broken",
+        }),
+      );
+
+      // throwing: entry exists but fails at load time.
+      await fs.mkdir(path.join(project, "src", "modules", "throwing", "cli"), { recursive: true });
+      await fs.writeFile(
+        path.join(project, "src", "modules", "throwing", "newbie.module.json"),
+        JSON.stringify({
+          key: "throwing",
+          module: { file: "throwing.module", className: "ThrowingModule" },
+          cli: "throwing",
+        }),
+      );
+      await fs.writeFile(
+        path.join(project, "src", "modules", "throwing", "cli", "index.ts"),
+        "throw new Error('boom during load');\n",
+      );
+
+      await fs.writeFile(
+        path.join(project, "modules.json"),
+        JSON.stringify({
+          registry: null,
+          modules: [
+            { key: "healthy", version: null, sourceCommit: "abc", localPatches: [] },
+            { key: "broken", version: null, sourceCommit: "abc", localPatches: [] },
+            { key: "throwing", version: null, sourceCommit: "abc", localPatches: [] },
+          ],
+        }),
+      );
+
+      const warnings: string[] = [];
+      const originalError = console.error;
+      console.error = (...args: unknown[]) => {
+        warnings.push(args.join(" "));
+      };
+      const program = new Command();
+      try {
+        await registerModuleCommands(program, { cwd: project, dryRun: false, skipPrismaGenerate: false });
+      } finally {
+        console.error = originalError;
+      }
+
+      // Registration must not throw; only the healthy namespace is attached.
+      const namespaces = program.commands.map((command) => command.name());
+      assert.deepEqual(namespaces, ["healthy"]);
+      assert.ok(program.commands[0].commands.some((sub) => sub.name() === "ping"));
+
+      assert.equal(warnings.length, 2);
+      assert.match(warnings[0], /Skipped CLI namespace 'broken' of module 'broken'/);
+      assert.match(warnings[1], /Skipped CLI namespace 'throwing' of module 'throwing'/);
+    } finally {
+      await fs.rm(project, { recursive: true, force: true });
+    }
   });
 });

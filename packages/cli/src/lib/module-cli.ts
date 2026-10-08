@@ -1,7 +1,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import type { Command } from "commander";
+import { yellow } from "colorette";
+import { Command } from "commander";
 
 import { installedModuleDir } from "./module-install";
 import { readInstalledManifest } from "./module-install";
@@ -104,6 +105,11 @@ export async function loadModuleCliEntry(
  *
  * Called before `program.parseAsync` so the dynamically-attached subcommands
  * are visible to argv parsing.
+ *
+ * A broken module CLI (missing entry, malformed exports, throwing `register`)
+ * degrades to a warning instead of failing startup: diagnostic commands
+ * (`doctor`, `status`) must stay runnable, and invoking the broken namespace
+ * surfaces commander's "unknown command" rather than a half-registered tree.
  */
 export async function registerModuleCommands(program: Command, options: GlobalOptions): Promise<void> {
   if (!(await stateExists(options.cwd))) return;
@@ -111,10 +117,23 @@ export async function registerModuleCommands(program: Command, options: GlobalOp
   for (const key of moduleKeys(state)) {
     const manifest = await readInstalledManifest(options.cwd, key);
     if (!manifest) continue;
-    const loaded = await loadModuleCliEntry(options.cwd, key, manifest);
-    if (!loaded) continue;
 
-    const parent = program.command(loaded.namespace);
-    await loaded.entry.register(parent, options);
+    try {
+      const loaded = await loadModuleCliEntry(options.cwd, key, manifest);
+      if (!loaded) continue;
+      // Register against a detached parent first and attach to the program
+      // only after success, so a throwing register cannot leave a
+      // half-registered namespace behind.
+      const detached = new Command(loaded.namespace);
+      await loaded.entry.register(detached, options);
+      program.addCommand(detached);
+    } catch (error) {
+      console.error(
+        yellow(`[warn] Skipped CLI namespace '${manifest.cli}' of module '${key}': ${(error as Error).message}`),
+      );
+      if (process.env.NEWBIE_DEBUG && (error as Error).stack) {
+        console.error((error as Error).stack);
+      }
+    }
   }
 }
