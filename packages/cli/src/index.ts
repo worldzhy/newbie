@@ -2,6 +2,10 @@
 import { Command } from "commander";
 import { red } from "colorette";
 
+// Published package version (package.json sits one level above both src/
+// during development and dist/ in the published tarball).
+import pkg from "../package.json";
+
 import { runAgent } from "./commands/agent";
 import { runApply } from "./commands/apply";
 import { runConfig } from "./commands/config";
@@ -18,9 +22,7 @@ import { GlobalOptions } from "./commands/shared";
 import { registerModuleCommands } from "./lib/module-cli";
 import { run } from "./lib/cli-runner";
 
-// Published package version, read at runtime (package.json sits one level
-// above both src/ during development and dist/ in the published tarball).
-export const VERSION = (require("../package.json") as { version: string }).version;
+export const VERSION: string = pkg.version;
 
 const program = new Command();
 

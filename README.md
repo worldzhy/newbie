@@ -1,159 +1,48 @@
-<p align="left">
+# Newbie
 
-![GitHub License](https://img.shields.io/github/license/worldzhy/newbie)
-![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg?style=flat-square)
-![GitHub package.json dependency version (prod)](https://img.shields.io/github/package-json/dependency-version/worldzhy/newbie/@nestjs/core?style=flat-square)
-![GitHub package.json dependency version (prod)](https://img.shields.io/github/package-json/dependency-version/worldzhy/newbie/@prisma/client?style=flat-square)
+Newbie is a Node.js backend development framework based on [NestJS](https://github.com/nestjs/nest).
+It ships a runtime core, a CLI that assembles installable modules from the
+[newbie-modules](https://github.com/worldzhy/newbie-modules) registry into consuming
+projects, and companion SDKs.
 
-</p>
+## Repository layout
 
-## 📖 Description
+This repository is an npm-workspaces monorepo:
 
-[Newbie](https://github.com/worldzhy/newbie) is a [Node.js](http://nodejs.org) project development framework based on [NestJS](https://github.com/nestjs/nest).
+| Package                                              | npm name                  | Description                                                                                            |
+| ---------------------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------ |
+| [packages/cli](packages/cli)                         | `@devbie/newbie-cli`      | CLI: scaffold projects, install/update modules from the registry, reconcile wiring, audit drift        |
+| [packages/core](packages/core)                       | `@devbie/newbie`          | Runtime library wired into every scaffolded project (bootstrap factory, graceful shutdown, monitoring) |
+| [packages/heartbeat-sdk](packages/heartbeat-sdk)     | `@devbie/heartbeat-sdk`   | Framework-agnostic heartbeat client for installation liveness reporting                                |
+| [packages/web-monitor-sdk](packages/web-monitor-sdk) | `@devbie/web-monitor-sdk` | Browser-side web monitoring SDK (PV, AJAX, resource, JS error, custom events)                          |
+| [templates/basic](templates/basic)                   | -                         | Project template used by `newbie create`                                                               |
 
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo_text.svg" width="320" alt="Nest Logo" /></a>
-</p>
+## CLI
 
-## 🛠 Setup environment
+The CLI is the primary entry point. See [packages/cli/README.md](packages/cli/README.md)
+for installation, the full command reference (`create`, interactive module selection,
+`install`, `apply`, `update`, `doctor`, `status`, `watch`, module-bundled command
+namespaces) and the `newbie.module.json` manifest format.
 
-#### Install Node.js
-
-| Follow the guide https://blog.csdn.net/worldzhy/article/details/105092560
-
-| Do not update these node packages:
-
-- "@elastic/elasticsearch": "^7.13.0"
-- "cache-manager": "^4.1.0"
-- "cache-manager-redis-store": "^2.0.0"
-
-#### Install pm2
+Quick start:
 
 ```bash
-npm i -g pm2
+npx @devbie/newbie-cli create my-app
+cd my-app && npm install
+
+npx newbie          # interactive module enable/disable (default command)
+npx newbie install  # reconcile project files with modules.json
 ```
 
-> https://pm2.io/
-
-#### Install NestJS
+## Development
 
 ```bash
-npm i -g @nestjs/cli
+npm install                      # install workspace dependencies
+npm run build:core               # build @devbie/newbie
+npm test -w @devbie/newbie-cli   # run CLI tests (node:test)
+npm run format                   # prettier across the repo
 ```
 
-> https://docs.nestjs.com/first-steps
-
-## 👩‍💻 Develop
-
-### Install dependencies
-
-```bash
-$ npm i
-$ cp .env.example .env
-```
-
-### Install database
-
-```bash
-$ npx prisma generate
-$ npx prisma db push
-$ npx prisma db seed
-```
-
-### Install husky
-
-```bash
-$ npx husky install
-```
-
-```bash
-// [Deprecated] Below is for the old version husky.
-$ npm i --save-dev husky commitizen @commitlint/{cli,config-conventional}
-$ npx husky install
-$ npx commitizen init cz-conventional-changelog --save-dev --save-exact
-$ echo "module.exports = {extends: ['@commitlint/config-conventional']};" > commitlint.config.js
-```
-
-### Set version
-
-```bash
-$npm version major
-$npm version minor
-$npm version patch
-```
-
-### Start application
-
-```bash
-$ npm run dev
-```
-
-## 💻 Production
-
-### Install dependencies
-
-```bash
-$ npm i --omit=dev
-$ npm i --save-dev tsconfig-paths
-$ cp .env.example .env
-```
-
-### Install database
-
-```bash
-$ npx prisma generate
-$ npx prisma db push
-$ npx prisma db seed
-```
-
-### Start application
-
-```bash
-$ npm run build
-$ pm2 start npm --name newbie -- start
-```
-
-### Restart application
-
-```bash
-$ pm2 stop newbie
-$ npm run build
-$ pm2 start newbie
-```
-
-### Proxy for geolite2-redist
-
-```bash
-npm i proxy-agent
-```
-
-> edit: node_modules/geolite2-redist/dist/download-helpers.js
-> import {ProxyAgent} from 'proxy-agent';
-
-got() set proxyAgent
-
-```
-await import('got')
-  .then(({ got }) => got(mirrorUrls.checksum[dbName],{
-      agent: {
-          https: new ProxyAgent('http://127.0.0.1:54960') // local vpn port
-      }
-  }).text())
-  .then(checksum => checksum.trim())
-```
-
-```
-await pipeline(got.stream(mirrorUrls.download[dbName], {
-    agent: {
-        https: new ProxyAgent('http://127.0.0.1:54960') // local vpn port
-    }
-}), tar.x({
-    cwd: hotDownloadDir,
-    filter: (entryPath) => path.basename(entryPath) === `${dbName}.mmdb`,
-    strip: 1
-}));
-```
-
-## 📄 License
+## License
 
 Newbie is [MIT licensed](LICENSE).

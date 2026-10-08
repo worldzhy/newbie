@@ -19,10 +19,9 @@ interface ApplySpec {
 }
 
 /**
- * Parse the declarative spec. Only `modules` is supported in Stage 3b:
- * { "modules": ["account", "workflow"] }.
+ * Parse the declarative spec: { "modules": ["account", "workflow"] }.
  */
-async function readSpec(file: string): Promise<string[]> {
+export async function readSpec(file: string): Promise<string[]> {
   const absolute = path.resolve(file);
   let raw: string;
   try {
