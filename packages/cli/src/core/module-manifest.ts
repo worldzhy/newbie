@@ -33,6 +33,19 @@ export interface ModuleManifest {
    */
   moduleDependencies?: string[];
   assets?: NestAsset[];
+  /**
+   * CLI namespace this module exposes. When declared, the CLI dynamically
+   * loads `<modulesDir>/<key>/cli/index.ts` at startup and registers the
+   * exported `register(program)` hook under this namespace.
+   */
+  cli?: string;
+  /**
+   * Package name of the companion SDK that ships with this module. The
+   * version is declared in the consumer project's `dependencies` (or the
+   * module's own `dependencies` field); this attribute only records the
+   * pairing so tooling can locate the SDK without scanning package names.
+   */
+  sdk?: string;
   [key: string]: unknown;
 }
 
@@ -45,6 +58,19 @@ function normalizeModuleDependencies(raw: unknown, key: string): string[] | unde
     );
   }
   return [...new Set(raw.map((item) => (item as string).trim()))];
+}
+
+/**
+ * Validate that an optional manifest field is either absent or a non-empty
+ * string. Used for fields like `cli` and `sdk` whose presence triggers runtime
+ * behaviour (dynamic CLI loading, SDK pairing), so a malformed value must fail
+ * loudly instead of silently being dropped.
+ */
+function assertOptionalString(value: unknown, field: string, key: string): void {
+  if (value === undefined) return;
+  if (typeof value !== "string" || value.length === 0) {
+    throw new Error(`Invalid newbie.module.json for '${key}': '${field}' must be a non-empty string when declared.`);
+  }
 }
 
 export function normalizeModuleManifest(raw: unknown, expectedKey?: string): ModuleManifest {
@@ -74,6 +100,8 @@ export function normalizeModuleManifest(raw: unknown, expectedKey?: string): Mod
   }
 
   const moduleDependencies = normalizeModuleDependencies(data.moduleDependencies, data.key);
+  assertOptionalString(data.cli, "cli", data.key);
+  assertOptionalString(data.sdk, "sdk", data.key);
   const manifest: ModuleManifest = {
     ...(data as object),
     key: data.key,

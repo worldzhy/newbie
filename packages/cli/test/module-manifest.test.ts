@@ -55,6 +55,28 @@ describe("normalizeModuleManifest", () => {
     );
     assert.throws(() => normalizeModuleManifest({ ...valid, moduleDependencies: ["audit", ""] }), /non-empty strings/);
   });
+
+  it("preserves an optional 'cli' namespace string", () => {
+    const manifest = normalizeModuleManifest({ ...valid, cli: "secrets" });
+    assert.equal(manifest.cli, "secrets");
+    assert.equal(normalizeModuleManifest(valid).cli, undefined);
+  });
+
+  it("rejects a non-string or empty 'cli' field", () => {
+    assert.throws(() => normalizeModuleManifest({ ...valid, cli: 42 }), /'cli' must be a non-empty string/);
+    assert.throws(() => normalizeModuleManifest({ ...valid, cli: "" }), /'cli' must be a non-empty string/);
+  });
+
+  it("preserves an optional 'sdk' package name string", () => {
+    const manifest = normalizeModuleManifest({ ...valid, sdk: "@devbie/heartbeat-sdk" });
+    assert.equal(manifest.sdk, "@devbie/heartbeat-sdk");
+    assert.equal(normalizeModuleManifest(valid).sdk, undefined);
+  });
+
+  it("rejects a non-string or empty 'sdk' field", () => {
+    assert.throws(() => normalizeModuleManifest({ ...valid, sdk: false }), /'sdk' must be a non-empty string/);
+    assert.throws(() => normalizeModuleManifest({ ...valid, sdk: "" }), /'sdk' must be a non-empty string/);
+  });
 });
 
 describe("moduleImportLine", () => {
