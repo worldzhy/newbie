@@ -11,8 +11,7 @@
     "./lib": "./dist/public.js"
   },
   "files": [
-    "dist",
-    "templates"
+    "dist"
   ],
   "publishConfig": {
     "access": "public"
@@ -24,8 +23,6 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@aws-sdk/client-secrets-manager": "^3.0.0",
-    "@aws-sdk/client-sts": "^3.0.0",
     "@inquirer/prompts": "^7.0.0",
     "colorette": "^2.0.20",
     "commander": "^12.1.0",

@@ -8,8 +8,6 @@ import { runConfig } from "./commands/config";
 import { runCreate } from "./commands/create";
 import { runDevLint } from "./commands/dev/lint";
 import { runDoctor } from "./commands/doctor";
-import { runEnvPull, runEnvPush } from "./commands/env";
-import { runEnvSetup } from "./commands/env-setup";
 import { runInstall } from "./commands/install";
 import { runStatus } from "./commands/status";
 import { parseKeysFlag, runUpdate } from "./commands/update";
@@ -224,56 +222,6 @@ dev
   .description("Enforce the module layering rules (domain -> capability -> foundation) across registry sources")
   .action(function (this: Command) {
     return run(() => runDevLint(collectOptions(this)));
-  });
-
-const env = program.command("env").description("Sync .env with AWS Secrets Manager");
-
-env
-  .command("pull")
-  .description("Pull environment variables from AWS Secrets Manager into .env")
-  .option("-e, --environment <name>", "environment name from the env-tool config (skips the prompt)")
-  .option("-y, --yes", "write .env without prompting (conflicting local values are kept)", false)
-  .option("--strict", "abort without writing .env when any secret fails to pull (for CI)", false)
-  .action(function (this: Command) {
-    const flags = this.opts();
-    return run(() =>
-      runEnvPull({
-        ...collectOptions(this),
-        environment: flags.environment as string | undefined,
-        yes: Boolean(flags.yes),
-        strict: Boolean(flags.strict),
-      }),
-    );
-  });
-
-env
-  .command("push")
-  .description("Push environment variables from .env to AWS Secrets Manager")
-  .option("-e, --environment <name>", "environment name from the env-tool config (skips the prompt)")
-  .option("-y, --yes", "create/update secrets without prompting", false)
-  .action(function (this: Command) {
-    const flags = this.opts();
-    return run(() =>
-      runEnvPush({
-        ...collectOptions(this),
-        environment: flags.environment as string | undefined,
-        yes: Boolean(flags.yes),
-      }),
-    );
-  });
-
-env
-  .command("setup")
-  .description("Provision the per-account Secrets Manager rotation Lambda and print its ARN")
-  .option("-e, --environment <name>", "environment name from the env-tool config (skips the prompt)")
-  .action(function (this: Command) {
-    const flags = this.opts();
-    return run(() =>
-      runEnvSetup({
-        ...collectOptions(this),
-        environment: flags.environment as string | undefined,
-      }),
-    );
   });
 
 program
