@@ -53,6 +53,12 @@ export interface HealthReportingOptions {
   /** Initial delay before the first report, giving dependencies time to
    * connect. Defaults to 10000. */
   initialDelayMs?: number;
+  /** Deployed application version (git sha / semver), self-reported. */
+  appVersion?: string;
+  /** Self-reported deployment environment, e.g. "prod". */
+  env?: string;
+  /** Self-reported instance identifier (hostname, EC2 instance id, ...). */
+  instanceId?: string;
 }
 
 /** Handle returned by startHealthReporting for lifecycle control. */

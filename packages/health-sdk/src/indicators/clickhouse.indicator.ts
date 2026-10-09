@@ -15,7 +15,7 @@ export function createClickhouseIndicator(service: unknown): NamedHealthIndicato
         return { status: "down", message: "query method not available" };
       }
       try {
-        await (query as (opts: { query: string }) => Promise<unknown>)({
+        await (query as (opts: { query: string }) => Promise<unknown>).call(service, {
           query: "SELECT 1",
         });
         return { status: "up" };

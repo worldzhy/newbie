@@ -18,7 +18,7 @@ export function createAwsIdentityIndicator(service: unknown): NamedHealthIndicat
         return { status: "down", message: "resolveDefaultCredentials not available" };
       }
       try {
-        const provider = (resolve as () => unknown)();
+        const provider = (resolve as () => unknown).call(service);
         if (typeof provider !== "function") {
           return { status: "down", message: "credential provider not a function" };
         }

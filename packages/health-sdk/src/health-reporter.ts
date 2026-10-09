@@ -38,6 +38,9 @@ export function startHealthReporting(
     token,
     intervalMs = 30_000,
     initialDelayMs = 10_000,
+    appVersion,
+    env,
+    instanceId,
   } = options;
 
   // --- Auto-detect assembled foundation services -------------------------
@@ -62,17 +65,29 @@ export function startHealthReporting(
   // --- Reporting loop ---------------------------------------------------
   const url = endpoint ? `${endpoint.replace(/\/+$/, "")}/health/snapshot` : null;
 
+  const runtimeFacts =
+    appVersion !== undefined || env !== undefined || instanceId !== undefined
+      ? {
+          ...(appVersion !== undefined && { appVersion }),
+          ...(env !== undefined && { env }),
+          ...(instanceId !== undefined && { instanceId }),
+        }
+      : undefined;
+
   async function report(): Promise<void> {
     try {
       const result = await runCheck(indicators);
       if (url && token) {
+        const body = runtimeFacts
+          ? JSON.stringify({ ...runtimeFacts, ...result })
+          : JSON.stringify(result);
         await fetch(url, {
           method: "POST",
           headers: {
             "X-Health-Token": token,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(result),
+          body,
         });
       }
     } catch {
