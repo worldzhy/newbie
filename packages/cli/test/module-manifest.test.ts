@@ -78,14 +78,14 @@ describe("normalizeModuleManifest", () => {
     assert.throws(() => normalizeModuleManifest({ ...valid, sdk: "" }), /'sdk' must be a non-empty string/);
   });
 
-  it("preserves an optional 'role' of 'observer' and leaves it absent by default", () => {
-    const manifest = normalizeModuleManifest({ ...valid, role: "observer" });
-    assert.equal(manifest.role, "observer");
+  it("preserves an optional 'role' of 'collector' and leaves it absent by default", () => {
+    const manifest = normalizeModuleManifest({ ...valid, role: "collector" });
+    assert.equal(manifest.role, "collector");
     assert.equal(normalizeModuleManifest(valid).role, undefined);
   });
 
   it("rejects an unknown or non-string 'role'", () => {
-    assert.throws(() => normalizeModuleManifest({ ...valid, role: "in-process" }), /'role' must be one of/);
+    assert.throws(() => normalizeModuleManifest({ ...valid, role: "observer" }), /'role' must be one of/);
     assert.throws(() => normalizeModuleManifest({ ...valid, role: 42 }), /'role' must be one of/);
   });
 });

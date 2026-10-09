@@ -12,16 +12,19 @@ import { NestAsset } from "./assets";
  * Cross-deployment topological role of a module.
  *
  * Absent for ordinary modules whose capabilities serve the host application
- * itself. "observer" modules additionally expose token-only ingestion
- * endpoints for remote deployments and model those remote endpoints as
- * installations (heartbeat / backend-monitor / web-monitor / module-hub):
- * the other half of the protocol lives in a separately distributed SDK or
- * CLI. This axis is orthogonal to `layer`, which constrains in-process
- * dependency direction.
+ * itself. "collector" modules receive information from remote deployments
+ * through token-only ingestion endpoints and model those remote endpoints as
+ * installations (heartbeat / backend-monitor / web-monitor / module-hub /
+ * health): the other half of the protocol lives in a separately distributed
+ * SDK or CLI. The name follows the industry-standard agent/probe -> collector
+ * split (OpenTelemetry Collector etc.); observation happens on both sides of
+ * the protocol, so "observer" cannot distinguish the central receiving end.
+ * This axis is orthogonal to `layer`, which constrains in-process dependency
+ * direction.
  */
-export type ModuleRole = "observer";
+export type ModuleRole = "collector";
 
-export const MODULE_ROLES: readonly ModuleRole[] = ["observer"];
+export const MODULE_ROLES: readonly ModuleRole[] = ["collector"];
 
 export function isModuleRole(value: string): value is ModuleRole {
   return (MODULE_ROLES as readonly string[]).includes(value);
