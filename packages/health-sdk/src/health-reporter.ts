@@ -1,5 +1,5 @@
 import { runCheck } from "./check";
-import { scanKnownServices } from "./container-scanner";
+import { scanKnownServices } from "./service-scanner";
 import { KNOWN_INDICATORS } from "./known-indicators";
 import type {
   HealthReportingHandle,

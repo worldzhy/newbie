@@ -1,7 +1,7 @@
 export { startHealthReporting } from "./health-reporter";
 export { runCheck } from "./check";
 export { KNOWN_INDICATORS } from "./known-indicators";
-export { scanKnownServices } from "./container-scanner";
+export { scanKnownServices } from "./service-scanner";
 
 export type {
   HealthIndicatorEntry,
