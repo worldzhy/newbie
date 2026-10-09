@@ -125,4 +125,71 @@ describe("registerModuleCommands", () => {
       await fs.rm(project, { recursive: true, force: true });
     }
   });
+
+  it("does not deadlock startup when an installed manifest lags behind CLI enum values", async () => {
+    const { registerModuleCommands } = await import("../src/lib/module-cli");
+    const { Command } = await import("commander");
+
+    const project = await fs.mkdtemp(path.join(os.tmpdir(), "newbie-module-cli-lag-"));
+    try {
+      // lagging: assembled copy still carries an enum value this CLI rejects
+      // (e.g. role renamed observer -> collector before `newbie update`).
+      await fs.mkdir(path.join(project, "src", "modules", "lagging"), { recursive: true });
+      await fs.writeFile(
+        path.join(project, "src", "modules", "lagging", "newbie.module.json"),
+        JSON.stringify({
+          key: "lagging",
+          role: "observer",
+          module: { file: "lagging.module", className: "LaggingModule" },
+        }),
+      );
+
+      // healthy: must still register despite the lagging neighbour.
+      await fs.mkdir(path.join(project, "src", "modules", "healthy", "cli"), { recursive: true });
+      await fs.writeFile(
+        path.join(project, "src", "modules", "healthy", "newbie.module.json"),
+        JSON.stringify({
+          key: "healthy",
+          role: "collector",
+          module: { file: "healthy.module", className: "HealthyModule" },
+          cli: "healthy",
+        }),
+      );
+      await fs.writeFile(
+        path.join(project, "src", "modules", "healthy", "cli", "index.ts"),
+        "export function register(parent) {\n  parent.command('ping').description('ping');\n}\n",
+      );
+
+      await fs.writeFile(
+        path.join(project, "modules.json"),
+        JSON.stringify({
+          registry: null,
+          modules: [
+            { key: "lagging", version: null, sourceCommit: "abc", localPatches: [] },
+            { key: "healthy", version: null, sourceCommit: "abc", localPatches: [] },
+          ],
+        }),
+      );
+
+      const warnings: string[] = [];
+      const originalError = console.error;
+      console.error = (...args: unknown[]) => {
+        warnings.push(args.join(" "));
+      };
+      const program = new Command();
+      try {
+        await registerModuleCommands(program, { cwd: project, dryRun: false, skipPrismaGenerate: false });
+      } finally {
+        console.error = originalError;
+      }
+
+      // Startup succeeds and repair commands stay runnable; the lagging
+      // module only costs a warning, the healthy namespace still attaches.
+      assert.deepEqual(program.commands.map((command) => command.name()), ["healthy"]);
+      assert.equal(warnings.length, 1);
+      assert.match(warnings[0], /Skipped CLI namespace 'lagging' of module 'lagging'/);
+    } finally {
+      await fs.rm(project, { recursive: true, force: true });
+    }
+  });
 });

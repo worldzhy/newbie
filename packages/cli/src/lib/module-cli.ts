@@ -115,10 +115,14 @@ export async function registerModuleCommands(program: Command, options: GlobalOp
   if (!(await stateExists(options.cwd))) return;
   const state = await readModulesState(options.cwd);
   for (const key of moduleKeys(state)) {
-    const manifest = await readInstalledManifest(options.cwd, key);
-    if (!manifest) continue;
-
+    // Manifest reading stays inside the per-module guard: an installed copy
+    // can temporarily lag behind this CLI (e.g. an enum value renamed in a
+    // newer CLI before `newbie update` copies the new manifests). Failing
+    // startup here would deadlock every command, including update itself.
+    let manifest: ModuleManifest | null = null;
     try {
+      manifest = await readInstalledManifest(options.cwd, key);
+      if (!manifest) continue;
       const loaded = await loadModuleCliEntry(options.cwd, key, manifest);
       if (!loaded) continue;
       // Register against a detached parent first and attach to the program
@@ -129,7 +133,9 @@ export async function registerModuleCommands(program: Command, options: GlobalOp
       program.addCommand(detached);
     } catch (error) {
       console.error(
-        yellow(`[warn] Skipped CLI namespace '${manifest.cli}' of module '${key}': ${(error as Error).message}`),
+        yellow(
+          `[warn] Skipped CLI namespace '${manifest?.cli ?? key}' of module '${key}': ${(error as Error).message}`,
+        ),
       );
       if (process.env.NEWBIE_DEBUG && (error as Error).stack) {
         console.error((error as Error).stack);
