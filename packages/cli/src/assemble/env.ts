@@ -36,7 +36,11 @@ export async function assembleEnv(params: {
   try {
     raw = await fs.readFile(path.resolve(cwd, ENV_PATH), "utf8");
   } catch {
-    // Missing .env: start empty and let the sections be appended.
+    reportIssue(
+      issues,
+      sink,
+      `${ENV_PATH} not found; a new file will be created with module variables only.`,
+    );
   }
 
   let lines: EnvLine[] = parseEnv(raw);
