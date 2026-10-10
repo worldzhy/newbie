@@ -3,8 +3,9 @@ import fsp from "node:fs/promises";
 import path from "node:path";
 import { cyan, green, yellow } from "colorette";
 
-import { MODULES_DIR, MODULE_MANIFEST_FILE } from "../constants/paths";
+import { MODULES_DIR, MODULE_MANIFEST_FILE, REGISTRY_MODULES_DIR } from "../constants/paths";
 import { CliError } from "../lib/errors";
+import { execCapture, trim } from "../lib/exec";
 import { moduleRootInRegistry, RegistryLocation, resolveRegistry } from "../lib/registry";
 
 export interface WatchOptions {
@@ -55,6 +56,25 @@ function debounce<T extends (...args: never[]) => void>(fn: T, delay: number): (
   };
 }
 
+/**
+ * Whether the module directory in the registry working tree has uncommitted
+ * changes. Watch syncs straight from the working tree, so uncommitted content
+ * leaves the assembled project with no matching registry commit; surfacing
+ * this at startup keeps assembly provenance explicit (audit via `newbie doctor`).
+ */
+async function moduleHasUncommittedChanges(registryRoot: string, key: string): Promise<boolean> {
+  try {
+    const status = await execCapture(
+      "git",
+      ["status", "--porcelain", "--", path.join(REGISTRY_MODULES_DIR, key)],
+      { cwd: registryRoot },
+    );
+    return trim(status).length > 0;
+  } catch {
+    return false;
+  }
+}
+
 export async function runWatch(options: WatchOptions): Promise<void> {
   const projectRoot = path.resolve(options.cwd);
 
@@ -89,6 +109,21 @@ export async function runWatch(options: WatchOptions): Promise<void> {
   console.info(cyan(`Watching ${watchKeys.length} module(s) for changes in ${registry.root}…`));
   console.info(`  ${watchKeys.join(", ")}`);
   console.info("Press Ctrl+C to stop.\n");
+
+  const dirtyKeys = (
+    await Promise.all(
+      watchKeys.map(async (key) => ((await moduleHasUncommittedChanges(registry.root, key)) ? key : null)),
+    )
+  ).filter((key): key is string => key !== null);
+  if (dirtyKeys.length > 0) {
+    console.warn(
+      yellow(
+        `Uncommitted changes in: ${dirtyKeys.join(", ")}\n` +
+          "  watch syncs straight from the working tree, so synced content has no matching\n" +
+          "  registry commit and the assembled project will drift. Audit with `newbie doctor`.\n",
+      ),
+    );
+  }
 
   const watchers: fs.FSWatcher[] = [];
 
