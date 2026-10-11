@@ -147,7 +147,7 @@ export class NewbieFactory {
     const port = options.port ?? (parseInt(process.env.PORT ?? "", 10) || 3000);
     const corsAllowedOrigins = options.corsAllowedOrigins ?? (process.env.ALLOWED_ORIGINS ?? "").split(",");
     const bodyLimit = options.bodyLimit ?? "10mb";
-    const requestTimeout = options.requestTimeout ?? 60000; // milliseconds
+    const requestTimeout = options.requestTimeout ?? 60_000;
 
     const bootstrap = async (): Promise<NewbieBootstrapResult> => {
       // [step 1] Create a nestjs application.
@@ -166,21 +166,13 @@ export class NewbieFactory {
         rawBody: true,
       });
 
-      // Shutdown signal handling is installed after listen():
-      //  - dev (portRaceRecovery): hard exit to release the port instantly
-      //  - prod: bounded graceful shutdown (see registerGracefulShutdown)
-      // Both call app.close() / run onModuleDestroy hooks themselves, so the
-      // framework-managed Nest signal listeners are intentionally not enabled
-      // (they would double-register for the same signals).
-
-      // Use v4 query parser.
+      // Shutdown handlers are installed after listen() (dev: hard exit via
+      // port-race; prod: bounded graceful shutdown). Both run app.close()
+      // themselves, so Nest's built-in signal listeners stay disabled to
+      // avoid double-registration.
       app.set("query parser", "extended");
-
       app.use(cookieParser());
-
-      // bodyParser was added back to express in release 4.16.0
-      // https://stackoverflow.com/questions/47232187/express-json-vs-bodyparser-json
-      app.use(json({ limit: bodyLimit })); // set max body size
+      app.use(json({ limit: bodyLimit }));
       app.use(urlencoded({ limit: bodyLimit, extended: true }));
       if (options.textBodyParser) {
         app.use(text({ type: "text/plain" }));
@@ -202,16 +194,8 @@ export class NewbieFactory {
 
       app.useGlobalPipes(
         new ValidationPipe({
-          /**
-           * By default, every path parameter and query parameter comes over the network as a string.
-           * The ValidationPipe automatically converts a string identifier to a number when the
-           * method signature declares a number.
-           */
-          transform: true,
-          /**
-           * Strip validated objects of properties without validation decorators.
-           */
-          whitelist: true,
+          transform: true, // auto-coerce string params to the declared DTO type
+          whitelist: true, // strip properties without validation decorators
         }),
       );
 
@@ -229,10 +213,8 @@ export class NewbieFactory {
       }
 
       if (environment === "production") {
-        // helmet is only enabled in production environment.
         app.use(helmet());
       } else if (options.swagger !== false) {
-        // API document is only available in development environment.
         const swagger = (options.swagger ?? {}) as NewbieSwaggerOptions;
         const config = new DocumentBuilder()
           .setTitle(swagger.title ?? "API Document")
