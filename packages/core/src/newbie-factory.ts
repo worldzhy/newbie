@@ -1,4 +1,4 @@
-import { Logger, ValidationPipe } from "@nestjs/common";
+import { Logger, LogLevel, ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { NestExpressApplication } from "@nestjs/platform-express";
 import { DocumentBuilder, SwaggerCustomOptions, SwaggerModule } from "@nestjs/swagger";
@@ -140,7 +140,7 @@ export class NewbieFactory {
     if (rawEnvironment !== "production" && rawEnvironment !== "development") {
       logger.warn(`Invalid ENVIRONMENT "${rawEnvironment}"; falling back to "development"`);
     }
-    const port = options.port ?? (parseInt(process.env.PORT ?? "") || 3000);
+    const port = options.port ?? (parseInt(process.env.PORT ?? "", 10) || 3000);
     const corsAllowedOrigins = options.corsAllowedOrigins ?? (process.env.ALLOWED_ORIGINS ?? "").split(",");
     const bodyLimit = options.bodyLimit ?? "10mb";
     const requestTimeout = options.requestTimeout ?? 60000; // milliseconds
@@ -154,7 +154,7 @@ export class NewbieFactory {
         options.logger ??
         (process.env.LOG_LEVEL ? process.env.LOG_LEVEL.split(",").map((s) => s.trim()) : ["log", "warn", "error"]);
       const app = await NestFactory.create<NestExpressApplication>(rootModule as any, {
-        logger: logLevel as any,
+        logger: logLevel as LogLevel[],
         // Keep the raw request body buffer on req.rawBody so that modules can
         // verify webhook HMAC signatures (e.g. module-hub's registry webhook).
         rawBody: true,

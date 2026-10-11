@@ -75,7 +75,7 @@ export function startModuleHubReporting(options: ModuleHubReportOptions): Module
   const instanceId = options.instanceId ?? hostname();
 
   let pingIntervalMs = DEFAULT_PING_INTERVAL_MS;
-  let timer: ReturnType<typeof setInterval> | null = null;
+  let timer: NodeJS.Timeout | null = null;
   let stopped = false;
 
   /** (Re)create the ping interval with the current pingIntervalMs. */
@@ -85,9 +85,7 @@ export function startModuleHubReporting(options: ModuleHubReportOptions): Module
     timer = setInterval(() => {
       void sendPing();
     }, pingIntervalMs);
-    if (typeof (timer as { unref?: unknown }).unref === "function") {
-      (timer as { unref(): void }).unref();
-    }
+    timer.unref();
   }
 
   /**
