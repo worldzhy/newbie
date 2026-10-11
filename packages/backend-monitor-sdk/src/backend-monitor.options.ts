@@ -8,7 +8,6 @@ import type { BackendMonitorOptions, ResolvedBackendMonitorOptions } from "./bac
  */
 export function resolveBackendMonitorOptions(options: BackendMonitorOptions): ResolvedBackendMonitorOptions {
   return {
-    enabled: options.enabled ?? false,
     endpoint: options.endpoint,
     token: options.token,
     env: options.env ?? process.env.ENVIRONMENT ?? "",

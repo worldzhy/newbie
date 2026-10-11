@@ -207,7 +207,6 @@ export class NewbieFactory {
       const backendMonitorToken = process.env.BACKEND_MONITOR_TOKEN;
       if (backendMonitorEndpoint && backendMonitorToken) {
         startBackendMonitoring(app, {
-          enabled: true,
           endpoint: backendMonitorEndpoint,
           token: backendMonitorToken,
         });

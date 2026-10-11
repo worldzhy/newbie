@@ -18,8 +18,7 @@ function createFakeApp() {
   return { app, middlewares, interceptors };
 }
 
-const enabledOptions = {
-  enabled: true as const,
+const configuredOptions = {
   endpoint: "http://example.test",
   token: "token-value",
 };
@@ -37,20 +36,20 @@ afterEach(() => {
 });
 
 describe("startBackendMonitoring", () => {
-  it("returns null and registers nothing when disabled", () => {
+  it("returns null and registers nothing when credentials are absent", () => {
     const { app, middlewares, interceptors } = createFakeApp();
 
-    const handle = startBackendMonitoring(app, { enabled: false, endpoint: "x", token: "y" });
+    const handle = startBackendMonitoring(app, { endpoint: "", token: "y" });
 
     assert.equal(handle, null);
     assert.equal(middlewares.length, 0);
     assert.equal(interceptors.length, 0);
   });
 
-  it("registers the request middleware and error interceptor when enabled", () => {
+  it("registers the request middleware and error interceptor when configured", () => {
     const { app, middlewares, interceptors } = createFakeApp();
 
-    const handle = track(startBackendMonitoring(app, enabledOptions));
+    const handle = track(startBackendMonitoring(app, configuredOptions));
 
     assert.notEqual(handle, null);
     assert.equal(middlewares.length, 1);
@@ -62,8 +61,8 @@ describe("startBackendMonitoring", () => {
     const first = createFakeApp();
     const second = createFakeApp();
 
-    const handle1 = track(startBackendMonitoring(first.app, enabledOptions));
-    const handle2 = track(startBackendMonitoring(second.app, enabledOptions));
+    const handle1 = track(startBackendMonitoring(first.app, configuredOptions));
+    const handle2 = track(startBackendMonitoring(second.app, configuredOptions));
 
     assert.equal(handle1, handle2);
     assert.equal(first.middlewares.length, 1);
@@ -76,11 +75,11 @@ describe("startBackendMonitoring", () => {
     const first = createFakeApp();
     const second = createFakeApp();
 
-    const handle1 = startBackendMonitoring(first.app, enabledOptions);
+    const handle1 = startBackendMonitoring(first.app, configuredOptions);
     assert.notEqual(handle1, null);
     handle1!.stop();
 
-    const handle2 = track(startBackendMonitoring(second.app, enabledOptions));
+    const handle2 = track(startBackendMonitoring(second.app, configuredOptions));
     assert.notEqual(handle2, null);
     assert.notEqual(handle1, handle2);
     assert.equal(second.middlewares.length, 1);

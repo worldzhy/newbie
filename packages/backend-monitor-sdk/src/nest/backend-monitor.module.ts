@@ -40,29 +40,31 @@ class MonitorReporterLifecycle implements OnModuleInit, OnModuleDestroy {
  * Usage in the project's business module:
  *
  *   BackendMonitorModule.forRoot({
- *     enabled: bool(process.env.BACKEND_MONITOR_ENABLED),
- *     endpoint: process.env.BACKEND_MONITOR_ENDPOINT,
+ *     endpoint: process.env.BACKEND_MONITOR_ENDPOINT ?? "",
  *     // MonitorInstallation report token (module-hub design §9.2), issued by
  *     // POST /backend-monitor/installations or auto-enrolled by the platform
  *     // when a BACKEND application is created; sent as X-Backend-Monitor-Token.
- *     token: process.env.BACKEND_MONITOR_TOKEN,
+ *     token: process.env.BACKEND_MONITOR_TOKEN ?? "",
  *   })
  *
- * When disabled (the default) the module installs nothing: no middleware,
- * no interceptor, no timer — the probe has zero cost and zero behavior.
+ * Activation follows the same convention as the heartbeat/health/module-hub
+ * reporters: when `endpoint` or `token` is empty (unset env) the module
+ * installs nothing — no middleware, no interceptor, no timer: zero cost and
+ * zero behavior. Dotenv must be loaded before module metadata is evaluated.
  */
 @Module({})
 export class BackendMonitorModule {
   static forRoot(options: BackendMonitorOptions): DynamicModule {
-    if (!options.enabled) {
+    if (!options.endpoint || !options.token) {
       return { module: BackendMonitorModule, global: true };
     }
 
-    const resolved = resolveBackendMonitorOptions({ ...options, enabled: true });
+    const resolved = resolveBackendMonitorOptions(options);
 
     /**
-     * Concrete module class built only when enabled; Nest reads its static
-     * metadata and invokes configure() to register the middleware globally.
+     * Concrete module class built only when credentials are present; Nest
+     * reads its static metadata and invokes configure() to register the
+     * middleware globally.
      */
     @Module({
       providers: [
@@ -80,12 +82,12 @@ export class BackendMonitorModule {
       ],
       exports: [MonitorEventReporter],
     })
-    class EnabledBackendMonitorModule implements NestModule {
+    class ConfiguredBackendMonitorModule implements NestModule {
       configure(consumer: MiddlewareConsumer): void {
         consumer.apply(BackendMonitorMiddleware).forRoutes("{*splat}");
       }
     }
 
-    return { module: EnabledBackendMonitorModule, global: true };
+    return { module: ConfiguredBackendMonitorModule, global: true };
   }
 }

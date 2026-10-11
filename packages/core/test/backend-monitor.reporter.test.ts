@@ -5,7 +5,6 @@ import { MonitorEventReporter } from "@devbie/backend-monitor-sdk";
 import type { IngestPayload, MonitorTransport, ResolvedBackendMonitorOptions } from "@devbie/backend-monitor-sdk";
 
 const baseOptions: ResolvedBackendMonitorOptions = {
-  enabled: true,
   endpoint: "http://example.test",
   token: "token-value",
   env: "test",

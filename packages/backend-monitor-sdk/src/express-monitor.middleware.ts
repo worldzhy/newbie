@@ -10,7 +10,8 @@ export type ExpressMonitorMiddleware = (request: Request, response: Response, ne
  * Creates a native Express middleware that collects one request metric per
  * inbound HTTP request.
  *
- * Runs on every route but is registered only when monitoring is enabled.
+ * Runs on every route but is registered only when endpoint+token are
+ * configured.
  * All capture work happens on response 'finish' and consists of object
  * allocation plus a bounded queue push — it never performs I/O and never
  * throws into the application's response path.

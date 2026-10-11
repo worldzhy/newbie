@@ -23,15 +23,15 @@ const GLOBAL_KEY = Symbol.for("@devbie/backend-monitor-sdk:bootstrap");
  * listen do not take effect.
  *
  * Idempotent via a global singleton, so watch-mode/HMR re-bootstrap does not
- * double-register. Returns null when options.enabled is false. Do not combine
- * with BackendMonitorModule.forRoot() in the same process — registering both
- * paths emits duplicate events.
+ * double-register. Returns null when `endpoint` or `token` is absent. Do not
+ * combine with BackendMonitorModule.forRoot() in the same process —
+ * registering both paths emits duplicate events.
  */
 export function startBackendMonitoring(
   app: INestApplication,
   options: BackendMonitorOptions,
 ): BackendMonitoringHandle | null {
-  if (options.enabled === false) {
+  if (!options.endpoint || !options.token) {
     return null;
   }
 
@@ -40,7 +40,7 @@ export function startBackendMonitoring(
     return existing as BackendMonitoringHandle;
   }
 
-  const reporter = new MonitorEventReporter(resolveBackendMonitorOptions({ ...options, enabled: true }));
+  const reporter = new MonitorEventReporter(resolveBackendMonitorOptions(options));
   reporter.start();
 
   app.use(createExpressMonitorMiddleware(reporter));

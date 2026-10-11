@@ -7,9 +7,9 @@
  * MonitorEventReporter constructor in framework-less ones.
  */
 export interface BackendMonitorOptions {
-  /** Master switch. When false (default) no middleware/interceptor/timer is installed. */
-  enabled?: boolean;
-  /** Full ingest report URL (e.g. https://nightwatch.example.com/backend-monitor/ingest). */
+  /** Full ingest report URL (e.g. https://nightwatch.example.com/backend-monitor/ingest).
+   * The probe is installed only when both `endpoint` and `token` are set;
+   * leave them empty to run with zero instrumentation. */
   endpoint: string;
   /**
    * MonitorInstallation report token (module-hub design §9.2), returned once
@@ -73,7 +73,6 @@ export interface IngestPayload {
 
 /** Fully resolved options with defaults applied. */
 export interface ResolvedBackendMonitorOptions {
-  enabled: boolean;
   endpoint: string;
   token: string;
   env: string;
