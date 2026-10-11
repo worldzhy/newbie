@@ -1,6 +1,6 @@
 {
   "name": "@devbie/newbie",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "newbie backend framework runtime",
   "license": "MIT",
   "author": "worldzhy",
@@ -30,6 +30,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
+    "@devbie/health-sdk": "^0.1.1",
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",

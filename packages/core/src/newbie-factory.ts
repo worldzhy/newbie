@@ -7,6 +7,7 @@ import { json, text, urlencoded } from "express";
 import helmet from "helmet";
 import cluster from "node:cluster";
 import os from "node:os";
+import { startHealthReporting } from "@devbie/health-sdk";
 import { listenWithPortRaceRecovery } from "./port-race";
 import { registerGracefulShutdown } from "./graceful-shutdown";
 import { startModuleHubReporting } from "./monitoring/module-hub.reporter";
@@ -224,14 +225,31 @@ export class NewbieFactory {
 
       console.log(`Application is running on: ${await app.getUrl()}`);
 
-      // [step 4] Module-hub self-registration. Env-gated: only starts when
-      // both MODULE_HUB_ENDPOINT and MODULE_HUB_TOKEN are present. The
-      // reporter sends a `kind="full"` snapshot immediately and `kind="ping"`
-      // every 60s. Fire-and-forget: never blocks the host process.
-      const hubEndpoint = process.env.MODULE_HUB_ENDPOINT;
-      const hubToken = process.env.MODULE_HUB_TOKEN;
-      if (hubEndpoint && hubToken) {
-        startModuleHubReporting({ endpoint: hubEndpoint, token: hubToken });
+      // [step 4] Built-in reporters. Both are env-gated and fire-and-forget:
+      // they never block or crash the host process.
+
+      // Module-hub self-registration: starts when MODULE_HUB_ENDPOINT and
+      // MODULE_HUB_TOKEN are present. Sends a `kind="full"` snapshot
+      // immediately and `kind="ping"` every 60s.
+      const moduleHubEndpoint = process.env.MODULE_HUB_ENDPOINT;
+      const moduleHubToken = process.env.MODULE_HUB_TOKEN;
+      if (moduleHubEndpoint && moduleHubToken) {
+        startModuleHubReporting({ endpoint: moduleHubEndpoint, token: moduleHubToken });
+      }
+
+      // Dependency health reporting: starts when HEALTH_REPORT_ENDPOINT and
+      // HEALTH_REPORT_TOKEN are present. Scans the DI container for assembled
+      // foundation services and POSTs snapshots every 30s; needs the NestJS
+      // app instance, so it lives here rather than in project main.ts.
+      const healthReportEndpoint = process.env.HEALTH_REPORT_ENDPOINT;
+      const healthReportToken = process.env.HEALTH_REPORT_TOKEN;
+      if (healthReportEndpoint && healthReportToken) {
+        startHealthReporting(app, {
+          endpoint: healthReportEndpoint,
+          token: healthReportToken,
+          appVersion: process.env.APP_VERSION,
+          env: process.env.ENVIRONMENT,
+        });
       }
 
       return { app, server };
