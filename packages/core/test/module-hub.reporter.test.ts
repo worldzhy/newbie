@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, it } from "node:test";
 
-import { startModuleHubReporting } from "../src/monitoring/module-hub.reporter";
+import { startModuleHubReporting } from "../src/module-hub/reporter";
 
 const GLOBAL_KEY = Symbol.for("@devbie/newbie:module-hub-reporter");
 

@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, it } from "node:test";
 
-import { readModuleSnapshot } from "../src/monitoring/module-hub.snapshot";
+import { readModuleSnapshot } from "../src/module-hub/snapshot";
 
 async function makeTempDir(): Promise<string> {
   return fs.mkdtemp(path.join(os.tmpdir(), "newbie-snapshot-"));

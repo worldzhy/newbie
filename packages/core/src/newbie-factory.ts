@@ -10,7 +10,7 @@ import os from "node:os";
 import { startHealthReporting } from "@devbie/health-sdk";
 import { listenWithPortRaceRecovery } from "./port-race";
 import { registerGracefulShutdown } from "./graceful-shutdown";
-import { startModuleHubReporting } from "./monitoring/module-hub.reporter";
+import { startModuleHubReporting } from "./module-hub/reporter";
 
 export type NewbieEnvironment = "development" | "production";
 

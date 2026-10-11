@@ -50,8 +50,8 @@ export * from "@devbie/backend-monitor-sdk";
 export * from "@devbie/backend-monitor-sdk/nest";
 
 // Built-in module-hub reporter (env-gated; no-op without MODULE_HUB_*)
-export * from "./monitoring/module-hub.reporter";
-export * from "./monitoring/module-hub.snapshot";
+export * from "./module-hub/reporter";
+export * from "./module-hub/snapshot";
 
 // Pipes (their local errors.constants is subpath-only, see note above)
 export * from "./pipes/cursor-slug.pipe";

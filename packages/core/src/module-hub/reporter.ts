@@ -1,5 +1,5 @@
 import { hostname } from "node:os";
-import { readModuleSnapshot, type ModuleSnapshotEntry } from "./module-hub.snapshot";
+import { readModuleSnapshot, type ModuleSnapshotEntry } from "./snapshot";
 
 /**
  * Built-in module-hub reporter client.
