@@ -193,7 +193,7 @@ program
 program
   .command("agent")
   .description(
-    "Run the module-hub agent: poll the hub with `newbie status`, execute dispatched changes (apply/update), report receipts",
+    "Run the module-hub agent: poll the hub with `newbie status`, execute dispatched changes (apply/update), report receipts (requires hub v2; v1 hubs expose no agent-poll route)",
   )
   .option("--once", "single pass: drain pending changes, deliver receipts, then exit (CI/cron friendly)", false)
   .action(function (this: Command) {
