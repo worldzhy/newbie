@@ -7,6 +7,7 @@ const appId = "appid_test";
 const monitor = webMonitorSdk({
   appId,
   api: "http://localhost/report",
+  token: "token_test",
 });
 
 // Override the fetch patched by monitor; verify auto-reporting after a request completes

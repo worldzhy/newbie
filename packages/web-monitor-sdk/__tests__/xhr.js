@@ -6,6 +6,7 @@ const appId = "appid_test";
 const monitor = webMonitorSdk({
   appId,
   api: "http://localhost/report",
+  token: "token_test",
 });
 // Start a server to receive requests
 httpServer(mockBaseXhrApi);

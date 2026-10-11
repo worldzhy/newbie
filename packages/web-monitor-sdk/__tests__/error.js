@@ -8,6 +8,7 @@ const appId = "appid_test";
 const monitor = webMonitorSdk({
   appId,
   api: "http://localhost/report",
+  token: "token_test",
 });
 // Intercept and store reported payloads for assertions in test()
 let reportTypeError = [];

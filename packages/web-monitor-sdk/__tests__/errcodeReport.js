@@ -10,6 +10,7 @@ httpServer(mockErrcodeReportApi);
 const monitor = webMonitorSdk({
   appId,
   api: "http://localhost/report",
+  token: "token_test",
   errcodeReport(res) {
     if (
       Object.prototype.toString.call(res) === "[object Object]" &&
