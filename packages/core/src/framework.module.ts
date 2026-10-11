@@ -16,6 +16,10 @@ import { HttpMiddleware } from "./middlewares/http.middleware";
 export interface FrameworkModuleOptions {
   /** Supplied to PrismaModule.forRoot — the project's generated PrismaClient constructor. */
   prisma: PrismaModuleOptions;
+  /** Rate-limit window in milliseconds. Default 1000. */
+  throttleTtl?: number;
+  /** Max requests per throttle window. Default 10000 (effectively off). */
+  throttleLimit?: number;
 }
 
 /**
@@ -32,8 +36,7 @@ export class FrameworkModule {
       imports: [
         ConfigModule.forRoot({ load: [FrameworkConfiguration], isGlobal: true }),
         ThrottlerModule.forRoot({
-          // Maximum of 10000 requests / 1000 milliseconds for each endpoint.
-          throttlers: [{ limit: 10000, ttl: 1000 }],
+          throttlers: [{ limit: options.throttleLimit ?? 10000, ttl: options.throttleTtl ?? 1000 }],
         }),
         HttpModule,
         PrismaModule.forRoot(options.prisma),

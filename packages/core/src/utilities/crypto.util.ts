@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt";
 import crypto from "crypto";
 
 /**
@@ -55,4 +56,19 @@ export function decryptString(encrypted: string, key: string, iv: string, authTa
   );
   decipher.setAuthTag(new Uint8Array(Buffer.from(authTag, "hex")));
   return decipher.update(encrypted, "hex", "utf8") + decipher.final("utf8");
+}
+
+/**
+ * Hash a password with bcrypt (auto-generated salt).
+ */
+export async function generateHash(password: string | null): Promise<string> {
+  const salt = await bcrypt.genSalt();
+  return bcrypt.hash(password, salt);
+}
+
+/**
+ * Compare a plaintext password against a bcrypt hash.
+ */
+export async function compareHash(password: string | null, hash: string | null): Promise<boolean> {
+  return bcrypt.compare(password, hash);
 }

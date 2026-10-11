@@ -1,4 +1,5 @@
 import { hostname } from "node:os";
+import { VERSION } from "../version";
 import { readModuleSnapshot, type ModuleSnapshotEntry } from "./snapshot";
 
 /**
@@ -20,10 +21,6 @@ import { readModuleSnapshot, type ModuleSnapshotEntry } from "./snapshot";
  *   - **Non-blocking startup**: the first `full` report is fire-and-forget;
  *     the HTTP server is already accepting traffic before this runs.
  */
-
-// Published package version, read at runtime (package.json sits two levels
-// above src/ during development and dist/ in the published tarball).
-const VERSION = (require("../../package.json") as { version: string }).version;
 
 /** Timeout for one report HTTP call so a hung hub cannot hold the timer. */
 const REPORT_TIMEOUT_MS = 10_000;

@@ -2,9 +2,8 @@
  * @devbie/newbie public entry.
  */
 
-// Published package version, read at runtime (package.json sits one level
-// above both src/ during development and dist/ in the published tarball).
-export const VERSION = (require("../package.json") as { version: string }).version;
+// Published package version (single source of truth in ./version.ts).
+export { VERSION } from "./version";
 
 // Application bootstrap
 export * from "./newbie-factory";

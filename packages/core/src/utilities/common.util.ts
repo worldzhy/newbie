@@ -1,58 +1,13 @@
-import bcrypt from "bcrypt";
-import crypto from "crypto";
-
-/**
- * Generate a cryptographically secure random integer in [1, max].
- * (Used for verification codes / OTP — Math.random is not unpredictable enough.)
- */
-export function generateRandomNumber(max: number): number {
-  return crypto.randomInt(1, max + 1);
-}
-
-/**
- * Generate a cryptographically secure string of random digits.
- */
-export function generateRandomNumbers(length = 6): string {
-  const characters = "0123456789";
-  let result = "";
-  for (let i = 0; i < length; i++) {
-    result += characters[crypto.randomInt(characters.length)];
-  }
-  return result;
-}
-
-/**
- * Generate a cryptographically secure string of random lowercase letters.
- */
-export function generateRandomLetters(length = 6): string {
-  const characters = "abcdefghijklmnopqrstuvwxyz";
-  let result = "";
-  for (let i = 0; i < length; i++) {
-    result += characters[crypto.randomInt(characters.length)];
-  }
-  return result;
-}
-
-/**
- * Generate a cryptographically secure string of random digits + uppercase letters.
- */
-export function generateRandomCode(length = 6): string {
-  const characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  let result = "";
-  for (let i = 0; i < length; i++) {
-    result += characters[crypto.randomInt(characters.length)];
-  }
-  return result;
-}
-
-export async function generateHash(password: string | null): Promise<string> {
-  const salt = await bcrypt.genSalt();
-  return await bcrypt.hash(password, salt);
-}
-
-export async function compareHash(password: string | null, hash: string | null): Promise<boolean> {
-  return await bcrypt.compare(password, hash);
-}
+// Random generators and password hashing were moved to their own modules;
+// re-exported here so existing `import { ... } from "./common.util"` paths
+// (and the `@devbie/newbie` barrel) keep working without change.
+export {
+  generateRandomNumber,
+  generateRandomNumbers,
+  generateRandomLetters,
+  generateRandomCode,
+} from "./random.util";
+export { generateHash, compareHash } from "./crypto.util";
 
 /**
  * 1=>A, 2=>B, 26=>Z, 52=>AZ

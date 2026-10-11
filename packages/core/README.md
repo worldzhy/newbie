@@ -26,8 +26,9 @@ optional self-reporting — without forcing you to wire it all together.
 - **Shared DTOs and utilities** — pagination request/response DTOs plus crypto,
   datetime, array and other common helpers.
 - **Observability built in** — graceful shutdown with bounded request
-  draining, watch-mode port-race recovery, an optional backend monitor probe
-  and an env-gated module-hub reporter.
+  draining, watch-mode port-race recovery, and env-gated backend monitor
+  probe (`BACKEND_MONITOR_API_URL` + `BACKEND_MONITOR_REPORT_TOKEN`) and
+  module-hub reporter (`MODULE_HUB_ENDPOINT` + `MODULE_HUB_TOKEN`).
 
 ## Requirements
 
