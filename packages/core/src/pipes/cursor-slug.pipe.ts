@@ -12,9 +12,7 @@ export class CursorSlugPipe implements PipeTransform {
       const rules = parseObjectLiteral(value);
       const items: Record<string, string> = {};
       rules.forEach((rule) => {
-        const num = String(rule[1]);
-        if (!num) items[rule[0]] = num;
-        else if (rule[1]) items[rule[0]] = rule[1];
+        if (rule[1]) items[rule[0]] = rule[1];
       });
       return items;
     } catch (_) {

@@ -43,9 +43,9 @@ export class FrameworkModule {
         { provide: APP_GUARD, useClass: ThrottlerGuard }, // 1st priority guard.
         // Filters
         { provide: APP_FILTER, useClass: AllExceptionFilter }, // 5th priority for all exceptions.
-        { provide: APP_FILTER, useClass: HttpExceptionFilter }, // 4nd priority for exceptions thrown by controllers.
-        { provide: APP_FILTER, useClass: NewbieExceptionFilter }, // 3nd priority for exceptions thrown by controllers.
-        { provide: APP_FILTER, useClass: PrismaExceptionFilter }, // 2rd priority for exceptions thrown by services.
+        { provide: APP_FILTER, useClass: HttpExceptionFilter }, // 4th priority for exceptions thrown by controllers.
+        { provide: APP_FILTER, useClass: NewbieExceptionFilter }, // 3rd priority for exceptions thrown by controllers.
+        { provide: APP_FILTER, useClass: PrismaExceptionFilter }, // 2nd priority for exceptions thrown by services.
         { provide: APP_FILTER, useClass: ThrottlerExceptionFilter }, // 1st priority for exceptions thrown by throttler (rate limit).
         { provide: APP_INTERCEPTOR, useClass: HttpResponseInterceptor },
         Logger,

@@ -81,6 +81,34 @@ export function startModuleHubReporting(options: ModuleHubReportOptions): Module
   let timer: ReturnType<typeof setInterval> | null = null;
   let stopped = false;
 
+  /** (Re)create the ping interval with the current pingIntervalMs. */
+  function schedulePing(): void {
+    if (stopped) return;
+    if (timer) clearInterval(timer);
+    timer = setInterval(() => {
+      void sendPing();
+    }, pingIntervalMs);
+    if (typeof (timer as { unref?: unknown }).unref === "function") {
+      (timer as { unref(): void }).unref();
+    }
+  }
+
+  /**
+   * Send a ping and adjust the interval if the hub returns a new
+   * reportIntervalSeconds. This lets the hub dynamically change the cadence
+   * (e.g. back off during incidents) without restarting the process.
+   */
+  async function sendPing(): Promise<void> {
+    const response = await send({ kind: "ping" });
+    if (response?.reportIntervalSeconds) {
+      const newInterval = response.reportIntervalSeconds * 1000;
+      if (newInterval !== pingIntervalMs) {
+        pingIntervalMs = newInterval;
+        schedulePing();
+      }
+    }
+  }
+
   async function send(body: Record<string, unknown>): Promise<{ reportIntervalSeconds?: number } | null> {
     try {
       const response = await fetch(url, {
@@ -124,12 +152,7 @@ export function startModuleHubReporting(options: ModuleHubReportOptions): Module
 
     // Start the ping loop now that we know the interval (or the default).
     if (!stopped && !timer) {
-      timer = setInterval(() => {
-        void send({ kind: "ping" });
-      }, pingIntervalMs);
-      if (typeof (timer as { unref?: unknown }).unref === "function") {
-        (timer as { unref(): void }).unref();
-      }
+      schedulePing();
     }
   }
 

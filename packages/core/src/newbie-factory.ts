@@ -1,4 +1,4 @@
-import { ValidationPipe } from "@nestjs/common";
+import { Logger, ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { NestExpressApplication } from "@nestjs/platform-express";
 import { DocumentBuilder, SwaggerCustomOptions, SwaggerModule } from "@nestjs/swagger";
@@ -11,6 +11,8 @@ import { startHealthReporting } from "@devbie/health-sdk";
 import { listenWithPortRaceRecovery } from "./port-race";
 import { registerGracefulShutdown } from "./graceful-shutdown";
 import { startModuleHubReporting } from "./module-hub/reporter";
+
+const logger = new Logger("NewbieFactory");
 
 export type NewbieEnvironment = "development" | "production";
 
@@ -85,18 +87,18 @@ export interface NewbieBootstrapResult {
 function clusterize(callback: () => unknown): void {
   if (cluster.isPrimary) {
     const numCPUs = os.availableParallelism();
-    console.log("MASTER SERVER IS RUNNING");
+    logger.log(`Master server is running with ${numCPUs} workers`);
 
     for (let i = 0; i < numCPUs; i++) {
       cluster.fork();
     }
 
     cluster.on("online", (worker) => {
-      console.log(`WORKER SERVER ${worker.id} IS ONLINE`);
+      logger.log(`Worker ${worker.id} is online`);
     });
 
     cluster.on("exit", (worker) => {
-      console.log(`WORKER SERVER ${worker.id} EXITED`);
+      logger.warn(`Worker ${worker.id} exited; restarting`);
       cluster.fork();
     });
   } else {
@@ -223,7 +225,7 @@ export class NewbieFactory {
         registerGracefulShutdown(app, server, options.shutdownTimeoutMs ?? 10_000);
       }
 
-      console.log(`Application is running on: ${await app.getUrl()}`);
+      logger.log(`Application is running on: ${await app.getUrl()}`);
 
       // [step 4] Built-in reporters. Both are env-gated and fire-and-forget:
       // they never block or crash the host process.
