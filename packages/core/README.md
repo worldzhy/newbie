@@ -27,7 +27,7 @@ optional self-reporting — without forcing you to wire it all together.
   datetime, array and other common helpers.
 - **Observability built in** — graceful shutdown with bounded request
   draining, watch-mode port-race recovery, and env-gated backend monitor
-  probe (`BACKEND_MONITOR_API_URL` + `BACKEND_MONITOR_REPORT_TOKEN`) and
+  probe (`BACKEND_MONITOR_ENDPOINT` + `BACKEND_MONITOR_TOKEN`) and
   module-hub reporter (`MODULE_HUB_ENDPOINT` + `MODULE_HUB_TOKEN`).
 
 ## Requirements

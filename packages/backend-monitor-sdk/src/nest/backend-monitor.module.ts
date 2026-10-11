@@ -41,11 +41,11 @@ class MonitorReporterLifecycle implements OnModuleInit, OnModuleDestroy {
  *
  *   BackendMonitorModule.forRoot({
  *     enabled: bool(process.env.BACKEND_MONITOR_ENABLED),
- *     endpoint: process.env.BACKEND_MONITOR_API_URL,
+ *     endpoint: process.env.BACKEND_MONITOR_ENDPOINT,
  *     // MonitorInstallation report token (module-hub design §9.2), issued by
  *     // POST /backend-monitor/installations or auto-enrolled by the platform
  *     // when a BACKEND application is created; sent as X-Backend-Monitor-Token.
- *     token: process.env.BACKEND_MONITOR_REPORT_TOKEN,
+ *     token: process.env.BACKEND_MONITOR_TOKEN,
  *   })
  *
  * When disabled (the default) the module installs nothing: no middleware,

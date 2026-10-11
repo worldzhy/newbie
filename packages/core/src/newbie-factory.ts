@@ -200,11 +200,11 @@ export class NewbieFactory {
         }),
       );
 
-      // Backend monitor probe: starts when BACKEND_MONITOR_API_URL and
-      // BACKEND_MONITOR_REPORT_TOKEN are present. Wired here rather than in
+      // Backend monitor probe: starts when BACKEND_MONITOR_ENDPOINT and
+      // BACKEND_MONITOR_TOKEN are present. Wired here rather than in
       // step 4 because global interceptors must be registered before listen.
-      const backendMonitorEndpoint = process.env.BACKEND_MONITOR_API_URL;
-      const backendMonitorToken = process.env.BACKEND_MONITOR_REPORT_TOKEN;
+      const backendMonitorEndpoint = process.env.BACKEND_MONITOR_ENDPOINT;
+      const backendMonitorToken = process.env.BACKEND_MONITOR_TOKEN;
       if (backendMonitorEndpoint && backendMonitorToken) {
         startBackendMonitoring(app, {
           enabled: true,
@@ -266,16 +266,16 @@ export class NewbieFactory {
         startModuleHubReporting({ endpoint: moduleHubEndpoint, token: moduleHubToken });
       }
 
-      // Dependency health reporting: starts when HEALTH_REPORT_ENDPOINT and
-      // HEALTH_REPORT_TOKEN are present. Scans the DI container for assembled
+      // Dependency health reporting: starts when HEALTH_ENDPOINT and
+      // HEALTH_TOKEN are present. Scans the DI container for assembled
       // foundation services and POSTs snapshots every 30s; needs the NestJS
       // app instance, so it lives here rather than in project main.ts.
-      const healthReportEndpoint = process.env.HEALTH_REPORT_ENDPOINT;
-      const healthReportToken = process.env.HEALTH_REPORT_TOKEN;
-      if (healthReportEndpoint && healthReportToken) {
+      const healthEndpoint = process.env.HEALTH_ENDPOINT;
+      const healthToken = process.env.HEALTH_TOKEN;
+      if (healthEndpoint && healthToken) {
         startHealthReporting(app, {
-          endpoint: healthReportEndpoint,
-          token: healthReportToken,
+          endpoint: healthEndpoint,
+          token: healthToken,
           appVersion: process.env.APP_VERSION,
           env: process.env.ENVIRONMENT,
         });
