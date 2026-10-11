@@ -2,7 +2,7 @@ import { DynamicModule, Global, Logger, MiddlewareConsumer } from "@nestjs/commo
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
 import { HttpModule } from "@nestjs/axios";
 import { ConfigModule } from "@nestjs/config";
-import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
+import { ThrottlerGuard, ThrottlerModule, type ThrottlerModuleOptions } from "@nestjs/throttler";
 import FrameworkConfiguration from "./framework.config";
 import { PrismaModule, PrismaModuleOptions } from "./prisma/prisma.module";
 import { AllExceptionFilter } from "./exception-filters/all.exception-filter";
@@ -16,10 +16,11 @@ import { HttpMiddleware } from "./middlewares/http.middleware";
 export interface FrameworkModuleOptions {
   /** Supplied to PrismaModule.forRoot — the project's generated PrismaClient constructor. */
   prisma: PrismaModuleOptions;
-  /** Rate-limit window in milliseconds. Default 1000. */
-  throttleTtl?: number;
-  /** Max requests per throttle window. Default 10000 (effectively off). */
-  throttleLimit?: number;
+  /**
+   * Passed through to ThrottlerModule.forRoot.
+   * Defaults to effectively-off (10000 requests / 1000ms per endpoint).
+   */
+  throttler?: ThrottlerModuleOptions;
 }
 
 /**
@@ -35,9 +36,9 @@ export class FrameworkModule {
       module: FrameworkModule,
       imports: [
         ConfigModule.forRoot({ load: [FrameworkConfiguration], isGlobal: true }),
-        ThrottlerModule.forRoot({
-          throttlers: [{ limit: options.throttleLimit ?? 10000, ttl: options.throttleTtl ?? 1000 }],
-        }),
+        ThrottlerModule.forRoot(
+          options.throttler ?? { throttlers: [{ limit: 10000, ttl: 1000 }] },
+        ),
         HttpModule,
         PrismaModule.forRoot(options.prisma),
       ],
