@@ -11,8 +11,8 @@ type QueueItem = { kind: "request"; payload: MonitoredRequestEvent } | { kind: "
 const TRANSPORT_TIMEOUT_MS = 10_000;
 
 /**
- * Transport abstraction; the default posts to
- * {endpoint}/backend-monitor/ingest. Injected in tests with a fake function.
+ * Transport abstraction; the default posts to `endpoint` (the full ingest
+ * URL) verbatim. Injected in tests with a fake function.
  */
 export type MonitorTransport = (payload: IngestPayload) => Promise<void>;
 
@@ -177,7 +177,7 @@ export class MonitorEventReporter {
 
   /** Real network transport used outside tests. */
   private defaultTransport: MonitorTransport = async (payload) => {
-    const response = await fetch(`${this.options.endpoint.replace(/\/+$/, "")}/backend-monitor/ingest`, {
+    const response = await fetch(this.options.endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

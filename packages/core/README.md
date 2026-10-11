@@ -151,7 +151,7 @@ provides typed access to request cookies.
 | `PORT`                | HTTP listen port.                                                            |
 | `ALLOWED_ORIGINS`     | Comma-separated CORS origin list.                                            |
 | `LOG_LEVEL`           | Comma-separated NestJS log levels (e.g. `log,warn,error`).                   |
-| `MODULE_HUB_ENDPOINT` | Enables module-hub self-reporting when set together with `MODULE_HUB_TOKEN`. |
+| `MODULE_HUB_ENDPOINT` | Full report URL; enables module-hub self-reporting when set together with `MODULE_HUB_TOKEN`. |
 | `MODULE_HUB_TOKEN`    | Token sent to the module hub.                                                |
 
 When both `MODULE_HUB_ENDPOINT` and `MODULE_HUB_TOKEN` are present, the

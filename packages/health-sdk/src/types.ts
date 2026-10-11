@@ -43,8 +43,9 @@ export type NestAppLike = object;
 
 /** Configuration for startHealthReporting. */
 export interface HealthReportingOptions {
-  /** Server endpoint to POST health snapshots to. Empty/undefined → skip
-   * reporting but still run checks (useful for local debugging). */
+  /** Full health snapshot report URL (e.g. https://host/health/snapshot).
+   * Empty/undefined → skip reporting but still run checks (useful for local
+   * debugging). */
   endpoint?: string;
   /** Installation token sent as X-Health-Token header. */
   token?: string;

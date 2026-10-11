@@ -31,7 +31,7 @@ npm install @devbie/heartbeat-sdk
 import { startHeartbeat } from "@devbie/heartbeat-sdk";
 
 const heartbeat = startHeartbeat({
-  endpoint: "https://heartbeat.example.com",
+  endpoint: "https://heartbeat.example.com/heartbeat/ping",
   token: process.env.HEARTBEAT_TOKEN!,
   appVersion: "1.4.2",
   env: "prod",
@@ -48,7 +48,7 @@ heartbeat.stop();
 
 | Option       | Type     | Default | Required | Description                                                                  |
 | ------------ | -------- | ------- | -------- | ---------------------------------------------------------------------------- |
-| `endpoint`   | `string` | —       | Yes      | Heartbeat server endpoint prefix, without a trailing slash.                  |
+| `endpoint`   | `string` | —       | Yes      | Full heartbeat report URL, e.g. `https://host/heartbeat/ping`.               |
 | `token`      | `string` | —       | Yes      | Installation token, sent as the `X-Heartbeat-Token` header; globally unique. |
 | `intervalMs` | `number` | `30000` | No       | Heartbeat interval in milliseconds.                                          |
 | `appVersion` | `string` | —       | No       | Deployed application version (git SHA or semver), self-reported.             |
@@ -66,10 +66,12 @@ The returned `HeartbeatHandle` exposes:
 Each tick issues an HTTP request:
 
 ```
-POST {endpoint}/heartbeat/ping
+POST {endpoint}
 X-Heartbeat-Token: {token}
 Content-Type: application/json
 ```
+
+`endpoint` is the full report URL (the SDK does not append any path).
 
 The JSON body is omitted entirely when no optional metadata is supplied;
 otherwise it contains only the provided fields:

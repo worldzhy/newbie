@@ -306,7 +306,7 @@ export class HubReportResponseDto {
 
 ### 5.1 进程内自注册与上报（框架侧待实现）
 
-- 配置 env：`MODULE_HUB_ENDPOINT`（host 前缀）、`MODULE_HUB_TOKEN`（report token）。占位代码读取的 `NIGHTWATCH_REPORT_ENDPOINT/NIGHTWATCH_APPLICATION_TOKEN` 是旧心跳契约变量，实现时替换。
+- 配置 env：`MODULE_HUB_ENDPOINT`（完整上报 URL，SDK 不再拼路径）、`MODULE_HUB_TOKEN`（report token）。占位代码读取的 `NIGHTWATCH_REPORT_ENDPOINT/NIGHTWATCH_APPLICATION_TOKEN` 是旧心跳契约变量，实现时替换。
 - **@newbie/core 启动钩子**：检测到 env 即启用上报——启动时发 `kind="full"`（含模块快照），之后按 `reportIntervalSeconds` 发 `kind="ping"`；随进程退出自然停止。
 - **快照来源不是 CLI**：运行进程不执行 `newbie status`。core 在装配期已持有模块清单（key/version/sourceCommit），需提供内部 API 产出与 `newbie status --json` modules[] 同形状的快照（字段对齐第 3 章注释）。
 - **fewbie SSR 对称实现**：fewbie runtime 的启动钩子（fewbie 侧工作量，见开放问题 3）。fewbie 工程无后端 module 清单，快照仅含框架事实，`modules` 省略。

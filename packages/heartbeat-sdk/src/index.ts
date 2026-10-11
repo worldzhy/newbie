@@ -4,7 +4,7 @@ export const VERSION = (require("../package.json") as { version: string }).versi
 
 /** Configuration required to start the heartbeat loop. */
 export interface HeartbeatOptions {
-  /** Heartbeat server endpoint prefix (no trailing slash). */
+  /** Full heartbeat report URL, e.g. https://host/heartbeat/ping. */
   endpoint: string;
   /** Installation token sent as X-Heartbeat-Token header; globally unique. */
   token: string;
@@ -27,7 +27,7 @@ export interface HeartbeatHandle {
 const GLOBAL_KEY = Symbol.for("@devbie/heartbeat-sdk:active");
 
 /**
- * Starts a heartbeat loop that POSTs to `{endpoint}/heartbeat/ping`
+ * Starts a heartbeat loop that POSTs to `endpoint` (the full report URL)
  * immediately and then every `intervalMs` (default 30s).
  *
  * The installation token is globally unique, so the server resolves the
@@ -45,7 +45,7 @@ export function startHeartbeat(options: HeartbeatOptions): HeartbeatHandle {
   }
 
   const { endpoint, token, intervalMs = 30_000, appVersion, env, instanceId } = options;
-  const url = `${endpoint.replace(/\/+$/, "")}/heartbeat/ping`;
+  const url = endpoint;
   const body =
     appVersion !== undefined || env !== undefined || instanceId !== undefined
       ? JSON.stringify({

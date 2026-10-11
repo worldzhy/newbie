@@ -63,7 +63,7 @@ export function startHealthReporting(
   }
 
   // --- Reporting loop ---------------------------------------------------
-  const url = endpoint ? `${endpoint.replace(/\/+$/, "")}/health/snapshot` : null;
+  const url = endpoint || null;
 
   const runtimeFacts =
     appVersion !== undefined || env !== undefined || instanceId !== undefined

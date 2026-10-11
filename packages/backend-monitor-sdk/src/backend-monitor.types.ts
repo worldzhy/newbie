@@ -9,7 +9,7 @@
 export interface BackendMonitorOptions {
   /** Master switch. When false (default) no middleware/interceptor/timer is installed. */
   enabled?: boolean;
-  /** Nightwatch platform base URL, without trailing slash (e.g. https://nightwatch.example.com). */
+  /** Full ingest report URL (e.g. https://nightwatch.example.com/backend-monitor/ingest). */
   endpoint: string;
   /**
    * MonitorInstallation report token (module-hub design §9.2), returned once

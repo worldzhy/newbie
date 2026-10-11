@@ -1,8 +1,8 @@
 /**
  * @devbie/backend-monitor-sdk public entry (zero-dependency core).
  *
- * - MonitorEventReporter: in-memory batching reporter posting to
- *   {endpoint}/backend-monitor/ingest (fire-and-forget, bounded queue).
+ * - MonitorEventReporter: in-memory batching reporter posting to the full
+ *   ingest URL given by `endpoint` (fire-and-forget, bounded queue).
  * - createExpressMonitorMiddleware: native Express request-metric middleware.
  * - Event/configuration types shared with the reporter.
  *

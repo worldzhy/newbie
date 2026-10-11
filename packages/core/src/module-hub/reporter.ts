@@ -28,7 +28,7 @@ const REPORT_TIMEOUT_MS = 10_000;
 const DEFAULT_PING_INTERVAL_MS = 60_000;
 
 export interface ModuleHubReportOptions {
-  /** Hub endpoint prefix (no trailing slash), e.g. https://api.example.com. */
+  /** Full module-hub report URL, e.g. https://api.example.com/module-hub/report. */
   endpoint: string;
   /** Report token sent as X-Module-Hub-Token header. */
   token: string;
@@ -68,7 +68,7 @@ export function startModuleHubReporting(options: ModuleHubReportOptions): Module
   }
 
   const { endpoint, token } = options;
-  const url = `${endpoint.replace(/\/+$/, "")}/module-hub/report`;
+  const url = endpoint;
   const projectRoot = options.projectRoot ?? process.cwd();
   const appVersion = options.appVersion ?? process.env.APP_VERSION ?? "";
   const env = options.env ?? process.env.ENVIRONMENT ?? "";
