@@ -1,9 +1,9 @@
-import { Logger, LogLevel, ValidationPipe } from "@nestjs/common";
+import { Logger, LogLevel, Type, ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { NestExpressApplication } from "@nestjs/platform-express";
 import { DocumentBuilder, SwaggerCustomOptions, SwaggerModule } from "@nestjs/swagger";
 import cookieParser from "cookie-parser";
-import { json, text, urlencoded } from "express";
+import { json, text, urlencoded, type Request, type Response } from "express";
 import helmet from "helmet";
 import cluster from "node:cluster";
 import os from "node:os";
@@ -14,6 +14,9 @@ import { registerGracefulShutdown } from "./graceful-shutdown";
 import { startModuleHubReporting } from "./module-hub/reporter";
 
 const logger = new Logger("NewbieFactory");
+
+/** Default NestJS log levels — verbose/debug are opt-in via LOG_LEVEL env. */
+const DEFAULT_LOG_LEVELS: LogLevel[] = ["log", "warn", "error"];
 
 export type NewbieEnvironment = "development" | "production";
 
@@ -41,7 +44,7 @@ export interface NewbieAppOptions {
    * comma-separated LOG_LEVEL env var, or ['log', 'warn', 'error'] so that
    * verbose/debug logs do not spam the console in normal runs.
    */
-  logger?: string[];
+  logger?: LogLevel[];
   /**
    * Also parse `text/plain` request bodies. Required by report endpoints whose
    * browser SDKs send payloads via sendBeacon (which posts text/plain).
@@ -51,13 +54,13 @@ export interface NewbieAppOptions {
    * Express middleware registered BEFORE the global CORS middleware. Use it
    * for route whitelists that must override the global origin policy.
    */
-  beforeCors?: (req: any, res: any, next: () => void) => void;
+  beforeCors?: (req: Request, res: Response, next: () => void) => void;
   /**
    * Function-style CORS resolver passed verbatim to app.enableCors(). When
    * set, it replaces the static {credentials, origin: corsAllowedOrigins}
    * config entirely.
    */
-  corsResolver?: (req: any, callback: (err: unknown, options?: unknown) => void) => void;
+  corsResolver?: (req: Request, callback: (err: unknown, options?: unknown) => void) => void;
   /**
    * Survive port races during `nest start --watch` under Docker bind mounts:
    * probe the port, kill stale previous-generation holders, stand down when a
@@ -151,11 +154,13 @@ export class NewbieFactory {
       // Explicitly set log levels so that verbose/debug logs (e.g. distributed
       // lock acquisitions) do not spam the console in normal runs. Set
       // LOG_LEVEL=verbose (or debug) via env to enable troubleshooting.
-      const logLevel =
+      const logLevels =
         options.logger ??
-        (process.env.LOG_LEVEL ? process.env.LOG_LEVEL.split(",").map((s) => s.trim()) : ["log", "warn", "error"]);
-      const app = await NestFactory.create<NestExpressApplication>(rootModule as any, {
-        logger: logLevel as LogLevel[],
+        (process.env.LOG_LEVEL
+          ? (process.env.LOG_LEVEL.split(",").map((s) => s.trim()) as LogLevel[])
+          : DEFAULT_LOG_LEVELS);
+      const app = await NestFactory.create<NestExpressApplication>(rootModule as Type<any>, {
+        logger: logLevels,
         // Keep the raw request body buffer on req.rawBody so that modules can
         // verify webhook HMAC signatures (e.g. module-hub's registry webhook).
         rawBody: true,

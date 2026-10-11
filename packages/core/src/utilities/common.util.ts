@@ -50,7 +50,7 @@ export function extractNumbersFromString(str: string) {
   const matches = str.match(/\d+/g);
   if (matches) {
     for (let i = 0; i < matches.length; i++) {
-      numbers.push(parseInt(matches[i]));
+      numbers.push(parseInt(matches[i], 10));
     }
   }
 
