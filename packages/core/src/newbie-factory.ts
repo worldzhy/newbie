@@ -8,6 +8,7 @@ import helmet from "helmet";
 import cluster from "node:cluster";
 import os from "node:os";
 import { startHealthReporting } from "@devbie/health-sdk";
+import { startBackendMonitoring } from "@devbie/backend-monitor-sdk/nest";
 import { listenWithPortRaceRecovery } from "./port-race";
 import { registerGracefulShutdown } from "./graceful-shutdown";
 import { startModuleHubReporting } from "./module-hub/reporter";
@@ -208,6 +209,19 @@ export class NewbieFactory {
           whitelist: true,
         }),
       );
+
+      // Backend monitor probe: starts when BACKEND_MONITOR_API_URL and
+      // BACKEND_MONITOR_REPORT_TOKEN are present. Wired here rather than in
+      // step 4 because global interceptors must be registered before listen.
+      const backendMonitorEndpoint = process.env.BACKEND_MONITOR_API_URL;
+      const backendMonitorToken = process.env.BACKEND_MONITOR_REPORT_TOKEN;
+      if (backendMonitorEndpoint && backendMonitorToken) {
+        startBackendMonitoring(app, {
+          enabled: true,
+          endpoint: backendMonitorEndpoint,
+          token: backendMonitorToken,
+        });
+      }
 
       if (environment === "production") {
         // helmet is only enabled in production environment.

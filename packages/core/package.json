@@ -33,7 +33,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@devbie/backend-monitor-sdk": "^0.1.0",
+    "@devbie/backend-monitor-sdk": "^0.1.1",
     "@devbie/health-sdk": "^0.1.1",
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",

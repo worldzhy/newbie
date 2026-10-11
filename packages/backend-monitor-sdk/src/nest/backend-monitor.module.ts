@@ -8,7 +8,7 @@ import {
   OnModuleInit,
 } from "@nestjs/common";
 import { APP_INTERCEPTOR } from "@nestjs/core";
-import { hostname } from "node:os";
+import { resolveBackendMonitorOptions } from "../backend-monitor.options";
 import { MonitorEventReporter } from "../backend-monitor.reporter";
 import { BackendMonitorOptions, ResolvedBackendMonitorOptions } from "../backend-monitor.types";
 import { BackendMonitorInterceptor } from "./backend-monitor.interceptor";
@@ -58,17 +58,7 @@ export class BackendMonitorModule {
       return { module: BackendMonitorModule, global: true };
     }
 
-    const resolved: ResolvedBackendMonitorOptions = {
-      enabled: true,
-      endpoint: options.endpoint,
-      token: options.token,
-      env: options.env ?? process.env.ENVIRONMENT ?? "",
-      appVersion: options.appVersion ?? "",
-      instanceId: options.instanceId ?? hostname(),
-      flushIntervalMs: options.flushIntervalMs ?? 5000,
-      maxBatchSize: options.maxBatchSize ?? 500,
-      maxQueueSize: options.maxQueueSize ?? 2000,
-    };
+    const resolved = resolveBackendMonitorOptions({ ...options, enabled: true });
 
     /**
      * Concrete module class built only when enabled; Nest reads its static

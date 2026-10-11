@@ -1,6 +1,6 @@
 {
   "name": "@devbie/backend-monitor-sdk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Framework-agnostic backend monitor reporter (bounded batching to /backend-monitor/ingest) with a NestJS adapter",
   "license": "MIT",
   "author": "worldzhy",

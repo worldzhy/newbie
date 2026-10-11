@@ -5,5 +5,6 @@
  */
 
 export * from "./backend-monitor.module";
+export * from "./backend-monitor.bootstrap";
 export * from "./backend-monitor.middleware";
 export * from "./backend-monitor.interceptor";
