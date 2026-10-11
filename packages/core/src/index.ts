@@ -1,11 +1,5 @@
 /**
  * @devbie/newbie public entry.
- *
- * Note: `pipes/errors.constants` is intentionally NOT re-exported here because
- * it shares symbol names with `exceptions/errors.constants` (a pre-existing
- * duplication in the framework). Both files remain available via subpaths:
- *   @devbie/newbie/pipes/errors.constants
- *   @devbie/newbie/exceptions/errors.constants
  */
 
 // Published package version, read at runtime (package.json sits one level

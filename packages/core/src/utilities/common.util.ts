@@ -1,35 +1,46 @@
 import bcrypt from "bcrypt";
+import crypto from "crypto";
 
+/**
+ * Generate a cryptographically secure random integer in [1, max].
+ * (Used for verification codes / OTP — Math.random is not unpredictable enough.)
+ */
 export function generateRandomNumber(max: number): number {
-  return Math.ceil(Math.random() * max);
+  return crypto.randomInt(1, max + 1);
 }
 
+/**
+ * Generate a cryptographically secure string of random digits.
+ */
 export function generateRandomNumbers(length = 6): string {
-  let result = "";
   const characters = "0123456789";
-  const charactersLength = characters.length;
+  let result = "";
   for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    result += characters[crypto.randomInt(characters.length)];
   }
   return result;
 }
 
+/**
+ * Generate a cryptographically secure string of random lowercase letters.
+ */
 export function generateRandomLetters(length = 6): string {
-  let result = "";
   const characters = "abcdefghijklmnopqrstuvwxyz";
-  const charactersLength = characters.length;
+  let result = "";
   for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    result += characters[crypto.randomInt(characters.length)];
   }
   return result;
 }
 
+/**
+ * Generate a cryptographically secure string of random digits + uppercase letters.
+ */
 export function generateRandomCode(length = 6): string {
-  let result = "";
   const characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const charactersLength = characters.length;
+  let result = "";
   for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    result += characters[crypto.randomInt(characters.length)];
   }
   return result;
 }

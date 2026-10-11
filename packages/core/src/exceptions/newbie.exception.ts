@@ -4,7 +4,11 @@ export class NewbieException extends HttpException {
   constructor(type: NewbieExceptionType) {
     const exception = NewbieExceptionMap.get(type);
     if (exception) {
-      super({ status: exception.code, error: exception.error }, HttpStatus.OK);
+      super({ code: exception.code, error: exception.error }, HttpStatus.OK);
+    } else {
+      // Unregistered type: never leave the exception without a super() call,
+      // which would corrupt the instance (getResponse()/getStatus() throw).
+      super({ code: 500, error: { message: "Unknown newbie exception type" } }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

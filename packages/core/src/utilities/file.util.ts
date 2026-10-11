@@ -12,7 +12,7 @@ export function readFilesInFolder(folderPath: string) {
     if (stats.isFile()) {
       files.push(filePath);
     } else if (stats.isDirectory()) {
-      readFilesInFolder(filePath);
+      files.push(...readFilesInFolder(filePath));
     }
   });
 
