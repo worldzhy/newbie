@@ -22,4 +22,4 @@
 
 ## Coordination
 - [ ] Checked `git log`/`git status` and `PENDING_PUSH.md` for other in-flight work on the same module before starting this change.
-- [ ] `PENDING_PUSH.md` is updated with this commit if pushing to the remote is deferred to the user.
+- [ ] Pushed to `origin` right after committing (`git push origin dev`); only left unpushed with a `PENDING_PUSH.md` entry if the push was deliberately deferred.
