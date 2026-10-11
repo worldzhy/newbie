@@ -4,8 +4,9 @@ import { ExtendedPrismaClient } from "./prisma.extension";
 @Injectable()
 export class PrismaService implements OnModuleInit, OnModuleDestroy {
   /**
-   * These methods are placeholders for NestJS lifecycle hooks.
-   * The actual implementation is bound in the PrismaModule factory.
+   * Empty lifecycle hooks — the PrismaModule factory returns a Proxy whose
+   * onModuleInit/onModuleDestroy perform the real $connect/$disconnect.
+   * These stubs exist only so NestJS recognises the lifecycle interfaces.
    */
   async onModuleInit(): Promise<void> {}
   async onModuleDestroy(): Promise<void> {}

@@ -77,8 +77,8 @@ export async function listenWithPortRaceRecovery(
         const server = await app.listen(port, host);
         httpServer = server;
         return server;
-      } catch (err: any) {
-        if (err?.code !== "EADDRINUSE") throw err;
+      } catch (err) {
+        if ((err as NodeJS.ErrnoException)?.code !== "EADDRINUSE") throw err;
         logger.warn(
           `app.listen() lost the port race on attempt ${attempt}, another instance bound first.`,
         );

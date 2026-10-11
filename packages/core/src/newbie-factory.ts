@@ -1,4 +1,5 @@
 import { Logger, LogLevel, Type, ValidationPipe } from "@nestjs/common";
+import type { CorsOptionsDelegate } from "@nestjs/common/interfaces/external/cors-options.interface";
 import { NestFactory } from "@nestjs/core";
 import { NestExpressApplication } from "@nestjs/platform-express";
 import { DocumentBuilder, SwaggerCustomOptions, SwaggerModule } from "@nestjs/swagger";
@@ -60,7 +61,7 @@ export interface NewbieAppOptions {
    * set, it replaces the static {credentials, origin: corsAllowedOrigins}
    * config entirely.
    */
-  corsResolver?: (req: Request, callback: (err: unknown, options?: unknown) => void) => void;
+  corsResolver?: CorsOptionsDelegate<Request>;
   /**
    * Survive port races during `nest start --watch` under Docker bind mounts:
    * probe the port, kill stale previous-generation holders, stand down when a
@@ -187,7 +188,7 @@ export class NewbieFactory {
       }
 
       if (options.corsResolver) {
-        app.enableCors(options.corsResolver as any);
+        app.enableCors(options.corsResolver);
       } else {
         app.enableCors({ credentials: true, origin: corsAllowedOrigins });
       }

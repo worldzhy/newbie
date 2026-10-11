@@ -13,7 +13,7 @@ export class WherePipe implements PipeTransform {
       rules.forEach((rule) => {
         const ruleKey = rule[0];
         const rawValue: string = rule[1] ?? "";
-        let ruleValue: any = rawValue;
+        let ruleValue: string | number | boolean = rawValue;
 
         if (rawValue.endsWith(")")) {
           const inner = /\(([^)]+)\)/.exec(rawValue)?.[1];
@@ -46,7 +46,7 @@ export class WherePipe implements PipeTransform {
         if (ruleValue != null && ruleValue !== "") items[ruleKey] = items[ruleKey] || ruleValue;
       });
       return items;
-    } catch (error) {
+    } catch {
       throw new BadRequestException(WHERE_PIPE_FORMAT);
     }
   }
