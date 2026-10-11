@@ -54,6 +54,19 @@ export class ModulesModule {}
 `;
 }
 
+function configValueUsesHelper(value: unknown, helper: "bool" | "int"): boolean {
+  if (typeof value === "string") {
+    return value.startsWith(`${helper}(process.`);
+  }
+  if (Array.isArray(value)) {
+    return value.some((item) => configValueUsesHelper(item, helper));
+  }
+  if (value && typeof value === "object") {
+    return Object.values(value).some((item) => configValueUsesHelper(item, helper));
+  }
+  return false;
+}
+
 function configTemplate(configs: Record<string, unknown>): string {
   // The manifest stores runtime expressions as plain strings ("process.env.X");
   // unwrap the quotes so they become real TS expressions in the generated file.
@@ -62,11 +75,12 @@ function configTemplate(configs: Record<string, unknown>): string {
     .replace(/("|')(bool\(process.*?)\1/g, "$2")
     .replace(/("|')(int\(process.*?)\1/g, "$2");
 
-  // Only import the helpers actually referenced by the generated body so the
-  // emitted file has no unused imports.
+  // Only import the helpers actually referenced by config values. Scanning the
+  // raw configs (rather than the emitted body) avoids false positives from
+  // string literals that happen to contain "bool(" / "int(".
   const helpers: string[] = [];
-  if (body.includes("bool(")) helpers.push("bool");
-  if (body.includes("int(")) helpers.push("int");
+  if (configValueUsesHelper(configs, "bool")) helpers.push("bool");
+  if (configValueUsesHelper(configs, "int")) helpers.push("int");
   const helperImport = helpers.length ? `import {${helpers.join(", ")}} from '@devbie/newbie';\n` : "";
 
   return `${DO_NOT_EDIT_HEADER}import {registerAs} from '@nestjs/config';
