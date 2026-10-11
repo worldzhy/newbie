@@ -122,6 +122,11 @@ export async function runDoctor(options: GlobalOptions): Promise<void> {
       );
     }
 
+    // Deprecation: the module still works but must not spread to new hosts.
+    if (manifest.deprecated) {
+      notice(`${label}: deprecated — ${manifest.deprecated}`);
+    }
+
     // Content drift against the pristine registry tree at the pinned commit.
     if (registry && record?.sourceCommit) {
       const pristine = await snapshotPristineModule(registry, key, record.sourceCommit);

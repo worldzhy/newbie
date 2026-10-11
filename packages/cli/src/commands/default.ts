@@ -3,7 +3,7 @@ import { bold, cyan, green, inverse } from "colorette";
 
 import { applyModuleKeys } from "../assemble/pipeline";
 import { moduleKeys } from "../core/modules-state";
-import { listRegistryKeys } from "../lib/registry";
+import { deprecatedNoticesOf, listRegistryModules } from "../lib/registry";
 
 import { createContext, GlobalOptions, printBanner } from "./shared";
 
@@ -21,19 +21,24 @@ export async function runInteractive(options: GlobalOptions): Promise<void> {
   console.info("| flexibly add or remove them in your project.              |");
   console.info(" -----------------------------------------------------------\n");
 
-  const available = await listRegistryKeys(ctx.registry.root);
-  const enabled = moduleKeys(ctx.state).filter((key) => available.includes(key));
+  const registryModules = await listRegistryModules(ctx.registry.root);
+  const deprecatedNotices = deprecatedNoticesOf(registryModules);
+  const enabled = moduleKeys(ctx.state).filter((key) => registryModules.some((entry) => entry.key === key));
 
+  // Deprecated modules stay hidden unless already enabled (flagged, so they
+  // can be unchecked) — deprecation gates new adoption, not removal.
   const chosen = await checkbox({
     message: "Which modules do you want to enable for your project:",
-    choices: available.map((name) => {
-      const checked = enabled.includes(name);
-      return {
-        value: name,
-        name: `${name}${checked ? " (enabled)" : ""}`,
-        checked,
-      };
-    }),
+    choices: registryModules
+      .filter((entry) => !deprecatedNotices.has(entry.key) || enabled.includes(entry.key))
+      .map((entry) => {
+        const checked = enabled.includes(entry.key);
+        return {
+          value: entry.key,
+          name: `${entry.key}${checked ? (deprecatedNotices.has(entry.key) ? " (enabled, deprecated)" : " (enabled)") : ""}`,
+          checked,
+        };
+      }),
     pageSize: 100,
     loop: true,
   });

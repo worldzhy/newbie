@@ -4,7 +4,7 @@ import { bold, green } from "colorette";
 
 import { applyModuleKeys } from "../assemble/pipeline";
 import { CliError } from "../lib/errors";
-import { listRegistryKeys } from "../lib/registry";
+import { deprecatedNoticesOf, listRegistryModules } from "../lib/registry";
 
 import { createContext, GlobalOptions } from "./shared";
 
@@ -50,12 +50,22 @@ export async function runApply(options: ApplyOptions): Promise<void> {
     fetch: true,
   });
 
-  const known = new Set(await listRegistryKeys(ctx.registry.root));
+  const registryModules = await listRegistryModules(ctx.registry.root);
+  const known = new Set(registryModules.map((entry) => entry.key));
   const deduped = new Set(wanted);
   const unknown = [...deduped].filter((key) => !known.has(key));
   if (unknown.length > 0) {
     throw new CliError(
       `Unknown module(s) in ${options.config}: ${unknown.join(", ")}. Available modules: ${[...known].join(", ")}`,
+    );
+  }
+  const deprecated = deprecatedNoticesOf(registryModules);
+  const deprecatedChosen = [...deduped].filter((key) => deprecated.has(key));
+  if (deprecatedChosen.length > 0) {
+    throw new CliError(
+      `Cannot apply deprecated module(s): ${deprecatedChosen
+        .map((key) => `'${key}' (${deprecated.get(key)})`)
+        .join(", ")}`,
     );
   }
   const nextKeys = [...deduped];

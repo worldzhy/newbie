@@ -168,6 +168,26 @@ export interface RegistryModule {
   manifest: import("../core/module-manifest").ModuleManifest;
 }
 
+/** Read the manifest of every module present in a registry working tree. */
+export async function listRegistryModules(registryRoot: string): Promise<RegistryModule[]> {
+  const keys = await listRegistryKeys(registryRoot);
+  const modules: RegistryModule[] = [];
+  for (const key of keys) {
+    const resolved = await readRegistryModule(registryRoot, key);
+    if (resolved) modules.push(resolved);
+  }
+  return modules;
+}
+
+/** Deprecation notices keyed by module key, from the manifests' `deprecated` field. */
+export function deprecatedNoticesOf(modules: RegistryModule[]): Map<string, string> {
+  return new Map(
+    modules
+      .filter((entry) => typeof entry.manifest.deprecated === "string")
+      .map((entry) => [entry.key, entry.manifest.deprecated as string]),
+  );
+}
+
 export async function readRegistryModule(registryRoot: string, key: string): Promise<RegistryModule | null> {
   const dir = moduleRootInRegistry(registryRoot, key);
   let raw: string;

@@ -73,6 +73,16 @@ export interface ModuleManifest {
    * pairing so tooling can locate the SDK without scanning package names.
    */
   sdk?: string;
+  /**
+   * Deprecation notice. When declared (non-empty string), the module is at
+   * end-of-life: `newbie config` hides it from the interactive picker and
+   * rejects `--add`, `newbie install` refuses to install it into a project
+   * that does not already have it, and `newbie doctor` emits a notice for
+   * hosts where it is still enabled. Already-installed hosts keep working —
+   * deprecation gates new adoption, not existing deployments. The string is
+   * the reason / successor guidance surfaced in those messages.
+   */
+  deprecated?: string;
   [key: string]: unknown;
 }
 
@@ -139,6 +149,7 @@ export function normalizeModuleManifest(raw: unknown, expectedKey?: string): Mod
   const moduleDependencies = normalizeModuleDependencies(data.moduleDependencies, data.key);
   assertOptionalString(data.cli, "cli", data.key);
   assertOptionalString(data.sdk, "sdk", data.key);
+  assertOptionalString(data.deprecated, "deprecated", data.key);
   assertOptionalRole(data.role, data.key);
   const manifest: ModuleManifest = {
     ...(data as object),

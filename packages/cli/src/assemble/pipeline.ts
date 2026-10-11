@@ -5,8 +5,9 @@ import { cyan } from "colorette";
 
 import { diffModuleKeys, ModulesState, moduleKeys, withModuleKeys } from "../core/modules-state";
 import { directDependents } from "../core/module-closure";
-import { MODULES_DIR, MODULE_MANIFEST_FILE } from "../constants/paths";
+import { MODULES_DIR, MODULE_MANIFEST_FILE, MODULES_JSON } from "../constants/paths";
 import { CliError } from "../lib/errors";
+import { readRegistryModule } from "../lib/registry";
 import { writeModulesState } from "../lib/modules-state";
 
 import { assembleDependencies } from "./dependencies";
@@ -243,6 +244,22 @@ export async function planReconcile(
     return !record?.sourceCommit;
   });
   const uninstalled = [...inProject].filter((key) => !enabledSet.has(key));
+
+  // Hard gate: refuse to copy a deprecated module into a project that does not
+  // have it yet. Hosts that already carry it keep installing/repairing.
+  const newlyInstalled = installed.filter((key) => !inProject.has(key));
+  const deprecated: string[] = [];
+  for (const key of newlyInstalled) {
+    const resolved = await readRegistryModule(ctx.registry.root, key);
+    if (resolved?.manifest.deprecated) {
+      deprecated.push(`'${key}' (${resolved.manifest.deprecated})`);
+    }
+  }
+  if (deprecated.length > 0) {
+    throw new CliError(
+      `Cannot install deprecated module(s): ${deprecated.join(", ")}. Remove them from ${MODULES_JSON} first.`,
+    );
+  }
 
   return {
     added: installed,
