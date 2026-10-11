@@ -1,13 +1,38 @@
-import { DynamicModule, Inject, MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
+import {
+  DynamicModule,
+  Injectable,
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  OnModuleDestroy,
+  OnModuleInit,
+} from "@nestjs/common";
 import { APP_INTERCEPTOR } from "@nestjs/core";
 import { hostname } from "node:os";
+import { MonitorEventReporter } from "../backend-monitor.reporter";
+import { BackendMonitorOptions, ResolvedBackendMonitorOptions } from "../backend-monitor.types";
 import { BackendMonitorInterceptor } from "./backend-monitor.interceptor";
 import { BackendMonitorMiddleware } from "./backend-monitor.middleware";
-import { MonitorEventReporter } from "./backend-monitor.reporter";
-import { BackendMonitorOptions, ResolvedBackendMonitorOptions } from "./backend-monitor.types";
 
 /** DI token for the resolved monitoring options. */
 export const BACKEND_MONITOR_OPTIONS = Symbol("BACKEND_MONITOR_OPTIONS");
+
+/**
+ * Bridges the dependency-free reporter into the Nest lifecycle: Nest
+ * instantiates this provider and calls start()/stop() on module init/destroy.
+ */
+@Injectable()
+class MonitorReporterLifecycle implements OnModuleInit, OnModuleDestroy {
+  constructor(private readonly reporter: MonitorEventReporter) {}
+
+  onModuleInit(): void {
+    this.reporter.start();
+  }
+
+  onModuleDestroy(): void {
+    this.reporter.stop();
+  }
+}
 
 /**
  * Built-in backend monitor probe.
@@ -59,6 +84,7 @@ export class BackendMonitorModule {
           useFactory: (monitorOptions: ResolvedBackendMonitorOptions) => new MonitorEventReporter(monitorOptions),
           inject: [BACKEND_MONITOR_OPTIONS],
         },
+        MonitorReporterLifecycle,
         BackendMonitorMiddleware,
         { provide: APP_INTERCEPTOR, useClass: BackendMonitorInterceptor },
       ],

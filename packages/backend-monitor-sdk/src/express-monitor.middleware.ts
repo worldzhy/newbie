@@ -1,22 +1,25 @@
-import { Injectable, NestMiddleware } from "@nestjs/common";
-import { NextFunction, Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import { randomUUID } from "node:crypto";
-import { MonitorEventReporter } from "./backend-monitor.reporter";
+import type { MonitorEventReporter } from "./backend-monitor.reporter";
 import { getMonitorMeta, isMonitoringTraffic, routeTemplate, safePathname, setMonitorMeta } from "./request-meta.util";
 
+/** Signature of the created handler; directly compatible with app.use(). */
+export type ExpressMonitorMiddleware = (request: Request, response: Response, next: NextFunction) => void;
+
 /**
- * Collects one request metric per inbound HTTP request.
+ * Creates a native Express middleware that collects one request metric per
+ * inbound HTTP request.
  *
  * Runs on every route but is registered only when monitoring is enabled.
  * All capture work happens on response 'finish' and consists of object
  * allocation plus a bounded queue push — it never performs I/O and never
  * throws into the application's response path.
+ *
+ * Framework-less hosts register it directly (app.use(...)); the Nest adapter
+ * wraps it in BackendMonitorMiddleware for the Nest middleware pipeline.
  */
-@Injectable()
-export class BackendMonitorMiddleware implements NestMiddleware {
-  constructor(private readonly reporter: MonitorEventReporter) {}
-
-  use(request: Request, response: Response, next: NextFunction): void {
+export function createExpressMonitorMiddleware(reporter: MonitorEventReporter): ExpressMonitorMiddleware {
+  return (request, response, next) => {
     // Break the self-reporting loop: ingest calls (tagged or on the ingest
     // path) are not themselves monitored.
     if (isMonitoringTraffic(request)) {
@@ -30,7 +33,7 @@ export class BackendMonitorMiddleware implements NestMiddleware {
     response.on("finish", () => {
       const meta = getMonitorMeta(request);
       if (!meta) return;
-      this.reporter.enqueueRequest({
+      reporter.enqueueRequest({
         requestId: meta.requestId,
         route: routeTemplate(request),
         path: safePathname(request),
@@ -44,5 +47,5 @@ export class BackendMonitorMiddleware implements NestMiddleware {
     });
 
     next();
-  }
+  };
 }

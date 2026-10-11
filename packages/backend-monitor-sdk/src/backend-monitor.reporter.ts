@@ -1,5 +1,4 @@
-import { Logger, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
-import {
+import type {
   IngestPayload,
   MonitoredErrorEvent,
   MonitoredRequestEvent,
@@ -24,9 +23,13 @@ export type MonitorTransport = (payload: IngestPayload) => Promise<void>;
  * payload per flush (both kinds share one HTTP call). The queue is bounded:
  * under overflow NEW events are dropped (counted) so monitoring can never
  * exhaust host memory. Delivery is fire-and-forget — failed batches are
- * dropped (logged at warn) and never block or crash the host application.
+ * dropped (warned) and never block or crash the host application.
+ *
+ * The class is dependency-free (no framework imports): drive it manually with
+ * start()/stop(), or use the @devbie/backend-monitor-sdk/nest adapter, which
+ * wires those calls to the Nest module lifecycle.
  */
-export class MonitorEventReporter implements OnModuleInit, OnModuleDestroy {
+export class MonitorEventReporter {
   private queue: QueueItem[] = [];
   private timer: ReturnType<typeof setInterval> | null = null;
   private flushing = false;
@@ -42,22 +45,10 @@ export class MonitorEventReporter implements OnModuleInit, OnModuleDestroy {
   private requestCount = 0;
   private errorCount = 0;
 
-  private readonly logger = new Logger("BackendMonitor");
-
   constructor(
     private readonly options: ResolvedBackendMonitorOptions,
     private readonly transport?: MonitorTransport,
   ) {}
-
-  /** Starts the periodic flush timer. Called by Nest lifecycle. */
-  onModuleInit(): void {
-    this.start();
-  }
-
-  /** Stops the timer. Called by Nest lifecycle on shutdown. */
-  onModuleDestroy(): void {
-    this.stop();
-  }
 
   /** Starts the periodic flush timer. */
   start(): void {
@@ -77,7 +68,7 @@ export class MonitorEventReporter implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  /** Stops the timer. */
+  /** Stops the timer and detaches the beforeExit drain listener. */
   stop(): void {
     if (this.timer) {
       clearInterval(this.timer);
@@ -170,8 +161,9 @@ export class MonitorEventReporter implements OnModuleInit, OnModuleDestroy {
       await send(batch);
     } catch (error) {
       this.failedBatchCount += 1;
-      this.logger.warn(
-        `Dropped backend monitor batch (requests=${batch.requests.length}, errors=${batch.errors.length}): ${
+      // Console (not a framework logger): the core reporter stays dependency-free.
+      console.warn(
+        `[BackendMonitor] Dropped backend monitor batch (requests=${batch.requests.length}, errors=${batch.errors.length}): ${
           (error as Error)?.message ?? error
         }`,
       );

@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { MonitorEventReporter, MonitorTransport } from "../src/monitoring/backend-monitor.reporter";
-import { IngestPayload, ResolvedBackendMonitorOptions } from "../src/monitoring/backend-monitor.types";
+import { MonitorEventReporter } from "@devbie/backend-monitor-sdk";
+import type { IngestPayload, MonitorTransport, ResolvedBackendMonitorOptions } from "@devbie/backend-monitor-sdk";
 
 const baseOptions: ResolvedBackendMonitorOptions = {
   enabled: true,

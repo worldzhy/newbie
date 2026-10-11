@@ -1,4 +1,4 @@
-import { Request } from "express";
+import type { Request } from "express";
 
 /** Per-request probe metadata attached to the Express request object. */
 export interface MonitorRequestMeta {
@@ -6,7 +6,7 @@ export interface MonitorRequestMeta {
   startDate: Date;
 }
 
-const META_KEY = Symbol.for("@devbie/newbie:backend-monitor:meta");
+const META_KEY = Symbol.for("@devbie/backend-monitor-sdk:meta");
 
 /**
  * Ingest path; traffic on it is the probe's own and must never be recorded.

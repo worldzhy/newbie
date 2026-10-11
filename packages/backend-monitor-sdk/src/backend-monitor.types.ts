@@ -2,8 +2,9 @@
  * Public configuration for the built-in backend monitor probe.
  *
  * This is business configuration (which nightwatch instance, which agent
- * token), therefore it is supplied by the project through
- * BackendMonitorModule.forRoot() — it never lives in framework.config.
+ * token), therefore it is supplied by the project — through
+ * BackendMonitorModule.forRoot() in Nest hosts, or directly to the
+ * MonitorEventReporter constructor in framework-less ones.
  */
 export interface BackendMonitorOptions {
   /** Master switch. When false (default) no middleware/interceptor/timer is installed. */

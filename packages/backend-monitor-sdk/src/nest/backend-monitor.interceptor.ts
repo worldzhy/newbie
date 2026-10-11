@@ -1,9 +1,9 @@
 import { CallHandler, ExecutionContext, HttpException, Injectable, NestInterceptor } from "@nestjs/common";
-import { Request } from "express";
+import type { Request } from "express";
 import { Observable } from "rxjs";
 import { tap } from "rxjs/operators";
-import { MonitorEventReporter } from "./backend-monitor.reporter";
-import { getMonitorMeta, routeTemplate, safePathname } from "./request-meta.util";
+import { MonitorEventReporter } from "../backend-monitor.reporter";
+import { getMonitorMeta, routeTemplate, safePathname } from "../request-meta.util";
 
 /**
  * Observes unhandled exceptions and enqueues an error event sharing the
@@ -14,6 +14,8 @@ import { getMonitorMeta, routeTemplate, safePathname } from "./request-meta.util
  */
 @Injectable()
 export class BackendMonitorInterceptor implements NestInterceptor {
+  // Value import (not `import type`): the constructor parameter type feeds
+  // Nest's emitted design:paramtypes metadata for DI resolution.
   constructor(private readonly reporter: MonitorEventReporter) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {

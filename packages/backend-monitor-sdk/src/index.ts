@@ -1,0 +1,16 @@
+/**
+ * @devbie/backend-monitor-sdk public entry (zero-dependency core).
+ *
+ * - MonitorEventReporter: in-memory batching reporter posting to
+ *   {endpoint}/backend-monitor/ingest (fire-and-forget, bounded queue).
+ * - createExpressMonitorMiddleware: native Express request-metric middleware.
+ * - Event/configuration types shared with the reporter.
+ *
+ * The NestJS adapter (BackendMonitorModule.forRoot, middleware, interceptor)
+ * lives at @devbie/backend-monitor-sdk/nest and requires the optional
+ * @nestjs/* peers.
+ */
+
+export * from "./backend-monitor.types";
+export * from "./backend-monitor.reporter";
+export * from "./express-monitor.middleware";
