@@ -62,9 +62,15 @@ function configTemplate(configs: Record<string, unknown>): string {
     .replace(/("|')(bool\(process.*?)\1/g, "$2")
     .replace(/("|')(int\(process.*?)\1/g, "$2");
 
-  return `${DO_NOT_EDIT_HEADER}import {registerAs} from '@nestjs/config';
-import {bool, int} from '@devbie/newbie';
+  // Only import the helpers actually referenced by the generated body so the
+  // emitted file has no unused imports.
+  const helpers: string[] = [];
+  if (body.includes("bool(")) helpers.push("bool");
+  if (body.includes("int(")) helpers.push("int");
+  const helperImport = helpers.length ? `import {${helpers.join(", ")}} from '@devbie/newbie';\n` : "";
 
+  return `${DO_NOT_EDIT_HEADER}import {registerAs} from '@nestjs/config';
+${helperImport}
 export default registerAs('modules', () => (${body}));
 `;
 }
