@@ -39,7 +39,7 @@ export function compareArraysContent(array1: Array<string | number>, array2: Arr
   compareArrays(g, h); // true
   compareArrays(i, j); // false
  */
-export function compareArrays(array1: Array<any>, array2: Array<any>) {
+export function compareArrays<T>(array1: T[], array2: T[]) {
   // if the other array is a falsy value, return
   if (!array2) return false;
   // if the argument is the same array, we can be sure the contents are same as well
@@ -49,9 +49,9 @@ export function compareArrays(array1: Array<any>, array2: Array<any>) {
 
   for (let i = 0, l = array1.length; i < l; i++) {
     // Check if we have nested arrays
-    if (array1[i] instanceof Array && array2[i] instanceof Array) {
+    if (Array.isArray(array1[i]) && Array.isArray(array2[i])) {
       // recurse into the nested arrays
-      if (!compareArrays(array1[i], array2[i])) return false;
+      if (!compareArrays(array1[i] as unknown as T[], array2[i] as unknown as T[])) return false;
     } else if (array1[i] !== array2[i]) {
       // Warning - two different object instances will never be equal: {x:20} != {x:20}
       return false;

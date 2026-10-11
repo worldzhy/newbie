@@ -97,7 +97,28 @@ function clusterize(callback: () => unknown): void {
       logger.log(`Worker ${worker.id} is online`);
     });
 
+    // Crash-window guard: if too many workers exit within a short window,
+    // something is fundamentally broken (bad config, missing DB, etc.) and
+    // forking more workers would just create a fork storm. Stop the master
+    // so the orchestrator (Docker / k8s) can surface the real error.
+    const MAX_EXITS = 10;
+    const EXIT_WINDOW_MS = 10_000;
+    const exitTimestamps: number[] = [];
+
     cluster.on("exit", (worker) => {
+      const now = Date.now();
+      exitTimestamps.push(now);
+      while (exitTimestamps.length && now - exitTimestamps[0] > EXIT_WINDOW_MS) {
+        exitTimestamps.shift();
+      }
+
+      if (exitTimestamps.length >= MAX_EXITS) {
+        logger.error(
+          `${exitTimestamps.length} workers exited within ${EXIT_WINDOW_MS}ms; stopping master to avoid fork storm`,
+        );
+        process.exit(1);
+      }
+
       logger.warn(`Worker ${worker.id} exited; restarting`);
       cluster.fork();
     });
@@ -113,8 +134,12 @@ export class NewbieFactory {
    *   NewbieFactory.create(ApplicationModule, {swagger: {title: 'My API'}})
    */
   static async create(rootModule: unknown, options: NewbieAppOptions = {}): Promise<NewbieBootstrapResult | void> {
+    const rawEnvironment = options.environment ?? process.env.ENVIRONMENT ?? "development";
     const environment: NewbieEnvironment =
-      options.environment ?? (process.env.ENVIRONMENT as NewbieEnvironment) ?? "development";
+      rawEnvironment === "production" || rawEnvironment === "development" ? rawEnvironment : "development";
+    if (rawEnvironment !== "production" && rawEnvironment !== "development") {
+      logger.warn(`Invalid ENVIRONMENT "${rawEnvironment}"; falling back to "development"`);
+    }
     const port = options.port ?? (parseInt(process.env.PORT ?? "") || 3000);
     const corsAllowedOrigins = options.corsAllowedOrigins ?? (process.env.ALLOWED_ORIGINS ?? "").split(",");
     const bodyLimit = options.bodyLimit ?? "10mb";
@@ -192,7 +217,7 @@ export class NewbieFactory {
         const swagger = (options.swagger ?? {}) as NewbieSwaggerOptions;
         const config = new DocumentBuilder()
           .setTitle(swagger.title ?? "API Document")
-          .setDescription(swagger.description ?? "It's good to see you guys 🥤")
+          .setDescription(swagger.description ?? "Welcome to the API documentation")
           .setVersion(swagger.version ?? "1.0")
           .addCookieAuth("refreshToken")
           .addBearerAuth()

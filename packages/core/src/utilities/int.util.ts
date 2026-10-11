@@ -1,2 +1,5 @@
-export const int = (val: string | undefined, num: number): number =>
-  val ? (isNaN(parseInt(val)) ? num : parseInt(val)) : num;
+export const int = (val: string | undefined, num: number): number => {
+  if (!val) return num;
+  const parsed = parseInt(val, 10);
+  return isNaN(parsed) ? num : parsed;
+};
