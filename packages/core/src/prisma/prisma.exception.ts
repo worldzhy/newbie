@@ -29,7 +29,7 @@ const prismaExceptions = {
   P2007: "A data validation error occurred. Please review the data and ensure it adheres to validation rules.",
   P2008: "Failed to parse the query. There's an issue with the provided query syntax.",
   P2009: "Failed to validate the query. The query violates validation rules.",
-  P2010: "The raw query failed to execute. Error detail",
+  P2010: "The raw query failed to execute",
   P2011: "A null constraint violation occurred on the specified constraint.",
   P2012: "A required value is missing at the specified path. Please provide the required value.",
   P2013: "The required argument is missing for the specified field on the specified object.",
@@ -109,5 +109,9 @@ const prismaExceptions = {
 };
 
 export function getPrismaExceptionMessage(errorCode: string | undefined, fallbackMsg: string): string {
-  return `${errorCode}: ${prismaExceptions[errorCode || ""] || fallbackMsg}`;
+  const tableMessage = prismaExceptions[errorCode || ""];
+  if (!tableMessage) return `${errorCode}: ${fallbackMsg}`;
+  // P2010 (raw query failure) carries the real database error in fallbackMsg.
+  if (errorCode === "P2010") return `${errorCode}: ${tableMessage}: ${fallbackMsg}`;
+  return `${errorCode}: ${tableMessage}`;
 }

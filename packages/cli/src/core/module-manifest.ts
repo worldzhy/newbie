@@ -8,6 +8,28 @@
 
 import { NestAsset } from "./assets";
 
+/**
+ * Cross-deployment topological role of a module.
+ *
+ * Absent for ordinary modules whose capabilities serve the host application
+ * itself. "collector" modules receive information from remote deployments
+ * through token-only ingestion endpoints and model those remote endpoints as
+ * installations (heartbeat / backend-monitor / web-monitor / module-hub /
+ * health): the other half of the protocol lives in a separately distributed
+ * SDK or CLI. The name follows the industry-standard agent/probe -> collector
+ * split (OpenTelemetry Collector etc.); observation happens on both sides of
+ * the protocol, so "observer" cannot distinguish the central receiving end.
+ * This axis is orthogonal to `layer`, which constrains in-process dependency
+ * direction.
+ */
+export type ModuleRole = "collector";
+
+export const MODULE_ROLES: readonly ModuleRole[] = ["collector"];
+
+export function isModuleRole(value: string): value is ModuleRole {
+  return (MODULE_ROLES as readonly string[]).includes(value);
+}
+
 export interface ModuleWiring {
   /** Module file without extension, e.g. "account.module". */
   file: string;
@@ -19,6 +41,11 @@ export interface ModuleManifest {
   key: string;
   /** Architectural layer of the module; absent for framework-special modules. */
   layer?: string;
+  /**
+   * Cross-deployment topological role; absent for ordinary modules that only
+   * serve the host application. Only declared values are permitted.
+   */
+  role?: ModuleRole;
   module: ModuleWiring;
   /** Project-relative path of the Prisma model fragment; absent = no models. */
   schema?: string;
@@ -33,6 +60,29 @@ export interface ModuleManifest {
    */
   moduleDependencies?: string[];
   assets?: NestAsset[];
+  /**
+   * CLI namespace this module exposes. When declared, the CLI dynamically
+   * loads `<modulesDir>/<key>/cli/index.ts` at startup and registers the
+   * exported `register(program)` hook under this namespace.
+   */
+  cli?: string;
+  /**
+   * Package name of the companion SDK that ships with this module. The
+   * version is declared in the consumer project's `dependencies` (or the
+   * module's own `dependencies` field); this attribute only records the
+   * pairing so tooling can locate the SDK without scanning package names.
+   */
+  sdk?: string;
+  /**
+   * Deprecation notice. When declared (non-empty string), the module is at
+   * end-of-life: `newbie config` hides it from the interactive picker and
+   * rejects `--add`, `newbie install` refuses to install it into a project
+   * that does not already have it, and `newbie doctor` emits a notice for
+   * hosts where it is still enabled. Already-installed hosts keep working —
+   * deprecation gates new adoption, not existing deployments. The string is
+   * the reason / successor guidance surfaced in those messages.
+   */
+  deprecated?: string;
   [key: string]: unknown;
 }
 
@@ -45,6 +95,29 @@ function normalizeModuleDependencies(raw: unknown, key: string): string[] | unde
     );
   }
   return [...new Set(raw.map((item) => (item as string).trim()))];
+}
+
+/**
+ * Validate that an optional manifest field is either absent or a non-empty
+ * string. Used for fields like `cli` and `sdk` whose presence triggers runtime
+ * behaviour (dynamic CLI loading, SDK pairing), so a malformed value must fail
+ * loudly instead of silently being dropped.
+ */
+function assertOptionalString(value: unknown, field: string, key: string): void {
+  if (value === undefined) return;
+  if (typeof value !== "string" || value.length === 0) {
+    throw new Error(`Invalid newbie.module.json for '${key}': '${field}' must be a non-empty string when declared.`);
+  }
+}
+
+/** Validate that the optional `role` field, when declared, is a known role. */
+function assertOptionalRole(value: unknown, key: string): void {
+  if (value === undefined) return;
+  if (typeof value !== "string" || !isModuleRole(value)) {
+    throw new Error(
+      `Invalid newbie.module.json for '${key}': 'role' must be one of: ${MODULE_ROLES.join(", ")} when declared.`,
+    );
+  }
 }
 
 export function normalizeModuleManifest(raw: unknown, expectedKey?: string): ModuleManifest {
@@ -74,6 +147,10 @@ export function normalizeModuleManifest(raw: unknown, expectedKey?: string): Mod
   }
 
   const moduleDependencies = normalizeModuleDependencies(data.moduleDependencies, data.key);
+  assertOptionalString(data.cli, "cli", data.key);
+  assertOptionalString(data.sdk, "sdk", data.key);
+  assertOptionalString(data.deprecated, "deprecated", data.key);
+  assertOptionalRole(data.role, data.key);
   const manifest: ModuleManifest = {
     ...(data as object),
     key: data.key,

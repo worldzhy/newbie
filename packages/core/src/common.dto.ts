@@ -48,7 +48,7 @@ export class CommonListRequestDto {
   page: number;
 }
 
-export class CommonListResponseDto {
+export class CommonListResponseDto<T = any> {
   @ApiProperty({
     type: CommonPagination,
     description: "Pagination information for the response",
@@ -60,7 +60,7 @@ export class CommonListResponseDto {
     isArray: true,
     description: "List of records in the current page",
   })
-  records: any[];
+  records: T[];
 }
 
 export class CommonGetByStringIdRequestDto {

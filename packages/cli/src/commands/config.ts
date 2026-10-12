@@ -4,7 +4,7 @@ import { cyan, green } from "colorette";
 import { describeMissingDependencies, expandRegistryClosure } from "../assemble/module-graph";
 import { directDependents, expandModuleClosure, findRemovalBlocks } from "../core/module-closure";
 import { moduleKeys, withModuleKeys } from "../core/modules-state";
-import { listRegistryKeys } from "../lib/registry";
+import { deprecatedNoticesOf, listRegistryModules } from "../lib/registry";
 import { writeModulesState } from "../lib/modules-state";
 import { CliError } from "../lib/errors";
 
@@ -39,13 +39,16 @@ export async function runConfig(options: ConfigOptions): Promise<void> {
   });
   const { cwd, sink } = ctx;
 
-  const known = await listRegistryKeys(ctx.registry.root);
+  const registryModules = await listRegistryModules(ctx.registry.root);
+  const known = registryModules.map((entry) => entry.key);
+  const deprecatedNotices = deprecatedNoticesOf(registryModules);
 
   if (options.list) {
     console.info(green("enabled modules:"));
     for (const record of ctx.state.modules) {
       const version = record.version ?? (record.sourceCommit ? record.sourceCommit.slice(0, 7) : "(not installed)");
-      console.info(`  - ${record.key} (${version})`);
+      const deprecated = deprecatedNotices.get(record.key);
+      console.info(`  - ${record.key} (${version})${deprecated ? " [deprecated]" : ""}`);
     }
     return;
   }
@@ -56,6 +59,12 @@ export async function runConfig(options: ConfigOptions): Promise<void> {
   if (addNames.length > 0 || removeNames.length > 0) {
     assertKnown(addNames, known);
     assertKnown(removeNames, known);
+    for (const name of addNames) {
+      const reason = deprecatedNotices.get(name);
+      if (reason) {
+        throw new CliError(`Cannot add deprecated module '${name}': ${reason}`);
+      }
+    }
 
     const current = moduleKeys(ctx.state);
     // Traverse the graph including modules marked for removal, so removal
@@ -93,16 +102,23 @@ export async function runConfig(options: ConfigOptions): Promise<void> {
   // Interactive: edit modules.json only (no assembly).
   const current = moduleKeys(ctx.state).filter((key) => known.includes(key));
 
-  const chosen = await checkbox({
-    message: "Config modules:",
-    choices: known.map((name) => {
-      const checked = current.includes(name);
+  // Deprecated modules stay hidden from the picker so new adoption is
+  // impossible; ones already enabled remain listed (flagged) so they can be
+  // unchecked and removed.
+  const choices = registryModules
+    .filter((entry) => !deprecatedNotices.has(entry.key) || current.includes(entry.key))
+    .map((entry) => {
+      const checked = current.includes(entry.key);
       return {
-        value: name,
-        name: `${name}${checked ? " (enabled)" : ""}`,
+        value: entry.key,
+        name: `${entry.key}${checked ? (deprecatedNotices.has(entry.key) ? " (enabled, deprecated)" : " (enabled)") : ""}`,
         checked,
       };
-    }),
+    });
+
+  const chosen = await checkbox({
+    message: "Config modules:",
+    choices,
     pageSize: 100,
     loop: true,
   });

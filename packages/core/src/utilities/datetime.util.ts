@@ -28,8 +28,9 @@ export function dateMinusMinutes(date: Date, minutes: number): Date {
 }
 
 export function datePlusYears(date: Date, years: number): Date {
-  const year = date.getFullYear() + years;
-  return new Date(date.setFullYear(year));
+  const copy = new Date(date);
+  copy.setFullYear(copy.getFullYear() + years);
+  return copy;
 }
 
 /**
@@ -37,9 +38,8 @@ export function datePlusYears(date: Date, years: number): Date {
  */
 export function datePlusYearsForString(dateStr: string, years: number): string {
   const date = new Date(dateStr);
-  const year = date.getFullYear() + years;
-  const newDate = new Date(date.setFullYear(year));
-  return newDate.toISOString().split("T")[0];
+  date.setFullYear(date.getFullYear() + years);
+  return date.toISOString().split("T")[0];
 }
 
 // !>>> Get date
@@ -170,11 +170,11 @@ export function splitDateTime(
   const arrayDate = arrayDateTime[0].split("/");
   const arrayTime = arrayDateTime[1].split(":");
 
-  const year = parseInt(arrayDate[2]);
-  const month = parseInt(arrayDate[1]);
-  const dayOfMonth = parseInt(arrayDate[0]);
-  const hour = parseInt(arrayTime[0]);
-  const minute = parseInt(arrayTime[1]);
+  const year = parseInt(arrayDate[2], 10);
+  const month = parseInt(arrayDate[1], 10);
+  const dayOfMonth = parseInt(arrayDate[0], 10);
+  const hour = parseInt(arrayTime[0], 10);
+  const minute = parseInt(arrayTime[1], 10);
   return {
     year,
     month,

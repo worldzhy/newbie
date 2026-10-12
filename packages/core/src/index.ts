@@ -1,16 +1,9 @@
 /**
  * @devbie/newbie public entry.
- *
- * Note: `pipes/errors.constants` is intentionally NOT re-exported here because
- * it shares symbol names with `exceptions/errors.constants` (a pre-existing
- * duplication in the framework). Both files remain available via subpaths:
- *   @devbie/newbie/pipes/errors.constants
- *   @devbie/newbie/exceptions/errors.constants
  */
 
-// Published package version, read at runtime (package.json sits one level
-// above both src/ during development and dist/ in the published tarball).
-export const VERSION = (require("../package.json") as { version: string }).version;
+// Published package version (single source of truth in ./version.ts).
+export { VERSION } from "./version";
 
 // Application bootstrap
 export * from "./newbie-factory";
@@ -43,14 +36,15 @@ export * from "./interceptors/http-response.interceptor";
 export * from "./middlewares/http.middleware";
 export * from "./middlewares/raw-body.middleware";
 
-// Built-in backend monitor probe (disabled unless forRoot({enabled:true}))
-export * from "./monitoring/backend-monitor.module";
-export * from "./monitoring/backend-monitor.types";
-export * from "./monitoring/backend-monitor.reporter";
+// Built-in backend monitor probe. The implementation lives in the standalone
+// @devbie/backend-monitor-sdk (zero-dependency core + Nest adapter under
+// /nest); re-exported here so `@devbie/newbie` import paths keep working.
+export * from "@devbie/backend-monitor-sdk";
+export * from "@devbie/backend-monitor-sdk/nest";
 
 // Built-in module-hub reporter (env-gated; no-op without MODULE_HUB_*)
-export * from "./monitoring/module-hub.reporter";
-export * from "./monitoring/module-hub.snapshot";
+export * from "./module-hub/reporter";
+export * from "./module-hub/snapshot";
 
 // Pipes (their local errors.constants is subpath-only, see note above)
 export * from "./pipes/cursor-slug.pipe";

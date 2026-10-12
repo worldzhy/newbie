@@ -61,7 +61,7 @@ describe("startHeartbeat", () => {
     cleanup();
     const spy = mockFetch(async () => new Response(null, { status: 204 }));
     const handle = startHeartbeat({
-      endpoint: "http://localhost:3000/",
+      endpoint: "http://localhost:3000/heartbeat/ping",
       token: "secret-token",
       intervalMs: 60_000,
     });

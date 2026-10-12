@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, it } from "node:test";
 
-import { startModuleHubReporting } from "../src/monitoring/module-hub.reporter";
+import { startModuleHubReporting } from "../src/module-hub/reporter";
 
 const GLOBAL_KEY = Symbol.for("@devbie/newbie:module-hub-reporter");
 
@@ -84,7 +84,7 @@ describe("startModuleHubReporting", () => {
 
     const spy = mockFetch(async () => new Response(JSON.stringify({ reportIntervalSeconds: 60 }), { status: 200 }));
     const handle = startModuleHubReporting({
-      endpoint: "http://localhost:3000/",
+      endpoint: "http://localhost:3000/module-hub/report",
       token: "secret-token",
       projectRoot: root,
     });

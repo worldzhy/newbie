@@ -48,7 +48,7 @@ const ErrorInstanceReport = function (error: StackTrace, api: string): void {
 };
 
 function Performance(options: InitOptions): void {
-  if (!options.appId || !options.api) throw new Error("appId or api is not defined");
+  if (!options.appId || !options.api || !options.token) throw new Error("appId, api or token is not defined");
   const filterUrlsDefault = ["/api/v1/report/web"];
   const opt: PerformanceOptions = {
     outTime: 300,
@@ -553,7 +553,7 @@ function Performance(options: InitOptions): void {
   }
 
   function getBaseData(type: ReportType, time?: number) {
-    const { appId } = opt;
+    const { appId, token } = opt;
     const markuser = markUser(type);
     if (conf.markPageUrl !== location.href) {
       conf.markPageUrl = location.href;
@@ -561,6 +561,7 @@ function Performance(options: InitOptions): void {
     }
     const result = {
       appId,
+      token,
       time: time || new Date().getTime(),
       markUser: markuser.markUser,
       markPage: conf.markPage,

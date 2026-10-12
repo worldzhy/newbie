@@ -30,15 +30,15 @@ export function registerGracefulShutdown(app: INestApplication, server: http.Ser
     console.log(`[shutdown] Received shutdown signal, draining for up to ${timeoutMs}ms...`);
 
     // Idle keep-alive sockets carry no in-flight request and can be dropped now.
-    server.closeIdleConnections?.();
+    server.closeIdleConnections();
 
     // Hard cap: destroy still-busy sockets (long-running/streaming requests).
     const forceTimer = setTimeout(() => {
       console.warn("[shutdown] Grace period exceeded, forcing all connections closed.");
-      server.closeAllConnections?.();
+      server.closeAllConnections();
     }, timeoutMs);
     // Do not let the timer itself keep the event loop alive.
-    forceTimer.unref?.();
+    forceTimer.unref();
 
     // app.close() runs module destroy hooks and then closes the HTTP server.
     app

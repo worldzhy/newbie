@@ -15,6 +15,13 @@ import { collectStatus, StatusReport } from "./status";
 import { GlobalOptions } from "./shared";
 import { runUpdate } from "./update";
 
+// v2-only command. The hub v1 surface is POST /module-hub/report; there is
+// no /module-hub/agent/poll route yet, so polling fails against v1 hubs.
+// Env semantic: since reporter SDKs 1.1.0 (@devbie/newbie 1.2.0),
+// MODULE_HUB_ENDPOINT is the FULL report URL (…/module-hub/report), not a
+// host base. When reviving this for hub v2, do not append a path to it —
+// derive the poll URL, e.g.
+// new URL("../agent/poll", endpoint) resolves to …/module-hub/agent/poll.
 const ENDPOINT_ENV = "MODULE_HUB_ENDPOINT";
 const TOKEN_ENV = "MODULE_HUB_TOKEN";
 const DEFAULT_POLL_INTERVAL_SECONDS = 60;
@@ -59,6 +66,8 @@ function sleep(ms: number): Promise<void> {
 }
 
 async function postPoll(endpoint: string, token: string, body: Record<string, unknown>): Promise<HubPollResponse> {
+  // TODO(v2): base-URL concatenation from before the 1.1.0 full-URL contract;
+  // switch to new URL("../agent/poll", endpoint) when the route ships.
   const url = `${endpoint}/module-hub/agent/poll`;
   let response: Response;
   try {

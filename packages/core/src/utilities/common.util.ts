@@ -1,47 +1,8 @@
-import bcrypt from "bcrypt";
-
-export function generateRandomNumber(max: number): number {
-  return Math.ceil(Math.random() * max);
-}
-
-export function generateRandomNumbers(length = 6): string {
-  let result = "";
-  const characters = "0123456789";
-  const charactersLength = characters.length;
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-}
-
-export function generateRandomLetters(length = 6): string {
-  let result = "";
-  const characters = "abcdefghijklmnopqrstuvwxyz";
-  const charactersLength = characters.length;
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-}
-
-export function generateRandomCode(length = 6): string {
-  let result = "";
-  const characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const charactersLength = characters.length;
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-}
-
-export async function generateHash(password: string | null): Promise<string> {
-  const salt = await bcrypt.genSalt();
-  return await bcrypt.hash(password, salt);
-}
-
-export async function compareHash(password: string | null, hash: string | null): Promise<boolean> {
-  return await bcrypt.compare(password, hash);
-}
+// Random generators and password hashing were moved to their own modules;
+// re-exported here so existing `import { ... } from "./common.util"` paths
+// (and the `@devbie/newbie` barrel) keep working without change.
+export { generateRandomNumber, generateRandomNumbers, generateRandomLetters, generateRandomCode } from "./random.util";
+export { generateHash, compareHash } from "./crypto.util";
 
 /**
  * 1=>A, 2=>B, 26=>Z, 52=>AZ
@@ -84,7 +45,7 @@ export function extractNumbersFromString(str: string) {
   const matches = str.match(/\d+/g);
   if (matches) {
     for (let i = 0; i < matches.length; i++) {
-      numbers.push(parseInt(matches[i]));
+      numbers.push(parseInt(matches[i], 10));
     }
   }
 

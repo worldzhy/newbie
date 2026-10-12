@@ -1,6 +1,7 @@
 export interface PerformanceOptions {
   appId: string;
   api: string;
+  token: string;
   outTime: number;
   filterUrls: string[];
   isPage: boolean;
@@ -21,6 +22,8 @@ export interface PerformanceOptions {
 export interface InitOptions {
   appId: string;
   api: string;
+  /** Secret report token (distinct from the public appId partition key). */
+  token: string;
   filterUrls?: string[];
   isPage?: boolean;
   isAjax?: boolean;

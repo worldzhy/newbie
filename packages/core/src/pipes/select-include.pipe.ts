@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, PipeTransform } from "@nestjs/common";
-import { SELECT_INCLUDE_PIPE_FORMAT } from "./errors.constants";
-var dot = require("dot-object");
+import dot from "dot-object";
+import { SELECT_INCLUDE_PIPE_FORMAT } from "../exceptions/errors.constants";
 
 /**
  * Convert a string like "id,createdAt,user.name,user.id"

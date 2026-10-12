@@ -2,14 +2,16 @@
 import { Command } from "commander";
 import { red } from "colorette";
 
+// Published package version (package.json sits one level above both src/
+// during development and dist/ in the published tarball).
+import pkg from "../package.json";
+
 import { runAgent } from "./commands/agent";
 import { runApply } from "./commands/apply";
 import { runConfig } from "./commands/config";
 import { runCreate } from "./commands/create";
 import { runDevLint } from "./commands/dev/lint";
 import { runDoctor } from "./commands/doctor";
-import { runEnvPull, runEnvPush } from "./commands/env";
-import { runEnvSetup } from "./commands/env-setup";
 import { runInstall } from "./commands/install";
 import { runStatus } from "./commands/status";
 import { parseKeysFlag, runUpdate } from "./commands/update";
@@ -17,11 +19,10 @@ import { runUpdateTemplate } from "./commands/update-template";
 import { runWatch } from "./commands/watch";
 import { runInteractive } from "./commands/default";
 import { GlobalOptions } from "./commands/shared";
-import { CliError, isUserCancellation } from "./lib/errors";
+import { registerModuleCommands } from "./lib/module-cli";
+import { run } from "./lib/cli-runner";
 
-// Published package version, read at runtime (package.json sits one level
-// above both src/ during development and dist/ in the published tarball).
-export const VERSION = (require("../package.json") as { version: string }).version;
+export const VERSION: string = pkg.version;
 
 const program = new Command();
 
@@ -44,24 +45,29 @@ function collectOptions(command: Command): GlobalOptions {
   };
 }
 
-async function run(action: () => Promise<void>): Promise<void> {
-  try {
-    await action();
-  } catch (error) {
-    if (isUserCancellation(error)) {
-      console.info("\nOperation cancelled\n");
-      process.exit(0);
+/**
+ * Inspect argv for the global `--cwd`/`-C` flag before commander parses the
+ * full option set. The module-CLI loader needs the project root to discover
+ * manifests, and it runs before `program.parseAsync`.
+ */
+function findCwdInArgv(): string {
+  const argv = process.argv;
+  for (let i = 2; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg === "--cwd" || arg === "-C") {
+      const next = argv[i + 1];
+      if (next && !next.startsWith("-")) return next;
+    } else if (arg.startsWith("--cwd=")) {
+      return arg.slice(6);
+    } else if (arg.startsWith("-C") && arg.length > 2) {
+      return arg.slice(2);
+    } else if (!arg.startsWith("-")) {
+      // First positional is the subcommand name; subsequent --cwd values
+      // would belong to that subcommand, so we stop scanning here.
+      break;
     }
-    if (error instanceof CliError) {
-      console.error(red(`\n${error.message}\n`));
-      process.exit(1);
-    }
-    console.error(red(`\n${(error as Error).message}\n`));
-    if (process.env.NEWBIE_DEBUG && (error as Error).stack) {
-      console.error((error as Error).stack);
-    }
-    process.exit(1);
   }
+  return process.cwd();
 }
 
 program
@@ -187,7 +193,7 @@ program
 program
   .command("agent")
   .description(
-    "Run the module-hub agent: poll the hub with `newbie status`, execute dispatched changes (apply/update), report receipts",
+    "Run the module-hub agent: poll the hub with `newbie status`, execute dispatched changes (apply/update), report receipts (requires hub v2; v1 hubs expose no agent-poll route)",
   )
   .option("--once", "single pass: drain pending changes, deliver receipts, then exit (CI/cron friendly)", false)
   .action(function (this: Command) {
@@ -220,56 +226,6 @@ dev
     return run(() => runDevLint(collectOptions(this)));
   });
 
-const env = program.command("env").description("Sync .env with AWS Secrets Manager");
-
-env
-  .command("pull")
-  .description("Pull environment variables from AWS Secrets Manager into .env")
-  .option("-e, --environment <name>", "environment name from the env-tool config (skips the prompt)")
-  .option("-y, --yes", "write .env without prompting (conflicting local values are kept)", false)
-  .option("--strict", "abort without writing .env when any secret fails to pull (for CI)", false)
-  .action(function (this: Command) {
-    const flags = this.opts();
-    return run(() =>
-      runEnvPull({
-        ...collectOptions(this),
-        environment: flags.environment as string | undefined,
-        yes: Boolean(flags.yes),
-        strict: Boolean(flags.strict),
-      }),
-    );
-  });
-
-env
-  .command("push")
-  .description("Push environment variables from .env to AWS Secrets Manager")
-  .option("-e, --environment <name>", "environment name from the env-tool config (skips the prompt)")
-  .option("-y, --yes", "create/update secrets without prompting", false)
-  .action(function (this: Command) {
-    const flags = this.opts();
-    return run(() =>
-      runEnvPush({
-        ...collectOptions(this),
-        environment: flags.environment as string | undefined,
-        yes: Boolean(flags.yes),
-      }),
-    );
-  });
-
-env
-  .command("setup")
-  .description("Provision the per-account Secrets Manager rotation Lambda and print its ARN")
-  .option("-e, --environment <name>", "environment name from the env-tool config (skips the prompt)")
-  .action(function (this: Command) {
-    const flags = this.opts();
-    return run(() =>
-      runEnvSetup({
-        ...collectOptions(this),
-        environment: flags.environment as string | undefined,
-      }),
-    );
-  });
-
 program
   .command("interactive", { isDefault: true, hidden: true })
   .description("Interactive module enable/disable flow (default)")
@@ -277,4 +233,19 @@ program
     return run(() => runInteractive(collectOptions(this)));
   });
 
-program.parseAsync(process.argv);
+void (async () => {
+  try {
+    await registerModuleCommands(program, {
+      cwd: findCwdInArgv(),
+      dryRun: false,
+      skipPrismaGenerate: false,
+    });
+  } catch (error) {
+    console.error(red(`\nFailed to load module CLIs: ${(error as Error).message}\n`));
+    if (process.env.NEWBIE_DEBUG && (error as Error).stack) {
+      console.error((error as Error).stack);
+    }
+    process.exit(1);
+  }
+  await program.parseAsync(process.argv);
+})();

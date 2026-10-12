@@ -1,7 +1,7 @@
 /**
  * Pure operations on the project-root `modules.json` install manifest.
  *
- * Shape (Stage 3b registry-copy model):
+ * Shape (registry-copy model):
  * {
  *   "registry": { "url": "...", "sourceCommit": "<sha>" },
  *   "modules": [

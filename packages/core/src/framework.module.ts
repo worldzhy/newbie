@@ -2,7 +2,7 @@ import { DynamicModule, Global, Logger, MiddlewareConsumer } from "@nestjs/commo
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
 import { HttpModule } from "@nestjs/axios";
 import { ConfigModule } from "@nestjs/config";
-import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
+import { ThrottlerGuard, ThrottlerModule, type ThrottlerModuleOptions } from "@nestjs/throttler";
 import FrameworkConfiguration from "./framework.config";
 import { PrismaModule, PrismaModuleOptions } from "./prisma/prisma.module";
 import { AllExceptionFilter } from "./exception-filters/all.exception-filter";
@@ -16,6 +16,11 @@ import { HttpMiddleware } from "./middlewares/http.middleware";
 export interface FrameworkModuleOptions {
   /** Supplied to PrismaModule.forRoot — the project's generated PrismaClient constructor. */
   prisma: PrismaModuleOptions;
+  /**
+   * Passed through to ThrottlerModule.forRoot.
+   * Defaults to effectively-off (10000 requests / 1000ms per endpoint).
+   */
+  throttler?: ThrottlerModuleOptions;
 }
 
 /**
@@ -31,10 +36,7 @@ export class FrameworkModule {
       module: FrameworkModule,
       imports: [
         ConfigModule.forRoot({ load: [FrameworkConfiguration], isGlobal: true }),
-        ThrottlerModule.forRoot({
-          // Maximum of 10000 requests / 1000 milliseconds for each endpoint.
-          throttlers: [{ limit: 10000, ttl: 1000 }],
-        }),
+        ThrottlerModule.forRoot(options.throttler ?? { throttlers: [{ limit: 10000, ttl: 1000 }] }),
         HttpModule,
         PrismaModule.forRoot(options.prisma),
       ],
@@ -43,9 +45,9 @@ export class FrameworkModule {
         { provide: APP_GUARD, useClass: ThrottlerGuard }, // 1st priority guard.
         // Filters
         { provide: APP_FILTER, useClass: AllExceptionFilter }, // 5th priority for all exceptions.
-        { provide: APP_FILTER, useClass: HttpExceptionFilter }, // 4nd priority for exceptions thrown by controllers.
-        { provide: APP_FILTER, useClass: NewbieExceptionFilter }, // 3nd priority for exceptions thrown by controllers.
-        { provide: APP_FILTER, useClass: PrismaExceptionFilter }, // 2rd priority for exceptions thrown by services.
+        { provide: APP_FILTER, useClass: HttpExceptionFilter }, // 4th priority for exceptions thrown by controllers.
+        { provide: APP_FILTER, useClass: NewbieExceptionFilter }, // 3rd priority for exceptions thrown by controllers.
+        { provide: APP_FILTER, useClass: PrismaExceptionFilter }, // 2nd priority for exceptions thrown by services.
         { provide: APP_FILTER, useClass: ThrottlerExceptionFilter }, // 1st priority for exceptions thrown by throttler (rate limit).
         { provide: APP_INTERCEPTOR, useClass: HttpResponseInterceptor },
         Logger,

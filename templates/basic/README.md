@@ -49,7 +49,7 @@ The template ships heartbeat wiring built on `@devbie/heartbeat-sdk` directly in
 
 ```bash
 HEARTBEAT_TOKEN=<heartbeat installation token>
-HEARTBEAT_ENDPOINT=https://<host>
+HEARTBEAT_ENDPOINT=https://<host>/heartbeat/ping
 ```
 
 The token is globally unique, so the server resolves the installation from it alone — no application id is needed. With the variables unset the wiring is a silent no-op, so projects without heartbeat monitoring need no extra setup.

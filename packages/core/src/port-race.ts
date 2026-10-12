@@ -2,7 +2,10 @@ import { execSync } from "node:child_process";
 import fs from "node:fs";
 import http from "node:http";
 import net from "node:net";
+import { Logger } from "@nestjs/common";
 import { NestExpressApplication } from "@nestjs/platform-express";
+
+const logger = new Logger("PortRace");
 
 /**
  * Port-race recovery for `nest start --watch` under Docker bind mounts.
@@ -38,7 +41,7 @@ const handleSignal = () => {
   // Second signal: force exit without cleanup.
   if (signalCount >= 2) process.exit(1);
   // Drop active connections and stop listening so the port is released at once.
-  httpServer?.closeAllConnections?.();
+  httpServer?.closeAllConnections();
   httpServer?.close();
   process.exit(0);
 };
@@ -63,7 +66,7 @@ export async function listenWithPortRaceRecovery(
   retryDelayMs = 200,
 ): Promise<http.Server> {
   registerSignalHandlersOnce();
-  console.log(`[port-race] Probing port ${port} availability before listen...`);
+  logger.log(`Probing port ${port} availability before listen...`);
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     if (await isPortAvailable(port, host)) {
@@ -74,19 +77,15 @@ export async function listenWithPortRaceRecovery(
         const server = await app.listen(port, host);
         httpServer = server;
         return server;
-      } catch (err: any) {
-        if (err?.code !== "EADDRINUSE") throw err;
-        console.warn(
-          `[port-race] app.listen() lost the port race on attempt ${attempt}, another instance bound first.`,
-        );
+      } catch (err) {
+        if ((err as NodeJS.ErrnoException)?.code !== "EADDRINUSE") throw err;
+        logger.warn(`app.listen() lost the port race on attempt ${attempt}, another instance bound first.`);
         // A sibling just won the bind — stand down immediately instead of
         // retrying for several seconds against a healthy instance.
         standDownIfSiblingWon(port);
       }
     } else {
-      console.warn(
-        `[port-race] Port ${port} is still in use (probe ${attempt}/${maxRetries}), waiting ${retryDelayMs}ms...`,
-      );
+      logger.warn(`Port ${port} is still in use (probe ${attempt}/${maxRetries}), waiting ${retryDelayMs}ms...`);
       // Only attempt eviction once: only previous-generation holders are
       // killable, so a same-generation sibling left alive is here to stay.
       if (attempt === 1) {
@@ -102,7 +101,7 @@ export async function listenWithPortRaceRecovery(
 
   // Retries exhausted without an identifiable sibling — share the port via
   // SO_REUSEPORT (last resort against an unkillable stale holder).
-  console.warn(`[port-race] Port ${port} still occupied after ${maxRetries} retries; binding with SO_REUSEPORT.`);
+  logger.warn(`Port ${port} still occupied after ${maxRetries} retries; binding with SO_REUSEPORT.`);
   const server = await listenWithReusePort(app, port, host);
   httpServer = server;
   return server;
@@ -116,9 +115,7 @@ export async function listenWithPortRaceRecovery(
 function standDownIfSiblingWon(port: number): void {
   const holders = findPortHolderPids(port).filter((pid) => pid !== process.pid);
   if (holders.length > 0 && holders.every((pid) => !isPreviousGeneration(pid))) {
-    console.log(
-      `[port-race] A sibling instance [${holders.join(", ")}] is already serving port ${port}; standing down.`,
-    );
+    logger.log(`A sibling instance [${holders.join(", ")}] is already serving port ${port}; standing down.`);
     process.exit(0);
   }
 }
@@ -211,10 +208,10 @@ function killStalePortHolders(port: number): void {
   for (const pid of findPortHolderPids(port)) {
     if (pid === process.pid) continue;
     if (!isPreviousGeneration(pid)) {
-      console.log(`[port-race] Skipping non-stale holder ${pid} of port ${port} (same generation).`);
+      logger.log(`Skipping non-stale holder ${pid} of port ${port} (same generation).`);
       continue;
     }
-    console.log(`[port-race] Killing stale process ${pid} holding port ${port}.`);
+    logger.log(`Killing stale process ${pid} holding port ${port}.`);
     try {
       process.kill(pid, "SIGKILL");
     } catch {

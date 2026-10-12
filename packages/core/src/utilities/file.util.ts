@@ -5,14 +5,14 @@ export function readFilesInFolder(folderPath: string) {
   const files: string[] = [];
   const items = fs.readdirSync(folderPath);
 
-  items.forEach((item: any) => {
+  items.forEach((item) => {
     const filePath = path.join(folderPath, item);
     const stats = fs.statSync(filePath);
 
     if (stats.isFile()) {
       files.push(filePath);
     } else if (stats.isDirectory()) {
-      readFilesInFolder(filePath);
+      files.push(...readFilesInFolder(filePath));
     }
   });
 

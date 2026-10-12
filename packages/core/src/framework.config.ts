@@ -2,7 +2,6 @@ import { registerAs } from "@nestjs/config";
 import { int } from "./utilities/int.util";
 
 export default registerAs("framework", () => ({
-  nodeFramework: "express", // support 'express' and 'fastify'.
   environment: process.env.ENVIRONMENT ?? "development", // support 'production' and 'development'.
   server: {
     port: int(process.env.PORT, 3000),

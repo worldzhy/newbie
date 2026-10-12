@@ -66,8 +66,8 @@ npx @devbie/fewbie-cli add web-monitor-sdk
 ```
 
 Then add the scaffolded `<WebMonitor />` component to your root layout and
-configure `NEXT_PUBLIC_WEB_MONITOR_API` and `NEXT_PUBLIC_WEB_MONITOR_APP_ID`.
-The component is a no-op until both environment variables are present.
+configure `NEXT_PUBLIC_WEB_MONITOR_ENDPOINT`, `NEXT_PUBLIC_WEB_MONITOR_APP_ID` and `NEXT_PUBLIC_WEB_MONITOR_TOKEN`.
+The component is a no-op until all three environment variables are present.
 
 ## Init options
 

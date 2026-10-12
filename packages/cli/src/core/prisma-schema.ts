@@ -21,6 +21,28 @@ export function updateDatasourceSchemas(content: string, addedPaths: string[], r
   });
 }
 
+/**
+ * Reconcile the `schemas = [...]` array to exactly the desired module
+ * namespaces. Non-module entries (e.g. "application") are preserved; every
+ * entry starting with "module/" is replaced by the supplied set. This makes
+ * the datasource block convergent instead of diff-based, so orphan entries
+ * left by out-of-band module removal are dropped.
+ */
+export function reconcileDatasourceSchemas(content: string, moduleNamespaces: string[]): string {
+  return content.replace(DATASOURCE_SCHEMAS_RE, (_whole, prefix: string, arrayLiteral: string) => {
+    let current: string[] = [];
+    try {
+      current = JSON.parse(`{"val": ${arrayLiteral}}`).val as string[];
+    } catch {
+      throw new Error("[Error] Cannot parse schemas array in prisma/schema.prisma");
+    }
+
+    const nonModule = current.filter((entry) => !entry.startsWith("module/"));
+    const next = Array.from(new Set([...nonModule, ...moduleNamespaces]));
+    return `${prefix}${JSON.stringify(next).replace(/,/g, ", ")}`;
+  });
+}
+
 /** Namespace name used inside the datasource schemas array for a module key. */
 export function moduleSchemaNamespace(key: string): string {
   return `module/${key}`;

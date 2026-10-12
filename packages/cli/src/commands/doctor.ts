@@ -122,6 +122,11 @@ export async function runDoctor(options: GlobalOptions): Promise<void> {
       );
     }
 
+    // Deprecation: the module still works but must not spread to new hosts.
+    if (manifest.deprecated) {
+      notice(`${label}: deprecated — ${manifest.deprecated}`);
+    }
+
     // Content drift against the pristine registry tree at the pinned commit.
     if (registry && record?.sourceCommit) {
       const pristine = await snapshotPristineModule(registry, key, record.sourceCommit);
@@ -162,6 +167,19 @@ export async function runDoctor(options: GlobalOptions): Promise<void> {
       if (isRegistryModule) {
         notice(`Extra module directory '${dir}' not declared in ${MODULES_JSON}; run 'newbie install' to remove it.`);
       }
+    }
+  }
+
+  // [check 6] orphan prisma fragments whose module is no longer enabled.
+  const enabledKeySet = new Set(keys);
+  const modelFiles = await fs.readdir(path.resolve(cwd, PRISMA_SCHEMA_MODELS_DIR)).catch((): string[] => []);
+  for (const file of modelFiles) {
+    if (!file.endsWith(".prisma")) continue;
+    const orphanKey = file.slice(0, -".prisma".length);
+    if (!enabledKeySet.has(orphanKey)) {
+      error(
+        `Orphan prisma fragment '${PRISMA_SCHEMA_MODELS_DIR}/${file}' (module '${orphanKey}' not enabled); run 'newbie install' to remove it.`,
+      );
     }
   }
 

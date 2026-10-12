@@ -23,7 +23,7 @@ export const parseObjectLiteral = (objectLiteralString: string): [string, string
   let str = objectLiteralString.trim();
   if (str.charCodeAt(0) === 123) str = str.slice(1, -1);
   const result: [string, string | undefined][] = [];
-  let toks = str.match(token) as RegExpMatchArray;
+  let toks = str.match(token);
   if (!toks) return result;
   let key: string | undefined = undefined;
   let values: string[] = [];
@@ -50,9 +50,9 @@ export const parseObjectLiteral = (objectLiteralString: string): [string, string
     } else if (c === 47 && i && tok.length > 1) {
       const match = toks[i - 1].match(divisionLookBehind);
       if (match && !keywordRegexLookBehind[match[0]]) {
-        str = str.substr(str.indexOf(tok) + 1);
-        const result = str.match(token);
-        if (result) toks = result;
+        str = str.substring(str.indexOf(tok) + 1);
+        const reToked = str.match(token);
+        if (reToked) toks = reToked;
         toks.push(",");
         i = -1;
         tok = "/";
