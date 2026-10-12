@@ -64,11 +64,9 @@ function debounce<T extends (...args: never[]) => void>(fn: T, delay: number): (
  */
 async function moduleHasUncommittedChanges(registryRoot: string, key: string): Promise<boolean> {
   try {
-    const status = await execCapture(
-      "git",
-      ["status", "--porcelain", "--", path.join(REGISTRY_MODULES_DIR, key)],
-      { cwd: registryRoot },
-    );
+    const status = await execCapture("git", ["status", "--porcelain", "--", path.join(REGISTRY_MODULES_DIR, key)], {
+      cwd: registryRoot,
+    });
     return trim(status).length > 0;
   } catch {
     return false;

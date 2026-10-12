@@ -82,9 +82,7 @@ export async function assembleSchemaFiles(params: {
   }
 
   if (content) {
-    const enabledWithSchema = (await keysWithSchema(cwd, enabledKeys)).filter(
-      (entry) => entry.fragment !== null,
-    );
+    const enabledWithSchema = (await keysWithSchema(cwd, enabledKeys)).filter((entry) => entry.fragment !== null);
     const moduleNamespaces = enabledWithSchema.map((entry) => moduleSchemaNamespace(entry.key));
     const next = reconcileDatasourceSchemas(content, moduleNamespaces);
     if (next !== content) {

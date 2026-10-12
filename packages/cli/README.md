@@ -187,11 +187,11 @@ project. Example: the `aws-secrets-manager` module declares `"cli": "secrets"`
 and pairs with [`@devbie/aws-secrets-cli`](https://www.npmjs.com/package/@devbie/aws-secrets-cli),
 providing:
 
-| Command                        | Description                                                            |
-| ------------------------------ | ---------------------------------------------------------------------- |
-| `newbie secrets pull`          | Pull environment variables from AWS Secrets Manager into `.env`.       |
-| `newbie secrets push`          | Push environment variables from `.env` to AWS Secrets Manager.         |
-| `newbie secrets deploy-rotation` | Provision the per-account rotation Lambda and print its ARN.         |
+| Command                          | Description                                                      |
+| -------------------------------- | ---------------------------------------------------------------- |
+| `newbie secrets pull`            | Pull environment variables from AWS Secrets Manager into `.env`. |
+| `newbie secrets push`            | Push environment variables from `.env` to AWS Secrets Manager.   |
+| `newbie secrets deploy-rotation` | Provision the per-account rotation Lambda and print its ARN.     |
 
 Module CLI entries consume shared building blocks (error handling, env-file
 parsing, exec helpers, `GlobalOptions`) via the `@devbie/newbie-cli/lib`
@@ -201,21 +201,21 @@ export; they never import framework internals by relative path.
 
 Every registry module carries a `newbie.module.json` at its root:
 
-| Field                | Type            | Description                                                                                  |
-| -------------------- | --------------- | -------------------------------------------------------------------------------------------- |
-| `key`                | string          | Module key; must match the directory name.                                                   |
-| `layer`              | string          | Architectural layer (`domain` / `capability` / `foundation`); absent for framework-specials. |
-| `module.file`        | string          | NestJS module file without extension, e.g. `account.module`.                                 |
-| `module.className`   | string          | Exported NestJS module class name, e.g. `AccountModule`.                                     |
-| `schema`             | string          | Project-relative path of the Prisma model fragment; absent = no models.                      |
-| `config-service`     | object          | Config keys merged into the generated `modules.config.ts`.                                   |
-| `env`                | object          | Environment variables the module requires (doctor reports missing ones).                     |
-| `dependencies`       | object          | npm dependencies merged into the consuming project's `package.json`.                         |
-| `devDependencies`    | object          | npm devDependencies merged into the consuming project's `package.json`.                      |
-| `moduleDependencies` | string[]        | Registry module keys imported via `@modules/<key>`; installs expand to the transitive closure. |
-| `assets`             | object[]        | Extra NestJS assets (e.g. resolvers) wired into the generated module index.                  |
-| `cli`                | string          | Command namespace this module exposes (see "Module-provided commands").                      |
-| `sdk`                | string          | Package name of the companion SDK shipped alongside the module (pairing record for tooling). |
+| Field                | Type     | Description                                                                                    |
+| -------------------- | -------- | ---------------------------------------------------------------------------------------------- |
+| `key`                | string   | Module key; must match the directory name.                                                     |
+| `layer`              | string   | Architectural layer (`domain` / `capability` / `foundation`); absent for framework-specials.   |
+| `module.file`        | string   | NestJS module file without extension, e.g. `account.module`.                                   |
+| `module.className`   | string   | Exported NestJS module class name, e.g. `AccountModule`.                                       |
+| `schema`             | string   | Project-relative path of the Prisma model fragment; absent = no models.                        |
+| `config-service`     | object   | Config keys merged into the generated `modules.config.ts`.                                     |
+| `env`                | object   | Environment variables the module requires (doctor reports missing ones).                       |
+| `dependencies`       | object   | npm dependencies merged into the consuming project's `package.json`.                           |
+| `devDependencies`    | object   | npm devDependencies merged into the consuming project's `package.json`.                        |
+| `moduleDependencies` | string[] | Registry module keys imported via `@modules/<key>`; installs expand to the transitive closure. |
+| `assets`             | object[] | Extra NestJS assets (e.g. resolvers) wired into the generated module index.                    |
+| `cli`                | string   | Command namespace this module exposes (see "Module-provided commands").                        |
+| `sdk`                | string   | Package name of the companion SDK shipped alongside the module (pairing record for tooling).   |
 
 ## Global options
 

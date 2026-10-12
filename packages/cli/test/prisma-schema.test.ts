@@ -57,11 +57,7 @@ describe("updateDatasourceSchemas", () => {
 
 describe("reconcileDatasourceSchemas", () => {
   it("sets module entries to exactly the supplied namespaces", () => {
-    const withOrphans = updateDatasourceSchemas(
-      SCHEMA,
-      ["module/account", "module/llm-agent", "module/workflow"],
-      [],
-    );
+    const withOrphans = updateDatasourceSchemas(SCHEMA, ["module/account", "module/llm-agent", "module/workflow"], []);
     const next = reconcileDatasourceSchemas(withOrphans, ["module/account", "module/copilot"]);
     const schemas = readDatasourceSchemas(next);
     assert.deepEqual(schemas, ["application", "module/account", "module/copilot"]);

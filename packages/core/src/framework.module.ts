@@ -36,9 +36,7 @@ export class FrameworkModule {
       module: FrameworkModule,
       imports: [
         ConfigModule.forRoot({ load: [FrameworkConfiguration], isGlobal: true }),
-        ThrottlerModule.forRoot(
-          options.throttler ?? { throttlers: [{ limit: 10000, ttl: 1000 }] },
-        ),
+        ThrottlerModule.forRoot(options.throttler ?? { throttlers: [{ limit: 10000, ttl: 1000 }] }),
         HttpModule,
         PrismaModule.forRoot(options.prisma),
       ],

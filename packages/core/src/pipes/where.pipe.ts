@@ -23,12 +23,24 @@ export class WherePipe implements PipeTransform {
               ruleValue = new Date(inner).toISOString();
             else if (rawValue.startsWith("float(")) ruleValue = parseFloat(inner);
             else if (rawValue.startsWith("string(")) ruleValue = inner;
-            else if (rawValue.startsWith("boolean(") || rawValue.startsWith("bool("))
-              ruleValue = inner === "true";
+            else if (rawValue.startsWith("boolean(") || rawValue.startsWith("bool(")) ruleValue = inner === "true";
           }
         }
 
-        const operators = ["lt", "lte", "gt", "gte", "equals", "not", "contains", "startsWith", "endsWith", "every", "some", "none"];
+        const operators = [
+          "lt",
+          "lte",
+          "gt",
+          "gte",
+          "equals",
+          "not",
+          "contains",
+          "startsWith",
+          "endsWith",
+          "every",
+          "some",
+          "none",
+        ];
         for (const val of operators) {
           if (rawValue.startsWith(`${val} `)) {
             const data: Record<string, any> = {};

@@ -79,17 +79,13 @@ export async function listenWithPortRaceRecovery(
         return server;
       } catch (err) {
         if ((err as NodeJS.ErrnoException)?.code !== "EADDRINUSE") throw err;
-        logger.warn(
-          `app.listen() lost the port race on attempt ${attempt}, another instance bound first.`,
-        );
+        logger.warn(`app.listen() lost the port race on attempt ${attempt}, another instance bound first.`);
         // A sibling just won the bind — stand down immediately instead of
         // retrying for several seconds against a healthy instance.
         standDownIfSiblingWon(port);
       }
     } else {
-      logger.warn(
-        `Port ${port} is still in use (probe ${attempt}/${maxRetries}), waiting ${retryDelayMs}ms...`,
-      );
+      logger.warn(`Port ${port} is still in use (probe ${attempt}/${maxRetries}), waiting ${retryDelayMs}ms...`);
       // Only attempt eviction once: only previous-generation holders are
       // killable, so a same-generation sibling left alive is here to stay.
       if (attempt === 1) {
@@ -119,9 +115,7 @@ export async function listenWithPortRaceRecovery(
 function standDownIfSiblingWon(port: number): void {
   const holders = findPortHolderPids(port).filter((pid) => pid !== process.pid);
   if (holders.length > 0 && holders.every((pid) => !isPreviousGeneration(pid))) {
-    logger.log(
-      `A sibling instance [${holders.join(", ")}] is already serving port ${port}; standing down.`,
-    );
+    logger.log(`A sibling instance [${holders.join(", ")}] is already serving port ${port}; standing down.`);
     process.exit(0);
   }
 }

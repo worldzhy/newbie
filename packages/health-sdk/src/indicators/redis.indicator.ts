@@ -15,9 +15,7 @@ export function createRedisIndicator(service: unknown): NamedHealthIndicator {
         return { status: "down", message: "getClient method not available" };
       }
       try {
-        const client = (getClient as () => unknown).call(service) as
-          | { ping?: () => Promise<string> }
-          | undefined;
+        const client = (getClient as () => unknown).call(service) as { ping?: () => Promise<string> } | undefined;
         if (!client || typeof client.ping !== "function") {
           return { status: "down", message: "redis client not initialized" };
         }

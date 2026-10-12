@@ -25,11 +25,7 @@ export interface EncryptionResult {
  */
 export function encryptString(data: string, key: string): EncryptionResult {
   const iv = crypto.randomBytes(12);
-  const cipher = crypto.createCipheriv(
-    "aes-256-gcm",
-    new Uint8Array(Buffer.from(key, "utf8")),
-    new Uint8Array(iv),
-  );
+  const cipher = crypto.createCipheriv("aes-256-gcm", new Uint8Array(Buffer.from(key, "utf8")), new Uint8Array(iv));
   const encrypted = cipher.update(data, "utf8", "hex") + cipher.final("hex");
   return {
     encrypted,

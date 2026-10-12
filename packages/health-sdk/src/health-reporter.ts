@@ -1,12 +1,7 @@
 import { runCheck } from "./check";
 import { scanKnownServices } from "./service-scanner";
 import { KNOWN_INDICATORS } from "./known-indicators";
-import type {
-  HealthReportingHandle,
-  HealthReportingOptions,
-  NamedHealthIndicator,
-  NestAppLike,
-} from "./types";
+import type { HealthReportingHandle, HealthReportingOptions, NamedHealthIndicator, NestAppLike } from "./types";
 
 const GLOBAL_KEY = Symbol.for("@devbie/health-sdk:active");
 
@@ -26,22 +21,11 @@ const GLOBAL_KEY = Symbol.for("@devbie/health-sdk:active");
  * The timers are `unref()`-ed so the process can exit naturally.
  * Network failures are silently dropped to avoid crashing the host process.
  */
-export function startHealthReporting(
-  app: NestAppLike,
-  options: HealthReportingOptions,
-): HealthReportingHandle {
+export function startHealthReporting(app: NestAppLike, options: HealthReportingOptions): HealthReportingHandle {
   const existing = (globalThis as Record<symbol, unknown>)[GLOBAL_KEY];
   if (existing) return existing as HealthReportingHandle;
 
-  const {
-    endpoint,
-    token,
-    intervalMs = 30_000,
-    initialDelayMs = 10_000,
-    appVersion,
-    env,
-    instanceId,
-  } = options;
+  const { endpoint, token, intervalMs = 30_000, initialDelayMs = 10_000, appVersion, env, instanceId } = options;
 
   // --- Auto-detect assembled foundation services -------------------------
   const discovered = scanKnownServices(
@@ -78,9 +62,7 @@ export function startHealthReporting(
     try {
       const result = await runCheck(indicators);
       if (url && token) {
-        const body = runtimeFacts
-          ? JSON.stringify({ ...runtimeFacts, ...result })
-          : JSON.stringify(result);
+        const body = runtimeFacts ? JSON.stringify({ ...runtimeFacts, ...result }) : JSON.stringify(result);
         await fetch(url, {
           method: "POST",
           headers: {

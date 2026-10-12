@@ -172,9 +172,7 @@ export async function runDoctor(options: GlobalOptions): Promise<void> {
 
   // [check 6] orphan prisma fragments whose module is no longer enabled.
   const enabledKeySet = new Set(keys);
-  const modelFiles = await fs
-    .readdir(path.resolve(cwd, PRISMA_SCHEMA_MODELS_DIR))
-    .catch((): string[] => []);
+  const modelFiles = await fs.readdir(path.resolve(cwd, PRISMA_SCHEMA_MODELS_DIR)).catch((): string[] => []);
   for (const file of modelFiles) {
     if (!file.endsWith(".prisma")) continue;
     const orphanKey = file.slice(0, -".prisma".length);

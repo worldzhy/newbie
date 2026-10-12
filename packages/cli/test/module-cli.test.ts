@@ -185,7 +185,10 @@ describe("registerModuleCommands", () => {
 
       // Startup succeeds and repair commands stay runnable; the lagging
       // module only costs a warning, the healthy namespace still attaches.
-      assert.deepEqual(program.commands.map((command) => command.name()), ["healthy"]);
+      assert.deepEqual(
+        program.commands.map((command) => command.name()),
+        ["healthy"],
+      );
       assert.equal(warnings.length, 1);
       assert.match(warnings[0], /Skipped CLI namespace 'lagging' of module 'lagging'/);
     } finally {

@@ -1,12 +1,7 @@
 // Random generators and password hashing were moved to their own modules;
 // re-exported here so existing `import { ... } from "./common.util"` paths
 // (and the `@devbie/newbie` barrel) keep working without change.
-export {
-  generateRandomNumber,
-  generateRandomNumbers,
-  generateRandomLetters,
-  generateRandomCode,
-} from "./random.util";
+export { generateRandomNumber, generateRandomNumbers, generateRandomLetters, generateRandomCode } from "./random.util";
 export { generateHash, compareHash } from "./crypto.util";
 
 /**

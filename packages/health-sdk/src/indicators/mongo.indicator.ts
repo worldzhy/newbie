@@ -12,9 +12,7 @@ export function createMongoIndicator(service: unknown): NamedHealthIndicator {
   return {
     name: "mongo",
     check: async () => {
-      const connection = (service as Record<string, unknown>)?.connection as
-        | { readyState?: number }
-        | undefined;
+      const connection = (service as Record<string, unknown>)?.connection as { readyState?: number } | undefined;
       if (!connection) {
         return { status: "down", message: "no mongoose connection" };
       }
