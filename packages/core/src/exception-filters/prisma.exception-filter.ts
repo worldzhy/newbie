@@ -33,7 +33,9 @@ enum PrismaExceptionCode {
 export class PrismaExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
     const response = host.switchToHttp().getResponse<Response>();
-    let statusCode: HttpStatus = HttpStatus.OK;
+    // Fail closed: a branch that does not assign a status is a server fault,
+    // never a 200 success (see ADR-001 addendum).
+    let statusCode: HttpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
 
     /*
      * PrismaClientKnownRequestError
@@ -55,9 +57,10 @@ export class PrismaExceptionFilter implements ExceptionFilter {
     } else if (exception instanceof PrismaClientUnknownRequestError) {
       /*
        * PrismaClientUnknownRequestError
-       * Engine returns an error related to a request that does not have an error code
+       * Engine returns an error related to a request that does not have an error code.
+       * No client-fixable error code means a server-side fault: respond 500.
        */
-      response.status(HttpStatus.OK).json({
+      response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         code: PrismaExceptionCode.PrismaClientUnknownRequestError,
         error: { message: exception.message },
         data: null,

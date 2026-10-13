@@ -60,3 +60,7 @@ newbie 核心的 HTTP 响应是统一信封：成功 `{code:0,error:null,data}`�
 - HTTP 访问日志立即获得真实状态码；审计记录逻辑不受影响。
 - fewbie api-client 从双通道判错简化为单通道：成功只解包 `data`，失败统一经 reject 通道归一为 `ApiError`。
 - OpenAPI 文档将能如实表达登录失败的 400/403/429。
+
+## 补充（2026-10-14，同日纳入 1.3.0）
+
+`PrismaExceptionFilter` 的 `PrismaClientUnknownRequestError` 分支同样硬编码 HTTP 200 + error 信封——数据库引擎的未知错误属于服务端故障，与认证错误同属"200 冒充成功"缺陷族。修正为 500；过滤器的默认 `statusCode` 初值同步从 200 改为 500（fail-closed：任何未显式赋状态的分支按服务端故障处理）。其余 Prisma 分支（P2 已知错误 400、初始化错误、校验错误 400、Rust panic 500）语义本已正确，不动。
