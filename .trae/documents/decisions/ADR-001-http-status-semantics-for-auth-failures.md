@@ -64,3 +64,7 @@ newbie 核心的 HTTP 响应是统一信封：成功 `{code:0,error:null,data}`�
 ## 补充（2026-10-14，同日纳入 1.3.0）
 
 `PrismaExceptionFilter` 的 `PrismaClientUnknownRequestError` 分支同样硬编码 HTTP 200 + error 信封——数据库引擎的未知错误属于服务端故障，与认证错误同属"200 冒充成功"缺陷族。修正为 500；过滤器的默认 `statusCode` 初值同步从 200 改为 500（fail-closed：任何未显式赋状态的分支按服务端故障处理）。其余 Prisma 分支（P2 已知错误 400、初始化错误、校验错误 400、Rust panic 500）语义本已正确，不动。
+
+## 补充二（2026-10-14，1.3.1）
+
+1.3.0 发布后冒烟发现状态码仍为 200：真正强制执行 200 的不是构造函数，而是专用的 `NewbieExceptionFilter`——它 `@Catch(NewbieException)` 且显式 `response.status(HttpStatus.OK)`，过滤器优先级使构造函数携带的状态被覆盖。改为 `response.status(exception.getStatus())`，让异常自带语义直达响应。教训：本契约有"构造函数 + 专用过滤器"两个状态决定点，二者必须一致。

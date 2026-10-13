@@ -1,4 +1,4 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus } from "@nestjs/common";
+import { ArgumentsHost, Catch, ExceptionFilter } from "@nestjs/common";
 import { Response } from "express";
 import { NewbieException } from "../exceptions/newbie.exception";
 
@@ -12,6 +12,8 @@ export class NewbieExceptionFilter implements ExceptionFilter {
       error: object;
     };
 
-    response.status(HttpStatus.OK).json({ code, error, data: null });
+    // The semantic status is carried by the exception itself (ADR-001);
+    // the filter must never force 200 over it.
+    response.status(exception.getStatus()).json({ code, error, data: null });
   }
 }
