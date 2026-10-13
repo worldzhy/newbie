@@ -19,6 +19,9 @@ const REFRESH_PATH = "/auth/refresh-access-token";
 /** Paths that must never trigger a silent refresh (would recurse). */
 const AUTH_PATH_PATTERN = /^\/auth\//;
 
+/** Cross-tab Web Lock that serializes refresh calls (see ADR-001). */
+const REFRESH_LOCK_NAME = "refresh-token";
+
 /** Refresh this early so business requests never carry an expired token. */
 const PROACTIVE_REFRESH_LEAD_MS = 60_000;
 
@@ -27,10 +30,34 @@ const PROACTIVE_REFRESH_CHECK_INTERVAL_MS = 30_000;
 
 /**
  * Pause before retrying a failed refresh. When another tab rotates the
- * refresh cookie, its Set-Cookie reaches this tab a moment later; the retry
+ * refresh cookie, the Set-Cookie reaches this tab a moment later; the retry
  * then carries the renewed cookie.
  */
 const REFRESH_RETRY_DELAY_MS = 1_500;
+
+// ---------------------------------------------------------------------------
+// Response envelope (newbie backend contract)
+// ---------------------------------------------------------------------------
+
+/**
+ * Standard JSON envelope: success is `{ code: 0, error: null, data }` and
+ * failure is a non-2xx status with `{ code, error: { message }, data: null }`.
+ */
+export interface ApiEnvelope<T = unknown> {
+  data?: T;
+  code?: number;
+  error?: { message?: string; description?: string } | null;
+}
+
+/** Whether a response body is a newbie envelope rather than a raw payload. */
+function isEnvelope(body: unknown): body is ApiEnvelope {
+  if (body === null || typeof body !== "object") return false;
+  if (Array.isArray(body)) return false;
+  const record = body as Record<string, unknown>;
+  // Every envelope carries both markers; a domain object that happens to
+  // have a `data` field alone is not unwrapped.
+  return "code" in record && "data" in record;
+}
 
 // ---------------------------------------------------------------------------
 // Token storage
@@ -60,12 +87,14 @@ export function clearSession(): void {
 /** Normalized error so callers never depend on the axios error shape. */
 export class ApiError extends Error {
   readonly status: number;
+  readonly code?: number;
   readonly data: unknown;
 
-  constructor(message: string, status: number, data: unknown) {
+  constructor(message: string, status: number, data?: unknown, code?: number) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    this.code = code;
     this.data = data;
   }
 }
@@ -80,6 +109,16 @@ export function onSessionExpired(handler: () => void): void {
   sessionExpiredHandler = handler;
 }
 
+/**
+ * Hook invoked exactly once per failed request, after any 401 refresh/replay
+ * attempt has been exhausted. Wire it to your toast layer; the client itself
+ * never imports a UI library.
+ */
+let errorHandler: ((error: ApiError) => void) | null = null;
+export function onError(handler: (error: ApiError) => void): void {
+  errorHandler = handler;
+}
+
 // ---------------------------------------------------------------------------
 // Refresh-token rotation
 // ---------------------------------------------------------------------------
@@ -88,19 +127,49 @@ function isUnauthorized(error: unknown): boolean {
   return axios.isAxiosError(error) && error.response?.status === 401;
 }
 
+/**
+ * Whether the access token is still due for a refresh. After acquiring the
+ * cross-tab lock, another tab may have already refreshed while we waited;
+ * this check lets us skip the network call and reuse the new token.
+ */
+function isRefreshStillDue(): boolean {
+  const expiresAt = Number(window.localStorage.getItem(ACCESS_TOKEN_EXPIRES_AT_KEY) ?? 0);
+  if (!expiresAt) return true;
+  return Date.now() >= expiresAt - PROACTIVE_REFRESH_LEAD_MS;
+}
+
 /** One refresh round-trip; persists the renewed token and its expiry. */
 async function requestRefreshOnce(): Promise<string | null> {
   const response = await axios.get(`${BASE_URL}${REFRESH_PATH}`, {
     withCredentials: true,
   });
-  // Default envelope: { token, tokenExpiresInSeconds }.
-  const data = response.data as {
+  const body = response.data as ApiEnvelope<{
     token?: string;
     tokenExpiresInSeconds?: number;
-  };
-  if (!data?.token) return null;
-  setSession(data.token, data.tokenExpiresInSeconds);
-  return data.token;
+  }>;
+  const token = body?.data?.token ?? "";
+  if (!token) return null;
+  setSession(token, body.data?.tokenExpiresInSeconds);
+  return token;
+}
+
+/** Send the refresh request with one retry on 401 (cross-tab cookie race). */
+async function requestRefreshWithRetry(): Promise<string | null> {
+  try {
+    return await requestRefreshOnce();
+  } catch (firstError) {
+    if (isUnauthorized(firstError)) {
+      // Possible cross-tab rotation race: retry once with the renewed cookie.
+      await new Promise((resolve) => setTimeout(resolve, REFRESH_RETRY_DELAY_MS));
+      try {
+        return await requestRefreshOnce();
+      } catch {
+        return null;
+      }
+    }
+    // Network or other non-auth failure: nothing a retry can fix.
+    return null;
+  }
 }
 
 // Shared in-flight refresh. The backend rotates the refresh cookie on every
@@ -108,22 +177,30 @@ async function requestRefreshOnce(): Promise<string | null> {
 // parallel refreshes that invalidate each other's cookie.
 let refreshPromise: Promise<string | null> | null = null;
 
-/** Exchange the httpOnly refresh cookie for a new access token (single-flight). */
+/**
+ * Exchange the httpOnly refresh cookie for a new access token.
+ *
+ * Two layers of dedup prevent concurrent refresh calls that would trigger
+ * the backend's refresh-token-reuse detection and revoke the session:
+ * 1. Single-tab: module-level refreshPromise — concurrent 401s in this tab
+ *    reuse the same promise.
+ * 2. Cross-tab: Web Locks (navigator.locks) serialize refreshes across tabs.
+ *    After acquiring the lock, re-check whether refresh is still needed.
+ *    Environments without Web Locks fall back to the single-flight + retry
+ *    mitigation.
+ */
 function refreshAccessToken(): Promise<string | null> {
   if (refreshPromise) return refreshPromise;
 
   refreshPromise = (async () => {
     try {
-      return await requestRefreshOnce();
-    } catch (firstError) {
-      if (!isUnauthorized(firstError)) return null;
-      // Possible cross-tab cookie rotation: retry once after a short pause.
-      await new Promise((resolve) => setTimeout(resolve, REFRESH_RETRY_DELAY_MS));
-      try {
-        return await requestRefreshOnce();
-      } catch {
-        return null;
+      if (typeof navigator !== "undefined" && navigator.locks) {
+        return await navigator.locks.request(REFRESH_LOCK_NAME, async () => {
+          if (!isRefreshStillDue()) return getAccessToken();
+          return requestRefreshWithRetry();
+        });
       }
+      return requestRefreshWithRetry();
     } finally {
       refreshPromise = null;
     }
@@ -160,6 +237,26 @@ export function initProactiveTokenRefresh(): void {
 }
 
 // ---------------------------------------------------------------------------
+// Error normalization (the single failure channel)
+// ---------------------------------------------------------------------------
+
+/** Map any thrown value to the normalized ApiError shape. */
+function toApiError(error: unknown): ApiError {
+  if (error instanceof ApiError) return error;
+  if (axios.isAxiosError(error)) {
+    const body = error.response?.data as ApiEnvelope | undefined;
+    return new ApiError(
+      body?.error?.message ?? error.message,
+      error.response?.status ?? 0,
+      body ?? error.response?.data,
+      body?.code,
+    );
+  }
+  if (error instanceof Error) return new ApiError(error.message, 0);
+  return new ApiError("Request failed", 0);
+}
+
+// ---------------------------------------------------------------------------
 // Axios instance
 // ---------------------------------------------------------------------------
 
@@ -177,8 +274,15 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Success channel: only unwrap the envelope; failures never arrive here
+// (they carry non-2xx status — see newbie ADR-001).
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (isEnvelope(response.data)) {
+      return { ...response, data: response.data.data };
+    }
+    return response;
+  },
   async (error) => {
     const original = error?.config as (InternalAxiosRequestConfig & { _retriedAfterRefresh?: boolean }) | undefined;
     const url: string = original?.url ?? "";
@@ -190,6 +294,8 @@ api.interceptors.response.use(
       const renewed = await refreshAccessToken();
       if (renewed) {
         original.headers.set("Authorization", `Bearer ${renewed}`);
+        // Replay goes through the same interceptor chain; its outcome is
+        // returned directly so this failure never reaches the handler.
         return api(original);
       }
       // Refresh cookie missing or expired: the session is over.
@@ -197,16 +303,15 @@ api.interceptors.response.use(
       sessionExpiredHandler?.();
     }
 
-    if (axios.isAxiosError(error)) {
-      const data = error.response?.data as { message?: string } | undefined;
-      throw new ApiError(data?.message ?? error.message, error.response?.status ?? 0, data);
-    }
-    throw error;
+    // Single exit for every final failure: normalize once, notify once.
+    const normalized = toApiError(error);
+    errorHandler?.(normalized);
+    throw normalized;
   },
 );
 
 // ---------------------------------------------------------------------------
-// Typed convenience methods — return the response body directly.
+// Typed convenience methods — resolve to the unwrapped response body.
 // ---------------------------------------------------------------------------
 
 export const apiClient = {
