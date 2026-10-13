@@ -13,7 +13,8 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/src/main.js",
     "newbie": "newbie",
-    "lint": "eslint \"{src}/**/*.ts\" --fix"
+    "lint": "eslint \"{src}/**/*.ts\" --fix",
+    "test": "find src -name '*.test.ts' -print0 | xargs -0 -r node --import tsx --test"
   },
   "dependencies": {
     "@devbie/newbie": "*",

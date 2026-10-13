@@ -11,7 +11,7 @@ cd my-service
 
 `create` copies this template and runs `git init`. Useful flags:
 
-- `--template-ref <ref>` — scaffold from a specific template tag (see Versioning below)
+- `--template-ref <ref>` — scaffold from a specific git branch or tag (see Pinning below)
 - `--template-path <dir>` — use a local template checkout (offline / development)
 - `--no-git-init` — skip `git init`
 
@@ -43,25 +43,28 @@ npx newbie update-template --write    # apply it (then commit on a branch and op
 
 Business code — `src/application/`, `src/modules/`, your Prisma models outside the marker block, `.env` — is never touched.
 
-## Heartbeat monitoring (optional)
+## Built-in monitoring (optional, env-gated)
 
-The template ships heartbeat wiring built on `@devbie/heartbeat-sdk` directly in `src/main.ts`. Once the app is listening, it reports liveness to the heartbeat server every 30s when both variables are set:
+`NewbieFactory` starts the built-in reporters automatically after the HTTP server is accepting traffic. Every reporter is a silent no-op unless its two variables are set, so no code wiring is required:
+
+- module-hub self-registration: `MODULE_HUB_ENDPOINT` + `MODULE_HUB_TOKEN`
+- dependency health snapshots: `HEALTH_ENDPOINT` + `HEALTH_TOKEN`
+- backend request monitoring: `BACKEND_MONITOR_ENDPOINT` + `BACKEND_MONITOR_TOKEN`
+
+Commented placeholders for all of them live in `.env.example`.
+
+## Pinning to a template revision
+
+`create` and `update-template` scaffold from the repository tip by default. The skeleton evolves in the same repository as `@devbie/newbie`, so the tip skeleton always matches the current framework line; there is no separate template version sequence.
+
+To scaffold from a specific git branch or tag, pass `--template-ref` (any ref accepted by `git clone --branch`):
 
 ```bash
-HEARTBEAT_TOKEN=<heartbeat installation token>
-HEARTBEAT_ENDPOINT=https://<host>/heartbeat/ping
+npx @devbie/newbie-cli create my-service --template-ref dev
+npx newbie update-template --template-ref dev
 ```
 
-The token is globally unique, so the server resolves the installation from it alone — no application id is needed. With the variables unset the wiring is a silent no-op, so projects without heartbeat monitoring need no extra setup.
-
-## Versioning
-
-Template releases are tagged on the [newbie repository](https://github.com/worldzhy/newbie) as `template-v<semver>` and track the `@devbie/newbie` release line (e.g. `template-v0.1.0-stage.0`). Pin a project to a specific release:
-
-```bash
-npx @devbie/newbie-cli create my-service --template-ref template-v0.1.0-stage.0
-npx newbie update-template --template-ref template-v0.1.0-stage.0
-```
+For a fully reproducible historical checkout, also pin the `@devbie/newbie` and `@devbie/newbie-cli` versions in `package.json` to the framework release contemporary with that ref.
 
 ## License
 
