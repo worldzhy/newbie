@@ -185,18 +185,20 @@ let refreshPromise: Promise<string | null> | null = null;
  * 1. Single-tab: module-level refreshPromise — concurrent 401s in this tab
  *    reuse the same promise.
  * 2. Cross-tab: Web Locks (navigator.locks) serialize refreshes across tabs.
- *    After acquiring the lock, re-check whether refresh is still needed.
- *    Environments without Web Locks fall back to the single-flight + retry
- *    mitigation.
+ * After acquiring the lock, re-check whether refresh is still needed.
+ * Pass force=true from the 401 reactive path: a 401 proves the token is
+ * invalid regardless of the stored expiry, so the lock-time re-check must
+ * not short-circuit. Environments without Web Locks fall back to the
+ * single-flight + retry mitigation.
  */
-function refreshAccessToken(): Promise<string | null> {
+function refreshAccessToken(force = false): Promise<string | null> {
   if (refreshPromise) return refreshPromise;
 
   refreshPromise = (async () => {
     try {
       if (typeof navigator !== "undefined" && navigator.locks) {
         return await navigator.locks.request(REFRESH_LOCK_NAME, async () => {
-          if (!isRefreshStillDue()) return getAccessToken();
+          if (!force && !isRefreshStillDue()) return getAccessToken();
           return requestRefreshWithRetry();
         });
       }
@@ -291,7 +293,7 @@ api.interceptors.response.use(
 
     if (isUnauthorized(error) && original && canSilentlyRefresh) {
       original._retriedAfterRefresh = true;
-      const renewed = await refreshAccessToken();
+      const renewed = await refreshAccessToken(true);
       if (renewed) {
         original.headers.set("Authorization", `Bearer ${renewed}`);
         // Replay goes through the same interceptor chain; its outcome is
