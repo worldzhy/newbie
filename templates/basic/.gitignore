@@ -1,0 +1,27 @@
+# compiled output
+/dist
+/generated
+/node_modules
+*.tsbuildinfo
+
+# dotenv environment variables file
+.env
+
+# git submodules file
+.gitmodules
+
+# OS
+.DS_Store
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# IDE - WebStorm
+.idea
+
+# newbie CLI state
+.newbie
