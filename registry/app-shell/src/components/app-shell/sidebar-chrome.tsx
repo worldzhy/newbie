@@ -69,7 +69,15 @@ interface SidebarNavLinkProps {
 
 // Leaf navigation row: full row when expanded, centered icon button with a
 // tooltip when collapsed.
-export function SidebarNavLink({ href, label, icon: Icon, active, collapsed, disabled, disabledHint }: SidebarNavLinkProps) {
+export function SidebarNavLink({
+  href,
+  label,
+  icon: Icon,
+  active,
+  collapsed,
+  disabled,
+  disabledHint,
+}: SidebarNavLinkProps) {
   const iconColor = disabled ? "text-muted-foreground/50" : active ? "text-primary" : "text-muted-foreground";
 
   const className = collapsed

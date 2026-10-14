@@ -69,7 +69,10 @@ export async function postSse(url: string, options: PostSseOptions): Promise<voi
 
   if (!response.ok || !response.body) {
     const detail = await response.text().catch(() => "");
-    throw new SseStreamError(response.status, `SSE request failed with ${response.status}${detail ? `: ${detail}` : ""}`);
+    throw new SseStreamError(
+      response.status,
+      `SSE request failed with ${response.status}${detail ? `: ${detail}` : ""}`,
+    );
   }
 
   await consumeSseStream(response.body, signal, onFrame);
