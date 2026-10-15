@@ -73,4 +73,5 @@ export * from "./utilities/file.util";
 export * from "./utilities/int.util";
 export * from "./utilities/parse-object-literal.util";
 export * from "./utilities/random.util";
+export * from "./utilities/sse.util";
 export * from "./utilities/timezone.util";
