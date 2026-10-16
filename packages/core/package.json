@@ -1,6 +1,6 @@
 {
   "name": "@devbie/newbie",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "newbie backend framework runtime",
   "license": "MIT",
   "author": "worldzhy",
@@ -47,12 +47,12 @@
     "uuid": "^10.0.0"
   },
   "peerDependencies": {
-    "@nestjs/axios": "^4.0.0",
-    "@nestjs/common": "^11.0.0",
-    "@nestjs/config": "^4.0.0",
-    "@nestjs/core": "^11.0.0",
-    "@nestjs/platform-express": "^11.0.0",
-    "@nestjs/swagger": "^11.0.0",
+    "@nestjs/axios": "^4.0.0 || ^12.0.0",
+    "@nestjs/common": "^11.0.0 || ^12.0.0",
+    "@nestjs/config": "^4.0.0 || ^12.0.0",
+    "@nestjs/core": "^11.0.0 || ^12.0.0",
+    "@nestjs/platform-express": "^11.0.0 || ^12.0.0",
+    "@nestjs/swagger": "^11.0.0 || ^12.0.0",
     "@nestjs/throttler": "^6.0.0",
     "@prisma/adapter-pg": "^7.0.0",
     "@prisma/client": "^7.0.0",
