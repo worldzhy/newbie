@@ -19,13 +19,17 @@ describe("resolveTemplate", () => {
     const resolved = await resolveTemplate({ templatePath: templateDir });
     assert.equal(resolved.root, path.resolve(templateDir));
   });
-
-  it("falls back to the monorepo checkout inside the fewbie repository", async () => {
-    const resolved = await resolveTemplate({});
-    assert.ok(resolved.source.startsWith("monorepo checkout"));
-    await assert.doesNotReject(() => fs.access(path.join(resolved.root, "package.json")));
-  });
 });
+
+async function writeTemplateFixture(root: string): Promise<void> {
+  await fs.mkdir(path.join(root, "src", "app"), { recursive: true });
+  await fs.writeFile(
+    path.join(root, "package.json"),
+    JSON.stringify({ name: "fewbie-basic-template", version: "0.1.0" }, null, 2),
+  );
+  await fs.writeFile(path.join(root, ".env.example"), "HEARTBEAT_ENDPOINT=\n");
+  await fs.writeFile(path.join(root, "src", "app", "page.tsx"), "export default function Page() { return null; }\n");
+}
 
 describe("runInit", () => {
   it("rejects invalid project names without touching the filesystem", async () => {
@@ -44,9 +48,12 @@ describe("runInit", () => {
 
   it("copies the template and rewrites the package name", async () => {
     const parent = await makeTempDir("fewbie-test-init-");
+    const templateDir = await makeTempDir("fewbie-test-template-");
     after(async () => fs.rm(parent, { recursive: true, force: true }));
+    after(async () => fs.rm(templateDir, { recursive: true, force: true }));
+    await writeTemplateFixture(templateDir);
 
-    await runInit({ name: "my-app", cwd: parent, gitInit: false });
+    await runInit({ name: "my-app", cwd: parent, gitInit: false, templatePath: templateDir });
 
     const target = path.join(parent, "my-app");
     const pkg = JSON.parse(await fs.readFile(path.join(target, "package.json"), "utf8")) as { name?: string };

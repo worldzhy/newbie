@@ -29,13 +29,13 @@ program
     console.log(`\n${bold("@devbie/fewbie-cli")} ${VERSION}`);
   });
 
-// Create a project from templates/basic via the same resolver chain as
-// `newbie create` (--template-path -> monorepo template -> git clone --branch).
+// Create a project from the fewbie-starter template repository (cloned at its
+// root) via the shared resolver chain: --template-path -> git clone --branch.
 program
   .command("init <project-name>")
   .description("create a new project from the fewbie basic template")
-  .option("--template-path <dir>", "use a local template directory instead of cloning the fewbie repository")
-  .option("--template-ref <ref>", "git ref of the fewbie repository to clone the template from")
+  .option("--template-path <dir>", "use a local template directory instead of cloning fewbie-starter")
+  .option("--template-ref <ref>", "git ref of fewbie-starter to clone the template from")
   .option("--no-git-init", "skip 'git init' in the new project", undefined)
   .action(async function (this: Command, projectName: string) {
     const flags = this.optsWithGlobals();
