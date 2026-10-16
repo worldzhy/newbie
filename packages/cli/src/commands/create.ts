@@ -6,9 +6,8 @@ import { bold, cyan, green } from "colorette";
 import { CliError } from "../lib/errors";
 import { execCapture } from "../lib/exec";
 
-/** Repository that ships the starter template under templates/basic. */
-const TEMPLATE_REPOSITORY_URL = "https://github.com/worldzhy/newbie.git";
-const TEMPLATE_SUBDIR = "templates/basic";
+/** Repository that ships the starter template at its root. */
+const TEMPLATE_REPOSITORY_URL = "https://github.com/worldzhy/newbie-starter.git";
 /** Explicit local template root; useful for offline/development runs. */
 const TEMPLATE_PATH_ENV = "NEWBIE_TEMPLATE_PATH";
 
@@ -37,24 +36,13 @@ export interface ResolvedTemplate {
   source: string;
 }
 
-/** Resolve the basic template: explicit path -> local checkout -> git clone. */
+/** Resolve the basic template: explicit path -> git clone of newbie-starter. */
 export async function resolveTemplate(options: TemplateReference): Promise<ResolvedTemplate> {
   const explicit = options.templatePath ?? process.env[TEMPLATE_PATH_ENV];
   if (explicit) {
     const root = path.resolve(explicit);
     await fs.access(path.join(root, "package.json"));
     return { root, source: root };
-  }
-
-  // Dev fallback: the CLI is executed from a newbie monorepo checkout.
-  const localDev = path.resolve(__dirname, "..", "..", "..", "..", TEMPLATE_SUBDIR);
-  if (
-    await fs
-      .access(path.join(localDev, "package.json"))
-      .then(() => true)
-      .catch(() => false)
-  ) {
-    return { root: localDev, source: `monorepo checkout (${localDev})` };
   }
 
   const ref = options.templateRef;
@@ -65,7 +53,7 @@ export async function resolveTemplate(options: TemplateReference): Promise<Resol
   cloneArgs.push(TEMPLATE_REPOSITORY_URL, temp);
   await execCapture("git", cloneArgs);
   return {
-    root: path.join(temp, TEMPLATE_SUBDIR),
+    root: temp,
     source: `${TEMPLATE_REPOSITORY_URL}#${ref ?? "HEAD"}`,
   };
 }

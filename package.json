@@ -1,13 +1,12 @@
 {
   "name": "newbie-monorepo",
   "version": "3.2.0",
-  "description": "newbie framework monorepo (@devbie/newbie, @devbie/newbie-cli, project templates)",
+  "description": "newbie framework monorepo (@devbie/newbie, @devbie/newbie-cli)",
   "author": "worldzhy",
   "private": true,
   "license": "MIT",
   "workspaces": [
-    "packages/*",
-    "templates/*"
+    "packages/*"
   ],
   "scripts": {
     "build:core": "npm run build -w @devbie/newbie",

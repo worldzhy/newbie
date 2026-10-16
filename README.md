@@ -15,7 +15,10 @@ This repository is an npm-workspaces monorepo:
 | [packages/core](packages/core)                       | `@devbie/newbie`          | Runtime library wired into every scaffolded project (bootstrap factory, graceful shutdown, monitoring) |
 | [packages/heartbeat-sdk](packages/heartbeat-sdk)     | `@devbie/heartbeat-sdk`   | Framework-agnostic heartbeat client for installation liveness reporting                                |
 | [packages/web-monitor-sdk](packages/web-monitor-sdk) | `@devbie/web-monitor-sdk` | Browser-side web monitoring SDK (PV, AJAX, resource, JS error, custom events)                          |
-| [templates/basic](templates/basic)                   | -                         | Project template used by `newbie create`                                                               |
+
+The project template used by `newbie create` lives in the dedicated
+[newbie-starter](https://github.com/worldzhy/newbie-starter) repository
+(single source of truth, consumed at its root).
 
 ## CLI
 
