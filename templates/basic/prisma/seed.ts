@@ -1,8 +1,8 @@
-import {PrismaClient} from '@generated/prisma/client';
-import {PrismaPg} from '@prisma/adapter-pg';
+import { PrismaClient } from "@generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 
 async function main() {
-  console.info('** seeding start');
+  console.info("** seeding start");
 
   const prisma = new PrismaClient({
     adapter: new PrismaPg({
@@ -15,13 +15,13 @@ async function main() {
   // await prisma.user.create({data:{name:'admin'}})
   // ...
 
-  console.info('** seeding end');
+  console.info("** seeding end");
 }
 
 //
 
 main()
-  .catch(e => {
+  .catch((e) => {
     console.error(e);
     // eslint-disable-next-line no-process-exit
     process.exit(1);
