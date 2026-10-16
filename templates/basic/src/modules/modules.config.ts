@@ -1,3 +1,3 @@
-import {registerAs} from '@nestjs/config';
+import { registerAs } from "@nestjs/config";
 
-export default registerAs('modules', () => ({}));
+export default registerAs("modules", () => ({}));

@@ -1,0 +1,77 @@
+# Sync the newbie-starter repository from this monorepo's templates/basic.
+#
+# The starter repo (worldzhy/newbie-starter) is the whole-repo template consumed
+# by the nightwatch platform's GitHub generate flow (see ADR-009 in
+# nightwatch-backend). It is a pure derived artifact: single source of truth is
+# templates/basic here, and this workflow is its only writer. Any manual edit
+# in the starter repo is overwritten on the next sync.
+name: Sync starter repo
+
+on:
+  push:
+    branches: [dev, main]
+    paths:
+      - "templates/basic/**"
+      - ".github/workflows/sync-starter.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: sync-starter
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # Tracked files only: node_modules/dist/generated and other untracked
+      # build artifacts can never leak into the starter.
+      - name: Export templates/basic (tracked files only)
+        run: |
+          rm -rf /tmp/starter-export
+          mkdir -p /tmp/starter-export
+          git archive HEAD templates/basic | tar -x --strip-components=2 -C /tmp/starter-export
+
+      # The banner is recomposed on every sync (markers delimit the block so
+      # repeated syncs never stack it).
+      - name: Prepend derived-artifact banner to README
+        working-directory: /tmp/starter-export
+        run: |
+          cat > /tmp/banner.md <<'EOF'
+          <!-- starter-sync-banner:start -->
+          > **Derived artifact — do not edit manually.**
+          > Auto-synced from https://github.com/worldzhy/newbie `templates/basic` (dev branch) by GitHub Actions.
+          <!-- starter-sync-banner:end -->
+          EOF
+          awk '/<!-- starter-sync-banner:start -->/{skip=1;next} /<!-- starter-sync-banner:end -->/{skip=0;next} !skip' README.md > /tmp/readme-body.md
+          { cat /tmp/banner.md; echo; cat /tmp/readme-body.md; } > README.md
+
+      # Build gate BEFORE push: the starter must never hold a non-building
+      # skeleton. Standalone install resolves @devbie/* from the npm registry
+      # (no lockfile in the template; npm ci is not applicable). The resolved
+      # package-lock.json intentionally travels with the starter (git add -A
+      # below): generated apps get a reproducible install whose resolution is
+      # exactly what this gate validated. prisma.config eagerly resolves
+      # PRISMA_DATABASE_URL even for generate, so a non-connecting placeholder
+      # is required; generate never opens a connection.
+      - name: Build validation
+        working-directory: /tmp/starter-export
+        run: |
+          npm install --no-audit --no-fund
+          PRISMA_DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" npx prisma generate
+          npm run build
+
+      - name: Commit and force-push to starter
+        working-directory: /tmp/starter-export
+        env:
+          STARTER_TOKEN: ${{ secrets.STARTER_SYNC_TOKEN }}
+        run: |
+          git init -q -b main
+          git add -A
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -q -m "chore: sync from newbie templates/basic @ ${GITHUB_SHA:0:7}"
+          git push -q --force "https://x-access-token:${STARTER_TOKEN}@github.com/worldzhy/newbie-starter.git" main

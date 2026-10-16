@@ -2,3 +2,5 @@ dist
 .next
 coverage
 node_modules
+# Agent working documents (Chinese by policy); never shipped with packages
+.trae

@@ -1,5 +1,5 @@
-import {NewbieFactory} from '@devbie/newbie';
-import {ApplicationModule} from '@/application/application.module';
+import { NewbieFactory } from "@devbie/newbie";
+import { ApplicationModule } from "@/application/application.module";
 
 async function bootstrap(): Promise<void> {
   // NewbieFactory auto-starts the built-in reporters after the HTTP server is

@@ -1,5 +1,5 @@
 {
-  "name": "newbie-template-basic",
+  "name": "newbie-basic-template",
   "version": "0.1.0",
   "description": "newbie backend project template (basic)",
   "author": "worldzhy",
@@ -13,7 +13,8 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/src/main.js",
     "newbie": "newbie",
-    "lint": "eslint \"{src}/**/*.ts\" --fix"
+    "lint": "eslint \"{src}/**/*.ts\" --fix",
+    "test": "find src -name '*.test.ts' -print0 | xargs -0 -r node --import tsx --test"
   },
   "dependencies": {
     "@devbie/newbie": "*",
@@ -47,7 +48,7 @@
     "dotenv": "^16.4.5",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
-    "prettier": "^3.3.3",
+    "prettier": "^3.9.9",
     "prisma": "^7.2.0",
     "rimraf": "^6.1.3",
     "source-map-support": "^0.5.21",
