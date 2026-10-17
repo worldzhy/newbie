@@ -1,5 +1,11 @@
 # newbie 框架拆分实施计划
 
+> **Status**：已交付（2026-09 完成全部 Stage）。**2026-10-17 后续契约演变**：本文中所有
+> 「`templates/basic` 是 monorepo 内的工作区」表述已被 ADR-003 部分取代——模板骨
+> 架事实源已迁至独立仓 [`worldzhy/newbie-starter`](https://github.com/worldzhy/newbie-starter)，
+> 本仓不再持有 `templates/`。当前真源指针：`packages/cli/src/commands/create.ts`
+> （模板解析链）+ ADR-003（决策）。正文保留原样作时点快照，git 历史兜底。
+>
 > 依据：`newbie-framework-split-plan.md`（同目录，设计决议 2026-09-23，09-24 修订）、`/Users/worldzhy/src/fewbie/.trae/documents/fewbie-framework-design.md`
 > 范围：本工作区（`/Users/worldzhy/src/newbie`，git: github.com/worldzhy/newbie，分支 `dev`）内的交付与验证。
 > nightwatch / fewbie / newbie-modules / apits 仓仅作为协调点列出，执行发生在各自工作区，不在本计划内动手。

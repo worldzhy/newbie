@@ -154,8 +154,8 @@ program
 program
   .command("create <name>")
   .description("Scaffold a new project from the basic template")
-  .option("--template-path <dir>", "use a local template directory instead of cloning the newbie repository")
-  .option("--template-ref <ref>", "git ref of the newbie repository to clone the template from")
+  .option("--template-path <dir>", "use a local template directory instead of cloning newbie-starter")
+  .option("--template-ref <ref>", "git ref of newbie-starter to clone the template from")
   .option("--no-git-init", "skip 'git init' in the new project", undefined)
   .action(function (this: Command, name: string) {
     const flags = this.opts();
@@ -175,8 +175,8 @@ program
   .description(
     "Diff framework-managed skeleton files (main.ts, tsconfig*, prisma framework block) against the template; business files are skipped",
   )
-  .option("--template-path <dir>", "use a local template directory instead of cloning the newbie repository")
-  .option("--template-ref <ref>", "git ref (e.g. a template tag) of the newbie repository to sync from")
+  .option("--template-path <dir>", "use a local template directory instead of cloning newbie-starter")
+  .option("--template-ref <ref>", "git ref (e.g. a template tag) of newbie-starter to sync from")
   .option("--write", "apply the template version of differing skeleton files", false)
   .action(function (this: Command) {
     const flags = this.opts();
