@@ -30,7 +30,7 @@
     "@rollup/plugin-replace": "^3.0.0",
     "@types/jest": "^26.0.22",
     "jest": "^26.6.3",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^3.3.2",
     "rollup": "^2.35.1",
     "rollup-plugin-dts": "^4.2.3",
     "rollup-plugin-node-resolve": "^5.2.0",
