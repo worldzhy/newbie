@@ -23,6 +23,23 @@ updates:
       patch-updates:
         update-types:
           - "patch"
+      # @nestjs/* packages must move in lockstep — framework peers span the
+      # family and partial upgrades break npm ci.
+      nestjs:
+        patterns:
+          - "@nestjs/*"
+      # @typescript-eslint/parser and eslint-plugin must stay on the same
+      # major; they cross-peer each other.
+      typescript-eslint:
+        patterns:
+          - "@typescript-eslint/*"
+    # typescript-eslint does not support TypeScript 7 yet
+    # (https://github.com/typescript-eslint/typescript-eslint/issues/10940).
+    # Revisit once upstream ships TS 7 support.
+    ignore:
+      - dependency-name: "typescript"
+        update-types:
+          - "version-update:semver-major"
 
   - package-ecosystem: "github-actions"
     directory: "/"
