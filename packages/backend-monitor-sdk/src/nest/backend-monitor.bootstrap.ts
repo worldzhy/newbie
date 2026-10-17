@@ -1,4 +1,3 @@
-import type { INestApplication } from "@nestjs/common";
 import { resolveBackendMonitorOptions } from "../backend-monitor.options";
 import { MonitorEventReporter } from "../backend-monitor.reporter";
 import type { BackendMonitorOptions } from "../backend-monitor.types";
@@ -12,6 +11,17 @@ export interface BackendMonitoringHandle {
 }
 
 const GLOBAL_KEY = Symbol.for("@devbie/backend-monitor-sdk:bootstrap");
+
+/**
+ * Minimal app contract required by startBackendMonitoring. NestJS 12
+ * narrowed INestApplication with platform-specific methods
+ * (enableCsrfProtection, useSecurityHeaders) that NestExpressApplication
+ * does not implement, so we accept a structural subset instead.
+ */
+export interface BackendMonitorApp {
+  use(...args: unknown[]): unknown;
+  useGlobalInterceptors(...args: unknown[]): unknown;
+}
 
 /**
  * Function-style wiring for hosts that bootstrap without registering a
@@ -28,7 +38,7 @@ const GLOBAL_KEY = Symbol.for("@devbie/backend-monitor-sdk:bootstrap");
  * registering both paths emits duplicate events.
  */
 export function startBackendMonitoring(
-  app: INestApplication,
+  app: BackendMonitorApp,
   options: BackendMonitorOptions,
 ): BackendMonitoringHandle | null {
   if (!options.endpoint || !options.token) {

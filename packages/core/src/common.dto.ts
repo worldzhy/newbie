@@ -7,25 +7,25 @@ class CommonPagination {
     type: Number,
     description: "Number of items in the current page",
   })
-  countOfCurrentPage: number;
+  countOfCurrentPage!: number;
 
   @ApiProperty({
     type: Number,
     description: "Total number of items across all pages",
   })
-  countOfTotal: number;
+  countOfTotal!: number;
 
   @ApiProperty({
     type: Number,
     description: "Page number, starts from 0",
   })
-  page: number;
+  page!: number;
 
   @ApiProperty({
     type: Number,
     description: "Page size, the number of items per page",
   })
-  pageSize: number;
+  pageSize!: number;
 }
 
 export class CommonListRequestDto {
@@ -36,7 +36,7 @@ export class CommonListRequestDto {
   @IsNotEmpty()
   @IsNumber()
   @Type(() => Number)
-  pageSize: number;
+  pageSize!: number;
 
   @ApiProperty({
     type: Number,
@@ -45,7 +45,7 @@ export class CommonListRequestDto {
   @IsNotEmpty()
   @IsNumber()
   @Type(() => Number)
-  page: number;
+  page!: number;
 }
 
 export class CommonListResponseDto<T = any> {
@@ -53,25 +53,25 @@ export class CommonListResponseDto<T = any> {
     type: CommonPagination,
     description: "Pagination information for the response",
   })
-  pagination: CommonPagination;
+  pagination!: CommonPagination;
 
   @ApiProperty({
     type: Object,
     isArray: true,
     description: "List of records in the current page",
   })
-  records: T[];
+  records!: T[];
 }
 
 export class CommonGetByStringIdRequestDto {
   @ApiProperty({ type: String })
   @IsString()
-  id: string;
+  id!: string;
 }
 
 export class CommonGetByNumberIdRequestDto {
   @ApiProperty({ type: Number })
   @IsNumber()
   @Type(() => Number)
-  id: number;
+  id!: number;
 }
