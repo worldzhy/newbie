@@ -25,7 +25,7 @@
     "@babel/plugin-transform-spread": "^7.12.1",
     "@babel/preset-env": "^7.12.11",
     "@babel/preset-typescript": "^7.26.0",
-    "@babel/runtime": "^7.26.0",
+    "@babel/runtime": "^8.0.7",
     "@rollup/plugin-babel": "^5.2.2",
     "@rollup/plugin-replace": "^3.0.0",
     "@types/jest": "^26.0.22",
