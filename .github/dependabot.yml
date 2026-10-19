@@ -7,6 +7,7 @@ version: 2
 updates:
   - package-ecosystem: "npm"
     directory: "/"
+    target-branch: "dev"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -22,9 +23,35 @@ updates:
       patch-updates:
         update-types:
           - "patch"
+      # @nestjs/* packages must move in lockstep — framework peers span the
+      # family and partial upgrades break npm ci.
+      nestjs:
+        patterns:
+          - "@nestjs/*"
+      # @typescript-eslint/parser and eslint-plugin must stay on the same
+      # major; they cross-peer each other.
+      typescript-eslint:
+        patterns:
+          - "@typescript-eslint/*"
+    # Major upgrades of the NestJS family are milestone-level migrations
+    # (whole-family lockstep plus TS/tooling compatibility), verified manually
+    # before landing on dev — never via automated PRs. The group above only
+    # aggregates patch/minor, so majors would otherwise arrive as single-package
+    # PRs that break lockstep and block the PR limit.
+    # typescript-eslint does not support TypeScript 7 yet
+    # (https://github.com/typescript-eslint/typescript-eslint/issues/10940).
+    # Revisit once upstream ships TS 7 support.
+    ignore:
+      - dependency-name: "@nestjs/*"
+        update-types:
+          - "version-update:semver-major"
+      - dependency-name: "typescript"
+        update-types:
+          - "version-update:semver-major"
 
   - package-ecosystem: "github-actions"
     directory: "/"
+    target-branch: "dev"
     schedule:
       interval: "monthly"
     labels:
