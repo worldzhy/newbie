@@ -23,7 +23,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@inquirer/prompts": "^7.0.0",
+    "@inquirer/prompts": "^8.7.3",
     "colorette": "^2.0.20",
     "commander": "^12.1.0",
     "figlet": "^1.7.0",
