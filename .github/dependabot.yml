@@ -33,10 +33,18 @@ updates:
       typescript-eslint:
         patterns:
           - "@typescript-eslint/*"
+    # Major upgrades of the NestJS family are milestone-level migrations
+    # (whole-family lockstep plus TS/tooling compatibility), verified manually
+    # before landing on dev — never via automated PRs. The group above only
+    # aggregates patch/minor, so majors would otherwise arrive as single-package
+    # PRs that break lockstep and block the PR limit.
     # typescript-eslint does not support TypeScript 7 yet
     # (https://github.com/typescript-eslint/typescript-eslint/issues/10940).
     # Revisit once upstream ships TS 7 support.
     ignore:
+      - dependency-name: "@nestjs/*"
+        update-types:
+          - "version-update:semver-major"
       - dependency-name: "typescript"
         update-types:
           - "version-update:semver-major"
