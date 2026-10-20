@@ -133,18 +133,9 @@ describe("normalizeSections", () => {
   });
 
   it("is idempotent", () => {
-    const raw = [
-      deco,
-      "# ! B variables",
-      deco,
-      "B_B=2",
-      "B_A=1",
-      "",
-      deco,
-      "# ! A variables",
-      deco,
-      "A_X=9",
-    ].join("\n");
+    const raw = [deco, "# ! B variables", deco, "B_B=2", "B_A=1", "", deco, "# ! A variables", deco, "A_X=9"].join(
+      "\n",
+    );
     const once = serializeEnv(normalizeSections(parseEnv(raw)));
     assert.equal(serializeEnv(normalizeSections(parseEnv(once))), once);
   });
