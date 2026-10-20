@@ -12,6 +12,8 @@ import { resolveTemplate, TemplateReference } from "./create";
 export interface UpdateTemplateOptions extends GlobalOptions, TemplateReference {
   /** Apply the changes instead of only printing the diff. */
   write?: boolean;
+  /** CI gate mode: print the diff and exit non-zero when anything drifts. */
+  check?: boolean;
 }
 
 async function readOrNull(root: string, rel: string): Promise<string | null> {
@@ -43,6 +45,9 @@ function printChangeDiff(change: SkeletonChange): void {
 }
 
 export async function runUpdateTemplate(options: UpdateTemplateOptions): Promise<void> {
+  if (options.check && options.write) {
+    throw new CliError("--check and --write are mutually exclusive.");
+  }
   const cwd = path.resolve(options.cwd);
   const sink = createSink(cwd, options.dryRun);
 
@@ -77,6 +82,14 @@ export async function runUpdateTemplate(options: UpdateTemplateOptions): Promise
     `\n${actionable.length} skeleton file(s) to sync: ` +
       actionable.map((c) => `${c.file.path} (${c.kind})`).join(", "),
   );
+
+  if (options.check) {
+    throw new CliError(
+      `${changes.length} skeleton file(s) drift from the template ` +
+        `(${actionable.length} auto-fixable). ` +
+        "Run `newbie update-template --write` to apply the template version.",
+    );
+  }
 
   if (!options.write) {
     console.info("\nNext steps:");
