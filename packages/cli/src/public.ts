@@ -14,7 +14,7 @@ export { CliError, isUserCancellation } from "./lib/errors";
 export { IssueBag } from "./lib/issues";
 export type { EnvLine } from "./core/env-file";
 export { envValues, parseEnv, serializeEnv } from "./core/env-file";
-export { ENV_PATH, ENV_TOOL_CONFIG_CANDIDATES } from "./constants/paths";
+export { ENV_PATH, ENV_EXAMPLE_PATH, ENV_TOOL_CONFIG_CANDIDATES } from "./constants/paths";
 export { execCapture, execLive } from "./lib/exec";
 export type { ExecResult } from "./lib/exec";
 export type { GlobalOptions } from "./commands/shared";

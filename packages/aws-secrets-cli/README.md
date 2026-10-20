@@ -19,6 +19,7 @@ module and loads the module's `cli/index.ts` entry, which re-exports the
 
 | Command                          | Description                                                        |
 | -------------------------------- | ------------------------------------------------------------------ |
+| `newbie secrets check`           | Verify every `.env.example` variable exists in Secrets Manager (CI guard, exits 1 on missing keys). |
 | `newbie secrets pull`            | Pull environment variables from AWS Secrets Manager into `.env`.   |
 | `newbie secrets push`            | Push environment variables from `.env` to AWS Secrets Manager.     |
 | `newbie secrets deploy-rotation` | Provision the per-account rotation Lambda (SST) and print its ARN. |
