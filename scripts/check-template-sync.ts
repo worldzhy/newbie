@@ -121,10 +121,9 @@ async function checkTemplateDependencies(templateRoot: string): Promise<string[]
     packages?: Record<string, { version?: unknown }>;
   };
 
-  const declared = [
-    ...Object.keys(manifest.dependencies ?? {}),
-    ...Object.keys(manifest.devDependencies ?? {}),
-  ].filter((name) => name.startsWith("@devbie/"));
+  const declared = [...Object.keys(manifest.dependencies ?? {}), ...Object.keys(manifest.devDependencies ?? {})].filter(
+    (name) => name.startsWith("@devbie/"),
+  );
 
   console.info("\nLocked @devbie/* dependency versions:");
   const mismatches: string[] = [];
