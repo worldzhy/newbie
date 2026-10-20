@@ -6,6 +6,12 @@
 `decisions/`（同号 ADR-002、同文）；nightwatch-backend 仓的原 ADR-009 已移除，
 平台侧文档引用指向本文。
 
+> **状态更新（2026-10-15）**：本文影响面中「模板显示名不变」一条已被取代——
+> nightwatch-backend 仓 `ADR-009-unify-template-display-name-basic.md` 决议显示名统一为
+> basic 词干（`fewbie basic template` / `newbie basic template`），并已由 migration
+> `20261015000000_unify_template_display_name` 与 `prisma/seed.ts` 落地。本文正文其余
+> 结论不变。
+
 ## 背景
 
 Mode A（模板建仓）通过 GitHub generate API（`POST /repos/{owner}/{repo}/generate`，

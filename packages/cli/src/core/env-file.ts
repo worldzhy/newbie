@@ -13,6 +13,11 @@ const SINGLE_ENTRY_RE = /^\s*(?:export\s+)?([\w.-]+)\s*=\s*([\s\S]*?)\s*$/;
 const SECTION_TITLE_RE = /^# ! (.+) variables\s*$/;
 const DECORATION_RE = /^#\s*-{5,}\s*$/;
 
+/** Deterministic code-unit order, matching the sort() precedent in module-closure. */
+export function compareStrings(a: string, b: string): number {
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
 /**
  * Parse the textual content of a .env file into typed lines.
  * Quoted values keep their inner content verbatim (quotes stripped).
@@ -214,6 +219,64 @@ export function pruneEmptySections(lines: EnvLine[]): EnvLine[] {
 
 export const MODULES_MARKER_START = "# @@newbie-modules-start";
 export const MODULES_MARKER_END = "# @@newbie-modules-end";
+
+/**
+ * Canonicalize CLI-generated `# ! <title> variables` sections: section blocks
+ * are ordered by title and entries within a section by key — the same order
+ * assembleEnvExample writes into .env.example. Only canonical blocks move:
+ * the three-line decorated header plus its immediately following entry run.
+ * Everything else (comments, blank lines, user-authored variables) is kept
+ * verbatim in place. Idempotent.
+ */
+export function normalizeSections(lines: EnvLine[]): EnvLine[] {
+  type EnvEntry = Extract<EnvLine, { kind: "entry" }>;
+  const spans: { title: string; start: number; end: number; entries: EnvEntry[] }[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (line.kind !== "comment") continue;
+    const match = line.text.match(SECTION_TITLE_RE);
+    if (!match) continue;
+
+    // Swallow the canonical header prefix (decoration, leading blank) so the
+    // block can be relocated without leaving orphan decoration lines behind.
+    let start = i;
+    if (lines[start - 1]?.kind === "comment" && DECORATION_RE.test((lines[start - 1] as { text: string }).text)) {
+      start -= 1;
+      if (lines[start - 1]?.kind === "blank") start -= 1;
+    }
+
+    // Body = the entry run immediately following the header; the first
+    // non-entry line terminates it so foreign content is never swallowed.
+    const entries: EnvEntry[] = [];
+    let j = i + 1;
+    if (lines[j]?.kind === "comment" && DECORATION_RE.test((lines[j] as { text: string }).text)) j += 1;
+    while (j < lines.length) {
+      const candidate = lines[j];
+      if (candidate.kind !== "entry") break;
+      entries.push(candidate);
+      j += 1;
+    }
+    spans.push({ title: match[1], start, end: j, entries });
+    i = j - 1;
+  }
+  if (spans.length === 0) return lines;
+
+  const documentOrder = spans;
+  const sorted = [...spans].sort((a, b) => compareStrings(a.title, b.title));
+
+  const next: EnvLine[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    if (i === documentOrder[0].start) {
+      for (const span of sorted) {
+        next.push(...sectionHeader(span.title));
+        next.push(...[...span.entries].sort((a, b) => compareStrings(a.key, b.key)));
+      }
+    }
+    if (documentOrder.some((span) => i >= span.start && i < span.end)) continue;
+    next.push(lines[i]);
+  }
+  return next;
+}
 
 /**
  * Replace (or append) the CLI-managed block in `.env.example` delimited by
