@@ -4,6 +4,7 @@ import { run } from "@devbie/newbie-cli/lib";
 import type { GlobalOptions } from "@devbie/newbie-cli/lib";
 
 import { runDeployRotation } from "./deploy-rotation";
+import { runSecretsCheck } from "./check";
 import { runSecretsPull, runSecretsPush } from "./pull-push";
 
 /**
@@ -36,6 +37,20 @@ export function register(parent: Command, options: GlobalOptions): void {
           environment: flags.environment as string | undefined,
           yes: Boolean(flags.yes),
           strict: Boolean(flags.strict),
+        }),
+      );
+    });
+
+  parent
+    .command("check")
+    .description("Verify every .env.example variable exists in AWS Secrets Manager (CI guard)")
+    .option("-e, --environment <name>", "environment name from the env-tool config (skips the prompt)")
+    .action(function (this: Command) {
+      const flags = this.opts();
+      return run(() =>
+        runSecretsCheck({
+          ...collectOptions(this),
+          environment: flags.environment as string | undefined,
         }),
       );
     });
