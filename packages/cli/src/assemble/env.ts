@@ -3,6 +3,8 @@ import path from "node:path";
 
 import {
   EnvLine,
+  compareStrings,
+  normalizeSections,
   parseEnv,
   pruneEmptySections,
   removeEnvKeys,
@@ -60,6 +62,10 @@ export async function assembleEnv(params: {
     lines = pruneEmptySections(removeEnvKeys(lines, removedKeys));
   }
 
+  // Canonical section order (ADR-005): same alphabetical order .env.example
+  // uses, so a module set renders identically in both files.
+  lines = normalizeSections(lines);
+
   const serialized = serializeEnv(lines);
   if (serialized !== raw) {
     await sink.writeText(ENV_PATH, serialized);
@@ -68,7 +74,9 @@ export async function assembleEnv(params: {
 
 /**
  * Regenerate the CLI-managed block inside .env.example. All enabled modules
- * contribute their full variable list; hand-written content outside the
+ * contribute their full variable list; sections are ordered by module key and
+ * variables alphabetically within each section (ADR-005), so the same module
+ * set always renders byte-identical content. Hand-written content outside the
  * @@newbie-modules markers is preserved.
  */
 export async function assembleEnvExample(params: {
@@ -81,14 +89,16 @@ export async function assembleEnvExample(params: {
 
   const decoration = "# ----------------------------------------------------------------------------------";
   const sectionLines: string[] = [];
-  for (const key of enabled) {
+  for (const key of [...enabled].sort(compareStrings)) {
     const manifest = await readInstalledManifest(cwd, key);
     if (manifest === null) {
       reportIssue(issues, sink, `Missing newbie.module.json for '${key}'; excluded from ${ENV_EXAMPLE_PATH}.`);
       continue;
     }
     sectionLines.push(decoration, `# ! ${sectionTitle(key)} variables`, decoration);
-    for (const [envKey, value] of Object.entries(manifest.env ?? {})) {
+    const entries = Object.entries(manifest.env ?? {});
+    entries.sort(([a], [b]) => compareStrings(a, b));
+    for (const [envKey, value] of entries) {
       sectionLines.push(`${envKey}=${value}`);
     }
   }

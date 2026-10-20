@@ -4,7 +4,9 @@ import { describe, it } from "node:test";
 import {
   MODULES_MARKER_END,
   MODULES_MARKER_START,
+  compareStrings,
   envValues,
+  normalizeSections,
   parseEnv,
   pruneEmptySections,
   removeEnvKeys,
@@ -76,6 +78,80 @@ describe("pruneEmptySections", () => {
       upsertEnvSection(parseEnv(""), "Account", { A: "1" }).filter((line) => line.kind !== "entry" || line.key !== "A"),
     );
     assert.ok(!serializeEnv(lines).includes("Account variables"));
+  });
+});
+
+describe("compareStrings", () => {
+  it("orders by code units, not locale", () => {
+    const sorted = ["aws-s3", "Aws-audit", "account", "audit"].sort(compareStrings);
+    assert.deepEqual(sorted, ["Aws-audit", "account", "audit", "aws-s3"]);
+  });
+});
+
+describe("normalizeSections", () => {
+  const deco = "# ----------------------------------------------------------------------------------";
+
+  it("orders sections by title and entries by key, preserving surrounding content", () => {
+    const raw = [
+      "APP_NAME=Newbie",
+      "",
+      deco,
+      "# ! Zeta variables",
+      deco,
+      "ZETA_B=2",
+      "ZETA_A=1",
+      "",
+      deco,
+      "# ! Alpha variables",
+      deco,
+      "ALPHA_X=9",
+      "",
+      "# user tail",
+      "USER_VAR=keep",
+    ].join("\n");
+    const out = serializeEnv(normalizeSections(parseEnv(raw)));
+
+    assert.ok(out.indexOf("# ! Alpha variables") < out.indexOf("# ! Zeta variables"));
+    const zetaBlock = out.slice(out.indexOf("# ! Zeta variables"));
+    assert.ok(zetaBlock.indexOf("ZETA_A=1") < zetaBlock.indexOf("ZETA_B=2"));
+    assert.ok(out.startsWith("APP_NAME=Newbie\n"));
+    assert.ok(out.endsWith("# user tail\nUSER_VAR=keep\n"));
+  });
+
+  it("keeps empty sections in the ordered run", () => {
+    const raw = [deco, "# ! B variables", deco, "", deco, "# ! A variables", deco].join("\n");
+    const out = serializeEnv(normalizeSections(parseEnv(raw)));
+    assert.ok(out.indexOf("# ! A variables") < out.indexOf("# ! B variables"));
+  });
+
+  it("never swallows content after a comment inside a section body", () => {
+    const raw = [deco, "# ! A variables", deco, "A_TWO=2", "# note", "A_ONE=1"].join("\n");
+    const out = serializeEnv(normalizeSections(parseEnv(raw)));
+    const values = envValues(parseEnv(out));
+    assert.deepEqual(values, { A_TWO: "2", A_ONE: "1" });
+    assert.ok(out.includes("# note"));
+  });
+
+  it("is idempotent", () => {
+    const raw = [
+      deco,
+      "# ! B variables",
+      deco,
+      "B_B=2",
+      "B_A=1",
+      "",
+      deco,
+      "# ! A variables",
+      deco,
+      "A_X=9",
+    ].join("\n");
+    const once = serializeEnv(normalizeSections(parseEnv(raw)));
+    assert.equal(serializeEnv(normalizeSections(parseEnv(once))), once);
+  });
+
+  it("leaves files without sections untouched", () => {
+    const raw = "APP_NAME=Newbie\nFOO=bar\n";
+    assert.equal(serializeEnv(normalizeSections(parseEnv(raw))), raw);
   });
 });
 
