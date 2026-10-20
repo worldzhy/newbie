@@ -1,7 +1,7 @@
 {
   "name": "@devbie/apits",
-  "version": "1.0.2",
-  "author": "zimv <zimudashiren@163.com>",
+  "version": "1.0.3",
+  "author": "worldzhy",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.mjs",
   "types": "./dist/cjs/index.d.ts",
