@@ -292,7 +292,7 @@ newbie-template/
 1. **不发 `@devbie/fewbie-core` 运行时 npm 包**——原因：AI 编码工具（v0.dev 等）的「母语」是 Next.js + Tailwind + shadcn/ui，自定义 Factory/Provider 链增加 AI 理解成本；源码归项目所有可获得最佳 AI 可读性/可生成性。
 2. **UI 库从 MUI 转向 shadcn/ui**（Tailwind + Radix + CSS 变量），与 v0 默认输出对齐；nightwatch-frontend 现有 MUI 页面需渐进迁移。
 3. **唯一 npm 包是 `@devbie/fewbie-cli`（工具层）**：
-   - `fewbie init` 从模板创建项目；`fewbie add <name>` 把组件/util 源码复制进项目（api-client、auth、theme、login-form、web-monitor-sdk 等，opt-in）
+   - `fewbie create` 从模板创建项目；`fewbie add <name>` 把组件/util 源码复制进项目（api-client、auth、theme、login-form、web-monitor-sdk 等，opt-in）
    - `fewbie gen api` 是 `open-api-typescript-request-generator`（npm 实包名，unscoped 独立包；bin 命令 `apits`、配置文件 `apits.config.ts`；2026-09-26 定稿 v1 消费 `^0.0.7-alpha.0`，该版本即全部既有成果，旧 `apits-gener`/`apits-gen` 名称均非 npm 包名）的 thin wrapper（不重写）
    - `fewbie doctor` / `fewbie update`（diff PR）
 4. **web-monitor SDK** 采用混合分发（2026-09-24 决议）：npm 包 `@devbie/web-monitor-sdk`（独立版本，**仅浏览器端数据上报，不含心跳**；心跳归独立包 `@devbie/heartbeat-sdk`，1.0.0 GA 定名，2026-09-26 定稿两包分离）+ `fewbie add web-monitor-sdk` thin wrapper（脚手架初始化样板 + 在 package.json 加入 `@devbie/web-monitor-sdk` 依赖）。旧名 `@inceptionpad/frontend-monitor-web-sdk`、`@doctorwork/web-report-sdk` 已弃用/被取代；心跳包旧名 `@devbie/nightwatch-heartbeat-sdk`（stage 期）1.0.0 GA 时改名 `@devbie/heartbeat-sdk`。SDK 的 endpoint/凭证/数据格式依赖 Application/Agent 统一模型（见前端 UI 层次重构 Phase 1）。
