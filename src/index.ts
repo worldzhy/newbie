@@ -2,7 +2,7 @@
 import { Command } from "commander";
 import { bold, red } from "colorette";
 
-import { runInit } from "./commands/init";
+import { runCreate } from "./commands/create";
 import { runAdd } from "./commands/add";
 import { runApits } from "./commands/apits";
 import { doctorCommand } from "./commands/doctor";
@@ -32,14 +32,14 @@ program
 // Create a project from the fewbie-starter template repository (cloned at its
 // root) via the shared resolver chain: --template-path -> git clone --branch.
 program
-  .command("init <project-name>")
+  .command("create <project-name>")
   .description("create a new project from the fewbie basic template")
   .option("--template-path <dir>", "use a local template directory instead of cloning fewbie-starter")
   .option("--template-ref <ref>", "git ref of fewbie-starter to clone the template from")
   .option("--no-git-init", "skip 'git init' in the new project", undefined)
   .action(async function (this: Command, projectName: string) {
     const flags = this.optsWithGlobals();
-    await runInit({
+    await runCreate({
       name: projectName,
       cwd: (flags.cwd as string) ?? process.cwd(),
       templatePath: flags.templatePath as string | undefined,

@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { after, describe, it } from "node:test";
 
-import { resolveTemplate, runInit } from "../src/commands/init";
+import { resolveTemplate, runCreate } from "../src/commands/create";
 
 async function makeTempDir(prefix: string): Promise<string> {
   return fs.mkdtemp(path.join(os.tmpdir(), prefix));
@@ -31,29 +31,29 @@ async function writeTemplateFixture(root: string): Promise<void> {
   await fs.writeFile(path.join(root, "src", "app", "page.tsx"), "export default function Page() { return null; }\n");
 }
 
-describe("runInit", () => {
+describe("runCreate", () => {
   it("rejects invalid project names without touching the filesystem", async () => {
-    await assert.rejects(runInit({ name: "Bad Name" }), /Invalid project name/);
-    await assert.rejects(runInit({ name: "" }), /Invalid project name/);
+    await assert.rejects(runCreate({ name: "Bad Name" }), /Invalid project name/);
+    await assert.rejects(runCreate({ name: "" }), /Invalid project name/);
   });
 
   it("rejects a non-empty target directory", async () => {
-    const parent = await makeTempDir("fewbie-test-init-");
+    const parent = await makeTempDir("fewbie-test-create-");
     after(async () => fs.rm(parent, { recursive: true, force: true }));
     await fs.mkdir(path.join(parent, "proj"));
     await fs.writeFile(path.join(parent, "proj", "keep.txt"), "x");
 
-    await assert.rejects(runInit({ name: "proj", cwd: parent }), /not empty/);
+    await assert.rejects(runCreate({ name: "proj", cwd: parent }), /not empty/);
   });
 
   it("copies the template and rewrites the package name", async () => {
-    const parent = await makeTempDir("fewbie-test-init-");
+    const parent = await makeTempDir("fewbie-test-create-");
     const templateDir = await makeTempDir("fewbie-test-template-");
     after(async () => fs.rm(parent, { recursive: true, force: true }));
     after(async () => fs.rm(templateDir, { recursive: true, force: true }));
     await writeTemplateFixture(templateDir);
 
-    await runInit({ name: "my-app", cwd: parent, gitInit: false, templatePath: templateDir });
+    await runCreate({ name: "my-app", cwd: parent, gitInit: false, templatePath: templateDir });
 
     const target = path.join(parent, "my-app");
     const pkg = JSON.parse(await fs.readFile(path.join(target, "package.json"), "utf8")) as { name?: string };

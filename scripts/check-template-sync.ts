@@ -2,16 +2,16 @@
  * Cross-repo consistency gate: a registry item whose target path also ships in
  * the starter template must be byte-identical to that template copy.
  *
- * `fewbie init` copies the whole fewbie-starter repository, so any file present
+ * `fewbie create` copies the whole fewbie-starter repository, so any file present
  * in both places is one artifact with two delivery channels:
  *   - the template copy — what a scaffolded project starts with;
  *   - the registry item — what `fewbie add <item>` writes into a project.
  * Editing one without the other silently forks them and the two channels then
  * disagree. This script asserts equality for every overlapping path.
  *
- * Template resolution mirrors init: FEWBIE_TEMPLATE_PATH (a local checkout,
+ * Template resolution mirrors create: FEWBIE_TEMPLATE_PATH (a local checkout,
  * offline-friendly) wins, otherwise a shallow clone of TEMPLATE_REPOSITORY_URL
- * on its default branch — the same source `fewbie init` uses when no
+ * on its default branch — the same source `fewbie create` uses when no
  * --template-ref is passed.
  *
  * Run via: node --import tsx scripts/check-template-sync.ts
@@ -20,7 +20,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
-import { TEMPLATE_PATH_ENV, TEMPLATE_REPOSITORY_URL } from "../src/commands/init";
+import { TEMPLATE_PATH_ENV, TEMPLATE_REPOSITORY_URL } from "../src/commands/create";
 import { execCapture } from "../src/lib/exec";
 
 const packageRoot = path.resolve(__dirname, "..");
@@ -120,7 +120,7 @@ async function main(): Promise<void> {
       console.error(`\nTemplate/registry drift detected (${mismatches.length}):`);
       for (const mismatch of mismatches) console.error(`  ${mismatch}`);
       console.error(
-        "\nThe template copy is what `fewbie init` hands out; the registry copy is what `fewbie add` installs.",
+        "\nThe template copy is what `fewbie create` hands out; the registry copy is what `fewbie add` installs.",
       );
       console.error("Edit both, or the two delivery channels fork.");
       process.exitCode = 1;

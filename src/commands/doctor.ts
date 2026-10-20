@@ -114,7 +114,7 @@ export async function runDoctor(options: DoctorOptions): Promise<DoctorResult> {
     findings.push({
       severity: "error",
       category: "structure",
-      message: "No components.json found — run 'fewbie init' or add shadcn/ui to this project first.",
+      message: "No components.json found — run 'fewbie create' or add shadcn/ui to this project first.",
     });
     return finalize(projectRoot, findings, []);
   }

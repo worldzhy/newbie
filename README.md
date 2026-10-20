@@ -21,7 +21,7 @@ CSS v4**, with shadcn-style UI primitives and design tokens already wired up.
 Run it directly with `npx`:
 
 ```bash
-npx @devbie/fewbie-cli init my-app
+npx @devbie/fewbie-cli create my-app
 ```
 
 Or install it globally:
@@ -35,7 +35,7 @@ fewbie --help
 
 ```bash
 # Scaffold a new project
-npx @devbie/fewbie-cli init my-app
+npx @devbie/fewbie-cli create my-app
 
 cd my-app
 npm install
@@ -48,7 +48,7 @@ npx fewbie add data-table
 
 ## Commands
 
-### `fewbie init <project-name>`
+### `fewbie create <project-name>`
 
 Create a new project from the Fewbie basic template.
 
@@ -118,7 +118,7 @@ The built-in registry follows the shadcn item conventions
 | `web-monitor-sdk`         | `component` | Browser-side monitoring (PV/AJAX/resource/errors) via `@devbie/web-monitor-sdk`; scaffolds a client component for the root layout. |
 
 An item whose target path also ships in the starter template must stay
-byte-identical to that template copy — `fewbie init` copies the whole template
+byte-identical to that template copy — `fewbie create` copies the whole template
 while `fewbie add` copies the item, so the same file has two delivery channels
 that fork if edited apart. `npm run check:template-sync -w @devbie/fewbie-cli`
 asserts this in CI and before publishing.
