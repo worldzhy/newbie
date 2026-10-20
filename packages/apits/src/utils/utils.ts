@@ -510,7 +510,7 @@ export async function formatContent(content: string, filePath?: string): Promise
 export function topNotesContent(): string {
   return `
   /**
-   * Created By apits-gen
+   * Created By @devbie/apits
    */
 
   `;

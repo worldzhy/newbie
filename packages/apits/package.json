@@ -1,12 +1,12 @@
 {
   "name": "@devbie/apits",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "author": "zimv <zimudashiren@163.com>",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.mjs",
   "types": "./dist/cjs/index.d.ts",
   "bin": {
-    "apits": "./bin/apits"
+    "apits": "bin/apits"
   },
   "files": [
     "bin",

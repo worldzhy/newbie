@@ -1,10 +1,10 @@
-# apits-gen
+# @devbie/apits
 
 Based on the OpenAPI specification, generate request and response type declarations and request method bodies for APIs
 
 ## Installation
 
-`npm install apits-gen`
+`npm install @devbie/apits`
 
 ## Quick start (no config file needed)
 
@@ -58,7 +58,7 @@ The config file is auto-discovered from any of:
 
 ```ts
 // apits.config.ts
-import { defineConfig } from 'apits-gen'
+import { defineConfig } from '@devbie/apits'
 
 export default defineConfig([
   {

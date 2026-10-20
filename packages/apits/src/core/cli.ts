@@ -238,7 +238,7 @@ export async function genConfig(prefill?: { input?: string }) {
   await fs.outputFile(
     configTSFile,
     await formatContent(dedent`
-      import { defineConfig } from 'apits-gen'
+      import { defineConfig } from '@devbie/apits'
 
       export default defineConfig([{
         input: '${configAnswers?.input || ""}',
