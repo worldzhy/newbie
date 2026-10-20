@@ -12,6 +12,30 @@ import { resolveTemplate, TemplateReference } from "./create";
 export interface UpdateTemplateOptions extends GlobalOptions, TemplateReference {
   /** Apply the changes instead of only printing the diff. */
   write?: boolean;
+  /** CI gate mode: print the diff and exit non-zero when anything drifts. */
+  check?: boolean;
+  /**
+   * Restrict the sync scope to skeleton files under these path prefixes
+   * (e.g. ["deploy/"] guards only the ADR-006 deploy assets in CI).
+   * Empty/undefined means every skeleton file.
+   */
+  paths?: string[];
+}
+
+/** True when a skeleton file path is equal to or nested under a filter prefix. */
+function matchesPathFilter(filePath: string, filter: string): boolean {
+  const normalized = filter.replace(/^\.\//, "").replace(/\/+$/, "");
+  if (normalized === "") return true;
+  return filePath === normalized || filePath.startsWith(`${normalized}/`);
+}
+
+function filterSkeletonFiles(paths: string[] | undefined): typeof SKELETON_FILES {
+  if (!paths || paths.length === 0) return SKELETON_FILES;
+  const selected = SKELETON_FILES.filter((file) => paths.some((p) => matchesPathFilter(file.path, p)));
+  if (selected.length === 0) {
+    throw new CliError(`No skeleton files match the path filter: ${paths.join(", ")}`);
+  }
+  return selected;
 }
 
 async function readOrNull(root: string, rel: string): Promise<string | null> {
@@ -43,15 +67,23 @@ function printChangeDiff(change: SkeletonChange): void {
 }
 
 export async function runUpdateTemplate(options: UpdateTemplateOptions): Promise<void> {
+  if (options.check && options.write) {
+    throw new CliError("--check and --write are mutually exclusive.");
+  }
   const cwd = path.resolve(options.cwd);
   const sink = createSink(cwd, options.dryRun);
+  const skeletonFiles = filterSkeletonFiles(options.paths);
+  const scope = options.paths && options.paths.length > 0 ? options.paths.join(", ") : null;
 
   const template = await resolveTemplate(options);
   console.info(cyan(`Template source: ${template.source}`));
+  if (scope) {
+    console.info(cyan(`Scope: ${scope} (${skeletonFiles.length} skeleton files)`));
+  }
 
   const projectFiles = new Map<string, string | null>();
   const templateFiles = new Map<string, string | null>();
-  for (const file of SKELETON_FILES) {
+  for (const file of skeletonFiles) {
     projectFiles.set(file.path, await readOrNull(cwd, file.path));
     templateFiles.set(file.path, await readOrNull(template.root, file.path));
   }
@@ -64,7 +96,8 @@ export async function runUpdateTemplate(options: UpdateTemplateOptions): Promise
   }
 
   if (changes.length === 0) {
-    console.info(green(bold("✓ Project skeleton is up to date with the template.")));
+    const suffix = scope ? ` (scope: ${scope})` : "";
+    console.info(green(bold(`✓ Project skeleton is up to date with the template${suffix}.`)));
     return;
   }
 
@@ -78,9 +111,19 @@ export async function runUpdateTemplate(options: UpdateTemplateOptions): Promise
       actionable.map((c) => `${c.file.path} (${c.kind})`).join(", "),
   );
 
+  const writeCommand = scope ? `newbie update-template --write ${scope}` : "newbie update-template --write";
+
+  if (options.check) {
+    throw new CliError(
+      `${changes.length} skeleton file(s) drift from the template ` +
+        `(${actionable.length} auto-fixable). ` +
+        `Run \`${writeCommand}\` to apply the template version.`,
+    );
+  }
+
   if (!options.write) {
     console.info("\nNext steps:");
-    console.info("  newbie update-template --write   # apply these changes (supports --dry-run)");
+    console.info(`  ${writeCommand}   # apply these changes (supports --dry-run)`);
     console.info("  git checkout -b chore/template-sync   # then review `git diff` and open a PR");
     return;
   }

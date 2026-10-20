@@ -6,6 +6,10 @@
  * .env, package.json, ...) are never touched. prisma/schema.prisma is
  * compared — and updated — only inside the framework marker block so project
  * models stay untouched.
+ *
+ * The deploy/* entries are the framework production stack (ADR-006): host
+ * values live only in the host-owned deploy.config.json / env.config.json,
+ * so these files stay byte-identical across every consuming project.
  */
 
 export const MARKER_START = "// @@newbie-framework-start";
@@ -27,6 +31,14 @@ export const SKELETON_FILES: readonly SkeletonFile[] = [
   { path: "nest-cli.json", strategy: "whole-file" },
   { path: "prisma.config.ts", strategy: "whole-file" },
   { path: "prisma/schema.prisma", strategy: "marker-block" },
+  { path: "deploy/scripts/lib.sh", strategy: "whole-file" },
+  { path: "deploy/scripts/render-env.sh", strategy: "whole-file" },
+  { path: "deploy/scripts/deploy.sh", strategy: "whole-file" },
+  { path: "deploy/scripts/start.sh", strategy: "whole-file" },
+  { path: "deploy/scripts/backup.sh", strategy: "whole-file" },
+  { path: "deploy/scripts/provision.sh", strategy: "whole-file" },
+  { path: "deploy/compose.prod.yml", strategy: "whole-file" },
+  { path: "deploy/Caddyfile.tmpl", strategy: "whole-file" },
 ];
 
 /** Extract the framework marker block (markers included); null when absent. */

@@ -171,14 +171,15 @@ program
   });
 
 program
-  .command("update-template")
+  .command("update-template [paths...]")
   .description(
-    "Diff framework-managed skeleton files (main.ts, tsconfig*, prisma framework block) against the template; business files are skipped",
+    "Diff framework-managed skeleton files (main.ts, tsconfig*, prisma framework block, deploy/*) against the template; business files are skipped. Pass path prefixes (e.g. deploy/) to restrict the scope",
   )
   .option("--template-path <dir>", "use a local template directory instead of cloning newbie-starter")
   .option("--template-ref <ref>", "git ref (e.g. a template tag) of newbie-starter to sync from")
   .option("--write", "apply the template version of differing skeleton files", false)
-  .action(function (this: Command) {
+  .option("--check", "CI gate: print the diff and exit non-zero when skeleton files drift", false)
+  .action(function (this: Command, paths: string[]) {
     const flags = this.opts();
     return run(() =>
       runUpdateTemplate({
@@ -186,6 +187,8 @@ program
         templatePath: flags.templatePath as string | undefined,
         templateRef: flags.templateRef as string | undefined,
         write: Boolean(flags.write),
+        check: Boolean(flags.check),
+        paths,
       }),
     );
   });

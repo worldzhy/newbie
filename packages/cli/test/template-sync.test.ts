@@ -71,6 +71,26 @@ describe("replaceMarkerBlock", () => {
   });
 });
 
+describe("SKELETON_FILES", () => {
+  it("ships the framework deploy assets as whole-file skeletons (ADR-006)", () => {
+    const deployPaths = SKELETON_FILES.filter((f) => f.path.startsWith("deploy/"));
+    assert.deepEqual(
+      deployPaths.map((f) => f.path),
+      [
+        "deploy/scripts/lib.sh",
+        "deploy/scripts/render-env.sh",
+        "deploy/scripts/deploy.sh",
+        "deploy/scripts/start.sh",
+        "deploy/scripts/backup.sh",
+        "deploy/scripts/provision.sh",
+        "deploy/compose.prod.yml",
+        "deploy/Caddyfile.tmpl",
+      ],
+    );
+    assert.ok(deployPaths.every((f) => f.strategy === "whole-file"));
+  });
+});
+
 describe("planTemplateSync", () => {
   it("is empty when project matches the template", () => {
     const { project, template } = identicalMaps();

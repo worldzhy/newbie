@@ -9,15 +9,11 @@ export interface AwsIdentity {
 
 /** Resolve the caller identity using the default credential chain (env vars, profile, SSO, IAM role). */
 export async function getCallerIdentity(region: string): Promise<AwsIdentity> {
-  const client = new STSClient({
-    region,
-    credentials: process.env.AWS_ACCESS_KEY_ID
-      ? {
-          accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? "",
-        }
-      : undefined,
-  });
+  // No explicit credentials: the SDK default chain resolves env vars
+  // (including AWS_SESSION_TOKEN, required for OIDC sessions), profiles,
+  // SSO and IMDS role credentials. Manually constructing a credentials
+  // object here would silently drop the session token and break OIDC.
+  const client = new STSClient({ region });
   const response = await client.send(new GetCallerIdentityCommand({}));
   return { accountId: response.Account ?? "", arn: response.Arn ?? "" };
 }
