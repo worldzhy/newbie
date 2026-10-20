@@ -38,6 +38,8 @@
 
 宿主值全部外置 `deploy.config.json` + `env.config.json`——没有参数外置，框架层文件无法逐字节相同，同步机制失效。理由是可验证性（diff 全红则工具无意义），不是成本。
 
+**C1 已落地（2026-10-21）**：五脚本 INSTALL_DIR 自推导、REGION 走 config→IMDS→fail-fast、compose 卷相对化、env.template 标记化、新增共享 lib.sh（fail-fast 自带 schema）；主机两个 config 经 SSM 显式放置，secret 退役 SITE_DOMAIN/ACME_EMAIL/ECR_REPOSITORY_PREFIX/IMAGE_TAG 四键（75→71）；断链按"安全联锁"语义接受（旧栈零停机，补 config 重跑即恢复），未引入任何自动生成代码。提交：nightwatch-backend 7e38a03（主体）/ fc03a9f（SSM 死参清理）/ cc0481e（CI OIDC 角色补 secretsmanager:GetSecretValue，CFN 部署生效）；newbie 8ac7ddd（aws-secrets-cli 1.1.2 修复手工凭证丢 AWS_SESSION_TOKEN 致 OIDC 必挂——c5d6505 守门步自引入起从未通过的根因）。生产等价性验证：部署链路全绿收敛（cc0481e），七容器 healthy，.env 74 键零重复，Caddyfile 渲染一致。
+
 ### B1c
 
 render-env.sh 的 INSTALL_DIR / SECRET_ID / REGION 硬编码改由 env.config.json 驱动（主机零新依赖，jq/aws 已在位）。
@@ -62,7 +64,7 @@ v1 全删已拍板（宿主未正式使用，无 legacy 负担）：Caddyfile `/
 
 ## 实施顺序
 
-1. 参数外置：deploy.config.json + env.config.json；render-env.sh 改 config 驱动
+1. ~~参数外置：deploy.config.json + env.config.json；render-env.sh 改 config 驱动~~ **✅ 完成（2026-10-21，见 C1 段落地注记）**
 2. 框架层文件划定 + 承载形式落地（newbie 侧）
 3. UI 数据化（先取证生产主机 compose 插件版本是否支持 `depends_on.required`）
 4. B2 渲染器（manifest 声明 + 装配期渲染）
