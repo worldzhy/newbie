@@ -117,6 +117,12 @@ The built-in registry follows the shadcn item conventions
 | `theme`                   | `component` | `next-themes` ThemeProvider wrapper and a light/dark toggle button.                                                                |
 | `web-monitor-sdk`         | `component` | Browser-side monitoring (PV/AJAX/resource/errors) via `@devbie/web-monitor-sdk`; scaffolds a client component for the root layout. |
 
+An item whose target path also ships in the starter template must stay
+byte-identical to that template copy — `fewbie init` copies the whole template
+while `fewbie add` copies the item, so the same file has two delivery channels
+that fork if edited apart. `npm run check:template-sync -w @devbie/fewbie-cli`
+asserts this in CI and before publishing.
+
 ## Global options
 
 | Option            | Description                                                         |

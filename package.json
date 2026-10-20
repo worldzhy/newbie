@@ -17,6 +17,7 @@
     "build": "npm run clean && tsc -p tsconfig.json && node --import tsx scripts/build-registry.ts && chmod +x dist/index.js",
     "clean": "rimraf dist",
     "test": "node --import tsx --test test/*.test.ts",
+    "check:template-sync": "node --import tsx scripts/check-template-sync.ts",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {

@@ -7,9 +7,9 @@ import { CliError } from "../lib/errors";
 import { execCapture } from "../lib/exec";
 
 /** Repository that ships the starter template at its root. */
-const TEMPLATE_REPOSITORY_URL = "https://github.com/worldzhy/fewbie-starter.git";
+export const TEMPLATE_REPOSITORY_URL = "https://github.com/worldzhy/fewbie-starter.git";
 /** Explicit local template root; useful for offline/development runs. */
-const TEMPLATE_PATH_ENV = "FEWBIE_TEMPLATE_PATH";
+export const TEMPLATE_PATH_ENV = "FEWBIE_TEMPLATE_PATH";
 
 /** Node/npm package-name rule (lowercase, scoped names allowed). */
 const PACKAGE_NAME_RE = /^(?:@[a-z0-9][a-z0-9-._]*\/)?[a-z0-9][a-z0-9-._]*$/;
