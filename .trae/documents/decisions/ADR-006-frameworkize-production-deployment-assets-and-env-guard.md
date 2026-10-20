@@ -1,90 +1,81 @@
 # ADR-006: 框架化生产部署资产 + env 键校验守卫
 
-状态：提议中
+状态：**方案 II（单一真源 + 分文件同步）+ B2（模块清单声明 + 确定性渲染）已拍板（2026-10-20 深夜）**，取代本文件早先的 A1（模板收编为示例）与 A4（宿主主权 + drift diff）讨论稿（均未实施，属起草期迭代非契约变更）；C1+D1（`newbie secrets check` 守卫）已落地（nightwatch-backend c5d6505 / newbie 8754bfc）。
 日期：2026-10-20
 
 ## 背景
 
-**问题 1：生产部署资产无单一真源。**
-`deploy.sh`、`render-env.sh`、`compose.prod.yml`、`Caddyfile.tmpl` 只存在于生产主机 `/opt/nightwatch/` 下，任何仓库（nightwatch-backend、newbie、newbie-starter）都没有副本。它们无版本化、无可追溯历史、主机丢失即丢失。今天能读到 `render-env.sh` 内容纯靠 SSM 现场执行 `cat`。
+- deploy/ 真源 = 宿主仓 `nightwatch-backend/deploy/`（10 文件 1488 行），经 Dockerfile `COPY /deploy` → 镜像 → deploy.sh `docker cp` 到主机；主机不是真源，但该真源绑定特定宿主、未抽象。
+- 行级分类（手工判定，±10%）：通用机制 ~50%（747 行）+ 模块派生 ~16%（236）+ 宿主参数 ~29%（431）+ 客户业务 ~5%（74）。扣 stack.yml 后非宿主占 80%。
+- `start.sh` 与 `deploy.sh` 的"镜像提取 assets + 调 render-env"逻辑逐行重复——宿主内部已存在"不可复用"实证。
+- 生产主机无 node（jq-1.8.1 / aws-cli 2.36 / docker 29.9.1 在位）；render-env.sh 34 行 jq 管道极简、无 bug。
+- env 漏配守卫已落地；`.newbie/env.config.json` 已存在。
 
-**问题 2：env 漏配无法被拦截。**
-2026-10-20 `LARK_VERIFICATION_TOKEN` 事故：代码（`.env.example` 与 lark.service.ts）声明了新 env，但 AWS Secrets Manager `nightwatch/prod/env` 未配置该键；部署静默成功，明文回调全部 503，直到用户发现。根因不是"配置麻烦"，而是"漏配了没人拦"。
+## 改判记录（方案 I/A4 → 方案 II）
 
-**问题 3：已有 `newbie secrets` CLI 但未接通。**
-`@devbie/aws-secrets-cli`（`aws-secrets-manager` 模块的 CLI 插件）已提供 `secrets pull`/`push`/`deploy-rotation`，nightwatch-backend 已装配该模块。但 nightwatch-backend **没有** `.newbie/env.config.json`（`ENV_TOOL_CONFIG_CANDIDATES`），命令直接报 "config not found"。生产侧用的是主机 `render-env.sh` 的 jq 管道，与框架 CLI 完全并行，逻辑分叉。
+方案 I（宿主主权 + 参考实现 + 只读 drift diff）被否的三条理由：
 
-**为什么先决定再写代码：**
-这是跨宿主契约级改动——部署资产的载体选择、`render-env.sh` 与 `secrets pull` 的关系、守卫的声明键来源，都会影响所有消费 newbie 的宿主项目。一旦写下去再改，迁移成本高。
+1. 修复传播靠人工（diff 发现 + cherry-pick），违反"事前自动拦截优先于事后记录"与"禁止裸操作"。
+2. "主动复用导向"原则 + 80% 非宿主数据 + start.sh/deploy.sh 重复实证，指向提取框架层。
+3. `/api/v1` 全删拍板后 Caddy 路由统一，方案 II 的结构性差异只剩 UI（可数据化，见下）。
 
-## 候选方案
+## 决策：方案 II + B2
 
-### 维度 A：部署资产（deploy.sh / render-env.sh / compose.prod.yml / Caddyfile.tmpl）的载体
+### 文件所有权二分
 
-| 选项 | 做法 | 说明 |
-|------|------|------|
-| A1 | 收进 **newbie-starter 模板**（作为模板根 `deploy/` 目录），`newbie create` 自动带入；升级走 `newbie update-template` | 与"骨架文件"同通道，宿主只填参数（secret id、域名、服务名） |
-| A2 | 做成 **newbie-modules registry 模块**（如 `deploy-docker`），宿主按需装配 | 模块化，但部署逻辑不是业务能力，放 registry 与模块分层模型（domain/capability/foundation）不符 |
-| A3 | 维持主机手维护，仅加文档 | 不变，但问题 1 不解决 |
+| 层 | 文件 | 所有方 | 同步 |
+|---|---|---|---|
+| 框架层 | render-env.sh / deploy.sh / start.sh / backup.sh / compose.prod.yml 骨架 / Caddyfile.tmpl | 框架（唯一真源） | 走同步通道 |
+| 宿主层 | deploy.config.json / env.config.json / aws/stack.yml / clickhouse/config.d/memory.xml / 宿主 compose overlay | 宿主 | 永不被覆盖 |
 
-### 维度 B：render-env.sh 与 `newbie secrets pull` 的关系
+框架层承载形式（次生决策）：update-template 白名单扩展 **或** `@devbie/deploy` npm 包——倾向后者（版本语义清晰 + 既有依赖守卫可强制升级）。
 
-| 选项 | 做法 |
-|------|------|
-| B1 | **render-env.sh 改为调用 `newbie secrets pull`**（或其底层逻辑），废弃主机 jq 管道；env 工具单源 |
-| B2 | 两者并存：render-env.sh 保留，`secrets pull` 仅用于本地开发 |
-| B3 | render-env.sh 不变，仅在其前加守卫检查 |
+### B2：模块派生内容（~16%）的产出
 
-### 维度 C：键校验守卫的"声明键"来源
+`newbie.module.json` 增基础设施声明 → 装配期确定性渲染 compose 服务片段 / env.template 键段 / backup.sh 引擎清单 / Caddyfile 公开命名空间 handle。渲染器是机制不是真源（同 render-env.sh 之于 .env 的关系）。**postgres 非模块**（55 个 manifest 无此模块，Prisma 主干库依赖它）→ 框架级声明兜底。
 
-| 选项 | 来源 | 说明 |
-|------|------|------|
-| C1 | **`.env.example`**（CLI 从模块 env config 生成，已是代码声明 env 的真源） | 与代码声明天然同步，新增 env 自动进声明集 |
-| C2 | `env.config.json` 的 `secrets[].keys` | 需手工维护，与代码声明可能漂移（正是事故模式） |
-| C3 | 两者交集 | 最严但维护成本高 |
+### C1 升格为必要前提
 
-### 维度 D：守卫执行位置
+宿主值全部外置 `deploy.config.json` + `env.config.json`——没有参数外置，框架层文件无法逐字节相同，同步机制失效。理由是可验证性（diff 全红则工具无意义），不是成本。
 
-| 选项 | 位置 | 说明 |
-|------|------|------|
-| D1 | **GitHub Actions deploy.yml**（OIDC 已有 AWS creds），build 之前 | fail-fast，不构建带病镜像；需 workflow 装 node + `npm ci` |
-| D2 | 主机 `deploy.sh` / `render-env.sh` 内 | 离渲染最近，但失败时镜像已推 |
-| D3 | 两处都跑 | 双重保险，冗余 |
+### B1c
 
-## 决策
+render-env.sh 的 INSTALL_DIR / SECRET_ID / REGION 硬编码改由 env.config.json 驱动（主机零新依赖，jq/aws 已在位）。
 
-待用户拍板。建议组合：**A1 + B1 + C1 + D1**。
+### UI 数据化（方案 II 隐含必要项）
 
-决定性理由（若采纳此组合）：
-- A1：部署资产是"项目骨架"的一部分，与 `main.ts`/`tsconfig` 同属 `newbie update-template` 同步范围，无新概念引入。
-- B1：消除"主机 jq 管道 vs 框架 CLI"双源分叉，env 渲染逻辑只维护一份。
-- C1：`.env.example` 已是代码→env 的声明真源（模块 env config 自动生成），守卫用它等于"代码要什么，secret 必须有什么"，零额外维护。
-- D1：fail-fast 是治理口径；deploy.yml 已有 OIDC 角色，加一步零额外权限。
+compose `frontend` 服务挂 `profiles: ["ui"]`；caddy `depends_on: { frontend: { condition: service_started, required: false } }`（无 profile 时依赖不启用服务非法，方向性陷阱：现 clickhouse-backup→clickhouse 是合法方向，caddy→frontend 不是）；Caddyfile 默认 handle 占位符化（UI 未启用回落 backend/404，复用 `__SITE_DOMAIN__` 的 sed 机制）；stack.yml `EcrFrontend` 加 CFN Condition + 开关。框架建"可选 UI（0 或 1 个）"一等概念；多 UI 属宿主 overlay。不做生成物 DSL（config 变第二真源）。
 
-## 跨宿主 / 演进检验
+### `/api/v1` 删除对本 ADR 的输入
 
-- **换宿主成立吗？** A1/B1/C1 对任何 newbie 宿主通用（secret id、域名、compose 服务名是宿主参数）。D1 依赖 GitHub Actions OIDC——若宿主用 GitLab/自建 CI，守卫需改成对应 CI 步骤，但 `newbie secrets check` 命令本身 CI-agnostic。
-- **泄漏厂商概念吗？** `secrets pull` 已支持多环境配置（env.config.json），secret 后端是 AWS 但接口抽象在 `@devbie/aws-secrets-cli` 内；未来换 GCP/Azure 是替换实现而非改契约。compose.prod.yml / Caddyfile 是部署编排而非厂商绑定。
+v1 全删已拍板（宿主未正式使用，无 legacy 负担）：Caddyfile `/api/v1` 例外净删除，路由统一为 `/api/*` strip → backend + 默认 → frontend；"新模块原生路由要记得改 Caddy"类裸操作整类消失。**P9b 已拍板（2026-10-20）**：web-monitor 整模块迁 `/web-monitor/*`（对齐四 collector 顶级模块键命名空间先例 /heartbeat /health /backend-monitor /module-hub，module-hub 宿主集成 API `/module-hub/installations` 即先例），v1 前缀同步删除。契约细节（audit 排除精确化、宿主 `webMonitor:` 字面量收敛、SDK `filterUrlsDefault`、前端 40 处生成调用重生成、Next dev 代理核实、Caddy handle 由 manifest publicNamespace 生成）由 web-monitor 契约 ADR 承载，结论回填本 ADR 的 Caddyfile.tmpl handle 块。
 
-## 影响
+### 两轴判据（本次固化；模板文件所有权与部署资产共用）
 
-**变易：**
-- env 变更从"控制台手编 71 键 JSON"降为 `newbie secrets push`（或 pull 的反向），且 `secrets check` 在部署前挡漏配。
-- 部署资产可追溯、可回滚、可跨宿主复用。
-- 主机只剩"参数"（secret id、域名），无逻辑。
+`是客户业务？ × 跨宿主可通用？`——main.ts（无业务、可通用）→ 框架 whole-file；deploy/（非业务、部分通用）→ 按文件分层拆分；src/application/*（业务）→ 宿主。防止单轴"非业务即框架"误推把 deploy/ 拖进框架。
 
-**变难 / 后续工作：**
-- 一次性迁移：nightwatch-backend 补 `.newbie/env.config.json`；主机部署资产从模板重新生成并验证等价；`render-env.sh` 切换到 `secrets pull`。
-- `newbie secrets` 需新增 `check` 子命令（读 `.env.example` 键集 ⊆ secret 键集，缺键非零退出）。
-- deploy.yml 加 `secrets check` 步骤（需 `npm ci` + OIDC 已有）。
-- 模板 `deploy/` 资产需参数化（secret id、域名、服务名从 `.env` 或配置注入）。
-- 新增"框架化部署资产"的 `update-template` 同步测试，防止漂移（类似 check-template-sync）。
+## 待拍板
+
+1. 框架层承载形式：SKELETON_FILES 白名单扩展 vs `@devbie/deploy` 包。
+2. 模板文件所有权分类（main.ts whole-file + bootstrap 责任上收 NewbieFactory options；.env.example 入表 marker-block，绑定 D1 守卫 declared 真源；生成物 modules.config.ts/modules.module.ts 不入表；模板文件未显式归类即守卫报错，对齐 check-template-deps 模式）——独立 ADR 承载。
+3. web-monitor 契约 ADR 实施——**P9b 已拍板（2026-10-20）：整模块迁 `/web-monitor/*` + 删 v1**，待出 ADR 并落地（跨四仓：newbie-modules / nightwatch-backend / nightwatch-frontend / newbie-sdk）。
+
+## 实施顺序
+
+1. 参数外置：deploy.config.json + env.config.json；render-env.sh 改 config 驱动
+2. 框架层文件划定 + 承载形式落地（newbie 侧）
+3. UI 数据化（先取证生产主机 compose 插件版本是否支持 `depends_on.required`）
+4. B2 渲染器（manifest 声明 + 装配期渲染）
+5. start.sh/deploy.sh 重复提取逻辑在框架层收敛为一份
+6. nightwatch 迁移 + 生产等价性验证（容器配置不得漂移）
 
 ## 取证索引
 
-- `@devbie/aws-secrets-cli`：`packages/aws-secrets-cli/src/{index.ts,pull-push.ts,env-tool-config.ts}`
-- env.config.json 候选：`packages/cli/src/constants/paths.ts:29`（`.newbie/env.config.json`）
-- 模块 CLI 动态加载：`packages/cli/src/lib/module-cli.ts`
-- nightwatch-backend 装配了 aws-secrets-manager 但无 env.config.json（grep 零命中）
-- 生产 deploy.yml OIDC 已有：`nightwatch-backend/.github/workflows/deploy.yml:30-34`
-- 生产部署资产仅在主机 `/opt/nightwatch/`：SSM 现场取证
+- deploy/ 行级非宿主占比：render-env.sh 94% / backup.sh 91% / env.template 85% / compose.prod.yml 80% / deploy.sh 75% / start.sh 71% / provision.sh 70% / Caddyfile.tmpl 70% / stack.yml 49% / memory.xml 17%
+- start.sh L34-45 ≈ deploy.sh L25-40（提取逻辑逐行重复）
+- stack.yml：9 个 CFN Parameters（DomainName/InstanceType/GitHubOrg/LatestAmiId/VpcId/SubnetId…）已参数化宿主值（B1c 的宿主侧先例）；资源级 Condition 全无（EcrFrontend L415 无条件资源）
+- 本机 compose v2.40.0 支持 `depends_on.required`；生产 docker 29.9.1 的 compose 插件版本待取证
+- 四 collector（heartbeat/health/backend-monitor/module-hub）控制器均为顶级 `@Controller("<module-key>")`（/heartbeat、/health、/backend-monitor、/module-hub）；module-hub 的宿主集成 API（/module-hub/installations，供宿主前端面板消费）同在模块命名空间——web-monitor `/api/v1` 是唯一离群
+- 主机工具链：SSM `which node` 空；jq/aws/docker 在位
+- Dockerfile.prod：`COPY --from=build /nwb/deploy /deploy`；镜像分发链 deploy.sh pull → docker create → docker cp
+- 现有 Caddyfile 无 /heartbeat、/health、/backend-monitor、/module-hub handle——collector 实例上报走容器内 URL 自洽；外部 reporter（如 fewbie SSR → nightwatch）经域名是否可达待取证

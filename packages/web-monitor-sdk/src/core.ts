@@ -17,7 +17,11 @@ let reportData: (type?: ReportType) => void;
 let reportCustomsNow: () => void;
 let reportCustomsSoon: () => void;
 let customsTimer: number | null;
-const errorDefault: any = { createTime: "", type: "js", msg: "", data: {} };
+/**
+ * Blank error-report entry template. Cloned per error event, then filled in
+ * with the actual message/stack/etc. before being pushed into the report list.
+ */
+const errorEntryTemplate: any = { createTime: "", type: "js", msg: "", data: {} };
 let _conf: any;
 let reportSdkError: (error: any) => void;
 
@@ -27,7 +31,7 @@ const reportDebounce = function () {
 };
 
 const ErrorInstanceReport = function (error: StackTrace, api: string): void {
-  const defaults = Object.assign({}, errorDefault);
+  const defaults = Object.assign({}, errorEntryTemplate);
   setTimeout(function () {
     defaults.msg = error.message;
     defaults.type = ERRORTYPES.script;
@@ -49,7 +53,13 @@ const ErrorInstanceReport = function (error: StackTrace, api: string): void {
 
 function Performance(options: InitOptions): void {
   if (!options.appId || !options.api || !options.token) throw new Error("appId, api or token is not defined");
-  const filterUrlsDefault = ["/api/v1/report/web"];
+  /**
+   * URLs always excluded from AJAX/resource collection, on top of the
+   * user-configured filterUrls. The collector endpoint itself fires as an
+   * AJAX request — without this filter the SDK would measure and report
+   * its own report calls as page performance data.
+   */
+  const alwaysFilteredUrls = ["/web-monitor/report"];
   const opt: PerformanceOptions = {
     outTime: 300,
     filterUrls: [],
@@ -63,7 +73,7 @@ function Performance(options: InitOptions): void {
     customsThrottleMs: 1000,
     ...options,
   };
-  opt.filterUrls = opt.filterUrls.concat(filterUrlsDefault);
+  opt.filterUrls = opt.filterUrls.concat(alwaysFilteredUrls);
 
   const conf: any = {
     opt,
@@ -147,7 +157,7 @@ function Performance(options: InitOptions): void {
         const { xhr = {} } = ajax;
         const { isReport, errMsg, code } = opt.errcodeReport(result);
         if (isReport) {
-          const defaults = Object.assign({}, errorDefault);
+          const defaults = Object.assign({}, errorEntryTemplate);
           defaults.createTime = new Date().getTime();
           defaults.type = ERRORTYPES.bussinessAjax;
           defaults.msg = errMsg || "业务接口异常";
@@ -206,7 +216,6 @@ function Performance(options: InitOptions): void {
     (window as any)._ahrealxhr = (window as any)._ahrealxhr || XMLHttpRequest;
     (window as any).XMLHttpRequest = function () {
       this.xhr = new (window as any)._ahrealxhr();
-      const xhr = this.xhr;
       for (const attr in this.xhr) {
         let type = "";
         try {
@@ -316,7 +325,7 @@ function Performance(options: InitOptions): void {
                   if (opt.errcodeReport) {
                     const { isReport, errMsg, code } = opt.errcodeReport(resResult);
                     if (isReport) {
-                      const defaults = Object.assign({}, errorDefault);
+                      const defaults = Object.assign({}, errorEntryTemplate);
                       defaults.createTime = new Date().getTime();
                       defaults.type = ERRORTYPES.bussinessFetch;
                       defaults.msg = errMsg || "业务接口异常";
@@ -344,7 +353,7 @@ function Performance(options: InitOptions): void {
           } else if (err) {
             msg = err;
           }
-          const defaults = Object.assign({}, errorDefault);
+          const defaults = Object.assign({}, errorEntryTemplate);
           defaults.createTime = new Date().getTime();
           defaults.type = ERRORTYPES.fetch;
           defaults.msg = msg;
@@ -378,7 +387,10 @@ function Performance(options: InitOptions): void {
         if (args[1].body) result.options = args[1].body;
       }
       if (result.method.toLocaleUpperCase() === "GET") {
-        const [url, options] = result.url.split("?");
+        // Only the query string is extracted as options; result.url keeps the
+        // full URL (including query) so it can be matched against the browser
+        // performance entry name in initPerformanceObserver.
+        const [, options] = result.url.split("?");
         result.options = options || "";
       }
     } catch (err) {
@@ -391,7 +403,7 @@ function Performance(options: InitOptions): void {
     window.addEventListener(
       "error",
       function (e: any) {
-        const defaults = Object.assign({}, errorDefault);
+        const defaults = Object.assign({}, errorEntryTemplate);
         defaults.type = ERRORTYPES.resource;
         defaults.createTime = new Date().getTime();
         defaults.msg = e.target.localName + " is load error";
@@ -410,7 +422,7 @@ function Performance(options: InitOptions): void {
     window.onerror = function (msg: any, _url: any, line: any, col: any, error: any) {
       const stack = computeStackTrace(error);
       if (stack.failed) {
-        const defaults = Object.assign({}, errorDefault);
+        const defaults = Object.assign({}, errorEntryTemplate);
         defaults.msg = msg;
         defaults.type = ERRORTYPES.log;
         defaults.api = ERRORAPIS.onerror;
@@ -429,7 +441,7 @@ function Performance(options: InitOptions): void {
       const error = e && e.reason;
       const stack = computeStackTrace(error);
       if (stack.failed) {
-        const defaults = Object.assign({}, errorDefault);
+        const defaults = Object.assign({}, errorEntryTemplate);
         if (isObject(error)) {
           defaults.msg = JSON.stringify(error);
         } else {
@@ -456,7 +468,7 @@ function Performance(options: InitOptions): void {
       }
       const msg = getConsoleErrorMsg(arguments as any);
       if (msg) {
-        const defaults = Object.assign({}, errorDefault);
+        const defaults = Object.assign({}, errorEntryTemplate);
         setTimeout(function () {
           defaults.msg = msg;
           defaults.type = ERRORTYPES.log;
@@ -500,7 +512,7 @@ function Performance(options: InitOptions): void {
       // responseText access can throw for opaque responses; keep the generic
       // "ajax request error" message.
     }
-    const defaults = Object.assign({}, errorDefault);
+    const defaults = Object.assign({}, errorEntryTemplate);
     defaults.createTime = new Date().getTime();
     defaults.type = ERRORTYPES.ajax;
     defaults.msg = msg;
@@ -519,7 +531,7 @@ function Performance(options: InitOptions): void {
   }
 
   function fetchErrResponse(res: Response, req: any, resData?: string) {
-    const defaults = Object.assign({}, errorDefault);
+    const defaults = Object.assign({}, errorEntryTemplate);
     let msg = "fetch request error";
     if (resData) {
       msg = resData;
