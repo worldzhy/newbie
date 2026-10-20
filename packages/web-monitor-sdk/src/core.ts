@@ -49,7 +49,7 @@ const ErrorInstanceReport = function (error: StackTrace, api: string): void {
 
 function Performance(options: InitOptions): void {
   if (!options.appId || !options.api || !options.token) throw new Error("appId, api or token is not defined");
-  const filterUrlsDefault = ["/api/v1/report/web"];
+  const filterUrlsDefault = ["/web-monitor/report"];
   const opt: PerformanceOptions = {
     outTime: 300,
     filterUrls: [],
