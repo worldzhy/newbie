@@ -61,3 +61,57 @@ describe("runUpdateTemplate --check", () => {
     );
   });
 });
+
+describe("runUpdateTemplate path filter", () => {
+  let project: string;
+  let template: string;
+
+  before(async () => {
+    project = await fs.mkdtemp(path.join(os.tmpdir(), "newbie-utf-project-"));
+    template = await fs.mkdtemp(path.join(os.tmpdir(), "newbie-utf-template-"));
+    await fs.writeFile(path.join(template, "package.json"), "{}", "utf8");
+    // Drift outside any deploy/ scope: tsconfig differs.
+    await fs.writeFile(path.join(template, "tsconfig.json"), '{ "from": "template" }\n', "utf8");
+    await fs.writeFile(path.join(project, "tsconfig.json"), '{ "from": "project" }\n', "utf8");
+    // In-sync deploy file so the deploy/ scope itself is green.
+    await fs.mkdir(path.join(template, "deploy/scripts"), { recursive: true });
+    await fs.mkdir(path.join(project, "deploy/scripts"), { recursive: true });
+    await fs.writeFile(path.join(template, "deploy/scripts/lib.sh"), "# same\n", "utf8");
+    await fs.writeFile(path.join(project, "deploy/scripts/lib.sh"), "# same\n", "utf8");
+  });
+
+  after(async () => {
+    await fs.rm(project, { recursive: true, force: true });
+    await fs.rm(template, { recursive: true, force: true });
+  });
+
+  it("passes with a deploy/ filter when the drift lives outside the scope", async () => {
+    await runUpdateTemplate({ cwd: project, templatePath: template, check: true, dryRun: false, paths: ["deploy/"] });
+  });
+
+  it("accepts a directory prefix without a trailing slash", async () => {
+    await runUpdateTemplate({ cwd: project, templatePath: template, check: true, dryRun: false, paths: ["deploy"] });
+  });
+
+  it("rejects when the drift is inside the filtered scope", async () => {
+    await assert.rejects(
+      runUpdateTemplate({ cwd: project, templatePath: template, check: true, dryRun: false, paths: ["tsconfig.json"] }),
+      (error: unknown) => {
+        assert.ok(error instanceof CliError);
+        assert.match(error.message, /drift from the template/);
+        return true;
+      },
+    );
+  });
+
+  it("rejects a filter matching no skeleton files (fail fast on CI typos)", async () => {
+    await assert.rejects(
+      runUpdateTemplate({ cwd: project, templatePath: template, check: true, dryRun: false, paths: ["nonexistent/"] }),
+      (error: unknown) => {
+        assert.ok(error instanceof CliError);
+        assert.match(error.message, /No skeleton files match/);
+        return true;
+      },
+    );
+  });
+});
