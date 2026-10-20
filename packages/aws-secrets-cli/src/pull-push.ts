@@ -39,15 +39,11 @@ export interface SecretsCommandOptions extends GlobalOptions {
 }
 
 export function createAwsClient(region: string): SecretsManagerClient {
-  return new SecretsManagerClient({
-    region,
-    credentials: process.env.AWS_ACCESS_KEY_ID
-      ? {
-          accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? "",
-        }
-      : undefined,
-  });
+  // No explicit credentials: the SDK default chain resolves env vars
+  // (including AWS_SESSION_TOKEN, required for OIDC sessions), profiles,
+  // SSO and IMDS role credentials. Manually constructing a credentials
+  // object here would silently drop the session token and break OIDC.
+  return new SecretsManagerClient({ region });
 }
 
 export function printCredentialHint(): void {
