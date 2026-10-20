@@ -1,0 +1,70 @@
+{
+  "name": "@devbie/apits",
+  "version": "1.0.0",
+  "author": "zimv <zimudashiren@163.com>",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.mjs",
+  "types": "./dist/cjs/index.d.ts",
+  "bin": {
+    "apits": "./bin/apits"
+  },
+  "files": [
+    "bin",
+    "dist"
+  ],
+  "scripts": {
+    "build": "father build",
+    "gen": "rm -rf ./api & tsx test/gen.ts --type-check false gen",
+    "gen:api-1": "tsx test/gen.ts --type-check false gen -n api-1",
+    "init": "tsx test/gen.ts --type-check false init",
+    "publishOnly": "npm run build",
+    "release": "npm run build && standard-version && git push --follow-tags origin master && npm publish",
+    "requestTest": "tsx watch test/requestTest.ts --type-check false",
+    "test": "tsx test/index.ts",
+    "test2": "tsx watch test/json-schema-to-typescript.ts --type-check false"
+  },
+  "lint-staged": {
+    "src/**/*.ts": [
+      "eslint --fix"
+    ]
+  },
+  "dependencies": {
+    "chalk": "^4.1.1",
+    "change-case": "^3.1.0",
+    "form-data": "^3.0.0",
+    "fs-extra": "^7.0.1",
+    "got": "^11.5.1",
+    "js-yaml": "^3.14.1",
+    "json-schema": "^0.3.0",
+    "json-schema-to-typescript": "15.0.4",
+    "json5": "^2.1.0",
+    "openapi-types": "^7.0.1",
+    "ora": "5.4.1",
+    "prettier": "^3.9.9",
+    "prompts": "^2.0.4",
+    "tsx": "^4.20.5",
+    "typescript": "^5",
+    "yargs": "^16.2.0"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^5.0.4",
+    "@types/js-yaml": "^3.12.0",
+    "@types/json-schema": "^7.0.1",
+    "@types/json5": "^0.0.30",
+    "@types/node": "^18.7.14",
+    "@types/prompts": "^1.2.0",
+    "@types/yargs": "^16.0.1",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^7.16.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^9.1.2",
+    "eslint-plugin-prettier": "^5.5.7",
+    "father": "^4",
+    "standard-version": "^4.4.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}
