@@ -20,6 +20,7 @@
     "build": "tsc -p tsconfig.json && chmod +x dist/index.js",
     "clean": "rimraf dist tsconfig.tsbuildinfo",
     "test": "node --import tsx --test test/*.test.ts",
+    "check:template-deps": "node --import tsx scripts/check-template-deps.ts",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
