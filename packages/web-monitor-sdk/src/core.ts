@@ -98,7 +98,10 @@ function Performance(options: InitOptions): void {
       const { responseText } = xhr;
       try {
         responseJson = JSON.parse(responseText);
-      } catch (e) {}
+      } catch (e) {
+        // Non-JSON response bodies (HTML/plain text) are normal; keep the
+        // empty object instead of spamming the host page console.
+      }
     } else if (xhr.responseType === "json" && isObject(xhr.response)) {
       responseJson = xhr.response;
     }
@@ -114,7 +117,10 @@ function Performance(options: InitOptions): void {
     } else if (xhr.responseType === "json") {
       try {
         resSize = JSON.stringify(xhr.response).length;
-      } catch (e) {}
+      } catch (e) {
+        // Unserializable response (e.g. cyclic structure); size stays 0 and
+        // reporting is unaffected.
+      }
     }
     return resSize;
   }
@@ -128,7 +134,10 @@ function Performance(options: InitOptions): void {
       try {
         if (_traceId) conf.ajaxMsg[_id].traceId = _traceId;
         conf.ajaxMsg[_id]["bodySize"] = getAjaxResponseSize(ajax);
-      } catch (err) {}
+      } catch (err) {
+        // traceId/bodySize enrichment is best-effort; a failure here must not
+        // break the reporting flow.
+      }
     }
     if (ajax.status < 200 || ajax.status > 300) {
       ajaxErrResponse(ajax);
@@ -202,7 +211,10 @@ function Performance(options: InitOptions): void {
         let type = "";
         try {
           type = typeof this.xhr[attr];
-        } catch (e) {}
+        } catch (e) {
+          // Some xhr properties throw on access (e.g. cross-origin getters);
+          // treating them as non-functions routes them to defineProperty below.
+        }
         if (type === "function") {
           this[attr] = hookfun(attr);
         } else {
@@ -297,7 +309,10 @@ function Performance(options: InitOptions): void {
                   let resResult: any = {};
                   try {
                     resResult = JSON.parse(data);
-                  } catch (e) {}
+                  } catch (e) {
+                    // Non-JSON response bodies are normal; errcodeReport is
+                    // simply skipped for them.
+                  }
                   if (opt.errcodeReport) {
                     const { isReport, errMsg, code } = opt.errcodeReport(resResult);
                     if (isReport) {
@@ -315,7 +330,10 @@ function Performance(options: InitOptions): void {
                   getFetchTime();
                 }
               });
-          } catch (e) {}
+          } catch (e) {
+            // res.clone()/text() can throw when the body is already disturbed;
+            // skip size/errcode inspection and hand back the original response.
+          }
           return res ? res.clone() : originRes;
         })
         .catch((err: any) => {
@@ -363,7 +381,9 @@ function Performance(options: InitOptions): void {
         const [url, options] = result.url.split("?");
         result.options = options || "";
       }
-    } catch (err) {}
+    } catch (err) {
+      // Malformed fetch arguments fall back to the GET default below.
+    }
     return result;
   }
 
@@ -476,7 +496,10 @@ function Performance(options: InitOptions): void {
       } else if (ajax.statusText) {
         msg = ajax.statusText;
       }
-    } catch (e) {}
+    } catch (e) {
+      // responseText access can throw for opaque responses; keep the generic
+      // "ajax request error" message.
+    }
     const defaults = Object.assign({}, errorDefault);
     defaults.createTime = new Date().getTime();
     defaults.type = ERRORTYPES.ajax;
@@ -511,7 +534,10 @@ function Performance(options: InitOptions): void {
     try {
       const _traceId = res.headers.get(conf.opt.traceIdHeaderName) || null;
       if (_traceId) defaults.traceId = _traceId;
-    } catch (e) {}
+    } catch (e) {
+      // headers.get() can throw for opaque/cross-origin responses; traceId
+      // stays null.
+    }
     defaults.data = { resourceUrl: req.url, status: res.status };
     conf.errorList.push(defaults);
   }
