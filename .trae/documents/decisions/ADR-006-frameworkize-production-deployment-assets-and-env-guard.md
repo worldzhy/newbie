@@ -58,18 +58,18 @@ v1 全删已拍板（宿主未正式使用，无 legacy 负担）：Caddyfile `/
 
 ## 待拍板
 
-1. 框架层承载形式：SKELETON_FILES 白名单扩展 vs `@devbie/deploy` 包。
+1. ~~框架层承载形式：SKELETON_FILES 白名单扩展 vs `@devbie/deploy` 包~~ **已拍板并落地（2026-10-21）：方案 A（SKELETON_FILES 白名单扩展，8 个 deploy 文件入表）。落地修订：CI 漂移门覆盖范围由"全部 SKELETON_FILES"收窄为 `deploy/`——`update-template --check` 新增 `[paths...]` 位置参数过滤（CLI 1.5.0）；收窄原因是 main.ts/tsconfig/nest-cli/prisma 4 个 legacy 骨架文件携宿主关注且存在先于本里程碑的漂移，其收敛单列为后续工作。三仓提交：nightwatch-backend 9a2091c/4e308b6、newbie-starter a9ef7dc/e578d3b、newbie f7bb798/aa5278a；CLI 版本 1.4.0（`--check`）+ 1.5.0（路径过滤），均 latest。**
 2. 模板文件所有权分类（main.ts whole-file + bootstrap 责任上收 NewbieFactory options；.env.example 入表 marker-block，绑定 D1 守卫 declared 真源；生成物 modules.config.ts/modules.module.ts 不入表；模板文件未显式归类即守卫报错，对齐 check-template-deps 模式）——独立 ADR 承载。
 3. web-monitor 契约 ADR 实施——**P9b 已拍板（2026-10-20）：整模块迁 `/web-monitor/*` + 删 v1**，待出 ADR 并落地（跨四仓：newbie-modules / nightwatch-backend / nightwatch-frontend / newbie-sdk）。
 
 ## 实施顺序
 
 1. ~~参数外置：deploy.config.json + env.config.json；render-env.sh 改 config 驱动~~ **✅ 完成（2026-10-21，见 C1 段落地注记）**
-2. 框架层文件划定 + 承载形式落地（newbie 侧）
+2. ~~框架层文件划定 + 承载形式落地（newbie 侧）~~ **✅ 完成（2026-10-21，方案 A + `deploy/` scoped 门，spec：nightwatch-backend/.trae/specs/adr006-framework-file-migration）**
 3. UI 数据化（先取证生产主机 compose 插件版本是否支持 `depends_on.required`）
 4. B2 渲染器（manifest 声明 + 装配期渲染）
 5. start.sh/deploy.sh 重复提取逻辑在框架层收敛为一份
-6. nightwatch 迁移 + 生产等价性验证（容器配置不得漂移）
+6. ~~nightwatch 迁移 + 生产等价性验证（容器配置不得漂移）~~ **✅ 完成（2026-10-21）：SSM 补 `appName` → CFN 更新 alarm namespace → 合并部署 → 七容器 healthy、compose config 渲染值与迁移前字面量一致、手动 backup 冒烟四引擎 success、BackupFailureAlarm OK。部署后修正一并记录：app secret 遗留 `APP_NAME=Nightwatch` 与 render-env 管道注入键重复，backup.sh `env_value` 取首匹配（与 compose env_file 末匹配语义相反），失败指标将错发大写 namespace 致告警静默——已从 secret 删除该键并重渲染 .env；`.env` 键唯一性由此成为隐含契约**
 
 ## 取证索引
 
