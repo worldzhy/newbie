@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference -- SST generates this reference to its platform config types
 /// <reference path="./.sst/platform/config.d.ts" />
 
 export default $config({

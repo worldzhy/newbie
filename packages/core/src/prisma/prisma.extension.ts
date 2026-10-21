@@ -1,4 +1,4 @@
-import { BadRequestException, Logger } from "@nestjs/common";
+import { BadRequestException } from "@nestjs/common";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 /**
@@ -43,7 +43,6 @@ function getSkipAndTake(params: { page: number; pageSize: number }) {
  */
 export const createExtendedPrismaClient = (options: CreateExtendedPrismaClientOptions) => {
   const { PrismaClient, connectionString } = options;
-  const logger = new Logger("Prisma");
 
   const prisma = new PrismaClient({
     adapter: new PrismaPg({

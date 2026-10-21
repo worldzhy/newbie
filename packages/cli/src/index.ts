@@ -208,7 +208,7 @@ program
   .command("watch [keys...]")
   .description("Watch the local newbie-modules registry and sync installed module sources into the project on change")
   .option("--all", "watch every registry module instead of only installed ones", false)
-  .action(function (this: Command, keys: string[]) {
+  .action(function (this: Command, _keys: string[]) {
     const flags = this.opts();
     return run(() =>
       runWatch({

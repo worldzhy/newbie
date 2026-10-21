@@ -103,7 +103,7 @@ export const XMLConstructorEnum = {
   DONE: 4,
 };
 
-var mockError = new ReferenceError(`xx is not defined
+const mockError = new ReferenceError(`xx is not defined
     at Object.<anonymous> (all.js:24)
     at __webpack_require__ (bootstrap 6b2274ddf49ac8544721:712)
     at fn (bootstrap 6b2274ddf49ac8544721:117)

@@ -17,6 +17,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run format:check
+      - run: npm run lint
 
       # Build leaf SDKs first: @devbie/newbie resolves their declarations
       # through the workspace symlinks, so their dist/ must exist beforehand.

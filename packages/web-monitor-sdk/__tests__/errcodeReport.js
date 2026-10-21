@@ -7,7 +7,7 @@ const appId = "appid_test";
 // Start a server to receive requests
 httpServer(mockErrcodeReportApi);
 /** default env domain; also used as the test instance for errcodeReport and filterUrls */
-const monitor = webMonitorSdk({
+const _monitor = webMonitorSdk({
   appId,
   api: "http://localhost/report",
   token: "token_test",
@@ -39,7 +39,7 @@ overrideFetch(function () {
 test("web options: errcodeReport", (done) => {
   fetch(mockErrcodeReportApi.api, {
     method: "GET",
-  }).then((res) => {});
+  }).then((_res) => {});
   // After sending requests, simulate the browser performance data observer
   window.mockPerformanceEntriesAdd(mockPerformanceResource.fetchErrcode);
   setTimeout(() => {

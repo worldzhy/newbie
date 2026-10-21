@@ -1,4 +1,5 @@
-import { perResource } from "./mock";
+/* eslint-disable @typescript-eslint/no-require-imports -- jest mock harness loads modules via CJS require */
+import { perResource as _perResource } from "./mock";
 import fetch from "node-fetch";
 
 window.fetch = fetch;
@@ -13,8 +14,8 @@ window.XMLHttpRequest.DONE = 4;
 window.performance.getEntries = function () {
   return [];
 };
-let _entriesByTypeArr = [],
-  observerCallbacks = [];
+let _entriesByTypeArr = [];
+const observerCallbacks = [];
 window.performance.getEntriesByType = function (type) {
   if (type === "navigation") {
     return [

@@ -28,7 +28,7 @@ export async function addModules(params: {
   registry: RegistryLocation;
   keys: string[];
 }): Promise<void> {
-  const { cwd, sink, registry, keys } = params;
+  const { sink, registry, keys } = params;
   for (const key of keys) {
     assertModuleKeySafe(key);
     await sink.copy(moduleRootInRegistry(registry.root, key), path.posix.join(MODULES_DIR, key));

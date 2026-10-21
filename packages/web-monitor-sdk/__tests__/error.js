@@ -5,13 +5,13 @@ import { overrideFetch } from "./mock/utils";
 import { ERRORTYPES, ERRORAPIS } from "../src/common/utils";
 import webMonitorSdk from "../src/index";
 const appId = "appid_test";
-const monitor = webMonitorSdk({
+const _monitor = webMonitorSdk({
   appId,
   api: "http://localhost/report",
   token: "token_test",
 });
 // Intercept and store reported payloads for assertions in test()
-let reportTypeError = [];
+const reportTypeError = [];
 // Override the fetch patched by monitor; verify auto-reporting after a request completes
 overrideFetch(function () {
   const body = JSON.parse(arguments[1].body);

@@ -38,7 +38,7 @@ export interface KnownIndicator {
  * The real INestApplicationContext exposes its DI container as a protected
  * member, which is not visible to TypeScript's structural typing. We accept
  * any object and access the container at runtime via a cast. */
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+
 export type NestAppLike = object;
 
 /** Configuration for startHealthReporting. */

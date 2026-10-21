@@ -35,7 +35,7 @@ export class AwsApiKeyStrategy implements RotationStrategy {
     );
   }
 
-  async setSecret(secretId: string, token: string, pendingDict: any, currentDict: any): Promise<void> {
+  async setSecret(_secretId: string, _token: string, _pendingDict: any, _currentDict: any): Promise<void> {
     // AWS API Key: Nothing to set on "service" side, already created in createSecret.
     return;
   }
