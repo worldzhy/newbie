@@ -16,6 +16,12 @@ export const MODULE_MANIFEST_FILE = "newbie.module.json";
 
 export const PRISMA_SCHEMA_MAIN = "prisma/schema.prisma";
 export const PRISMA_SCHEMA_MODELS_DIR = "prisma/models";
+/**
+ * Host-owned additions to module models (ADR-020). Must stay outside `prisma/`:
+ * Prisma loads every `.prisma` file under the configured schema root, and the
+ * convergent sweep in assemble/schema.ts owns `prisma/models` wholesale.
+ */
+export const PRISMA_ADDITIONS_DIR = "prisma-additions";
 
 export const ENV_PATH = ".env";
 export const ENV_EXAMPLE_PATH = ".env.example";

@@ -1,8 +1,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import { moduleSchemaNamespace, reconcileDatasourceSchemas } from "../core/prisma-schema";
-import { MODULES_DIR, PRISMA_SCHEMA_MAIN, PRISMA_SCHEMA_MODELS_DIR } from "../constants/paths";
+import { mergeModelAdditions, moduleSchemaNamespace, reconcileDatasourceSchemas } from "../core/prisma-schema";
+import { MODULES_DIR, PRISMA_ADDITIONS_DIR, PRISMA_SCHEMA_MAIN, PRISMA_SCHEMA_MODELS_DIR } from "../constants/paths";
 import { IssueBag, reportIssue } from "../lib/issues";
 import { readInstalledManifest, readInstalledSchema } from "../lib/module-install";
 import { fileExists } from "../lib/fs-util";
@@ -12,6 +12,16 @@ const DO_NOT_EDIT_HEADER = `// THIS FILE IS MANAGED BY @devbie/newbie-cli. DO NO
 // Run 'newbie install' to regenerate this file.
 
 `;
+
+/** Read a host-owned file; null when absent. */
+async function readOptionalText(cwd: string, relativePath: string): Promise<string | null> {
+  try {
+    return await fs.readFile(path.resolve(cwd, relativePath), "utf8");
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+    throw error;
+  }
+}
 
 /** Keys of modules (among the given ones) that declare a Prisma fragment. */
 async function keysWithSchema(cwd: string, keys: string[]): Promise<{ key: string; fragment: string | null }[]> {
@@ -30,23 +40,40 @@ export async function assembleSchemaFiles(params: {
   cwd: string;
   sink: Sink;
   issues: IssueBag;
-  added: string[];
   enabledKeys: string[];
   skipPrismaGenerate?: boolean;
 }): Promise<void> {
-  const { cwd, sink, issues, added, enabledKeys, skipPrismaGenerate } = params;
+  const { cwd, sink, issues, enabledKeys, skipPrismaGenerate } = params;
   const enabledSet = new Set(enabledKeys);
 
-  // [step 1] Copy added module fragments into prisma/models/<key>.prisma
-  for (const { key, fragment } of await keysWithSchema(cwd, added)) {
+  // [step 1] Render a fragment for every enabled module into
+  // prisma/models/<key>.prisma, merging the host's optional additions
+  // (ADR-020). Rendering the enabled set rather than only newly added keys is
+  // what makes a host addition take effect on a plain `newbie install` and
+  // keeps the generated file convergent.
+  for (const { key, fragment } of await keysWithSchema(cwd, enabledKeys)) {
     if (fragment === null) {
       reportIssue(issues, sink, `Declared Prisma fragment is missing inside ${path.posix.join(MODULES_DIR, key)}`);
       continue;
     }
-    await sink.writeText(
-      path.posix.join(PRISMA_SCHEMA_MODELS_DIR, `${key}.prisma`),
-      `${DO_NOT_EDIT_HEADER}${fragment}`,
-    );
+    const additionsPath = path.posix.join(PRISMA_ADDITIONS_DIR, `${key}.prisma`);
+    const additions = await readOptionalText(cwd, additionsPath);
+    let content = fragment;
+    if (additions !== null) {
+      const merged = mergeModelAdditions(fragment, additions);
+      for (const conflict of merged.conflicts) {
+        reportIssue(
+          issues,
+          sink,
+          `${additionsPath}: field '${conflict.model}.${conflict.field}' is already declared by module '${key}'; rename or remove the addition.`,
+        );
+      }
+      for (const model of merged.unknownModels) {
+        reportIssue(issues, sink, `${additionsPath}: model '${model}' is not declared by module '${key}'.`);
+      }
+      content = merged.content;
+    }
+    await sink.writeText(path.posix.join(PRISMA_SCHEMA_MODELS_DIR, `${key}.prisma`), `${DO_NOT_EDIT_HEADER}${content}`);
   }
 
   // [step 2] Convergent removal: delete any prisma/models/<key>.prisma whose
