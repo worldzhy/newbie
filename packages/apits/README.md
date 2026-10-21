@@ -32,14 +32,14 @@ The file name is derived from the input when `-n/--name` is omitted:
 
 ### CLI options
 
-| Option | Description | Default |
-| --- | --- | --- |
-| `input` (positional) | OpenAPI document URL or local `.json` / `.json5` / `.yaml` / `.yml` file | — |
-| `-o, --output <path>` | Output directory | `src/api` |
-| `-n, --name <name>` | Base name of the generated `<name>.ts`; when using a config file, filters sources by name | derived from the input host / file name |
-| `--base-url <url>` | Runtime `baseURL` (supports the `[code]:` prefix) | — |
-| `--no-client` | Do not scaffold the default `request.ts` axios client | client is generated |
-| `-w, --watch` | Watch a local document and regenerate on change | off |
+| Option                | Description                                                                               | Default                                 |
+| --------------------- | ----------------------------------------------------------------------------------------- | --------------------------------------- |
+| `input` (positional)  | OpenAPI document URL or local `.json` / `.json5` / `.yaml` / `.yml` file                  | —                                       |
+| `-o, --output <path>` | Output directory                                                                          | `src/api`                               |
+| `-n, --name <name>`   | Base name of the generated `<name>.ts`; when using a config file, filters sources by name | derived from the input host / file name |
+| `--base-url <url>`    | Runtime `baseURL` (supports the `[code]:` prefix)                                         | —                                       |
+| `--no-client`         | Do not scaffold the default `request.ts` axios client                                     | client is generated                     |
+| `-w, --watch`         | Watch a local document and regenerate on change                                           | off                                     |
 
 ## Optional configuration file
 
@@ -58,18 +58,18 @@ The config file is auto-discovered from any of:
 
 ```ts
 // apits.config.ts
-import { defineConfig } from '@devbie/apits'
+import { defineConfig } from "@devbie/apits";
 
 export default defineConfig([
   {
-    input: 'http://localhost:3041/api-json',
-    output: 'src/api/user',
-    name: 'user', // optional, derived from `input` when omitted
-    baseURL: '[code]:process.env.BASE_API_URL',
+    input: "http://localhost:3041/api-json",
+    output: "src/api/user",
+    name: "user", // optional, derived from `input` when omitted
+    baseURL: "[code]:process.env.BASE_API_URL",
     clientImportTemplate: () => "import request from './request'",
-    client: true
-  }
-])
+    client: true,
+  },
+]);
 ```
 
 CLI flags take precedence over config-file values. With a config file,
