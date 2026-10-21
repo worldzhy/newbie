@@ -13,8 +13,8 @@
 >
 > 框架侧真源（设计方向以此为准）：
 >
-> - Roadmap C1：`/Users/worldzhy/src/newbie/.trae/documents/devbie-framework-roadmap.md`「Phase C1. module-hub 控制面」（2026-09-27 定稿）
-> - 拆分计划 Phase 6：`/Users/worldzhy/src/newbie/.trae/documents/newbie-framework-split-plan.md`
+> - Roadmap C1：`/Users/worldzhy/src/devbie/.trae/documents/devbie-framework-roadmap.md`「Phase C1. module-hub 控制面」（2026-09-27 定稿）
+> - 拆分计划 Phase 6：`/Users/worldzhy/src/devbie/.trae/documents/newbie-framework-split-plan.md`
 >
 > 宿主侧依据：
 >
