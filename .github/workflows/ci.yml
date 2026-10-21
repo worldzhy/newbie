@@ -10,7 +10,7 @@ on:
     branches: [dev]
 
 jobs:
-  build-and-test:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
