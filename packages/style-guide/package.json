@@ -27,8 +27,14 @@
   },
   "peerDependencies": {
     "eslint": "^9.0.0 || ^10.0.0",
+    "next": "^16.4.2",
     "prettier": "^3.9.9",
     "typescript": ">=5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "next": {
+      "optional": true
+    }
   },
   "scripts": {
     "test": "node --test"

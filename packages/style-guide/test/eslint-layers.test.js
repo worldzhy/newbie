@@ -39,6 +39,16 @@ describe("@devbie/style-guide published surface", () => {
       ["./eslint/base", "./eslint/nest", "./eslint/next"],
     );
   });
+
+  it("declares next as an optional peer, tested against a devDependency copy", () => {
+    // The next entry is only loadable where `next` exists, but a package-level
+    // required peer would force base/nest consumers to install Next.js. The
+    // optional peer documents the contract without forcing anything; the dev
+    // dependency exists so this package's own test suite can load the layer.
+    assert.equal(pkg.peerDependenciesMeta?.next?.optional, true);
+    assert.equal(pkg.peerDependencies.next, "^16.4.2");
+    assert.equal(pkg.devDependencies.next, "^16.4.2");
+  });
 });
 
 describe("eslint layers", () => {

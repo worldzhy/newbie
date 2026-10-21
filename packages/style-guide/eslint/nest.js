@@ -11,9 +11,10 @@ import prettierConfig from "eslint-config-prettier";
  *
  * The rule set is the plugin's recommended flat config. Four of those rules
  * are type-aware, so every file covered by this layer must belong to a
- * TypeScript project (projectService resolves the nearest tsconfig.json), and
- * the plugin's peers (`class-validator`, `@typescript-eslint/parser`) must be
- * installed by the consumer.
+ * TypeScript project (projectService resolves the nearest tsconfig.json). The
+ * plugin's own peer declarations bring what its rules expect (`class-validator`
+ * is referenced by name only — the rules never import it at lint runtime), and
+ * npm/pnpm auto-install those peers, so no extra install step is required.
  *
  * `prettierConfig` is repeated here so that composing `[...base, ...nest]`
  * still ends on the formatting-rule shutdown.
