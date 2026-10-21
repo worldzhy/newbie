@@ -1,18 +1,19 @@
 import { Logger, LogLevel, Type, ValidationPipe } from "@nestjs/common";
-import type { CorsOptionsDelegate } from "@nestjs/common/interfaces/external/cors-options.interface";
 import { NestFactory } from "@nestjs/core";
 import { NestExpressApplication } from "@nestjs/platform-express";
 import { DocumentBuilder, SwaggerCustomOptions, SwaggerModule } from "@nestjs/swagger";
 import cookieParser from "cookie-parser";
-import { json, text, urlencoded, type Request, type Response } from "express";
+import { json, text, urlencoded } from "express";
 import helmet from "helmet";
 import cluster from "node:cluster";
 import os from "node:os";
 import { startHealthReporting } from "@devbie/health-sdk";
+import { startHeartbeat } from "@devbie/heartbeat-sdk";
 import { startBackendMonitoring } from "@devbie/backend-monitor-sdk/nest";
 import { listenWithPortRaceRecovery } from "./port-race";
 import { registerGracefulShutdown } from "./graceful-shutdown";
 import { startModuleHubReporting } from "./module-hub/reporter";
+import { AllowAnyOriginRegistry } from "./cors/allow-any-origin.registry";
 
 const logger = new Logger("NewbieFactory");
 
@@ -47,26 +48,11 @@ export interface NewbieAppOptions {
    */
   logger?: LogLevel[];
   /**
-   * Also parse `text/plain` request bodies. Required by report endpoints whose
-   * browser SDKs send payloads via sendBeacon (which posts text/plain).
-   */
-  textBodyParser?: boolean;
-  /**
-   * Express middleware registered BEFORE the global CORS middleware. Use it
-   * for route whitelists that must override the global origin policy.
-   */
-  beforeCors?: (req: Request, res: Response, next: () => void) => void;
-  /**
-   * Function-style CORS resolver passed verbatim to app.enableCors(). When
-   * set, it replaces the static {credentials, origin: corsAllowedOrigins}
-   * config entirely.
-   */
-  corsResolver?: CorsOptionsDelegate<Request>;
-  /**
    * Survive port races during `nest start --watch` under Docker bind mounts:
    * probe the port, kill stale previous-generation holders, stand down when a
    * same-generation sibling wins, and fall back to SO_REUSEPORT. Also installs
    * fast-shutdown SIGTERM/SIGINT handlers that release the port immediately.
+   * Defaults to `environment !== "production"`.
    */
   portRaceRecovery?: boolean;
   /**
@@ -149,6 +135,7 @@ export class NewbieFactory {
     const corsAllowedOrigins = options.corsAllowedOrigins ?? (process.env.ALLOWED_ORIGINS ?? "").split(",");
     const bodyLimit = options.bodyLimit ?? "10mb";
     const requestTimeout = options.requestTimeout ?? 60_000;
+    const portRaceRecovery = options.portRaceRecovery ?? environment !== "production";
 
     const bootstrap = async (): Promise<NewbieBootstrapResult> => {
       // [step 1] Create a nestjs application.
@@ -175,23 +162,24 @@ export class NewbieFactory {
       app.use(cookieParser());
       app.use(json({ limit: bodyLimit }));
       app.use(urlencoded({ limit: bodyLimit, extended: true }));
-      if (options.textBodyParser) {
-        app.use(text({ type: "text/plain" }));
-      }
+      // Monitor SDKs reporting via navigator.sendBeacon post text/plain bodies.
+      app.use(text({ type: "text/plain" }));
 
       // [step 2] Enable features.
 
-      // Project hook registered before the global CORS middleware, e.g. an
-      // open-route whitelist that overrides the origin policy.
-      if (options.beforeCors) {
-        app.use(options.beforeCors);
-      }
-
-      if (options.corsResolver) {
-        app.enableCors(options.corsResolver);
-      } else {
-        app.enableCors({ credentials: true, origin: corsAllowedOrigins });
-      }
+      // Any-origin report endpoints (@AllowAnyOrigin) get CORS:* at the
+      // Express layer, registered before the global CORS config so the origin
+      // policy never overrides it. The route registry is built from controller
+      // metadata by AllowAnyOriginRegistry (ADR-009 D1).
+      app.use(AllowAnyOriginRegistry.handleRequest);
+      app.enableCors((req, callback) => {
+        if (req && AllowAnyOriginRegistry.matches(req.method, req.path)) {
+          // Handled by the middleware above; origin: false prevents the
+          // global cors middleware from overriding ACAO:*.
+          return callback(null, { origin: false });
+        }
+        callback(null, { credentials: true, origin: corsAllowedOrigins });
+      });
 
       app.useGlobalPipes(
         new ValidationPipe({
@@ -237,7 +225,7 @@ export class NewbieFactory {
 
       // [step 3] Listen port. With portRaceRecovery enabled, probe the port,
       // evict stale holders and survive `nest start --watch` port races.
-      const server = options.portRaceRecovery
+      const server = portRaceRecovery
         ? await listenWithPortRaceRecovery(app, port, "0.0.0.0")
         : await app.listen(port, "0.0.0.0");
       server.timeout = requestTimeout;
@@ -245,7 +233,7 @@ export class NewbieFactory {
         server.keepAliveTimeout = options.keepAliveTimeout;
       }
 
-      if (!options.portRaceRecovery) {
+      if (!portRaceRecovery) {
         // Production-style shutdown: drain in-flight requests within a bounded
         // grace period and always terminate afterwards.
         registerGracefulShutdown(app, server, options.shutdownTimeoutMs ?? 10_000);
@@ -253,8 +241,16 @@ export class NewbieFactory {
 
       logger.log(`Application is running on: ${await app.getUrl()}`);
 
-      // [step 4] Built-in reporters. Both are env-gated and fire-and-forget:
-      // they never block or crash the host process.
+      // [step 4] Built-in reporters. All are env-gated, fire-and-forget and
+      // idempotent: they never block or crash the host process.
+
+      // Heartbeat liveness: starts when HEARTBEAT_ENDPOINT and HEARTBEAT_TOKEN
+      // are present. Sends an immediate beat and repeats every 30s.
+      const heartbeatEndpoint = process.env.HEARTBEAT_ENDPOINT;
+      const heartbeatToken = process.env.HEARTBEAT_TOKEN;
+      if (heartbeatEndpoint && heartbeatToken) {
+        startHeartbeat({ endpoint: heartbeatEndpoint, token: heartbeatToken });
+      }
 
       // Module-hub self-registration: starts when MODULE_HUB_ENDPOINT and
       // MODULE_HUB_TOKEN are present. Sends a `kind="full"` snapshot
@@ -265,20 +261,16 @@ export class NewbieFactory {
         startModuleHubReporting({ endpoint: moduleHubEndpoint, token: moduleHubToken });
       }
 
-      // Dependency health reporting: starts when HEALTH_ENDPOINT and
-      // HEALTH_TOKEN are present. Scans the DI container for assembled
-      // foundation services and POSTs snapshots every 30s; needs the NestJS
-      // app instance, so it lives here rather than in project main.ts.
-      const healthEndpoint = process.env.HEALTH_ENDPOINT;
-      const healthToken = process.env.HEALTH_TOKEN;
-      if (healthEndpoint && healthToken) {
-        startHealthReporting(app, {
-          endpoint: healthEndpoint,
-          token: healthToken,
-          appVersion: process.env.APP_VERSION,
-          env: process.env.ENVIRONMENT,
-        });
-      }
+      // Dependency health reporting: checks always run; the POST step is
+      // gated by HEALTH_ENDPOINT + HEALTH_TOKEN inside the SDK. Scans the DI
+      // container for assembled foundation services every 30s; needs the
+      // NestJS app instance, so it lives here rather than in project main.ts.
+      startHealthReporting(app, {
+        endpoint: process.env.HEALTH_ENDPOINT,
+        token: process.env.HEALTH_TOKEN,
+        appVersion: process.env.APP_VERSION,
+        env: process.env.ENVIRONMENT,
+      });
 
       return { app, server };
     };

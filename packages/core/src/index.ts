@@ -19,6 +19,8 @@ export * from "./common.dto";
 
 // Decorators
 export * from "./decorators/cookie.decorator";
+export * from "./cors/allow-any-origin.decorator";
+export * from "./cors/allow-any-origin.registry";
 
 // Exception filters
 export * from "./exception-filters/all.exception-filter";
