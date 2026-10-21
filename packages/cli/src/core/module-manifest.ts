@@ -46,6 +46,12 @@ export interface ModuleManifest {
    * serve the host application. Only declared values are permitted.
    */
   role?: ModuleRole;
+  /**
+   * Claims the public URL namespace `/<key>/*` on the site domain: assemble
+   * renders a Caddy `handle /<key>/*` pass-through block for the module
+   * (ADR-008 D4). The namespace always equals the module key.
+   */
+  publicNamespace?: boolean;
   module: ModuleWiring;
   /** Project-relative path of the Prisma model fragment; absent = no models. */
   schema?: string;
@@ -120,6 +126,14 @@ function assertOptionalRole(value: unknown, key: string): void {
   }
 }
 
+/** Validate that an optional manifest field is either absent or a boolean. */
+function assertOptionalBoolean(value: unknown, field: string, key: string): void {
+  if (value === undefined) return;
+  if (typeof value !== "boolean") {
+    throw new Error(`Invalid newbie.module.json for '${key}': '${field}' must be a boolean when declared.`);
+  }
+}
+
 export function normalizeModuleManifest(raw: unknown, expectedKey?: string): ModuleManifest {
   if (!raw || typeof raw !== "object") {
     throw new Error("Invalid newbie.module.json: expected an object.");
@@ -151,6 +165,7 @@ export function normalizeModuleManifest(raw: unknown, expectedKey?: string): Mod
   assertOptionalString(data.sdk, "sdk", data.key);
   assertOptionalString(data.deprecated, "deprecated", data.key);
   assertOptionalRole(data.role, data.key);
+  assertOptionalBoolean(data.publicNamespace, "publicNamespace", data.key);
   const manifest: ModuleManifest = {
     ...(data as object),
     key: data.key,

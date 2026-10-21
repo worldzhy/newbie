@@ -88,6 +88,23 @@ describe("normalizeModuleManifest", () => {
     assert.throws(() => normalizeModuleManifest({ ...valid, role: "observer" }), /'role' must be one of/);
     assert.throws(() => normalizeModuleManifest({ ...valid, role: 42 }), /'role' must be one of/);
   });
+
+  it("preserves an optional 'publicNamespace' boolean and leaves it absent by default", () => {
+    const manifest = normalizeModuleManifest({ ...valid, publicNamespace: true });
+    assert.equal(manifest.publicNamespace, true);
+    assert.equal(normalizeModuleManifest(valid).publicNamespace, undefined);
+  });
+
+  it("rejects a non-boolean 'publicNamespace'", () => {
+    assert.throws(
+      () => normalizeModuleManifest({ ...valid, publicNamespace: "true" }),
+      /'publicNamespace' must be a boolean/,
+    );
+    assert.throws(
+      () => normalizeModuleManifest({ ...valid, publicNamespace: 1 }),
+      /'publicNamespace' must be a boolean/,
+    );
+  });
 });
 
 describe("moduleImportLine", () => {
