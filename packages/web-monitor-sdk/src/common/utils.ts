@@ -67,7 +67,7 @@ export function getConsoleErrorMsg(args: any[]): string {
       }
       msg = arr.toString();
     }
-  } catch (e) {
+  } catch {
     // no-op
   }
   return msg;

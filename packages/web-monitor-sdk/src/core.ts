@@ -32,7 +32,7 @@ const reportDebounce = function () {
 
 const ErrorInstanceReport = function (error: StackTrace, api: string): void {
   const defaults = Object.assign({}, errorEntryTemplate);
-  setTimeout(function () {
+  setTimeout(() => {
     defaults.msg = error.message;
     defaults.type = ERRORTYPES.script;
     defaults.name = error.name;
@@ -46,7 +46,9 @@ const ErrorInstanceReport = function (error: StackTrace, api: string): void {
     }
     defaults.data = { resourceUrl: _url, line, col };
     defaults.createTime = new Date().getTime();
-    _conf && _conf.errorList.push(defaults);
+    if (_conf) {
+      _conf.errorList.push(defaults);
+    }
     if (reportDebounce()) reportData(ReportType.Error);
   }, 0);
 };
@@ -108,7 +110,7 @@ function Performance(options: InitOptions): void {
       const { responseText } = xhr;
       try {
         responseJson = JSON.parse(responseText);
-      } catch (e) {
+      } catch {
         // Non-JSON response bodies (HTML/plain text) are normal; keep the
         // empty object instead of spamming the host page console.
       }
@@ -127,7 +129,7 @@ function Performance(options: InitOptions): void {
     } else if (xhr.responseType === "json") {
       try {
         resSize = JSON.stringify(xhr.response).length;
-      } catch (e) {
+      } catch {
         // Unserializable response (e.g. cyclic structure); size stays 0 and
         // reporting is unaffected.
       }
@@ -144,7 +146,7 @@ function Performance(options: InitOptions): void {
       try {
         if (_traceId) conf.ajaxMsg[_id].traceId = _traceId;
         conf.ajaxMsg[_id]["bodySize"] = getAjaxResponseSize(ajax);
-      } catch (err) {
+      } catch {
         // traceId/bodySize enrichment is best-effort; a failure here must not
         // break the reporting flow.
       }
@@ -220,7 +222,7 @@ function Performance(options: InitOptions): void {
         let type = "";
         try {
           type = typeof this.xhr[attr];
-        } catch (e) {
+        } catch {
           // Some xhr properties throw on access (e.g. cross-origin getters);
           // treating them as non-functions routes them to defineProperty below.
         }
@@ -247,30 +249,30 @@ function Performance(options: InitOptions): void {
     function setFactory(attr: string) {
       return function (v: any) {
         const xhr = this.xhr;
-        const that = this;
         const hook = proxy[attr];
         if (typeof hook === "function") {
-          xhr[attr] = function () {
-            proxy[attr](that) || v.apply(xhr, arguments as any);
+          xhr[attr] = (...args: any[]) => {
+            if (!proxy[attr](this)) {
+              v.apply(xhr, args);
+            }
           };
         } else {
           const attrSetterHook = (hook || {})["setter"];
-          v = (attrSetterHook && attrSetterHook(v, that)) || v;
+          v = (attrSetterHook && attrSetterHook(v, this)) || v;
           try {
             xhr[attr] = v;
-          } catch (e) {
+          } catch {
             this[attr + "_"] = v;
           }
         }
       };
     }
     function hookfun(fun: string) {
-      return function () {
-        const args = [].slice.call(arguments);
+      return function (...args: any[]) {
         if (proxy[fun] && proxy[fun].call(this, args, this.xhr)) {
           return;
         }
-        return this.xhr[fun].apply(this.xhr, args);
+        return this.xhr[fun](...args);
       };
     }
     return (window as any)._ahrealxhr;
@@ -279,8 +281,8 @@ function Performance(options: InitOptions): void {
   function _fetch() {
     if (!window.fetch) return;
     const _fetch = fetch;
-    (window as any).fetch = function () {
-      const _arg = arguments;
+    (window as any).fetch = function (...args: any[]) {
+      const _arg = args;
       const _id = randomString();
       const req = fetArg(_arg);
       if (req.type !== "report-data") {
@@ -290,7 +292,7 @@ function Performance(options: InitOptions): void {
         conf.haveFetch = true;
       }
       return _fetch
-        .apply(this, arguments as any)
+        .apply(this, args)
         .then((originRes: Response) => {
           if (req.type === "report-data") return originRes;
           const url = originRes.url ? originRes.url.split("?")[0] : "";
@@ -311,14 +313,14 @@ function Performance(options: InitOptions): void {
                 if (res!.status < 200 || res!.status > 300) {
                   fetchErrResponse(res!, req, data);
                   getFetchTime();
-                } else if (res!.status == 200) {
+                } else if (res!.status === 200) {
                   if (conf.ajaxMsg[_id]) {
                     conf.ajaxMsg[_id]["bodySize"] = data.length;
                   }
                   let resResult: any = {};
                   try {
                     resResult = JSON.parse(data);
-                  } catch (e) {
+                  } catch {
                     // Non-JSON response bodies are normal; errcodeReport is
                     // simply skipped for them.
                   }
@@ -339,7 +341,7 @@ function Performance(options: InitOptions): void {
                   getFetchTime();
                 }
               });
-          } catch (e) {
+          } catch {
             // res.clone()/text() can throw when the body is already disturbed;
             // skip size/errcode inspection and hand back the original response.
           }
@@ -367,7 +369,7 @@ function Performance(options: InitOptions): void {
     };
   }
 
-  function fetArg(arg: IArguments) {
+  function fetArg(arg: any[]) {
     const result: any = { method: "GET", type: "fetchrequest" };
     const args = Array.prototype.slice.apply(arg);
     if (!args || !args.length) return result;
@@ -393,7 +395,7 @@ function Performance(options: InitOptions): void {
         const [, options] = result.url.split("?");
         result.options = options || "";
       }
-    } catch (err) {
+    } catch {
       // Malformed fetch arguments fall back to the GET default below.
     }
     return result;
@@ -402,7 +404,7 @@ function Performance(options: InitOptions): void {
   function _error() {
     window.addEventListener(
       "error",
-      function (e: any) {
+      (e: any) => {
         const defaults = Object.assign({}, errorEntryTemplate);
         defaults.type = ERRORTYPES.resource;
         defaults.createTime = new Date().getTime();
@@ -414,12 +416,13 @@ function Performance(options: InitOptions): void {
           type: e.type,
           resourceUrl: e.target.href || e.target.src || e.target.currentSrc,
         };
-        if (e.target != window) conf.errorList.push(defaults);
+        if (e.target !== window) conf.errorList.push(defaults);
       },
       true,
     );
     const _oldOnerror = window.onerror as any;
-    window.onerror = function (msg: any, _url: any, line: any, col: any, error: any) {
+    window.onerror = function (...args: [any, any, any, any, any]) {
+      const [msg, _url, line, col, error] = args;
       const stack = computeStackTrace(error);
       if (stack.failed) {
         const defaults = Object.assign({}, errorEntryTemplate);
@@ -434,10 +437,10 @@ function Performance(options: InitOptions): void {
         ErrorInstanceReport(stack, ERRORAPIS.onerror);
       }
       if (_oldOnerror) {
-        return _oldOnerror.apply(this, arguments as any);
+        return _oldOnerror.apply(this, args as any);
       }
     };
-    window.addEventListener("unhandledrejection", function (e: any) {
+    window.addEventListener("unhandledrejection", (e: any) => {
       const error = e && e.reason;
       const stack = computeStackTrace(error);
       if (stack.failed) {
@@ -458,18 +461,18 @@ function Performance(options: InitOptions): void {
       }
     });
     const oldError = console.error;
-    console.error = function () {
-      if (arguments.length === 1) {
-        const stack = computeStackTrace(arguments[0]);
+    console.error = (...args: any[]) => {
+      if (args.length === 1) {
+        const stack = computeStackTrace(args[0]);
         if (!stack.failed) {
           ErrorInstanceReport(stack, ERRORAPIS.consoleError);
           return;
         }
       }
-      const msg = getConsoleErrorMsg(arguments as any);
+      const msg = getConsoleErrorMsg(args);
       if (msg) {
         const defaults = Object.assign({}, errorEntryTemplate);
-        setTimeout(function () {
+        setTimeout(() => {
           defaults.msg = msg;
           defaults.type = ERRORTYPES.log;
           defaults.api = ERRORAPIS.consoleError;
@@ -479,11 +482,11 @@ function Performance(options: InitOptions): void {
           if (reportDebounce()) reportData(ReportType.Error);
         }, 0);
       }
-      return (oldError as any).apply(console, arguments as any);
+      return (oldError as any).apply(console, args);
     };
     addEventListener(
       "load",
-      function () {
+      () => {
         loadTime = new Date().getTime() - beginTime;
         getLargeTime();
       },
@@ -491,7 +494,7 @@ function Performance(options: InitOptions): void {
     );
     addEventListener(
       "unload",
-      function () {
+      () => {
         if (navigator && (navigator as any).sendBeacon) reportData(ReportType.Unload);
       },
       false,
@@ -508,7 +511,7 @@ function Performance(options: InitOptions): void {
       } else if (ajax.statusText) {
         msg = ajax.statusText;
       }
-    } catch (e) {
+    } catch {
       // responseText access can throw for opaque responses; keep the generic
       // "ajax request error" message.
     }
@@ -546,7 +549,7 @@ function Performance(options: InitOptions): void {
     try {
       const _traceId = res.headers.get(conf.opt.traceIdHeaderName) || null;
       if (_traceId) defaults.traceId = _traceId;
-    } catch (e) {
+    } catch {
       // headers.get() can throw for opaque/cross-origin responses; traceId
       // stays null.
     }
@@ -626,7 +629,7 @@ function Performance(options: InitOptions): void {
         fetch(api, {
           method: "POST",
           headers: { "Content-Type": "text/plain" },
-          // @ts-ignore
+          // @ts-expect-error -- custom marker so the patched fetch skips re-reporting SDK report calls
           type: "report-data" as any,
           body,
         }).catch((err) => {

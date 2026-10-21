@@ -4,3 +4,5 @@ coverage
 node_modules
 # Agent working documents (Chinese by policy); never shipped with packages
 .trae
+# GeoJSON map data assets (minified single-line); formatting them is pure churn
+**/maps/*.json

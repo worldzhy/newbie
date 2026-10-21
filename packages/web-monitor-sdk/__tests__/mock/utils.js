@@ -1,9 +1,12 @@
+/* eslint-disable @typescript-eslint/no-require-imports -- jest mock harness loads modules via CJS require */
 export function overrideFetch(cb) {
   // Override the fetch patched by monitor to skip reporting
   const monitorFetch = window.fetch;
   window.fetch = function () {
     if (arguments[1] && arguments[1].type === "report-data") {
-      cb && cb.apply(this, arguments);
+      if (cb) {
+        cb.apply(this, arguments);
+      }
       // report
       return Promise.resolve();
     }
@@ -20,7 +23,7 @@ export function httpServer(config) {
     if (reqPath === config.path) {
       if (config.isBlob) {
         const filePath = path.resolve(__dirname, "./mock.js");
-        var stats = fs.statSync(filePath);
+        const stats = fs.statSync(filePath);
         res.writeHead(200, {
           "Content-Type": "application/octet-stream",
           "Content-Disposition": "attachment; filename=mock",

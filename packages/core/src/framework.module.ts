@@ -1,5 +1,5 @@
 import { DynamicModule, Global, Logger, MiddlewareConsumer } from "@nestjs/common";
-import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, DiscoveryModule } from "@nestjs/core";
 import { HttpModule } from "@nestjs/axios";
 import { ConfigModule } from "@nestjs/config";
 import { ThrottlerGuard, ThrottlerModule, type ThrottlerModuleOptions } from "@nestjs/throttler";
@@ -12,6 +12,7 @@ import { PrismaExceptionFilter } from "./exception-filters/prisma.exception-filt
 import { ThrottlerExceptionFilter } from "./exception-filters/throttler.exception-filter";
 import { HttpResponseInterceptor } from "./interceptors/http-response.interceptor";
 import { HttpMiddleware } from "./middlewares/http.middleware";
+import { AllowAnyOriginRegistry } from "./cors/allow-any-origin.registry";
 
 export interface FrameworkModuleOptions {
   /** Supplied to PrismaModule.forRoot — the project's generated PrismaClient constructor. */
@@ -38,6 +39,7 @@ export class FrameworkModule {
         ConfigModule.forRoot({ load: [FrameworkConfiguration], isGlobal: true }),
         ThrottlerModule.forRoot(options.throttler ?? { throttlers: [{ limit: 10000, ttl: 1000 }] }),
         HttpModule,
+        DiscoveryModule,
         PrismaModule.forRoot(options.prisma),
       ],
       providers: [
@@ -50,6 +52,7 @@ export class FrameworkModule {
         { provide: APP_FILTER, useClass: PrismaExceptionFilter }, // 2nd priority for exceptions thrown by services.
         { provide: APP_FILTER, useClass: ThrottlerExceptionFilter }, // 1st priority for exceptions thrown by throttler (rate limit).
         { provide: APP_INTERCEPTOR, useClass: HttpResponseInterceptor },
+        AllowAnyOriginRegistry,
         Logger,
       ],
       exports: [HttpModule, Logger],

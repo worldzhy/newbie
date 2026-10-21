@@ -8,6 +8,7 @@ import pkg from "../package.json";
 
 import { runAgent } from "./commands/agent";
 import { runApply } from "./commands/apply";
+import { runAssemble } from "./commands/assemble";
 import { runConfig } from "./commands/config";
 import { runCreate } from "./commands/create";
 import { runDevLint } from "./commands/dev/lint";
@@ -79,6 +80,17 @@ program
   .action(function (this: Command) {
     const options = { ...collectOptions(this), yes: Boolean(this.opts().yes) };
     return run(() => runInstall(options));
+  });
+
+program
+  .command("assemble")
+  .description(
+    "Regenerate module-derived deploy assets (deploy/compose.modules.yml, Caddyfile module route block) from the installed module set",
+  )
+  .option("--check", "CI gate: print the diff and exit non-zero when the generated deploy assets drift", false)
+  .action(function (this: Command) {
+    const flags = this.opts();
+    return run(() => runAssemble({ ...collectOptions(this), check: Boolean(flags.check) }));
   });
 
 program
@@ -173,7 +185,7 @@ program
 program
   .command("update-template [paths...]")
   .description(
-    "Diff framework-managed skeleton files (main.ts, tsconfig*, prisma framework block, deploy/*) against the template; business files are skipped. Pass path prefixes (e.g. deploy/) to restrict the scope",
+    "Diff framework-owned template files (ADR-009 ownership registry: main.ts, tsconfig*, nest-cli.json, prisma.config.ts, prisma framework block, .env.example/.gitignore framework blocks, deploy/*) against the template; generated and host-owned files are skipped. Pass path prefixes (e.g. deploy/) to restrict the scope",
   )
   .option("--template-path <dir>", "use a local template directory instead of cloning newbie-starter")
   .option("--template-ref <ref>", "git ref (e.g. a template tag) of newbie-starter to sync from")
@@ -208,7 +220,7 @@ program
   .command("watch [keys...]")
   .description("Watch the local newbie-modules registry and sync installed module sources into the project on change")
   .option("--all", "watch every registry module instead of only installed ones", false)
-  .action(function (this: Command, keys: string[]) {
+  .action(function (this: Command, _keys: string[]) {
     const flags = this.opts();
     return run(() =>
       runWatch({
@@ -224,7 +236,9 @@ const dev = program
 
 dev
   .command("lint")
-  .description("Enforce the module layering rules (domain -> capability -> foundation) across registry sources")
+  .description(
+    "Enforce the module layering rules (feature -> capability -> infrastructure -> datastore) across registry sources",
+  )
   .action(function (this: Command) {
     return run(() => runDevLint(collectOptions(this)));
   });

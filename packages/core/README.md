@@ -106,28 +106,31 @@ npx @devbie/newbie-cli create my-app
 | `environment`        | `string`          | `ENVIRONMENT` or `development`          | `development` enables Swagger; `production` enables Helmet.                      |
 | `port`               | `number`          | `PORT` or `3000`                        | Port the HTTP server listens on.                                                 |
 | `corsAllowedOrigins` | `string[]`        | `ALLOWED_ORIGINS`                       | Allowed CORS origins (credentials enabled).                                      |
-| `corsResolver`       | `function`        | —                                       | Custom function-style CORS resolver; replaces static origins.                    |
 | `bodyLimit`          | `string`          | `10mb`                                  | Maximum request body size.                                                       |
 | `requestTimeout`     | `number`          | `60000`                                 | Request timeout in milliseconds.                                                 |
 | `keepAliveTimeout`   | `number`          | —                                       | Keep-alive timeout in milliseconds.                                              |
 | `logger`             | `string[]`        | `LOG_LEVEL` or `['log','warn','error']` | NestJS log levels.                                                               |
-| `textBodyParser`     | `boolean`         | `false`                                 | Also parse `text/plain` bodies (for `sendBeacon` endpoints).                     |
-| `beforeCors`         | `function`        | —                                       | Express middleware registered before the global CORS middleware.                 |
 | `swagger`            | `object \| false` | enabled in development                  | Swagger config (`title`, `description`, `version`, `path`, default path `/api`). |
-| `portRaceRecovery`   | `boolean`         | `false`                                 | Survive port races during `nest start --watch` under bind mounts.                |
+| `portRaceRecovery`   | `boolean`         | `environment !== "production"`          | Survive port races during `nest start --watch` under bind mounts.                |
 | `shutdownTimeoutMs`  | `number`          | `10000`                                 | Grace period for in-flight requests on SIGTERM/SIGINT.                           |
 | `cluster`            | `boolean`         | `false`                                 | Run one worker per available CPU core.                                           |
 
 ### What the framework wires for you
 
-- `cookie-parser`, JSON/URL-encoded body parsers (and optional text parser).
-- CORS with credentials, plus the v4 (extended) Express query parser.
+- `cookie-parser`, JSON/URL-encoded body parsers, and always-on `text/plain`
+  parsing (monitor SDKs report via `navigator.sendBeacon`).
+- CORS with credentials, plus the v4 (extended) Express query parser. Routes
+  decorated with `@AllowAnyOrigin()` answer `Access-Control-Allow-Origin: *`
+  (preflight included) while every other route keeps the origin whitelist.
 - A global `ValidationPipe` with `transform` and `whitelist` enabled.
 - Helmet in production; Swagger UI (cookie + bearer auth) in development.
 - A global throttler guard (10000 requests / second per endpoint by default).
 - A response-shaping `HttpResponseInterceptor`.
 - Exception filters in priority order: throttler → Prisma → newbie → HTTP →
   catch-all, so every failure gets a consistent error envelope.
+- Env-gated reporters after listen: heartbeat (`HEARTBEAT_*`), module-hub
+  (`MODULE_HUB_*`) and dependency health (`HEALTH_*`; checks always run, the
+  POST is skipped when the endpoint is unset).
 
 ## List endpoints and query pipes
 

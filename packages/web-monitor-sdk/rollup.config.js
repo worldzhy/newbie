@@ -17,10 +17,10 @@ function cleanDist() {
         if (fs.existsSync(distDir)) {
           try {
             fs.rmSync(distDir, { recursive: true, force: true });
-          } catch (e) {
+          } catch {
             try {
               fs.rmdirSync(distDir, { recursive: true });
-            } catch (e2) {
+            } catch {
               const remove = (p) => {
                 if (!fs.existsSync(p)) return;
                 const s = fs.statSync(p);

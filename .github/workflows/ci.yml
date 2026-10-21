@@ -17,6 +17,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run format:check
+      - run: npm run lint
 
       # Build leaf SDKs first: @devbie/newbie resolves their declarations
       # through the workspace symlinks, so their dist/ must exist beforehand.
@@ -31,6 +32,15 @@ jobs:
       - run: npm run build -w @devbie/newbie-cli
       - run: npm test -w @devbie/newbie-cli
       - run: npm run build -w @devbie/aws-secrets-cli
+
+      - run: npm run build -w @devbie/fewbie-cli
+      - run: npm test -w @devbie/fewbie-cli
+      # The template-sync gate compares registry items against fewbie-starter's
+      # default branch — the same source `fewbie create` clones. That invariant
+      # is only meaningful once work has landed on main, so the gate is skipped
+      # on dev (ported from the standalone fewbie repo's CI).
+      - if: github.ref_name == 'main' || github.base_ref == 'main'
+        run: npm run check:template-sync -w @devbie/fewbie-cli
 
       - run: npm test -w @devbie/heartbeat-sdk
       - run: npm test -w @devbie/web-monitor-sdk

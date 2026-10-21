@@ -5,15 +5,20 @@
   "author": "worldzhy",
   "private": true,
   "license": "MIT",
+  "prettier": "@devbie/style-guide/prettier",
   "workspaces": [
     "packages/*"
   ],
   "scripts": {
     "build:core": "npm run build -w @devbie/newbie",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix"
   },
   "devDependencies": {
+    "@devbie/style-guide": "*",
+    "eslint": "^9.39.4",
     "prettier": "^3.9.9"
   }
 }

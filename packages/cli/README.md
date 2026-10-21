@@ -80,6 +80,18 @@ requirements).
 | ----------- | -------------------------- |
 | `-y, --yes` | Skip confirmation prompts. |
 
+#### `newbie assemble`
+
+Regenerate the module-derived deploy assets from the installed module set:
+`deploy/compose.modules.yml` (datastore services rendered from the CLI
+datastore registry, ADR-008) and the `@@newbie-modules` route block of
+`deploy/Caddyfile.tmpl` (one `handle /<key>/*` block per module declaring
+`publicNamespace`). The same renders run as a step of install/apply/update.
+
+| Option    | Description                                                                |
+| --------- | -------------------------------------------------------------------------- |
+| `--check` | CI gate: print the diff and exit non-zero when the generated assets drift. |
+
 #### `newbie config`
 
 View or edit the enabled-module list in `modules.json` without touching project
@@ -135,14 +147,19 @@ Print machine-readable project state as JSON.
 
 #### `newbie update-template`
 
-Diff framework-managed skeleton files (`main.ts`, `tsconfig*`, the Prisma
-framework block) against the template. Business files are skipped.
+Diff framework-owned template files against the template, driven by the
+ADR-009 ownership registry: whole-file sync for `main.ts`, `tsconfig*`,
+`nest-cli.json`, `prisma.config.ts` and the static `deploy/` stack; block sync
+for the `@@newbie-framework` blocks of `.env.example`, `.gitignore` and
+`prisma/schema.prisma`. Generated (`newbie assemble` products) and
+template-shipped host-owned files are skipped.
 
 | Option                  | Description                                                       |
 | ----------------------- | ----------------------------------------------------------------- |
 | `--template-path <dir>` | Use a local template directory instead of cloning the repository. |
 | `--template-ref <ref>`  | Git ref (e.g. a template tag) to sync from.                       |
-| `--write`               | Apply the template version of differing skeleton files.           |
+| `--write`               | Apply the template version of differing template files.           |
+| `--check`               | CI gate: print the diff and exit non-zero when files drift.       |
 
 #### `newbie agent`
 
@@ -169,9 +186,11 @@ registry checkout, not a consuming project).
 
 #### `newbie dev lint`
 
-Enforce the module layering rules (`domain` -> `capability` -> `foundation`)
-across registry sources: upward dependencies and same-layer import cycles are
-errors; same-layer dependencies are warnings for review.
+Enforce the module layering rules (`feature` -> `capability` -> `infrastructure`
+-> `datastore`) across registry sources: upward dependencies and same-layer
+import cycles are errors; same-layer dependencies are warnings for review. A
+`datastore` module must additionally be listed in the CLI datastore registry
+(see ADR-008 D3).
 
 ### Module-provided commands
 
@@ -201,21 +220,21 @@ export; they never import framework internals by relative path.
 
 Every registry module carries a `newbie.module.json` at its root:
 
-| Field                | Type     | Description                                                                                    |
-| -------------------- | -------- | ---------------------------------------------------------------------------------------------- |
-| `key`                | string   | Module key; must match the directory name.                                                     |
-| `layer`              | string   | Architectural layer (`domain` / `capability` / `foundation`); absent for framework-specials.   |
-| `module.file`        | string   | NestJS module file without extension, e.g. `account.module`.                                   |
-| `module.className`   | string   | Exported NestJS module class name, e.g. `AccountModule`.                                       |
-| `schema`             | string   | Project-relative path of the Prisma model fragment; absent = no models.                        |
-| `config-service`     | object   | Config keys merged into the generated `modules.config.ts`.                                     |
-| `env`                | object   | Environment variables the module requires (doctor reports missing ones).                       |
-| `dependencies`       | object   | npm dependencies merged into the consuming project's `package.json`.                           |
-| `devDependencies`    | object   | npm devDependencies merged into the consuming project's `package.json`.                        |
-| `moduleDependencies` | string[] | Registry module keys imported via `@modules/<key>`; installs expand to the transitive closure. |
-| `assets`             | object[] | Extra NestJS assets (e.g. resolvers) wired into the generated module index.                    |
-| `cli`                | string   | Command namespace this module exposes (see "Module-provided commands").                        |
-| `sdk`                | string   | Package name of the companion SDK shipped alongside the module (pairing record for tooling).   |
+| Field                | Type     | Description                                                                                                     |
+| -------------------- | -------- | --------------------------------------------------------------------------------------------------------------- |
+| `key`                | string   | Module key; must match the directory name.                                                                      |
+| `layer`              | string   | Architectural layer (`feature` / `capability` / `infrastructure` / `datastore`); absent for framework-specials. |
+| `module.file`        | string   | NestJS module file without extension, e.g. `account.module`.                                                    |
+| `module.className`   | string   | Exported NestJS module class name, e.g. `AccountModule`.                                                        |
+| `schema`             | string   | Project-relative path of the Prisma model fragment; absent = no models.                                         |
+| `config-service`     | object   | Config keys merged into the generated `modules.config.ts`.                                                      |
+| `env`                | object   | Environment variables the module requires (doctor reports missing ones).                                        |
+| `dependencies`       | object   | npm dependencies merged into the consuming project's `package.json`.                                            |
+| `devDependencies`    | object   | npm devDependencies merged into the consuming project's `package.json`.                                         |
+| `moduleDependencies` | string[] | Registry module keys imported via `@modules/<key>`; installs expand to the transitive closure.                  |
+| `cli`                | string   | Command namespace this module exposes (see "Module-provided commands").                                         |
+| `sdk`                | string   | Package name of the companion SDK shipped alongside the module (pairing record for tooling).                    |
+| `publicNamespace`    | boolean  | Claim the public URL namespace `/<key>/*`; assemble renders a Caddy handle block (ADR-008).                     |
 
 ## Global options
 

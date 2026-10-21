@@ -87,10 +87,12 @@ function extractArchive(registryRoot: string, sourceCommit: string, subpath: str
     git.stdout.pipe(tar.stdin);
 
     // Collect child stderr for actionable failure messages.
-    let gitErr = "";
+    // gitErr is drained but never read: git failures resolve(false) via the
+    // exit code, while tar failures surface tarErr in the rejection message.
+    let _gitErr = "";
     let tarErr = "";
     git.stderr.on("data", (chunk) => {
-      gitErr += chunk.toString();
+      _gitErr += chunk.toString();
     });
     tar.stderr.on("data", (chunk) => {
       tarErr += chunk.toString();

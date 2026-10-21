@@ -3,7 +3,7 @@ import { mockPerformanceResource, mockHttpStatusError } from "./mock/mock";
 import { overrideFetch, httpServer } from "./mock/utils";
 import webMonitorSdk from "../src/index";
 const appId = "appid_test";
-const monitor = webMonitorSdk({
+const _monitor = webMonitorSdk({
   appId,
   api: "http://localhost/report",
   token: "token_test",
@@ -29,13 +29,13 @@ test("web api: fetch http error 404", (done) => {
 
   fetch(requestAddress, {
     method: "GET",
-  }).then((res) => {});
+  }).then((_res) => {});
 
   // After sending requests, simulate the browser performance data observer
   window.mockPerformanceEntriesAdd(mockPerformanceResource.fetchHttpErr);
   fetch(requestAddress, {
     method: "GET",
-  }).then((res) => {});
+  }).then((_res) => {});
 
   // After sending requests, simulate the browser performance data observer
   window.mockPerformanceEntriesAdd(mockPerformanceResource.fetchHttpErr);

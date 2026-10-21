@@ -22,12 +22,12 @@ export class GenericStrategy implements RotationStrategy {
     );
   }
 
-  async setSecret(secretId: string, token: string, pendingDict: any, currentDict: any): Promise<void> {
+  async setSecret(_secretId: string, _token: string, _pendingDict: any, _currentDict: any): Promise<void> {
     // Generic secret: nothing to set on external service
     return;
   }
 
-  async testSecret(secretId: string, token: string, pendingDict: any): Promise<void> {
+  async testSecret(_secretId: string, _token: string, _pendingDict: any): Promise<void> {
     // Generic secret: nothing to test
     return;
   }

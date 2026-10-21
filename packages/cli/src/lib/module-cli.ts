@@ -51,7 +51,7 @@ let tsxRegistered = false;
  */
 function ensureTsxRegistered(): void {
   if (tsxRegistered) return;
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const api = require("tsx/cjs/api") as TsxCjsApi;
   api.register();
   tsxRegistered = true;
@@ -60,7 +60,7 @@ function ensureTsxRegistered(): void {
 /** Load the module CLI entry (a TypeScript file) via the registered hooks. */
 function loadEntryModule(entryPath: string): Record<string, unknown> {
   ensureTsxRegistered();
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   return require(entryPath) as Record<string, unknown>;
 }
 

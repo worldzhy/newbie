@@ -1,6 +1,7 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
 import { ExtendedPrismaClient } from "./prisma.extension";
 
+/* eslint-disable @typescript-eslint/no-unsafe-declaration-merging, @typescript-eslint/no-empty-object-type -- intentional declaration merging: PrismaService instances expose the ExtendedPrismaClient API */
 @Injectable()
 export class PrismaService implements OnModuleInit, OnModuleDestroy {
   /**
@@ -17,3 +18,4 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
  * This ensures the PrismaService class is treated as an ExtendedPrismaClient by TypeScript.
  */
 export interface PrismaService extends ExtendedPrismaClient {}
+/* eslint-enable @typescript-eslint/no-unsafe-declaration-merging, @typescript-eslint/no-empty-object-type */

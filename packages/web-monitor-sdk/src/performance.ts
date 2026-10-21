@@ -56,12 +56,12 @@ export function clearPerformanceResourceList(): void {
 export function initPerformanceObserver(conf: any): void {
   if ((window as any).PerformanceObserver) {
     _performanceResourceList = [].concat(performance.getEntriesByType("resource") as any);
-    const observer = new (window as any).PerformanceObserver(function (list: any) {
+    const observer = new (window as any).PerformanceObserver((list: any) => {
       const entries = list.getEntriesByType("resource");
       entries.forEach((item: any) => {
-        if (item.initiatorType == "xmlhttprequest" || item.initiatorType == "fetch") {
+        if (item.initiatorType === "xmlhttprequest" || item.initiatorType === "fetch") {
           for (let i = 0; i < conf.ajaxCompleteTemp.length; i++) {
-            if (conf.ajaxCompleteTemp[i].name == item.name) {
+            if (conf.ajaxCompleteTemp[i].name === item.name) {
               item._id = conf.ajaxCompleteTemp[i]._id;
               conf.ajaxCompleteTemp.splice(i, 1);
               break;
@@ -96,8 +96,8 @@ export function perforResource({ conf, opt }: { conf: any; opt: any }): boolean 
   const resourceList: any[] = [];
   if (!resource && !resource.length) return;
   resource.forEach((item: any) => {
-    if (!opt.isAjax && (item.initiatorType == "xmlhttprequest" || item.initiatorType == "fetch")) return;
-    if (!opt.isResource && item.initiatorType != "xmlhttprequest" && item.initiatorType !== "fetch") return;
+    if (!opt.isAjax && (item.initiatorType === "xmlhttprequest" || item.initiatorType === "fetch")) return;
+    if (!opt.isResource && item.initiatorType !== "xmlhttprequest" && item.initiatorType !== "fetch") return;
     const json: any = {
       name: item.name,
       method: "GET",

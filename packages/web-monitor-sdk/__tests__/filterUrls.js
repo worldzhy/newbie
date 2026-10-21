@@ -3,11 +3,11 @@ import "./mock/web.env";
 import { filterResourceError } from "../src/utils";
 import { filterResource, perforPage } from "../src/performance";
 
-const appId = "appid_test";
+const _appId = "appid_test";
 
 test("web options: filterUrls -> filterResourceError", () => {
-  let opt = { filterUrls: ["/api/ignore/v1", ".com/api/v2/ignore"] };
-  let conf = {
+  const opt = { filterUrls: ["/api/ignore/v1", ".com/api/v2/ignore"] };
+  const conf = {
     errorList: [
       {
         testId: 1,
@@ -55,8 +55,8 @@ test("web options: filterUrls -> filterResourceError", () => {
 });
 
 test("web options: filterUrls -> filterResource", () => {
-  let opt = { filterUrls: ["/api/ignore/v1", ".com/api/v2/ignore"] };
-  let conf = {
+  const opt = { filterUrls: ["/api/ignore/v1", ".com/api/v2/ignore"] };
+  const conf = {
     resourceList: [
       {
         testId: 1,
@@ -104,7 +104,7 @@ test("web options: filterUrls -> filterResource", () => {
 });
 
 test("web options: perforPage", () => {
-  let conf = {};
+  const conf = {};
   perforPage(conf);
   expect(conf.performance);
 });

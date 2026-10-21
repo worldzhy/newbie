@@ -3,7 +3,7 @@ import { mockPerformanceResource, XMLConstructorEnum, mockBaseXhrApi } from "./m
 import { overrideFetch, httpServer } from "./mock/utils";
 import webMonitorSdk from "../src/index";
 const appId = "appid_test";
-const monitor = webMonitorSdk({
+const _monitor = webMonitorSdk({
   appId,
   api: "http://localhost/report",
   token: "token_test",
@@ -41,14 +41,14 @@ test("web api: XMLHttpRequest", (done) => {
 
   function state_Change() {
     // 4 = "loaded"
-    if (xmlhttp.readyState == 4) {
-      if (xmlhttp.status == 200) {
+    if (xmlhttp.readyState === 4) {
+      if (xmlhttp.status === 200) {
         expect(xmlhttp.status).toEqual(200);
       }
     }
   }
   // Verify enumerable XMLHttpRequest properties are not lost after patching
-  for (var attr in XMLHttpRequest) {
+  for (const attr in XMLHttpRequest) {
     expect(XMLHttpRequest[attr]).toEqual(XMLConstructorEnum[attr]);
   }
   setTimeout(() => {
