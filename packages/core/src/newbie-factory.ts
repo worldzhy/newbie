@@ -185,6 +185,7 @@ export class NewbieFactory {
         new ValidationPipe({
           transform: true, // auto-coerce string params to the declared DTO type
           whitelist: true, // strip properties without validation decorators
+          forbidUnknownValues: true, // reject payloads with no known properties (CVE-2019-18413)
         }),
       );
 

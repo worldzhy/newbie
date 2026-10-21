@@ -8,8 +8,8 @@ import tseslint from "typescript-eslint";
  * eslint-config-prettier last so no plugin can re-enable eslint formatting
  * rules afterwards.
  *
- * Internal entry: consumers import `backend`, `frontend` or `next`, never
- * this file.
+ * Internal entry: consumers import `base` (or compose a layer such as
+ * `nest` / `next` on top of it), never this file.
  */
 export default [
   ...tseslint.configs.recommended,

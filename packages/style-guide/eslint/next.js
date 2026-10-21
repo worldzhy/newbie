@@ -1,26 +1,30 @@
-import { defineConfig, globalIgnores } from "eslint/config";
-import core from "./core.js";
+import { globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
 import prettierConfig from "eslint-config-prettier";
 
 /**
- * Next.js standard for Next.js applications
- * (nightwatch-frontend, fewbie-starter).
+ * Next.js layer for the devbie ecosystem.
  *
- * Extends the shared `core` baseline with the canonical Next rule set.
+ * This is a layer, not a standalone standard: compose it after `base`
+ * (`export default [...base, ...next]`), so every repo shares the same
+ * language-level rules while Next.js applications add only the canonical
+ * framework rule set.
+ *
  * `eslint-config-next` already bundles the React / react-hooks / jsx-a11y
  * layers, so nothing else is layered on top: spreading another React layer
  * would redefine the same plugin and flat config rejects that.
  *
  * This entry can only be loaded where the `next` package is installed; Node
- * repos without a Next runtime use the `base` entry instead.
+ * repos without a Next runtime compose `base` with `nest` or nothing at all.
+ *
+ * `prettierConfig` is repeated here so that composing `[...base, ...next]`
+ * still ends on the formatting-rule shutdown.
  */
-export default defineConfig([
-  ...core,
+export default [
   ...nextVitals,
   ...nextTs,
   prettierConfig,
   // Framework-generated artifacts; consumers append their own ignores.
   globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
-]);
+];

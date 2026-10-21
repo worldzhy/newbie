@@ -3,6 +3,7 @@ import { ExtendedPrismaClient } from "./prisma.extension";
 
 /* eslint-disable @typescript-eslint/no-unsafe-declaration-merging, @typescript-eslint/no-empty-object-type -- intentional declaration merging: PrismaService instances expose the ExtendedPrismaClient API */
 @Injectable()
+// eslint-disable-next-line @darraghor/nestjs-typed/injectable-should-be-provided -- registered by PrismaModule.forRoot()'s factory provider metadata, which the rule does not traverse
 export class PrismaService implements OnModuleInit, OnModuleDestroy {
   /**
    * Empty lifecycle hooks — the PrismaModule factory returns a Proxy whose

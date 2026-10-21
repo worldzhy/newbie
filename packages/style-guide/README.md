@@ -5,26 +5,44 @@ Single source of truth for code style across the devbie ecosystem
 
 ## Exports
 
-| Entry                             | Contents                                            |
-| --------------------------------- | --------------------------------------------------- |
-| `@devbie/style-guide/prettier`    | Canonical prettier config (all repos)               |
-| `@devbie/style-guide/eslint/base` | eslint flat standard for Node TypeScript repos      |
-| `@devbie/style-guide/eslint/next` | `base` + canonical Next.js rules (for Next.js apps) |
+| Entry                             | Contents                                        |
+| --------------------------------- | ----------------------------------------------- |
+| `@devbie/style-guide/prettier`    | Canonical prettier config (all repos)           |
+| `@devbie/style-guide/eslint/base` | Baseline eslint flat config for Node TypeScript |
+| `@devbie/style-guide/eslint/nest` | Nest.js layer (Nest-specific rules, type-aware) |
+| `@devbie/style-guide/eslint/next` | Next.js layer (canonical Next.js rules)         |
 
-## Which entry each repo uses
+`nest` and `next` are **layers, not standalone standards**: every consumer
+composes `[...base, ...nest]` or `[...base, ...next]`. The baseline carries
+the shared language-level rules and prettier; a layer adds only its
+framework's rules. `base` alone covers CLIs, code generators, registries, and
+SDKs.
 
-| Repo                                                       | eslint entry |
-| ---------------------------------------------------------- | ------------ |
-| newbie, newbie-starter, nightwatch-backend, newbie-modules | `base`       |
-| fewbie-starter, nightwatch-frontend                        | `next`       |
+## Coverage: which entry each repo uses
 
-`base` is the shared default: language-level rules plus prettier, with no
-framework content — it serves Nest services, CLIs, code generators, and
-source registries alike. `next` is `base`'s baseline plus `eslint-config-next`
-(which already bundles the React / react-hooks / jsx-a11y layers), so every
-repo shares the same language-level rules while Next.js applications add only
-the canonical framework layer. `eslint-config-next` requires the `next`
-package at load time, which is why Node repos cannot use `next`.
+| Repo                                | Composition                               |
+| ----------------------------------- | ----------------------------------------- |
+| newbie-monorepo root                | `base` + `nest` scoped to `packages/core` |
+| newbie-starter, nightwatch-backend  | `base` + `nest`                           |
+| fewbie-starter, nightwatch-frontend | `base` + `next`                           |
+| newbie-modules                      | `base` only                               |
+
+Two structural facts drive this table:
+
+- `newbie-modules` installs no dependencies at all (modules are copied into a
+  consumer, not built in place), so it can only use `base`, which is purely
+  syntactic.
+- The newbie monorepo root lints heterogeneous packages in one config: only
+  `packages/core` is Nest framework code, while the CLIs, the generator and
+  the SDKs are plain Node. ESLint flat config does not read `package.json` and
+  nested `eslint.config.mjs` files are not inherited, so per-package
+  differentiation must be expressed in the root config with `files` scoping —
+  never with per-package config files or `package.json` entry fields.
+
+`next` (and `nest`) must be loaded where the framework's packages are
+installed; `eslint-config-next` requires `next` at load time, and the Nest
+layer requires `class-validator` plus a TypeScript project for its four
+type-aware rules.
 
 ## Usage
 
@@ -48,11 +66,12 @@ not style decisions.
 
 ```js
 import base from "@devbie/style-guide/eslint/base";
-// Next.js apps: import next from "@devbie/style-guide/eslint/next";
+// Nest apps:      import nest from "@devbie/style-guide/eslint/nest";
+// Next.js apps:   import next from "@devbie/style-guide/eslint/next";
 
 export default [
   ...base,
-  // Repo-specific rules and ignores go here.
+  // ...nest or ...next, then repo-specific rules and ignores.
 ];
 ```
 
@@ -68,6 +87,11 @@ default, only as a deliberate milestone.
 
 ## Changelog
 
+- 1.3.0 — new `nest` layer backed by `@darraghor/eslint-plugin-nestjs-typed`
+  (recommended flat config, four type-aware rules), and `next` reshaped into a
+  layer. Consumers now compose `[...base, ...nest]` / `[...base, ...next]`;
+  this also lets the newbie monorepo scope the Nest layer to `packages/core`
+  via `files` instead of giving a Nest framework standard to its CLIs.
 - 1.2.0 — `backend` renamed to `base` and `frontend` removed. After apits and
   fewbie-cli joined the newbie monorepo (ADR-012/ADR-015), `frontend` had no
   consumer left, and `backend` no longer described its consumers (CLIs, code

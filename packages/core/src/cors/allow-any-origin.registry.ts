@@ -42,6 +42,7 @@ const REQUEST_METHOD_NAMES: Record<number, string> = {
  * FrameworkModule.forRoot() gets the scan.
  */
 @Injectable()
+// eslint-disable-next-line @darraghor/nestjs-typed/injectable-should-be-provided -- registered by FrameworkModule.forRoot()'s dynamic module metadata, which the rule does not traverse
 export class AllowAnyOriginRegistry implements OnModuleInit {
   /** normalized path -> declared HTTP methods (uppercase). */
   private static readonly routes = new Map<string, Set<string>>();
