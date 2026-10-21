@@ -40,6 +40,18 @@ describe("@devbie/style-guide published surface", () => {
     );
   });
 
+  it("ships type declarations for every eslint entry", () => {
+    // Consumers compose the layers from eslint.config.* files; without types
+    // every IDE flags the central import as untyped. Each entry maps an
+    // adjacent declaration alongside its JS module.
+    for (const entry of ["./eslint/base", "./eslint/nest", "./eslint/next"]) {
+      const target = pkg.exports[entry];
+      assert.equal(typeof target, "object", `${entry} must map types + default`);
+      assert.match(target.types, /\.d\.ts$/);
+      assert.match(target.default, /\.js$/);
+    }
+  });
+
   it("declares next as an optional peer, tested against a devDependency copy", () => {
     // The next entry is only loadable where `next` exists, but a package-level
     // required peer would force base/nest consumers to install Next.js. The
