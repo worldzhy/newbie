@@ -52,11 +52,11 @@ npx fewbie add data-table
 
 Create a new project from the Fewbie basic template.
 
-| Option                  | Description                                                       |
-| ----------------------- | ----------------------------------------------------------------- |
-| `--template-path <dir>` | Use a local template directory instead of cloning the repository. |
-| `--template-ref <ref>`  | Git ref of the fewbie repository to clone the template from.      |
-| `--no-git-init`         | Skip `git init` in the new project.                               |
+| Option                  | Description                                                          |
+| ----------------------- | -------------------------------------------------------------------- |
+| `--template-path <dir>` | Use a local template directory instead of cloning the repository.    |
+| `--template-ref <ref>`  | Git ref of the fewbie-starter repository to clone the template from. |
+| `--no-git-init`         | Skip `git init` in the new project.                                  |
 
 ### `fewbie add <names...>`
 
