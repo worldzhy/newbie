@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { bold, cyan, green, red, yellow } from "colorette";
+import { bold, cyan, green, yellow } from "colorette";
 
 import { CliError } from "../lib/errors";
 import { unifiedDiff } from "../lib/diff";

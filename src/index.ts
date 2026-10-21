@@ -10,6 +10,7 @@ import { runUpdate } from "./commands/update";
 
 // Published package version, read at runtime (package.json sits one level
 // above both src/ during development and dist/ in the published tarball).
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- deliberate: read version at runtime; package.json sits one level above both src/ and dist/
 export const VERSION = (require("../package.json") as { version: string }).version;
 
 const program = new Command();
