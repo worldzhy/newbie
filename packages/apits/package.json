@@ -1,8 +1,13 @@
 {
   "name": "@devbie/apits",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "author": "worldzhy",
-  "prettier": "@devbie/style-guide/prettier",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/worldzhy/newbie.git",
+    "directory": "packages/apits"
+  },
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.mjs",
   "types": "./dist/cjs/index.d.ts",
@@ -23,15 +28,9 @@
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "publishOnly": "npm run build",
-    "release": "npm run build && standard-version && git push --follow-tags origin master && npm publish",
     "requestTest": "tsx watch test/requestTest.ts --type-check false",
     "test": "tsx test/index.ts",
     "test2": "tsx watch test/json-schema-to-typescript.ts --type-check false"
-  },
-  "lint-staged": {
-    "src/**/*.ts": [
-      "eslint --fix"
-    ]
   },
   "dependencies": {
     "chalk": "^4.1.1",
@@ -52,7 +51,6 @@
     "yargs": "^16.2.0"
   },
   "devDependencies": {
-    "@devbie/style-guide": "^1.1.3",
     "@types/fs-extra": "^5.0.4",
     "@types/js-yaml": "^3.12.0",
     "@types/json-schema": "^7.0.1",
@@ -60,9 +58,7 @@
     "@types/node": "^18.7.14",
     "@types/prompts": "^1.0.4",
     "@types/yargs": "^16.0.1",
-    "eslint": "^9.39.4",
-    "father": "^4",
-    "standard-version": "^4.4.0"
+    "father": "^4"
   },
   "publishConfig": {
     "access": "public",

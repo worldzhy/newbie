@@ -403,7 +403,7 @@ async function main(): Promise<void> {
   const apiP4a = await fs.readFile(path.join(outDirP4a, "p4test.ts"), "utf-8");
   assert.match(
     apiP4a,
-    /import type \{AxiosRequestConfig\} from 'axios'/,
+    /import type \{\s*AxiosRequestConfig\s*\} from ['"]axios['"]/,
     "P-4: default config type imports AxiosRequestConfig",
   );
   assert.match(apiP4a, /extra\?: AxiosRequestConfig/, "P-4: generated functions type extra as AxiosRequestConfig");
@@ -428,7 +428,7 @@ async function main(): Promise<void> {
   const apiP4b = await fs.readFile(path.join(outDirP4b, "p4custom.ts"), "utf-8");
   assert.match(
     apiP4b,
-    /import \{request, type RequestConfig\} from '\.\.\/fetch'/,
+    /import \{\s*request, type RequestConfig\s*\} from ['"]\.\.\/fetch['"]/,
     "P-4: custom client import preserved",
   );
   assert.match(apiP4b, /extra\?: RequestConfig/, "P-4: custom clientConfigType applied to extra");

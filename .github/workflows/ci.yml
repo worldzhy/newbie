@@ -35,6 +35,9 @@ jobs:
 
       - run: npm run build -w @devbie/fewbie-cli
       - run: npm test -w @devbie/fewbie-cli
+
+      - run: npm run build -w @devbie/apits
+      - run: npm test -w @devbie/apits
       # The template-sync gate compares registry items against fewbie-starter's
       # default branch — the same source `fewbie create` clones. That invariant
       # is only meaningful once work has landed on main, so the gate is skipped
