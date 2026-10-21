@@ -1,0 +1,5 @@
+# markdown
+**/*.md
+
+# ignore
+node_modules
