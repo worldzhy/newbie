@@ -87,6 +87,10 @@ default, only as a deliberate milestone.
 
 ## Changelog
 
+- 1.3.1 — the internal `core` entry is inlined into `base` and removed. Nothing
+  imported it directly (`base` was its only consumer), and keeping two files
+  for one entry set made the loading order harder to read: `nest` and `next`
+  each also end on `prettierConfig`, so there is no shared tail to factor out.
 - 1.3.0 — new `nest` layer backed by `@darraghor/eslint-plugin-nestjs-typed`
   (recommended flat config, four type-aware rules), and `next` reshaped into a
   layer. Consumers now compose `[...base, ...nest]` / `[...base, ...next]`;
