@@ -77,7 +77,7 @@ nightwatch ci.yml 漂移门摘掉 `deploy/` 路径过滤，恢复对全部 whole
 
 ## 实施顺序（里程碑）
 
-1. newbie core：NewbieFactory 吸收 bootstrap 责任 + `@AllowAnyOrigin` 扫描/注册表/中间件收编（删除 `beforeCors`/`corsResolver` option）；newbie-modules：security 删除 PublicCorsService，五个 collector 控制器装饰器改从框架导入；
+1. ~~newbie core：NewbieFactory 吸收 bootstrap 责任 + `@AllowAnyOrigin` 扫描/注册表/中间件收编（删除 `beforeCors`/`corsResolver` option）；newbie-modules：security 删除 PublicCorsService，五个 collector 控制器装饰器改从框架导入~~ **✅ 完成（2026-10-21，@devbie/newbie 1.7.0，newbie f1da7f7 / newbie-modules de8b25f / newbie-starter 83fc721）：工厂收编 text/plain 恒开、heartbeat reporter、health 检查恒跑/POST 门控、portRaceRecovery 默认 `environment !== "production"`；`@AllowAnyOrigin()` + `ALLOW_ANY_ORIGIN_KEY` 与静态路由注册表由 FrameworkModule 提供（新增 5 例单测，核心 38 tests 全绿），security 删除两文件、五个 collector 改导入 `@devbie/newbie/cors/allow-any-origin.decorator`、SecurityModule 去 DiscoveryModule；registry `newbie dev lint` 0 error / 20 warning（warning 与 M3 基线一致）；check:template-deps 预期红（main 仍钉 newbie 1.6.0 / cli 1.5.0，待 dev 合 main）**；
 2. newbie-starter：main.ts 瘦身为 whole-file 形态、nest-cli.json glob 化、.env.example 框架段标记化、dotfiles 分类落地（含 eslintrc tsconfigRootDir 修复）；
 3. newbie CLI：template-sync 注册表升格 31 文件全量分类 + 未归类守卫 + schema.prisma 比较归一化；
 4. nightwatch 迁移：重同步骨架文件，diff 审查 + 全量验证（tsc/测试/冒烟）；
