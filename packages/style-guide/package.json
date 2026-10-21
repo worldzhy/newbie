@@ -29,5 +29,11 @@
     "eslint": "^9.0.0 || ^10.0.0",
     "prettier": "^3.9.9",
     "typescript": ">=5.0.0"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "next": "^16.4.2"
   }
 }
