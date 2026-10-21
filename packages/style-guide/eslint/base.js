@@ -6,9 +6,9 @@ import prettierConfig from "eslint-config-prettier";
  *
  * Consumers: every repo composes this and optionally adds a framework layer —
  * `[...base, ...nest]` for Nest applications, `[...base, ...next]` for Next.js
- * applications. Repos without a framework (newbie-modules, a dependency-free
- * source registry) use `base` alone: every rule here is syntactic, so it runs
- * without installing module dependencies.
+ * applications. Plain Node packages (CLIs, code generators, SDKs) use `base`
+ * alone: every rule here is syntactic, so it runs without installing module
+ * dependencies.
  *
  * Formatting rules (quotes, eol-last, trailing spaces, ...) are deliberately
  * absent: prettier owns formatting. `prettierConfig` is appended last so that

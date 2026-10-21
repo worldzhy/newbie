@@ -86,6 +86,18 @@ describe("eslint layers", () => {
     assert.ok(ruleIds(next).some((id) => id.startsWith("@next/next/")));
   });
 
+  it("lets consumers use the idiomatic array-literal default export", () => {
+    // eslint-config-next bundles eslint-plugin-import, whose
+    // no-anonymous-default-export warns on `export default [...]` — the
+    // canonical flat-config idiom. The layer switches it off for config
+    // files so consumers need no `const config = [...]; export default
+    // config;` shim. Must stay scoped to config files; the rule is real
+    // for application code.
+    const configEntries = flatten(next).filter((entry) => entry.files?.includes("**/eslint.config.*"));
+    assert.equal(configEntries.length, 1);
+    assert.equal(configEntries[0].rules["import/no-anonymous-default-export"], "off");
+  });
+
   it("every layer is a composable array of plain config objects", () => {
     for (const layer of [base, nest, next]) {
       assert.ok(Array.isArray(layer) && layer.length > 0);

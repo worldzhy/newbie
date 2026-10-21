@@ -1,7 +1,7 @@
 # @devbie/style-guide
 
 Single source of truth for code style across the devbie ecosystem
-(newbie / fewbie / nightwatch / apits). See ADR-010 in `worldzhy/newbie`.
+(newbie / fewbie / nightwatch / apits). See ADR-010 in `worldzhy/devbie`.
 
 ## Exports
 
@@ -9,7 +9,7 @@ Single source of truth for code style across the devbie ecosystem
 | --------------------------------- | ----------------------------------------------- |
 | `@devbie/style-guide/prettier`    | Canonical prettier config (all repos)           |
 | `@devbie/style-guide/eslint/base` | Baseline eslint flat config for Node TypeScript |
-| `@devbie/style-guide/eslint/nest` | Nest.js layer (Nest-specific rules, type-aware) |
+| `@devbie/style-guide/eslint/nest` | Nest layer (Nest-specific rules, type-aware)    |
 | `@devbie/style-guide/eslint/next` | Next.js layer (canonical Next.js rules)         |
 
 `nest` and `next` are **layers, not standalone standards**: every consumer
@@ -25,13 +25,16 @@ SDKs.
 | devbie monorepo root                | `base` + `nest` scoped to `packages/newbie` |
 | newbie-starter, nightwatch-backend  | `base` + `nest`                             |
 | fewbie-starter, nightwatch-frontend | `base` + `next`                             |
-| newbie-modules                      | `base` only                                 |
+| newbie-modules                      | `base` + `nest`                             |
 
 Two structural facts drive this table:
 
-- `newbie-modules` installs no dependencies at all (modules are copied into a
-  consumer, not built in place), so it can only use `base`, which is purely
-  syntactic.
+- `newbie-modules` is a pure source registry — module sources are copied into
+  a consumer rather than built in place — but those sources are Nest code, so
+  it composes `[...base, ...nest]` with `injectable-should-be-provided`
+  scoped off: there is no host module graph in the registry for the rule to
+  resolve providers against, and the host keeps the rule enabled where that
+  graph exists.
 - The devbie monorepo root lints heterogeneous packages in one config: only
   `packages/newbie` is Nest framework code, while the CLIs, the generator and
   the SDKs are plain Node. ESLint flat config does not read `package.json` and
@@ -40,9 +43,11 @@ Two structural facts drive this table:
   never with per-package config files or `package.json` entry fields.
 
 `next` (and `nest`) must be loaded where the framework's packages are
-installed; `eslint-config-next` requires `next` at load time, and the Nest
-layer requires `class-validator` plus a TypeScript project for its four
-type-aware rules.
+installed: `eslint-config-next` requires `next` at load time (declared as an
+optional peer, so base/nest consumers are never forced to install Next.js),
+and the Nest layer requires a TypeScript project for its four type-aware
+rules. The Nest plugin's own peer declarations carry the rest — nothing
+imports `class-validator` at lint runtime.
 
 ## Usage
 

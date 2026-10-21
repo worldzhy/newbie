@@ -24,6 +24,16 @@ import prettierConfig from "eslint-config-prettier";
 export default [
   ...nextVitals,
   ...nextTs,
+  {
+    files: ["**/eslint.config.*"],
+    rules: {
+      // eslint-config-next bundles eslint-plugin-import, whose
+      // no-anonymous-default-export warns on `export default [...]` — the
+      // canonical flat-config idiom. Switch it off for config files so
+      // consumers need no `const config = [...]; export default config;` shim.
+      "import/no-anonymous-default-export": "off",
+    },
+  },
   prettierConfig,
   // Framework-generated artifacts; consumers append their own ignores.
   globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),

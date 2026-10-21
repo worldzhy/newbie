@@ -2,7 +2,7 @@ import nestjsTyped from "@darraghor/eslint-plugin-nestjs-typed";
 import prettierConfig from "eslint-config-prettier";
 
 /**
- * Nest.js layer for the devbie ecosystem.
+ * Nest layer for the devbie ecosystem.
  *
  * This is a layer, not a standalone standard: compose it after `base`
  * (`export default [...base, ...nest]`). Keeping it separable lets a
