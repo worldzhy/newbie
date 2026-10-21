@@ -20,5 +20,5 @@
 //   package.json main/module/types and bin are aligned to these paths.
 export default {
   esm: { autoExtension: true },
-  cjs: { autoExtension: true }
+  cjs: { autoExtension: true },
 };

@@ -9,7 +9,7 @@
 //
 // Shape mirrors `node_modules/tsx/dist/cjs/api/index.d.cts`; only the
 // `register` symbol used by `src/cli.ts` is declared here.
-declare module 'tsx/cjs/api' {
+declare module "tsx/cjs/api" {
   type RegisterOptions = {
     namespace?: string;
   };
