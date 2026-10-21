@@ -25,7 +25,7 @@ start.sh/deploy.sh 的镜像提取逻辑重复（ADR-006 已记录实证）；ba
 | `compose.application.yml` | 宿主 | 永不被工具触碰；模板只发空占位 | 宿主 overlay（多 UI、宿主私有服务） |
 
 - **已验证合并语义**（compose v2.40.0 实测）：depends_on 跨文件按 service key 合并（并集）、同 key 后者胜、短/长语法归一、合并只增不减；逃逸口 `depends_on: !reset null` 需 compose ≥2.24。
-- **已验证陷阱**：profiles 门控的服务从合并模型消失后，任何指向它的 depends_on 是硬校验错误 → 采用 `depends_on: { frontend: { condition: service_started, required: false } }`（需 compose ≥2.24）。**落地前置：取证生产主机（docker 29.9.1）compose 插件版本**（ADR-006 已标记的证据缺口）。
+- **已验证陷阱**：profiles 门控的服务从合并模型消失后，任何指向它的 depends_on 是硬校验错误 → 采用 `depends_on: { frontend: { condition: service_started, required: false } }`（需 compose ≥2.24）。**落地前置：取证生产主机（docker 29.9.1）compose 插件版本**（ADR-006 已标记的证据缺口）——**已取证（2026-10-21）：生产 compose 插件 v5.6.0，`required: false` 与 `!reset null` 经 SSM 语义实测双双通过，D1 解锁**。
 - **设计规则**：framework 层文件永不引用 module 层服务；只允许上层向下挂接（module→framework、application→下两层）。
 - 脚本（deploy/start/backup.sh）硬编码 `-f compose.framework.yml -f compose.modules.yml -f compose.application.yml` 组合，保持逐字节一致。
 
@@ -100,7 +100,7 @@ compose 中 datastore 服务携带 label `newbie.backup-engine: <engine>`；back
 
 ## 实施顺序（里程碑）
 
-1. 生产主机 compose 插件版本取证（SSM 一条命令，D1 前置）；
+1. ~~生产主机 compose 插件版本取证（SSM 一条命令，D1 前置）~~ **✅ 完成（2026-10-21）：插件 v5.6.0，`required: false` / `!reset null` 语义实测通过**；
 2. newbie-modules registry：layer 改名与重标（foundation→infrastructure、domain→feature、datastore 标注）+ web-monitor publicNamespace；
 3. newbie CLI：layer-lint 枚举/rank、datastore 注册表与守卫、compose.modules.yml 渲染器、Caddyfile 标记块渲染器、`assemble --check`；
 4. newbie-starter：compose 三文件拆分、Caddyfile.tmpl 标记块化、backup.sh label 分发化、lib.sh 收敛；
@@ -111,7 +111,7 @@ compose 中 datastore 服务携带 label `newbie.backup-engine: <engine>`；back
 ## 取证索引
 
 - compose 合并语义实测：本机 Docker Compose v2.40.0-desktop.1，depends_on 跨文件并集合并/同 key 后者胜/长短语法归一/只增不减；profiles 门控服务消失 → 指向它的 depends_on 硬校验错误；`!reset null` 与 `required: false` 均需 ≥2.24
-- 生产主机工具链：SSM `which node` 空；jq-1.8.1 / aws-cli 2.36 / docker 29.9.1 在位；compose 插件版本待取证
+- 生产主机工具链：SSM `which node` 空；jq-1.8.1 / aws-cli 2.36 / docker 29.9.1 在位；compose 插件 v5.6.0（2026-10-21 SSM 取证：profiles 门控服务 + `depends_on.required: false` 合并校验通过、`!reset null` 逃逸实测通过——版本与语义双重满足 D1 ≥2.24 前置）
 - registry 54 模块 layer 实测：foundation 28 / capability 13 / domain 13；datastore 候选（mongo/redis/clickhouse/elasticsearch/snowflake）moduleDependencies 全为零
 - foundation 层子类实测：外部/云服务适配 16（aws-* 8、tencent-cos、cloudinary、googleapis、googlemaps、github、slack、lark、llm）、本地技术引擎 5（queue/puppeteer/pdf/xlsx/local-storage）、横切机制 2（security/audit——security 实测为 foundation 非 capability）
 - 四 collector 控制器均为顶级 `@Controller("<module-key>")`（ADR-006/ADR-007）
@@ -120,6 +120,6 @@ compose 中 datastore 服务携带 label `newbie.backup-engine: <engine>`；back
 
 ## 遗留（不阻塞）
 
-1. 生产 compose 插件版本取证（里程碑 1）；
+1. ~~生产 compose 插件版本取证（里程碑 1）~~ **✅ 完成（2026-10-21，见取证索引）**；
 2. security/audit 是否上移 capability：实施期按 moduleDependencies 图逐模块判定，不在本 ADR；
 3. datastore→datastore 同层边如未来出现实例，评估是否加定向 lint。

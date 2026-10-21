@@ -76,7 +76,7 @@ v1 全删已拍板（宿主未正式使用，无 legacy 负担）：Caddyfile `/
 - deploy/ 行级非宿主占比：render-env.sh 94% / backup.sh 91% / env.template 85% / compose.prod.yml 80% / deploy.sh 75% / start.sh 71% / provision.sh 70% / Caddyfile.tmpl 70% / stack.yml 49% / memory.xml 17%
 - start.sh L34-45 ≈ deploy.sh L25-40（提取逻辑逐行重复）
 - stack.yml：9 个 CFN Parameters（DomainName/InstanceType/GitHubOrg/LatestAmiId/VpcId/SubnetId…）已参数化宿主值（B1c 的宿主侧先例）；资源级 Condition 全无（EcrFrontend L415 无条件资源）
-- 本机 compose v2.40.0 支持 `depends_on.required`；生产 docker 29.9.1 的 compose 插件版本待取证
+- 本机 compose v2.40.0 支持 `depends_on.required`；生产 docker 29.9.1 的 compose 插件版本**已取证（2026-10-21 SSM）：v5.6.0，`required: false` 与 `!reset null` 语义实测双双通过**
 - 四 collector（heartbeat/health/backend-monitor/module-hub）控制器均为顶级 `@Controller("<module-key>")`（/heartbeat、/health、/backend-monitor、/module-hub）；module-hub 的宿主集成 API（/module-hub/installations，供宿主前端面板消费）同在模块命名空间——web-monitor `/api/v1` 是唯一离群
 - 主机工具链：SSM `which node` 空；jq/aws/docker 在位
 - Dockerfile.prod：`COPY --from=build /nwb/deploy /deploy`；镜像分发链 deploy.sh pull → docker create → docker cp
