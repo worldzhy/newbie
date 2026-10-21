@@ -8,6 +8,8 @@
  * modules.
  */
 
+import { isRegisteredDatastore } from "./datastore-registry";
+
 export type ModuleLayer = "datastore" | "infrastructure" | "capability" | "feature";
 
 export const MODULE_LAYERS: readonly ModuleLayer[] = ["datastore", "infrastructure", "capability", "feature"];
@@ -101,6 +103,18 @@ export function lintModuleLayers(modules: LayeredModule[]): LayerLintFinding[] {
         level: "error",
         module: mod.key,
         message: `unknown layer '${mod.layer}' (expected one of: ${MODULE_LAYERS.join(", ")})`,
+      });
+    }
+  }
+
+  // Datastore modules must be listed in the CLI datastore registry, which
+  // owns their deploy runtime values (ADR-008 D3; "unlisted = error").
+  for (const mod of modules) {
+    if (mod.layer === "datastore" && !isRegisteredDatastore(mod.key)) {
+      findings.push({
+        level: "error",
+        module: mod.key,
+        message: `datastore module '${mod.key}' is not listed in the CLI datastore registry`,
       });
     }
   }

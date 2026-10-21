@@ -110,4 +110,30 @@ describe("lintModuleLayers", () => {
     assert.equal(findings[0].level, "error");
     assert.match(findings[0].message, /declares dependency on '@modules\/ghost' which is not a registry module/);
   });
+
+  it("flags a datastore module missing from the CLI datastore registry", () => {
+    const findings = lintModuleLayers([mod("vault", "datastore")]);
+    assert.equal(findings.length, 1);
+    assert.equal(findings[0].level, "error");
+    assert.match(findings[0].message, /datastore module 'vault' is not listed in the CLI datastore registry/);
+  });
+
+  it("accepts a registered datastore module", () => {
+    const findings = lintModuleLayers([mod("mongo", "datastore")]);
+    assert.deepEqual(findings, []);
+  });
+
+  it("flags any layered dependency of a datastore module as upward", () => {
+    const findings = lintModuleLayers([mod("security", "infrastructure"), mod("mongo", "datastore", ["security"])]);
+    assert.equal(findings.length, 1);
+    assert.equal(findings[0].level, "error");
+    assert.match(findings[0].message, /datastore module must not depend on infrastructure module 'security'/);
+  });
+
+  it("allows a same-layer edge between two datastore modules", () => {
+    const findings = lintModuleLayers([mod("mongo", "datastore"), mod("redis", "datastore", ["mongo"])]);
+    assert.equal(findings.length, 1);
+    assert.equal(findings[0].level, "warning");
+    assert.match(findings[0].message, /same-layer dependency on 'mongo'/);
+  });
 });
