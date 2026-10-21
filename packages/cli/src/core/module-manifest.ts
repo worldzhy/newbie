@@ -6,8 +6,6 @@
  * newbie-modules registry and in the consuming project (`src/modules/<key>`).
  */
 
-import { NestAsset } from "./assets";
-
 /**
  * Cross-deployment topological role of a module.
  *
@@ -65,7 +63,6 @@ export interface ModuleManifest {
    * when planning installs, so a required module can never be left behind.
    */
   moduleDependencies?: string[];
-  assets?: NestAsset[];
   /**
    * CLI namespace this module exposes. When declared, the CLI dynamically
    * loads `<modulesDir>/<key>/cli/index.ts` at startup and registers the

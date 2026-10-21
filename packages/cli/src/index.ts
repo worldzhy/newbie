@@ -185,7 +185,7 @@ program
 program
   .command("update-template [paths...]")
   .description(
-    "Diff framework-managed skeleton files (main.ts, tsconfig*, prisma framework block, deploy/*) against the template; business files are skipped. Pass path prefixes (e.g. deploy/) to restrict the scope",
+    "Diff framework-owned template files (ADR-009 ownership registry: main.ts, tsconfig*, nest-cli.json, prisma.config.ts, prisma framework block, .env.example/.gitignore framework blocks, deploy/*) against the template; generated and host-owned files are skipped. Pass path prefixes (e.g. deploy/) to restrict the scope",
   )
   .option("--template-path <dir>", "use a local template directory instead of cloning newbie-starter")
   .option("--template-ref <ref>", "git ref (e.g. a template tag) of newbie-starter to sync from")

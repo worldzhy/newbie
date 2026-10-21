@@ -147,14 +147,19 @@ Print machine-readable project state as JSON.
 
 #### `newbie update-template`
 
-Diff framework-managed skeleton files (`main.ts`, `tsconfig*`, the Prisma
-framework block) against the template. Business files are skipped.
+Diff framework-owned template files against the template, driven by the
+ADR-009 ownership registry: whole-file sync for `main.ts`, `tsconfig*`,
+`nest-cli.json`, `prisma.config.ts` and the static `deploy/` stack; block sync
+for the `@@newbie-framework` blocks of `.env.example`, `.gitignore` and
+`prisma/schema.prisma`. Generated (`newbie assemble` products) and
+template-shipped host-owned files are skipped.
 
 | Option                  | Description                                                       |
 | ----------------------- | ----------------------------------------------------------------- |
 | `--template-path <dir>` | Use a local template directory instead of cloning the repository. |
 | `--template-ref <ref>`  | Git ref (e.g. a template tag) to sync from.                       |
-| `--write`               | Apply the template version of differing skeleton files.           |
+| `--write`               | Apply the template version of differing template files.           |
+| `--check`               | CI gate: print the diff and exit non-zero when files drift.       |
 
 #### `newbie agent`
 
@@ -227,7 +232,6 @@ Every registry module carries a `newbie.module.json` at its root:
 | `dependencies`       | object   | npm dependencies merged into the consuming project's `package.json`.                                            |
 | `devDependencies`    | object   | npm devDependencies merged into the consuming project's `package.json`.                                         |
 | `moduleDependencies` | string[] | Registry module keys imported via `@modules/<key>`; installs expand to the transitive closure.                  |
-| `assets`             | object[] | Extra NestJS assets (e.g. resolvers) wired into the generated module index.                                     |
 | `cli`                | string   | Command namespace this module exposes (see "Module-provided commands").                                         |
 | `sdk`                | string   | Package name of the companion SDK shipped alongside the module (pairing record for tooling).                    |
 | `publicNamespace`    | boolean  | Claim the public URL namespace `/<key>/*`; assemble renders a Caddy handle block (ADR-008).                     |

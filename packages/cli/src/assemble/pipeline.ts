@@ -14,7 +14,6 @@ import { assembleDependencies } from "./dependencies";
 import { applyDeployRenders, planDeployRenders } from "./deploy";
 import { assembleEnv, assembleEnvExample } from "./env";
 import { describeMissingDependencies, expandRegistryClosure } from "./module-graph";
-import { assembleNestJsAssets } from "./assets";
 import { assembleNestJsModules } from "./modules";
 import { addModules, removeModules } from "./modules-copy";
 import { assembleSchemaFiles } from "./schema";
@@ -144,9 +143,8 @@ export async function runSteps(ctx: PipelineContext, changes: PlannedChange): Pr
     skipPrismaGenerate,
   });
 
-  step("Update nestjs assets");
-  await assembleNestJsAssets({ cwd, sink, issues, added, removed });
-
+  // nest-cli.json assets are a fixed template glob (ADR-009 D2); no
+  // per-module asset injection happens here, so the file stays byte-identical.
   step("Update nestjs modules");
   await assembleNestJsModules({ cwd, sink, issues, enabledKeys });
 
