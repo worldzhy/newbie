@@ -101,7 +101,7 @@ compose 中 datastore 服务携带 label `newbie.backup-engine: <engine>`；back
 ## 实施顺序（里程碑）
 
 1. ~~生产主机 compose 插件版本取证（SSM 一条命令，D1 前置）~~ **✅ 完成（2026-10-21）：插件 v5.6.0，`required: false` / `!reset null` 语义实测通过**；
-2. newbie-modules registry：layer 改名与重标（foundation→infrastructure、domain→feature、datastore 标注）+ web-monitor publicNamespace；
+2. ~~newbie-modules registry：layer 改名与重标（foundation→infrastructure、domain→feature、datastore 标注）+ web-monitor publicNamespace~~ **✅ 完成（2026-10-21，newbie-modules d612ad4）：39 个 manifest 改动，终态分布 infrastructure 23 / datastore 5 / capability 15 / feature 11 + module-hub 无 layer（修正设计期取证 13/13 的 capability/domain 划分误差为实测 15/11，总数不变、不影响决策）；过渡期：旧版 CLI（≤1.5.0）`newbie dev lint` 会将新层名报 unknown layer，M3 枚举更新后消除**；
 3. newbie CLI：layer-lint 枚举/rank、datastore 注册表与守卫、compose.modules.yml 渲染器、Caddyfile 标记块渲染器、`assemble --check`；
 4. newbie-starter：compose 三文件拆分、Caddyfile.tmpl 标记块化、backup.sh label 分发化、lib.sh 收敛；
 5. nightwatch 迁移 + 生产等价性验证（按"nightwatch 迁移路径"）。
