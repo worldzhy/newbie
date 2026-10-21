@@ -17,7 +17,7 @@
     "lint:fix": "eslint --fix"
   },
   "devDependencies": {
-    "@devbie/style-guide": "^1.0.0",
+    "@devbie/style-guide": "*",
     "eslint": "^9.39.4",
     "prettier": "^3.9.9"
   }

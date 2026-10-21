@@ -1,16 +1,23 @@
 import { defineConfig, globalIgnores } from "eslint/config";
+import core from "./core.js";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
 import prettierConfig from "eslint-config-prettier";
 
 /**
- * Shared eslint flat config for Next.js codebases
+ * Next.js standard for Next.js applications
  * (nightwatch-frontend, fewbie-starter).
  *
- * Repo-specific rules and ignores belong in the consumer's own
- * eslint.config.mjs, spread after this entry.
+ * Extends the shared `core` baseline with the canonical Next rule set.
+ * `eslint-config-next` already bundles the React / react-hooks / jsx-a11y
+ * layers, so the `frontend` React layer is not repeated here: spreading both
+ * would redefine the same plugin and flat config rejects that.
+ *
+ * This entry can only be loaded where the `next` package is installed, which
+ * is why frontend repos without a Next runtime use `frontend` instead.
  */
 export default defineConfig([
+  ...core,
   ...nextVitals,
   ...nextTs,
   prettierConfig,
