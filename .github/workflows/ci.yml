@@ -1,10 +1,13 @@
 name: CI
 
+# Verification runs once, on the integration branch. main only receives dev
+# commits that already carry a green run here, so it re-runs nothing; its own
+# release-only gates live in release-check.yml.
 on:
   push:
-    branches: [dev, main]
+    branches: [dev]
   pull_request:
-    branches: [dev, main]
+    branches: [dev]
 
 jobs:
   build-and-test:
@@ -38,12 +41,6 @@ jobs:
 
       - run: npm run build -w @devbie/apits
       - run: npm test -w @devbie/apits
-      # The template-sync gate compares registry items against fewbie-starter's
-      # default branch — the same source `fewbie create` clones. That invariant
-      # is only meaningful once work has landed on main, so the gate is skipped
-      # on dev (ported from the standalone fewbie repo's CI).
-      - if: github.ref_name == 'main' || github.base_ref == 'main'
-        run: npm run check:template-sync -w @devbie/fewbie-cli
 
       - run: npm test -w @devbie/heartbeat-sdk
       - run: npm test -w @devbie/web-monitor-sdk

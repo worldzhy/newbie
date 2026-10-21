@@ -1,0 +1,24 @@
+# Release gate for main.
+#
+# Verification runs once, on dev (see ci.yml): every commit merged into main is
+# a dev commit that already carries a green run, so main re-runs no checks.
+# What is left here are invariants that only hold on the release branch — the
+# template-sync gate compares registry items against fewbie-starter's default
+# branch, which is the source `fewbie create` clones.
+name: Release check
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  template-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run check:template-sync -w @devbie/fewbie-cli
