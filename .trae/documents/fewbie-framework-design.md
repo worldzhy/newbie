@@ -4,7 +4,7 @@
 
 
 > 状态：设计决议（2026-09-24）
-> 本文档取代 `/Users/worldzhy/src/newbie/.trae/documents/newbie-framework-split-plan.md` 中第六章「@devbie/fewbie-core 设计」的旧方案（旧方案拟照抄 @devbie/newbie 的重 npm 包模式，已废弃；该后端文档已于 2026-09-24 同步修订）。
+> 本文档取代 `/Users/worldzhy/src/devbie/.trae/documents/newbie-framework-split-plan.md` 中第六章「@devbie/fewbie-core 设计」的旧方案（旧方案拟照抄 @devbie/newbie 的重 npm 包模式，已废弃；该后端文档已于 2026-09-24 同步修订）。
 
 ## 一、背景与触发条件
 

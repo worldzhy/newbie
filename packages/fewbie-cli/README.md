@@ -1,7 +1,7 @@
 # @devbie/fewbie-cli
 
 [![npm version](https://img.shields.io/npm/v/@devbie/fewbie-cli?style=flat-square)](https://www.npmjs.com/package/@devbie/fewbie-cli)
-[![license](https://img.shields.io/npm/l/@devbie/fewbie-cli?style=flat-square)](https://github.com/worldzhy/newbie/tree/dev/packages/fewbie-cli)
+[![license](https://img.shields.io/npm/l/@devbie/fewbie-cli?style=flat-square)](https://github.com/worldzhy/devbie/tree/dev/packages/fewbie-cli)
 [![node](https://img.shields.io/node/v/@devbie/fewbie-cli?style=flat-square)](https://www.npmjs.com/package/@devbie/fewbie-cli)
 
 Command-line tool for the Fewbie frontend framework. Scaffold Next.js projects
@@ -52,11 +52,11 @@ npx fewbie add data-table
 
 Create a new project from the Fewbie basic template.
 
-| Option                  | Description                                                       |
-| ----------------------- | ----------------------------------------------------------------- |
-| `--template-path <dir>` | Use a local template directory instead of cloning the repository. |
-| `--template-ref <ref>`  | Git ref of the fewbie repository to clone the template from.      |
-| `--no-git-init`         | Skip `git init` in the new project.                               |
+| Option                  | Description                                                          |
+| ----------------------- | -------------------------------------------------------------------- |
+| `--template-path <dir>` | Use a local template directory instead of cloning the repository.    |
+| `--template-ref <ref>`  | Git ref of the fewbie-starter repository to clone the template from. |
+| `--no-git-init`         | Skip `git init` in the new project.                                  |
 
 ### `fewbie add <names...>`
 
@@ -141,4 +141,4 @@ Running `fewbie` with no arguments prints help and exits successfully.
 
 ## License
 
-[MIT](https://github.com/worldzhy/newbie/tree/dev/packages/fewbie-cli)
+[MIT](https://github.com/worldzhy/devbie/tree/dev/packages/fewbie-cli)

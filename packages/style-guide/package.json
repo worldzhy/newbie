@@ -1,15 +1,24 @@
 {
   "name": "@devbie/style-guide",
-  "version": "1.1.3",
-  "description": "Single source of truth for devbie ecosystem code style: shared prettier config and eslint flat standards (backend, frontend, next)",
+  "version": "1.4.1",
+  "description": "Single source of truth for devbie ecosystem code style: shared prettier config and composable eslint flat layers (base, nest, next)",
   "license": "MIT",
   "author": "worldzhy",
   "type": "module",
   "exports": {
     "./prettier": "./prettier.js",
-    "./eslint/backend": "./eslint/backend.js",
-    "./eslint/frontend": "./eslint/frontend.js",
-    "./eslint/next": "./eslint/next.js",
+    "./eslint/base": {
+      "types": "./eslint/base.d.ts",
+      "default": "./eslint/base.js"
+    },
+    "./eslint/nest": {
+      "types": "./eslint/nest.d.ts",
+      "default": "./eslint/nest.js"
+    },
+    "./eslint/next": {
+      "types": "./eslint/next.d.ts",
+      "default": "./eslint/next.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -20,16 +29,26 @@
     "access": "public"
   },
   "dependencies": {
+    "@darraghor/eslint-plugin-nestjs-typed": "^7.5.8",
     "eslint-config-next": "^16.4.2",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-jsx-a11y": "^6.10.0",
-    "eslint-plugin-react": "^7.37.0",
-    "eslint-plugin-react-hooks": "^7.1.0",
     "typescript-eslint": "^8.71.2"
   },
   "peerDependencies": {
     "eslint": "^9.0.0 || ^10.0.0",
+    "next": "^16.0.0",
     "prettier": "^3.9.9",
     "typescript": ">=5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "next": {
+      "optional": true
+    }
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "next": "^16.4.2"
   }
 }

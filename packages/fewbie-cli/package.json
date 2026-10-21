@@ -6,7 +6,7 @@
   "author": "worldzhy",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/worldzhy/newbie.git",
+    "url": "git+https://github.com/worldzhy/devbie.git",
     "directory": "packages/fewbie-cli"
   },
   "bin": {

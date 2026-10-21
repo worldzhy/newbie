@@ -1,7 +1,7 @@
 # @devbie/web-monitor-sdk
 
 [![npm version](https://img.shields.io/npm/v/@devbie/web-monitor-sdk?style=flat-square)](https://www.npmjs.com/package/@devbie/web-monitor-sdk)
-[![license](https://img.shields.io/npm/l/@devbie/web-monitor-sdk?style=flat-square)](https://github.com/worldzhy/newbie/blob/dev/LICENSE)
+[![license](https://img.shields.io/npm/l/@devbie/web-monitor-sdk?style=flat-square)](https://github.com/worldzhy/devbie/blob/dev/LICENSE)
 
 Browser-side web monitoring SDK. It automatically collects page-view and page
 performance data, AJAX calls (both `XMLHttpRequest` and `fetch`), resource
@@ -181,4 +181,4 @@ initializer is also exposed on the browser as `window._frontendMonitor`.
 
 ## License
 
-[MIT](https://github.com/worldzhy/newbie/blob/dev/LICENSE)
+[MIT](https://github.com/worldzhy/devbie/blob/dev/LICENSE)

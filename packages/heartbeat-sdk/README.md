@@ -1,7 +1,7 @@
 # @devbie/heartbeat-sdk
 
 [![npm version](https://img.shields.io/npm/v/@devbie/heartbeat-sdk?style=flat-square)](https://www.npmjs.com/package/@devbie/heartbeat-sdk)
-[![license](https://img.shields.io/npm/l/@devbie/heartbeat-sdk?style=flat-square)](https://github.com/worldzhy/newbie/blob/dev/LICENSE)
+[![license](https://img.shields.io/npm/l/@devbie/heartbeat-sdk?style=flat-square)](https://github.com/worldzhy/devbie/blob/dev/LICENSE)
 [![node](https://img.shields.io/node/v/@devbie/heartbeat-sdk?style=flat-square)](https://www.npmjs.com/package/@devbie/heartbeat-sdk)
 
 A tiny, framework-agnostic heartbeat client for installation liveness
@@ -153,4 +153,4 @@ if (endpoint && token) {
 
 ## License
 
-[MIT](https://github.com/worldzhy/newbie/blob/dev/LICENSE)
+[MIT](https://github.com/worldzhy/devbie/blob/dev/LICENSE)
