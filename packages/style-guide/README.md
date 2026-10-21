@@ -92,6 +92,16 @@ default, only as a deliberate milestone.
 
 ## Changelog
 
+- 1.4.1 — the optional `next` peer widens to `^16.0.0`. 1.4.0 declared
+  `^16.4.2` (mirroring the dev dependency used by this package's own test
+  suite), but npm enforces optional-peer ranges against installed copies, so
+  consumers on Next.js 16.2 failed to install with ERESOLVE. The peer now
+  states the actual contract: any Next.js 16.
+- 1.4.0 — the three eslint entries ship type declarations (exports map
+  `types` alongside `default`), and the `next` layer switches off
+  `import/no-anonymous-default-export` for `eslint.config.*` files so
+  consumers can use the idiomatic `export default [...base, ...next]`.
+  `next` is declared as an optional peer.
 - 1.3.1 — the internal `core` entry is inlined into `base` and removed. Nothing
   imported it directly (`base` was its only consumer), and keeping two files
   for one entry set made the loading order harder to read: `nest` and `next`
