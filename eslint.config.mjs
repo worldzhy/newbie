@@ -1,7 +1,7 @@
-import backend from "@devbie/style-guide/eslint/backend";
+import base from "@devbie/style-guide/eslint/base";
 
 export default [
-  ...backend,
+  ...base,
   {
     ignores: ["**/dist/**", "**/coverage/**"],
   },

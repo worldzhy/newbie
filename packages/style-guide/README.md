@@ -5,27 +5,26 @@ Single source of truth for code style across the devbie ecosystem
 
 ## Exports
 
-| Entry                                 | Contents                                                    |
-| ------------------------------------- | ----------------------------------------------------------- |
-| `@devbie/style-guide/prettier`        | Canonical prettier config (all repos)                       |
-| `@devbie/style-guide/eslint/backend`  | eslint flat standard for Nest/Node TypeScript backends      |
-| `@devbie/style-guide/eslint/frontend` | eslint flat standard for frontend repos (TS + React + a11y) |
-| `@devbie/style-guide/eslint/next`     | Frontend standard + canonical Next.js rules (overlay)       |
+| Entry                             | Contents                                            |
+| --------------------------------- | --------------------------------------------------- |
+| `@devbie/style-guide/prettier`    | Canonical prettier config (all repos)               |
+| `@devbie/style-guide/eslint/base` | eslint flat standard for Node TypeScript repos      |
+| `@devbie/style-guide/eslint/next` | `base` + canonical Next.js rules (for Next.js apps) |
 
 ## Which entry each repo uses
 
-| Repo                                                              | eslint entry |
-| ----------------------------------------------------------------- | ------------ |
-| newbie, newbie-starter, nightwatch-backend, newbie-modules, apits | `backend`    |
-| fewbie                                                            | `frontend`   |
-| fewbie-starter, nightwatch-frontend                               | `next`       |
+| Repo                                                       | eslint entry |
+| ---------------------------------------------------------- | ------------ |
+| newbie, newbie-starter, nightwatch-backend, newbie-modules | `base`       |
+| fewbie-starter, nightwatch-frontend                        | `next`       |
 
-`next` is the shared `core` baseline plus `eslint-config-next` (which already
-bundles the React / react-hooks / jsx-a11y layers), so every repo shares the
-same language-level rules while Next.js applications add only the canonical
-framework layer. `eslint-config-next` requires the `next` package at load
-time, which is why repos without a Next runtime (fewbie) use `frontend`
-instead.
+`base` is the shared default: language-level rules plus prettier, with no
+framework content — it serves Nest services, CLIs, code generators, and
+source registries alike. `next` is `base`'s baseline plus `eslint-config-next`
+(which already bundles the React / react-hooks / jsx-a11y layers), so every
+repo shares the same language-level rules while Next.js applications add only
+the canonical framework layer. `eslint-config-next` requires the `next`
+package at load time, which is why Node repos cannot use `next`.
 
 ## Usage
 
@@ -48,12 +47,11 @@ not style decisions.
 `eslint.config.mjs` in the consumer repo:
 
 ```js
-import backend from "@devbie/style-guide/eslint/backend";
-// frontend repos: import frontend from "@devbie/style-guide/eslint/frontend";
-// Next.js apps:   import next from "@devbie/style-guide/eslint/next";
+import base from "@devbie/style-guide/eslint/base";
+// Next.js apps: import next from "@devbie/style-guide/eslint/next";
 
 export default [
-  ...backend,
+  ...base,
   // Repo-specific rules and ignores go here.
 ];
 ```
@@ -70,6 +68,13 @@ default, only as a deliberate milestone.
 
 ## Changelog
 
+- 1.2.0 — `backend` renamed to `base` and `frontend` removed. After apits and
+  fewbie-cli joined the newbie monorepo (ADR-012/ADR-015), `frontend` had no
+  consumer left, and `backend` no longer described its consumers (CLIs, code
+  generators, registries — none of them backends). The pair is now named for
+  what it is: `base` (the default) and `next` (the Next.js specialization).
+  The react/react-hooks/jsx-a11y plugin dependencies are dropped; `next`
+  gets those layers from `eslint-config-next`.
 - 1.1.3 — `frontend` pins the React version for rule evaluation (19.0) instead
   of detecting it: fewbie lints React template sources without a `react`
   package installed, where detection only emits a warning.
