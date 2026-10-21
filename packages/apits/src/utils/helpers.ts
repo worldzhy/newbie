@@ -152,7 +152,7 @@ export function prepare(requestConfig: RequestConfig, requestData: any): Request
     const UniFormData: typeof FormData | undefined = useNativeFormData
       ? FormData
       : useNodeFormData
-        ? // eslint-disable-next-line @typescript-eslint/no-var-requires
+        ? // eslint-disable-next-line @typescript-eslint/no-require-imports -- isomorphic shim: conditional CJS require when native FormData is unavailable
           require("form-data")
         : undefined;
     if (!UniFormData) {

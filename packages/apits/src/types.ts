@@ -325,7 +325,12 @@ export interface RequestFunctionParams extends RequestConfig {
 }
 
 /** Additional parameters of the request function */
-export type RequestFunctionRestArgs<T extends Function> = T extends (payload: any, ...args: infer R) => any ? R : never;
+export type RequestFunctionRestArgs<T extends (...args: any[]) => any> = T extends (
+  payload: any,
+  ...args: infer R
+) => any
+  ? R
+  : never;
 
 /** Property definition */
 export interface PropDefinition {

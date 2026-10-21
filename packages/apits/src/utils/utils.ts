@@ -91,6 +91,7 @@ export function processJsonSchema<T extends JSONSchema4>(jsonSchema: T): T {
 
   // Mock.toJSONSchema produces `properties` as an array, but JSONSchema4 expects an object.
   if (isArray(jsonSchema.properties)) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- narrowing the array to the object shape here is intentional and type-safe at runtime
     // @ts-ignore
     jsonSchema.properties = (jsonSchema.properties as JSONSchema4[]).reduce<Defined<JSONSchema4["properties"]>>(
       (props, js) => {

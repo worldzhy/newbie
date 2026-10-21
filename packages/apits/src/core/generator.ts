@@ -37,7 +37,7 @@ interface OutputFileList {
 }
 
 // Default client import snippet placed at the top of generated files.
-function defaultClientImportTemplate(config?: Config) {
+function defaultClientImportTemplate(_config?: Config) {
   return `import request from './request'`;
 }
 
@@ -52,7 +52,6 @@ const getDataKeySetStr = (method: string) => {
 // request function can substitute path params from the incoming data object.
 function handlePathParam(path: string) {
   if (path.match(/\{(\w+)\}/)) {
-    // eslint-disable-next-line no-template-curly-in-string
     return `\`${path.replace(/\{(\w+)\}/g, "${data.$1}")}\``;
   }
 
@@ -218,11 +217,11 @@ export class Generator {
     // Convert the OpenAPI document into the internal interface list.
     const allApi = await openApiToInterfaces(openApiV3Json);
 
-    let interfaceList = allApi.interfaces;
+    const interfaceList = allApi.interfaces;
 
     const categoryCode: string[] = [...componentsCode];
 
-    for (let interfaceInfo of interfaceList) {
+    for (const interfaceInfo of interfaceList) {
       const code = await this.generateInterfaceCode(
         {
           ...this.config,

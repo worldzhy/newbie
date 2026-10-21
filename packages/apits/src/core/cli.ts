@@ -91,6 +91,7 @@ function loadConfigFile(discovered: DiscoveredConfig): Config[] {
 
   if (kind === "ts") {
     // tsx is registered at module load time.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports -- user config files are loaded dynamically at runtime
     const mod = require(filePath);
     return normalizeConfig(mod.default ?? mod);
   }

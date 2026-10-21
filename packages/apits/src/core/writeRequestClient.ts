@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import fs from "fs-extra";
 import { Config } from "../types";
 import { dedent } from "../utils/vtilsLite";
