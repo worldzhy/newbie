@@ -1,7 +1,7 @@
 # @devbie/newbie
 
 [![npm version](https://img.shields.io/npm/v/@devbie/newbie?style=flat-square)](https://www.npmjs.com/package/@devbie/newbie)
-[![license](https://img.shields.io/npm/l/@devbie/newbie?style=flat-square)](https://github.com/worldzhy/newbie/blob/dev/LICENSE)
+[![license](https://img.shields.io/npm/l/@devbie/newbie?style=flat-square)](https://github.com/worldzhy/devbie/blob/dev/LICENSE)
 
 A batteries-included backend application framework runtime built on top of
 [NestJS 11](https://nestjs.com/), [Prisma 7](https://www.prisma.io/) and
@@ -172,4 +172,4 @@ seconds. Reporting is fire-and-forget and never blocks application startup.
 
 ## License
 
-[MIT](https://github.com/worldzhy/newbie/blob/dev/LICENSE)
+[MIT](https://github.com/worldzhy/devbie/blob/dev/LICENSE)

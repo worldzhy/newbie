@@ -99,7 +99,7 @@ async function assertTemplateRegistryComplete(templateRoot: string): Promise<voi
   if (unclassified.length === 0) return;
   throw new CliError(
     `Template file(s) missing from the ownership registry (ADR-009 D4):\n  - ${unclassified.join("\n  - ")}\n` +
-      "Classify each one in TEMPLATE_FILES (packages/cli/src/core/template-sync.ts).",
+      "Classify each one in TEMPLATE_FILES (packages/newbie-cli/src/core/template-sync.ts).",
   );
 }
 

@@ -20,20 +20,20 @@ SDKs.
 
 ## Coverage: which entry each repo uses
 
-| Repo                                | Composition                               |
-| ----------------------------------- | ----------------------------------------- |
-| newbie-monorepo root                | `base` + `nest` scoped to `packages/core` |
-| newbie-starter, nightwatch-backend  | `base` + `nest`                           |
-| fewbie-starter, nightwatch-frontend | `base` + `next`                           |
-| newbie-modules                      | `base` only                               |
+| Repo                                | Composition                                 |
+| ----------------------------------- | ------------------------------------------- |
+| devbie monorepo root                | `base` + `nest` scoped to `packages/newbie` |
+| newbie-starter, nightwatch-backend  | `base` + `nest`                             |
+| fewbie-starter, nightwatch-frontend | `base` + `next`                             |
+| newbie-modules                      | `base` only                                 |
 
 Two structural facts drive this table:
 
 - `newbie-modules` installs no dependencies at all (modules are copied into a
   consumer, not built in place), so it can only use `base`, which is purely
   syntactic.
-- The newbie monorepo root lints heterogeneous packages in one config: only
-  `packages/core` is Nest framework code, while the CLIs, the generator and
+- The devbie monorepo root lints heterogeneous packages in one config: only
+  `packages/newbie` is Nest framework code, while the CLIs, the generator and
   the SDKs are plain Node. ESLint flat config does not read `package.json` and
   nested `eslint.config.mjs` files are not inherited, so per-package
   differentiation must be expressed in the root config with `files` scoping —
@@ -94,7 +94,7 @@ default, only as a deliberate milestone.
 - 1.3.0 — new `nest` layer backed by `@darraghor/eslint-plugin-nestjs-typed`
   (recommended flat config, four type-aware rules), and `next` reshaped into a
   layer. Consumers now compose `[...base, ...nest]` / `[...base, ...next]`;
-  this also lets the newbie monorepo scope the Nest layer to `packages/core`
+  this also lets the devbie monorepo scope the Nest layer to `packages/newbie`
   via `files` instead of giving a Nest framework standard to its CLIs.
 - 1.2.0 — `backend` renamed to `base` and `frontend` removed. After apits and
   fewbie-cli joined the newbie monorepo (ADR-012/ADR-015), `frontend` had no

@@ -1,7 +1,7 @@
 # @devbie/newbie-cli
 
 [![npm version](https://img.shields.io/npm/v/@devbie/newbie-cli?style=flat-square)](https://www.npmjs.com/package/@devbie/newbie-cli)
-[![license](https://img.shields.io/npm/l/@devbie/newbie-cli?style=flat-square)](https://github.com/worldzhy/newbie/blob/dev/LICENSE)
+[![license](https://img.shields.io/npm/l/@devbie/newbie-cli?style=flat-square)](https://github.com/worldzhy/devbie/blob/dev/LICENSE)
 [![node](https://img.shields.io/node/v/@devbie/newbie-cli?style=flat-square)](https://www.npmjs.com/package/@devbie/newbie-cli)
 
 Command-line tool for the [Newbie](https://www.npmjs.com/package/@devbie/newbie)
@@ -260,4 +260,4 @@ name:
 
 ## License
 
-[MIT](https://github.com/worldzhy/newbie/blob/dev/LICENSE)
+[MIT](https://github.com/worldzhy/devbie/blob/dev/LICENSE)

@@ -1,7 +1,7 @@
 {
-  "name": "newbie-monorepo",
+  "name": "devbie-monorepo",
   "version": "3.2.0",
-  "description": "newbie framework monorepo (@devbie/newbie, @devbie/newbie-cli)",
+  "description": "devbie monorepo: publishable @devbie/* packages (newbie framework, newbie-cli)",
   "author": "worldzhy",
   "private": true,
   "license": "MIT",
