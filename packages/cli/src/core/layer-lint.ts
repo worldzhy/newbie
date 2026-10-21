@@ -1,21 +1,27 @@
 /**
  * Pure evaluation of the registry module layering rules.
  *
- * Layers form a one-way hierarchy: domain -> capability -> foundation.
- * A module may depend on modules in its own layer or lower layers, never on
- * a higher layer. `module-hub` is framework-special: it carries no layer,
- * may depend on any module, and must not be depended upon by layered modules.
+ * Layers form a one-way hierarchy: feature -> capability -> infrastructure ->
+ * datastore. A module may depend on modules in its own layer or lower layers,
+ * never on a higher layer. `module-hub` is framework-special: it carries no
+ * layer, may depend on any module, and must not be depended upon by layered
+ * modules.
  */
 
-export type ModuleLayer = "foundation" | "capability" | "domain";
+export type ModuleLayer = "datastore" | "infrastructure" | "capability" | "feature";
 
-export const MODULE_LAYERS: readonly ModuleLayer[] = ["foundation", "capability", "domain"];
+export const MODULE_LAYERS: readonly ModuleLayer[] = ["datastore", "infrastructure", "capability", "feature"];
 
-/** Higher rank = higher layer; dependencies may only flow to lower/equal ranks. */
+/**
+ * Higher rank = higher layer; dependencies may only flow to lower/equal ranks.
+ * Ranks step by 10 so a future layer can be inserted without renumbering;
+ * 0 is deliberately unused (falsy and collides with "unset" semantics).
+ */
 const LAYER_RANK: Record<ModuleLayer, number> = {
-  foundation: 0,
-  capability: 1,
-  domain: 2,
+  datastore: 10,
+  infrastructure: 20,
+  capability: 30,
+  feature: 40,
 };
 
 export interface LayeredModule {

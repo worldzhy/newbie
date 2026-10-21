@@ -15,18 +15,18 @@ function mod(
 describe("lintModuleLayers", () => {
   it("accepts a clean downward graph", () => {
     const findings = lintModuleLayers([
-      mod("security", "foundation"),
+      mod("security", "infrastructure"),
       mod("account", "capability", ["security"]),
-      mod("order", "domain", ["account", "security"]),
+      mod("order", "feature", ["account", "security"]),
     ]);
     assert.deepEqual(findings, []);
   });
 
   it("flags an upward dependency as an error", () => {
-    const findings = lintModuleLayers([mod("security", "foundation", ["account"]), mod("account", "capability")]);
+    const findings = lintModuleLayers([mod("security", "infrastructure", ["account"]), mod("account", "capability")]);
     assert.equal(findings.length, 1);
     assert.equal(findings[0].level, "error");
-    assert.match(findings[0].message, /foundation module must not depend on capability module 'account'/);
+    assert.match(findings[0].message, /infrastructure module must not depend on capability module 'account'/);
   });
 
   it("warns on same-layer dependencies", () => {
@@ -54,7 +54,7 @@ describe("lintModuleLayers", () => {
   it("allows layer-less module-hub to depend on layered modules", () => {
     const findings = lintModuleLayers([
       mod("module-hub", undefined, ["security", "account"]),
-      mod("security", "foundation"),
+      mod("security", "infrastructure"),
       mod("account", "capability"),
     ]);
     assert.deepEqual(findings, []);
@@ -70,7 +70,7 @@ describe("lintModuleLayers", () => {
 
   it("errors on a physical import missing from moduleDependencies", () => {
     const findings = lintModuleLayers([
-      mod("security", "foundation", [], []),
+      mod("security", "infrastructure", [], []),
       mod("account", "capability", ["security"], []),
     ]);
     const undeclared = findings.find((finding) => finding.message.includes("does not declare it"));
@@ -81,7 +81,7 @@ describe("lintModuleLayers", () => {
 
   it("accepts a physical import that is declared in moduleDependencies", () => {
     const findings = lintModuleLayers([
-      mod("security", "foundation", [], []),
+      mod("security", "infrastructure", [], []),
       mod("account", "capability", ["security"], ["security"]),
     ]);
     assert.deepEqual(findings, []);
@@ -89,7 +89,7 @@ describe("lintModuleLayers", () => {
 
   it("warns on a declared dependency that is never imported", () => {
     const findings = lintModuleLayers([
-      mod("security", "foundation", [], []),
+      mod("security", "infrastructure", [], []),
       mod("account", "capability", [], ["security"]),
     ]);
     assert.equal(findings.length, 1);

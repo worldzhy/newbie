@@ -224,7 +224,9 @@ const dev = program
 
 dev
   .command("lint")
-  .description("Enforce the module layering rules (domain -> capability -> foundation) across registry sources")
+  .description(
+    "Enforce the module layering rules (feature -> capability -> infrastructure -> datastore) across registry sources",
+  )
   .action(function (this: Command) {
     return run(() => runDevLint(collectOptions(this)));
   });

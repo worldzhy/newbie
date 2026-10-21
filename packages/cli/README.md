@@ -169,9 +169,11 @@ registry checkout, not a consuming project).
 
 #### `newbie dev lint`
 
-Enforce the module layering rules (`domain` -> `capability` -> `foundation`)
-across registry sources: upward dependencies and same-layer import cycles are
-errors; same-layer dependencies are warnings for review.
+Enforce the module layering rules (`feature` -> `capability` -> `infrastructure`
+-> `datastore`) across registry sources: upward dependencies and same-layer
+import cycles are errors; same-layer dependencies are warnings for review. A
+`datastore` module must additionally be listed in the CLI datastore registry
+(see ADR-008 D3).
 
 ### Module-provided commands
 
@@ -201,21 +203,21 @@ export; they never import framework internals by relative path.
 
 Every registry module carries a `newbie.module.json` at its root:
 
-| Field                | Type     | Description                                                                                    |
-| -------------------- | -------- | ---------------------------------------------------------------------------------------------- |
-| `key`                | string   | Module key; must match the directory name.                                                     |
-| `layer`              | string   | Architectural layer (`domain` / `capability` / `foundation`); absent for framework-specials.   |
-| `module.file`        | string   | NestJS module file without extension, e.g. `account.module`.                                   |
-| `module.className`   | string   | Exported NestJS module class name, e.g. `AccountModule`.                                       |
-| `schema`             | string   | Project-relative path of the Prisma model fragment; absent = no models.                        |
-| `config-service`     | object   | Config keys merged into the generated `modules.config.ts`.                                     |
-| `env`                | object   | Environment variables the module requires (doctor reports missing ones).                       |
-| `dependencies`       | object   | npm dependencies merged into the consuming project's `package.json`.                           |
-| `devDependencies`    | object   | npm devDependencies merged into the consuming project's `package.json`.                        |
-| `moduleDependencies` | string[] | Registry module keys imported via `@modules/<key>`; installs expand to the transitive closure. |
-| `assets`             | object[] | Extra NestJS assets (e.g. resolvers) wired into the generated module index.                    |
-| `cli`                | string   | Command namespace this module exposes (see "Module-provided commands").                        |
-| `sdk`                | string   | Package name of the companion SDK shipped alongside the module (pairing record for tooling).   |
+| Field                | Type     | Description                                                                                                     |
+| -------------------- | -------- | --------------------------------------------------------------------------------------------------------------- |
+| `key`                | string   | Module key; must match the directory name.                                                                      |
+| `layer`              | string   | Architectural layer (`feature` / `capability` / `infrastructure` / `datastore`); absent for framework-specials. |
+| `module.file`        | string   | NestJS module file without extension, e.g. `account.module`.                                                    |
+| `module.className`   | string   | Exported NestJS module class name, e.g. `AccountModule`.                                                        |
+| `schema`             | string   | Project-relative path of the Prisma model fragment; absent = no models.                                         |
+| `config-service`     | object   | Config keys merged into the generated `modules.config.ts`.                                                      |
+| `env`                | object   | Environment variables the module requires (doctor reports missing ones).                                        |
+| `dependencies`       | object   | npm dependencies merged into the consuming project's `package.json`.                                            |
+| `devDependencies`    | object   | npm devDependencies merged into the consuming project's `package.json`.                                         |
+| `moduleDependencies` | string[] | Registry module keys imported via `@modules/<key>`; installs expand to the transitive closure.                  |
+| `assets`             | object[] | Extra NestJS assets (e.g. resolvers) wired into the generated module index.                                     |
+| `cli`                | string   | Command namespace this module exposes (see "Module-provided commands").                                         |
+| `sdk`                | string   | Package name of the companion SDK shipped alongside the module (pairing record for tooling).                    |
 
 ## Global options
 
