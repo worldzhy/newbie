@@ -8,6 +8,7 @@ import pkg from "../package.json";
 
 import { runAgent } from "./commands/agent";
 import { runApply } from "./commands/apply";
+import { runAssemble } from "./commands/assemble";
 import { runConfig } from "./commands/config";
 import { runCreate } from "./commands/create";
 import { runDevLint } from "./commands/dev/lint";
@@ -79,6 +80,17 @@ program
   .action(function (this: Command) {
     const options = { ...collectOptions(this), yes: Boolean(this.opts().yes) };
     return run(() => runInstall(options));
+  });
+
+program
+  .command("assemble")
+  .description(
+    "Regenerate module-derived deploy assets (deploy/compose.modules.yml, Caddyfile module route block) from the installed module set",
+  )
+  .option("--check", "CI gate: print the diff and exit non-zero when the generated deploy assets drift", false)
+  .action(function (this: Command) {
+    const flags = this.opts();
+    return run(() => runAssemble({ ...collectOptions(this), check: Boolean(flags.check) }));
   });
 
 program

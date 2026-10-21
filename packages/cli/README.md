@@ -80,6 +80,18 @@ requirements).
 | ----------- | -------------------------- |
 | `-y, --yes` | Skip confirmation prompts. |
 
+#### `newbie assemble`
+
+Regenerate the module-derived deploy assets from the installed module set:
+`deploy/compose.modules.yml` (datastore services rendered from the CLI
+datastore registry, ADR-008) and the `@@newbie-modules` route block of
+`deploy/Caddyfile.tmpl` (one `handle /<key>/*` block per module declaring
+`publicNamespace`). The same renders run as a step of install/apply/update.
+
+| Option    | Description                                                                |
+| --------- | -------------------------------------------------------------------------- |
+| `--check` | CI gate: print the diff and exit non-zero when the generated assets drift. |
+
 #### `newbie config`
 
 View or edit the enabled-module list in `modules.json` without touching project
@@ -218,6 +230,7 @@ Every registry module carries a `newbie.module.json` at its root:
 | `assets`             | object[] | Extra NestJS assets (e.g. resolvers) wired into the generated module index.                                     |
 | `cli`                | string   | Command namespace this module exposes (see "Module-provided commands").                                         |
 | `sdk`                | string   | Package name of the companion SDK shipped alongside the module (pairing record for tooling).                    |
+| `publicNamespace`    | boolean  | Claim the public URL namespace `/<key>/*`; assemble renders a Caddy handle block (ADR-008).                     |
 
 ## Global options
 

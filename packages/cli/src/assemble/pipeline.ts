@@ -11,6 +11,7 @@ import { readRegistryModule } from "../lib/registry";
 import { writeModulesState } from "../lib/modules-state";
 
 import { assembleDependencies } from "./dependencies";
+import { applyDeployRenders, planDeployRenders } from "./deploy";
 import { assembleEnv, assembleEnvExample } from "./env";
 import { describeMissingDependencies, expandRegistryClosure } from "./module-graph";
 import { assembleNestJsAssets } from "./assets";
@@ -148,6 +149,9 @@ export async function runSteps(ctx: PipelineContext, changes: PlannedChange): Pr
 
   step("Update nestjs modules");
   await assembleNestJsModules({ cwd, sink, issues, enabledKeys });
+
+  step("Update deploy assets");
+  await applyDeployRenders(sink, await planDeployRenders({ cwd, sink, issues, enabledKeys }));
 
   step("Update package dependencies");
   await assembleDependencies({
