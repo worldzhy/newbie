@@ -4,6 +4,11 @@
   "description": "fewbie frontend framework CLI",
   "license": "MIT",
   "author": "worldzhy",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/worldzhy/newbie.git",
+    "directory": "packages/fewbie-cli"
+  },
   "bin": {
     "fewbie": "dist/index.js"
   },

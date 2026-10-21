@@ -1,7 +1,7 @@
 # @devbie/fewbie-cli
 
 [![npm version](https://img.shields.io/npm/v/@devbie/fewbie-cli?style=flat-square)](https://www.npmjs.com/package/@devbie/fewbie-cli)
-[![license](https://img.shields.io/npm/l/@devbie/fewbie-cli?style=flat-square)](https://github.com/worldzhy/fewbie/blob/dev/LICENSE)
+[![license](https://img.shields.io/npm/l/@devbie/fewbie-cli?style=flat-square)](https://github.com/worldzhy/newbie/tree/dev/packages/fewbie-cli)
 [![node](https://img.shields.io/node/v/@devbie/fewbie-cli?style=flat-square)](https://www.npmjs.com/package/@devbie/fewbie-cli)
 
 Command-line tool for the Fewbie frontend framework. Scaffold Next.js projects
@@ -141,4 +141,4 @@ Running `fewbie` with no arguments prints help and exits successfully.
 
 ## License
 
-[MIT](https://github.com/worldzhy/fewbie/blob/dev/LICENSE)
+[MIT](https://github.com/worldzhy/newbie/tree/dev/packages/fewbie-cli)
