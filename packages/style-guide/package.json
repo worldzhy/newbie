@@ -1,0 +1,31 @@
+{
+  "name": "@devbie/style-guide",
+  "version": "1.0.0",
+  "description": "Single source of truth for devbie ecosystem code style: shared prettier config and eslint flat configs (Nest and Next entries)",
+  "license": "MIT",
+  "author": "worldzhy",
+  "type": "module",
+  "exports": {
+    "./prettier": "./prettier.js",
+    "./eslint/nest": "./eslint/nest.js",
+    "./eslint/next": "./eslint/next.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "prettier.js",
+    "eslint"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "eslint-config-next": "^16.4.2",
+    "eslint-config-prettier": "^10.1.8",
+    "typescript-eslint": "^8.71.2"
+  },
+  "peerDependencies": {
+    "eslint": "^9.0.0 || ^10.0.0",
+    "prettier": "^3.9.9",
+    "typescript": ">=5.0.0"
+  }
+}
