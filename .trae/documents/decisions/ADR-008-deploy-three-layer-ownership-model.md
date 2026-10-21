@@ -102,7 +102,7 @@ compose 中 datastore 服务携带 label `newbie.backup-engine: <engine>`；back
 
 1. ~~生产主机 compose 插件版本取证（SSM 一条命令，D1 前置）~~ **✅ 完成（2026-10-21）：插件 v5.6.0，`required: false` / `!reset null` 语义实测通过**；
 2. ~~newbie-modules registry：layer 改名与重标（foundation→infrastructure、domain→feature、datastore 标注）+ web-monitor publicNamespace~~ **✅ 完成（2026-10-21，newbie-modules d612ad4）：39 个 manifest 改动，终态分布 infrastructure 23 / datastore 5 / capability 15 / feature 11 + module-hub 无 layer（修正设计期取证 13/13 的 capability/domain 划分误差为实测 15/11，总数不变、不影响决策）；过渡期：旧版 CLI（≤1.5.0）`newbie dev lint` 会将新层名报 unknown layer，M3 枚举更新后消除**；
-3. newbie CLI：layer-lint 枚举/rank、datastore 注册表与守卫、compose.modules.yml 渲染器、Caddyfile 标记块渲染器、`assemble --check`；
+3. ~~newbie CLI：layer-lint 枚举/rank、datastore 注册表与守卫、compose.modules.yml 渲染器、Caddyfile 标记块渲染器、`assemble --check`~~ **✅ 完成（2026-10-21，@devbie/newbie-cli 1.6.0，newbie daf1300..f4045c1 / newbie-starter 1483d19 / newbie-modules 1b5b162）：六个分段提交——D2 层改名（daf1300）、D3 datastore 注册表+守卫（9b20ae3）、D1 compose 渲染器（9ce8a74）、D4 Caddyfile 渲染器+manifest publicNamespace（98a8d51）、assemble 命令+pipeline+`--check` 门（a758409）、release 1.6.0（f4045c1）；151 tests 全绿，compose 三文件合并冒烟实证 depends_on 并集/profiles 门控/`restart: "no"` 字符串保真；newbie-starter lockfile 升 1.6.0（check:template-deps 待 dev 合 main 转绿）；附带修复：M2 之前既有的 11 个 registry manifest 缺 security 声明（newbie-modules 1b5b162）**；
 4. newbie-starter：compose 三文件拆分、Caddyfile.tmpl 标记块化、backup.sh label 分发化、lib.sh 收敛；
 5. nightwatch 迁移 + 生产等价性验证（按"nightwatch 迁移路径"）。
 
