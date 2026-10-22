@@ -43,4 +43,5 @@ jobs:
       - run: npm test -w @devbie/apits
 
       - run: npm test -w @devbie/heartbeat-sdk
+      - run: npm test -w @devbie/health-sdk
       - run: npm test -w @devbie/web-monitor-sdk
