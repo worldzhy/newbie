@@ -1,4 +1,4 @@
-# ADR-021: assemble --check enforces module source parity with the registry checkout
+# ADR-021: assemble --check gates module source drift against the registry checkout
 
 Date: 2026-10-23
 Status: accepted
@@ -16,8 +16,8 @@ registry advance that never reaches the host is only visible as a "notice" in
 
 ## Candidates
 
-1. A new `newbie verify` command owning the parity gate.
-2. Extend `assemble --check` with a source parity comparison.
+1. A new `newbie verify` command owning the drift gate.
+2. Extend `assemble --check` with a module source drift comparison.
 3. Keep the check in `newbie doctor` only.
 4. Compare the installed copy against the `sourceCommit` pinned in modules.json.
 5. Compare trees with `diff -r`.
@@ -41,7 +41,7 @@ Rejected:
 
 ## Decision
 
-- `planModuleSourceDrift` (`packages/newbie-cli/src/assemble/module-sources.ts`)
+- `diffModuleSources` (`packages/newbie-cli/src/assemble/module-source-drift.ts`)
   hashes every file under `src/modules/<key>` and under
   `<registry>/packages/modules/<key>` and diffs the two file snapshots. The
   snapshot is content-only, so empty directories and `.DS_Store` never register

@@ -1,7 +1,7 @@
 import { bold, green } from "colorette";
 
 import { applyDeployRenders, planDeployRenders } from "../assemble/deploy";
-import { ModuleSourceDrift, planModuleSourceDrift } from "../assemble/module-sources";
+import { ModuleSourceDrift, diffModuleSources } from "../assemble/module-source-drift";
 import { moduleKeys } from "../core/modules-state";
 import { unifiedDiff } from "../core/unified-diff";
 import { CliError } from "../lib/errors";
@@ -38,7 +38,7 @@ export async function runAssemble(options: AssembleOptions): Promise<void> {
 
   const plans = await planDeployRenders({ cwd: ctx.cwd, sink, issues: ctx.issues, enabledKeys });
   const sourceDrifts = options.check
-    ? await planModuleSourceDrift({ cwd: ctx.cwd, registryRoot: ctx.registry.root, enabledKeys })
+    ? await diffModuleSources({ cwd: ctx.cwd, registryRoot: ctx.registry.root, enabledKeys })
     : [];
 
   if (plans.length === 0 && sourceDrifts.length === 0) {

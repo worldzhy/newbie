@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, it } from "node:test";
 
-import { planModuleSourceDrift } from "../src/assemble/module-sources";
+import { diffModuleSources } from "../src/assemble/module-source-drift";
 
 const directories: string[] = [];
 
@@ -42,12 +42,12 @@ async function makeTrees(params: {
   return { cwd, registryRoot };
 }
 
-describe("planModuleSourceDrift", () => {
+describe("diffModuleSources", () => {
   it("reports nothing for byte-identical module sources", async () => {
     const files = { "newbie.module.json": '{"key":"account"}', "src/account.service.ts": "export class A {}\n" };
     const { cwd, registryRoot } = await makeTrees({ key: "account", project: files, registry: files });
 
-    assert.deepEqual(await planModuleSourceDrift({ cwd, registryRoot, enabledKeys: ["account"] }), []);
+    assert.deepEqual(await diffModuleSources({ cwd, registryRoot, enabledKeys: ["account"] }), []);
   });
 
   it("reports changed, added and removed files separately", async () => {
@@ -65,7 +65,7 @@ describe("planModuleSourceDrift", () => {
       },
     });
 
-    const drifts = await planModuleSourceDrift({ cwd, registryRoot, enabledKeys: ["account"] });
+    const drifts = await diffModuleSources({ cwd, registryRoot, enabledKeys: ["account"] });
 
     assert.equal(drifts.length, 1);
     assert.equal(drifts[0].key, "account");
@@ -83,7 +83,7 @@ describe("planModuleSourceDrift", () => {
       registry: null,
     });
 
-    const drifts = await planModuleSourceDrift({ cwd, registryRoot, enabledKeys: ["account"] });
+    const drifts = await diffModuleSources({ cwd, registryRoot, enabledKeys: ["account"] });
 
     assert.equal(drifts.length, 1);
     assert.equal(drifts[0].report, null);
@@ -96,7 +96,7 @@ describe("planModuleSourceDrift", () => {
       registry: { "src/account.service.ts": "export class B {}\n" },
     });
 
-    assert.deepEqual(await planModuleSourceDrift({ cwd, registryRoot, enabledKeys: [] }), []);
+    assert.deepEqual(await diffModuleSources({ cwd, registryRoot, enabledKeys: [] }), []);
   });
 
   it("ignores empty leftover directories and OS metadata in the registry checkout", async () => {
@@ -105,6 +105,6 @@ describe("planModuleSourceDrift", () => {
     await fs.mkdir(path.join(registryRoot, "packages", "modules", "security", "self-only"), { recursive: true });
     await fs.writeFile(path.join(registryRoot, "packages", "modules", "security", ".DS_Store"), "junk", "utf8");
 
-    assert.deepEqual(await planModuleSourceDrift({ cwd, registryRoot, enabledKeys: ["security"] }), []);
+    assert.deepEqual(await diffModuleSources({ cwd, registryRoot, enabledKeys: ["security"] }), []);
   });
 });

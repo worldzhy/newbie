@@ -11,7 +11,7 @@ import { moduleRootInRegistry } from "../lib/registry";
  * The installed copy under `src/modules/<key>` is registry-owned wholesale
  * (ADR-019: module sources must stay byte-identical to the host copy, the
  * diff-empty back-port rule). This plan is the read-only side of the
- * `assemble --check` parity gate (ADR-021): nothing here can repair the
+ * `assemble --check` drift gate (ADR-021): nothing here can repair the
  * drift, because the fix lives in whichever repository carries the newer
  * version.
  */
@@ -45,7 +45,7 @@ async function isDirectory(dir: string): Promise<boolean> {
  * pinned-commit comparison for the local "did I patch an installed copy"
  * question.
  */
-export async function planModuleSourceDrift(params: {
+export async function diffModuleSources(params: {
   cwd: string;
   registryRoot: string;
   enabledKeys: string[];
