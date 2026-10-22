@@ -55,7 +55,7 @@ function identicalMaps(): {
 
 describe("TEMPLATE_FILES ownership registry (ADR-009 D4)", () => {
   it("classifies every shipped template file exactly once", () => {
-    assert.equal(TEMPLATE_FILES.length, 31);
+    assert.equal(TEMPLATE_FILES.length, 33);
     const paths = TEMPLATE_FILES.map((file) => file.path);
     assert.equal(new Set(paths).size, paths.length, "duplicate registry path");
   });
@@ -65,7 +65,7 @@ describe("TEMPLATE_FILES ownership registry (ADR-009 D4)", () => {
     assert.equal(count("framework-whole-file"), 13);
     assert.equal(count("framework-marker-block"), 3);
     assert.equal(count("generated"), 3);
-    assert.equal(count("template-shipped-host-owned"), 12);
+    assert.equal(count("template-shipped-host-owned"), 14);
   });
 
   it("ships the framework deploy stack as whole-file entries", () => {
