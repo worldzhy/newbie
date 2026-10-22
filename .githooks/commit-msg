@@ -1,0 +1,7 @@
+#!/bin/sh
+# Language gate: commit history is English-only (workspace rule, 2026-10-04).
+# Blocks any commit message (subject or body) containing Han characters.
+if perl -CSD -ne '$found = 1 if /\p{Han}/; END { exit($found ? 0 : 1) }' "$1"; then
+  echo "commit-msg: Chinese characters are not allowed in commit messages (English-only history)" >&2
+  exit 1
+fi
