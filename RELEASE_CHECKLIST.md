@@ -36,8 +36,8 @@ Run through every step below before publishing any package in this repo (package
   - `sprintf-js` moderate (GHSA-hp3w-g68c-fv3c, range `*`) — hoisted into
     the workspace via js-yaml 3 → argparse → sprintf-js; Jest 26 itself
     pulls js-yaml 3 transitively.
-  Neither chain ever ships with the package (`publishConfig.files = dist`,
-  runtime dependencies = 0), and `micromatch@4.0.8` / `sprintf-js@1.1.3` are
-  both upstream latests (advisories range `*`), so no upgrade path exists.
-  Waived since 1.1.2; re-check when Jest 30 lands a new micromatch pin or
-  upstream patches brace parsing.
+    Neither chain ever ships with the package (`publishConfig.files = dist`,
+    runtime dependencies = 0), and `micromatch@4.0.8` / `sprintf-js@1.1.3` are
+    both upstream latests (advisories range `*`), so no upgrade path exists.
+    Waived since 1.1.2; re-check when Jest 30 lands a new micromatch pin or
+    upstream patches brace parsing.
