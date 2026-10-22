@@ -16,20 +16,28 @@ Run through every step below before publishing any package in this repo (package
 ## Waived audit findings (re-verify on every release)
 
 - `@devbie/style-guide` — 5 high findings in the `eslint-config-next` tree
-  (`fast-glob` / `braces` / `micromatch` glob stack-exhaustion DoS, reached via
-  `@next/eslint-plugin-next`). The advisories declare range `*` — no fixed
-  upstream versions exist, so no override can resolve them, and npm's suggested
-  fix (downgrade `eslint-config-next` to 14) would break Next.js 16 consumers.
-  Exposure is lint-time only: nothing runs these libraries against
-  attacker-controlled globs. Waived since 1.4.0; revisit when upstream ships
-  fixes or the dependency-union milestone reshapes the next layer.
+  (`eslint-config-next`/`@next/eslint-plugin-next`/`fast-glob`/`micromatch`
+  /`braces`), reached via the eslint flat-next layer. Advisories:
+  GHSA-vfj7-8cjw-p6xm (braces glob stack-exhaustion DoS, range `*`),
+  plus four downstream warnings all tracing to the same root and declaring
+  ranges `*` or `>=14.3.0-canary.0`. npm's suggested fix is **downgrade**
+  `eslint-config-next` to 14.2.35 (major), which would break the Next.js 16
+  consumers this layer was explicitly introduced for (ADR-011 hard
+  constraint). Exposure is lint-time only — nothing runs these libraries
+  against attacker-controlled globs. Waived since 1.4.0; revisit when
+  upstream ships fixes or the dependency-union milestone reshapes the next
+  layer.
 
-- `@devbie/web-monitor-sdk` — 3 findings (`braces`/`micromatch` high,
-  `sprintf-js` moderate) in the Jest 26 devTools tree (jest-config →
-  micromatch 4.0.8 → braces 3.0.3, and sane → micromatch 3.1.10 → braces
-  2.3.2; sprintf-js reaches via js-yaml 3 → argparse). This package ships
-  with zero runtime dependencies — `publishConfig.files` = `dist`, Jest
-  never leaves the dev tree — and both `micromatch@4.0.8` and
-  `sprintf-js@1.1.3` are upstream latests (advisories range `*`), so no
-  upgrade path exists. Waived since 1.1.2; re-check when Jest 30 lands a
-  new micromatch pin or upstream patches brace parsing.
+- `@devbie/web-monitor-sdk` — 3 findings, all **indirect**:
+  - `braces` high (GHSA-vfj7-8cjw-p6xm, range `*`) and `micromatch` high
+    (range `>=0.2.0`) — two chains from Jest 26 devTools:
+    `jest-config`/`jest-haste-map`/`jest-util` → micromatch 4.0.8 → braces
+    3.0.3, and `sane` → micromatch 3.1.10 → braces 2.3.2.
+  - `sprintf-js` moderate (GHSA-hp3w-g68c-fv3c, range `*`) — hoisted into
+    the workspace via js-yaml 3 → argparse → sprintf-js; Jest 26 itself
+    pulls js-yaml 3 transitively.
+  Neither chain ever ships with the package (`publishConfig.files = dist`,
+  runtime dependencies = 0), and `micromatch@4.0.8` / `sprintf-js@1.1.3` are
+  both upstream latests (advisories range `*`), so no upgrade path exists.
+  Waived since 1.1.2; re-check when Jest 30 lands a new micromatch pin or
+  upstream patches brace parsing.
