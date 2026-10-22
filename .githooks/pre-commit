@@ -1,0 +1,51 @@
+#!/bin/sh
+# Formats staged files with this repo's own prettier and config
+# (package.json "prettier" -> @devbie/style-guide/prettier) inside a throwaway
+# Node container, then restages them. Fails closed: when the formatter cannot
+# run, the commit is blocked instead of letting unformatted code into history.
+set -e
+
+repo_root=$(git rev-parse --show-toplevel)
+cd "$repo_root"
+
+if [ ! -f node_modules/prettier/bin/prettier.cjs ]; then
+  echo "pre-commit: prettier is missing (run npm install); commit blocked" >&2
+  exit 1
+fi
+
+list_file=$(mktemp)
+trap 'rm -f "$list_file"' EXIT
+
+git diff --cached --name-only --diff-filter=ACMR -z > "$list_file"
+
+set --
+while IFS= read -r -d '' path; do
+  case "$path" in
+    *.cjs|*.css|*.js|*.json|*.jsx|*.md|*.mdx|*.mjs|*.scss|*.ts|*.tsx|*.yml|*.yaml)
+      if ! git diff --quiet -- "$path"; then
+        echo "pre-commit: $path has unstaged changes; stage the whole file first" >&2
+        exit 1
+      fi
+      set -- "$@" "$path"
+      ;;
+  esac
+done < "$list_file"
+
+[ "$#" -eq 0 ] && exit 0
+
+if ! docker run --rm --network none \
+  -v "$repo_root":/workspace -w /workspace \
+  node:24-alpine \
+  sh -c '
+    set -e
+    spec=$(node -p "const p = require(\"./package.json\"); typeof p.prettier === \"string\" ? p.prettier : \"\"")
+    if [ -n "$spec" ]; then
+      node -e "require.resolve(process.argv[1])" "$spec"
+    fi
+    node node_modules/prettier/bin/prettier.cjs --write "$@"
+  ' sh "$@"; then
+  echo "pre-commit: formatter failed; commit blocked" >&2
+  exit 1
+fi
+
+git add -- "$@"
