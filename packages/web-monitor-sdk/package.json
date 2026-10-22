@@ -16,7 +16,6 @@
     "build": "rollup -c rollup.config.js && npm run build:types",
     "build:types": "rollup -c rollup.dts.config.js",
     "clean": "rimraf dist",
-    "test": "jest",
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {

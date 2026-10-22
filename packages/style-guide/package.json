@@ -45,9 +45,6 @@
       "optional": true
     }
   },
-  "scripts": {
-    "test": "node --test"
-  },
   "devDependencies": {
     "next": "^16.4.2"
   }

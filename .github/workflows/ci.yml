@@ -57,10 +57,9 @@ jobs:
       - run: npm run build -w @devbie/health-sdk
       - run: npm run build -w @devbie/backend-monitor-sdk
 
-      # One step per workspace that owns a test script. Listed explicitly
+      # One step per workspace that owns a behavioral suite. Listed explicitly
       # rather than --workspaces so a package gains/loses coverage only by
-      # intent: web-monitor-sdk still declares a jest script with no test
-      # files, and apits' "test" runs a scratch script, not a suite.
+      # intent: apits' "test" runs a scratch script, not a suite.
       - run: npm test -w @devbie/newbie-cli
       - run: npm test -w @devbie/newbie
       - run: npm test -w @devbie/fewbie-cli
