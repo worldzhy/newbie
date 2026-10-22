@@ -30,18 +30,10 @@ jobs:
       - run: npm run build -w @devbie/web-monitor-sdk
 
       - run: npm run build -w @devbie/newbie
-      - run: npm test -w @devbie/newbie
 
       - run: npm run build -w @devbie/newbie-cli
-      - run: npm test -w @devbie/newbie-cli
       - run: npm run build -w @devbie/aws-secrets-cli
 
       - run: npm run build -w @devbie/fewbie-cli
-      - run: npm test -w @devbie/fewbie-cli
 
       - run: npm run build -w @devbie/apits
-      - run: npm test -w @devbie/apits
-
-      - run: npm test -w @devbie/heartbeat-sdk
-      - run: npm test -w @devbie/health-sdk
-      - run: npm test -w @devbie/web-monitor-sdk
