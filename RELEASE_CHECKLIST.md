@@ -23,3 +23,13 @@ Run through every step below before publishing any package in this repo (package
   Exposure is lint-time only: nothing runs these libraries against
   attacker-controlled globs. Waived since 1.4.0; revisit when upstream ships
   fixes or the dependency-union milestone reshapes the next layer.
+
+- `@devbie/web-monitor-sdk` — 3 findings (`braces`/`micromatch` high,
+  `sprintf-js` moderate) in the Jest 26 devTools tree (jest-config →
+  micromatch 4.0.8 → braces 3.0.3, and sane → micromatch 3.1.10 → braces
+  2.3.2; sprintf-js reaches via js-yaml 3 → argparse). This package ships
+  with zero runtime dependencies — `publishConfig.files` = `dist`, Jest
+  never leaves the dev tree — and both `micromatch@4.0.8` and
+  `sprintf-js@1.1.3` are upstream latests (advisories range `*`), so no
+  upgrade path exists. Waived since 1.1.2; re-check when Jest 30 lands a
+  new micromatch pin or upstream patches brace parsing.

@@ -1,6 +1,6 @@
 {
   "name": "@devbie/newbie",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "description": "newbie backend framework runtime",
   "license": "MIT",
   "author": "worldzhy",
@@ -45,7 +45,7 @@
     "dot-object": "^2.1.5",
     "helmet": "^7.1.0",
     "lodash": "^4.17.21",
-    "uuid": "^10.0.0"
+    "uuid": "^14.0.3"
   },
   "peerDependencies": {
     "@nestjs/axios": "^4.0.0 || ^12.0.0",
