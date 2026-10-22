@@ -13,7 +13,7 @@
 | 交付物                                                                                                                       | 状态      | 版本            |
 | ---------------------------------------------------------------------------------------------------------------------------- | --------- | --------------- |
 | `@devbie/newbie` core（exception-filters / pipes / prisma / NewbieFactory / heartbeat / backend-monitor 探针）               | ✅ 已发布 | `0.1.0-stage.2` |
-| `@devbie/newbie-cli`（create / install / update / doctor / apply / status / agent / check / update-template / config / env） | ✅ 已发布 | `0.1.0-stage.1` |
+| `@devbie/newbie-cli`（create / install / update / doctor / apply / status / agent / check / sync-template / config / env） | ✅ 已发布 | `0.1.0-stage.1` |
 | `@devbie/heartbeat-sdk`（token-only 心跳内核）                                                                               | ✅ 已发布 | `0.1.0-stage.0` |
 | newbie 模板（basic 骨架 + 薄 main.ts + 心跳接线）                                                                            | ✅ 已发布 | 随 core         |
 | `newbie-modules` registry（48 个 module 迁入，复制模型装配管线）                                                             | ✅ 可用   | —               |
@@ -101,7 +101,7 @@
 #### A4. `fewbie update` 命令
 
 - **目标**：registry 组件/token 升级 → diff PR
-- **机制**：类比 `newbie update-template`，拉取 registry 新版本，diff 项目内已安装件的源码，生成可 review 的变更
+- **机制**：类比 `newbie sync-template`，拉取 registry 新版本，diff 项目内已安装件的源码，生成可 review 的变更
 - **边界**：只 diff `fewbie add` 安装的件，不动用户业务代码；已被本地修改的件提示冲突
 - **验证**：安装旧版件 → 修改 registry 件 → `fewbie update` 生成正确 diff
 

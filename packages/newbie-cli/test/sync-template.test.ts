@@ -4,14 +4,14 @@ import os from "node:os";
 import path from "node:path";
 import { after, before, describe, it } from "node:test";
 
-import { runUpdateTemplate } from "../src/commands/update-template";
+import { runSyncTemplate } from "../src/commands/sync-template";
 import { CliError } from "../src/lib/errors";
 
 /**
- * Exercises runUpdateTemplate against a local template directory
+ * Exercises runSyncTemplate against a local template directory
  * (--template-path), so no git clone happens.
  */
-describe("runUpdateTemplate --check", () => {
+describe("runSyncTemplate --check", () => {
   let project: string;
   let template: string;
 
@@ -28,14 +28,14 @@ describe("runUpdateTemplate --check", () => {
   });
 
   it("passes when nothing drifts", async () => {
-    await runUpdateTemplate({ cwd: project, templatePath: template, check: true, dryRun: false });
+    await runSyncTemplate({ cwd: project, templatePath: template, check: true, dryRun: false });
   });
 
   it("rejects with CliError when a skeleton file drifts", async () => {
     await fs.mkdir(path.join(template, "deploy/scripts"), { recursive: true });
     await fs.writeFile(path.join(template, "deploy/scripts/lib.sh"), "# template\n", "utf8");
     await assert.rejects(
-      runUpdateTemplate({ cwd: project, templatePath: template, check: true, dryRun: false }),
+      runSyncTemplate({ cwd: project, templatePath: template, check: true, dryRun: false }),
       (error: unknown) => {
         assert.ok(error instanceof CliError);
         assert.match(error.message, /drift from the template/);
@@ -45,14 +45,14 @@ describe("runUpdateTemplate --check", () => {
   });
 
   it("passes again once the drift is applied with --write", async () => {
-    await runUpdateTemplate({ cwd: project, templatePath: template, write: true, dryRun: false });
+    await runSyncTemplate({ cwd: project, templatePath: template, write: true, dryRun: false });
     assert.equal(await fs.readFile(path.join(project, "deploy/scripts/lib.sh"), "utf8"), "# template\n");
-    await runUpdateTemplate({ cwd: project, templatePath: template, check: true, dryRun: false });
+    await runSyncTemplate({ cwd: project, templatePath: template, check: true, dryRun: false });
   });
 
   it("rejects --check combined with --write", async () => {
     await assert.rejects(
-      runUpdateTemplate({ cwd: project, templatePath: template, check: true, write: true, dryRun: false }),
+      runSyncTemplate({ cwd: project, templatePath: template, check: true, write: true, dryRun: false }),
       (error: unknown) => {
         assert.ok(error instanceof CliError);
         assert.match(error.message, /mutually exclusive/);
@@ -62,7 +62,7 @@ describe("runUpdateTemplate --check", () => {
   });
 });
 
-describe("runUpdateTemplate path filter", () => {
+describe("runSyncTemplate path filter", () => {
   let project: string;
   let template: string;
 
@@ -86,16 +86,16 @@ describe("runUpdateTemplate path filter", () => {
   });
 
   it("passes with a deploy/ filter when the drift lives outside the scope", async () => {
-    await runUpdateTemplate({ cwd: project, templatePath: template, check: true, dryRun: false, paths: ["deploy/"] });
+    await runSyncTemplate({ cwd: project, templatePath: template, check: true, dryRun: false, paths: ["deploy/"] });
   });
 
   it("accepts a directory prefix without a trailing slash", async () => {
-    await runUpdateTemplate({ cwd: project, templatePath: template, check: true, dryRun: false, paths: ["deploy"] });
+    await runSyncTemplate({ cwd: project, templatePath: template, check: true, dryRun: false, paths: ["deploy"] });
   });
 
   it("rejects when the drift is inside the filtered scope", async () => {
     await assert.rejects(
-      runUpdateTemplate({ cwd: project, templatePath: template, check: true, dryRun: false, paths: ["tsconfig.json"] }),
+      runSyncTemplate({ cwd: project, templatePath: template, check: true, dryRun: false, paths: ["tsconfig.json"] }),
       (error: unknown) => {
         assert.ok(error instanceof CliError);
         assert.match(error.message, /drift from the template/);
@@ -106,7 +106,7 @@ describe("runUpdateTemplate path filter", () => {
 
   it("rejects a filter matching no template files (fail fast on CI typos)", async () => {
     await assert.rejects(
-      runUpdateTemplate({ cwd: project, templatePath: template, check: true, dryRun: false, paths: ["nonexistent/"] }),
+      runSyncTemplate({ cwd: project, templatePath: template, check: true, dryRun: false, paths: ["nonexistent/"] }),
       (error: unknown) => {
         assert.ok(error instanceof CliError);
         assert.match(error.message, /No framework-managed template files match/);
@@ -116,7 +116,7 @@ describe("runUpdateTemplate path filter", () => {
   });
 });
 
-describe("runUpdateTemplate ownership guard", () => {
+describe("runSyncTemplate ownership guard", () => {
   let project: string;
   let template: string;
 
@@ -134,7 +134,7 @@ describe("runUpdateTemplate ownership guard", () => {
   it("rejects an unclassified template file (ADR-009 D4 unlisted = error)", async () => {
     await fs.writeFile(path.join(template, "unclassified.txt"), "x", "utf8");
     await assert.rejects(
-      runUpdateTemplate({ cwd: project, templatePath: template, check: true, dryRun: false }),
+      runSyncTemplate({ cwd: project, templatePath: template, check: true, dryRun: false }),
       (error: unknown) => {
         assert.ok(error instanceof CliError);
         assert.match(error.message, /ownership registry/);
@@ -150,7 +150,7 @@ describe("runUpdateTemplate ownership guard", () => {
     await fs.writeFile(path.join(template, "node_modules/pkg/index.js"), "", "utf8");
     await fs.writeFile(path.join(template, "package-lock.json"), "{}", "utf8");
     await fs.writeFile(path.join(template, ".env"), "HOST=1", "utf8");
-    await runUpdateTemplate({ cwd: project, templatePath: template, check: true, dryRun: false });
+    await runSyncTemplate({ cwd: project, templatePath: template, check: true, dryRun: false });
   });
 
   it("reports missing-markers for a framework block file without markers", async () => {
@@ -161,7 +161,7 @@ describe("runUpdateTemplate ownership guard", () => {
     );
     await fs.writeFile(path.join(project, ".env.example"), "HOST=1\n", "utf8");
     await assert.rejects(
-      runUpdateTemplate({ cwd: project, templatePath: template, check: true, dryRun: false }),
+      runSyncTemplate({ cwd: project, templatePath: template, check: true, dryRun: false }),
       (error: unknown) => {
         assert.ok(error instanceof CliError);
         assert.match(error.message, /drift from the template/);

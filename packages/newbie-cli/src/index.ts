@@ -16,7 +16,7 @@ import { runDoctor } from "./commands/doctor";
 import { runInstall } from "./commands/install";
 import { runStatus } from "./commands/status";
 import { parseKeysFlag, runUpdate } from "./commands/update";
-import { runUpdateTemplate } from "./commands/update-template";
+import { runSyncTemplate } from "./commands/sync-template";
 import { runWatch } from "./commands/watch";
 import { runInteractive } from "./commands/default";
 import { GlobalOptions } from "./commands/shared";
@@ -183,7 +183,7 @@ program
   });
 
 program
-  .command("update-template [paths...]")
+  .command("sync-template [paths...]")
   .description(
     "Diff framework-owned template files (ADR-009 ownership registry: main.ts, tsconfig*, nest-cli.json, prisma.config.ts, prisma framework block, .env.example/.gitignore framework blocks, deploy/*) against the template; generated and host-owned files are skipped. Pass path prefixes (e.g. deploy/) to restrict the scope",
   )
@@ -194,7 +194,7 @@ program
   .action(function (this: Command, paths: string[]) {
     const flags = this.opts();
     return run(() =>
-      runUpdateTemplate({
+      runSyncTemplate({
         ...collectOptions(this),
         templatePath: flags.templatePath as string | undefined,
         templateRef: flags.templateRef as string | undefined,

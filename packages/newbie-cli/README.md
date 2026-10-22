@@ -145,7 +145,7 @@ Print machine-readable project state as JSON.
 
 ### Template sync and automation
 
-#### `newbie update-template`
+#### `newbie sync-template`
 
 Diff framework-owned template files against the template, driven by the
 ADR-009 ownership registry: whole-file sync for `main.ts`, `tsconfig*`,
