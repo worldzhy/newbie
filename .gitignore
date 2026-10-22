@@ -33,6 +33,3 @@ packages/*/node_modules
 
 # npm pack tarballs (staging artifacts, consumed from the registry)
 *.tgz
-
-# personal periodic self-assessment reports (not framework assets)
-/self-assessments/
