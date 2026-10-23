@@ -484,21 +484,6 @@ function Performance(options: InitOptions): void {
       }
       return (oldError as any).apply(console, args);
     };
-    addEventListener(
-      "load",
-      () => {
-        loadTime = new Date().getTime() - beginTime;
-        getLargeTime();
-      },
-      false,
-    );
-    addEventListener(
-      "unload",
-      () => {
-        if (navigator && (navigator as any).sendBeacon) reportData(ReportType.Unload);
-      },
-      false,
-    );
   }
 
   function ajaxErrResponse(ajax: any) {
@@ -749,6 +734,34 @@ function Performance(options: InitOptions): void {
         reportCustomsNow();
       }, opt.customsThrottleMs);
     };
+
+    // Page lifecycle reporting is independent of error collection. Register
+    // these here rather than inside _error(), otherwise disabling isError
+    // would silently disable page views as well.
+    addEventListener(
+      "load",
+      () => {
+        loadTime = new Date().getTime() - beginTime;
+        getLargeTime();
+      },
+      false,
+    );
+    addEventListener(
+      "unload",
+      () => {
+        if (navigator && (navigator as any).sendBeacon) reportData(ReportType.Unload);
+      },
+      false,
+    );
+    // Framework integrations (React/Next) initialize the SDK after hydration,
+    // so the window `load` event may already have fired and the listener above
+    // would never run — the page would never be reported. Treat an already
+    // loaded document as "loaded now" and emit the first page report once the
+    // report machinery above is fully assigned.
+    if (document.readyState === "complete") {
+      loadTime = new Date().getTime() - beginTime;
+      setTimeout(() => getLargeTime(), opt.outTime);
+    }
   } catch (err: any) {
     reportSdkError(err);
   }
