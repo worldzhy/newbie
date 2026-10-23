@@ -58,3 +58,11 @@ The "archived read-only" step in the Decision therefore did not take effect as
 written. Whether the repository was deleted or made private is a GitHub-side
 action owned by the maintainer; this addendum records the observed state only
 and does not change the merge decision.
+
+## Addendum (2026-10-23)
+
+The maintainer confirmed that the standalone `worldzhy/apits` repository has
+been deleted from GitHub. The source of truth for the apits package is now
+`packages/apits` in this monorepo, published as `@devbie/apits`. The legacy
+unscoped `apits-gen` line on npm remains available for existing consumers but
+is no longer the canonical artifact.
