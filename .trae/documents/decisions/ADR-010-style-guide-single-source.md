@@ -1,8 +1,9 @@
 # ADR-010: 代码风格单一真源收敛为 @devbie/style-guide 共享包
 
-- 状态：Accepted
+- 状态：已采纳
 - 日期：2026-10-21
 - 决策人：worldzhy（命名与单包形态经多轮压力测试后拍板）
+- 更新：2026-10-23 — eslint 入口命名与分组部分由 ADR-011 取代，其后又经 ADR-016（入口改为 base/next）、ADR-017（重组为 base/nest/next 三层 layer）、ADR-019（registry 组合 nest 层）演进；prettier 单一真源等其余内容仍有效。
 
 ## 背景
 

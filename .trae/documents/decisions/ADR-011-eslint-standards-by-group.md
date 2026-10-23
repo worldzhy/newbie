@@ -1,8 +1,9 @@
 # ADR-011: 按前后端分组固化 eslint 标准，入口拆为 backend / frontend / next
 
-- 状态：Accepted
+- 状态：已采纳
 - 日期：2026-10-21
 - 决策人：worldzhy（分组口径与"后端共用一套、前端共用一套"由用户明确拍板）
+- 更新：2026-10-23 — 入口命名与 frontend 分组由 ADR-016 取代（backend→base、frontend 入口删除）；nest 层最终形态见 ADR-017，newbie-modules 的组合方式见 ADR-019。frontend 组唯一消费方 fewbie 已并入 newbie monorepo（ADR-012）。
 - 取代：ADR-010 中的 eslint 入口命名与分组部分（prettier 单一真源等其余内容仍然有效）
 
 ## 背景

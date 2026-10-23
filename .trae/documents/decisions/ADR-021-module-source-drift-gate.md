@@ -1,7 +1,7 @@
 # ADR-021: assemble --check gates module source drift against the registry checkout
 
 Date: 2026-10-23
-Status: accepted
+状态：已采纳
 Supersedes: none
 
 ## Context

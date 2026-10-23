@@ -1,7 +1,7 @@
 # ADR-019: the module registry composes the nest layer with file-scoped exceptions
 
 Date: 2026-10-21
-Status: accepted
+状态：已采纳
 Supersedes: ADR-017 (the `newbie-modules` placement: base-only linting for a repo that "installs no dependencies by design")
 
 ## Context

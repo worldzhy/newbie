@@ -1,7 +1,7 @@
 # ADR-020: host-side Prisma model additions
 
 Date: 2026-10-21
-Status: accepted
+状态：已采纳
 Supersedes: none
 
 ## Context

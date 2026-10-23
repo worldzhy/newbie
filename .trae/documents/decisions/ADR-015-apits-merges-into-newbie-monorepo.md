@@ -1,7 +1,7 @@
 # ADR-015: apits merges into the newbie monorepo
 
 Date: 2026-10-21
-Status: accepted
+状态：已采纳
 
 ## Context
 

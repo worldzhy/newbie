@@ -1,6 +1,6 @@
 # ADR-012: fewbie 并入 newbie monorepo，fewbie 仓归档只读
 
-- 状态：Accepted
+- 状态：已采纳
 - 日期：2026-10-21
 - 决策人：worldzhy（用户提出"把 cli 放到 newbie 中、fewbie 仓就没用了"并拍板执行形态）
 - 影响：ADR-011 中"fewbie 消费 frontend eslint 入口"的分组归属随本合并失效——fewbie-cli 迁入 newbie 后随根 `eslint.config.mjs` 走 backend 入口；frontend 入口的存废另案决定
