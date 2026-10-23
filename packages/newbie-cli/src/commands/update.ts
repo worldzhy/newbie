@@ -136,7 +136,12 @@ export async function runUpdate(
 
   const updatable = inspections.filter((result) => result.status === "update-available");
   if (updatable.length === 0) {
-    console.info(green("\n[info] All modules are up to date.\n"));
+    const skipped = inspections.filter((result) => result.status !== "up-to-date").length;
+    if (skipped === 0) {
+      console.info(green("\n[info] All modules are up to date.\n"));
+    } else {
+      console.info(yellow(`\n[info] Nothing to update: ${skipped} module(s) skipped (see above).\n`));
+    }
     return;
   }
 
