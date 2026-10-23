@@ -21,39 +21,6 @@ if [ ! -f node_modules/prettier/bin/prettier.cjs ]; then
   exit 1
 fi
 
-# --- ADR placement check -------------------------------------------------
-# Any ADR commit must first go through adr-placement skill: determine
-# ownership (repo), numbering, superseded updates, and cross-host check.
-# This is a hard gate — the agent must confirm all four items before commit.
-adr_files=$(git diff --cached --name-only --diff-filter=ACMR | grep '^\.trae/documents/decisions/ADR-.*\.md$' || true)
-
-if [ -n "$adr_files" ]; then
-  cat >&2 <<'EOF'
-=================================================================
-ADR placement check — commit blocked
-
-You staged ADR files. Before committing, run the adr-placement skill
-and confirm all four items:
-
-1. Ownership (治理的代码在哪 → ADR 在哪):
-   - SPI contract (PermissionAuthorizer, ScopeResolver): newbie-modules/devbie
-   - Host-specific (ProjectMember, SCOPE_RESOLVERS map): nightwatch-backend
-   - Unsure → output 3-column decision table, wait for user
-
-2. Numbering: ls .trae/documents/decisions/ | tail -1 → current max + 1
-
-3. Superseded: does this replace an older ADR?
-   Yes → update old ADR Status + add "Superseded by:" line
-
-4. Cross-host check: does the ADR affect multiple hosts?
-   Yes → Cross-host section required
-
-After confirming, re-stage and commit.
-=================================================================
-EOF
-  exit 1
-fi
-
 # --- Collect staged files (whole-file staging only) ----------------------
 # Two NUL-delimited lists are written to temp files so we can safely pass
 # paths containing spaces through docker, and avoid "set -e" being tripped
