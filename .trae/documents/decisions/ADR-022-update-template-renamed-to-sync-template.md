@@ -5,7 +5,7 @@
 
 ## 背景
 
-`@devbie/newbie-cli` 的模板对齐能力存在两个词根并存：命令层叫 `update-template`，实现层叫 "template sync"（`template-sync.ts`、`planTemplateSync`、`isSyncableTemplateFile`、fewbie-cli 的 `check:template-sync`、ADR-009 正文）。同一概念两个名字，违反仓内命名单一词根的约定，需要在扩散到更多 CI 消费点之前收口。
+`@devbie/newbie-cli` 的模板对齐能力存在两个词根并存：命令层叫 `update-template`，实现层叫 "template sync"（`template-sync.ts`、`planTemplateSync`、`isSyncableTemplateFile`、ADR-009 正文）。同一概念两个名字，违反仓内命名单一词根的约定，需要在扩散到更多 CI 消费点之前收口。
 
 ## 候选方案
 
@@ -23,5 +23,5 @@
 
 ## 影响
 
-- 更容易：命令名与实现层、ADR-009、fewbie `check:template-sync` 词根统一；语义不再与模块 `update` 混淆。
+- 更容易：命令名与实现层、ADR-009 词根统一；语义不再与模块 `update` 混淆。
 - 更难/后续工作：`@devbie/newbie-cli` 发 1.9.0（契约变更按上线前规则走 minor）；nightwatch-backend ci.yml、README、`.env.example`/`.gitignore`/`prisma/schema.prisma`/`deploy/compose.application.yml` 注释、newbie-starter 同名文件与 `check:template` 脚本同步更新；历史 spec/ADR 正文按三分治规则保留原样不改。
