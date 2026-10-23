@@ -8,6 +8,7 @@ import {
   initPerformanceObserver,
   perforPage,
   perforResource,
+  setSdkErrorReporter,
 } from "./performance";
 import { InitOptions, PerformanceOptions, ReportType } from "./types";
 
@@ -191,6 +192,7 @@ function Performance(options: InitOptions): void {
     result = Object.assign(result, { version: sdk_version, ..._error });
     doReport({ api, body: JSON.stringify(result), outTime: 0 });
   };
+  setSdkErrorReporter(reportSdkError);
 
   function getLargeTime() {
     if (conf.page !== location.href) {
