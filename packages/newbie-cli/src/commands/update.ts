@@ -4,6 +4,7 @@ import { bold, cyan, green, inverse, yellow } from "colorette";
 
 import { runSteps } from "../assemble/pipeline";
 import { describeMissingDependencies, expandRegistryClosure } from "../assemble/module-graph";
+import { collectMissingRegistrySources } from "../assemble/modules-copy";
 import { diffSnapshots, driftPatchIds } from "../core/drift";
 import { moduleKeys } from "../core/modules-state";
 import { snapshotInstalledModule, snapshotPristineModule } from "../lib/drift";
@@ -15,7 +16,7 @@ import { CliError } from "../lib/errors";
 
 import { createContext, GlobalOptions } from "./shared";
 
-type UpdateStatus = "missing" | "drifted" | "update-available" | "up-to-date";
+type UpdateStatus = "missing" | "missing-in-registry" | "drifted" | "update-available" | "up-to-date";
 
 interface UpdateInspection {
   key: string;
@@ -103,6 +104,14 @@ export async function runUpdate(
       }
     }
 
+    // Never schedule a copy the current registry checkout cannot serve: the
+    // copy step deletes the installed directory before reading the source.
+    const missingSources = await collectMissingRegistrySources(registry.root, [key]);
+    if (missingSources.length > 0) {
+      inspections.push({ ...base, status: "missing-in-registry" });
+      continue;
+    }
+
     inspections.push({ ...base, status: "update-available" });
   }
   process.stdout.write("\x1b[2K\r");
@@ -110,6 +119,12 @@ export async function runUpdate(
   for (const result of inspections) {
     if (result.status === "missing") {
       console.info(yellow(`[skip] ${result.key}: directory missing; run 'newbie install'.`));
+    } else if (result.status === "missing-in-registry") {
+      console.info(
+        yellow(
+          `[skip] ${result.key}: not present in registry checkout ${short(registry.sourceCommit)}; set NEWBIE_MODULES_REF to a ref that carries it, then run 'newbie install'.`,
+        ),
+      );
     } else if (result.status === "drifted") {
       console.info(
         yellow(
@@ -121,7 +136,12 @@ export async function runUpdate(
 
   const updatable = inspections.filter((result) => result.status === "update-available");
   if (updatable.length === 0) {
-    console.info(green("\n[info] All modules are up to date.\n"));
+    const skipped = inspections.filter((result) => result.status !== "up-to-date").length;
+    if (skipped === 0) {
+      console.info(green("\n[info] All modules are up to date.\n"));
+    } else {
+      console.info(yellow(`\n[info] Nothing to update: ${skipped} module(s) skipped (see above).\n`));
+    }
     return;
   }
 

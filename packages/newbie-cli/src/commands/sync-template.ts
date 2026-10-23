@@ -20,7 +20,7 @@ import { createSink } from "../lib/sink";
 import { GlobalOptions } from "./shared";
 import { resolveTemplate, TemplateReference } from "./create";
 
-export interface UpdateTemplateOptions extends GlobalOptions, TemplateReference {
+export interface SyncTemplateOptions extends GlobalOptions, TemplateReference {
   /** Apply the changes instead of only printing the diff. */
   write?: boolean;
   /** CI gate mode: print the diff and exit non-zero when anything drifts. */
@@ -124,7 +124,7 @@ function printChangeDiff(change: TemplateChange): void {
   process.stdout.write(diff);
 }
 
-export async function runUpdateTemplate(options: UpdateTemplateOptions): Promise<void> {
+export async function runSyncTemplate(options: SyncTemplateOptions): Promise<void> {
   if (options.check && options.write) {
     throw new CliError("--check and --write are mutually exclusive.");
   }
@@ -171,7 +171,7 @@ export async function runUpdateTemplate(options: UpdateTemplateOptions): Promise
       actionable.map((c) => `${c.file.path} (${c.kind})`).join(", "),
   );
 
-  const writeCommand = scope ? `newbie update-template --write ${scope}` : "newbie update-template --write";
+  const writeCommand = scope ? `newbie sync-template --write ${scope}` : "newbie sync-template --write";
 
   if (options.check) {
     throw new CliError(

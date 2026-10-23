@@ -22,7 +22,7 @@
  * degrade to a warning so the gate stays usable offline. CI runs the script
  * without the flag to keep it network-free.
  *
- * Run via: node --import tsx scripts/check-template-sync.ts [--check-deps]
+ * Run via: node --import tsx scripts/check-template-drift.ts [--check-deps]
  */
 import fs from "node:fs/promises";
 import os from "node:os";
@@ -59,7 +59,7 @@ async function resolveTemplateRoot(): Promise<ResolvedTemplate> {
     return { root, source: root };
   }
 
-  const temp = await fs.mkdtemp(path.join(os.tmpdir(), "fewbie-template-sync-"));
+  const temp = await fs.mkdtemp(path.join(os.tmpdir(), "fewbie-template-drift-"));
   try {
     await execCapture("git", ["clone", "--quiet", "--depth", "1", TEMPLATE_REPOSITORY_URL, temp]);
   } catch (error) {

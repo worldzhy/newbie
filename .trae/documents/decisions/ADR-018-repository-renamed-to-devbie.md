@@ -1,7 +1,7 @@
 # ADR-018: Repository renamed to devbie and package directories aligned with package names
 
 Date: 2026-10-21
-Status: accepted
+状态：已采纳
 
 ## Context
 

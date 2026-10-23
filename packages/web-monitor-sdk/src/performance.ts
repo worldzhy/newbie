@@ -1,4 +1,13 @@
-import { reportSdkError } from "./core";
+/**
+ * SDK error reporting slot. Injected by core during init via
+ * setSdkErrorReporter; performance must not import core (circular import).
+ * Defaults to a no-op so pre-init calls stay safe.
+ */
+let sdkErrorReporter: (error: any) => void = () => {};
+
+export function setSdkErrorReporter(reporter: (error: any) => void): void {
+  sdkErrorReporter = reporter;
+}
 
 const getNavigationEntryFromPerformanceTiming = (): any => {
   const timing: any = performance.timing as any;
@@ -22,7 +31,7 @@ export const getNavigationEntry = (): any => {
     }
     return getNavigationEntryFromPerformanceTiming();
   } catch (error) {
-    reportSdkError(error);
+    sdkErrorReporter(error);
     return false;
   }
 };
@@ -38,7 +47,7 @@ export const getFCP = (): number | false => {
     const timing: any = getNavigationEntry();
     return (timing.domInteractive || timing.domLoading) - timing.fetchStart;
   } catch (error) {
-    reportSdkError(error);
+    sdkErrorReporter(error);
     return false;
   }
 };

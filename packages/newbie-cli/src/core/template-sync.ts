@@ -107,6 +107,8 @@ export const TEMPLATE_FILES: readonly TemplateFile[] = [
 
   // Shipped once by `newbie create`; the host owns them afterwards.
   { path: "package.json", ownership: "template-shipped-host-owned" },
+  { path: ".githooks/pre-commit", ownership: "template-shipped-host-owned" },
+  { path: ".githooks/commit-msg", ownership: "template-shipped-host-owned" },
   { path: "README.md", ownership: "template-shipped-host-owned" },
   { path: ".prettierignore", ownership: "template-shipped-host-owned" },
   { path: "eslint.config.mjs", ownership: "template-shipped-host-owned" },

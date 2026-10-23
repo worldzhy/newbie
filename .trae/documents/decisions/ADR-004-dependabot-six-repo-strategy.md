@@ -2,6 +2,7 @@
 
 状态：已采纳
 日期：2026-10-17
+更新：2026-10-23 — "六仓已落地"需按当前仓拓扑重读：fewbie 已并入 newbie（后改名 devbie），当前六仓为 devbie / newbie-modules / newbie-starter / fewbie-starter / nightwatch-backend / nightwatch-frontend。实测 newbie-modules 无 `.github/dependabot.yml`（纯注册仓、无运行时依赖，设计如此），策略实际覆盖 5/6；分层与分组原则不变。
 
 ## 背景
 

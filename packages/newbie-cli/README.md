@@ -88,9 +88,9 @@ datastore registry, ADR-008) and the `@@newbie-modules` route block of
 `deploy/Caddyfile.tmpl` (one `handle /<key>/*` block per module declaring
 `publicNamespace`). The same renders run as a step of install/apply/update.
 
-| Option    | Description                                                                |
-| --------- | -------------------------------------------------------------------------- |
-| `--check` | CI gate: print the diff and exit non-zero when the generated assets drift. |
+| Option    | Description                                                                                                                                                                         |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--check` | CI gate: print the diff and exit non-zero when the generated assets drift, or when an installed module differs from the registry checkout it must stay byte-identical to (ADR-021). |
 
 #### `newbie config`
 
@@ -145,7 +145,7 @@ Print machine-readable project state as JSON.
 
 ### Template sync and automation
 
-#### `newbie update-template`
+#### `newbie sync-template`
 
 Diff framework-owned template files against the template, driven by the
 ADR-009 ownership registry: whole-file sync for `main.ts`, `tsconfig*`,

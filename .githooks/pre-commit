@@ -1,0 +1,99 @@
+#!/bin/sh
+# Lints (fixable only) and formats staged files inside a throwaway Node
+# container, then restages them. Each step runs this repo's own eslint flat
+# config (from eslint.config.*) and prettier config (from package.json
+# "prettier"). Fails closed: unfixable lint errors or formatter failures block
+# the commit instead of letting debt into history.
+set -e
+
+repo_root=$(git rev-parse --show-toplevel)
+cd "$repo_root"
+
+# --- Pre-flight ---------------------------------------------------------
+
+if [ ! -f node_modules/eslint/bin/eslint.js ]; then
+  echo "pre-commit: eslint is missing (run npm install); commit blocked" >&2
+  exit 1
+fi
+
+if [ ! -f node_modules/prettier/bin/prettier.cjs ]; then
+  echo "pre-commit: prettier is missing (run npm install); commit blocked" >&2
+  exit 1
+fi
+
+# --- Collect staged files (whole-file staging only) ----------------------
+# Two NUL-delimited lists are written to temp files so we can safely pass
+# paths containing spaces through docker, and avoid "set -e" being tripped
+# by eslint's exit code on unfixable errors.
+
+list_file=$(mktemp)
+all_list=$(mktemp)
+lint_list=$(mktemp)
+trap 'rm -f "$list_file" "$all_list" "$lint_list"' EXIT
+
+git diff --cached --name-only --diff-filter=ACMR -z > "$list_file"
+
+set --
+while IFS= read -r -d '' path; do
+  case "$path" in
+    *.cjs|*.css|*.js|*.json|*.jsx|*.md|*.mdx|*.mjs|*.scss|*.ts|*.tsx|*.yml|*.yaml)
+      if ! git diff --quiet -- "$path"; then
+        echo "pre-commit: $path has unstaged changes; stage the whole file first" >&2
+        exit 1
+      fi
+      case "$path" in
+        *.cjs|*.js|*.jsx|*.mjs|*.ts|*.tsx)
+          printf '%s\0' "$path" >> "$lint_list"
+          printf '%s\0' "$path" >> "$all_list"
+          ;;
+        *)
+          printf '%s\0' "$path" >> "$all_list"
+          ;;
+      esac
+      ;;
+  esac
+done < "$list_file"
+
+if [ ! -s "$all_list" ]; then
+  exit 0
+fi
+
+# --- Lint (--fix, repo eslint flat config) -------------------------------
+# set +e so we can capture eslint's exit code before restaging; the global
+# set -e would otherwise abort at the docker run when unfixable errors exist.
+
+if [ -s "$lint_list" ]; then
+  set +e
+  docker run --rm --network none \
+    -v "$repo_root":/workspace -w /workspace \
+    -v "$lint_list":/tmp/lint_list:ro \
+    node:24-alpine \
+    sh -c 'cat /tmp/lint_list | xargs -0 node node_modules/eslint/bin/eslint.js --fix'
+  lint_exit=$?
+  set -e
+  xargs -0 < "$lint_list" git add --
+  if [ $lint_exit -ne 0 ]; then
+    echo "pre-commit: lint found unfixable errors; commit blocked" >&2
+    exit 1
+  fi
+fi
+
+# --- Format (repo prettier config) ---------------------------------------
+
+if ! docker run --rm --network none \
+  -v "$repo_root":/workspace -w /workspace \
+  -v "$all_list":/tmp/all_list:ro \
+  node:24-alpine \
+  sh -c '
+    set -e
+    spec=$(node -p "const p = require(\"./package.json\"); typeof p.prettier === \"string\" ? p.prettier : \"\"")
+    if [ -n "$spec" ]; then
+      node -e "require.resolve(process.argv[1])" "$spec"
+    fi
+    cat /tmp/all_list | xargs -0 node node_modules/prettier/bin/prettier.cjs --write
+  '; then
+  echo "pre-commit: formatter failed; commit blocked" >&2
+  exit 1
+fi
+
+xargs -0 < "$all_list" git add --

@@ -6,7 +6,9 @@
 > 本仓不再持有 `templates/`。当前真源指针：`packages/cli/src/commands/create.ts`
 > （模板解析链）+ ADR-003（决策）。正文保留原样作时点快照，git 历史兜底。
 >
-> 依据：`newbie-framework-split-plan.md`（同目录，设计决议 2026-09-23，09-24 修订）、`/Users/worldzhy/src/fewbie/.trae/documents/fewbie-framework-design.md`
+> **归档注记（2026-10-23）**：本文原存档于 `.trae/documents/`，按设计文档三分治原则作为已交付工作产物迁入 `.trae/specs/newbie-framework-split/`，正文原样。
+>
+> 依据：`.trae/documents/design/newbie-framework-split-plan.md`（设计决议 2026-09-23，09-24 修订）、`/Users/worldzhy/src/devbie/.trae/documents/design/fewbie-framework-design.md`
 > 范围：本工作区（`/Users/worldzhy/src/newbie`，git: github.com/worldzhy/newbie，分支 `dev`）内的交付与验证。
 > nightwatch / fewbie / newbie-modules / apits 仓仅作为协调点列出，执行发生在各自工作区，不在本计划内动手。
 
@@ -47,8 +49,8 @@
 ### 1.2 抽取的关键耦合点（决定 Stage 1 难度）
 
 1. **framework 反向依赖项目生成物**（最高风险）：
-   - [prisma.extension.ts:2](file:///Users/worldzhy/src/newbie/src/framework/prisma/prisma.extension.ts#L2) `import {Prisma, PrismaClient} from '@generated/prisma/client'`
-   - [prisma.exception-filter.ts:3](file:///Users/worldzhy/src/newbie/src/framework/exception-filters/prisma.exception-filter.ts#L3) `import {Prisma} from '@generated/prisma/client'`
+   - [prisma.extension.ts:2](file:///Users/worldzhy/src/devbie/packages/newbie/src/prisma/prisma.extension.ts#L2) `import {Prisma, PrismaClient} from '@generated/prisma/client'`
+   - [prisma.exception-filter.ts:3](file:///Users/worldzhy/src/devbie/packages/newbie/src/exception-filters/prisma.exception-filter.ts#L3) `import {Prisma} from '@generated/prisma/client'`
    - `@generated/prisma` 是每个消费项目 prisma generate 的产物，npm 包不能依赖它。
 2. framework 内部用 `@framework/*` 自别名（framework.module.ts、framework.config.ts 等），打包进 npm 包需改为相对路径或包内自引用。
 3. `framework.settings.json` 是装配清单（env 默认值 + 依赖版本），按已修订的 §3.5 不进包，env 归模板 `.env.example`、依赖归包 package.json。

@@ -1,7 +1,8 @@
 # ADR-017: third eslint layer `nest`, and per-package differentiation via path scoping
 
 Date: 2026-10-21
-Status: accepted
+状态：已采纳
+更新：2026-10-23 — 本文「newbie-modules 仅用 base」的放置由 ADR-019 取代（改为组合 `[...base, ...nest]`）。
 
 ## Context
 

@@ -1,7 +1,7 @@
 # ADR-015: apits merges into the newbie monorepo
 
 Date: 2026-10-21
-Status: accepted
+状态：已采纳
 
 ## Context
 
@@ -48,3 +48,21 @@ for no architectural benefit.
   scoped package) is still referenced by fewbie-cli's scaffold templates.
   Retiring that pointer is tracked as a separate decision and is not part of
   this merge.
+
+## Addendum (2026-10-22)
+
+The standalone `apits` repository is no longer publicly reachable: the GitHub
+API returns 404 for `worldzhy/apits` and the name is absent from the account's
+public repository list, while the archived `fewbie` repository is still listed.
+The "archived read-only" step in the Decision therefore did not take effect as
+written. Whether the repository was deleted or made private is a GitHub-side
+action owned by the maintainer; this addendum records the observed state only
+and does not change the merge decision.
+
+## Addendum (2026-10-23)
+
+The maintainer confirmed that the standalone `worldzhy/apits` repository has
+been deleted from GitHub. The source of truth for the apits package is now
+`packages/apits` in this monorepo, published as `@devbie/apits`. The legacy
+unscoped `apits-gen` line on npm remains available for existing consumers but
+is no longer the canonical artifact.

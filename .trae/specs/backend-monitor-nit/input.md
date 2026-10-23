@@ -3,6 +3,8 @@
 > 交付日期：2026-09-27。对应 roadmap A1（newbie core backend-monitor 探针 Nit 优化）。
 > 来源：nightwatch-backend-next `.trae/specs/backend-monitor-redesign/review.md`（12 AC 11 PASS / 1 PARTIAL，0 Critical / 0 Major）。
 > Nit-3（beforeExit 注销）、Nit-5（sortOrder @IsIn）、Nit-7（自环残留清理）**已修复**，不在本清单。
+>
+> **归档注记（2026-10-23）**：本文原存档于 `.trae/documents/`，按设计文档三分治原则作为历史工作输入迁入 `.trae/specs/backend-monitor-nit/`，正文原样。
 
 ## 待优化项
 

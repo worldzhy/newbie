@@ -1,8 +1,9 @@
 # ADR-016: style-guide entries become `base` and `next`
 
 Date: 2026-10-21
-Status: accepted
+状态：已采纳
 Supersedes: ADR-011 (entry naming and the frontend group)
+更新：2026-10-23 — 本文「两个入口（base、next）」的结论由 ADR-017 取代：重组为 base/nest/next 三个 layer，next 不再自带 core。
 
 ## Context
 

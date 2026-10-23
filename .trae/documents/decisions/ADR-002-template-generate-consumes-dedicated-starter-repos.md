@@ -5,6 +5,7 @@
 副本注记：本决策同时存档于 worldzhy/fewbie 与 worldzhy/newbie 两仓
 `decisions/`（同号 ADR-002、同文）；nightwatch-backend 仓的原 ADR-009 已移除，
 平台侧文档引用指向本文。
+更新：2026-10-23 — 本文「单一事实源 = monorepo `templates/basic`、starter 仓为派生物」的契约已由 ADR-003（2026-10-17）部分取代；「Template.repositoryUrl 指向专属 starter 仓」的决定仍有效并被 ADR-003 强化。
 
 > **状态更新（2026-10-15）**：本文影响面中「模板显示名不变」一条已被取代——
 > nightwatch-backend 仓 `ADR-009-unify-template-display-name-basic.md` 决议显示名统一为

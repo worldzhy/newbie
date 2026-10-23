@@ -30,17 +30,38 @@ jobs:
       - run: npm run build -w @devbie/web-monitor-sdk
 
       - run: npm run build -w @devbie/newbie
-      - run: npm test -w @devbie/newbie
 
       - run: npm run build -w @devbie/newbie-cli
-      - run: npm test -w @devbie/newbie-cli
       - run: npm run build -w @devbie/aws-secrets-cli
 
       - run: npm run build -w @devbie/fewbie-cli
-      - run: npm test -w @devbie/fewbie-cli
 
       - run: npm run build -w @devbie/apits
-      - run: npm test -w @devbie/apits
 
+  # Behavioral tests. Verification alone proves the workspaces compile; this
+  # job proves the 268 existing test cases still hold. It is a separate job so
+  # a test failure is attributable and does not mask a build failure.
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      # Tests import sibling workspaces through the workspace symlinks, which
+      # resolve to dist/. Build the leaf SDKs first, same order as verify.
+      - run: npm run build -w @devbie/heartbeat-sdk
+      - run: npm run build -w @devbie/health-sdk
+      - run: npm run build -w @devbie/backend-monitor-sdk
+
+      # One step per workspace that owns a behavioral suite. Listed explicitly
+      # rather than --workspaces so a package gains/loses coverage only by
+      # intent: apits' "test" runs a scratch script, not a suite.
+      - run: npm test -w @devbie/newbie-cli
+      - run: npm test -w @devbie/newbie
+      - run: npm test -w @devbie/fewbie-cli
+      - run: npm test -w @devbie/health-sdk
       - run: npm test -w @devbie/heartbeat-sdk
-      - run: npm test -w @devbie/web-monitor-sdk
