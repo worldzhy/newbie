@@ -1,0 +1,115 @@
+import type { CollectorWorkspaceConfig } from "./config";
+import type { NormalizedMessage } from "./session-source";
+
+export interface UploadSession {
+  externalSessionId: string;
+  workspaceKey: string;
+  model: string;
+  turnCount: number;
+  messageCount: number;
+  toolCallCount: number;
+  toolNames: string[];
+  touchedFiles: string[];
+  durationMs: number;
+  startedAt: string;
+  endedAt: string;
+  messages: NormalizedMessage[];
+}
+
+export interface UploadDocument {
+  workspaceKey: string;
+  title: string;
+  refPath: string;
+  content: string;
+  capturedAt: string;
+}
+
+/** Hard caps mirrored from the server DTOs. */
+const MAX_SESSIONS_PER_BATCH = 50;
+const MAX_MESSAGES_PER_SESSION = 2_000;
+const MAX_DOCUMENTS_PER_BATCH = 100;
+
+/**
+ * HTTP client for the collector ingest endpoints. Bearer token only — the
+ * server resolves it to exactly one member and rejects anything else.
+ */
+export class CollectorApi {
+  constructor(
+    private readonly endpoint: string,
+    private readonly token: string,
+  ) {}
+
+  async reportWorkspaces(memberUserId: string, workspaces: CollectorWorkspaceConfig[]): Promise<void> {
+    await this.post("/people-evaluation/collector/workspaces", {
+      workspaces: workspaces.map((workspace) => ({
+        evaluateeUserId: memberUserId,
+        workspaceKey: workspace.workspaceKey,
+        rootPath: workspace.rootPath,
+        isCompany: workspace.isCompany,
+        repositories: workspace.repositories,
+      })),
+    });
+  }
+
+  async reportSessions(memberUserId: string, sessions: UploadSession[]): Promise<void> {
+    for (let index = 0; index < sessions.length; index += MAX_SESSIONS_PER_BATCH) {
+      const batch = sessions.slice(index, index + MAX_SESSIONS_PER_BATCH);
+      await this.post("/people-evaluation/collector/sessions", {
+        sessions: batch.map((session) => ({
+          evaluateeUserId: memberUserId,
+          workspaceKey: session.workspaceKey,
+          externalSessionId: session.externalSessionId,
+          model: session.model,
+          turnCount: session.turnCount,
+          messageCount: session.messageCount,
+          toolCallCount: session.toolCallCount,
+          toolNames: session.toolNames,
+          touchedFiles: session.touchedFiles,
+          durationMs: session.durationMs,
+          startedAt: session.startedAt,
+          endedAt: session.endedAt,
+          messages: session.messages.slice(0, MAX_MESSAGES_PER_SESSION).map((message) => ({
+            seq: message.seq,
+            role: message.role,
+            content: message.content,
+            toolName: message.toolName,
+            toolCalls: message.toolCalls,
+            tokenCount: message.tokenCount,
+            createdAt: message.createdAt,
+          })),
+        })),
+      });
+    }
+  }
+
+  async reportDocuments(memberUserId: string, documents: UploadDocument[]): Promise<void> {
+    for (let index = 0; index < documents.length; index += MAX_DOCUMENTS_PER_BATCH) {
+      const batch = documents.slice(index, index + MAX_DOCUMENTS_PER_BATCH);
+      await this.post("/people-evaluation/collector/documents", {
+        documents: batch.map((document) => ({
+          evaluateeUserId: memberUserId,
+          workspaceKey: document.workspaceKey,
+          title: document.title,
+          refPath: document.refPath,
+          content: document.content,
+          capturedAt: document.capturedAt,
+        })),
+      });
+    }
+  }
+
+  private async post(path: string, body: unknown): Promise<void> {
+    const response = await fetch(`${this.endpoint}${path}`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${this.token}`,
+      },
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+      const text = await response.text().catch(() => "");
+      throw new Error(`POST ${path} failed: ${response.status} ${text.slice(0, 500)}`);
+    }
+  }
+}
