@@ -5,6 +5,7 @@ import path from "node:path";
 import { afterEach, describe, it } from "node:test";
 
 import { applyModuleKeys, planReconcile, PipelineContext } from "../src/assemble/pipeline";
+import { addModules } from "../src/assemble/modules-copy";
 import { normalizeModulesState } from "../src/core/modules-state";
 import { CliError } from "../src/lib/errors";
 import { IssueBag } from "../src/lib/issues";
@@ -224,5 +225,70 @@ describe("applyModuleKeys", () => {
       persisted.modules.map((entry) => entry.key),
       ["account"],
     );
+  });
+});
+
+describe("addModules", () => {
+  it("keeps the installed copy when the registry source is missing", async () => {
+    const registryRoot = await makeRegistry({ account: {} });
+    const cwd = await makeProject({ modules: [{ key: "ghost" }], copied: ["ghost"] });
+    const marker = path.join(cwd, "src", "modules", "ghost", "local.txt");
+    await fs.writeFile(marker, "keep me", "utf8");
+
+    await assert.rejects(
+      silenceConsole(() =>
+        addModules({
+          cwd,
+          sink: createSink(cwd, false),
+          registry: {
+            root: registryRoot,
+            url: "https://example.invalid/registry.git",
+            sourceCommit: REGISTRY_COMMIT,
+            local: true,
+          },
+          keys: ["ghost"],
+        }),
+      ),
+      (error: unknown) => {
+        assert.ok(error instanceof CliError);
+        assert.match(error.message, /missing module source\(s\):[\s\S]*ghost/);
+        return true;
+      },
+    );
+
+    assert.equal(await fs.readFile(marker, "utf8"), "keep me");
+  });
+
+  it("copies nothing when one of the requested sources is missing", async () => {
+    const registryRoot = await makeRegistry({ account: {} });
+    const cwd = await makeProject({
+      modules: [{ key: "account" }, { key: "ghost" }],
+      copied: ["account", "ghost"],
+    });
+    const marker = path.join(cwd, "src", "modules", "account", "local.txt");
+    await fs.writeFile(marker, "keep me", "utf8");
+
+    await assert.rejects(
+      silenceConsole(() =>
+        addModules({
+          cwd,
+          sink: createSink(cwd, false),
+          registry: {
+            root: registryRoot,
+            url: "https://example.invalid/registry.git",
+            sourceCommit: REGISTRY_COMMIT,
+            local: true,
+          },
+          keys: ["account", "ghost"],
+        }),
+      ),
+      (error: unknown) => {
+        assert.ok(error instanceof CliError);
+        assert.match(error.message, /ghost/);
+        return true;
+      },
+    );
+
+    assert.equal(await fs.readFile(marker, "utf8"), "keep me");
   });
 });
