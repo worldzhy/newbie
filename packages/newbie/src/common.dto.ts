@@ -1,5 +1,5 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsNumber, IsNotEmpty, IsString } from "class-validator";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { IsNumber, IsOptional, IsString } from "class-validator";
 import { Type } from "class-transformer";
 
 class CommonPagination {
@@ -29,23 +29,23 @@ class CommonPagination {
 }
 
 export class CommonListRequestDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     type: Number,
-    description: "Page size, the number of items per page",
+    description: "Page size, the number of items per page. Defaults to 20 when omitted.",
   })
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber()
   @Type(() => Number)
-  pageSize!: number;
+  pageSize?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     type: Number,
-    description: "Page number, starts from 0",
+    description: "Page number, starts from 0. Defaults to 0 when omitted.",
   })
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber()
   @Type(() => Number)
-  page!: number;
+  page?: number;
 }
 
 export class CommonListResponseDto<T = any> {

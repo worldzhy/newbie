@@ -22,10 +22,19 @@ export interface CreateExtendedPrismaClientOptions {
 }
 
 /**
- * Helper function to calculate pagination parameters.
+ * Default pagination values applied when the caller omits page or pageSize.
  */
-function getSkipAndTake(params: { page: number; pageSize: number }) {
-  const { page, pageSize } = params;
+const DEFAULT_PAGE = 0;
+const DEFAULT_PAGE_SIZE = 20;
+
+/**
+ * Helper function to calculate pagination parameters.
+ * page and pageSize are optional; omitted values fall back to DEFAULT_PAGE /
+ * DEFAULT_PAGE_SIZE so callers (and DTOs) can treat them as optional.
+ */
+function getSkipAndTake(params: { page?: number; pageSize?: number }) {
+  const page = params.page ?? DEFAULT_PAGE;
+  const pageSize = params.pageSize ?? DEFAULT_PAGE_SIZE;
   if (page >= 0 && pageSize > 0) {
     return {
       skip: pageSize * page,
@@ -75,13 +84,15 @@ export const createExtendedPrismaClient = (options: CreateExtendedPrismaClientOp
 
       async findManyInManyPages(params: {
         model: string;
-        pagination: { page: number; pageSize: number };
+        pagination: { page?: number; pageSize?: number };
         findManyArgs?: any;
       }) {
         const { pagination, findManyArgs } = params;
         const model = params.model as string;
         const modelLowercaseFirstLetter = model.charAt(0).toLowerCase() + model.slice(1);
-        const { skip, take } = getSkipAndTake(pagination);
+        const page = pagination.page ?? DEFAULT_PAGE;
+        const pageSize = pagination.pageSize ?? DEFAULT_PAGE_SIZE;
+        const { skip, take } = getSkipAndTake({ page, pageSize });
 
         const currentClient = this as any;
 
@@ -99,8 +110,8 @@ export const createExtendedPrismaClient = (options: CreateExtendedPrismaClientOp
         return {
           records,
           pagination: {
-            page: pagination.page,
-            pageSize: pagination.pageSize,
+            page,
+            pageSize,
             countOfCurrentPage: records.length,
             countOfTotal: total,
           },
@@ -132,7 +143,7 @@ export interface ExtendedPrismaClient {
   findManyInOnePage: (params: { model: string; findManyArgs?: any }) => Promise<any>;
   findManyInManyPages: (params: {
     model: string;
-    pagination: { page: number; pageSize: number };
+    pagination: { page?: number; pageSize?: number };
     findManyArgs?: any;
   }) => Promise<any>;
   /**
