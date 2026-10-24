@@ -22,10 +22,10 @@ export function traeSlugPrefix(rootPath: string): string {
 /** Resolves which company workspace a Trae memory file belongs to, if any. */
 export function traeMemoryWorkspaceFor(
   filePath: string,
-  traeMemoryRoot: string,
+  traeMemoryDirectory: string,
   companyWorkspaces: CollectorWorkspaceConfig[],
 ): CollectorWorkspaceConfig | null {
-  const slugDirectory = relative(traeMemoryRoot, filePath).split(sep)[0];
+  const slugDirectory = relative(traeMemoryDirectory, filePath).split(sep)[0];
   if (!slugDirectory) return null;
   for (const workspace of companyWorkspaces) {
     const prefix = traeSlugPrefix(workspace.rootPath);

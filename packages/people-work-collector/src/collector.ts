@@ -39,11 +39,11 @@ export async function collectOnce(
   const companyWorkspaces = config.workspaces.filter((workspace) => workspace.isCompany);
 
   for (const ide of Object.keys(SESSION_SOURCES) as IdeKey[]) {
-    const root = config.sessionRoots[ide];
-    if (!root) continue;
+    const directory = config.agentSessionDirectories[ide];
+    if (!directory) continue;
     const source = SESSION_SOURCES[ide];
 
-    for (const filePath of walkJsonl(root)) {
+    for (const filePath of walkJsonl(directory)) {
       if (!source.accepts(filePath)) continue;
       const progress = state.files[filePath];
       const delta = source.readDelta(filePath, progress?.offset ?? 0, progress?.nextSeq ?? 0);
@@ -53,7 +53,7 @@ export async function collectOnce(
         continue;
       }
 
-      const workspace = source.resolveWorkspace({ filePath, root, parsed: delta.parsed, companyWorkspaces });
+      const workspace = source.resolveWorkspace({ filePath, directory, parsed: delta.parsed, companyWorkspaces });
       if (!workspace) {
         // Outside every company workspace (e.g. personal work) — advance the
         // offset so it is not re-read, upload nothing.

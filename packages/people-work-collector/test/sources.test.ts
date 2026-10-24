@@ -12,8 +12,8 @@ const companyWorkspace = {
   repositories: [],
 };
 
-function context(filePath: string, root: string, parsed = emptySession()) {
-  return { filePath, root, parsed, companyWorkspaces: [companyWorkspace] };
+function context(filePath: string, directory: string, parsed = emptySession()) {
+  return { filePath, directory, parsed, companyWorkspaces: [companyWorkspace] };
 }
 
 describe("session source registry", () => {

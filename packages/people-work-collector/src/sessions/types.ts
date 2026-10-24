@@ -50,8 +50,8 @@ export interface NormalizedRecord {
 /** Everything a source needs in order to place one file in a declared workspace. */
 export interface SessionFileContext {
   filePath: string;
-  /** Configured root for this source (e.g. ~/.claude/projects). */
-  root: string;
+  /** Directory configured for this IDE (e.g. ~/.claude/projects). */
+  directory: string;
   parsed: ParsedSessionFile;
   companyWorkspaces: CollectorWorkspaceConfig[];
 }

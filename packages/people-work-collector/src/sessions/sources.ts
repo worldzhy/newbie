@@ -32,15 +32,15 @@ const traeSource: SessionSource = {
   provenance: "trae-memory",
   accepts: (filePath) => basename(filePath).startsWith("session_memory_"),
   readDelta: readTraeMemoryDelta,
-  resolveWorkspace: ({ filePath, root, companyWorkspaces }) =>
-    traeMemoryWorkspaceFor(filePath, root, companyWorkspaces),
+  resolveWorkspace: ({ filePath, directory, companyWorkspaces }) =>
+    traeMemoryWorkspaceFor(filePath, directory, companyWorkspaces),
   note: TRAE_MEMORY_FIDELITY_NOTE,
 };
 
 /**
  * One descriptor per supported IDE, keyed by `IdeKey` — the same key the
- * config uses under `sessionRoots`. A configured root for an unknown IDE is
- * ignored by construction.
+ * config uses under `agentSessionDirectories`. A configured directory for an
+ * unknown IDE is ignored by construction.
  */
 export const SESSION_SOURCES: Record<IdeKey, SessionSource> = {
   claude: transcriptSource("claude"),

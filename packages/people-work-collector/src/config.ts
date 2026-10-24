@@ -14,9 +14,9 @@ export interface CollectorWorkspaceConfig {
 }
 
 /**
- * IDE identity: both the key of `sessionRoots` and the key of the session
- * source registry. The wire provenance may differ per IDE (Trae only exposes
- * IDE-written summaries, reported as "trae-memory").
+ * IDE identity: both the key of `agentSessionDirectories` and the key of the
+ * session source registry. The wire provenance may differ per IDE (Trae only
+ * exposes IDE-written summaries, reported as "trae-memory").
  */
 export type IdeKey = "claude" | "codex" | "trae";
 
@@ -26,12 +26,13 @@ export interface CollectorConfig {
   memberUserId: string;
   workspaces: CollectorWorkspaceConfig[];
   /**
-   * Per-IDE session storage root, keyed by IDE. Only sessions whose recorded
-   * working directory is inside a company workspace are uploaded. `trae`
-   * points at Trae's memory store (~/.trae-cn/memory/projects) — those
-   * sessions are the IDE's own summaries, uploaded with source "trae-memory".
+   * Where each IDE keeps its agent session records, keyed by IDE and scanned
+   * recursively. Only sessions whose recorded working directory is inside a
+   * company workspace are uploaded. `trae` points at Trae's memory store
+   * (~/.trae-cn/memory/projects) — those sessions are the IDE's own summaries,
+   * uploaded with source "trae-memory".
    */
-  sessionRoots: Partial<Record<IdeKey, string>>;
+  agentSessionDirectories: Partial<Record<IdeKey, string>>;
   /** Directories inside company workspaces whose markdown files count as declared work. */
   documentDirectories: string[];
   maxDocumentBytes: number;
@@ -59,8 +60,8 @@ export interface CollectorState {
 export const DEFAULT_CONFIG_PATH = join(homedir(), ".devbie", "people-collector.json");
 export const DEFAULT_STATE_PATH = join(homedir(), ".devbie", "people-collector-state.json");
 
-/** Default IDE session roots, probed for existence at init time. */
-export const DEFAULT_SESSION_ROOTS: Record<IdeKey, string> = {
+/** Default agent session directories per IDE, probed for existence at init time. */
+export const DEFAULT_AGENT_SESSION_DIRECTORIES: Record<IdeKey, string> = {
   claude: join(homedir(), ".claude", "projects"),
   codex: join(homedir(), ".codex", "sessions"),
   trae: join(homedir(), ".trae-cn", "memory", "projects"),
@@ -83,7 +84,7 @@ export function loadConfig(path = DEFAULT_CONFIG_PATH): CollectorConfig {
     token: parsed.token ?? "",
     memberUserId: parsed.memberUserId ?? "",
     workspaces: parsed.workspaces ?? [],
-    sessionRoots: parsed.sessionRoots ?? {},
+    agentSessionDirectories: parsed.agentSessionDirectories ?? {},
     documentDirectories: parsed.documentDirectories ?? [],
     maxDocumentBytes: parsed.maxDocumentBytes ?? 200_000,
   };
@@ -121,7 +122,7 @@ export function writeSampleConfig(path = DEFAULT_CONFIG_PATH): void {
         repositories: [{ path: ".", platform: "github", repositoryFullName: "worldzhy/nightwatch-backend" }],
       },
     ],
-    sessionRoots: { ...DEFAULT_SESSION_ROOTS },
+    agentSessionDirectories: { ...DEFAULT_AGENT_SESSION_DIRECTORIES },
     documentDirectories: ["docs", ".trae/documents"],
     maxDocumentBytes: 200_000,
   };
@@ -139,17 +140,17 @@ export function writeConfigFromProfile(profile: CollectorProfile, path = DEFAULT
   if (!profile.endpoint || !profile.token || !profile.memberUserId) {
     throw new Error("Profile must define endpoint, token and memberUserId.");
   }
-  const sessionRoots: Partial<Record<IdeKey, string>> = {};
-  for (const ide of Object.keys(DEFAULT_SESSION_ROOTS) as IdeKey[]) {
-    const root = DEFAULT_SESSION_ROOTS[ide];
-    if (existsSync(root)) sessionRoots[ide] = root;
+  const agentSessionDirectories: Partial<Record<IdeKey, string>> = {};
+  for (const ide of Object.keys(DEFAULT_AGENT_SESSION_DIRECTORIES) as IdeKey[]) {
+    const root = DEFAULT_AGENT_SESSION_DIRECTORIES[ide];
+    if (existsSync(root)) agentSessionDirectories[ide] = root;
   }
   const config: CollectorConfig = {
     endpoint: profile.endpoint.replace(/\/$/, ""),
     token: profile.token,
     memberUserId: profile.memberUserId,
     workspaces: [],
-    sessionRoots,
+    agentSessionDirectories,
     documentDirectories: ["docs", ".trae/documents"],
     maxDocumentBytes: 200_000,
   };
