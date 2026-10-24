@@ -1,8 +1,9 @@
 # ADR-024: CLI 命令面契约（newbie-cli / fewbie-cli）
 
-状态：已采纳
+状态：已采纳（arity 分态、`template sync` 命名与 `modules install` 相关条款由 ADR-029 取代）
 日期：2026-10-23（2026-10-24 修订：两层裸调用、取消 `project`/`hub`/`registry` 命名空间、删除 `apply`/`assemble`/`agent`/`modules list`、`modules lint` 收紧作用域）
 Supersedes: 部分取代 ADR-021（门禁放置）、ADR-022（命令名形式）
+Superseded by: ADR-029 —— `modules install` 拆为 `modules add` + `modules apply`，`template sync` 改名 `template update`；其余条款不变。
 
 ## 背景
 

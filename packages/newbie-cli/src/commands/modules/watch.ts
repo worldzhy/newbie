@@ -39,7 +39,7 @@ async function installedModuleKeys(projectRoot: string): Promise<string[]> {
 /**
  * Copy one module's registry source tree into the project. Mirrors the
  * install pipeline's addModules behaviour but runs outside the full
- * assemble context (env/prisma wiring is left to `newbie modules install`).
+ * assemble context (env/prisma wiring is left to `newbie modules apply`).
  */
 async function syncModule(projectRoot: string, registry: RegistryLocation, key: string): Promise<void> {
   const source = moduleRootInRegistry(registry.root, key);
@@ -113,7 +113,7 @@ export async function runWatch(options: ModulesWatchOptions): Promise<void> {
       yellow(
         options.all
           ? "No matching modules found in the registry."
-          : "No modules installed in this project. Run `newbie modules install` first, or use --all to watch every registry module.",
+          : "This project has no enabled modules. Run `newbie modules add <key>` to declare one (or `newbie modules apply` when modules.json already declares a set), or use --all to watch every registry module.",
       ),
     );
     return;

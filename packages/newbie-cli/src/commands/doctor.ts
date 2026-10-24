@@ -79,10 +79,10 @@ export async function runDoctor(options: DoctorOptions): Promise<void> {
 
   // [check 3] generated wiring
   if (!(await fileExists(cwd, MODULES_MODULE_TS))) {
-    error(`Generated ${MODULES_MODULE_TS} is missing; run 'newbie modules install'.`);
+    error(`Generated ${MODULES_MODULE_TS} is missing; run 'newbie modules apply'.`);
   }
   if (!(await fileExists(cwd, MODULES_CONFIG_TS))) {
-    error(`Generated ${MODULES_CONFIG_TS} is missing; run 'newbie modules install'.`);
+    error(`Generated ${MODULES_CONFIG_TS} is missing; run 'newbie modules apply'.`);
   }
 
   // [check 4] per-module state
@@ -98,7 +98,7 @@ export async function runDoctor(options: DoctorOptions): Promise<void> {
     const label = bold(key);
 
     if (!(await fileExists(cwd, `${MODULES_DIR}/${key}`))) {
-      error(`${label}: module directory missing; run 'newbie modules install'.`);
+      error(`${label}: module directory missing; run 'newbie modules apply'.`);
       continue;
     }
 
@@ -111,7 +111,7 @@ export async function runDoctor(options: DoctorOptions): Promise<void> {
 
     if (manifest.schema) {
       if (!(await fileExists(cwd, path.posix.join(PRISMA_SCHEMA_MODELS_DIR, `${key}.prisma`)))) {
-        error(`${label}: ${PRISMA_SCHEMA_MODELS_DIR}/${key}.prisma missing; run 'newbie modules install'.`);
+        error(`${label}: ${PRISMA_SCHEMA_MODELS_DIR}/${key}.prisma missing; run 'newbie modules apply'.`);
       }
       if (datasourceSchemas && !datasourceSchemas.includes(moduleSchemaNamespace(key))) {
         error(`${label}: datasource schemas lacks '${moduleSchemaNamespace(key)}'.`);
@@ -154,7 +154,7 @@ export async function runDoctor(options: DoctorOptions): Promise<void> {
   // [check 4b] declared moduleDependencies must all be enabled.
   for (const { module, dependency } of findMissingEnabledModules(keys, moduleGraph)) {
     error(
-      `'${dependency}' must be enabled because module '${module}' declares it as a module dependency; run 'newbie modules install'.`,
+      `'${dependency}' must be enabled because module '${module}' declares it as a module dependency; run 'newbie modules apply'.`,
     );
   }
 
@@ -173,7 +173,7 @@ export async function runDoctor(options: DoctorOptions): Promise<void> {
       const isRegistryModule = registry ? (await readRegistryModule(registry.root, dir)) !== null : false;
       if (isRegistryModule) {
         notice(
-          `Extra module directory '${dir}' not declared in ${MODULES_JSON}; run 'newbie modules install' to remove it.`,
+          `Extra module directory '${dir}' not declared in ${MODULES_JSON}; run 'newbie modules apply' to remove it.`,
         );
       }
     }
@@ -187,7 +187,7 @@ export async function runDoctor(options: DoctorOptions): Promise<void> {
     const orphanKey = file.slice(0, -".prisma".length);
     if (!enabledKeySet.has(orphanKey)) {
       error(
-        `Orphan prisma fragment '${PRISMA_SCHEMA_MODELS_DIR}/${file}' (module '${orphanKey}' not enabled); run 'newbie modules install' to remove it.`,
+        `Orphan prisma fragment '${PRISMA_SCHEMA_MODELS_DIR}/${file}' (module '${orphanKey}' not enabled); run 'newbie modules apply' to remove it.`,
       );
     }
   }

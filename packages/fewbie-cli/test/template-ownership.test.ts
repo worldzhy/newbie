@@ -5,7 +5,7 @@ import {
   extractMarkerBlock,
   FRAMEWORK_MARKER_END,
   FRAMEWORK_MARKER_START,
-  planTemplateSync,
+  planTemplateUpdate,
   replaceMarkerBlock,
   TemplateAsset,
 } from "../src/lib/template-ownership";
@@ -37,9 +37,9 @@ describe("marker blocks", () => {
   });
 });
 
-describe("planTemplateSync", () => {
+describe("planTemplateUpdate", () => {
   it("creates a framework file missing from the project", () => {
-    const changes = planTemplateSync(new Map([["next.config.ts", null]]), new Map([["next.config.ts", "template"]]), [
+    const changes = planTemplateUpdate(new Map([["next.config.ts", null]]), new Map([["next.config.ts", "template"]]), [
       frameworkAsset,
     ]);
     assert.equal(changes.length, 1);
@@ -48,7 +48,7 @@ describe("planTemplateSync", () => {
   });
 
   it("updates a framework file that differs", () => {
-    const changes = planTemplateSync(new Map([["next.config.ts", "old"]]), new Map([["next.config.ts", "new"]]), [
+    const changes = planTemplateUpdate(new Map([["next.config.ts", "old"]]), new Map([["next.config.ts", "new"]]), [
       frameworkAsset,
     ]);
     assert.equal(changes.length, 1);
@@ -57,14 +57,14 @@ describe("planTemplateSync", () => {
   });
 
   it("leaves matching framework files alone", () => {
-    const changes = planTemplateSync(new Map([["next.config.ts", "same"]]), new Map([["next.config.ts", "same"]]), [
+    const changes = planTemplateUpdate(new Map([["next.config.ts", "same"]]), new Map([["next.config.ts", "same"]]), [
       frameworkAsset,
     ]);
     assert.deepEqual(changes, []);
   });
 
   it("updates only the marked block of a mixed file and keeps host content", () => {
-    const changes = planTemplateSync(
+    const changes = planTemplateUpdate(
       new Map([["src/app/globals.css", globalsCss("--primary: old;", ":root { --host: 42; }")]]),
       new Map([["src/app/globals.css", globalsCss("--primary: new;")]]),
       [mixedAsset],
@@ -77,7 +77,7 @@ describe("planTemplateSync", () => {
   });
 
   it("reports missing markers in the project copy instead of guessing", () => {
-    const changes = planTemplateSync(
+    const changes = planTemplateUpdate(
       new Map([["src/app/globals.css", ":root { --primary: old; }"]]),
       new Map([["src/app/globals.css", globalsCss("--primary: new;")]]),
       [mixedAsset],
@@ -90,7 +90,7 @@ describe("planTemplateSync", () => {
   it("treats markers missing from the template itself as a template defect", () => {
     assert.throws(
       () =>
-        planTemplateSync(
+        planTemplateUpdate(
           new Map([["src/app/globals.css", globalsCss("--primary: old;")]]),
           new Map([["src/app/globals.css", ":root { --primary: new; }"]]),
           [mixedAsset],
@@ -100,7 +100,7 @@ describe("planTemplateSync", () => {
   });
 
   it("skips assets the template no longer ships", () => {
-    const changes = planTemplateSync(new Map([["next.config.ts", "old"]]), new Map([["next.config.ts", null]]), [
+    const changes = planTemplateUpdate(new Map([["next.config.ts", "old"]]), new Map([["next.config.ts", null]]), [
       frameworkAsset,
     ]);
     assert.deepEqual(changes, []);

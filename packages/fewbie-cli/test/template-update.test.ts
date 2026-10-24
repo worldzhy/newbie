@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { after, describe, it } from "node:test";
 
-import { runTemplateSync } from "../src/commands/template/sync";
+import { runTemplateUpdate } from "../src/commands/template/update";
 import { FRAMEWORK_MARKER_END, FRAMEWORK_MARKER_START } from "../src/lib/template-ownership";
 
 async function makeTempDir(prefix: string): Promise<string> {
@@ -21,18 +21,18 @@ async function writeFile(root: string, relativePath: string, content: string): P
 }
 
 async function makeTemplate(): Promise<string> {
-  const root = await makeTempDir("fewbie-sync-template-");
+  const root = await makeTempDir("fewbie-update-template-");
   await fs.writeFile(path.join(root, "package.json"), JSON.stringify({ name: "fewbie-basic-template" }, null, 2));
   await writeFile(root, "next.config.ts", "// template next config\n");
   await writeFile(root, "src/lib/utils.ts", "export const cn = () => '';\n");
   await writeFile(root, "src/app/globals.css", globalsCss("--primary: template;", ""));
-  // Host-owned: template sync must never copy this.
+  // Host-owned: template update must never copy this.
   await writeFile(root, "src/app/page.tsx", "// template page\n");
   return root;
 }
 
 async function makeProject(): Promise<string> {
-  const root = await makeTempDir("fewbie-sync-project-");
+  const root = await makeTempDir("fewbie-update-project-");
   await fs.writeFile(path.join(root, "package.json"), JSON.stringify({ name: "fixture" }, null, 2));
   await writeFile(root, "next.config.ts", "// host next config\n");
   await writeFile(root, "src/app/globals.css", globalsCss("--primary: host;", ":root { --host: 42; }"));
@@ -40,7 +40,7 @@ async function makeProject(): Promise<string> {
   return root;
 }
 
-describe("fewbie template sync", () => {
+describe("fewbie template update", () => {
   it("--check reports drift without writing files", async () => {
     const project = await makeProject();
     const template = await makeTemplate();
@@ -50,13 +50,13 @@ describe("fewbie template sync", () => {
     });
 
     await assert.rejects(
-      runTemplateSync({ cwd: project, check: true, templatePath: template }),
+      runTemplateUpdate({ cwd: project, check: true, templatePath: template }),
       /drift from the template/,
     );
     assert.equal(await fs.readFile(path.join(project, "next.config.ts"), "utf8"), "// host next config\n");
   });
 
-  it("writes framework files, syncs only the marked block and creates missing files", async () => {
+  it("writes framework files, updates only the marked block and creates missing files", async () => {
     const project = await makeProject();
     const template = await makeTemplate();
     after(async () => {
@@ -64,7 +64,7 @@ describe("fewbie template sync", () => {
       await fs.rm(template, { recursive: true, force: true });
     });
 
-    await runTemplateSync({ cwd: project, templatePath: template });
+    await runTemplateUpdate({ cwd: project, templatePath: template });
 
     assert.equal(await fs.readFile(path.join(project, "next.config.ts"), "utf8"), "// template next config\n");
     const globals = await fs.readFile(path.join(project, "src/app/globals.css"), "utf8");
@@ -85,7 +85,7 @@ describe("fewbie template sync", () => {
     await writeFile(project, "src/app/globals.css", ":root { --primary: host; }\n");
 
     await assert.rejects(
-      runTemplateSync({ cwd: project, check: true, templatePath: template }),
+      runTemplateUpdate({ cwd: project, check: true, templatePath: template }),
       /drift from the template/,
     );
     assert.equal(await fs.readFile(path.join(project, "src/app/globals.css"), "utf8"), ":root { --primary: host; }\n");
@@ -99,7 +99,7 @@ describe("fewbie template sync", () => {
       await fs.rm(template, { recursive: true, force: true });
     });
 
-    await runTemplateSync({ cwd: project, templatePath: template, paths: ["src/lib"] });
+    await runTemplateUpdate({ cwd: project, templatePath: template, paths: ["src/lib"] });
 
     assert.ok(await fs.stat(path.join(project, "src/lib/utils.ts")));
     assert.equal(await fs.readFile(path.join(project, "next.config.ts"), "utf8"), "// host next config\n");

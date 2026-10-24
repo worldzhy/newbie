@@ -5,7 +5,7 @@
  * `fewbie create` copies the whole fewbie-starter repository, so any file present
  * in both places is one artifact with two delivery channels:
  *   - the template copy — what a scaffolded project starts with;
- *   - the registry item — what `fewbie modules install <item>` writes into a project.
+ *   - the registry item — what `fewbie modules add <item>` writes into a project.
  * Editing one without the other silently forks them and the two channels then
  * disagree. This script asserts equality for every overlapping path.
  *
@@ -87,7 +87,7 @@ async function main(): Promise<void> {
       console.error(`\nTemplate/registry drift detected (${mismatches.length}):`);
       for (const mismatch of mismatches) console.error(`  ${mismatch}`);
       console.error(
-        "\nThe template copy is what `fewbie create` hands out; the registry copy is what `fewbie modules install` installs.",
+        "\nThe template copy is what `fewbie create` hands out; the registry copy is what `fewbie modules add` installs.",
       );
       console.error("Edit both, or the two delivery channels fork.");
       process.exitCode = 1;

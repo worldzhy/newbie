@@ -148,7 +148,7 @@ export async function runDoctor(options: DoctorOptions): Promise<DoctorResult> {
         category: "registry",
         message: `Module '${name}' is partially installed — missing: ${targets
           .filter((_, index) => !present[index])
-          .join(", ")}. Run 'fewbie modules install' to repair.`,
+          .join(", ")}. Run 'fewbie modules apply' to repair.`,
       });
     }
   }

@@ -13,7 +13,7 @@
 | 交付物                                                                                                                       | 状态      | 版本            |
 | ---------------------------------------------------------------------------------------------------------------------------- | --------- | --------------- |
 | `@devbie/newbie` core（exception-filters / pipes / prisma / NewbieFactory / heartbeat / backend-monitor 探针）               | ✅ 已发布 | `0.1.0-stage.2` |
-| `@devbie/newbie-cli`（create / doctor / status / modules install·remove·update·watch·lint / template sync） | ✅ 已发布 | `0.1.0-stage.1` |
+| `@devbie/newbie-cli`（create / doctor / status / modules add·apply·remove·update·watch·lint / template update） | ✅ 已发布 | `0.1.0-stage.1` |
 | `@devbie/heartbeat-sdk`（token-only 心跳内核）                                                                               | ✅ 已发布 | `0.1.0-stage.0` |
 | newbie 模板（basic 骨架 + 薄 main.ts + 心跳接线）                                                                            | ✅ 已发布 | 随 core         |
 | `newbie-modules` registry（48 个 module 迁入，复制模型装配管线）                                                             | ✅ 可用   | —               |
@@ -46,7 +46,7 @@
 
 | #   | 功能                                                                                                                          | 归属       | 优先级 | 前置 |
 | --- | ----------------------------------------------------------------------------------------------------------------------------- | ---------- | ------ | ---- |
-| B1  | `newbie modules watch` 命令（原 `newbie dev-sync`；watch registry 实时同步）✅（2026-09-27，150ms 防抖；删除同步受平台限制，重跑 `newbie modules install` 兜底） | newbie CLI | 中     | 无   |
+| B1  | `newbie modules watch` 命令（原 `newbie dev-sync`；watch registry 实时同步）✅（2026-09-27，150ms 防抖；删除同步受平台限制，重跑 `newbie modules apply` 兜底） | newbie CLI | 中     | 无   |
 
 ### Phase C — 中心化控制面（核心未做项）
 
@@ -84,9 +84,9 @@
   - 新建 `packages/web-monitor-sdk/`（或独立仓），从现有 SDK 抽取核心
   - 发布 `@devbie/web-monitor-sdk@0.1.0-stage.0`
 - **fewbie 侧**：
-  - registry 新增 `web-monitor-sdk` 件：`fewbie modules install web-monitor-sdk` 脚手架 layout 注入采集组件 + 加 npm 依赖
+  - registry 新增 `web-monitor-sdk` 件：`fewbie modules add web-monitor-sdk` 脚手架 layout 注入采集组件 + 加 npm 依赖
   - 心跳接线仍由模板 `instrumentation.ts` 负责（`@devbie/heartbeat-sdk`），与本件解耦
-- **验证**：fewbie 模板 `modules install web-monitor-sdk` 后 `next build` 通过 + 浏览器控制台确认上报
+- **验证**：fewbie 模板 `modules add web-monitor-sdk` 后 `next build` 通过 + 浏览器控制台确认上报
 
 #### A3. `fewbie doctor` 命令
 
@@ -101,8 +101,8 @@
 #### A4. `fewbie modules update` 命令
 
 - **目标**：registry 组件/token 升级（默认写入，`--check` 为门禁）
-- **机制**：类比 `newbie template sync`，拉取 registry 新版本，diff 项目内已安装件的源码，生成可 review 的变更
-- **边界**：只 diff `fewbie modules install` 安装的件，不动用户业务代码；已被本地修改的件提示冲突
+- **机制**：类比 `newbie template update`，拉取 registry 新版本，diff 项目内已安装件的源码，生成可 review 的变更
+- **边界**：只 diff `fewbie modules add` 安装的件，不动用户业务代码；已被本地修改的件提示冲突
 - **验证**：安装旧版件 → 修改 registry 件 → `fewbie modules update --check` 检出漂移、默认写入收敛
 
 #### A5. fewbie 其余 registry 件
@@ -114,7 +114,7 @@
 | `settings-required-state` | UI   | 设置缺失时的引导状态页                           |
 
 - **约束**：全部以 shadcn registry 兼容格式存放，双端可装
-- **验证**：`fewbie modules install <name>` 后 `next build` 通过 + 官方 `npx shadcn add <registry-url>/<name>` 也能装
+- **验证**：`fewbie modules add <name>` 后 `next build` 通过 + 官方 `npx shadcn add <registry-url>/<name>` 也能装
 
 ---
 
@@ -125,7 +125,7 @@
 - **目标**：解决复制模型下"改完 registry 要重新 install 才生效"的开发痛点
 - **机制**：watch `newbie-modules/packages/modules/<key>/` 目录变更，实时同步到消费项目 `src/modules/<key>/`
 - **用法**：`newbie modules watch <key>` 或 `newbie modules watch --all`
-- **边界**：只同步源码，不重跑装配管线（env / prisma 合并仍需 `newbie modules install`）；检测到本地修改时提示冲突
+- **边界**：只同步源码，不重跑装配管线（env / prisma 合并仍需 `newbie modules apply`）；检测到本地修改时提示冲突
 - **验证**：改 registry module 源码 → 消费项目文件实时更新 → 应用热重载生效
 
 ---
@@ -144,7 +144,7 @@
 > **详细设计真源**：[module-hub-design.md](./module-hub-design.md)（v3 修订说明；含 Prisma DDL、API 契约与开放问题）。本节以下为方向摘要，细节冲突时以设计文档为准。
 
 - **目标**：跨安装实例的模块可见性与事实对账（module 版本目录、安装快照、lastSeenAt、审计），不做远程执行
-- **形态**：作为普通 module 收录在 `newbie-modules` registry（`packages/modules/module-hub/`），经 `newbie modules install module-hub` 复制装配。hub 部署在宿主实例内部，无多租户问题，UI 读权限复用宿主自身鉴权
+- **形态**：作为普通 module 收录在 `newbie-modules` registry（`packages/modules/module-hub/`），经 `newbie modules add module-hub` 复制装配。hub 部署在宿主实例内部，无多租户问题，UI 读权限复用宿主自身鉴权
 - **身份模型（去 project 化）**：
   - hub 只有 **installation** 实体：一个 token = 一个安装实例；dev/staging/prod 各发一个 token 即天然多实例，无需 project 层级
   - 自注册：进程启动时由 `@devbie/core` 启动钩子带 token 直接上报，installation 即「一个运行中的部署端点」

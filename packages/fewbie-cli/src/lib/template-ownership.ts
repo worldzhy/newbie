@@ -3,16 +3,16 @@
  *
  * Every file the starter template ships is classified explicitly:
  *
- * - framework: the template owns the whole file; template sync overwrites the
+ * - framework: the template owns the whole file; template update overwrites the
  *   host copy.
  * - mixed: the framework owns the marked block only; everything outside the
  *   markers belongs to the host and is never rewritten. A missing marker pair
  *   is a defect in the host copy, not something to guess around.
  * - host: shipped once by `fewbie create`, then owned by the host; template
- *   sync never touches it.
+ *   update never touches it.
  *
- * Registry items are not listed here: `modules install` / `modules update` own
- * those paths, and template sync refuses to run if the two sets ever overlap
+ * Registry items are not listed here: `modules add` / `modules update` own
+ * those paths, and template update refuses to run if the two sets ever overlap
  * (see `assertNoRegistryOverlap`).
  */
 
@@ -47,7 +47,7 @@ export const TEMPLATE_ASSETS: readonly TemplateAsset[] = [
     note: "design tokens live inside the marker block; host-specific tokens stay outside it",
   },
 
-  // Host-owned: distributed once by create, then never touched by sync.
+  // Host-owned: distributed once by create, then never touched by template update.
   { path: "src/app/layout.tsx", ownership: "host" },
   { path: "src/app/page.tsx", ownership: "host" },
   { path: "src/components/**", ownership: "host" },
@@ -58,7 +58,7 @@ export const TEMPLATE_ASSETS: readonly TemplateAsset[] = [
   { path: "CLAUDE.md", ownership: "host" },
 ];
 
-/** Template files whose content template sync manages. */
+/** Template files whose content template update manages. */
 export function isSyncableAsset(asset: TemplateAsset): boolean {
   return asset.ownership === "framework" || asset.ownership === "mixed";
 }
@@ -104,13 +104,13 @@ export interface TemplateChange {
 }
 
 /**
- * Compute the sync plan. `projectFiles` / `templateFiles` map each asset path
+ * Compute the update plan. `projectFiles` / `templateFiles` map each asset path
  * to its content, or null when absent.
  *
  * Throws when the template itself is malformed (a mixed file lacks markers):
  * that is a template defect, not a project state.
  */
-export function planTemplateSync(
+export function planTemplateUpdate(
   projectFiles: ReadonlyMap<string, string | null>,
   templateFiles: ReadonlyMap<string, string | null>,
   assets: readonly TemplateAsset[] = SYNCABLE_ASSETS,
@@ -119,7 +119,7 @@ export function planTemplateSync(
 
   for (const asset of assets) {
     const templateContent = templateFiles.get(asset.path);
-    // The template dropped this file; nothing to sync.
+    // The template dropped this file; nothing to update.
     if (templateContent == null) continue;
 
     const projectContent = projectFiles.get(asset.path);

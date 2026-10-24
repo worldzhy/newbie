@@ -8,7 +8,7 @@ import { readTextIfExists } from "../../lib/fs-util";
 import {
   FRAMEWORK_MARKER_END,
   FRAMEWORK_MARKER_START,
-  planTemplateSync,
+  planTemplateUpdate,
   SYNCABLE_ASSETS,
   TemplateAsset,
   TemplateChange,
@@ -16,7 +16,7 @@ import {
 import { unifiedDiff } from "../../lib/diff";
 import { resolveTemplate } from "../create";
 
-export interface TemplateSyncOptions {
+export interface TemplateUpdateOptions {
   /** Project root (global --cwd). */
   cwd: string;
   /** Path prefix filter (e.g. "src/app/"); empty means every syncable asset. */
@@ -45,7 +45,7 @@ function filterAssets(paths: string[] | undefined): readonly TemplateAsset[] {
 }
 
 /**
- * Every file a registry item owns. Template sync must never manage one of
+ * Every file a registry item owns. Template update must never manage one of
  * these (ADR-025 clause 4); an overlap is a classification defect.
  */
 async function collectRegistryTargets(): Promise<Set<string>> {
@@ -64,7 +64,7 @@ function printChange(change: TemplateChange): void {
     console.warn(
       yellow(
         `! ${change.asset.path}: framework markers (${FRAMEWORK_MARKER_START} / ${FRAMEWORK_MARKER_END}) ` +
-          "not found; cannot sync this file. Add them back to re-enable template sync.",
+          "not found; cannot update this file. Add them back to re-enable template update.",
       ),
     );
     return;
@@ -79,7 +79,7 @@ function printChange(change: TemplateChange): void {
   );
 }
 
-export async function runTemplateSync(options: TemplateSyncOptions): Promise<void> {
+export async function runTemplateUpdate(options: TemplateUpdateOptions): Promise<void> {
   const projectRoot = path.resolve(options.cwd);
   const assets = filterAssets(options.paths);
   const scope = options.paths && options.paths.length > 0 ? options.paths.join(", ") : null;
@@ -96,8 +96,8 @@ export async function runTemplateSync(options: TemplateSyncOptions): Promise<voi
     const overlap = assets.filter((asset) => registryTargets.has(asset.path));
     if (overlap.length > 0) {
       throw new CliError(
-        `Template sync and the registry both own: ${overlap.map((asset) => asset.path).join(", ")}. ` +
-          "Reclassify them in ADR-025 before syncing.",
+        `Template update and the registry both own: ${overlap.map((asset) => asset.path).join(", ")}. ` +
+          "Reclassify them in ADR-025 before updating.",
       );
     }
 
@@ -110,7 +110,7 @@ export async function runTemplateSync(options: TemplateSyncOptions): Promise<voi
 
     let changes: TemplateChange[];
     try {
-      changes = planTemplateSync(projectFiles, templateFiles, assets);
+      changes = planTemplateUpdate(projectFiles, templateFiles, assets);
     } catch (error) {
       throw new CliError((error as Error).message);
     }
@@ -125,12 +125,12 @@ export async function runTemplateSync(options: TemplateSyncOptions): Promise<voi
     for (const change of changes) printChange(change);
 
     console.info(
-      `\n${actionable.length} template file(s) to sync: ` +
+      `\n${actionable.length} template file(s) to update: ` +
         actionable.map((change) => `${change.asset.path} (${change.kind})`).join(", "),
     );
 
     if (options.check) {
-      const command = scope ? `fewbie template sync ${scope}` : "fewbie template sync";
+      const command = scope ? `fewbie template update ${scope}` : "fewbie template update";
       throw new CliError(
         `${changes.length} template file(s) drift from the template (${actionable.length} auto-fixable). ` +
           `Run \`${command}\` to apply the template version.`,

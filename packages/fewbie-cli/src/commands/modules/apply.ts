@@ -2,12 +2,126 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { bold, cyan, green, yellow } from "colorette";
 
-import { LoadedItem, readItemFileContent, resolveInstallSet, resolveRegistryRoot } from "../../registry/store";
+import {
+  LoadedItem,
+  listRegistryItemNames,
+  readItemFileContent,
+  resolveInstallSet,
+  resolveRegistryRoot,
+} from "../../registry/store";
+import { confirm } from "../../lib/confirm";
 import { CliError } from "../../lib/errors";
 import { pathExists, readTextIfExists } from "../../lib/fs-util";
 import { execInteractive } from "../../lib/exec-interactive";
-import { writeModulesFile } from "../../lib/modules-file";
+import { requireModulesFile, writeModulesFile } from "../../lib/modules-file";
 import { missingPackages } from "../../lib/npm-spec";
+import { assertProjectRoot } from "../../lib/project";
+
+export interface ModulesApplyOptions {
+  /** Project root (global --cwd). */
+  cwd: string;
+  /** CI gate: verify the declared set, its files and its dependencies; write nothing. */
+  check?: boolean;
+  yes?: boolean;
+  force?: boolean;
+  skipInstall?: boolean;
+  dryRun?: boolean;
+}
+
+/**
+ * Reconcile the project with the declared set in fewbie.json (ADR-029): restore
+ * missing files, land dependency closure members, install npm dependencies.
+ * `--check` is the CI gate (ADR-024 F7 for fewbie): prove the declaration is
+ * complete, every declared file exists, and every declared npm dependency is
+ * installed. Content drift is `modules update --check`'s job.
+ */
+export async function runApply(options: ModulesApplyOptions): Promise<void> {
+  const projectRoot = path.resolve(options.cwd);
+  await assertProjectRoot(projectRoot);
+
+  if (options.check) {
+    await runApplyCheck(projectRoot);
+    return;
+  }
+
+  const declared = await requireModulesFile(projectRoot);
+  const registryRoot = await resolveRegistryRoot();
+  const items = await resolveInstallSet(registryRoot, declared);
+  const declaredClosure = new Set(declared);
+  const additions = items.map((item) => item.manifest.name).filter((name) => !declaredClosure.has(name));
+
+  if (additions.length > 0) {
+    console.info(cyan(`Installing ${additions.join(", ")} into ${projectRoot}...`));
+    const confirmed = await confirm(`Do you want to INSTALL ${additions.join(", ")}?`, options);
+    if (!confirmed) {
+      console.info("[info] Cancelled.");
+      return;
+    }
+  }
+
+  const result = await applyModuleSelection({
+    projectRoot,
+    current: declared,
+    next: declared,
+    force: options.force,
+    skipInstall: options.skipInstall,
+    dryRun: options.dryRun,
+  });
+
+  if (result.written.length === 0 && result.deleted.length === 0 && additions.length === 0) {
+    console.info(green("[info] Project is in sync with fewbie.json."));
+  } else if (options.dryRun) {
+    console.info("[dry-run] no files were modified");
+  } else {
+    console.info(bold(green("\n✓ Modules installed.")));
+  }
+}
+
+/** CI gate: the declared set is complete, its files exist, its dependencies are installed. */
+async function runApplyCheck(projectRoot: string): Promise<void> {
+  const declared = await requireModulesFile(projectRoot);
+  const registryRoot = await resolveRegistryRoot();
+  const items = await resolveInstallSet(registryRoot, declared);
+
+  const closure = items.map((item) => item.manifest.name);
+  const undeclared = closure.filter((name) => !declared.includes(name));
+
+  const missingFiles: string[] = [];
+  for (const item of items) {
+    for (const file of item.files) {
+      if (!(await pathExists(path.join(projectRoot, file.target)))) {
+        missingFiles.push(`${item.manifest.name}: ${file.target}`);
+      }
+    }
+  }
+
+  const specs = [...new Set(items.flatMap((item) => item.manifest.dependencies ?? []))];
+  const missingDependencies = await missingPackages(projectRoot, specs);
+
+  if (undeclared.length > 0 || missingFiles.length > 0 || missingDependencies.length > 0) {
+    const lines = [
+      ...undeclared.map((name) => `  - ${name}: required by the declared set but missing from fewbie.json`),
+      ...missingFiles.map((entry) => `  - ${entry}: file missing`),
+      ...missingDependencies.map((spec) => `  - ${spec}: npm dependency not installed`),
+    ];
+    throw new CliError(
+      `Declared module set is incomplete:\n${lines.join("\n")}\n` + "Run `fewbie modules apply` to converge it.",
+    );
+  }
+
+  // Read every declared file once so an unreadable registry item fails the gate
+  // rather than silently passing.
+  for (const item of items) {
+    for (const file of item.files) await readItemFileContent(file);
+  }
+
+  const available = await listRegistryItemNames(registryRoot);
+  for (const name of declared) {
+    if (!available.includes(name)) throw new CliError(`Registry item '${name}' not found.`);
+  }
+
+  console.info(green(bold("✓ Declared modules, their files and dependencies match fewbie.json.")));
+}
 
 export interface ApplySelectionOptions {
   /** Project root. */

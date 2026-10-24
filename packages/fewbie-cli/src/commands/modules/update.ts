@@ -44,7 +44,7 @@ export async function runUpdate(options: ModulesUpdateOptions): Promise<void> {
   for (const item of selected) {
     for (const file of item.files) {
       const current = await readTextIfExists(path.join(projectRoot, file.target));
-      // A missing copy is install's job, not update's; report it as a hint.
+      // A missing copy is apply's job, not update's; report it as a hint.
       if (current === null) {
         missing.push(`${item.manifest.name}: ${file.target}`);
         continue;
@@ -57,7 +57,7 @@ export async function runUpdate(options: ModulesUpdateOptions): Promise<void> {
   if (outdated.length === 0) {
     console.info(green(bold("✓ Declared module files are up to date.")));
     if (missing.length > 0) {
-      console.info(yellow(`Missing file(s); run 'fewbie modules install' to restore them:\n  ${missing.join("\n  ")}`));
+      console.info(yellow(`Missing file(s); run 'fewbie modules apply' to restore them:\n  ${missing.join("\n  ")}`));
     }
     return;
   }

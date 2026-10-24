@@ -5,28 +5,28 @@ import { bold, cyan, green, yellow } from "colorette";
 import {
   findUnclassifiedTemplateFiles,
   frameworkMarkers,
-  isSyncableTemplateFile,
-  planTemplateSync,
+  isUpdatableTemplateFile,
+  planTemplateUpdate,
   TEMPLATE_FILES,
   TEMPLATE_SCAN_IGNORED_DIRECTORIES,
   TEMPLATE_SCAN_IGNORED_FILES,
   TEMPLATE_SCAN_IGNORED_SUFFIXES,
   TemplateChange,
   TemplateFile,
-} from "../../core/template-sync";
+} from "../../core/template-update";
 import { unifiedDiff } from "../../core/unified-diff";
 import { CliError } from "../../lib/errors";
 import { createSink } from "../../lib/sink";
 import { GlobalOptions } from "../shared";
 import { resolveTemplate, TemplateReference } from "../create";
 
-export interface TemplateSyncOptions extends GlobalOptions, TemplateReference {
+export interface TemplateUpdateOptions extends GlobalOptions, TemplateReference {
   /** CI gate mode: print the diff and exit non-zero when anything drifts. */
   check?: boolean;
   /**
-   * Restrict the sync scope to template files under these path prefixes
+   * Restrict the update scope to template files under these path prefixes
    * (e.g. ["deploy/"] guards only the ADR-006 deploy assets in CI).
-   * Empty/undefined means every syncable template file.
+   * Empty/undefined means every updatable template file.
    */
   paths?: string[];
 }
@@ -39,9 +39,9 @@ function matchesPathFilter(filePath: string, filter: string): boolean {
 }
 
 function filterTemplateFiles(paths: string[] | undefined): readonly TemplateFile[] {
-  const syncable = TEMPLATE_FILES.filter(isSyncableTemplateFile);
-  if (!paths || paths.length === 0) return syncable;
-  const selected = syncable.filter((file) => paths.some((p) => matchesPathFilter(file.path, p)));
+  const updatable = TEMPLATE_FILES.filter(isUpdatableTemplateFile);
+  if (!paths || paths.length === 0) return updatable;
+  const selected = updatable.filter((file) => paths.some((p) => matchesPathFilter(file.path, p)));
   if (selected.length === 0) {
     throw new CliError(`No framework-managed template files match the path filter: ${paths.join(", ")}`);
   }
@@ -97,7 +97,7 @@ async function assertTemplateRegistryComplete(templateRoot: string): Promise<voi
   if (unclassified.length === 0) return;
   throw new CliError(
     `Template file(s) missing from the ownership registry (ADR-009 D4):\n  - ${unclassified.join("\n  - ")}\n` +
-      "Classify each one in TEMPLATE_FILES (packages/newbie-cli/src/core/template-sync.ts).",
+      "Classify each one in TEMPLATE_FILES (packages/newbie-cli/src/core/template-update.ts).",
   );
 }
 
@@ -108,7 +108,7 @@ function printChangeDiff(change: TemplateChange): void {
     console.warn(
       yellow(
         `! ${label}: framework markers (${markers.start} / ${markers.end}) ` +
-          "not found; skipping. Add them back to re-enable template sync.",
+          "not found; skipping. Add them back to re-enable template update.",
       ),
     );
     return;
@@ -122,7 +122,7 @@ function printChangeDiff(change: TemplateChange): void {
   process.stdout.write(diff);
 }
 
-export async function runTemplateSync(options: TemplateSyncOptions): Promise<void> {
+export async function runTemplateUpdate(options: TemplateUpdateOptions): Promise<void> {
   const cwd = path.resolve(options.cwd);
   const sink = createSink(cwd, options.dryRun);
   const templateFiles = filterTemplateFiles(options.paths);
@@ -145,7 +145,7 @@ export async function runTemplateSync(options: TemplateSyncOptions): Promise<voi
 
   let changes: TemplateChange[];
   try {
-    changes = planTemplateSync(projectFiles, templateContents, templateFiles);
+    changes = planTemplateUpdate(projectFiles, templateContents, templateFiles);
   } catch (error) {
     throw new CliError((error as Error).message);
   }
@@ -162,12 +162,12 @@ export async function runTemplateSync(options: TemplateSyncOptions): Promise<voi
   }
 
   console.info(
-    `\n${actionable.length} template file(s) to sync: ` +
+    `\n${actionable.length} template file(s) to update: ` +
       actionable.map((c) => `${c.file.path} (${c.kind})`).join(", "),
   );
 
   if (options.check) {
-    const command = scope ? `newbie template sync ${scope}` : "newbie template sync";
+    const command = scope ? `newbie template update ${scope}` : "newbie template update";
     throw new CliError(
       `${changes.length} template file(s) drift from the template ` +
         `(${actionable.length} auto-fixable). ` +

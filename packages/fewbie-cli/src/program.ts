@@ -9,11 +9,12 @@ import { runApits } from "./commands/apits";
 import { runCreate } from "./commands/create";
 import { doctorCommand } from "./commands/doctor";
 import { runModules } from "./commands/modules/default";
-import { runInstall } from "./commands/modules/install";
+import { runAdd } from "./commands/modules/add";
+import { runApply } from "./commands/modules/apply";
 import { runRemove } from "./commands/modules/remove";
 import { runUpdate } from "./commands/modules/update";
 import { runStatus } from "./commands/status";
-import { runTemplateSync } from "./commands/template/sync";
+import { runTemplateUpdate } from "./commands/template/update";
 
 export const VERSION: string = pkg.version;
 
@@ -23,8 +24,8 @@ interface GlobalOptions {
 }
 
 /**
- * The static command surface (ADR-024). Registry/project nouns are
- * namespaces; the current project's lifecycle verbs sit at the root.
+ * The static command surface (ADR-024, amended by ADR-029). Registry/project
+ * nouns are namespaces; the current project's lifecycle verbs sit at the root.
  */
 export function buildProgram(): Command {
   const program = new Command();
@@ -32,7 +33,7 @@ export function buildProgram(): Command {
   program
     .name("fewbie")
     .description(
-      "Fewbie frontend framework CLI: scaffold Next.js projects, manage registry modules and sync framework template files",
+      "Fewbie frontend framework CLI: scaffold Next.js projects, manage registry modules and update framework template files",
     )
     .version(VERSION)
     .option("-C, --cwd <dir>", "project root directory", process.cwd())
@@ -93,29 +94,45 @@ export function buildProgram(): Command {
   });
 
   modules
-    .command("install [names...]")
-    .description(
-      "reconcile the project with fewbie.json; with names, declare them (npm-style add) and install. --check is the CI gate",
-    )
-    .option("--check", "CI gate: verify the declared set, its files and dependencies without writing anything", false)
+    .command("add <names...>")
+    .description("declare the named modules in fewbie.json (npm-style add) and land their files")
     .option("-y, --yes", "skip confirmation prompts", false)
     .option("-f, --force", "overwrite files that already exist but belong to no declared module", false)
     .option("--skip-install", "do not run npm install for missing dependencies", false)
     .option(
       "--with-login-form",
-      "also install the login-form block (e.g. `fewbie modules install auth --with-login-form`)",
+      "also install the login-form block (e.g. `fewbie modules add auth --with-login-form`)",
       false,
     )
     .action(function (this: Command, names: string[]) {
       const flags = this.opts();
-      return runInstall({
+      return runAdd({
         ...globals(this),
         names,
-        check: Boolean(flags.check),
         yes: Boolean(flags.yes),
         force: Boolean(flags.force),
         skipInstall: Boolean(flags.skipInstall),
         withLoginForm: Boolean(flags.withLoginForm),
+      });
+    });
+
+  modules
+    .command("apply")
+    .description(
+      "reconcile the project with fewbie.json (restore missing files, land dependency closure members). --check is the CI gate",
+    )
+    .option("--check", "CI gate: verify the declared set, its files and dependencies without writing anything", false)
+    .option("-y, --yes", "skip confirmation prompts", false)
+    .option("-f, --force", "overwrite files that already exist but belong to no declared module", false)
+    .option("--skip-install", "do not run npm install for missing dependencies", false)
+    .action(function (this: Command) {
+      const flags = this.opts();
+      return runApply({
+        ...globals(this),
+        check: Boolean(flags.check),
+        yes: Boolean(flags.yes),
+        force: Boolean(flags.force),
+        skipInstall: Boolean(flags.skipInstall),
       });
     });
 
@@ -145,16 +162,16 @@ export function buildProgram(): Command {
   });
 
   template
-    .command("sync [paths...]")
+    .command("update [paths...]")
     .description(
-      "sync framework-owned template files (ADR-025 ownership registry: framework configs, instrumentation, utils and the globals.css marker block) from the template; pass path prefixes to restrict the scope",
+      "update framework-owned template files (ADR-025 ownership registry: framework configs, instrumentation, utils and the globals.css marker block) from the template; pass path prefixes to restrict the scope",
     )
     .option("--template-path <dir>", "use a local template directory instead of cloning fewbie-starter")
-    .option("--template-ref <ref>", "git ref of fewbie-starter to sync the template from")
+    .option("--template-ref <ref>", "git ref of fewbie-starter to update the template from")
     .option("--check", "CI gate: print the diff and exit non-zero when template files drift", false)
     .action(function (this: Command, paths: string[]) {
       const flags = this.opts();
-      return runTemplateSync({
+      return runTemplateUpdate({
         ...globals(this),
         paths,
         check: Boolean(flags.check),

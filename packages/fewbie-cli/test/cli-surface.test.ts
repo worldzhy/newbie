@@ -26,11 +26,12 @@ function describeCommand(command: Command): SerializedCommand {
 }
 
 /**
- * ADR-024 command-surface snapshot. Any change here must come with an ADR
- * update first: the CLI surface is a contract, not an implementation detail.
+ * ADR-024 command-surface snapshot (amended by ADR-029). Any change here must
+ * come with an ADR update first: the CLI surface is a contract, not an
+ * implementation detail.
  */
 describe("fewbie CLI surface", () => {
-  it("matches the ADR-024 command tree", () => {
+  it("matches the ADR-024/ADR-029 command tree", () => {
     const surface = describeCommand(buildProgram());
     assert.deepEqual(surface, {
       name: "fewbie",
@@ -62,9 +63,15 @@ describe("fewbie CLI surface", () => {
           options: ["--json"],
           commands: [
             {
-              name: "install",
-              arguments: [{ name: "names", required: false, variadic: true }],
-              options: ["--check", "-y, --yes", "-f, --force", "--skip-install", "--with-login-form"],
+              name: "add",
+              arguments: [{ name: "names", required: true, variadic: true }],
+              options: ["-y, --yes", "-f, --force", "--skip-install", "--with-login-form"],
+              commands: [],
+            },
+            {
+              name: "apply",
+              arguments: [],
+              options: ["--check", "-y, --yes", "-f, --force", "--skip-install"],
               commands: [],
             },
             {
@@ -87,7 +94,7 @@ describe("fewbie CLI surface", () => {
           options: [],
           commands: [
             {
-              name: "sync",
+              name: "update",
               arguments: [{ name: "paths", required: false, variadic: true }],
               options: ["--template-path <dir>", "--template-ref <ref>", "--check"],
               commands: [],
@@ -108,8 +115,6 @@ describe("fewbie CLI surface", () => {
     const program = buildProgram();
     const rootNames = program.commands.map((command) => command.name());
     for (const retired of [
-      "add",
-      "apply",
       "assemble",
       "agent",
       "config",
@@ -117,6 +122,9 @@ describe("fewbie CLI surface", () => {
       "dev",
       "sync-template",
       "install",
+      // ADR-029: add/apply live under `modules`, never at the root.
+      "add",
+      "apply",
     ]) {
       assert.ok(!rootNames.includes(retired), `retired root command '${retired}' must not exist`);
     }
@@ -124,11 +132,11 @@ describe("fewbie CLI surface", () => {
     assert.ok(rootNames.includes("template"));
     assert.deepEqual(
       program.commands.find((command) => command.name() === "modules")?.commands.map((command) => command.name()),
-      ["install", "remove", "update"],
+      ["add", "apply", "remove", "update"],
     );
     assert.deepEqual(
       program.commands.find((command) => command.name() === "template")?.commands.map((command) => command.name()),
-      ["sync"],
+      ["update"],
     );
   });
 

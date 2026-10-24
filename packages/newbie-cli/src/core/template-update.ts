@@ -5,19 +5,19 @@
  *
  * - framework-whole-file: the template owns the whole file and consuming
  *   projects receive it byte-identical (deploy stack, tsconfigs, main.ts...).
- * - framework-marker-block: only the @@newbie-framework block is synced; the
+ * - framework-marker-block: only the @@newbie-framework block is updated; the
  *   host owns everything outside the markers (.env.example, .gitignore,
  *   prisma/schema.prisma).
- * - generated: rendered by `newbie modules install` from the installed module set;
- *   template sync must not compare or overwrite it.
+ * - generated: rendered by `newbie modules apply` from the installed module set;
+ *   template update must not compare or overwrite it.
  * - template-shipped-host-owned: distributed once by `newbie create`, then
- *   owned by the host; never overwritten by template sync.
+ *   owned by the host; never overwritten by template update.
  *
  * A template file missing from this registry is a template defect and is
  * reported by the guard (ADR-009 D4: unlisted = error), mirroring the
  * check-template-deps convention.
  *
- * Two files carry fragments rendered by `newbie modules install` inside otherwise
+ * Two files carry fragments rendered by `newbie modules apply` inside otherwise
  * framework-owned content: the `schemas = [...]` line of prisma/schema.prisma
  * and the @@newbie-modules block of deploy/Caddyfile.tmpl. Those fragments are
  * ignored when comparing and preserved when applying the template version.
@@ -45,7 +45,7 @@ export type TemplateFileOwnership =
   "framework-whole-file" | "framework-marker-block" | "generated" | "template-shipped-host-owned";
 
 /**
- * Fragment inside a framework-owned file rendered by `newbie modules install`:
+ * Fragment inside a framework-owned file rendered by `newbie modules apply`:
  * a whole marker block (Caddyfile route block) or a single line (prisma
  * datasource schemas array).
  */
@@ -100,7 +100,7 @@ export const TEMPLATE_FILES: readonly TemplateFile[] = [
     rendered: { kind: "line", pattern: /^\s*schemas\s*=.*$/m },
   },
 
-  // Assembly products; rendered by `newbie modules install` / `newbie modules update`.
+  // Assembly products; rendered by `newbie modules apply` / `newbie modules update`.
   { path: "src/modules/modules.config.ts", ownership: "generated" },
   { path: "src/modules/modules.module.ts", ownership: "generated" },
   { path: "deploy/compose.modules.yml", ownership: "generated" },
@@ -122,12 +122,12 @@ export const TEMPLATE_FILES: readonly TemplateFile[] = [
   { path: ".github/workflows/dependabot-triage.yml", ownership: "template-shipped-host-owned" },
 ];
 
-/** Files that never participate in template sync (owned by no one file class). */
-export function isSyncableTemplateFile(file: TemplateFile): boolean {
+/** Files that never participate in template update (owned by no one file class). */
+export function isUpdatableTemplateFile(file: TemplateFile): boolean {
   return file.ownership === "framework-whole-file" || file.ownership === "framework-marker-block";
 }
 
-const SYNCABLE_FILES: readonly TemplateFile[] = TEMPLATE_FILES.filter(isSyncableTemplateFile);
+const UPDATABLE_FILES: readonly TemplateFile[] = TEMPLATE_FILES.filter(isUpdatableTemplateFile);
 
 /**
  * Directories and file names excluded from the unclassified-file guard:
@@ -260,7 +260,7 @@ export interface TemplateChange {
 }
 
 /**
- * Compute the sync plan for `files` (defaults to every syncable registry
+ * Compute the update plan for `files` (defaults to every updatable registry
  * entry). `projectFiles` / `templateFiles` map each path to its content, or
  * null when the file does not exist.
  *
@@ -268,16 +268,16 @@ export interface TemplateChange {
  * missing assembly-rendered fragment) — that is a template defect, not a
  * project state.
  */
-export function planTemplateSync(
+export function planTemplateUpdate(
   projectFiles: ReadonlyMap<string, string | null>,
   templateFiles: ReadonlyMap<string, string | null>,
-  files: readonly TemplateFile[] = SYNCABLE_FILES,
+  files: readonly TemplateFile[] = UPDATABLE_FILES,
 ): TemplateChange[] {
   const changes: TemplateChange[] = [];
 
   for (const file of files) {
     const templateContent = templateFiles.get(file.path);
-    // The template dropped this file; nothing to sync.
+    // The template dropped this file; nothing to update.
     if (templateContent == null) continue;
     const projectContent = projectFiles.get(file.path);
 

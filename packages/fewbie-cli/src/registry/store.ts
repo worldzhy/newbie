@@ -130,7 +130,7 @@ export async function resolveInstallSet(root: string, names: string[]): Promise<
     }
     visiting.add(name);
     const loaded = await loadItem(root, name).catch(() => {
-      throw new CliError(`Registry item '${name}' not found. Run 'fewbie modules install <name>' with a valid name.`);
+      throw new CliError(`Registry item '${name}' not found. Run 'fewbie modules add <name>' with a valid name.`);
     });
     for (const dep of loaded.manifest.registryDependencies ?? []) {
       await visit(dep);

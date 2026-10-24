@@ -6,7 +6,7 @@
 
 Command-line tool for the Fewbie frontend framework. Scaffold Next.js projects
 from the Fewbie basic template, manage registry modules declared in
-`fewbie.json`, sync framework-owned template files, and generate typed API
+`fewbie.json`, update framework-owned template files, and generate typed API
 request code from OpenAPI documents.
 
 The generated projects use **Next.js 16 (App Router), React 19 and Tailwind
@@ -42,8 +42,8 @@ npm install
 npm run dev
 
 # Declare and install registry modules (dependencies installed automatically)
-npx fewbie modules install api-client auth
-npx fewbie modules install login-form
+npx fewbie modules add api-client auth
+npx fewbie modules add login-form
 
 # Inspect project state
 npx fewbie doctor
@@ -87,22 +87,29 @@ enable/disable picker; on a non-TTY (or with `--json`) it is read-only.
 | -------- | ----------------------------------- |
 | `--json` | Print the module inventory as JSON. |
 
-### `fewbie modules install [names...]`
+### `fewbie modules add <names...>`
 
-npm-style arity: with `names` it declares them and lands their files; without
-`names` it reconciles the project with `fewbie.json` (restores missing files,
-adds dependency closure members, installs npm dependencies).
+npm-style add: declares the named modules in `fewbie.json` and lands their
+files (dependency closure included, npm dependencies installed automatically).
 
 | Option              | Description                                                                                         |
 | ------------------- | --------------------------------------------------------------------------------------------------- |
-| `--check`           | CI gate: verify the declared set, its files and dependencies without writing anything.              |
 | `-y, --yes`         | Skip confirmation prompts.                                                                          |
 | `-f, --force`       | Overwrite files that already exist but belong to no declared module (e.g. shipped by the template). |
 | `--skip-install`    | Do not run `npm install` for missing dependencies.                                                  |
-| `--with-login-form` | Also install the `login-form` block, e.g. `fewbie modules install auth --with-login-form`.          |
+| `--with-login-form` | Also install the `login-form` block, e.g. `fewbie modules add auth --with-login-form`.              |
 
-`--check` and module names are mutually exclusive: the gate inspects the whole
-declared set.
+### `fewbie modules apply`
+
+Reconcile the project with `fewbie.json`: restore missing files, land
+dependency closure members, install npm dependencies.
+
+| Option           | Description                                                                                         |
+| ---------------- | --------------------------------------------------------------------------------------------------- |
+| `--check`        | CI gate: verify the declared set, its files and dependencies without writing anything.              |
+| `-y, --yes`      | Skip confirmation prompts.                                                                          |
+| `-f, --force`    | Overwrite files that already exist but belong to no declared module (e.g. shipped by the template). |
+| `--skip-install` | Do not run `npm install` for missing dependencies.                                                  |
 
 ### `fewbie modules remove <names...>`
 
@@ -117,16 +124,16 @@ kept. Removing a module still required by another declared module fails.
 ### `fewbie modules update [names...]`
 
 Update installed files to the registry source. Writes by default; missing files
-are reported as `install` work rather than silently recreated.
+are reported as `apply` work rather than silently recreated.
 
 | Option      | Description                                                          |
 | ----------- | -------------------------------------------------------------------- |
 | `--check`   | CI gate: verify installed files against the registry; write nothing. |
 | `-y, --yes` | Skip confirmation prompts.                                           |
 
-### `fewbie template sync [paths...]`
+### `fewbie template update [paths...]`
 
-Sync framework-owned template files from the starter template. Pass path
+Update framework-owned template files from the starter template. Pass path
 prefixes (e.g. `src/app`) to restrict the scope; no paths means every
 framework-owned asset.
 
@@ -137,18 +144,18 @@ Ownership follows ADR-025:
   `.prettierignore`, `.env.example`, `src/instrumentation.ts`,
   `src/lib/utils.ts`.
 - **mixed** — only the block between `/* fewbie:framework:start */` and
-  `/* fewbie:framework:end */` is synced (`src/app/globals.css`); host content
+  `/* fewbie:framework:end */` is updated (`src/app/globals.css`); host content
   outside the markers is preserved. A missing marker pair is reported, never
   guessed.
 - **host-owned** — distributed once by `create`, never touched:
   `src/app/layout.tsx`, `src/app/page.tsx`, `src/components/**`, `package.json`,
   `README.md`, `next-env.d.ts`, `AGENTS.md`, `CLAUDE.md`.
 
-| Option                  | Description                                                          |
-| ----------------------- | -------------------------------------------------------------------- |
-| `--template-path <dir>` | Use a local template directory instead of cloning the repository.    |
-| `--template-ref <ref>`  | Git ref of the fewbie-starter repository to sync the template from.  |
-| `--check`               | CI gate: print the diff and exit non-zero when template files drift. |
+| Option                  | Description                                                           |
+| ----------------------- | --------------------------------------------------------------------- |
+| `--template-path <dir>` | Use a local template directory instead of cloning the repository.     |
+| `--template-ref <ref>`  | Git ref of the fewbie-starter repository to update the template from. |
+| `--check`               | CI gate: print the diff and exit non-zero when template files drift.  |
 
 ### `fewbie apits [input]`
 
@@ -200,7 +207,8 @@ The built-in registry follows the shadcn item conventions
 
 An item whose target path also ships in the starter template must stay
 byte-identical to that template copy — `fewbie create` copies the whole template
-while `fewbie modules install` copies the item, so the same file has two
+while `fewbie modules add` copies the item (and `fewbie modules apply` restores
+it on reconcile), so the same file has two
 delivery channels that fork if edited apart.
 `npm run check:template-drift -w @devbie/fewbie-cli` asserts this in CI and
 before publishing. `npm run check:template-deps -w @devbie/fewbie-cli`

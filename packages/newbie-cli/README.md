@@ -10,7 +10,7 @@ newbie-modules registry, reconcile module copies and project wiring, and load
 module-bundled command namespaces (e.g. `newbie secrets`) declared by the
 installed modules.
 
-The command surface is a written contract; see ADR-024.
+The command surface is a written contract; see ADR-024/ADR-029.
 
 ## Requirements
 
@@ -48,7 +48,7 @@ npm install
 npx newbie modules
 
 # Reconcile project files with the enabled module list (non-interactive)
-npx newbie modules install -y
+npx newbie modules apply -y
 ```
 
 ## Commands
@@ -99,11 +99,19 @@ inventory and never writes.
 | -------- | ----------------------------------- |
 | `--json` | Print the module inventory as JSON. |
 
-#### `newbie modules install [keys...]`
+#### `newbie modules add <keys...>`
 
-Without keys: reconcile the project with `modules.json` (copy missing modules,
-remove extra ones, regenerate wiring). With keys: declare them in `modules.json`
-(npm-style add) and install.
+Declare modules in `modules.json` (npm-style add) and install them: fetch the
+registry, reject unknown or deprecated keys, then land the copies and wiring.
+
+| Option      | Description                |
+| ----------- | -------------------------- |
+| `-y, --yes` | Skip confirmation prompts. |
+
+#### `newbie modules apply`
+
+Reconcile the project with `modules.json`: copy missing modules, remove extra
+ones, regenerate wiring.
 
 | Option      | Description                                                                                  |
 | ----------- | -------------------------------------------------------------------------------------------- |
@@ -153,11 +161,11 @@ Only valid inside a newbie-modules registry checkout (cwd must contain
 
 ### `newbie template`
 
-#### `newbie template sync [paths...]`
+#### `newbie template update [paths...]`
 
-Sync framework-owned template files from the template, driven by the ADR-009
-ownership registry: whole-file sync for `main.ts`, `tsconfig*`, `nest-cli.json`,
-`prisma.config.ts` and the static `deploy/` stack; block sync for the
+Update framework-owned template files from the template, driven by the ADR-009
+ownership registry: whole-file update for `main.ts`, `tsconfig*`, `nest-cli.json`,
+`prisma.config.ts` and the static `deploy/` stack; block update for the
 `@@newbie-framework` blocks of `.env.example`, `.gitignore` and
 `prisma/schema.prisma`. Generated and template-shipped host-owned files are
 skipped. Path prefixes (e.g. `deploy/`) restrict the scope.
@@ -165,7 +173,7 @@ skipped. Path prefixes (e.g. `deploy/`) restrict the scope.
 | Option                  | Description                                                       |
 | ----------------------- | ----------------------------------------------------------------- |
 | `--template-path <dir>` | Use a local template directory instead of cloning the repository. |
-| `--template-ref <ref>`  | Git ref (e.g. a template tag) to sync from.                       |
+| `--template-ref <ref>`  | Git ref (e.g. a template tag) to update from.                     |
 | `--check`               | CI gate: print the diff and exit non-zero when files drift.       |
 
 ### Module-provided commands

@@ -64,8 +64,14 @@ describe("newbie CLI surface", () => {
           options: ["--json"],
           commands: [
             {
-              name: "install",
-              arguments: [{ name: "keys", required: false, variadic: true }],
+              name: "add",
+              arguments: [{ name: "keys", required: true, variadic: true }],
+              options: ["-y, --yes"],
+              commands: [],
+            },
+            {
+              name: "apply",
+              arguments: [],
               options: ["--check", "-y, --yes"],
               commands: [],
             },
@@ -101,7 +107,7 @@ describe("newbie CLI surface", () => {
           options: [],
           commands: [
             {
-              name: "sync",
+              name: "update",
               arguments: [{ name: "paths", required: false, variadic: true }],
               options: ["--template-path <dir>", "--template-ref <ref>", "--check"],
               commands: [],
@@ -120,8 +126,15 @@ describe("newbie CLI surface", () => {
     for (const retired of ["apply", "assemble", "agent", "config", "interactive", "dev", "sync-template", "install"]) {
       assert.equal(rootNames.has(retired), false, `retired root command '${retired}' must not exist`);
     }
-    // `install` is a valid verb, but only under the modules namespace.
+    // ADR-029: `install` and `sync` are retired verbs; modules uses add/apply
+    // and template uses update.
     const modules = surface.commands.find((command) => command.name === "modules");
-    assert.ok(modules?.commands.some((command) => command.name === "install"));
+    const modulesNames = new Set(modules?.commands.map((command) => command.name));
+    assert.equal(modulesNames.has("install"), false, "retired modules command 'install' must not exist");
+    assert.ok(modulesNames.has("add") && modulesNames.has("apply"));
+    const template = surface.commands.find((command) => command.name === "template");
+    const templateNames = new Set(template?.commands.map((command) => command.name));
+    assert.equal(templateNames.has("sync"), false, "retired template command 'sync' must not exist");
+    assert.ok(templateNames.has("update"));
   });
 });

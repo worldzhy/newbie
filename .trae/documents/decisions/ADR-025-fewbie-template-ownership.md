@@ -1,8 +1,9 @@
 # ADR-025 fewbie 模板所有权与 `template sync`
 
-状态：已采纳
+状态：已采纳（传播命令名由 ADR-029 改为 `template update`）
 日期：2026-10-24
 前置：ADR-024（CLI 契约）、ADR-003（模板仓是模板真源）、ADR-012（fewbie 合入 devbie monorepo）
+Superseded by: ADR-029 —— 决策第 3 条的命令名由 `template sync` 改为 `template update`；所有权分类本体不变。
 
 ## 背景
 

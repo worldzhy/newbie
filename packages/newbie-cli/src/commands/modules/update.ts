@@ -122,11 +122,11 @@ export async function runUpdate(options: ModulesUpdateOptions): Promise<void> {
 
   for (const result of inspections) {
     if (result.status === "missing") {
-      console.info(yellow(`[skip] ${result.key}: directory missing; run 'newbie modules install'.`));
+      console.info(yellow(`[skip] ${result.key}: directory missing; run 'newbie modules apply'.`));
     } else if (result.status === "missing-in-registry") {
       console.info(
         yellow(
-          `[skip] ${result.key}: not present in registry checkout ${short(registry.sourceCommit)}; set NEWBIE_MODULES_REF to a ref that carries it, then run 'newbie modules install'.`,
+          `[skip] ${result.key}: not present in registry checkout ${short(registry.sourceCommit)}; set NEWBIE_MODULES_REF to a ref that carries it, then run 'newbie modules apply'.`,
         ),
       );
     } else if (result.status === "drifted") {

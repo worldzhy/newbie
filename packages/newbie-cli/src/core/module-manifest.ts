@@ -79,7 +79,7 @@ export interface ModuleManifest {
   /**
    * Deprecation notice. When declared (non-empty string), the module is at
    * end-of-life: the interactive picker (`newbie modules`) hides it and
-   * `newbie modules install` refuses to install it into a project
+   * `newbie modules add` refuses to install it into a project
    * that does not already have it, and `newbie doctor` emits a notice for
    * hosts where it is still enabled. Already-installed hosts keep working —
    * deprecation gates new adoption, not existing deployments. The string is

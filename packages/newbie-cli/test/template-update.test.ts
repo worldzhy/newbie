@@ -5,12 +5,12 @@ import {
   extractMarkerBlock,
   findUnclassifiedTemplateFiles,
   frameworkMarkers,
-  isSyncableTemplateFile,
-  planTemplateSync,
+  isUpdatableTemplateFile,
+  planTemplateUpdate,
   replaceMarkerBlock,
   TEMPLATE_FILES,
   TemplateFile,
-} from "../src/core/template-sync";
+} from "../src/core/template-update";
 
 const SLASH = "//";
 const HASH = "#";
@@ -90,12 +90,12 @@ describe("TEMPLATE_FILES ownership registry (ADR-009 D4)", () => {
     }
   });
 
-  it("keeps generated and host-owned files out of the sync plan", () => {
+  it("keeps generated and host-owned files out of the update plan", () => {
     const { project, template } = identicalMaps();
     project.set("package.json", '{ "host": true }\n');
     project.set("src/modules/modules.module.ts", "// regenerated\n");
     project.set("deploy/compose.modules.yml", "services: {}\n");
-    assert.deepEqual(planTemplateSync(project, template), []);
+    assert.deepEqual(planTemplateUpdate(project, template), []);
   });
 
   it("lists unclassified template files (unlisted = error)", () => {
@@ -143,16 +143,16 @@ describe("replaceMarkerBlock", () => {
   });
 });
 
-describe("planTemplateSync", () => {
+describe("planTemplateUpdate", () => {
   it("is empty when project matches the template", () => {
     const { project, template } = identicalMaps();
-    assert.deepEqual(planTemplateSync(project, template), []);
+    assert.deepEqual(planTemplateUpdate(project, template), []);
   });
 
   it("flags differing whole-file entries as update", () => {
     const { project, template } = identicalMaps();
     project.set("tsconfig.json", '{ "old": true }\n');
-    const changes = planTemplateSync(project, template);
+    const changes = planTemplateUpdate(project, template);
     assert.equal(changes.length, 1);
     assert.equal(changes[0].file.path, "tsconfig.json");
     assert.equal(changes[0].kind, "update");
@@ -162,7 +162,7 @@ describe("planTemplateSync", () => {
   it("flags template files missing from the project as create", () => {
     const { project, template } = identicalMaps();
     project.set("nest-cli.json", null);
-    const changes = planTemplateSync(project, template);
+    const changes = planTemplateUpdate(project, template);
     assert.equal(changes.length, 1);
     assert.equal(changes[0].kind, "create");
     assert.equal(changes[0].currentComparable, null);
@@ -171,16 +171,16 @@ describe("planTemplateSync", () => {
   it("skips files the template no longer ships", () => {
     const { project, template } = identicalMaps();
     template.set("tsconfig.build.json", null);
-    assert.deepEqual(planTemplateSync(project, template), []);
+    assert.deepEqual(planTemplateUpdate(project, template), []);
   });
 
-  it("syncs only the framework block of .env.example and preserves host variables", () => {
+  it("updates only the framework block of .env.example and preserves host variables", () => {
     const { project, template } = identicalMaps();
     project.set(".env.example", `HOST_ONLY=1\n${frameworkBlock(HASH)}\n`);
-    assert.deepEqual(planTemplateSync(project, template), []);
+    assert.deepEqual(planTemplateUpdate(project, template), []);
 
     project.set(".env.example", `HOST_ONLY=1\n${frameworkMarkers(HASH).start}\nSTALE\n${frameworkMarkers(HASH).end}\n`);
-    const changes = planTemplateSync(project, template);
+    const changes = planTemplateUpdate(project, template);
     assert.equal(changes.length, 1);
     assert.equal(changes[0].kind, "update");
     assert.match(changes[0].nextContent ?? "", /HOST_ONLY=1/);
@@ -191,7 +191,7 @@ describe("planTemplateSync", () => {
   it("reports missing-markers when a project block file lost its markers", () => {
     const { project, template } = identicalMaps();
     project.set(".gitignore", "/dist\n");
-    const changes = planTemplateSync(project, template);
+    const changes = planTemplateUpdate(project, template);
     assert.equal(changes.length, 1);
     assert.equal(changes[0].kind, "missing-markers");
     assert.equal(changes[0].nextContent, null);
@@ -205,7 +205,7 @@ describe("planTemplateSync", () => {
       'schemas  = ["application", "module/account"]',
     );
     project.set("prisma/schema.prisma", `// header\n${projectBlock}\nmodel Order {\n  id Int @id\n}\n`);
-    assert.deepEqual(planTemplateSync(project, template), []);
+    assert.deepEqual(planTemplateUpdate(project, template), []);
   });
 
   it("preserves the project's schemas line when the framework block drifts", () => {
@@ -215,7 +215,7 @@ describe("planTemplateSync", () => {
       'schemas  = ["application", "module/account"]',
     );
     project.set("prisma/schema.prisma", `// header\n${projectBlock}\nmodel Order {\n  id Int @id\n}\n`);
-    const changes = planTemplateSync(project, template);
+    const changes = planTemplateUpdate(project, template);
     assert.equal(changes.length, 1);
     assert.equal(changes[0].kind, "update");
     const next = changes[0].nextContent ?? "";
@@ -228,14 +228,14 @@ describe("planTemplateSync", () => {
     const { project, template } = identicalMaps();
     const rendered = `site {\n# @@newbie-modules-start\n\thandle /web-monitor/* {\n\t\treverse_proxy backend:3000\n\t}\n# @@newbie-modules-end\n}\n`;
     project.set("deploy/Caddyfile.tmpl", rendered);
-    assert.deepEqual(planTemplateSync(project, template), []);
+    assert.deepEqual(planTemplateUpdate(project, template), []);
   });
 
   it("preserves the project's module block when the Caddyfile static part drifts", () => {
     const { project, template } = identicalMaps();
     const rendered = `site {\n# @@newbie-modules-start\n\thandle /web-monitor/* {\n\t\treverse_proxy backend:3000\n\t}\n# @@newbie-modules-end\n}\n`;
     project.set("deploy/Caddyfile.tmpl", `${rendered}\n# host comment\n`);
-    const changes = planTemplateSync(project, template);
+    const changes = planTemplateUpdate(project, template);
     assert.equal(changes.length, 1);
     const next = changes[0].nextContent ?? "";
     assert.match(next, /handle \/web-monitor\/\*/);
@@ -244,7 +244,7 @@ describe("planTemplateSync", () => {
   it("throws when the template marker block is malformed", () => {
     const { project, template } = identicalMaps();
     template.set(".env.example", "HOST=1\n");
-    assert.throws(() => planTemplateSync(project, template), /framework block/i);
+    assert.throws(() => planTemplateUpdate(project, template), /framework block/i);
   });
 
   it("is idempotent: applying the plan yields an empty follow-up plan", () => {
@@ -259,20 +259,20 @@ describe("planTemplateSync", () => {
         'schemas  = ["application", "module/account"]',
       )}\nmodel Order {\n  id Int @id\n}\n`,
     );
-    const changes = planTemplateSync(project, template);
+    const changes = planTemplateUpdate(project, template);
     assert.equal(changes.length, 4);
     for (const change of changes) {
       assert.ok(change.nextContent !== null);
       project.set(change.file.path, change.nextContent);
     }
-    assert.deepEqual(planTemplateSync(project, template), []);
+    assert.deepEqual(planTemplateUpdate(project, template), []);
   });
 
-  it("is syncable only for framework ownership classes", () => {
-    const syncable = TEMPLATE_FILES.filter(isSyncableTemplateFile).map((file) => file.path);
-    assert.ok(syncable.includes("src/main.ts"));
-    assert.ok(syncable.includes(".env.example"));
-    assert.ok(!syncable.includes("package.json"));
-    assert.ok(!syncable.includes("deploy/compose.modules.yml"));
+  it("is updatable only for framework ownership classes", () => {
+    const updatable = TEMPLATE_FILES.filter(isUpdatableTemplateFile).map((file) => file.path);
+    assert.ok(updatable.includes("src/main.ts"));
+    assert.ok(updatable.includes(".env.example"));
+    assert.ok(!updatable.includes("package.json"));
+    assert.ok(!updatable.includes("deploy/compose.modules.yml"));
   });
 });

@@ -6,14 +6,15 @@ import pkg from "../package.json";
 
 import { runCreate } from "./commands/create";
 import { runDoctor } from "./commands/doctor";
+import { runAdd } from "./commands/modules/add";
+import { runApply } from "./commands/modules/apply";
 import { runModules } from "./commands/modules/default";
-import { runInstall } from "./commands/modules/install";
 import { runLint } from "./commands/modules/lint";
 import { runRemove } from "./commands/modules/remove";
 import { runUpdate } from "./commands/modules/update";
 import { runWatch } from "./commands/modules/watch";
 import { runStatus } from "./commands/status";
-import { runTemplateSync } from "./commands/template/sync";
+import { runTemplateUpdate } from "./commands/template/update";
 import { GlobalOptions } from "./commands/shared";
 import { run } from "./lib/cli-runner";
 import { parseModuleSelector } from "./lib/module-selector";
@@ -21,7 +22,7 @@ import { parseModuleSelector } from "./lib/module-selector";
 export const VERSION: string = pkg.version;
 
 /**
- * The static command surface (ADR-024). Module-provided namespaces are
+ * The static command surface (ADR-024/ADR-029). Module-provided namespaces are
  * attached at runtime by `registerModuleCommands`.
  */
 export function buildProgram(): Command {
@@ -98,20 +99,32 @@ export function buildProgram(): Command {
   });
 
   modules
-    .command("install [keys...]")
-    .description(
-      "Reconcile the project with modules.json; with keys, declare them (npm-style add) and install. --check is the CI gate",
-    )
-    .option("--check", "CI gate: verify module copies and generated wiring without writing anything", false)
+    .command("add <keys...>")
+    .description("Declare modules in modules.json and install them (npm-style add)")
     .option("-y, --yes", "skip confirmation prompts", false)
     .action(function (this: Command, keys: string[]) {
       const flags = this.opts();
       return run(() =>
-        runInstall({
+        runAdd({
+          ...collectOptions(this),
+          yes: Boolean(flags.yes),
+          keys: parseModuleSelector(keys) ?? [],
+        }),
+      );
+    });
+
+  modules
+    .command("apply")
+    .description("Reconcile the project with modules.json; --check is the CI gate")
+    .option("--check", "CI gate: verify module copies and generated wiring without writing anything", false)
+    .option("-y, --yes", "skip confirmation prompts", false)
+    .action(function (this: Command) {
+      const flags = this.opts();
+      return run(() =>
+        runApply({
           ...collectOptions(this),
           check: Boolean(flags.check),
           yes: Boolean(flags.yes),
-          keys: parseModuleSelector(keys),
         }),
       );
     });
@@ -183,9 +196,9 @@ export function buildProgram(): Command {
   });
 
   template
-    .command("sync [paths...]")
+    .command("update [paths...]")
     .description(
-      "Sync framework-owned template files (ADR-009 ownership registry: main.ts, tsconfig*, nest-cli.json, prisma.config.ts, prisma framework block, .env.example/.gitignore framework blocks, deploy/*) from the template; pass path prefixes to restrict the scope",
+      "Update framework-owned template files (ADR-009 ownership registry: main.ts, tsconfig*, nest-cli.json, prisma.config.ts, prisma framework block, .env.example/.gitignore framework blocks, deploy/*) from the template; pass path prefixes to restrict the scope",
     )
     .option("--template-path <dir>", "use a local template directory instead of cloning newbie-starter")
     .option("--template-ref <ref>", "git ref (e.g. a template tag) of newbie-starter to sync from")
@@ -193,7 +206,7 @@ export function buildProgram(): Command {
     .action(function (this: Command, paths: string[]) {
       const flags = this.opts();
       return run(() =>
-        runTemplateSync({
+        runTemplateUpdate({
           ...collectOptions(this),
           templatePath: flags.templatePath as string | undefined,
           templateRef: flags.templateRef as string | undefined,
