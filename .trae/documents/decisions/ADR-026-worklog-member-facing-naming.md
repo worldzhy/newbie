@@ -1,6 +1,7 @@
 # ADR-026: 成员侧采集工具命名为 worklog
 
-- 状态：已采纳（2026-10-24）
+- 状态：已采纳（服务端词汇章节由 [ADR-030](ADR-030-worklog-server-vocabulary.md) 取代）
+- Superseded by: ADR-030（2026-10-24，仅「服务端词汇不变」章节；成员面向命名仍然生效）
 - 关联：ADR-029（nightwatch-backend，people-evaluation AI-first 设计）§8 中命名的 `@devbie/people-work-collector` 由本 ADR 取代；ADR-029 正文保留原样（时点快照）。
 
 ## 背景
