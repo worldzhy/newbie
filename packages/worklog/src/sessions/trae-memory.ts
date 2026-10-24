@@ -12,7 +12,7 @@ import type { NormalizedMessage, SessionDelta } from "./types";
  * `~/.trae-cn/memory/projects/<slug>/<yyyymmdd>/`): one line per message,
  * already summarized by the IDE — {intent, actions[], outcome, learned[],
  * message_summary_time, message_id}. This is NOT a raw transcript; the
- * collector marks these sessions with provenance "trae-memory" so the server
+ * worklog marks these sessions with provenance "trae-memory" so the server
  * never confuses the two fidelity levels. The workspace is derived from the
  * directory slug — the records carry no cwd.
  */

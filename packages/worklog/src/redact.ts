@@ -1,7 +1,7 @@
 /**
  * Client-side redaction (ADR-029 §8): credentials and other people's data never
  * leave the member's machine. This is a best-effort scrubber, not a guarantee —
- * the collector reports what it scanned so the operator can tighten patterns.
+ * worklog reports what it scanned so the operator can tighten patterns.
  */
 const PATTERNS: { name: string; pattern: RegExp }[] = [
   { name: "aws-access-key", pattern: /\b(?:AKIA|ASIA)[0-9A-Z]{16}\b/g },

@@ -7,7 +7,7 @@ import { describe, it } from "node:test";
 import { readTranscriptDelta } from "../src/sessions/transcript";
 
 function transcriptFile(lines: string[]): string {
-  const directory = mkdtempSync(join(tmpdir(), "people-collector-"));
+  const directory = mkdtempSync(join(tmpdir(), "worklog-"));
   const file = join(directory, "session.jsonl");
   writeFileSync(file, lines.join("\n") + "\n");
   return file;

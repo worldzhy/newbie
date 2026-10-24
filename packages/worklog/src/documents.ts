@@ -2,9 +2,9 @@ import { createHash } from "node:crypto";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { basename, join, relative } from "node:path";
 
-import type { CollectorConfig } from "./config";
+import type { WorklogConfig } from "./config";
 import { redact } from "./redact";
-import type { CollectorState } from "./state";
+import type { WorklogState } from "./state";
 import type { UploadDocument } from "./api";
 
 const DOCUMENT_EXTENSIONS = new Set([".md", ".markdown", ".txt"]);
@@ -14,7 +14,7 @@ const DOCUMENT_EXTENSIONS = new Set([".md", ".markdown", ".txt"]);
  * company-work locations are walked; personal workspaces are never visited.
  * A document is re-uploaded only when its content hash changes.
  */
-export function scanDocuments(config: CollectorConfig, state: CollectorState): UploadDocument[] {
+export function scanDocuments(config: WorklogConfig, state: WorklogState): UploadDocument[] {
   const documents: UploadDocument[] = [];
   const companyWorkspaces = config.workspaces.filter((workspace) => workspace.isCompany);
 

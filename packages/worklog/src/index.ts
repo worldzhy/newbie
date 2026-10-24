@@ -5,13 +5,13 @@ export {
   loadConfig,
   writeSampleConfig,
 } from "./config";
-export type { CollectorConfig, CollectorWorkspaceConfig, IdeKey } from "./config";
+export type { WorklogConfig, WorklogWorkspaceConfig, IdeKey } from "./config";
 export { writeConfigFromProfile } from "./profile";
-export type { CollectorProfile } from "./profile";
+export type { WorklogProfile } from "./profile";
 export { loadState, saveState } from "./state";
-export type { CollectorState, FileProgress } from "./state";
-export { collectOnce } from "./collect";
-export type { CollectSummary } from "./collect";
+export type { WorklogState, FileProgress } from "./state";
+export { syncOnce } from "./sync";
+export type { SyncSummary } from "./sync";
 export type { NormalizedMessage, ParsedSessionFile, SessionAggregate } from "./sessions/types";
-export { CollectorApi } from "./api";
+export { WorklogApi } from "./api";
 export type { UploadDocument, UploadSession } from "./api";

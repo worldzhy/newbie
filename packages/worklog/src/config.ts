@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 
-export interface CollectorWorkspaceConfig {
+export interface WorklogWorkspaceConfig {
   /** Stable identifier the server stores (e.g. the repository directory name). */
   workspaceKey: string;
   /** Absolute path of the workspace root. */
@@ -20,11 +20,11 @@ export interface CollectorWorkspaceConfig {
  */
 export type IdeKey = "claude" | "codex" | "trae";
 
-export interface CollectorConfig {
+export interface WorklogConfig {
   endpoint: string;
   token: string;
   memberUserId: string;
-  workspaces: CollectorWorkspaceConfig[];
+  workspaces: WorklogWorkspaceConfig[];
   /**
    * Where each IDE keeps its agent session records, keyed by IDE and scanned
    * recursively. Only sessions whose recorded working directory is inside a
@@ -38,8 +38,8 @@ export interface CollectorConfig {
   maxDocumentBytes: number;
 }
 
-export const DEFAULT_CONFIG_PATH = join(homedir(), ".devbie", "people-collector.json");
-export const DEFAULT_STATE_PATH = join(homedir(), ".devbie", "people-collector-state.json");
+export const DEFAULT_CONFIG_PATH = join(homedir(), ".devbie", "worklog.json");
+export const DEFAULT_STATE_PATH = join(homedir(), ".devbie", "worklog-state.json");
 
 /** Default agent session directories per IDE, probed for existence at init time. */
 export const DEFAULT_AGENT_SESSION_DIRECTORIES: Record<IdeKey, string> = {
@@ -48,12 +48,12 @@ export const DEFAULT_AGENT_SESSION_DIRECTORIES: Record<IdeKey, string> = {
   trae: join(homedir(), ".trae-cn", "memory", "projects"),
 };
 
-export function loadConfig(path = DEFAULT_CONFIG_PATH): CollectorConfig {
+export function loadConfig(path = DEFAULT_CONFIG_PATH): WorklogConfig {
   if (!existsSync(path)) {
-    throw new Error(`Collector config not found at ${path}. Run "people-work-collector init" first.`);
+    throw new Error(`Worklog config not found at ${path}. Run "worklog init" first.`);
   }
-  const parsed = JSON.parse(readFileSync(path, "utf8")) as Partial<CollectorConfig>;
-  const config: CollectorConfig = {
+  const parsed = JSON.parse(readFileSync(path, "utf8")) as Partial<WorklogConfig>;
+  const config: WorklogConfig = {
     endpoint: (parsed.endpoint ?? "").replace(/\/$/, ""),
     token: parsed.token ?? "",
     memberUserId: parsed.memberUserId ?? "",
@@ -63,15 +63,15 @@ export function loadConfig(path = DEFAULT_CONFIG_PATH): CollectorConfig {
     maxDocumentBytes: parsed.maxDocumentBytes ?? 200_000,
   };
   if (!config.endpoint || !config.token || !config.memberUserId) {
-    throw new Error("Collector config must define endpoint, token and memberUserId.");
+    throw new Error("Worklog config must define endpoint, token and memberUserId.");
   }
   return config;
 }
 
 export function writeSampleConfig(path = DEFAULT_CONFIG_PATH): void {
-  const sample: CollectorConfig = {
+  const sample: WorklogConfig = {
     endpoint: "http://localhost:3000",
-    token: "<collector token from the supervisor>",
+    token: "<worklog token from the supervisor>",
     memberUserId: "<your userId uuid>",
     workspaces: [
       {

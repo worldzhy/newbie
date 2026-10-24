@@ -1,6 +1,6 @@
 import { relative, resolve, sep } from "node:path";
 
-import type { CollectorWorkspaceConfig } from "../config";
+import type { WorklogWorkspaceConfig } from "../config";
 
 /** Path containment check that is robust against partial names. */
 export function isInside(path: string, root: string): boolean {
@@ -23,8 +23,8 @@ export function traeSlugPrefix(rootPath: string): string {
 export function traeMemoryWorkspaceFor(
   filePath: string,
   traeMemoryDirectory: string,
-  companyWorkspaces: CollectorWorkspaceConfig[],
-): CollectorWorkspaceConfig | null {
+  companyWorkspaces: WorklogWorkspaceConfig[],
+): WorklogWorkspaceConfig | null {
   const slugDirectory = relative(traeMemoryDirectory, filePath).split(sep)[0];
   if (!slugDirectory) return null;
   for (const workspace of companyWorkspaces) {

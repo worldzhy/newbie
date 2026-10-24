@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 
 import { REDACTED, redact } from "../src/redact";
 
-describe("collector redaction", () => {
+describe("worklog redaction", () => {
   it("removes cloud and platform credentials wholesale", () => {
     const input = [
       "aws AKIAIOSFODNN7EXAMPLE done",

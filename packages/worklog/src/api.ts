@@ -1,4 +1,4 @@
-import type { CollectorWorkspaceConfig } from "./config";
+import type { WorklogWorkspaceConfig } from "./config";
 import type { NormalizedMessage } from "./sessions/types";
 
 export interface UploadSession {
@@ -32,16 +32,16 @@ const MAX_MESSAGES_PER_SESSION = 2_000;
 const MAX_DOCUMENTS_PER_BATCH = 100;
 
 /**
- * HTTP client for the collector ingest endpoints. Bearer token only — the
+ * HTTP client for the server ingest endpoints. Bearer token only — the
  * server resolves it to exactly one member and rejects anything else.
  */
-export class CollectorApi {
+export class WorklogApi {
   constructor(
     private readonly endpoint: string,
     private readonly token: string,
   ) {}
 
-  async reportWorkspaces(memberUserId: string, workspaces: CollectorWorkspaceConfig[]): Promise<void> {
+  async reportWorkspaces(memberUserId: string, workspaces: WorklogWorkspaceConfig[]): Promise<void> {
     await this.post("/people-evaluation/collector/workspaces", {
       workspaces: workspaces.map((workspace) => ({
         evaluateeUserId: memberUserId,

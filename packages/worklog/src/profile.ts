@@ -2,10 +2,10 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 
 import { DEFAULT_AGENT_SESSION_DIRECTORIES, DEFAULT_CONFIG_PATH } from "./config";
-import type { CollectorConfig, IdeKey } from "./config";
+import type { WorklogConfig, IdeKey } from "./config";
 
 /** The member profile downloaded from the server — everything init needs. */
-export interface CollectorProfile {
+export interface WorklogProfile {
   endpoint: string;
   token: string;
   memberUserId: string;
@@ -17,7 +17,7 @@ export interface CollectorProfile {
  * exist on this machine are kept), workspaces start empty — the member fills
  * in which of their workspaces are company ones before the first sync.
  */
-export function writeConfigFromProfile(profile: CollectorProfile, path = DEFAULT_CONFIG_PATH): void {
+export function writeConfigFromProfile(profile: WorklogProfile, path = DEFAULT_CONFIG_PATH): void {
   if (!profile.endpoint || !profile.token || !profile.memberUserId) {
     throw new Error("Profile must define endpoint, token and memberUserId.");
   }
@@ -26,7 +26,7 @@ export function writeConfigFromProfile(profile: CollectorProfile, path = DEFAULT
     const directory = DEFAULT_AGENT_SESSION_DIRECTORIES[ide];
     if (existsSync(directory)) agentSessionDirectories[ide] = directory;
   }
-  const config: CollectorConfig = {
+  const config: WorklogConfig = {
     endpoint: profile.endpoint.replace(/\/$/, ""),
     token: profile.token,
     memberUserId: profile.memberUserId,

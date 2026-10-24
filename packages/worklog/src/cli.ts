@@ -1,18 +1,18 @@
 #!/usr/bin/env node
 import { existsSync, readFileSync } from "node:fs";
 
-import { collectOnce } from "./collect";
+import { syncOnce } from "./sync";
 import { DEFAULT_CONFIG_PATH, DEFAULT_STATE_PATH, loadConfig, writeSampleConfig } from "./config";
 import { writeConfigFromProfile } from "./profile";
-import type { CollectorProfile } from "./profile";
+import type { WorklogProfile } from "./profile";
 import { loadState, saveState } from "./state";
-import { CollectorApi } from "./api";
+import { WorklogApi } from "./api";
 
 /**
- * `people-work-collector` — member-side evidence collector (ADR-029 §8).
+ * `worklog` — member-side worklog agent (ADR-029 §8, renamed in ADR-026).
  *
  * Commands:
- *   init [--profile <path>]  write ~/.devbie/people-collector.json — from a
+ *   init [--profile <path>]  write ~/.devbie/worklog.json — from a
  *                            downloaded profile (endpoint/token/userId) when
  *                            given, a fill-in sample otherwise
  *   sync                     report workspaces, new agent-session chunks and changed declared documents
@@ -29,7 +29,7 @@ async function main(): Promise<void> {
     const profileFlag = process.argv.indexOf("--profile");
     const profilePath = profileFlag !== -1 ? process.argv[profileFlag + 1] : undefined;
     if (profilePath) {
-      const profile = JSON.parse(readFileSync(profilePath, "utf8")) as CollectorProfile;
+      const profile = JSON.parse(readFileSync(profilePath, "utf8")) as WorklogProfile;
       writeConfigFromProfile(profile);
       console.log(
         `Wrote config to ${DEFAULT_CONFIG_PATH} from ${profilePath}. Add your company workspaces to "workspaces" before the first sync.`,
@@ -66,9 +66,9 @@ async function main(): Promise<void> {
 
   const config = loadConfig();
   const state = loadState();
-  const api = new CollectorApi(config.endpoint, config.token);
+  const api = new WorklogApi(config.endpoint, config.token);
 
-  const summary = await collectOnce(config, state, api);
+  const summary = await syncOnce(config, state, api);
   saveState(state);
 
   console.log(

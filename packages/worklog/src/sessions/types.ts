@@ -1,4 +1,4 @@
-import type { CollectorWorkspaceConfig } from "../config";
+import type { WorklogWorkspaceConfig } from "../config";
 
 export type MessageRole = "user" | "assistant" | "tool" | "system";
 
@@ -53,20 +53,20 @@ export interface SessionFileContext {
   /** Directory configured for this IDE (e.g. ~/.claude/projects). */
   directory: string;
   parsed: ParsedSessionFile;
-  companyWorkspaces: CollectorWorkspaceConfig[];
+  companyWorkspaces: WorklogWorkspaceConfig[];
 }
 
 /**
  * One IDE's session storage. A source owns the three things that differ per
  * IDE — which files it reads, how a delta is parsed, and how a file maps to a
- * declared workspace. The collector therefore carries no per-IDE branching.
+ * declared workspace. Worklog therefore carries no per-IDE branching.
  */
 export interface SessionSource {
   /** Wire value reported to the server as session provenance. */
   provenance: string;
   accepts(filePath: string): boolean;
   readDelta(filePath: string, offset: number, nextSeq: number): SessionDelta;
-  resolveWorkspace(context: SessionFileContext): CollectorWorkspaceConfig | null;
+  resolveWorkspace(context: SessionFileContext): WorklogWorkspaceConfig | null;
   /** Caveat surfaced in the run summary; only sources with a caveat declare one. */
   note?: string;
 }

@@ -7,7 +7,7 @@ import { describe, it } from "node:test";
 import { writeConfigFromProfile } from "../src/profile";
 
 function configPath(): string {
-  return join(mkdtempSync(join(tmpdir(), "people-collector-profile-")), "config.json");
+  return join(mkdtempSync(join(tmpdir(), "worklog-profile-")), "config.json");
 }
 
 describe("writeConfigFromProfile", () => {

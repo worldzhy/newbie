@@ -1,12 +1,12 @@
-import type { CollectorConfig, IdeKey } from "./config";
+import type { WorklogConfig, IdeKey } from "./config";
 import { scanDocuments } from "./documents";
 import { walkJsonl } from "./jsonl-files";
 import { emptyProgress, mergeProgress } from "./state";
-import type { CollectorState } from "./state";
+import type { WorklogState } from "./state";
 import { SESSION_SOURCES } from "./sessions/sources";
-import { CollectorApi, UploadDocument, UploadSession } from "./api";
+import { WorklogApi, UploadDocument, UploadSession } from "./api";
 
-export interface CollectSummary {
+export interface SyncSummary {
   workspacesReported: number;
   sessionsUploaded: number;
   messagesUploaded: number;
@@ -20,12 +20,8 @@ export interface CollectSummary {
  * source, then upload declared documents. Per-IDE differences live in
  * `sessions/sources.ts`, so this loop is the same for every IDE.
  */
-export async function collectOnce(
-  config: CollectorConfig,
-  state: CollectorState,
-  api: CollectorApi,
-): Promise<CollectSummary> {
-  const summary: CollectSummary = {
+export async function syncOnce(config: WorklogConfig, state: WorklogState, api: WorklogApi): Promise<SyncSummary> {
+  const summary: SyncSummary = {
     workspacesReported: 0,
     sessionsUploaded: 0,
     messagesUploaded: 0,

@@ -20,22 +20,22 @@ export interface FileProgress {
 }
 
 /** Everything already sent for this installation, so a sync only reads the tail. */
-export interface CollectorState {
+export interface WorklogState {
   files: Record<string, FileProgress>;
   documents: Record<string, { hash: string; workspaceKey: string }>;
 }
 
-export function loadState(path = DEFAULT_STATE_PATH): CollectorState {
+export function loadState(path = DEFAULT_STATE_PATH): WorklogState {
   if (!existsSync(path)) return { files: {}, documents: {} };
   try {
-    const parsed = JSON.parse(readFileSync(path, "utf8")) as Partial<CollectorState>;
+    const parsed = JSON.parse(readFileSync(path, "utf8")) as Partial<WorklogState>;
     return { files: parsed.files ?? {}, documents: parsed.documents ?? {} };
   } catch {
     return { files: {}, documents: {} };
   }
 }
 
-export function saveState(state: CollectorState, path = DEFAULT_STATE_PATH): void {
+export function saveState(state: WorklogState, path = DEFAULT_STATE_PATH): void {
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, JSON.stringify(state, null, 2), "utf8");
 }
