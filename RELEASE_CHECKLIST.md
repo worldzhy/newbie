@@ -28,6 +28,15 @@ Run through every step below before publishing any package in this repo (package
   upstream ships fixes or the dependency-union milestone reshapes the next
   layer.
 
+- `@nestjs/platform-express` — 3 high findings (multer) reported against the
+  installed `@nestjs/platform-express@10.4.18` (audit range
+  `10.4.18 - 10.4.22 || >=11.1.2`). It is a **peerDependency range** of
+  `@devbie/newbie` (`^11.0.0 || ^12.0.0`), not a runtime dependency of the
+  CLI packages, and the workspace install resolves it for the framework's
+  test fixtures. The host (nightwatch-backend) pins its own NestJS version.
+  Waived for CLI-only releases (2026-10-24); revisit when the framework
+  raises its peer floor or NestJS ships a patched multer pin.
+
 - `@devbie/web-monitor-sdk` — 3 findings, all **indirect**:
   - `braces` high (GHSA-vfj7-8cjw-p6xm, range `*`) and `micromatch` high
     (range `>=0.2.0`) — two chains from Jest 26 devTools:
