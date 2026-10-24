@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { packageNameOf } from "../src/commands/add";
+import { packageNameOf } from "../src/lib/npm-spec";
 
 describe("packageNameOf", () => {
   it("strips the version from an unscoped spec", () => {
