@@ -220,7 +220,7 @@ export async function applyModuleKeys(
 }
 
 /**
- * `newbie install` planning (read-only): modules.json is the source of truth;
+ * `newbie modules install` planning (read-only): modules.json is the source of truth;
  * modules missing from src/modules (or lacking a registry pin, e.g. after an
  * interrupted install) are reinstalled, extra copied modules are removed.
  *

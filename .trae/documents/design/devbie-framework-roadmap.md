@@ -39,14 +39,14 @@
 | A1  | backend-monitor 探针 Nit 优化 ✅（2026-09-28，Nit-1 reporter 队列改 per-kind 计数器消除 O(n) 扫描；Nit-2 记为已知限制）           | newbie core     | 高     |
 | A2  | `@devbie/web-monitor-sdk` 包发布 + fewbie thin wrapper ✅（2026-09-27，`0.1.0-stage.0` 已发布，latest 直指；fewbie 件 `9cfa860`） | newbie + fewbie | 高     |
 | A3  | `fewbie doctor` 命令 ✅（2026-09-27）                                                                                             | fewbie CLI      | 中     |
-| A4  | `fewbie update` 命令（组件/token diff PR）✅（2026-09-27，含零依赖 LCS unified diff）                                             | fewbie CLI      | 中     |
-| A5  | fewbie 其余 add 件（data-table / page-header / settings-required-state）✅（2026-09-27，`next build` 验证）                       | fewbie registry | 中     |
+| A4  | `fewbie modules update` 命令（原 `fewbie update`；组件/token 升级，默认写入，`--check` 为门禁）✅（2026-09-27，含零依赖 LCS unified diff） | fewbie CLI      | 中     |
+| A5  | fewbie 其余 registry 件（data-table / page-header / settings-required-state）✅（2026-09-27，`next build` 验证）                       | fewbie registry | 中     |
 
 ### Phase B — 开发体验增强
 
 | #   | 功能                                                                                                                          | 归属       | 优先级 | 前置 |
 | --- | ----------------------------------------------------------------------------------------------------------------------------- | ---------- | ------ | ---- |
-| B1  | `newbie dev-sync` 命令（watch registry 实时同步）✅（2026-09-27，150ms 防抖；删除同步受平台限制，重跑 `newbie install` 兜底） | newbie CLI | 中     | 无   |
+| B1  | `newbie modules watch` 命令（原 `newbie dev-sync`；watch registry 实时同步）✅（2026-09-27，150ms 防抖；删除同步受平台限制，重跑 `newbie modules install` 兜底） | newbie CLI | 中     | 无   |
 
 ### Phase C — 中心化控制面（核心未做项）
 
@@ -84,9 +84,9 @@
   - 新建 `packages/web-monitor-sdk/`（或独立仓），从现有 SDK 抽取核心
   - 发布 `@devbie/web-monitor-sdk@0.1.0-stage.0`
 - **fewbie 侧**：
-  - registry 新增 `web-monitor-sdk` 件：`fewbie add web-monitor-sdk` 脚手架 layout 注入采集组件 + 加 npm 依赖
+  - registry 新增 `web-monitor-sdk` 件：`fewbie modules install web-monitor-sdk` 脚手架 layout 注入采集组件 + 加 npm 依赖
   - 心跳接线仍由模板 `instrumentation.ts` 负责（`@devbie/heartbeat-sdk`），与本件解耦
-- **验证**：fewbie 模板 `add web-monitor-sdk` 后 `next build` 通过 + 浏览器控制台确认上报
+- **验证**：fewbie 模板 `modules install web-monitor-sdk` 后 `next build` 通过 + 浏览器控制台确认上报
 
 #### A3. `fewbie doctor` 命令
 
@@ -98,14 +98,14 @@
 - **输出**：人类可读报告 + `--json` 模式
 - **验证**：在干净模板上跑 `fewbie doctor` 零告警；手动破坏 token 后能检出
 
-#### A4. `fewbie update` 命令
+#### A4. `fewbie modules update` 命令
 
-- **目标**：registry 组件/token 升级 → diff PR
-- **机制**：类比 `newbie sync-template`，拉取 registry 新版本，diff 项目内已安装件的源码，生成可 review 的变更
-- **边界**：只 diff `fewbie add` 安装的件，不动用户业务代码；已被本地修改的件提示冲突
-- **验证**：安装旧版件 → 修改 registry 件 → `fewbie update` 生成正确 diff
+- **目标**：registry 组件/token 升级（默认写入，`--check` 为门禁）
+- **机制**：类比 `newbie template sync`，拉取 registry 新版本，diff 项目内已安装件的源码，生成可 review 的变更
+- **边界**：只 diff `fewbie modules install` 安装的件，不动用户业务代码；已被本地修改的件提示冲突
+- **验证**：安装旧版件 → 修改 registry 件 → `fewbie modules update --check` 检出漂移、默认写入收敛
 
-#### A5. fewbie 其余 add 件
+#### A5. fewbie 其余 registry 件
 
 | 件                        | 类型 | 内容                                             |
 | ------------------------- | ---- | ------------------------------------------------ |
@@ -114,18 +114,18 @@
 | `settings-required-state` | UI   | 设置缺失时的引导状态页                           |
 
 - **约束**：全部以 shadcn registry 兼容格式存放，双端可装
-- **验证**：`fewbie add <name>` 后 `next build` 通过 + 官方 `npx shadcn add <registry-url>/<name>` 也能装
+- **验证**：`fewbie modules install <name>` 后 `next build` 通过 + 官方 `npx shadcn add <registry-url>/<name>` 也能装
 
 ---
 
 ### Phase B — 开发体验增强
 
-#### B1. `newbie dev-sync` 命令
+#### B1. `newbie modules watch` 命令
 
 - **目标**：解决复制模型下"改完 registry 要重新 install 才生效"的开发痛点
 - **机制**：watch `newbie-modules/packages/modules/<key>/` 目录变更，实时同步到消费项目 `src/modules/<key>/`
-- **用法**：`newbie dev-sync <key>` 或 `newbie dev-sync --all`
-- **边界**：只同步源码，不重跑装配管线（env / prisma 合并仍需 `newbie install`）；检测到本地修改时提示冲突
+- **用法**：`newbie modules watch <key>` 或 `newbie modules watch --all`
+- **边界**：只同步源码，不重跑装配管线（env / prisma 合并仍需 `newbie modules install`）；检测到本地修改时提示冲突
 - **验证**：改 registry module 源码 → 消费项目文件实时更新 → 应用热重载生效
 
 ---

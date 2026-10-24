@@ -8,7 +8,7 @@
  * - framework-marker-block: only the @@newbie-framework block is synced; the
  *   host owns everything outside the markers (.env.example, .gitignore,
  *   prisma/schema.prisma).
- * - generated: rendered by `newbie assemble` from the installed module set;
+ * - generated: rendered by `newbie modules install` from the installed module set;
  *   template sync must not compare or overwrite it.
  * - template-shipped-host-owned: distributed once by `newbie create`, then
  *   owned by the host; never overwritten by template sync.
@@ -17,7 +17,7 @@
  * reported by the guard (ADR-009 D4: unlisted = error), mirroring the
  * check-template-deps convention.
  *
- * Two files carry fragments rendered by `newbie assemble` inside otherwise
+ * Two files carry fragments rendered by `newbie modules install` inside otherwise
  * framework-owned content: the `schemas = [...]` line of prisma/schema.prisma
  * and the @@newbie-modules block of deploy/Caddyfile.tmpl. Those fragments are
  * ignored when comparing and preserved when applying the template version.
@@ -45,7 +45,7 @@ export type TemplateFileOwnership =
   "framework-whole-file" | "framework-marker-block" | "generated" | "template-shipped-host-owned";
 
 /**
- * Fragment inside a framework-owned file rendered by `newbie assemble`:
+ * Fragment inside a framework-owned file rendered by `newbie modules install`:
  * a whole marker block (Caddyfile route block) or a single line (prisma
  * datasource schemas array).
  */
@@ -100,7 +100,7 @@ export const TEMPLATE_FILES: readonly TemplateFile[] = [
     rendered: { kind: "line", pattern: /^\s*schemas\s*=.*$/m },
   },
 
-  // Assembly products; rendered by `newbie assemble` / `newbie install`.
+  // Assembly products; rendered by `newbie modules install` / `newbie modules update`.
   { path: "src/modules/modules.config.ts", ownership: "generated" },
   { path: "src/modules/modules.module.ts", ownership: "generated" },
   { path: "deploy/compose.modules.yml", ownership: "generated" },

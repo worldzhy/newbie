@@ -57,7 +57,7 @@ export async function addModules(params: {
     const detail = missing.map(({ key, source }) => `  - ${key} (${source})`).join("\n");
     throw new CliError(
       `Registry checkout ${registry.sourceCommit ?? "unknown"} is missing module source(s):\n${detail}\n` +
-        `Point NEWBIE_MODULES_REF at a ref that carries them, then run 'newbie install'.`,
+        `Point NEWBIE_MODULES_REF at a ref that carries them, then run 'newbie modules install'.`,
     );
   }
 

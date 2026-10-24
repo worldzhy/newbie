@@ -9,7 +9,7 @@ import { fileExists } from "../lib/fs-util";
 import { Sink } from "../lib/sink";
 
 const DO_NOT_EDIT_HEADER = `// THIS FILE IS MANAGED BY @devbie/newbie-cli. DO NOT EDIT.
-// Run 'newbie install' to regenerate this file.
+// Run 'newbie modules install' to regenerate this file.
 
 `;
 
@@ -49,7 +49,7 @@ export async function assembleSchemaFiles(params: {
   // [step 1] Render a fragment for every enabled module into
   // prisma/models/<key>.prisma, merging the host's optional additions
   // (ADR-020). Rendering the enabled set rather than only newly added keys is
-  // what makes a host addition take effect on a plain `newbie install` and
+  // what makes a host addition take effect on a plain `newbie modules install` and
   // keeps the generated file convergent.
   for (const { key, fragment } of await keysWithSchema(cwd, enabledKeys)) {
     if (fragment === null) {
