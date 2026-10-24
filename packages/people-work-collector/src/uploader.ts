@@ -1,5 +1,5 @@
 import type { CollectorWorkspaceConfig } from "./config";
-import type { NormalizedMessage } from "./session-source";
+import type { NormalizedMessage } from "./sessions/types";
 
 export interface UploadSession {
   externalSessionId: string;

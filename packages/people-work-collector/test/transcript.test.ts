@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it } from "node:test";
 
-import { readJsonlDelta } from "../src/session-source";
+import { readTranscriptDelta } from "../src/sessions/transcript";
 
 function transcriptFile(lines: string[]): string {
   const directory = mkdtempSync(join(tmpdir(), "people-collector-"));
@@ -37,7 +37,7 @@ const claudeRecords = [
 
 describe("session transcript delta reader", () => {
   it("normalizes Claude Code records and aggregates tool usage", () => {
-    const { parsed, nextOffset } = readJsonlDelta(transcriptFile(claudeRecords), 0, 0);
+    const { parsed, nextOffset } = readTranscriptDelta(transcriptFile(claudeRecords), 0, 0);
 
     assert.equal(parsed.workspaceRootPath, "/work/company");
     assert.equal(parsed.externalSessionId, "session-1");
@@ -54,11 +54,11 @@ describe("session transcript delta reader", () => {
 
   it("reads only the appended tail and leaves a partially written line for the next run", () => {
     const file = transcriptFile(claudeRecords);
-    const first = readJsonlDelta(file, 0, 0);
+    const first = readTranscriptDelta(file, 0, 0);
 
     appendFileSync(file, `${claudeRecords[0]}\n{"type":"user","message":{"content":"partial`);
 
-    const second = readJsonlDelta(file, first.nextOffset, first.parsed.messages.length);
+    const second = readTranscriptDelta(file, first.nextOffset, first.parsed.messages.length);
 
     assert.equal(second.parsed.messages.length, 1);
     assert.equal(second.parsed.messages[0].seq, 2);
@@ -73,7 +73,7 @@ describe("session transcript delta reader", () => {
       message: { role: "user", content: long },
     });
 
-    const { parsed } = readJsonlDelta(transcriptFile([line]), 0, 0);
+    const { parsed } = readTranscriptDelta(transcriptFile([line]), 0, 0);
 
     assert.equal(parsed.messages.length, 3);
     assert.deepEqual(
@@ -92,7 +92,7 @@ describe("session transcript delta reader", () => {
       payload: { type: "agent_message", message: "Answered the review question" },
     });
 
-    const { parsed } = readJsonlDelta(transcriptFile([line]), 0, 0);
+    const { parsed } = readTranscriptDelta(transcriptFile([line]), 0, 0);
 
     assert.equal(parsed.messages.length, 1);
     assert.equal(parsed.messages[0].role, "assistant");
@@ -102,8 +102,8 @@ describe("session transcript delta reader", () => {
 
   it("returns nothing new when the file has not grown", () => {
     const file = transcriptFile(claudeRecords);
-    const first = readJsonlDelta(file, 0, 0);
-    const second = readJsonlDelta(file, first.nextOffset, first.parsed.messages.length);
+    const first = readTranscriptDelta(file, 0, 0);
+    const second = readTranscriptDelta(file, first.nextOffset, first.parsed.messages.length);
 
     assert.equal(second.parsed.messages.length, 0);
     assert.equal(second.nextOffset, first.nextOffset);

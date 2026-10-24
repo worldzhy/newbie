@@ -1,12 +1,11 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it } from "node:test";
 
-import { traeMemoryWorkspaceFor, traeSlugPrefix } from "../src/collector";
-import { writeConfigFromProfile } from "../src/config";
-import { readTraeMemoryDelta } from "../src/session-source";
+import { readTraeMemoryDelta } from "../src/sessions/trae-memory";
+import { traeMemoryWorkspaceFor, traeSlugPrefix } from "../src/sessions/workspace";
 
 const traeLines = [
   JSON.stringify({
@@ -71,27 +70,5 @@ describe("trae memory delta reader", () => {
       null,
     );
     assert.equal(traeMemoryWorkspaceFor(file, root, []), null);
-  });
-});
-
-describe("writeConfigFromProfile", () => {
-  it("writes a config carrying the profile credentials", () => {
-    const directory = mkdtempSync(join(tmpdir(), "people-collector-profile-"));
-    const path = join(directory, "config.json");
-
-    writeConfigFromProfile({ endpoint: "https://nw.example.com/", token: "token-1", memberUserId: "user-1" }, path);
-
-    const written = JSON.parse(readFileSync(path, "utf8"));
-    assert.equal(written.endpoint, "https://nw.example.com");
-    assert.equal(written.token, "token-1");
-    assert.equal(written.memberUserId, "user-1");
-    assert.deepEqual(written.workspaces, []);
-  });
-
-  it("rejects an incomplete profile", () => {
-    const directory = mkdtempSync(join(tmpdir(), "people-collector-profile-"));
-    assert.throws(() =>
-      writeConfigFromProfile({ endpoint: "", token: "token-1", memberUserId: "user-1" }, join(directory, "c.json")),
-    );
   });
 });
