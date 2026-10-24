@@ -1,5 +1,24 @@
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { closeSync, openSync, readFileSync, readdirSync, readSync, statSync } from "node:fs";
 import { join } from "node:path";
+
+/** First complete line of a file (reading at most 64 KiB); null when empty or unreadable. */
+export function readFirstLine(filePath: string): string | null {
+  try {
+    const fd = openSync(filePath, "r");
+    try {
+      const buffer = Buffer.alloc(64 * 1024);
+      const bytesRead = readSync(fd, buffer, 0, buffer.length, 0);
+      const text = buffer.subarray(0, bytesRead).toString("utf8");
+      const newline = text.indexOf("\n");
+      const line = newline === -1 ? text : text.slice(0, newline);
+      return line.trim() ? line : null;
+    } finally {
+      closeSync(fd);
+    }
+  } catch {
+    return null;
+  }
+}
 
 /** Complete lines appended after `offset`; a partial trailing line is left for the next run. */
 export function readCompleteLines(filePath: string, offset: number): { lines: string[]; nextOffset: number } {

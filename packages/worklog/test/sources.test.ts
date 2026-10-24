@@ -5,15 +5,13 @@ import { describe, it } from "node:test";
 import { SESSION_SOURCES } from "../src/sessions/sources";
 import { emptySession } from "../src/sessions/types";
 
-const companyWorkspace = {
+const declaredWorkspace = {
   workspaceKey: "devbie",
   rootPath: "/Users/worldzhy/src/devbie",
-  isCompany: true,
-  repositories: [],
 };
 
 function context(filePath: string, directory: string, parsed = emptySession()) {
-  return { filePath, directory, parsed, companyWorkspaces: [companyWorkspace] };
+  return { filePath, directory, parsed, workspaces: [declaredWorkspace] };
 }
 
 describe("session source registry", () => {

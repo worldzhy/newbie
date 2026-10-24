@@ -10,25 +10,26 @@ export function isInside(path: string, root: string): boolean {
 }
 
 /**
- * Trae names a project memory directory after the workspace root path with
- * "/" replaced by "-" (leading "-" kept), suffixed by `--p2-<hash>` — e.g.
- * `/Users/w/work` → `-Users-w-work--p2-abc…`. The hash is not invertible, so
- * matching is done by computing the prefix for each declared workspace.
+ * Both Claude and Trae name a per-workspace directory after the workspace
+ * root path with "/" replaced by "-" (leading "-" kept) — e.g. `/Users/w/work`
+ * → `-Users-w-work`. Trae additionally suffixes `--p2-<hash>`, which is not
+ * invertible, so Trae matching is done by computing the prefix for each
+ * declared workspace.
  */
-export function traeSlugPrefix(rootPath: string): string {
+export function dashedSlugFor(rootPath: string): string {
   return resolve(rootPath).split(sep).join("-");
 }
 
-/** Resolves which company workspace a Trae memory file belongs to, if any. */
+/** Resolves which declared workspace a Trae memory file belongs to, if any. */
 export function traeMemoryWorkspaceFor(
   filePath: string,
   traeMemoryDirectory: string,
-  companyWorkspaces: WorklogWorkspaceConfig[],
+  workspaces: WorklogWorkspaceConfig[],
 ): WorklogWorkspaceConfig | null {
   const slugDirectory = relative(traeMemoryDirectory, filePath).split(sep)[0];
   if (!slugDirectory) return null;
-  for (const workspace of companyWorkspaces) {
-    const prefix = traeSlugPrefix(workspace.rootPath);
+  for (const workspace of workspaces) {
+    const prefix = dashedSlugFor(workspace.rootPath);
     if (slugDirectory === prefix || slugDirectory.startsWith(`${prefix}--p2-`)) return workspace;
   }
   return null;

@@ -10,15 +10,14 @@ import type { UploadDocument } from "./api";
 const DOCUMENT_EXTENSIONS = new Set([".md", ".markdown", ".txt"]);
 
 /**
- * Declared-layer document scan (ADR-029 §8). Only directories configured as
- * company-work locations are walked; personal workspaces are never visited.
+ * Declared-layer document scan (ADR-029 §8, ADR-030). Only declared
+ * workspaces are walked; anything else on the machine is never visited.
  * A document is re-uploaded only when its content hash changes.
  */
 export function scanDocuments(config: WorklogConfig, state: WorklogState): UploadDocument[] {
   const documents: UploadDocument[] = [];
-  const companyWorkspaces = config.workspaces.filter((workspace) => workspace.isCompany);
 
-  for (const workspace of companyWorkspaces) {
+  for (const workspace of config.workspaces) {
     for (const directory of config.documentDirectories) {
       const absoluteDirectory = join(workspace.rootPath, directory);
       for (const filePath of walk(absoluteDirectory)) {

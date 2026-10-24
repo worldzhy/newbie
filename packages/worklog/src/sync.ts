@@ -33,8 +33,6 @@ export async function syncOnce(config: WorklogConfig, state: WorklogState, api: 
   await api.reportWorkspaces(config.memberUserId, config.workspaces);
   summary.workspacesReported = config.workspaces.length;
 
-  const companyWorkspaces = config.workspaces.filter((workspace) => workspace.isCompany);
-
   for (const ide of Object.keys(SESSION_SOURCES) as IdeKey[]) {
     const directory = config.agentSessionDirectories[ide];
     if (!directory) continue;
@@ -50,10 +48,15 @@ export async function syncOnce(config: WorklogConfig, state: WorklogState, api: 
         continue;
       }
 
-      const workspace = source.resolveWorkspace({ filePath, directory, parsed: delta.parsed, companyWorkspaces });
+      const workspace = source.resolveWorkspace({
+        filePath,
+        directory,
+        parsed: delta.parsed,
+        workspaces: config.workspaces,
+      });
       if (!workspace) {
-        // Outside every company workspace (e.g. personal work) — advance the
-        // offset so it is not re-read, upload nothing.
+        // Outside every declared workspace — advance the offset so it is not
+        // re-read, upload nothing.
         summary.skippedSessions++;
         state.files[filePath] = { ...(progress ?? emptyProgress()), offset: delta.nextOffset };
         continue;

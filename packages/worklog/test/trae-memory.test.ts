@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { describe, it } from "node:test";
 
 import { readTraeMemoryDelta } from "../src/sessions/trae-memory";
-import { traeMemoryWorkspaceFor, traeSlugPrefix } from "../src/sessions/workspace";
+import { dashedSlugFor, traeMemoryWorkspaceFor } from "../src/sessions/workspace";
 
 const traeLines = [
   JSON.stringify({
@@ -35,11 +35,9 @@ function traeMemoryFile(lines: string[]): { root: string; file: string } {
   return { root, file };
 }
 
-const companyWorkspace = {
+const declaredWorkspace = {
   workspaceKey: "devbie",
   rootPath: "/Users/worldzhy/src/devbie",
-  isCompany: true,
-  repositories: [],
 };
 
 describe("trae memory delta reader", () => {
@@ -59,14 +57,14 @@ describe("trae memory delta reader", () => {
     assert.ok(nextOffset > 0);
   });
 
-  it("maps a memory file to its company workspace via the directory slug prefix", () => {
+  it("maps a memory file to its declared workspace via the directory slug prefix", () => {
     const { root, file } = traeMemoryFile(traeLines);
 
-    assert.equal(traeSlugPrefix("/Users/worldzhy/src/devbie"), "-Users-worldzhy-src-devbie");
-    assert.equal(traeMemoryWorkspaceFor(file, root, [companyWorkspace])?.workspaceKey, "devbie");
+    assert.equal(dashedSlugFor("/Users/worldzhy/src/devbie"), "-Users-worldzhy-src-devbie");
+    assert.equal(traeMemoryWorkspaceFor(file, root, [declaredWorkspace])?.workspaceKey, "devbie");
     // A different workspace whose slug shares a prefix must not match.
     assert.equal(
-      traeMemoryWorkspaceFor(file, root, [{ ...companyWorkspace, rootPath: "/Users/worldzhy/src/dev" }]),
+      traeMemoryWorkspaceFor(file, root, [{ ...declaredWorkspace, rootPath: "/Users/worldzhy/src/dev" }]),
       null,
     );
     assert.equal(traeMemoryWorkspaceFor(file, root, []), null);

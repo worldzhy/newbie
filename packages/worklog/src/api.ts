@@ -47,8 +47,6 @@ export class WorklogApi {
         evaluateeUserId: memberUserId,
         workspaceKey: workspace.workspaceKey,
         rootPath: workspace.rootPath,
-        isCompany: workspace.isCompany,
-        repositories: workspace.repositories,
       })),
     });
   }

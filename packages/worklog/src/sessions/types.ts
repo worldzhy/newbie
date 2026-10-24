@@ -25,7 +25,7 @@ export interface SessionAggregate {
 }
 
 export interface ParsedSessionFile {
-  /** Working directory recorded by the IDE — used for company-workspace scoping. */
+  /** Working directory recorded by the IDE — used for workspace scoping. */
   workspaceRootPath: string | null;
   externalSessionId: string | null;
   messages: NormalizedMessage[];
@@ -53,13 +53,14 @@ export interface SessionFileContext {
   /** Directory configured for this IDE (e.g. ~/.claude/projects). */
   directory: string;
   parsed: ParsedSessionFile;
-  companyWorkspaces: WorklogWorkspaceConfig[];
+  workspaces: WorklogWorkspaceConfig[];
 }
 
 /**
- * One IDE's session storage. A source owns the three things that differ per
- * IDE — which files it reads, how a delta is parsed, and how a file maps to a
- * declared workspace. Worklog therefore carries no per-IDE branching.
+ * One IDE's session storage. A source owns the four things that differ per
+ * IDE — which files it reads, how a delta is parsed, how a file maps to a
+ * declared workspace, and how much activity a path has. Worklog therefore
+ * carries no per-IDE branching.
  */
 export interface SessionSource {
   /** Wire value reported to the server as session provenance. */
@@ -67,6 +68,8 @@ export interface SessionSource {
   accepts(filePath: string): boolean;
   readDelta(filePath: string, offset: number, nextSeq: number): SessionDelta;
   resolveWorkspace(context: SessionFileContext): WorklogWorkspaceConfig | null;
+  /** Session files of this IDE known to belong to `rootPath` (add-time evidence). */
+  countSessions(directory: string, rootPath: string): number;
   /** Caveat surfaced in the run summary; only sources with a caveat declare one. */
   note?: string;
 }

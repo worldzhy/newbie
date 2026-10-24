@@ -3,14 +3,10 @@ import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 
 export interface WorklogWorkspaceConfig {
-  /** Stable identifier the server stores (e.g. the repository directory name). */
+  /** Stable identifier the server stores (derived from the directory name). */
   workspaceKey: string;
-  /** Absolute path of the workspace root. */
+  /** Absolute, symlink-resolved path of the workspace root. */
   rootPath: string;
-  /** Self-declared company/personal split. Only company workspaces are scanned. */
-  isCompany: boolean;
-  /** Workspace → repository mapping reported to the server. */
-  repositories: { path: string; platform: string; repositoryFullName: string }[];
 }
 
 /**
@@ -24,16 +20,21 @@ export interface WorklogConfig {
   endpoint: string;
   token: string;
   memberUserId: string;
+  /**
+   * The allowlist (ADR-030): only workspaces declared here are ever scanned
+   * or uploaded. There is no company/personal split — a path that is not
+   * declared is personal by construction and never touched.
+   */
   workspaces: WorklogWorkspaceConfig[];
   /**
    * Where each IDE keeps its agent session records, keyed by IDE and scanned
    * recursively. Only sessions whose recorded working directory is inside a
-   * company workspace are uploaded. `trae` points at Trae's memory store
+   * declared workspace are uploaded. `trae` points at Trae's memory store
    * (~/.trae-cn/memory/projects) — those sessions are the IDE's own summaries,
    * uploaded with source "trae-memory".
    */
   agentSessionDirectories: Partial<Record<IdeKey, string>>;
-  /** Directories inside company workspaces whose markdown files count as declared work. */
+  /** Directories inside declared workspaces whose markdown files count as declared work. */
   documentDirectories: string[];
   maxDocumentBytes: number;
 }
@@ -41,7 +42,7 @@ export interface WorklogConfig {
 export const DEFAULT_CONFIG_PATH = join(homedir(), ".devbie", "worklog.json");
 export const DEFAULT_STATE_PATH = join(homedir(), ".devbie", "worklog-state.json");
 
-/** Default agent session directories per IDE, probed for existence at init time. */
+/** Default agent session directories per IDE, probed for existence when a profile is applied. */
 export const DEFAULT_AGENT_SESSION_DIRECTORIES: Record<IdeKey, string> = {
   claude: join(homedir(), ".claude", "projects"),
   codex: join(homedir(), ".codex", "sessions"),
@@ -50,7 +51,7 @@ export const DEFAULT_AGENT_SESSION_DIRECTORIES: Record<IdeKey, string> = {
 
 export function loadConfig(path = DEFAULT_CONFIG_PATH): WorklogConfig {
   if (!existsSync(path)) {
-    throw new Error(`Worklog config not found at ${path}. Run "worklog init" first.`);
+    throw new Error(`Worklog config not found at ${path}. Run "worklog --profile <path>" with the downloaded profile.`);
   }
   const parsed = JSON.parse(readFileSync(path, "utf8")) as Partial<WorklogConfig>;
   const config: WorklogConfig = {
@@ -68,23 +69,8 @@ export function loadConfig(path = DEFAULT_CONFIG_PATH): WorklogConfig {
   return config;
 }
 
-export function writeSampleConfig(path = DEFAULT_CONFIG_PATH): void {
-  const sample: WorklogConfig = {
-    endpoint: "http://localhost:3000",
-    token: "<worklog token from the supervisor>",
-    memberUserId: "<your userId uuid>",
-    workspaces: [
-      {
-        workspaceKey: "nightwatch-backend",
-        rootPath: join(homedir(), "src", "nightwatch-backend"),
-        isCompany: true,
-        repositories: [{ path: ".", platform: "github", repositoryFullName: "worldzhy/nightwatch-backend" }],
-      },
-    ],
-    agentSessionDirectories: { ...DEFAULT_AGENT_SESSION_DIRECTORIES },
-    documentDirectories: ["docs", ".trae/documents"],
-    maxDocumentBytes: 200_000,
-  };
+/** Persists the config with owner-only permissions — it carries the bearer token. */
+export function saveConfig(config: WorklogConfig, path = DEFAULT_CONFIG_PATH): void {
   mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, JSON.stringify(sample, null, 2), "utf8");
+  writeFileSync(path, JSON.stringify(config, null, 2) + "\n", { encoding: "utf8", mode: 0o600 });
 }
