@@ -19,17 +19,26 @@ export interface FileProgress {
   touchedFiles: string[];
 }
 
-/** Everything already sent for this installation, so a sync only reads the tail. */
+/** Everything already sent for this installation, so a send only reads the tail. */
 export interface WorklogState {
   files: Record<string, FileProgress>;
   documents: Record<string, { hash: string; workspaceKey: string }>;
+  /** When a send last finished successfully. */
+  lastSentAt?: string;
+  /** Why the most recent attempt failed; cleared by the next successful send. */
+  lastError?: string;
 }
 
 export function loadState(path = DEFAULT_STATE_PATH): WorklogState {
   if (!existsSync(path)) return { files: {}, documents: {} };
   try {
     const parsed = JSON.parse(readFileSync(path, "utf8")) as Partial<WorklogState>;
-    return { files: parsed.files ?? {}, documents: parsed.documents ?? {} };
+    return {
+      files: parsed.files ?? {},
+      documents: parsed.documents ?? {},
+      lastSentAt: parsed.lastSentAt,
+      lastError: parsed.lastError,
+    };
   } catch {
     return { files: {}, documents: {} };
   }

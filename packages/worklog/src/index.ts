@@ -10,8 +10,17 @@ export { upsertConfigFromProfile } from "./profile";
 export type { WorklogProfile } from "./profile";
 export { loadState, saveState } from "./state";
 export type { WorklogState, FileProgress } from "./state";
-export { syncOnce } from "./sync";
-export type { SyncSummary } from "./sync";
+export { sendOnce } from "./send";
+export type { SendSummary } from "./send";
+export {
+  SCHEDULER_INTERVAL_SECONDS,
+  SCHEDULER_LABEL,
+  defaultSchedulerPaths,
+  installSchedule,
+  isScheduleInstalled,
+  removeSchedule,
+} from "./scheduler";
+export type { SchedulerPaths } from "./scheduler";
 export { addWorkspace, removeWorkspace } from "./workspaces";
 export type { AddWorkspaceResult, WorkspaceActivity } from "./workspaces";
 export type { NormalizedMessage, ParsedSessionFile, SessionAggregate } from "./sessions/types";

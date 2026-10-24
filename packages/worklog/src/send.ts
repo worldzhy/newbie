@@ -6,7 +6,7 @@ import type { WorklogState } from "./state";
 import { SESSION_SOURCES } from "./sessions/sources";
 import { WorklogApi, UploadDocument, UploadSession } from "./api";
 
-export interface SyncSummary {
+export interface SendSummary {
   workspacesReported: number;
   sessionsUploaded: number;
   messagesUploaded: number;
@@ -16,12 +16,12 @@ export interface SyncSummary {
 }
 
 /**
- * One collection pass: report workspaces, stream each configured session
- * source, then upload declared documents. Per-IDE differences live in
+ * One sending pass: report workspaces, stream each configured session source,
+ * then upload declared documents. Per-IDE differences live in
  * `sessions/sources.ts`, so this loop is the same for every IDE.
  */
-export async function syncOnce(config: WorklogConfig, state: WorklogState, api: WorklogApi): Promise<SyncSummary> {
-  const summary: SyncSummary = {
+export async function sendOnce(config: WorklogConfig, state: WorklogState, api: WorklogApi): Promise<SendSummary> {
+  const summary: SendSummary = {
     workspacesReported: 0,
     sessionsUploaded: 0,
     messagesUploaded: 0,
