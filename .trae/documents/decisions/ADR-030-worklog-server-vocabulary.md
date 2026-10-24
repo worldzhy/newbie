@@ -48,7 +48,9 @@ ADR-026 只统一了成员面向的一半：客户端叫 `worklog`，而服务�
 
 ### 4. 破坏性变更的处理
 
-`@devbie/worklog` 升 `2.0.0`（路由与 profile 字段 `memberUserId` → `evaluateeUserId`），`1.1.0` 保留可回退。nightwatch 未上线、无真实数据，按「未上线系统禁止过度考虑迁移」处理：PG 用手写 forward migration 做表/列重命名；ClickHouse 直接改 init migration 并重建开发库表，不叠加额外兼容迁移。
+`@devbie/worklog` 升 `1.2.0`（路由与 profile 字段 `memberUserId` → `evaluateeUserId`）。上线前所有包留在 1.x 线，破坏性契约变更只进 minor，不进 2。（本次曾误发 `2.0.0`，已弃用并以 `1.2.0` 为 latest；上线前不得再出现 2.x。）
+
+nightwatch 未上线、无真实数据，按「未上线系统禁止过度考虑迁移」处理：不写任何 rename migration。PG 的 installation 表本就不在 migrations 链中（由 db push 管理），直接改 Prisma 模型并重建开发库对象；ClickHouse 直接改 init migration 并重建开发库表。都不叠加 forward 迁移或兼容层。
 
 ### 5. 撤销与轮换即时生效
 
@@ -61,14 +63,14 @@ ADR-026 只统一了成员面向的一半：客户端叫 `worklog`，而服务�
 | 路由 | 模块控制器声明 `people/worklog/*`，任意宿主装配即得同一命名空间 | 不做路由覆写 |
 | 认证 | installation resolver 的 kind 仍为模块键 `people-evaluation`（kind 是装配标识，不是词汇） | 不改 guard / resolver 绑定 |
 | 权限资源 | `RequirePermission` 的资源名随 Prisma 模型改为 `PeopleEvaluationWorklogInstallation` | ADMIN 持 `*:Manage`，无种子权限行受影响 |
-| 数据列 | `evaluateeUserId` 与其余模型对齐；ClickHouse 列 `evaluatee_user_id` | 迁移由 host prisma 管线执行 |
+| 数据列 | `evaluateeUserId` 与其余模型对齐；ClickHouse 列 `evaluatee_user_id` | 直接改 Prisma 模型并重建开发库对象，不新增迁移 |
 | 前端 | 生成客户端不消费 collector 路由 | 零改动 |
 
 ## 影响
 
 - newbie-modules：`collector.controller.ts` → `controllers/worklog.controller.ts`（ingest + 回读读出 `PeopleEvaluationController`）、`installation.controller.ts` → `worklog-installation.controller.ts`；`people-evaluation-collector.dto.ts` → `people-evaluation-worklog.dto.ts`；installation service / token resolver 同步改名；Prisma 模型与 ClickHouse init migration 同步改名。
-- devbie：`@devbie/worklog` 2.0.0（API 路径、`memberUserId` → `evaluateeUserId`、README 与 profile 字段）。
-- nightwatch-backend：手写迁移 `ALTER TABLE ... RENAME TO` / `RENAME COLUMN`；开发库重放 ClickHouse init migration。
+- devbie：`@devbie/worklog` 1.2.0（API 路径、`memberUserId` → `evaluateeUserId`、README 与 profile 字段）。
+- nightwatch-backend：无新增迁移；改 Prisma 模型后直接重建开发库对象，重放 ClickHouse init migration。
 - 未改动：`/people/{rubrics,periods,home-ground,assessments,pip-plans}` 路由、installation token 的凭证形态与软撤销语义（撤销/轮换的生效时机见 §5）、审计边界。
 
 ## 未在此 ADR 决定的事
