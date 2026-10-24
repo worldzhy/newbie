@@ -1,17 +1,28 @@
 #!/usr/bin/env node
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 
 import { collectOnce } from "./collector";
-import { DEFAULT_CONFIG_PATH, DEFAULT_STATE_PATH, loadConfig, loadState, saveState, writeSampleConfig } from "./config";
+import {
+  CollectorProfile,
+  DEFAULT_CONFIG_PATH,
+  DEFAULT_STATE_PATH,
+  loadConfig,
+  loadState,
+  saveState,
+  writeConfigFromProfile,
+  writeSampleConfig,
+} from "./config";
 import { CollectorApi } from "./uploader";
 
 /**
  * `people-work-collector` — member-side evidence collector (ADR-029 §8).
  *
  * Commands:
- *   init    write a sample config to ~/.devbie/people-collector.json
- *   sync    report workspaces, new agent-session chunks and changed declared documents
- *   status  show what is configured and what has already been sent
+ *   init [--profile <path>]  write ~/.devbie/people-collector.json — from a
+ *                            downloaded profile (endpoint/token/userId) when
+ *                            given, a fill-in sample otherwise
+ *   sync                     report workspaces, new agent-session chunks and changed declared documents
+ *   status                   show what is configured and what has already been sent
  */
 async function main(): Promise<void> {
   const command = process.argv[2] ?? "sync";
@@ -19,6 +30,16 @@ async function main(): Promise<void> {
   if (command === "init") {
     if (existsSync(DEFAULT_CONFIG_PATH)) {
       console.log(`Config already exists at ${DEFAULT_CONFIG_PATH}`);
+      return;
+    }
+    const profileFlag = process.argv.indexOf("--profile");
+    const profilePath = profileFlag !== -1 ? process.argv[profileFlag + 1] : undefined;
+    if (profilePath) {
+      const profile = JSON.parse(readFileSync(profilePath, "utf8")) as CollectorProfile;
+      writeConfigFromProfile(profile);
+      console.log(
+        `Wrote config to ${DEFAULT_CONFIG_PATH} from ${profilePath}. Add your company workspaces to "workspaces" before the first sync.`,
+      );
       return;
     }
     writeSampleConfig();

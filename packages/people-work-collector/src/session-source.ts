@@ -1,4 +1,5 @@
 import { readFileSync, statSync } from "node:fs";
+import { basename, dirname } from "node:path";
 
 import { redact } from "./redact";
 
@@ -59,23 +60,10 @@ export function readJsonlDelta(
   offset: number,
   nextSeq: number,
 ): { parsed: ParsedSessionFile; nextOffset: number } {
-  const size = statSync(filePath).size;
-  if (size <= offset) {
-    return {
-      parsed: emptySession(),
-      nextOffset: offset,
-    };
+  const { lines, nextOffset } = readCompleteLines(filePath, offset);
+  if (lines.length === 0) {
+    return { parsed: emptySession(), nextOffset };
   }
-
-  const fd = readFileSync(filePath);
-  const slice = fd.subarray(offset);
-  const lastNewline = slice.lastIndexOf(0x0a);
-  if (lastNewline === -1) {
-    return { parsed: emptySession(), nextOffset: offset };
-  }
-
-  const text = slice.subarray(0, lastNewline + 1).toString("utf8");
-  const nextOffset = offset + lastNewline + 1;
 
   const messages: NormalizedMessage[] = [];
   const toolNames = new Set<string>();
@@ -89,8 +77,7 @@ export function readJsonlDelta(
   let toolCallCount = 0;
   let seq = nextSeq;
 
-  for (const line of text.split("\n")) {
-    if (!line.trim()) continue;
+  for (const line of lines) {
     let record: Record<string, unknown>;
     try {
       record = JSON.parse(line) as Record<string, unknown>;
@@ -298,4 +285,116 @@ function emptySession(): ParsedSessionFile {
       endedAt: new Date().toISOString(),
     },
   };
+}
+
+/**
+ * Trae session memory (`session_memory_*.jsonl` under
+ * `~/.trae-cn/memory/projects/<slug>/<yyyymmdd>/`): one line per message,
+ * already summarized by the IDE — {intent, actions[], outcome, learned[],
+ * message_summary_time, message_id}. This is NOT a raw transcript; the
+ * collector marks these sessions with source "trae-memory" so the server
+ * never confuses the two fidelity levels. The workspace is derived from the
+ * directory slug by the caller — the records carry no cwd.
+ */
+export function readTraeMemoryDelta(
+  filePath: string,
+  offset: number,
+  nextSeq: number,
+): { parsed: ParsedSessionFile; nextOffset: number } {
+  const { lines, nextOffset } = readCompleteLines(filePath, offset);
+  if (lines.length === 0) {
+    return { parsed: emptySession(), nextOffset };
+  }
+
+  // Stable session identity: the chat id from the file name plus the daily
+  // folder, so the same chat summarized on different days stays distinct.
+  const sessionId = basename(filePath, ".jsonl").replace(/^session_memory_/, "");
+  const dateFolder = basename(dirname(filePath));
+  const externalSessionId = `trae-memory:${dateFolder}:${sessionId}`;
+
+  const messages: NormalizedMessage[] = [];
+  let startedAt: string | null = null;
+  let endedAt: string | null = null;
+  let seq = nextSeq;
+
+  for (const line of lines) {
+    let record: Record<string, unknown>;
+    try {
+      record = JSON.parse(line) as Record<string, unknown>;
+    } catch {
+      continue;
+    }
+
+    const content = composeTraeMemoryContent(record);
+    if (!content) continue;
+
+    const createdAt = parseTraeMemoryTime(stringOrNull(record.message_summary_time));
+    if (createdAt) {
+      startedAt = startedAt ?? createdAt;
+      endedAt = createdAt;
+    }
+
+    for (const chunk of chunkContent(redact(content))) {
+      messages.push({ seq: seq++, role: "assistant", content: chunk, createdAt: createdAt ?? undefined });
+    }
+  }
+
+  return {
+    parsed: {
+      workspaceRootPath: null,
+      externalSessionId,
+      messages,
+      aggregate: {
+        externalSessionId,
+        model: "",
+        turnCount: messages.length,
+        messageCount: messages.length,
+        toolCallCount: 0,
+        toolNames: [],
+        touchedFiles: [],
+        startedAt: startedAt ?? new Date().toISOString(),
+        endedAt: endedAt ?? new Date().toISOString(),
+      },
+    },
+    nextOffset,
+  };
+}
+
+/** Composes one readable text block out of the IDE's per-message summary. */
+function composeTraeMemoryContent(record: Record<string, unknown>): string {
+  const parts: string[] = [];
+  const intent = stringOrNull(record.intent);
+  if (intent) parts.push(`Intent: ${intent}`);
+  const actions = stringList(record.actions);
+  if (actions.length > 0) parts.push(`Actions: ${actions.join("; ")}`);
+  const outcome = stringOrNull(record.outcome);
+  if (outcome) parts.push(`Outcome: ${outcome}`);
+  const learned = stringList(record.learned);
+  if (learned.length > 0) parts.push(`Learned: ${learned.join("; ")}`);
+  return parts.join("\n");
+}
+
+/** "2026-10-23 00:40:36" is local time — parse it as such, emit ISO. */
+function parseTraeMemoryTime(value: string | null): string | null {
+  if (!value) return null;
+  const parsed = new Date(value.replace(" ", "T"));
+  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
+}
+
+function stringList(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string" && item.length > 0)
+    : [];
+}
+
+/** Complete lines appended after `offset`; a partial trailing line is left for the next run. */
+function readCompleteLines(filePath: string, offset: number): { lines: string[]; nextOffset: number } {
+  const size = statSync(filePath).size;
+  if (size <= offset) return { lines: [], nextOffset: offset };
+  const fd = readFileSync(filePath);
+  const slice = fd.subarray(offset);
+  const lastNewline = slice.lastIndexOf(0x0a);
+  if (lastNewline === -1) return { lines: [], nextOffset: offset };
+  const text = slice.subarray(0, lastNewline + 1).toString("utf8");
+  return { lines: text.split("\n").filter((line) => line.trim()), nextOffset: offset + lastNewline + 1 };
 }

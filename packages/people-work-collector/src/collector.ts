@@ -1,9 +1,9 @@
 import { readdirSync, statSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { basename, join, relative, resolve, sep } from "node:path";
 
-import type { CollectorConfig, CollectorState, FileProgress } from "./config";
+import type { CollectorConfig, CollectorState, CollectorWorkspaceConfig, FileProgress } from "./config";
 import { scanDocuments } from "./documents";
-import { readJsonlDelta } from "./session-source";
+import { readJsonlDelta, readTraeMemoryDelta } from "./session-source";
 import { CollectorApi, UploadDocument, UploadSession } from "./uploader";
 
 export interface CollectSummary {
@@ -37,9 +37,13 @@ export async function collectOnce(
 
   for (const [sourceName, root] of Object.entries(config.sessionSources)) {
     if (!root) continue;
+    const isTraeMemory = sourceName === "traeMemory";
     for (const filePath of walkJsonl(root)) {
+      if (isTraeMemory && !basename(filePath).startsWith("session_memory_")) continue;
       const progress = state.files[filePath];
-      const delta = readJsonlDelta(filePath, progress?.offset ?? 0, progress?.nextSeq ?? 0);
+      const delta = isTraeMemory
+        ? readTraeMemoryDelta(filePath, progress?.offset ?? 0, progress?.nextSeq ?? 0)
+        : readJsonlDelta(filePath, progress?.offset ?? 0, progress?.nextSeq ?? 0);
       if (delta.parsed.messages.length === 0) {
         state.files[filePath] = {
           ...(progress ?? emptyProgress()),
@@ -48,9 +52,13 @@ export async function collectOnce(
         continue;
       }
 
-      const workspace = companyWorkspaces.find((candidate) =>
-        delta.parsed.workspaceRootPath ? isInside(delta.parsed.workspaceRootPath, candidate.rootPath) : false,
-      );
+      // Trae memory records carry no cwd: the workspace is derived from the
+      // directory slug the IDE wrote the file under.
+      const workspace = isTraeMemory
+        ? traeMemoryWorkspaceFor(filePath, root, companyWorkspaces)
+        : companyWorkspaces.find((candidate) =>
+            delta.parsed.workspaceRootPath ? isInside(delta.parsed.workspaceRootPath, candidate.rootPath) : false,
+          );
 
       if (!workspace) {
         // Recorded cwd is outside every company workspace (e.g. a personal
@@ -65,6 +73,7 @@ export async function collectOnce(
       const upload: UploadSession = {
         externalSessionId,
         workspaceKey: workspace.workspaceKey,
+        source: isTraeMemory ? "trae-memory" : sourceName,
         model: aggregate.model,
         turnCount: aggregate.turnCount,
         messageCount: aggregate.messageCount,
@@ -92,6 +101,11 @@ export async function collectOnce(
     if (sourceName === "codex") {
       summary.notes.push(
         "Codex transcripts without a recorded working directory are skipped — only sessions carrying cwd can be scoped to a company workspace.",
+      );
+    }
+    if (isTraeMemory) {
+      summary.notes.push(
+        'Trae sessions are the IDE\'s own session summaries (source "trae-memory"), not raw transcripts — lower fidelity by construction.',
       );
     }
   }
@@ -156,6 +170,31 @@ function isInside(path: string, root: string): boolean {
   const absolutePath = resolve(path);
   const absoluteRoot = resolve(root);
   return absolutePath === absoluteRoot || absolutePath.startsWith(`${absoluteRoot}/`);
+}
+
+/**
+ * Trae names a project memory directory after the workspace root path with
+ * "/" replaced by "-" (leading "-" kept), suffixed by `--p2-<hash>` — e.g.
+ * `/Users/w/work` → `-Users-w-work--p2-abc…`. The hash is not invertible, so
+ * matching is done by computing the prefix for each declared workspace.
+ */
+export function traeSlugPrefix(rootPath: string): string {
+  return resolve(rootPath).split(sep).join("-");
+}
+
+/** Resolves which company workspace a Trae memory file belongs to, if any. */
+export function traeMemoryWorkspaceFor(
+  filePath: string,
+  traeMemoryRoot: string,
+  companyWorkspaces: CollectorWorkspaceConfig[],
+): CollectorWorkspaceConfig | null {
+  const slugDirectory = relative(traeMemoryRoot, filePath).split(sep)[0];
+  if (!slugDirectory) return null;
+  for (const workspace of companyWorkspaces) {
+    const prefix = traeSlugPrefix(workspace.rootPath);
+    if (slugDirectory === prefix || slugDirectory.startsWith(`${prefix}--p2-`)) return workspace;
+  }
+  return null;
 }
 
 function* walkJsonl(root: string): Generator<string> {

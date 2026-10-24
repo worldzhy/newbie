@@ -1,6 +1,6 @@
 {
   "name": "@devbie/people-work-collector",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Member-side work collector for people-evaluation: reports declared workspaces, AI-agent sessions and declared documents from company workspaces only",
   "license": "MIT",
   "author": "worldzhy",

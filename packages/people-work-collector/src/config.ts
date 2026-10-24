@@ -20,11 +20,14 @@ export interface CollectorConfig {
   workspaces: CollectorWorkspaceConfig[];
   /**
    * IDE transcript roots. Only sessions whose recorded working directory is
-   * inside a company workspace are uploaded.
+   * inside a company workspace are uploaded. `traeMemory` points at Trae's
+   * memory store (~/.trae-cn/memory/projects) — those sessions are the IDE's
+   * own summaries, uploaded with source "trae-memory".
    */
   sessionSources: {
     claude?: string;
     codex?: string;
+    traeMemory?: string;
   };
   /** Directories inside company workspaces whose markdown files count as declared work. */
   documentDirectories: string[];
@@ -52,6 +55,20 @@ export interface CollectorState {
 
 export const DEFAULT_CONFIG_PATH = join(homedir(), ".devbie", "people-collector.json");
 export const DEFAULT_STATE_PATH = join(homedir(), ".devbie", "people-collector-state.json");
+
+/** Default IDE transcript roots, probed for existence at init time. */
+export const DEFAULT_SESSION_SOURCES: Required<CollectorConfig["sessionSources"]> = {
+  claude: join(homedir(), ".claude", "projects"),
+  codex: join(homedir(), ".codex", "sessions"),
+  traeMemory: join(homedir(), ".trae-cn", "memory", "projects"),
+};
+
+/** The member profile downloaded from the server — everything init needs. */
+export interface CollectorProfile {
+  endpoint: string;
+  token: string;
+  memberUserId: string;
+}
 
 export function loadConfig(path = DEFAULT_CONFIG_PATH): CollectorConfig {
   if (!existsSync(path)) {
@@ -101,13 +118,37 @@ export function writeSampleConfig(path = DEFAULT_CONFIG_PATH): void {
         repositories: [{ path: ".", platform: "github", repositoryFullName: "worldzhy/nightwatch-backend" }],
       },
     ],
-    sessionSources: {
-      claude: join(homedir(), ".claude", "projects"),
-      codex: join(homedir(), ".codex", "sessions"),
-    },
+    sessionSources: { ...DEFAULT_SESSION_SOURCES },
     documentDirectories: ["docs", ".trae/documents"],
     maxDocumentBytes: 200_000,
   };
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, JSON.stringify(sample, null, 2), "utf8");
+}
+
+/**
+ * Writes a ready-to-run config from a downloaded profile: credentials come
+ * from the profile, session sources are probed (only roots that exist on this
+ * machine are kept), workspaces start empty — the member fills in which of
+ * their workspaces are company ones before the first sync.
+ */
+export function writeConfigFromProfile(profile: CollectorProfile, path = DEFAULT_CONFIG_PATH): void {
+  if (!profile.endpoint || !profile.token || !profile.memberUserId) {
+    throw new Error("Profile must define endpoint, token and memberUserId.");
+  }
+  const sessionSources: CollectorConfig["sessionSources"] = {};
+  for (const [name, root] of Object.entries(DEFAULT_SESSION_SOURCES)) {
+    if (existsSync(root)) sessionSources[name as keyof CollectorConfig["sessionSources"]] = root;
+  }
+  const config: CollectorConfig = {
+    endpoint: profile.endpoint.replace(/\/$/, ""),
+    token: profile.token,
+    memberUserId: profile.memberUserId,
+    workspaces: [],
+    sessionSources,
+    documentDirectories: ["docs", ".trae/documents"],
+    maxDocumentBytes: 200_000,
+  };
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, JSON.stringify(config, null, 2), "utf8");
 }

@@ -4,6 +4,8 @@ import type { NormalizedMessage } from "./session-source";
 export interface UploadSession {
   externalSessionId: string;
   workspaceKey: string;
+  /** Transcript origin: "claude" / "codex" (raw) or "trae-memory" (IDE summaries). */
+  source: string;
   model: string;
   turnCount: number;
   messageCount: number;
@@ -59,6 +61,7 @@ export class CollectorApi {
           evaluateeUserId: memberUserId,
           workspaceKey: session.workspaceKey,
           externalSessionId: session.externalSessionId,
+          source: session.source,
           model: session.model,
           turnCount: session.turnCount,
           messageCount: session.messageCount,
