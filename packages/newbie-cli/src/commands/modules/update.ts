@@ -2,19 +2,19 @@ import figlet from "figlet";
 import { checkbox, select } from "@inquirer/prompts";
 import { bold, cyan, green, inverse, yellow } from "colorette";
 
-import { runSteps } from "../assemble/pipeline";
-import { describeMissingDependencies, expandRegistryClosure } from "../assemble/module-graph";
-import { collectMissingRegistrySources } from "../assemble/modules-copy";
-import { diffSnapshots, driftPatchIds } from "../core/drift";
-import { moduleKeys } from "../core/modules-state";
-import { snapshotInstalledModule, snapshotPristineModule } from "../lib/drift";
-import { fileExists } from "../lib/fs-util";
-import { MODULES_DIR } from "../constants/paths";
-import { writeModulesState } from "../lib/modules-state";
+import { describeMissingDependencies, expandRegistryClosure } from "../../assemble/module-graph";
+import { collectMissingRegistrySources } from "../../assemble/modules-copy";
+import { ModuleSourceDrift, diffModuleSources } from "../../assemble/module-source-drift";
+import { runSteps } from "../../assemble/pipeline";
+import { diffSnapshots, driftPatchIds } from "../../core/drift";
+import { moduleKeys } from "../../core/modules-state";
+import { MODULES_DIR } from "../../constants/paths";
+import { snapshotInstalledModule, snapshotPristineModule } from "../../lib/drift";
+import { CliError } from "../../lib/errors";
+import { fileExists } from "../../lib/fs-util";
+import { writeModulesState } from "../../lib/modules-state";
 
-import { CliError } from "../lib/errors";
-
-import { createContext, GlobalOptions } from "./shared";
+import { createContext, GlobalOptions } from "../shared";
 
 type UpdateStatus = "missing" | "missing-in-registry" | "drifted" | "update-available" | "up-to-date";
 
@@ -28,25 +28,29 @@ interface UpdateInspection {
 
 const short = (commit: string | null): string => (commit ? commit.slice(0, 7) : "unknown");
 
-/** Split a `--keys` flag value: accepts comma and/or space separated input. */
-export function parseKeysFlag(input: string[] | undefined): string[] | undefined {
-  if (!input) return undefined;
-  const keys = input
-    .flatMap((chunk) => chunk.split(","))
-    .map((key) => key.trim())
-    .filter((key) => key.length > 0);
-  return [...new Set(keys)];
+/** Whether the process can prompt the user. */
+function isInteractive(): boolean {
+  return Boolean(process.stdin.isTTY && process.stdout.isTTY);
 }
 
-export async function runUpdate(
-  options: GlobalOptions & {
-    all?: boolean;
-    yes?: boolean;
-    force?: boolean;
-    /** Non-interactive single/multi module selector, e.g. --keys a,b. */
-    keys?: string[];
-  },
-): Promise<void> {
+export interface ModulesUpdateOptions extends GlobalOptions {
+  yes?: boolean;
+  force?: boolean;
+  /** CI gate: verify installed copies against the registry checkout, write nothing. */
+  check?: boolean;
+  /** Positional module selector; undefined means every module with an update. */
+  keys?: string[];
+}
+
+export async function runUpdate(options: ModulesUpdateOptions): Promise<void> {
+  if (options.check) {
+    if (options.keys && options.keys.length > 0) {
+      throw new CliError("`modules update --check` inspects every enabled module and does not accept module keys.");
+    }
+    await runUpdateCheck(options);
+    return;
+  }
+
   console.info(
     figlet.textSync("Newbie", {
       font: "Epic",
@@ -118,11 +122,11 @@ export async function runUpdate(
 
   for (const result of inspections) {
     if (result.status === "missing") {
-      console.info(yellow(`[skip] ${result.key}: directory missing; run 'newbie install'.`));
+      console.info(yellow(`[skip] ${result.key}: directory missing; run 'newbie modules install'.`));
     } else if (result.status === "missing-in-registry") {
       console.info(
         yellow(
-          `[skip] ${result.key}: not present in registry checkout ${short(registry.sourceCommit)}; set NEWBIE_MODULES_REF to a ref that carries it, then run 'newbie install'.`,
+          `[skip] ${result.key}: not present in registry checkout ${short(registry.sourceCommit)}; set NEWBIE_MODULES_REF to a ref that carries it, then run 'newbie modules install'.`,
         ),
       );
     } else if (result.status === "drifted") {
@@ -146,11 +150,11 @@ export async function runUpdate(
   }
 
   let selected: UpdateInspection[];
-  if (options.keys) {
+  if (options.keys && options.keys.length > 0) {
     const enabled = new Set(keys);
     const unknown = options.keys.filter((key) => !enabled.has(key));
     if (unknown.length > 0) {
-      throw new CliError(`Unknown or disabled module(s) in --keys: ${unknown.join(", ")}. Enabled: ${keys.join(", ")}`);
+      throw new CliError(`Unknown or disabled module(s): ${unknown.join(", ")}. Enabled: ${keys.join(", ")}`);
     }
     const updatableKeys = new Set(updatable.map((result) => result.key));
     for (const key of options.keys) {
@@ -163,10 +167,10 @@ export async function runUpdate(
     }
     selected = updatable.filter((result) => options.keys!.includes(result.key));
     if (selected.length === 0) {
-      console.info(green("\n[info] Nothing to update for the given --keys.\n"));
+      console.info(green("\n[info] Nothing to update for the given modules.\n"));
       return;
     }
-  } else if (options.all || options.dryRun) {
+  } else if (options.dryRun || !isInteractive()) {
     selected = updatable;
   } else {
     const selectedKeys = await checkbox({
@@ -229,4 +233,45 @@ export async function runUpdate(
 
   ctx.issues.assertEmpty();
   console.info(bold(green("\nC O M P L E T E\n")));
+}
+
+/** Print one installed module whose sources diverge from the registry checkout. */
+function printSourceDrift(drift: ModuleSourceDrift): void {
+  const verdict = drift.report === null ? "absent from" : "differs from";
+  console.info(bold(`\n# ${drift.installedPath} (${verdict} ${drift.registryPath})`));
+  if (drift.report === null) return;
+  for (const file of drift.report.added) console.info(`  added: ${file}`);
+  for (const file of drift.report.changed) console.info(`  changed: ${file}`);
+  for (const file of drift.report.removed) console.info(`  removed: ${file}`);
+}
+
+/**
+ * CI gate (ADR-024 F7): every installed module copy must stay byte-identical to
+ * the registry checkout it was back-ported from (ADR-019/ADR-021). Runs
+ * offline: CI points NEWBIE_MODULES_PATH at a local checkout, so no fetch.
+ */
+async function runUpdateCheck(options: ModulesUpdateOptions): Promise<void> {
+  const { ctx } = await createContext(options, { fetch: false });
+  const enabledKeys = moduleKeys(ctx.state);
+  if (enabledKeys.length === 0) {
+    console.info(green(bold("✓ No modules are enabled.")));
+    return;
+  }
+
+  const drifts = await diffModuleSources({
+    cwd: ctx.cwd,
+    registryRoot: ctx.registry.root,
+    enabledKeys,
+  });
+  if (drifts.length === 0) {
+    console.info(green(bold("✓ Installed module sources match the registry checkout.")));
+    return;
+  }
+
+  for (const drift of drifts) printSourceDrift(drift);
+  const keys = drifts.map((drift) => drift.key).join(", ");
+  throw new CliError(
+    `${drifts.length} installed module(s) differ from the registry checkout (${keys}); ` +
+      "back-port the host changes to newbie-modules, or run `newbie modules update` to adopt the registry version.",
+  );
 }

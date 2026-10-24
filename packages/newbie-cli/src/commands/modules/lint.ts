@@ -2,10 +2,10 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { gray, green, red, yellow } from "colorette";
 
-import { LayeredModule, lintModuleLayers } from "../../core/layer-lint";
 import { REGISTRY_MODULES_DIR } from "../../constants/paths";
+import { LayeredModule, lintModuleLayers } from "../../core/layer-lint";
 import { CliError } from "../../lib/errors";
-import { listRegistryKeys, readRegistryModule, requireRegistry, RegistryLocation } from "../../lib/registry";
+import { listRegistryKeys, readRegistryModule } from "../../lib/registry";
 
 /** Cross-module import reference, e.g. `@modules/account/account.service`. */
 const IMPORT_PATTERN = /@modules\/([a-z0-9-]+)/g;
@@ -34,23 +34,26 @@ async function moduleDependencies(dir: string, selfKey: string): Promise<string[
   return [...dependencies].sort();
 }
 
-/** Prefer the current working directory when it is itself a registry checkout. */
-async function resolveLintTarget(cwd: string): Promise<RegistryLocation> {
+/** Fail unless cwd is a newbie-modules registry checkout (ADR-024 F17). */
+async function requireRegistryCheckout(cwd: string): Promise<string> {
+  const root = path.resolve(cwd);
   try {
-    await fs.stat(path.join(cwd, REGISTRY_MODULES_DIR));
-    return { root: cwd, url: "", sourceCommit: null, local: true };
+    await fs.stat(path.join(root, REGISTRY_MODULES_DIR));
   } catch {
-    return requireRegistry({ fetch: false });
+    throw new CliError(
+      `modules lint only works inside a newbie-modules registry checkout. Run it from the registry working tree (cwd must contain ${REGISTRY_MODULES_DIR}).`,
+    );
   }
+  return root;
 }
 
-export async function runDevLint(options: { cwd: string }): Promise<void> {
-  const registry = await resolveLintTarget(path.resolve(options.cwd));
-  const keys = await listRegistryKeys(registry.root);
+export async function runLint(options: { cwd: string }): Promise<void> {
+  const root = await requireRegistryCheckout(options.cwd);
+  const keys = await listRegistryKeys(root);
 
   const modules: LayeredModule[] = [];
   for (const key of keys) {
-    const mod = await readRegistryModule(registry.root, key);
+    const mod = await readRegistryModule(root, key);
     if (!mod) continue;
     modules.push({
       key,
@@ -60,7 +63,7 @@ export async function runDevLint(options: { cwd: string }): Promise<void> {
     });
   }
 
-  console.info(`Linted ${modules.length} registry module(s) in ${registry.root}\n`);
+  console.info(`Linted ${modules.length} registry module(s) in ${root}\n`);
 
   const findings = lintModuleLayers(modules);
   const errors = findings.filter((finding) => finding.level === "error");

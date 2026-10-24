@@ -30,14 +30,21 @@ interface DoctorFinding {
   message: string;
 }
 
-export async function runDoctor(options: GlobalOptions): Promise<void> {
-  console.info(
-    figlet.textSync("Newbie", {
-      font: "Epic",
-      width: 80,
-      whitespaceBreak: true,
-    }),
-  );
+export interface DoctorOptions extends GlobalOptions {
+  /** Print findings as JSON instead of human-readable text. */
+  json?: boolean;
+}
+
+export async function runDoctor(options: DoctorOptions): Promise<void> {
+  if (!options.json) {
+    console.info(
+      figlet.textSync("Newbie", {
+        font: "Epic",
+        width: 80,
+        whitespaceBreak: true,
+      }),
+    );
+  }
 
   const cwd = path.resolve(options.cwd);
   const findings: DoctorFinding[] = [];
@@ -50,18 +57,18 @@ export async function runDoctor(options: GlobalOptions): Promise<void> {
 
   // [check 1] modules.json
   if (!(await stateExists(cwd))) {
-    throw new CliError(`${MODULES_JSON} not found. Run 'newbie config' to declare modules first.`);
+    throw new CliError(`${MODULES_JSON} not found. Run 'newbie modules' to declare modules first.`);
   }
   const state = await readModulesState(cwd);
   const keys = moduleKeys(state);
 
   // [check 2] registry
   const registry = await resolveRegistry({ fetch: false });
-  if (registry) {
+  if (registry && !options.json) {
     console.info(
       `Registry: ${registry.local ? "local " : "cached "}${registry.root} @ ${registry.sourceCommit?.slice(0, 7) ?? "unknown"}\n`,
     );
-  } else {
+  } else if (!registry) {
     notice("Registry unavailable offline; drift checks skipped (set NEWBIE_MODULES_PATH or run an online command).");
   }
 
@@ -72,10 +79,10 @@ export async function runDoctor(options: GlobalOptions): Promise<void> {
 
   // [check 3] generated wiring
   if (!(await fileExists(cwd, MODULES_MODULE_TS))) {
-    error(`Generated ${MODULES_MODULE_TS} is missing; run 'newbie install'.`);
+    error(`Generated ${MODULES_MODULE_TS} is missing; run 'newbie modules install'.`);
   }
   if (!(await fileExists(cwd, MODULES_CONFIG_TS))) {
-    error(`Generated ${MODULES_CONFIG_TS} is missing; run 'newbie install'.`);
+    error(`Generated ${MODULES_CONFIG_TS} is missing; run 'newbie modules install'.`);
   }
 
   // [check 4] per-module state
@@ -91,7 +98,7 @@ export async function runDoctor(options: GlobalOptions): Promise<void> {
     const label = bold(key);
 
     if (!(await fileExists(cwd, `${MODULES_DIR}/${key}`))) {
-      error(`${label}: module directory missing; run 'newbie install'.`);
+      error(`${label}: module directory missing; run 'newbie modules install'.`);
       continue;
     }
 
@@ -104,7 +111,7 @@ export async function runDoctor(options: GlobalOptions): Promise<void> {
 
     if (manifest.schema) {
       if (!(await fileExists(cwd, path.posix.join(PRISMA_SCHEMA_MODELS_DIR, `${key}.prisma`)))) {
-        error(`${label}: ${PRISMA_SCHEMA_MODELS_DIR}/${key}.prisma missing; run 'newbie install'.`);
+        error(`${label}: ${PRISMA_SCHEMA_MODELS_DIR}/${key}.prisma missing; run 'newbie modules install'.`);
       }
       if (datasourceSchemas && !datasourceSchemas.includes(moduleSchemaNamespace(key))) {
         error(`${label}: datasource schemas lacks '${moduleSchemaNamespace(key)}'.`);
@@ -118,7 +125,7 @@ export async function runDoctor(options: GlobalOptions): Promise<void> {
     const record = state.modules.find((entry) => entry.key === key);
     if (registry?.sourceCommit && record?.sourceCommit && record.sourceCommit !== registry.sourceCommit) {
       notice(
-        `${label}: update available (${record.sourceCommit.slice(0, 7)} -> ${registry.sourceCommit.slice(0, 7)}); run 'newbie update'.`,
+        `${label}: update available (${record.sourceCommit.slice(0, 7)} -> ${registry.sourceCommit.slice(0, 7)}); run 'newbie modules update'.`,
       );
     }
 
@@ -147,7 +154,7 @@ export async function runDoctor(options: GlobalOptions): Promise<void> {
   // [check 4b] declared moduleDependencies must all be enabled.
   for (const { module, dependency } of findMissingEnabledModules(keys, moduleGraph)) {
     error(
-      `'${dependency}' must be enabled because module '${module}' declares it as a module dependency; run 'newbie install'.`,
+      `'${dependency}' must be enabled because module '${module}' declares it as a module dependency; run 'newbie modules install'.`,
     );
   }
 
@@ -165,7 +172,9 @@ export async function runDoctor(options: GlobalOptions): Promise<void> {
     if (!keys.includes(dir)) {
       const isRegistryModule = registry ? (await readRegistryModule(registry.root, dir)) !== null : false;
       if (isRegistryModule) {
-        notice(`Extra module directory '${dir}' not declared in ${MODULES_JSON}; run 'newbie install' to remove it.`);
+        notice(
+          `Extra module directory '${dir}' not declared in ${MODULES_JSON}; run 'newbie modules install' to remove it.`,
+        );
       }
     }
   }
@@ -178,13 +187,37 @@ export async function runDoctor(options: GlobalOptions): Promise<void> {
     const orphanKey = file.slice(0, -".prisma".length);
     if (!enabledKeySet.has(orphanKey)) {
       error(
-        `Orphan prisma fragment '${PRISMA_SCHEMA_MODELS_DIR}/${file}' (module '${orphanKey}' not enabled); run 'newbie install' to remove it.`,
+        `Orphan prisma fragment '${PRISMA_SCHEMA_MODELS_DIR}/${file}' (module '${orphanKey}' not enabled); run 'newbie modules install' to remove it.`,
       );
     }
   }
 
   const errors = findings.filter((finding) => finding.level === "error");
   const notices = findings.filter((finding) => finding.level === "notice");
+
+  if (options.json) {
+    console.info(
+      JSON.stringify(
+        {
+          cwd,
+          registry: registry
+            ? {
+                available: true,
+                local: registry.local,
+                path: registry.root,
+                sourceCommit: registry.sourceCommit,
+              }
+            : { available: false },
+          errors: errors.map((finding) => finding.message),
+          notices: notices.map((finding) => finding.message),
+        },
+        null,
+        2,
+      ),
+    );
+    if (errors.length > 0) process.exitCode = 1;
+    return;
+  }
 
   for (const finding of errors) console.info(red(`  ✗ ${finding.message}`));
   for (const finding of notices) console.info(yellow(`  ! ${finding.message}`));

@@ -3,15 +3,17 @@ import fsp from "node:fs/promises";
 import path from "node:path";
 import { cyan, green, yellow } from "colorette";
 
-import { MODULES_DIR, MODULE_MANIFEST_FILE, REGISTRY_MODULES_DIR } from "../constants/paths";
-import { CliError } from "../lib/errors";
-import { execCapture, trim } from "../lib/exec";
-import { moduleRootInRegistry, RegistryLocation, resolveRegistry } from "../lib/registry";
+import { MODULES_DIR, MODULE_MANIFEST_FILE, REGISTRY_MODULES_DIR } from "../../constants/paths";
+import { CliError } from "../../lib/errors";
+import { execCapture, trim } from "../../lib/exec";
+import { moduleRootInRegistry, RegistryLocation, resolveRegistry } from "../../lib/registry";
 
-export interface WatchOptions {
+export interface ModulesWatchOptions {
   cwd: string;
   /** Watch every registry module instead of only installed ones. */
   all?: boolean;
+  /** Restrict the watched set to these module keys. */
+  keys?: string[];
 }
 
 /** Module keys currently copied into the project (have a manifest). */
@@ -37,7 +39,7 @@ async function installedModuleKeys(projectRoot: string): Promise<string[]> {
 /**
  * Copy one module's registry source tree into the project. Mirrors the
  * install pipeline's addModules behaviour but runs outside the full
- * assemble context (env/prisma wiring is left to `newbie install`).
+ * assemble context (env/prisma wiring is left to `newbie modules install`).
  */
 async function syncModule(projectRoot: string, registry: RegistryLocation, key: string): Promise<void> {
   const source = moduleRootInRegistry(registry.root, key);
@@ -73,7 +75,7 @@ async function moduleHasUncommittedChanges(registryRoot: string, key: string): P
   }
 }
 
-export async function runWatch(options: WatchOptions): Promise<void> {
+export async function runWatch(options: ModulesWatchOptions): Promise<void> {
   const projectRoot = path.resolve(options.cwd);
 
   const registry = await resolveRegistry({ fetch: false });
@@ -91,14 +93,27 @@ export async function runWatch(options: WatchOptions): Promise<void> {
   }
 
   const installed = await installedModuleKeys(projectRoot);
-  const watchKeys = options.all ? await listRegistryKeys(registry.root) : installed;
+  const baseKeys = options.all ? await listRegistryKeys(registry.root) : installed;
+  const selected = options.keys && options.keys.length > 0 ? new Set(options.keys) : null;
+  const watchKeys = selected ? baseKeys.filter((key) => selected.has(key)) : baseKeys;
+
+  if (selected) {
+    const missing = [...selected].filter((key) => !baseKeys.includes(key));
+    if (missing.length > 0) {
+      console.warn(
+        yellow(
+          `  ! ${missing.join(", ")}: not ${options.all ? "in the registry" : "installed in this project"}; skipping`,
+        ),
+      );
+    }
+  }
 
   if (watchKeys.length === 0) {
     console.info(
       yellow(
         options.all
-          ? "No modules found in the registry."
-          : "No modules installed in this project. Run `newbie install` first, or use --all to watch every registry module.",
+          ? "No matching modules found in the registry."
+          : "No modules installed in this project. Run `newbie modules install` first, or use --all to watch every registry module.",
       ),
     );
     return;
@@ -161,9 +176,9 @@ export async function runWatch(options: WatchOptions): Promise<void> {
   });
 }
 
-/** List all module keys in a registry working tree (local copy of listRegistryKeys). */
+/** List all module keys in a registry working tree. */
 async function listRegistryKeys(registryRoot: string): Promise<string[]> {
-  const dir = path.resolve(registryRoot, "packages", "modules");
+  const dir = path.resolve(registryRoot, REGISTRY_MODULES_DIR);
   try {
     const entries = await fsp.readdir(dir, { withFileTypes: true });
     const keys: string[] = [];

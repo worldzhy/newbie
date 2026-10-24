@@ -104,5 +104,5 @@ export async function runCreate(options: CreateOptions): Promise<void> {
   }
 
   console.info(green(bold("\n✓ Project created.\n")));
-  console.info(`Next steps:\n  cd ${name}\n  npm install\n  newbie config\n`);
+  console.info(`Next steps:\n  cd ${name}\n  npm install\n  newbie modules\n`);
 }

@@ -13,16 +13,14 @@ import {
   TEMPLATE_SCAN_IGNORED_SUFFIXES,
   TemplateChange,
   TemplateFile,
-} from "../core/template-sync";
-import { unifiedDiff } from "../core/unified-diff";
-import { CliError } from "../lib/errors";
-import { createSink } from "../lib/sink";
-import { GlobalOptions } from "./shared";
-import { resolveTemplate, TemplateReference } from "./create";
+} from "../../core/template-sync";
+import { unifiedDiff } from "../../core/unified-diff";
+import { CliError } from "../../lib/errors";
+import { createSink } from "../../lib/sink";
+import { GlobalOptions } from "../shared";
+import { resolveTemplate, TemplateReference } from "../create";
 
-export interface SyncTemplateOptions extends GlobalOptions, TemplateReference {
-  /** Apply the changes instead of only printing the diff. */
-  write?: boolean;
+export interface TemplateSyncOptions extends GlobalOptions, TemplateReference {
   /** CI gate mode: print the diff and exit non-zero when anything drifts. */
   check?: boolean;
   /**
@@ -124,10 +122,7 @@ function printChangeDiff(change: TemplateChange): void {
   process.stdout.write(diff);
 }
 
-export async function runSyncTemplate(options: SyncTemplateOptions): Promise<void> {
-  if (options.check && options.write) {
-    throw new CliError("--check and --write are mutually exclusive.");
-  }
+export async function runTemplateSync(options: TemplateSyncOptions): Promise<void> {
   const cwd = path.resolve(options.cwd);
   const sink = createSink(cwd, options.dryRun);
   const templateFiles = filterTemplateFiles(options.paths);
@@ -171,21 +166,13 @@ export async function runSyncTemplate(options: SyncTemplateOptions): Promise<voi
       actionable.map((c) => `${c.file.path} (${c.kind})`).join(", "),
   );
 
-  const writeCommand = scope ? `newbie sync-template --write ${scope}` : "newbie sync-template --write";
-
   if (options.check) {
+    const command = scope ? `newbie template sync ${scope}` : "newbie template sync";
     throw new CliError(
       `${changes.length} template file(s) drift from the template ` +
         `(${actionable.length} auto-fixable). ` +
-        `Run \`${writeCommand}\` to apply the template version.`,
+        `Run \`${command}\` to apply the template version.`,
     );
-  }
-
-  if (!options.write) {
-    console.info("\nNext steps:");
-    console.info(`  ${writeCommand}   # apply these changes (supports --dry-run)`);
-    console.info("  git checkout -b chore/template-sync   # then review `git diff` and open a PR");
-    return;
   }
 
   for (const change of actionable) {
