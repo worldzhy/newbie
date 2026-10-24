@@ -22,8 +22,20 @@ import { parseModuleSelector } from "./lib/module-selector";
 export const VERSION: string = pkg.version;
 
 /**
- * The static command surface (ADR-024/ADR-029). Module-provided namespaces are
- * attached at runtime by `registerModuleCommands`.
+ * Reject unrecognized command names and surplus positional arguments instead
+ * of silently degrading to the parent action (commander is lenient by
+ * default). A retired name such as `modules install` must fail loudly: a
+ * silent no-op would let stale automation report success (ADR-029).
+ */
+export function enforceStrictArguments(command: Command): void {
+  command.allowExcessArguments(false);
+  for (const child of command.commands) enforceStrictArguments(child);
+}
+
+/**
+ * The static command surface (ADR-024). Module-provided namespaces are
+ * attached at runtime by `registerModuleCommands` and stay outside this
+ * strictness rule: their arity is owned by the module package.
  */
 export function buildProgram(): Command {
   const program = new Command();
@@ -221,6 +233,8 @@ export function buildProgram(): Command {
     program.outputHelp();
     console.info(`\nnewbie v${VERSION}`);
   });
+
+  enforceStrictArguments(program);
 
   return program;
 }

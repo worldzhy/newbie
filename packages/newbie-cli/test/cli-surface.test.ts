@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { Command } from "commander";
+import { Command, CommanderError } from "commander";
 
 import { buildProgram } from "../src/program";
 
@@ -137,4 +137,44 @@ describe("newbie CLI surface", () => {
     assert.equal(templateNames.has("sync"), false, "retired template command 'sync' must not exist");
     assert.ok(templateNames.has("update"));
   });
+
+  /**
+   * ADR-029: retired names and surplus arguments must exit non-zero. Without
+   * strict arity commander treats them as extra operands and runs the parent
+   * action, so a stale script would report success while doing nothing.
+   */
+  it("rejects retired commands and surplus arguments at runtime", () => {
+    for (const argv of [
+      ["modules", "install"],
+      ["template", "sync"],
+      ["modules", "apply", "extra"],
+    ]) {
+      const error = expectParseFailure(argv);
+      assert.equal(error.exitCode, 1, `'newbie ${argv.join(" ")}' must exit 1`);
+    }
+  });
 });
+
+function expectParseFailure(argv: string[]): InstanceType<typeof CommanderError> {
+  const program = buildProgram();
+  silenceAndThrow(program);
+  let error: unknown;
+  try {
+    program.parse(argv, { from: "user" });
+  } catch (caught) {
+    error = caught;
+  }
+  assert.ok(error instanceof CommanderError, `'newbie ${argv.join(" ")}' must be rejected by the parser`);
+  return error;
+}
+
+/**
+ * `exitOverride` is per-command: without it a subcommand calls process.exit
+ * directly, which would take the test runner down instead of surfacing the
+ * parse error.
+ */
+function silenceAndThrow(command: Command): void {
+  command.exitOverride();
+  command.configureOutput({ writeOut: () => {}, writeErr: () => {} });
+  for (const child of command.commands) silenceAndThrow(child);
+}

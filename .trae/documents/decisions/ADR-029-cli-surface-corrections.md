@@ -1,6 +1,6 @@
 # ADR-029: CLI 命令面修正——`template update` 与 `modules add` / `modules apply`
 
-状态：已采纳
+状态：已采纳（2026-10-24 追加第 5 条：退役命令与多余参数必须非零退出，随 1.11.1 / 1.3.1 发布）
 日期：2026-10-24
 Supersedes: ADR-022（全部）；部分取代 ADR-024（条款 5 的 arity 分态、F1 的 `template sync` 命名、目标命令面相关行、F7/F10 的 `modules install` 引用）、ADR-025（决策第 3 条的命令名）
 
@@ -46,7 +46,8 @@ fewbie：
 2. `modules apply` 是**新命令**，不是 ADR-024 F6 删除的旧 `apply`（带 `--config` / `--ci`）的复活：旧 `apply` 绕开声明文件直接吃 spec，本 `apply` 只按声明文件收敛，ADR-024 条款 10（声明文件是唯一写入口）不变。
 3. `template sync` 改名 `template update`，行为、flag、所有权清单不变。ADR-022 的 `sync` 词根结论随平铺前提失效而废止；实现层符号（`template-sync.ts`、`planTemplateSync` 等）同步改为 update 词根，保持命令层与实现层单一词根。
 4. `--force` / `--skip-install` 归属：冲突场景（目标文件已存在但不属于已声明模块，常见于模板自带文件与新声明模块重叠）在 `add` 与 `apply` 都可能出现——`applyModuleSelection` 的冲突判定对「下一集合减当前集合」生效，两条命令都经过它；`--force` 是该引擎层的开关，两个命令都承接。`--skip-install` 同理（两条命令都会补装缺失依赖，测试与沙箱需要跳过）。newbie 侧 `--force` 本就在 `modules update`（覆盖漂移副本），本次不变。
-5. 版本：`@devbie/newbie-cli` 1.10.1 → 1.11.0，`@devbie/fewbie-cli` 1.2.0 → 1.3.0（未上线，1.x 内 minor）。
+5. 无法识别的命令名与多余位置参数必须非零退出，不得静默降级为父命令动作。commander 默认 `allowExcessArguments=true`，会把 `modules install` 当作父命令的多余操作数并执行裸 `modules`（列表/选择器），exit 0——这会让旧脚本"成功"却什么都没做。静态命令树全量递归设置 `allowExcessArguments(false)`，并在 `cli-surface.test.ts` 增加运行时断言（`exitCode=1`）；随包注册的动态命名空间不在此列，其 arity 由所属模块包自持。
+6. 版本：`@devbie/newbie-cli` 1.10.1 → 1.11.0、`@devbie/fewbie-cli` 1.2.0 → 1.3.0；随后 1.11.1 / 1.3.1 为第 5 条加固的补丁发布（未上线，1.x 内 minor/patch）。
 
 ## ADR 关系
 
@@ -66,5 +67,5 @@ fewbie：
 
 ## 影响
 
-- 更容易：`install` 一词三义消失；`remove` 有对称的 `add`；对齐动词只剩 `update` 一个；`apply --check` 语义自解释（terraform plan 先例）。
+- 更容易：`install` 一词三义消失；`remove` 有对称的 `add`；对齐动词只剩 `update` 一个；`apply --check` 语义自解释（terraform plan 先例）；退役命令与多余参数显式失败，旧自动化不再能"静默成功"。
 - 更难/后续工作：两个 CLI 的命令树、实现层符号、测试快照、README、设计文档、模板仓脚本、nightwatch-backend CI、各仓技能中所有 `template sync` / `modules install` 引用需清零；nightwatch-backend 派生文件需用新 CLI 重生成并复验双门禁（`modules apply --check` + `template update --check`）。

@@ -18,6 +18,17 @@ import { runTemplateUpdate } from "./commands/template/update";
 
 export const VERSION: string = pkg.version;
 
+/**
+ * Reject unrecognized command names and surplus positional arguments instead
+ * of silently degrading to the parent action (commander is lenient by
+ * default). A retired name such as `modules install` must fail loudly: a
+ * silent no-op would let stale automation report success (ADR-029).
+ */
+export function enforceStrictArguments(command: Command): void {
+  command.allowExcessArguments(false);
+  for (const child of command.commands) enforceStrictArguments(child);
+}
+
 interface GlobalOptions {
   cwd: string;
   dryRun: boolean;
@@ -204,6 +215,8 @@ export function buildProgram(): Command {
     program.outputHelp();
     console.info(`\n${bold("@devbie/fewbie-cli")} ${VERSION}`);
   });
+
+  enforceStrictArguments(program);
 
   return program;
 }
