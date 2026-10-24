@@ -1,5 +1,6 @@
 import { basename } from "node:path";
 
+import type { IdeKey } from "../config";
 import { readTraeMemoryDelta } from "./trae-memory";
 import { readTranscriptDelta } from "./transcript";
 import type { SessionSource } from "./types";
@@ -27,7 +28,7 @@ function transcriptSource(provenance: string, note?: string): SessionSource {
 }
 
 /** Trae exposes no transcripts, only the IDE's own session summaries. */
-const traeMemorySource: SessionSource = {
+const traeSource: SessionSource = {
   provenance: "trae-memory",
   accepts: (filePath) => basename(filePath).startsWith("session_memory_"),
   readDelta: readTraeMemoryDelta,
@@ -36,9 +37,13 @@ const traeMemorySource: SessionSource = {
   note: TRAE_MEMORY_FIDELITY_NOTE,
 };
 
-/** Keyed by `collector config.sessionSources` keys; unknown keys are ignored. */
-export const SESSION_SOURCES: Record<string, SessionSource> = {
+/**
+ * One descriptor per supported IDE, keyed by `IdeKey` — the same key the
+ * config uses under `sessionRoots`. A configured root for an unknown IDE is
+ * ignored by construction.
+ */
+export const SESSION_SOURCES: Record<IdeKey, SessionSource> = {
   claude: transcriptSource("claude"),
   codex: transcriptSource("codex", CODEX_NO_CWD_NOTE),
-  traeMemory: traeMemorySource,
+  trae: traeSource,
 };

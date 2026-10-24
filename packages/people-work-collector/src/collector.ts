@@ -1,4 +1,4 @@
-import type { CollectorConfig, CollectorState } from "./config";
+import type { CollectorConfig, CollectorState, IdeKey } from "./config";
 import { scanDocuments } from "./documents";
 import { walkJsonl } from "./files";
 import { emptyProgress, mergeProgress } from "./progress";
@@ -38,9 +38,10 @@ export async function collectOnce(
 
   const companyWorkspaces = config.workspaces.filter((workspace) => workspace.isCompany);
 
-  for (const [sourceKey, root] of Object.entries(config.sessionSources)) {
-    const source = SESSION_SOURCES[sourceKey];
-    if (!root || !source) continue;
+  for (const ide of Object.keys(SESSION_SOURCES) as IdeKey[]) {
+    const root = config.sessionRoots[ide];
+    if (!root) continue;
+    const source = SESSION_SOURCES[ide];
 
     for (const filePath of walkJsonl(root)) {
       if (!source.accepts(filePath)) continue;

@@ -13,6 +13,7 @@ export type {
   CollectorState,
   CollectorWorkspaceConfig,
   FileProgress,
+  IdeKey,
 } from "./config";
 export { collectOnce } from "./collector";
 export type { CollectSummary } from "./collector";

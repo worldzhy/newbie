@@ -18,15 +18,16 @@ function context(filePath: string, root: string, parsed = emptySession()) {
 
 describe("session source registry", () => {
   it("declares one descriptor per supported IDE with its wire provenance", () => {
-    assert.deepEqual(Object.keys(SESSION_SOURCES), ["claude", "codex", "traeMemory"]);
+    assert.deepEqual(Object.keys(SESSION_SOURCES), ["claude", "codex", "trae"]);
     assert.equal(SESSION_SOURCES.claude.provenance, "claude");
     assert.equal(SESSION_SOURCES.codex.provenance, "codex");
-    assert.equal(SESSION_SOURCES.traeMemory.provenance, "trae-memory");
+    // The config key is the IDE; the wire value states the fidelity level.
+    assert.equal(SESSION_SOURCES.trae.provenance, "trae-memory");
   });
 
   it("reads only Trae's memory files, not arbitrary jsonl", () => {
-    assert.equal(SESSION_SOURCES.traeMemory.accepts("/memory/20261023/session_memory_abc.jsonl"), true);
-    assert.equal(SESSION_SOURCES.traeMemory.accepts("/memory/20261023/other.jsonl"), false);
+    assert.equal(SESSION_SOURCES.trae.accepts("/memory/20261023/session_memory_abc.jsonl"), true);
+    assert.equal(SESSION_SOURCES.trae.accepts("/memory/20261023/other.jsonl"), false);
     assert.equal(SESSION_SOURCES.claude.accepts("/projects/anything.jsonl"), true);
   });
 
@@ -48,6 +49,6 @@ describe("session source registry", () => {
       "session_memory_a.jsonl",
     );
 
-    assert.equal(SESSION_SOURCES.traeMemory.resolveWorkspace(context(filePath, root))?.workspaceKey, "devbie");
+    assert.equal(SESSION_SOURCES.trae.resolveWorkspace(context(filePath, root))?.workspaceKey, "devbie");
   });
 });

@@ -13,22 +13,25 @@ export interface CollectorWorkspaceConfig {
   repositories: { path: string; platform: string; repositoryFullName: string }[];
 }
 
+/**
+ * IDE identity: both the key of `sessionRoots` and the key of the session
+ * source registry. The wire provenance may differ per IDE (Trae only exposes
+ * IDE-written summaries, reported as "trae-memory").
+ */
+export type IdeKey = "claude" | "codex" | "trae";
+
 export interface CollectorConfig {
   endpoint: string;
   token: string;
   memberUserId: string;
   workspaces: CollectorWorkspaceConfig[];
   /**
-   * IDE transcript roots. Only sessions whose recorded working directory is
-   * inside a company workspace are uploaded. `traeMemory` points at Trae's
-   * memory store (~/.trae-cn/memory/projects) — those sessions are the IDE's
-   * own summaries, uploaded with source "trae-memory".
+   * Per-IDE session storage root, keyed by IDE. Only sessions whose recorded
+   * working directory is inside a company workspace are uploaded. `trae`
+   * points at Trae's memory store (~/.trae-cn/memory/projects) — those
+   * sessions are the IDE's own summaries, uploaded with source "trae-memory".
    */
-  sessionSources: {
-    claude?: string;
-    codex?: string;
-    traeMemory?: string;
-  };
+  sessionRoots: Partial<Record<IdeKey, string>>;
   /** Directories inside company workspaces whose markdown files count as declared work. */
   documentDirectories: string[];
   maxDocumentBytes: number;
@@ -56,11 +59,11 @@ export interface CollectorState {
 export const DEFAULT_CONFIG_PATH = join(homedir(), ".devbie", "people-collector.json");
 export const DEFAULT_STATE_PATH = join(homedir(), ".devbie", "people-collector-state.json");
 
-/** Default IDE transcript roots, probed for existence at init time. */
-export const DEFAULT_SESSION_SOURCES: Required<CollectorConfig["sessionSources"]> = {
+/** Default IDE session roots, probed for existence at init time. */
+export const DEFAULT_SESSION_ROOTS: Record<IdeKey, string> = {
   claude: join(homedir(), ".claude", "projects"),
   codex: join(homedir(), ".codex", "sessions"),
-  traeMemory: join(homedir(), ".trae-cn", "memory", "projects"),
+  trae: join(homedir(), ".trae-cn", "memory", "projects"),
 };
 
 /** The member profile downloaded from the server — everything init needs. */
@@ -80,7 +83,7 @@ export function loadConfig(path = DEFAULT_CONFIG_PATH): CollectorConfig {
     token: parsed.token ?? "",
     memberUserId: parsed.memberUserId ?? "",
     workspaces: parsed.workspaces ?? [],
-    sessionSources: parsed.sessionSources ?? {},
+    sessionRoots: parsed.sessionRoots ?? {},
     documentDirectories: parsed.documentDirectories ?? [],
     maxDocumentBytes: parsed.maxDocumentBytes ?? 200_000,
   };
@@ -118,7 +121,7 @@ export function writeSampleConfig(path = DEFAULT_CONFIG_PATH): void {
         repositories: [{ path: ".", platform: "github", repositoryFullName: "worldzhy/nightwatch-backend" }],
       },
     ],
-    sessionSources: { ...DEFAULT_SESSION_SOURCES },
+    sessionRoots: { ...DEFAULT_SESSION_ROOTS },
     documentDirectories: ["docs", ".trae/documents"],
     maxDocumentBytes: 200_000,
   };
@@ -136,16 +139,17 @@ export function writeConfigFromProfile(profile: CollectorProfile, path = DEFAULT
   if (!profile.endpoint || !profile.token || !profile.memberUserId) {
     throw new Error("Profile must define endpoint, token and memberUserId.");
   }
-  const sessionSources: CollectorConfig["sessionSources"] = {};
-  for (const [name, root] of Object.entries(DEFAULT_SESSION_SOURCES)) {
-    if (existsSync(root)) sessionSources[name as keyof CollectorConfig["sessionSources"]] = root;
+  const sessionRoots: Partial<Record<IdeKey, string>> = {};
+  for (const ide of Object.keys(DEFAULT_SESSION_ROOTS) as IdeKey[]) {
+    const root = DEFAULT_SESSION_ROOTS[ide];
+    if (existsSync(root)) sessionRoots[ide] = root;
   }
   const config: CollectorConfig = {
     endpoint: profile.endpoint.replace(/\/$/, ""),
     token: profile.token,
     memberUserId: profile.memberUserId,
     workspaces: [],
-    sessionSources,
+    sessionRoots,
     documentDirectories: ["docs", ".trae/documents"],
     maxDocumentBytes: 200_000,
   };
