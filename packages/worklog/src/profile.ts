@@ -8,7 +8,7 @@ import type { WorklogConfig, IdeKey } from "./config";
 export interface WorklogProfile {
   endpoint: string;
   token: string;
-  memberUserId: string;
+  evaluateeUserId: string;
 }
 
 /**
@@ -21,8 +21,8 @@ export interface WorklogProfile {
  * which of their workspaces are company ones before the first sync.
  */
 export function upsertConfigFromProfile(profile: WorklogProfile, path = DEFAULT_CONFIG_PATH): void {
-  if (!profile.endpoint || !profile.token || !profile.memberUserId) {
-    throw new Error("Profile must define endpoint, token and memberUserId.");
+  if (!profile.endpoint || !profile.token || !profile.evaluateeUserId) {
+    throw new Error("Profile must define endpoint, token and evaluateeUserId.");
   }
   const existing = existsSync(path) ? loadConfig(path) : null;
   const agentSessionDirectories: Partial<Record<IdeKey, string>> = {
@@ -35,7 +35,7 @@ export function upsertConfigFromProfile(profile: WorklogProfile, path = DEFAULT_
   const config: WorklogConfig = {
     endpoint: profile.endpoint.replace(/\/$/, ""),
     token: profile.token,
-    memberUserId: profile.memberUserId,
+    evaluateeUserId: profile.evaluateeUserId,
     workspaces: existing?.workspaces ?? [],
     agentSessionDirectories,
     documentDirectories: existing?.documentDirectories ?? ["docs", ".trae/documents"],

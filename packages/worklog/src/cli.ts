@@ -85,7 +85,7 @@ async function main(): Promise<void> {
     console.log(`Config:   ${DEFAULT_CONFIG_PATH}`);
     console.log(`State:    ${DEFAULT_STATE_PATH}`);
     console.log(`Server:   ${config ? config.endpoint : "not configured — run: worklog --profile <path>"}`);
-    console.log(`Member:   ${config?.memberUserId ?? "not configured"}`);
+    console.log(`Evaluatee: ${config?.evaluateeUserId ?? "not configured"}`);
     console.log(
       `Reporting: ${scheduled ? `on (send every ${SCHEDULER_INTERVAL_SECONDS / 60} minutes)` : "off — run: worklog start"}`,
     );

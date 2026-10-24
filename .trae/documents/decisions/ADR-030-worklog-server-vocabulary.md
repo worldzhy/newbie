@@ -50,6 +50,10 @@ ADR-026 只统一了成员面向的一半：客户端叫 `worklog`，而服务�
 
 `@devbie/worklog` 升 `2.0.0`（路由与 profile 字段 `memberUserId` → `evaluateeUserId`），`1.1.0` 保留可回退。nightwatch 未上线、无真实数据，按「未上线系统禁止过度考虑迁移」处理：PG 用手写 forward migration 做表/列重命名；ClickHouse 直接改 init migration 并重建开发库表，不叠加额外兼容迁移。
 
+### 5. 撤销与轮换即时生效
+
+原 resolver 对有效 token 做 60s 正缓存，撤销与轮换实际要等缓存过期才生效，与「软撤销后 ingest 立即 401」的契约不符（端到端冒烟时实证）。改为**有效 token 不缓存**：每次 ingest 做一次按 `tokenHash` 的索引查询；仅对非法 token 保留 10s 负缓存以吸收垃圾流量。ingest 是低频批量写入，单次索引查询成本可忽略，而绩效证据的写入权限收回必须是即时的。
+
 ## Cross-host check
 
 | 维度 | 框架层（模块 registry） | 宿主层（nightwatch-backend） |
@@ -65,7 +69,7 @@ ADR-026 只统一了成员面向的一半：客户端叫 `worklog`，而服务�
 - newbie-modules：`collector.controller.ts` → `controllers/worklog.controller.ts`（ingest + 回读读出 `PeopleEvaluationController`）、`installation.controller.ts` → `worklog-installation.controller.ts`；`people-evaluation-collector.dto.ts` → `people-evaluation-worklog.dto.ts`；installation service / token resolver 同步改名；Prisma 模型与 ClickHouse init migration 同步改名。
 - devbie：`@devbie/worklog` 2.0.0（API 路径、`memberUserId` → `evaluateeUserId`、README 与 profile 字段）。
 - nightwatch-backend：手写迁移 `ALTER TABLE ... RENAME TO` / `RENAME COLUMN`；开发库重放 ClickHouse init migration。
-- 未改动：`/people/{rubrics,periods,home-ground,assessments,pip-plans}` 路由、installation token 语义、软撤销语义、审计边界。
+- 未改动：`/people/{rubrics,periods,home-ground,assessments,pip-plans}` 路由、installation token 的凭证形态与软撤销语义（撤销/轮换的生效时机见 §5）、审计边界。
 
 ## 未在此 ADR 决定的事
 

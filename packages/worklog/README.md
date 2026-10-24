@@ -73,7 +73,7 @@ transcript body lands in a columnar store for evaluation context.
 
 ## What is **not** collected
 
-- **Uncommitted output.** The collector never runs `git status` or `git diff`
+- **Uncommitted output.** The worklog agent never runs `git status` or `git diff`
   and never reads your working tree. Only committed work reaches the fact layer,
   through the platform APIs.
 - **Anything outside a declared workspace.**

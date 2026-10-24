@@ -19,7 +19,7 @@ export type IdeKey = "claude" | "codex" | "trae";
 export interface WorklogConfig {
   endpoint: string;
   token: string;
-  memberUserId: string;
+  evaluateeUserId: string;
   /**
    * The allowlist (ADR-030): only workspaces declared here are ever scanned
    * or uploaded. There is no company/personal split — a path that is not
@@ -57,14 +57,14 @@ export function loadConfig(path = DEFAULT_CONFIG_PATH): WorklogConfig {
   const config: WorklogConfig = {
     endpoint: (parsed.endpoint ?? "").replace(/\/$/, ""),
     token: parsed.token ?? "",
-    memberUserId: parsed.memberUserId ?? "",
+    evaluateeUserId: parsed.evaluateeUserId ?? "",
     workspaces: parsed.workspaces ?? [],
     agentSessionDirectories: parsed.agentSessionDirectories ?? {},
     documentDirectories: parsed.documentDirectories ?? [],
     maxDocumentBytes: parsed.maxDocumentBytes ?? 200_000,
   };
-  if (!config.endpoint || !config.token || !config.memberUserId) {
-    throw new Error("Worklog config must define endpoint, token and memberUserId.");
+  if (!config.endpoint || !config.token || !config.evaluateeUserId) {
+    throw new Error("Worklog config must define endpoint, token and evaluateeUserId.");
   }
   return config;
 }

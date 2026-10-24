@@ -41,22 +41,22 @@ export class WorklogApi {
     private readonly token: string,
   ) {}
 
-  async reportWorkspaces(memberUserId: string, workspaces: WorklogWorkspaceConfig[]): Promise<void> {
-    await this.post("/people-evaluation/collector/workspaces", {
+  async reportWorkspaces(evaluateeUserId: string, workspaces: WorklogWorkspaceConfig[]): Promise<void> {
+    await this.post("/people/worklog/workspaces", {
       workspaces: workspaces.map((workspace) => ({
-        evaluateeUserId: memberUserId,
+        evaluateeUserId,
         workspaceKey: workspace.workspaceKey,
         rootPath: workspace.rootPath,
       })),
     });
   }
 
-  async reportSessions(memberUserId: string, sessions: UploadSession[]): Promise<void> {
+  async reportSessions(evaluateeUserId: string, sessions: UploadSession[]): Promise<void> {
     for (let index = 0; index < sessions.length; index += MAX_SESSIONS_PER_BATCH) {
       const batch = sessions.slice(index, index + MAX_SESSIONS_PER_BATCH);
-      await this.post("/people-evaluation/collector/sessions", {
+      await this.post("/people/worklog/sessions", {
         sessions: batch.map((session) => ({
-          evaluateeUserId: memberUserId,
+          evaluateeUserId,
           workspaceKey: session.workspaceKey,
           externalSessionId: session.externalSessionId,
           source: session.source,
@@ -83,12 +83,12 @@ export class WorklogApi {
     }
   }
 
-  async reportDocuments(memberUserId: string, documents: UploadDocument[]): Promise<void> {
+  async reportDocuments(evaluateeUserId: string, documents: UploadDocument[]): Promise<void> {
     for (let index = 0; index < documents.length; index += MAX_DOCUMENTS_PER_BATCH) {
       const batch = documents.slice(index, index + MAX_DOCUMENTS_PER_BATCH);
-      await this.post("/people-evaluation/collector/documents", {
+      await this.post("/people/worklog/documents", {
         documents: batch.map((document) => ({
-          evaluateeUserId: memberUserId,
+          evaluateeUserId,
           workspaceKey: document.workspaceKey,
           title: document.title,
           refPath: document.refPath,
