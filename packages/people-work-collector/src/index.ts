@@ -1,22 +1,17 @@
 export {
+  DEFAULT_AGENT_SESSION_DIRECTORIES,
   DEFAULT_CONFIG_PATH,
   DEFAULT_STATE_PATH,
   loadConfig,
-  loadState,
-  saveState,
-  writeConfigFromProfile,
   writeSampleConfig,
 } from "./config";
-export type {
-  CollectorConfig,
-  CollectorProfile,
-  CollectorState,
-  CollectorWorkspaceConfig,
-  FileProgress,
-  IdeKey,
-} from "./config";
-export { collectOnce } from "./collector";
-export type { CollectSummary } from "./collector";
+export type { CollectorConfig, CollectorWorkspaceConfig, IdeKey } from "./config";
+export { writeConfigFromProfile } from "./profile";
+export type { CollectorProfile } from "./profile";
+export { loadState, saveState } from "./state";
+export type { CollectorState, FileProgress } from "./state";
+export { collectOnce } from "./collect";
+export type { CollectSummary } from "./collect";
 export type { NormalizedMessage, ParsedSessionFile, SessionAggregate } from "./sessions/types";
-export { CollectorApi } from "./uploader";
-export type { UploadDocument, UploadSession } from "./uploader";
+export { CollectorApi } from "./api";
+export type { UploadDocument, UploadSession } from "./api";

@@ -1,5 +1,5 @@
 import { redact } from "../redact";
-import { stringOrNull } from "./text";
+import { stringOrNull } from "./record";
 import type { NormalizedRecord } from "./types";
 
 /**

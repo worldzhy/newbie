@@ -1,18 +1,12 @@
 #!/usr/bin/env node
 import { existsSync, readFileSync } from "node:fs";
 
-import { collectOnce } from "./collector";
-import {
-  CollectorProfile,
-  DEFAULT_CONFIG_PATH,
-  DEFAULT_STATE_PATH,
-  loadConfig,
-  loadState,
-  saveState,
-  writeConfigFromProfile,
-  writeSampleConfig,
-} from "./config";
-import { CollectorApi } from "./uploader";
+import { collectOnce } from "./collect";
+import { DEFAULT_CONFIG_PATH, DEFAULT_STATE_PATH, loadConfig, writeSampleConfig } from "./config";
+import { writeConfigFromProfile } from "./profile";
+import type { CollectorProfile } from "./profile";
+import { loadState, saveState } from "./state";
+import { CollectorApi } from "./api";
 
 /**
  * `people-work-collector` — member-side evidence collector (ADR-029 §8).

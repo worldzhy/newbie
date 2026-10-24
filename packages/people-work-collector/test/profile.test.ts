@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it } from "node:test";
 
-import { writeConfigFromProfile } from "../src/config";
+import { writeConfigFromProfile } from "../src/profile";
 
 function configPath(): string {
   return join(mkdtempSync(join(tmpdir(), "people-collector-profile-")), "config.json");

@@ -38,25 +38,6 @@ export interface CollectorConfig {
   maxDocumentBytes: number;
 }
 
-export interface FileProgress {
-  offset: number;
-  nextSeq: number;
-  sessionId: string;
-  turnCount: number;
-  messageCount: number;
-  toolCallCount: number;
-  startedAt: string;
-  endedAt: string;
-  model: string;
-  toolNames: string[];
-  touchedFiles: string[];
-}
-
-export interface CollectorState {
-  files: Record<string, FileProgress>;
-  documents: Record<string, { hash: string; workspaceKey: string }>;
-}
-
 export const DEFAULT_CONFIG_PATH = join(homedir(), ".devbie", "people-collector.json");
 export const DEFAULT_STATE_PATH = join(homedir(), ".devbie", "people-collector-state.json");
 
@@ -66,13 +47,6 @@ export const DEFAULT_AGENT_SESSION_DIRECTORIES: Record<IdeKey, string> = {
   codex: join(homedir(), ".codex", "sessions"),
   trae: join(homedir(), ".trae-cn", "memory", "projects"),
 };
-
-/** The member profile downloaded from the server — everything init needs. */
-export interface CollectorProfile {
-  endpoint: string;
-  token: string;
-  memberUserId: string;
-}
 
 export function loadConfig(path = DEFAULT_CONFIG_PATH): CollectorConfig {
   if (!existsSync(path)) {
@@ -94,21 +68,6 @@ export function loadConfig(path = DEFAULT_CONFIG_PATH): CollectorConfig {
   return config;
 }
 
-export function loadState(path = DEFAULT_STATE_PATH): CollectorState {
-  if (!existsSync(path)) return { files: {}, documents: {} };
-  try {
-    const parsed = JSON.parse(readFileSync(path, "utf8")) as Partial<CollectorState>;
-    return { files: parsed.files ?? {}, documents: parsed.documents ?? {} };
-  } catch {
-    return { files: {}, documents: {} };
-  }
-}
-
-export function saveState(state: CollectorState, path = DEFAULT_STATE_PATH): void {
-  mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, JSON.stringify(state, null, 2), "utf8");
-}
-
 export function writeSampleConfig(path = DEFAULT_CONFIG_PATH): void {
   const sample: CollectorConfig = {
     endpoint: "http://localhost:3000",
@@ -128,32 +87,4 @@ export function writeSampleConfig(path = DEFAULT_CONFIG_PATH): void {
   };
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, JSON.stringify(sample, null, 2), "utf8");
-}
-
-/**
- * Writes a ready-to-run config from a downloaded profile: credentials come
- * from the profile, session sources are probed (only roots that exist on this
- * machine are kept), workspaces start empty — the member fills in which of
- * their workspaces are company ones before the first sync.
- */
-export function writeConfigFromProfile(profile: CollectorProfile, path = DEFAULT_CONFIG_PATH): void {
-  if (!profile.endpoint || !profile.token || !profile.memberUserId) {
-    throw new Error("Profile must define endpoint, token and memberUserId.");
-  }
-  const agentSessionDirectories: Partial<Record<IdeKey, string>> = {};
-  for (const ide of Object.keys(DEFAULT_AGENT_SESSION_DIRECTORIES) as IdeKey[]) {
-    const root = DEFAULT_AGENT_SESSION_DIRECTORIES[ide];
-    if (existsSync(root)) agentSessionDirectories[ide] = root;
-  }
-  const config: CollectorConfig = {
-    endpoint: profile.endpoint.replace(/\/$/, ""),
-    token: profile.token,
-    memberUserId: profile.memberUserId,
-    workspaces: [],
-    agentSessionDirectories,
-    documentDirectories: ["docs", ".trae/documents"],
-    maxDocumentBytes: 200_000,
-  };
-  mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, JSON.stringify(config, null, 2), "utf8");
 }

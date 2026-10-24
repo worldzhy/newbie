@@ -2,9 +2,10 @@ import { createHash } from "node:crypto";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { basename, join, relative } from "node:path";
 
-import type { CollectorConfig, CollectorState } from "./config";
+import type { CollectorConfig } from "./config";
 import { redact } from "./redact";
-import type { UploadDocument } from "./uploader";
+import type { CollectorState } from "./state";
+import type { UploadDocument } from "./api";
 
 const DOCUMENT_EXTENSIONS = new Set([".md", ".markdown", ".txt"]);
 

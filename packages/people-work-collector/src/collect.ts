@@ -1,9 +1,10 @@
-import type { CollectorConfig, CollectorState, IdeKey } from "./config";
+import type { CollectorConfig, IdeKey } from "./config";
 import { scanDocuments } from "./documents";
-import { walkJsonl } from "./files";
-import { emptyProgress, mergeProgress } from "./progress";
+import { walkJsonl } from "./jsonl-files";
+import { emptyProgress, mergeProgress } from "./state";
+import type { CollectorState } from "./state";
 import { SESSION_SOURCES } from "./sessions/sources";
-import { CollectorApi, UploadDocument, UploadSession } from "./uploader";
+import { CollectorApi, UploadDocument, UploadSession } from "./api";
 
 export interface CollectSummary {
   workspacesReported: number;

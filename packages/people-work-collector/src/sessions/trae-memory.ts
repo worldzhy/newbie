@@ -1,8 +1,9 @@
 import { basename, dirname } from "node:path";
 
-import { readCompleteLines } from "../files";
+import { readCompleteLines } from "../jsonl-files";
 import { redact } from "../redact";
-import { chunkContent, stringList, stringOrNull } from "./text";
+import { chunkContent } from "./content";
+import { stringList, stringOrNull } from "./record";
 import { emptySession } from "./types";
 import type { NormalizedMessage, SessionDelta } from "./types";
 

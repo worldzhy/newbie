@@ -1,7 +1,8 @@
-import { readCompleteLines } from "../files";
+import { readCompleteLines } from "../jsonl-files";
 import { normalizeClaudeRecord } from "./claude";
 import { normalizeCodexRecord } from "./codex";
-import { chunkContent, stringOrNull } from "./text";
+import { chunkContent } from "./content";
+import { stringOrNull } from "./record";
 import { emptySession } from "./types";
 import type { NormalizedMessage, NormalizedRecord, SessionDelta } from "./types";
 
